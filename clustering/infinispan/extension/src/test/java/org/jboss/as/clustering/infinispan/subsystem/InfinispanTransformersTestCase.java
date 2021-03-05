@@ -1,24 +1,24 @@
 /*
-* JBoss, Home of Professional Open Source.
-* Copyright 2011, Red Hat Middleware LLC, and individual contributors
-* as indicated by the @author tags. See the copyright.txt file in the
-* distribution for a full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.controller.PropertiesTestUtil.checkMapModels;
@@ -132,6 +132,24 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                         formatArtifact("org.jboss.eap:wildfly-clustering-spi:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-connector:%s", version),
                 };
+            case EAP_7_3_0:
+                return new String[] {
+                        formatEAP7SubsystemArtifact(version),
+                        "org.infinispan:infinispan-commons:9.4.16.Final-redhat-00002",
+                        "org.infinispan:infinispan-core:9.4.16.Final-redhat-00002",
+                        "org.infinispan:infinispan-cachestore-jdbc:9.4.16.Final-redhat-00002",
+                        "org.infinispan:infinispan-client-hotrod:9.4.16.Final-redhat-00002",
+                        // Following are needed for InfinispanSubsystemInitialization
+                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-client:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-singleton-api:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-connector:%s", version),
+                };
             default: {
                 throw new IllegalArgumentException();
             }
@@ -171,6 +189,11 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     @Test
     public void testTransformerEAP720() throws Exception {
         testTransformation(ModelTestControllerVersion.EAP_7_2_0);
+    }
+
+    @Test
+    public void testTransformerEAP730() throws Exception {
+        testTransformation(ModelTestControllerVersion.EAP_7_3_0);
     }
 
     private KernelServices buildKernelServices(String xml, ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
@@ -351,6 +374,11 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         testRejections(ModelTestControllerVersion.EAP_7_2_0);
     }
 
+    @Test
+    public void testRejectionsEAP730() throws Exception {
+        testRejections(ModelTestControllerVersion.EAP_7_3_0);
+    }
+
     private void testRejections(final ModelTestControllerVersion controller) throws Exception {
         final ModelVersion version = getModelVersion(controller).getVersion();
         final String[] dependencies = getDependencies(controller);
@@ -419,7 +447,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
             config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH, StateTransferResourceDefinition.PATH), new RejectedValueConfig(StateTransferResourceDefinition.Attribute.TIMEOUT, value -> value.asLong() <= 0));
             config.addFailedAttribute(remoteContainerAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
-            for (PathElement path : Arrays.asList(ThreadPoolResourceDefinition.CLIENT.getPathElement(), ConnectionPoolResourceDefinition.PATH, org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition.PATH, RemoteClusterResourceDefinition.WILDCARD_PATH, RemoteTransactionResourceDefinition.PATH, SecurityResourceDefinition.PATH) ) {
+            for (PathElement path : Arrays.asList(ThreadPoolResourceDefinition.CLIENT.getPathElement(), ConnectionPoolResourceDefinition.PATH, org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition.PATH, RemoteClusterResourceDefinition.WILDCARD_PATH, RemoteTransactionResourceDefinition.PATH, SecurityResourceDefinition.PATH)) {
                 config.addFailedAttribute(remoteContainerAddress.append(path), FailedOperationTransformationConfig.REJECTED_RESOURCE);
             }
 
