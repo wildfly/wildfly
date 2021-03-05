@@ -83,7 +83,8 @@ class MicroProfileMetricsSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }, RUNTIME);
 
         MetricsHTTTPSecurityService.install(context, securityEnabled);
-        MicroProfileMetricsContextService.install(context);
+        final MicroProfileVendorMetricRegistry vendorMetricRegistry = new MicroProfileVendorMetricRegistry();
+        MicroProfileMetricsContextService.install(context, vendorMetricRegistry);
 
         // delay the registration of the metrics in the VERIFY stage so that all resources
         // created during the RUNTIME phase will have been registered in the MRR.
@@ -96,7 +97,7 @@ class MicroProfileMetricsSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 ImmutableManagementResourceRegistration rootResourceRegistration = context.getRootResourceRegistration();
                 Resource rootResource = context.readResourceFromRoot(EMPTY_ADDRESS);
 
-                MetricRegistration registration = new MetricRegistration(new MicroProfileVendorMetricRegistry());
+                MetricRegistration registration = new MetricRegistration(vendorMetricRegistry);
 
                 metricCollector.collectResourceMetrics(rootResource, rootResourceRegistration, Function.identity(),
                         exposeAnySubsystem, exposedSubsystems, prefix, registration);

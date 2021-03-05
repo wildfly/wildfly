@@ -49,19 +49,21 @@ public class MicroProfileMetricsContextService implements Service {
 
     private final Supplier<MetricsContextService> metricsContextService;
     private final MetricsRequestHandler metricsRequestHandler = new MetricsRequestHandler();
+    private final MicroProfileVendorMetricRegistry vendorMetricsRegistry;
 
-    static void install(OperationContext context) {
+    static void install(OperationContext context, MicroProfileVendorMetricRegistry vendorMetricRegistry) {
         ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(MICROPROFILE_METRIC_HTTP_CONTEXT_CAPABILITY.getCapabilityServiceName());
 
         Supplier<MetricsContextService> metricsContextService = serviceBuilder.requires(context.getCapabilityServiceName(METRICS_HTTP_CONTEXT_CAPABILITY, MetricsContextService.class));
 
-        Service microprofileMetricsContextService = new MicroProfileMetricsContextService(metricsContextService);
+        Service microprofileMetricsContextService = new MicroProfileMetricsContextService(metricsContextService, vendorMetricRegistry);
 
         serviceBuilder.setInstance(microprofileMetricsContextService).install();
     }
 
-    MicroProfileMetricsContextService(Supplier<MetricsContextService> metricsContextService) {
+    MicroProfileMetricsContextService(Supplier<MetricsContextService> metricsContextService, MicroProfileVendorMetricRegistry vendorMetricsRegistry) {
         this.metricsContextService = metricsContextService;
+        this.vendorMetricsRegistry = vendorMetricsRegistry;
     }
 
     @Override
@@ -73,13 +75,18 @@ public class MicroProfileMetricsContextService implements Service {
                 String method = exchange.getRequestMethod().toString();
                 HeaderValues acceptHeaders = exchange.getRequestHeaders().get(Headers.ACCEPT);
 
-                metricsRequestHandler.handleRequest(requestPath, method, acceptHeaders == null ? null : acceptHeaders.stream(), (status, message, headers) -> {
-                    exchange.setStatusCode(status);
-                    for (Map.Entry<String, String> entry : headers.entrySet()) {
-                        exchange.getResponseHeaders().put(new HttpString(entry.getKey()), entry.getValue());
-                    }
-                    exchange.getResponseSender().send(message);
-                });
+                vendorMetricsRegistry.readLock();
+                try {
+                    metricsRequestHandler.handleRequest(requestPath, method, acceptHeaders == null ? null : acceptHeaders.stream(), (status, message, headers) -> {
+                        exchange.setStatusCode(status);
+                        for (Map.Entry<String, String> entry : headers.entrySet()) {
+                            exchange.getResponseHeaders().put(new HttpString(entry.getKey()), entry.getValue());
+                        }
+                        exchange.getResponseSender().send(message);
+                    });
+                } finally {
+                    vendorMetricsRegistry.unlock();
+                }
             }
         });
     }
@@ -88,6 +95,6 @@ public class MicroProfileMetricsContextService implements Service {
     public void stop(StopContext context) {
         metricsContextService.get().setOverrideableMetricHandler(null);
 
-        MicroProfileVendorMetricRegistry.removeAllMetrics();
+        vendorMetricsRegistry.removeAllMetrics();
     }
 }
