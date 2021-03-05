@@ -1,0 +1,121 @@
+[[EncryptedExpressions]]
+= Encrypted Expressions
+
+WildFly Elytron provides support for handling encrypted expressions in the management model using a `SecretKey` from a `CredentialStore` to decrypt the expression at runtime.
+
+For information regarding how to create, configure, and populate credential stores including the manipulation of secret keys please refer to the <<CredentialStore, Credential Store>> chapter.
+
+Within the `elytron` subsystem one or more `resolvers` can be defined to handle the decryption of a previously encrypted expression.  Each resolver will reference a single secret key in a
+single credential store which it will use to decrypt the expressions.  Encrypted expressions can take one of two forms:
+
+ * `${ENC::ResolverName:RUxZAUMQXUj3qP1hbXyO5PpmsbgkepjoscIf3tKXvGiPDXYqNAc=}`
+ * `${ENC::RUxZAUMQXUj3qP1hbXyO5PpmsbgkepjoscIf3tKXvGiPDXYqNAc=}`
+
+In both cases the `ENC` prefix is used to identify the expression is an encrypted expression, this prefix is the default however it is possible to define an alternative prefix for use
+across the configuration.
+
+Within the first example the `ResolverName` is the name of an individual resolver definition.  The name of the resolver has been omitted in the second example as it is also possible
+to define a default resolver which will be used if no resolver is specified within the expression.
+
+== expression=encryption resource
+
+Support for decrypting expressions is enabled by defining a singleton `expression=encryption` resource within the `elytron` subsystem.
+
+This resource can be defined with the following attributes.
+
+ * `prefix` (Default `ENC`) - The prefix used within the encrypted expressions.
+ * `default-resolver` (Optional) - For expressions that do not define a resolver, the default resolver to use.
+ * `resolvers` - A lit of one more named resolver definitions.
+
+An individual resolver is defined with three attributes:
+
+ * `name` - The name of the individual configuration used to reference it.
+ * `credential-store` - Reference to the credential store instance that contains the secret key this resolver will use.
+ * `secret-key` - The alias of the secret key within the credential store to use.
+
+The following is an example CLI command to define an `expression=encryption` resource in the `elytron` subsystem with two resolver definitions one if which is a
+default and an alternative prefix.
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=elytron/expression=encryption:add(prefix=ENCRYPTED, default-resolver=one, \
+    resolvers=[{name=one, credential-store=store-one, secret-key=key}, \
+               {name=two, credential-store=store-two,secret-key=key}])
+{"outcome" => "success"}
+----
+
+== Creating Expressions
+
+NOTE: The following section illustrates how to create an encrypted expression, if you repeat the same command for the same clear text is it normal that a different
+result is returned for the same key.  This is because a unique initialisation vector is used for each call.
+
+=== Management Operation
+
+Once the `expression=encryption` resource has been defined the `create-expression` management operation can be called to generate an expression using the referenced
+secret key.
+
+WARNING: When using management operations to create expressions from a `clear-text` string remember to disable the history in the CLI first otherwise the clear text string will be cached.
+
+In these examples the `expression=encryption` resource has been configured to use the default prefix.
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] history --disable
+[standalone@localhost:9990 /] /subsystem=elytron/expression=encryption:create-expression(resolver=two, clear-text=MyPassword)
+{
+    "outcome" => "success",
+    "result" => {"expression" => "${ENC::two:RUxZAUMQcUVLxqjt8zh8FabcA+wcnux+mqfLE27sfmHfKNG9BcY=}"}
+}
+
+[standalone@localhost:9990 /] history --enable
+----
+
+When using the `create-expression` operation the `resolver` attribute can be ommited, in that case the `default-resolver` will be used instead.
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] history --disable
+[standalone@localhost:9990 /] /subsystem=elytron/expression=encryption:create-expression(clear-text=MyPassword)
+{
+    "outcome" => "success",
+    "result" => {"expression" => "${ENC::RUxZAUMQu7biKBAwtUi+to+BlQnbjK3URUHMUDh8ReTlN0Alao0=}"}
+}
+
+[standalone@localhost:9990 /] history --enable
+----
+
+In both cases the resulting expression can be used on any attribute of a resource which supports the use of expressions.
+
+=== Command Line Tool
+
+Once a credential store has been populated with a secret key the `credential-store` command of the `elytron-tool` can also be used to create the encrypted string to include in an expression.
+
+[source,options="nowrap"]
+----
+]$ bin/elytron-tool.sh credential-store --location standalone/configuration/store-one.cs --type PropertiesCredentialStore --encrypt key
+Clear text value:
+Confirm clear text value:
+Clear text encrypted to token 'RUxZAUMQvGzk6Vaadp2cahhZ6rlPhHOZcWyjXALlAthrENvRTvQ=' using alias 'key'.
+----
+
+The `--encrypt` action is used with the `credential-store` command, the argument to this action is the alias of the secret key to use.  In this form the tool will prompt
+twice for the clear text which is being encrypted.  When using the command line tool the output is just the Base64 encoded encrypted ciphertext, to use this in the management model
+it will need to be included in an expression as described earlier i.e. using the appropriate prefix and if required resolver name.
+
+When using the `--encrypt` action it is also possible to pass in `--clear-text` parameter to pass in the clear text directly but this may be visible to other users and may also
+be cached in the command history of your shell. 
+
+== Domain Mode
+
+When using encrypted expressions in domain mode things are slightly different to how the legacy vault may have been used in the past.
+
+To make use of encrypted expressions in the host controler configuration the `expression=encryption` resource and relevant `*credential-store` definitions must be defined within the `elytron` subsystem definition of the
+host controller i.e. in the same `host.xml` configuration.
+
+For expressions within a domain profile being used to configure one or more servers the `expression=encryption` resource and relevant `*credential-store` definitions must be defined within the `elytron` subsystem 
+definition of the same profile.
+
+The runtime management operations are not supported against the `expression=encryption` or `*credential-store` when defined within a domain profile so for these environments the credential store and relevant
+expressions should be created offline before defining in the model.  It is possible to reference a common credential store file shared between the host controller management model and the domain profile but after making
+any updates to the credential store from the host controller the application server processes will need to be restarted to force them to reload the credential store.
+

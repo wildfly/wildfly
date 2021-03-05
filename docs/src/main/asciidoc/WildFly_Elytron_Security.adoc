@@ -98,6 +98,7 @@ include::_elytron/OpenSSL.adoc[]
 include::_elytron/Web_Single_Sign_On.adoc[]
 include::_elytron/Audit.adoc[]
 include::_elytron/Credential_Store.adoc[]
+include::_elytron/Encrypted_Expressions.adoc[]
 include::_elytron/Custom_Components.adoc[]
 include::_elytron/Migrate_Legacy_Security_to_Elytron_Security.adoc[]
 
