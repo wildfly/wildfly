@@ -44,6 +44,7 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
+import org.wildfly.clustering.web.session.oob.OOBSession;
 import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
 
 /**
@@ -94,6 +95,10 @@ public class DistributableSession implements io.undertow.server.session.Session 
                         // The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
                         session.getMetaData().setLastAccess(this.startTime, Instant.now());
                         session.close();
+                    } finally {
+                        // In case the session is referenced after the request, switch to an OOB session
+                        String id = session.getId();
+                        this.entry = new SimpleImmutableEntry<>(new OOBSession<>(this.manager.getSessionManager(), id, session.getLocalContext()), new SimpleSessionConfig(id));
                     }
                 } catch (Throwable e) {
                     // Don't propagate exceptions at the stage, since response was already committed
@@ -227,7 +232,6 @@ public class DistributableSession implements io.undertow.server.session.Session 
         Map.Entry<Session<Map<String, Object>>, SessionConfig> entry = this.entry;
         Session<Map<String, Object>> session = entry.getKey();
         this.validate(exchange, session);
-        this.validateBatch(session);
         // Invoke listeners outside of the context of the batch associated with this session
         this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
         try (BatchContext context = this.resumeBatch()) {
@@ -242,7 +246,10 @@ public class DistributableSession implements io.undertow.server.session.Session 
                 String id = session.getId();
                 entry.getValue().clearSession(exchange, id);
             }
-            this.batch.close();
+            // An OOB session has no batch
+            if (this.batch != null) {
+                this.batch.close();
+            }
         } finally {
             this.closeTask.accept(exchange);
         }
@@ -284,14 +291,8 @@ public class DistributableSession implements io.undertow.server.session.Session 
         }
     }
 
-    private void validateBatch(Session<Map<String, Object>> session) {
-        if (this.batch.getState() == Batch.State.CLOSED) {
-            throw UndertowClusteringLogger.ROOT_LOGGER.batchIsAlreadyClosed(session.getId());
-        }
-    }
-
     private BatchContext resumeBatch() {
-        Batch batch = (this.batch.getState() != Batch.State.CLOSED) ? this.batch : null;
+        Batch batch = (this.batch != null) && (this.batch.getState() != Batch.State.CLOSED) ? this.batch : null;
         return this.manager.getSessionManager().getBatcher().resumeBatch(batch);
     }
 }

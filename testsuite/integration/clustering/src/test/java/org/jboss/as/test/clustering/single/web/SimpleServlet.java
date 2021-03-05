@@ -74,8 +74,10 @@ public class SimpleServlet extends HttpServlet {
 
     @Override
     protected void doHead(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession(true);
-        response.addHeader(SESSION_ID_HEADER, session.getId());
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            response.addHeader(SESSION_ID_HEADER, session.getId());
+        }
     }
 
     @Override
