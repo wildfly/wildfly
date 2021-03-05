@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -45,7 +46,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 import org.infinispan.util.concurrent.CompletableFutures;
 import org.jboss.as.clustering.context.DefaultExecutorService;
-import org.jboss.as.clustering.context.ExecutorServiceFactory;
+import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.BatchContext;
@@ -129,7 +130,7 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
 
     @Override
     public void start() {
-        this.executor = new DefaultExecutorService(this.getClass(), ExecutorServiceFactory.CACHED_THREAD);
+        this.executor = Executors.newCachedThreadPool(new DefaultThreadFactory(this.getClass()));
         if (this.recorder != null) {
             this.recorder.reset();
         }
