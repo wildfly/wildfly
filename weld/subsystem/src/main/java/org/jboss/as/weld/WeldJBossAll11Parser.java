@@ -52,6 +52,7 @@ class WeldJBossAll11Parser extends AbstractWeldJBossAllParser implements JBossAl
         Boolean requireBeanDescriptor = getAttributeAsBoolean(reader, REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME);
         Boolean nonPortableMode = getAttributeAsBoolean(reader, NON_PORTABLE_MODE_ATTRIBUTE_NAME);
         Boolean developmentMode = getAttributeAsBoolean(reader, DEVELOPMENT_MODE_ATTRIBUTE_NAME);
+        super.parseWeldElement(reader);
         return new WeldJBossAllConfiguration(requireBeanDescriptor, nonPortableMode, developmentMode);
     }
 
