@@ -72,7 +72,7 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |JSR-250: Common Annotations for the Java Platform 1.3 |X |X |X |X
 
-|JSR-343: Java Message Service API 2.0 |X |-- |X |--
+|Jakarta Messaging 2.0 |X |-- |X |--
 
 |Jakarta Transactions 1.3 |X |X |X |X
 
@@ -107,11 +107,11 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 |Jakarta EE Security API 1.0 |X |X |X |X
 |=======================================================================
 
-Missing ActiveMQ Artemis and JMS?
+Missing ActiveMQ Artemis and Jakarta Messaging?
 
 [WARNING]
 
-The WildFly Web Profile doesn't include JMS (provided by ActiveMQ Artemis) by
+The WildFly Web Profile doesn't include Jakarta Messaging (provided by ActiveMQ Artemis) by
 default. If you want to use messaging, make sure you start the server
  using the "Full Platform" configuration.
 

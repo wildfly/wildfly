@@ -25,7 +25,7 @@ package org.jboss.as.test.smoke.jms;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Setup task to create/remove a minimal JMS bridge.
+ * Setup task to create/remove a minimal Jakarta Messaging bridge.
  * @author Emmanuel Hugonnet (c) 2019 Red Hat, Inc.
  */
 public class DefaultCreateJMSBridgeSetupTask extends AbstractCreateJMSBridgeSetupTask {

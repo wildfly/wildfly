@@ -44,7 +44,7 @@ public class JMSOperationsProvider {
     private static final String FILE_NAME = "jmsoperations.properties";
 
     /**
-     * Gets an instance of a JMSOperations implementation for a particular JMS provider based on the classname
+     * Gets an instance of a JMSOperations implementation for a particular Jakarta Messaging provider based on the classname
      * given by property "jmsoperations.implementation.class" in jmsoperations.properties somewhere on the classpath
      * The property should contain a fully qualified name of a class that implements JMSOperations interface
      * The setting in that file can be overriden by a system property declaration
@@ -89,7 +89,7 @@ public class JMSOperationsProvider {
     }
 
     /**
-     * Gets an instance of a JMSOperations implementation for a particular JMS provider based on the classname
+     * Gets an instance of a JMSOperations implementation for a particular Jakarta Messaging provider based on the classname
      * given by property "jmsoperations.implementation.class" in jmsoperations.properties somewhere on the classpath
      * The property should contain a fully qualified name of a class that implements JMSOperations interface
      * The setting in that file can be overriden by a system property declaration

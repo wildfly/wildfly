@@ -162,7 +162,7 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
     }
 
     /**
-     * Creates new JMS Web Service endpoint.
+     * Creates new Jakarta Messaging Web Service endpoint.
      *
      * @param endpointClass endpoint class name
      * @param endpointName endpoint name

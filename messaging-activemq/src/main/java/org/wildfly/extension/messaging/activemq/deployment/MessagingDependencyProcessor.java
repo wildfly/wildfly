@@ -38,7 +38,7 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
- * Processor that add module dependencies for JMS deployments.
+ * Processor that add module dependencies for Jakarta Messaging deployments.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */

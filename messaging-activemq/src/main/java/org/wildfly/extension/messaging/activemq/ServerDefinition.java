@@ -992,7 +992,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
                 ConnectorServiceDefinition.INSTANCE,
                 GroupingHandlerDefinition.INSTANCE,
 
-                // JMS resources
+                // Jakarta Messaging resources
                 LegacyConnectionFactoryDefinition.INSTANCE,
                 PooledConnectionFactoryDefinition.INSTANCE));
 

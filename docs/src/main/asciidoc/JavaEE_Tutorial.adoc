@@ -44,7 +44,7 @@ include::_javaee-guide/Contexts_and_Dependency_Injection_(CDI).adoc[]
 
 include::_javaee-guide/Jakarta_Bean_Validation.adoc[]
 
-include::_javaee-guide/Java_Message_Service_API_(JMS).adoc[]
+include::_javaee-guide/Jakarta_Messaging_API.adoc[]
 
 include::_javaee-guide/Jakarta_Connectors_Architecture.adoc[]
 

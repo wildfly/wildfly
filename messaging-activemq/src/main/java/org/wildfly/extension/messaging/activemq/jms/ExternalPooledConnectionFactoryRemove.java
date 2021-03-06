@@ -30,7 +30,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Operation Handler to remove a JMS external pooled Connection Factory.
+ * Operation Handler to remove a Jakarta Messaging external pooled Connection Factory.
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */
 public class ExternalPooledConnectionFactoryRemove extends PooledConnectionFactoryRemove {

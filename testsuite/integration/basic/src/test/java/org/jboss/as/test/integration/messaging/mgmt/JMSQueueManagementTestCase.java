@@ -61,7 +61,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests the management API for JMS queues.
+ * Tests the management API for Jakarta Messaging queues.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

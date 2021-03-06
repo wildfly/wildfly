@@ -16,7 +16,7 @@ import org.jboss.logging.Logger;
 )
 
 /**
- * Auxiliary class for JMS smoke tests - receives messages from a queue.
+ * Auxiliary class for Jakarta Messaging smoke tests - receives messages from a queue.
  * Test of fix for WFLY-9762
  *
  * @author <a href="jondruse@redhat.com">Jiri Ondrusek</a>

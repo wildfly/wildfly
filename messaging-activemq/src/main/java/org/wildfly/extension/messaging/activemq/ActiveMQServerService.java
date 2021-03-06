@@ -290,7 +290,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                 server.getServiceRegistry().addOutgoingInterceptor(outgoingInterceptor);
             }
 
-            // the server is actually started by the JMSService.
+            // the server is actually started by the Jakarta Messaging Service.
         } catch (Exception e) {
             throw MessagingLogger.ROOT_LOGGER.failedToStartService(e);
         } finally {
@@ -312,7 +312,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                     }
                 }
 
-                // the server is actually stopped by the JMS Service
+                // the server is actually stopped by the Jakarta Messaging Service
             }
             pathConfig.closeCallbacks(pathManager.get());
         } catch (Exception e) {

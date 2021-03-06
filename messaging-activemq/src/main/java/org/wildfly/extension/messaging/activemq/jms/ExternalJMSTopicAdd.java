@@ -28,7 +28,7 @@ import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 
 /**
- * Update handler adding a topic to the JMS subsystem. The
+ * Update handler adding a topic to the Jakarta Messaging subsystem. The
  * runtime action, will create the {@link JMSTopicService}.
  *
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.

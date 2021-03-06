@@ -53,7 +53,7 @@
         <module name="org.apache.activemq.artemis.ra"/>
         <module name="org.jboss.common-beans"/>
         <module name="org.jboss.staxmapper"/>
-        <!-- required to provide high-level JMS CLI commands loaded by the extension -->
+        <!-- required to provide high-level Jakarta Messaging CLI commands loaded by the extension -->
         <module name="org.jboss.as.cli" optional="true"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
