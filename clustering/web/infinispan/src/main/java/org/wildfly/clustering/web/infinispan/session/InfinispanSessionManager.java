@@ -83,7 +83,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-@Listener(primaryOnly = true)
+@Listener
 public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionManager<LC, TransactionBatch> {
 
     private final Registrar<SessionExpirationListener> expirationRegistrar;
@@ -99,6 +99,7 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
     private final SpecificationProvider<S, SC, AL> provider;
     private final Runnable startTask;
     private final Consumer<ImmutableSession> closeTask;
+    private final Object removeListener;
 
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private volatile Registration expirationRegistration;
@@ -125,6 +126,7 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
                 }
             }
         };
+        this.removeListener = (this.recorder != null) ? new RemoveListener(this::removed) : null;
     }
 
     @Override
@@ -136,7 +138,12 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
         this.identifierFactory.start();
         this.expirationRegistration = this.expirationRegistrar.register(this.expirationListener);
         CacheEventFilter<Object, Object> filter = new PredicateKeyFilter<>(SessionCreationMetaDataKeyFilter.INSTANCE);
-        this.cache.addListener(this, filter, null);
+        if (!this.properties.isPersistent()) {
+            this.cache.addListener(this, filter, null);
+        }
+        if (this.removeListener != null) {
+            this.cache.addListener(this.removeListener, filter, null);
+        }
         this.cache.addListener(this.factory.getMetaDataFactory(), filter, null);
         this.cache.addListener(this.factory.getAttributesFactory(), filter, null);
         this.startTask.run();
@@ -145,7 +152,12 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
     @Override
     public void stop() {
         this.expirationRegistration.close();
-        this.cache.removeListener(this);
+        if (!this.properties.isPersistent()) {
+            this.cache.removeListener(this);
+        }
+        if (this.removeListener != null) {
+            this.cache.removeListener(this.removeListener);
+        }
         this.cache.removeListener(this.factory.getMetaDataFactory());
         this.cache.removeListener(this.factory.getAttributesFactory());
         this.identifierFactory.stop();
@@ -242,7 +254,7 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
 
     @CacheEntryActivated
     public CompletionStage<Void> activated(CacheEntryActivatedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (!event.isPre() && !this.properties.isPersistent()) {
+        if (!event.isPre()) {
             String id = event.getKey().getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
             try (TransactionBatch batch = this.batcher.suspendBatch()) {
@@ -264,7 +276,7 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
 
     @CacheEntryPassivated
     public CompletionStage<Void> passivated(CacheEntryPassivatedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (event.isPre() && !this.properties.isPersistent()) {
+        if (event.isPre()) {
             String id = event.getKey().getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
             try (TransactionBatch batch = this.batcher.suspendBatch()) {
@@ -284,26 +296,32 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
         return CompletableFutures.completedNull();
     }
 
-    @CacheEntryRemoved
-    public CompletionStage<Void> removed(CacheEntryRemovedEvent<SessionCreationMetaDataKey, ?> event) {
-        if (event.isPre()) {
-            String id = event.getKey().getId();
-            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
-            if (this.recorder != null) {
-                SessionMetaDataFactory<MV> factory = this.factory.getMetaDataFactory();
-                MV value = factory.tryValue(id);
-                if (value != null) {
-                    try {
-                        return CompletableFuture.runAsync(() -> {
-                            ImmutableSessionMetaData metaData = factory.createImmutableSessionMetaData(id, value);
-                            this.recorder.record(metaData);
-                        }, this.executor);
-                    } catch (RejectedExecutionException e) {
-                        // Session manager is stopped
-                    }
-                }
+    private void removed(String id) {
+        InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
+        if (this.recorder != null) {
+            SessionMetaDataFactory<MV> factory = this.factory.getMetaDataFactory();
+            MV value = factory.tryValue(id);
+            if (value != null) {
+                ImmutableSessionMetaData metaData = factory.createImmutableSessionMetaData(id, value);
+                this.recorder.record(metaData);
             }
         }
-        return CompletableFutures.completedNull();
+    }
+
+    @Listener(primaryOnly = true, observation = Listener.Observation.PRE)
+    private static class RemoveListener {
+        private final Consumer<String> remover;
+
+        RemoveListener(Consumer<String> remover) {
+            this.remover = remover;
+        }
+
+        @CacheEntryRemoved
+        public CompletionStage<Void> removed(CacheEntryRemovedEvent<SessionCreationMetaDataKey, ?> event) {
+            if (event.isPre()) {
+                this.remover.accept(event.getKey().getId());
+            }
+            return CompletableFutures.completedNull();
+        }
     }
 }
