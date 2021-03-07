@@ -84,7 +84,7 @@
         <version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>1.0.0.Alpha1</version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>
         <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
         <version.org.hibernate.validator>7.0.1.Final</version.org.hibernate.validator>
-        <version.org.jboss.metadata>14.0.0.Alpha1</version.org.jboss.metadata>
+        <version.org.jboss.metadata>14.0.0.Beta1</version.org.jboss.metadata>
         <version.org.jboss.weld.weld>4.0.0.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>4.0.Final</version.org.jboss.weld.weld-api>
 
