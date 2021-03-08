@@ -37,7 +37,7 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 /**
- * Domain extension used to initialize the jsf subsystem.
+ * Domain extension used to initialize the Jakarta Server Faces subsystem.
  *
  * @author Stuart Douglas
  * @author Emanuel Muckenhuber

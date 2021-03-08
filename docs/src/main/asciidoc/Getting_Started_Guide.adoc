@@ -34,7 +34,7 @@ server configuration profiles.
 |Jakarta EE Platform Technology |Jakarta EE Full Platform |Jakarta EE Web
 Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Profile
 
-|JSR-356: Java API for Web Socket |X |X |X |X
+|Jakarta WebSocket |X |X |X |X
 
 |Jakarta JSON Processing 1.1 |X |X |X |X
 
@@ -53,11 +53,11 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |Jakarta Batch 1.0 |X |-- |X |--
 
-|Concurrency Utilities for Jakarta EE |X |X |X |X
+|Jakarta Concurrency |X |X |X |X
 
-|JSR-365: Contexts and Dependency Injection for Java 2.0 |X |X |X |X
+|Jakarta Contexts and Dependency Injection 2.0 |X |X |X |X
 
-|JSR-330: Dependency Injection for Java 1.0 |X |X |X |X
+|Jakarta Dependency Injection |X |X |X |X
 
 |Jakarta Bean Validation 2.0 |X |X |X |X
 
@@ -66,13 +66,13 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |Jakarta Interceptors 1.2 |X |X |X |X
 
-|Jakarta EE Connector Architecture 1.7 |X |-- |X |X
+|Jakarta Connectors 1.7 |X |-- |X |X
 
-|JSR-338: Java Persistence 2.2 |X |X |X |X
+|Jakarta Persistence 2.2 |X |X |X |X
 
-|JSR-250: Common Annotations for the Java Platform 1.3 |X |X |X |X
+|Jakarta Annotations 1.3 |X |X |X |X
 
-|JSR-343: Java Message Service API 2.0 |X |-- |X |--
+|Jakarta Messaging 2.0 |X |-- |X |--
 
 |Jakarta Transactions 1.3 |X |X |X |X
 
@@ -80,15 +80,15 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |Jakarta RESTful Web Services 2.1 |X |X |X |X
 
-|JSR-109: Implementing Enterprise Web Services 1.3 |X |-- |X |--
+|Jakarta Enterprise Web Services 1.3 |X |-- |X |--
 
 |Jakarta XML Web Services Specification 2.3 |X |X |X |X
 
-|JSR-181: Web Services Metadata for the Java Platform |X |-- |X |--
+|Jakarta Web Services Metadata |X |-- |X |--
 
 |Jakarta XML RPC 1.1 |Optional |-- |-- |--
 
-|JSR-67: Java APIs for XML Messaging 1.3 |X |-- |X |--
+|Jakarta SOAP with Attachments 1.3 |X |-- |X |--
 
 |Jakarta XML Registries |Optional |-- |-- |--
 
@@ -100,11 +100,11 @@ Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Pr
 
 |Jakarta EE Application Deployment 1.2 |Optional |-- |-- |--
 
-|JSR-77: J2EE Management 1.1 |X |  |X | 
+|Jakarta Management 1.1 |X |  |X | 
 
-|JSR-45: Debugging Support for Other Languages 1.0 |X |X |X |X
+|Jakarta Debugging Support for Other Languages 1.0 |X |X |X |X
 
-|Jakarta EE Security API 1.0 |X |X |X |X
+|Jakarta Security 1.0 |X |X |X |X
 |=======================================================================
 
 Missing ActiveMQ Artemis and JMS?

@@ -291,7 +291,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .setInitialMode(Mode.ACTIVE)
                 .install();
 
-        // WS-AT / JTA Transaction bridge services:
+        // WS-AT / Jakarta Transactions Transaction bridge services:
 
         final TxBridgeInboundRecoveryService txBridgeInboundRecoveryService = new TxBridgeInboundRecoveryService();
         ServiceBuilder<?> txBridgeInboundRecoveryServiceBuilder =

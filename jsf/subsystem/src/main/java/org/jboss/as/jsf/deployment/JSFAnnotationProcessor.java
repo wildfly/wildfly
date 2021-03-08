@@ -54,7 +54,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * {@link DeploymentUnitProcessor} implementation responsible for extracting JSF annotations from a deployment and attaching them
+ * {@link DeploymentUnitProcessor} implementation responsible for extracting Jakarta Server Faces annotations from a deployment and attaching them
  * to the deployment unit to eventually be added to the {@link javax.servlet.ServletContext}.
  *
  * @author John Bailey
@@ -124,8 +124,8 @@ public class JSFAnnotationProcessor implements DeploymentUnitProcessor {
                     discoveredClasses.add(annotatedClass);
                 } else {
                     if (annotation == FacesAnnotation.FACES_VALIDATOR || annotation == FacesAnnotation.FACES_CONVERTER || annotation == FacesAnnotation.FACES_BEHAVIOR) {
-                        // Support for Injection into JSF Managed Objects allows to inject FacesValidator, FacesConverter and FacesBehavior if managed = true
-                        // JSF 2.3 spec chapter 5.9.1 - JSF Objects Valid for @Inject Injection
+                        // Support for Injection into Jakarta Server Faces Managed Objects allows to inject FacesValidator, FacesConverter and FacesBehavior if managed = true
+                        // Jakarta Server Faces 2.3 spec chapter 5.9.1 - Jakarta Server Faces Objects Valid for @Inject Injection
                         AnnotationValue value = annotationInstance.value(MANAGED_ANNOTATION_PARAMETER);
                         if (value != null && value.asBoolean()) {
                             continue;

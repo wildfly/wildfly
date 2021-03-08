@@ -92,7 +92,7 @@ public class SFSBHibernateSessionFactory {
         student.setLastName(lastName);
 
         try {
-            // We are not explicitly initializing a Transaction as Hibernate is expected to invoke the JTA TransactionManager
+            // We are not explicitly initializing a Transaction as Hibernate is expected to invoke the Jakarta Transactions TransactionManager
             // implicitly
             Session session = sessionFactory.openSession();
             session.save(student);

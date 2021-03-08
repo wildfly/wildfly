@@ -79,7 +79,7 @@ image:jsf/8108c4f111aab2c3465472eb84cf1d9b7cf912d0.jpg[images/jsf/8108c4f111aab2
 
 The contents of the project is shown as above.
 
-[[add-jsf-into-project]]
+[[add-Jakarta-Server-Faces-into-project]]
 == Add Jakarta Server Faces into project
 
 The Jakarta Server Faces library is now included in maven repo, so we can let maven to
@@ -108,7 +108,7 @@ Then we add Jakarta Server Faces dependency into pom.xml:
 
 Please note the 'scope' is 'provided', because we don't want to bundle
 the jsf.jar into the war produced by our project later, as JBoss AS7
-already have jsf bundled in.
+already have Jakarta Server Faces bundled in.
 
 Then we run 'mvn install' to update the project, and maven will download
 jsf-api for us automatically.
@@ -258,7 +258,7 @@ image:jsf/91e40cd0b1545cff4622857d6dc9959f96faf056.jpg[images/jsf/91e40cd0b1545c
 
 Hooray! We've imported the project into IntelliJ now icon:smile-o[role="yellow"]
 
-[[adding-intellij-jsf-support-to-project]]
+[[adding-intellij-Jakarta-Server-Faces-support-to-project]]
 == Adding IntelliJ Jakarta Server Faces support to project
 
 Let's see how to use IntelliJ and AS7 to debug the project. First we

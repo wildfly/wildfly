@@ -129,7 +129,7 @@ public class Configuration {
 
     /**
      * defaults to true, if changed to false (in the persistence.xml),
-     * the JPA container will not start the persistence unit service.
+     * the Jakarta Persistence container will not start the persistence unit service.
      */
     public static final String JPA_CONTAINER_MANAGED = "jboss.as.jpa.managed";
 
@@ -185,7 +185,7 @@ public class Configuration {
     public static final String SKIPMIXEDSYNCTYPECHECKING = "wildfly.jpa.skipmixedsynctypechecking";
 
     /**
-     * Document properties that allow JPA apps to disable WildFly JTA platform/2lc integration for Hibernate ORM 5.3+ (WFLY-10433)
+     * Document properties that allow Jakarta Persistence apps to disable WildFly Jakarta Transactions platform/2lc integration for Hibernate ORM 5.3+ (WFLY-10433)
      * public static final String CONTROLJTAINTEGRATION = "wildfly.jpa.jtaplatform";
      * public static final String CONTROL2LCINTEGRATION = "wildfly.jpa.regionfactory";
      */
@@ -328,7 +328,7 @@ public class Configuration {
 
     /**
      * Return true if detaching of managed entities should be deferred until the entity manager is closed.
-     * Note:  only applies to transaction scoped entity managers used without an active JTA transaction.
+     * Note:  only applies to transaction scoped entity managers used without an active Jakarta Transactions transaction.
      *
      * @param properties
      * @return
@@ -342,7 +342,7 @@ public class Configuration {
 
     /**
      * Return true if detaching of query results (entities) should be deferred until the entity manager is closed.
-     * Note:  only applies to transaction scoped entity managers used without an active JTA transaction.
+     * Note:  only applies to transaction scoped entity managers used without an active Jakarta Transactions transaction.
      *
      * @param properties
      * @return

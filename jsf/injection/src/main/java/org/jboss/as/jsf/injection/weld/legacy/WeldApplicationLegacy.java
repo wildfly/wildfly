@@ -35,7 +35,7 @@ import javax.naming.NamingException;
 /**
  * @author pmuir
  *
- * Bring this class back to allow JSF 1.2 to be used with WildFly
+ * Bring this class back to allow Faces 1.2 to be used with WildFly
  * See https://issues.jboss.org/browse/WFLY-9708
  */
 public class WeldApplicationLegacy extends ForwardingApplication {

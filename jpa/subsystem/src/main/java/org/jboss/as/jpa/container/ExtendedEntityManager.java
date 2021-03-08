@@ -43,7 +43,7 @@ import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  * Represents the Extended persistence context injected into a stateful bean.  At bean invocation time,
- * will join the active JTA transaction if one is present.  If no active JTA transaction is present,
+ * will join the active Jakarta Transactions transaction if one is present.  If no active Jakarta Transactions transaction is present,
  * created/deleted/updated/loaded entities will remain associated with the entity manager until it is joined with a
  * transaction (commit will save the changes, rollback will lose them).
  * <p/>
@@ -131,7 +131,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
     }
 
     /**
-     * Associate the extended persistence context with the current JTA transaction (if one is found)
+     * Associate the extended persistence context with the current Jakarta Transactions transaction (if one is found)
      *
      * this method is private to the Jakarta Persistence subsystem
      */
