@@ -35,6 +35,7 @@ import java.util.LinkedList;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -61,6 +62,7 @@ public class ConfigHttpPathTask implements ServerSetupTask {
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
         ModelControllerClient mgmtCli = managementClient.getControllerClient();
         removeConfigSource(mgmtCli, registeredConfigSources);
+        ServerReload.reloadIfRequired(managementClient);
     }
 
     /**

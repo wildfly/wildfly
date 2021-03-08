@@ -28,6 +28,7 @@ import java.net.SocketPermission;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 @RunWith(Arquillian.class)
 public class ResourceWithCustomOperationNameBeanTestCase {
@@ -72,6 +73,9 @@ public class ResourceWithCustomOperationNameBeanTestCase {
         performCall("opentracing/with-custom-operation-name");
 
         List<MockSpan> spans = mockTracer.finishedSpans();
+        IntStream.range(0, spans.size())
+                .forEach(idx -> System.out.println("*** " + idx + ": " + spans.get(idx).toString()));
+
         Assert.assertEquals(3, spans.size());
 
         Assert.assertEquals("my-custom-method-operation-name", spans.get(0).operationName());

@@ -36,6 +36,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.module.util.TestModule;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.CustomConfigSource;
 
@@ -67,6 +68,7 @@ public class SetupTask implements ServerSetupTask {
         removeConfigSourceProvider(managementClient.getControllerClient());
 
         testModule.remove();
+        ServerReload.reloadIfRequired(managementClient);
     }
 
     private void addConfigSourceProvider(ModelControllerClient client) throws IOException {

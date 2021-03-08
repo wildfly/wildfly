@@ -60,6 +60,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.module.util.TestModule;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -103,6 +104,7 @@ public class SetupTask implements ServerSetupTask {
         testModule.addJavaArchive(moduleFile);
         testModule.create();
         testModules.add(testModule);
+        ServerReload.reloadIfRequired(managementClient);
     }
 
     @Override
@@ -113,6 +115,7 @@ public class SetupTask implements ServerSetupTask {
         }
         final File archiveDir = new File("target/archives");
         cleanFile(archiveDir);
+        ServerReload.reloadIfRequired(managementClient);
     }
 
     private void addConfigSource(ModelControllerClient client) throws IOException {
