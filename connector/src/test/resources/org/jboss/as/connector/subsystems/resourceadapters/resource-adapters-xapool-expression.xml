@@ -12,7 +12,7 @@
         <bean-validation-group>${test.expr:group}</bean-validation-group>
       </bean-validation-groups>
       <!--Optional:-->
-      <transaction-support>XATransaction</transaction-support>
+      <transaction-support>${test.expr:XATransaction}</transaction-support>
       <!--Zero or more repetitions:-->
       <config-property name="config1">value</config-property>
       <!--Optional:-->

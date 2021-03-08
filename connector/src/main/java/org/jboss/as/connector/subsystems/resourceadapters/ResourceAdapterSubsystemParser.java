@@ -176,7 +176,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         TRANSACTION_SUPPORT.marshallAsElement(ra, streamWriter);
         writeNewConfigProperties(streamWriter, ra);
         TransactionSupportEnum transactionSupport = ra.hasDefined(TRANSACTION_SUPPORT.getName()) ? TransactionSupportEnum
-            .valueOf(ra.get(TRANSACTION_SUPPORT.getName()).asString()) : null;
+            .valueOf(ra.get(TRANSACTION_SUPPORT.getName()).resolve().asString()) : null;
         boolean isXa = false;
         if (transactionSupport == TransactionSupportEnum.XATransaction) {
             isXa = true;

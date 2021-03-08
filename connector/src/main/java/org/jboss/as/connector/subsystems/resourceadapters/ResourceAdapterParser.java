@@ -321,7 +321,11 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                             }
                             String value = rawElementText(reader);
                             TRANSACTION_SUPPORT.parseAndSetParameter(value, operation, reader);
-                            isXa = value != null && TransactionSupportEnum.valueOf(value) == TransactionSupportEnum.XATransaction;
+                            ModelNode transactionSupport = TRANSACTION_SUPPORT.parse(value, reader);
+                            // so we need to know the transaction support level to give a chance to throw XMLStreamException for
+                            // unexpectedElement when parsing connection-definitions in CommonIronJacamarParser ?
+                            String transactionSupportResolved = transactionSupport.resolve().asString();
+                            isXa = value != null && TransactionSupportEnum.valueOf(transactionSupportResolved) == TransactionSupportEnum.XATransaction;
                             txSupportMatched = true;
                             break;
                         }

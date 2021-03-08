@@ -174,8 +174,9 @@ public class RaOperationUtil {
         Map<String, String> configProperties = new HashMap<>(0);
         List<ConnectionDefinition> connectionDefinitions = new ArrayList<>(0);
         List<AdminObject> adminObjects = new ArrayList<>(0);
+        String transactionSupportResolved = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, TRANSACTION_SUPPORT);
         TransactionSupportEnum transactionSupport = operation.hasDefined(TRANSACTION_SUPPORT.getName()) ? TransactionSupportEnum
-                .valueOf(operation.get(TRANSACTION_SUPPORT.getName()).asString()) : null;
+                .valueOf(ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, TRANSACTION_SUPPORT)) : null;
         String bootstrapContext = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, BOOTSTRAP_CONTEXT);
         List<String> beanValidationGroups = BEANVALIDATION_GROUPS.unwrap(context, operation);
         boolean wmSecurity = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, operation, WM_SECURITY);
