@@ -427,7 +427,7 @@ Schema validation of exchanged messages can also be enabled in
 `jboss-webservices.xml`. Further details available
 <<Jakarta_XML_Web_Services_User_Guide,here>>.
 
-[[interceptors]]
+[[Interceptors]]
 ==== Interceptors
 
 The `jboss-webservices.xml` descriptor also allows specifying the
