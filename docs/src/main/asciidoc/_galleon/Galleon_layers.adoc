@@ -452,7 +452,7 @@ link:#gal.io[io] +
 link:#gal.base-server[base-server] +
 
 |[[gal.resource-adapters]]resource-adapters
-|Support for deployment of JCA adapters.
+|Support for deployment of Jakarta Connectors resource adapters.
 |
 link:#gal.transactions[transactions] +
 

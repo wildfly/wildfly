@@ -52,7 +52,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Testcase running jca inflow transaction from deployed RAR.
+ * Testcase running Jakarta Connectors inflow transaction from deployed RAR.
  * Two mock XA resources are enlisted inside of MDB to proceed 2PC.
  *
  * @author Ondrej Chaloupka <ochaloup@redhat.com>

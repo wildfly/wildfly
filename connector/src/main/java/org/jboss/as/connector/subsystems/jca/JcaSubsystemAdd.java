@@ -51,7 +51,7 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 
 /**
- * JCA subsystem
+ * Jakarta Connectors subsystem
  *
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>

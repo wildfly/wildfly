@@ -1,4 +1,0 @@
-[[JavaEE_Connector_Architecture_(JCA)]]
-= JavaEE Connector Architecture (JCA)
-
-

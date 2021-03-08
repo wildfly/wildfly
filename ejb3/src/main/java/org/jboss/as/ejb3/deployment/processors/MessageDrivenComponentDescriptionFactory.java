@@ -257,7 +257,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
      */
     private String getDefaultResourceAdapterName(final ServiceRegistry serviceRegistry) {
         if (appclient) {
-            // we must report the MDB, but we can't use any MDB/JCA facilities
+            // we must report the MDB, but we can't use any MDB/Jakarta Connectors facilities
             return "n/a";
         }
         final ServiceController<DefaultResourceAdapterService> serviceController = (ServiceController<DefaultResourceAdapterService>) serviceRegistry.getRequiredService(DefaultResourceAdapterService.DEFAULT_RA_NAME_SERVICE_NAME);

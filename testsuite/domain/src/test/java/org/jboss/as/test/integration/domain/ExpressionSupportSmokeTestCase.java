@@ -726,7 +726,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         boolean result = true;
         if (address.size() > 1 && address.getLastElement().getKey().equals("bootstrap-context") && address.getLastElement().getValue().equals("default")
             && address.getElement(address.size() - 2).getKey().equals("subsystem") && address.getElement(address.size() - 2).getValue().equals("jca")) {
-            // JCA subsystem doesn't persist this resource
+            // Jakarta Connectors subsystem doesn't persist this resource
             result = false;
         }
         return result;

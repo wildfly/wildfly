@@ -41,7 +41,7 @@ import org.jboss.jca.core.util.Injection;
 import org.jboss.threads.BlockingExecutor;
 
 /**
- * Utility class for JCA integration test
+ * Utility class for Jakarta Connectors integration test
  *
  * @author <a href="mailto:msimka@redhat.com">Martin Simka</a>
  */

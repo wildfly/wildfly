@@ -26,7 +26,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.junit.runner.RunWith;
 
 /**
- * Integration test for JCA capacity policies JBJCA-986 using datasource
+ * Integration test for Jakarta Connectors capacity policies JBJCA-986 using datasource
  *
  * @author <a href="mailto:msimka@redhat.com">Martin Simka</a>
  */

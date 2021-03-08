@@ -46,7 +46,7 @@ import org.wildfly.security.evidence.PasswordGuessEvidence;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * An Elytron based {@link CallbackHandler} implementation designed for the JCA security inflow. It uses the information
+ * An Elytron based {@link CallbackHandler} implementation designed for the Jakarta Connectors security inflow. It uses the information
  * obtained from the {@link javax.security.auth.callback.Callback}s to authenticate and authorize the identity supplied
  * by the resource adapter and inserts the {@link SecurityIdentity} representing the authorized identity in the subject's
  * private credentials set.

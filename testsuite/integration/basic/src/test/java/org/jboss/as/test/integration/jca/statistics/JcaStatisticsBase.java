@@ -29,7 +29,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
 /**
- * Base class for JCA statistics tests
+ * Base class for Jakarta Connectors statistics tests
  *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
  */

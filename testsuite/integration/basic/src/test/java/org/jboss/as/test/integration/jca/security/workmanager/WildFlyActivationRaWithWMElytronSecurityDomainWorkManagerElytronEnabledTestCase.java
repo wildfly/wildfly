@@ -86,7 +86,7 @@ import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
 
 /**
- * Test security inflow with JCA work manager using Elytron security domain
+ * Test security inflow with Jakarta Connectors work manager using Elytron security domain
  */
 @RunWith(Arquillian.class)
 @ServerSetup({

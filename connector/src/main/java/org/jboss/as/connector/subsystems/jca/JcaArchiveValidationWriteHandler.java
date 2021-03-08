@@ -29,7 +29,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Write Handler for jca config attribute
+ * Write Handler for Jakarta Connectors config attribute
  *
  * @author Stefano Maestri
  */

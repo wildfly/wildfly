@@ -91,9 +91,9 @@ public class JBossContextXATerminator implements JBossXATerminator {
     @Override
     public void registerWork(Work work, Xid xid, long timeout) throws WorkCompletedException {
         try {
-            // jca provides timeout in milliseconds, SubordinationManager expects seconds
+            // Jakarta Connectors provides timeout in milliseconds, SubordinationManager expects seconds
             int timeout_seconds = (int) timeout/1000;
-            // unlimited timeout for jca means -1 which fails in wfly client
+            // unlimited timeout for Jakarta Connectors means -1 which fails in wfly client
             if(timeout_seconds <= 0) timeout_seconds = ContextTransactionManager.getGlobalDefaultTransactionTimeout();
             localTransactionContext.findOrImportTransaction(xid, timeout_seconds);
         } catch (XAException xae) {

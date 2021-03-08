@@ -28,7 +28,7 @@ import javax.jms.Destination;
 import javax.jms.JMSException;
 
 /**
- * Test message used for testing in jca inflow transaction rar.
+ * Test message used for testing in Jakarta Connectors inflow transaction rar.
  *
  * @author Ondrej Chaloupka <ochaloup@redhat.com>
  */
