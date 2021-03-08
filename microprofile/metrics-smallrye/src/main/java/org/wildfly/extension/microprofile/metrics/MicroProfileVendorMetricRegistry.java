@@ -27,6 +27,8 @@ import static org.wildfly.extension.metrics.MetricMetadata.Type.COUNTER;
 
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import io.smallrye.metrics.ExtendedMetadata;
 import io.smallrye.metrics.MetricRegistries;
@@ -46,6 +48,7 @@ import org.wildfly.extension.metrics.WildFlyMetricMetadata;
 public class MicroProfileVendorMetricRegistry implements MetricRegistry {
 
     final org.eclipse.microprofile.metrics.MetricRegistry vendorRegistry = MetricRegistries.get(VENDOR);
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     @Override
     public void registerMetric(org.wildfly.extension.metrics.Metric metric, MetricMetadata metadata) {
@@ -74,40 +77,66 @@ public class MicroProfileVendorMetricRegistry implements MetricRegistry {
                 }
             };
         }
-        final Metadata mpMetadata;
-        synchronized (vendorRegistry) {
-            Metadata existingMetadata = vendorRegistry.getMetadata().get(metadata.getMetricName());
-            if (existingMetadata != null) {
-                mpMetadata = existingMetadata;
-            } else {
-                mpMetadata = new ExtendedMetadata(metadata.getMetricName(), metadata.getMetricName(), metadata.getDescription(),
-                        metadata.getType() == COUNTER ? MetricType.COUNTER : MetricType.GAUGE, metricUnit(metadata.getMeasurementUnit()),
-                        null, false,
-                        // for WildFly subsystem metrics, the microprofile scope is put in the OpenMetrics tags
-                        // so that the name of the metric does not change ("vendor_" will not be prepended to it).
-                        Optional.of(false));
+
+        lock.writeLock().lock();
+        try {
+            synchronized (vendorRegistry) { // TODO does the writeLock eliminate the need for this synchronized?
+                final Metadata mpMetadata;
+                Metadata existingMetadata = vendorRegistry.getMetadata().get(metadata.getMetricName());
+                if (existingMetadata != null) {
+                    mpMetadata = existingMetadata;
+                } else {
+                    mpMetadata = new ExtendedMetadata(metadata.getMetricName(), metadata.getMetricName(), metadata.getDescription(),
+                            metadata.getType() == COUNTER ? MetricType.COUNTER : MetricType.GAUGE, metricUnit(metadata.getMeasurementUnit()),
+                            null, false,
+                            // for WildFly subsystem metrics, the microprofile scope is put in the OpenMetrics tags
+                            // so that the name of the metric does not change ("vendor_" will not be prepended to it).
+                            Optional.of(false));
+                }
+                Tag[] mpTags = toMicroProfileMetricsTags(metadata.getTags());
+                vendorRegistry.register(mpMetadata, mpMetric, mpTags);
             }
-            Tag[] mpTags = toMicroProfileMetricsTags(metadata.getTags());
-            vendorRegistry.register(mpMetadata, mpMetric, mpTags);
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
     @Override
     public void unregister(MetricID metricID) {
-        vendorRegistry.remove(toMicroProfileMetricID(metricID));
+        lock.writeLock().lock();
+        try {
+            vendorRegistry.remove(toMicroProfileMetricID(metricID));
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public void readLock() {
+        lock.readLock().lock();
+    }
+
+    @Override
+    public void unlock() {
+        lock.readLock().unlock();
     }
 
     private org.eclipse.microprofile.metrics.MetricID toMicroProfileMetricID(MetricID metricID) {
         return new org.eclipse.microprofile.metrics.MetricID(metricID.getMetricName(), toMicroProfileMetricsTags(metricID.getTags()));
     }
 
-    static void removeAllMetrics() {
-        for (org.eclipse.microprofile.metrics.MetricRegistry registry : new org.eclipse.microprofile.metrics.MetricRegistry[]{
-                MetricRegistries.get(BASE),
-                MetricRegistries.get(VENDOR)}) {
-            for (String name : registry.getNames()) {
-                registry.remove(name);
+    void removeAllMetrics() {
+        lock.writeLock().lock();
+        try {
+            for (org.eclipse.microprofile.metrics.MetricRegistry registry : new org.eclipse.microprofile.metrics.MetricRegistry[]{
+                    MetricRegistries.get(BASE),
+                    MetricRegistries.get(VENDOR)}) {
+                for (String name : registry.getNames()) {
+                    registry.remove(name);
+                }
             }
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 

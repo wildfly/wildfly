@@ -27,6 +27,8 @@ import java.io.Closeable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 public class WildFlyMetricRegistry implements Closeable, MetricRegistry {
@@ -34,11 +36,19 @@ public class WildFlyMetricRegistry implements Closeable, MetricRegistry {
     /* Key is the metric name */
     private Map<String, MetricMetadata> metadataMap = new HashMap();
     private Map<MetricID, Metric> metricMap = new TreeMap<>();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
 
     @Override
     public void close() {
-        metricMap.clear();
-        metadataMap.clear();
+
+        lock.writeLock().lock();
+        try {
+            metricMap.clear();
+            metadataMap.clear();
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     Map<MetricID, Metric> getMetrics() {
@@ -54,15 +64,35 @@ public class WildFlyMetricRegistry implements Closeable, MetricRegistry {
         requireNonNull(metadata);
         requireNonNull(metric);
 
-        MetricID metricID = metadata.getMetricID();
-        if (!metadataMap.containsKey(metadata.getMetricName())) {
-            metadataMap.put(metadata.getMetricName(), metadata);
+        lock.writeLock().lock();
+        try {
+            MetricID metricID = metadata.getMetricID();
+            if (!metadataMap.containsKey(metadata.getMetricName())) {
+                metadataMap.put(metadata.getMetricName(), metadata);
+            }
+            metricMap.put(metricID, metric);
+        } finally {
+            lock.writeLock().unlock();
         }
-        metricMap.put(metricID, metric);
     }
 
     @Override
     public void unregister(MetricID metricID) {
-        metricMap.remove(metricID);
+        lock.writeLock().lock();
+        try {
+            metricMap.remove(metricID);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public void readLock() {
+        lock.readLock().lock();
+    }
+
+    @Override
+    public void unlock() {
+        lock.readLock().unlock();
     }
 }

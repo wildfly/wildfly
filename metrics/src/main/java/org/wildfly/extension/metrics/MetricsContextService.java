@@ -93,8 +93,14 @@ public class MetricsContextService implements Service {
                     return;
                 }
 
-                String wildFlyMetrics = prometheusExporter.export(wildflyMetricRegistry.get());
-                exchange.getResponseSender().send(wildFlyMetrics);
+                WildFlyMetricRegistry metricRegistry = wildflyMetricRegistry.get();
+                metricRegistry.readLock();
+                try {
+                    String wildFlyMetrics = prometheusExporter.export(metricRegistry);
+                    exchange.getResponseSender().send(wildFlyMetrics);
+                } finally {
+                    metricRegistry.unlock();
+                }
             }
         });
         consumer.accept(this);
