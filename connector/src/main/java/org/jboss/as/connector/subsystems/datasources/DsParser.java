@@ -681,9 +681,10 @@ public class DsParser extends AbstractParser {
                 case MODULE: {
                     String moduleName = rawAttributeText(reader, DRIVER_MODULE_NAME.getXmlName());
                     String slot = null;
-                    if (moduleName.contains(":")) {
-                        slot = moduleName.substring(moduleName.indexOf(":") + 1);
-                        moduleName = moduleName.substring(0, moduleName.indexOf(":"));
+                    int slotId = findSlot(moduleName);
+                    if(slotId != -1) {
+                        slot = moduleName.substring(slotId + 1);
+                        moduleName = moduleName.substring(0, slotId);
                     }
                     DRIVER_MODULE_NAME.parseAndSetParameter(moduleName, operation, reader);
                     if (slot != null) {
@@ -2601,6 +2602,29 @@ public class DsParser extends AbstractParser {
             }
         }
         throw new ParserException(bundle.unexpectedEndOfDocument());
+    }
+
+    private int findSlot(String moduleName) {
+        boolean insideVariable = false;
+        int i = 0;
+        while (i < moduleName.length()) {
+            if (!insideVariable) {
+                if (moduleName.charAt(i) == ':') {
+                    return i;
+                }
+                if ((moduleName.charAt(i) == '$') && (i + 1 < moduleName.length()) && (moduleName.charAt(i+1) == '{')) {
+                    insideVariable = true;
+                    i += 2;
+                    continue;
+                }
+            } else {
+                if (moduleName.charAt(i) == '}') {
+                    insideVariable = false;
+                }
+            }
+            i++;
+        }
+        return -1;
     }
 
     /**
