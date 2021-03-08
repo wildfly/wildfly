@@ -37,17 +37,17 @@
            ping="${modcluster.ping:10}"
            proxies="proxy1 proxy2"
            proxy-url="${modcluster.proxy-url:/}"
+           session-draining-strategy="${modcluster.session-draining-strategy:ALWAYS}"
            smax="${modcluster.smax:2}"
            socket-timeout="${modcluster.socket-timeout:20}"
            ssl-context="mod_cluster-context"
+           status-interval="${modcluster.status-interval:99}"
            sticky-session="${modcluster.sticky-session:true}"
            sticky-session-force="${modcluster.sticky-session-force:false}"
            sticky-session-remove="${modcluster.sticky-session-remove:false}"
            stop-context-timeout="${modcluster.stop-context-timeout:10}"
            ttl="${modcluster.ttl:1}"
-           worker-timeout="${modcluster.worker-timeout:2}"
-           session-draining-strategy="${modcluster.session-draining-strategy:ALWAYS}"
-           status-interval="${modcluster.status-interval:10}">
+           worker-timeout="${modcluster.worker-timeout:2}">
         <dynamic-load-provider decay="${modcluster.dynamic-load-provider.decay:2}"
                                history="${modcluster.dynamic-load-provider.history:10}"
                                initial-load="${modcluster.dynamic-load-provider.initial-load:50}">
@@ -70,20 +70,22 @@
                 <property name="name2"
                           value="${property2:value2}"/>
             </load-metric>
-            <custom-load-metric capacity="${modcluster.custom-load-metric.capacity:1.1}"
-                                class="SomeFakeLoadMetricClass1"
-                                module="com.radoslavhusar.mod_cluster"
+            <custom-load-metric class="${modcluster.custom-load-metric.class:SomeFakeLoadMetricClass1}"
+                                module="${modcluster.custom-load-metric.module:org.wildfly.extension.mod_cluster}"
+                                capacity="${modcluster.custom-load-metric.capacity:1.1}"
                                 weight="${modcluster.custom-load-metric.weight:5}"
             />
             <custom-load-metric class="SomeFakeLoadMetricClass2"
-                                capacity="${modcluster.custom-load-metric.capacity:1.1}"/>
+                                capacity="${modcluster.custom-load-metric.capacity:1.1}"
+                                module="my.custom.package"
+            />
             <custom-load-metric class="SomeFakeLoadMetricClass3"
                                 weight="${modcluster.custom-load-metric.weight:5}"/>
         </dynamic-load-provider>
     </proxy>
-    <proxy name="other"
+    <proxy name="with-legacy-ssl-configuration"
            listener="default">
-        <simple-load-provider factor="${modcluster.simple-load-provider.factor:15}"/>
+        <simple-load-provider factor="${modcluster.simple-load-provider.factor:50}"/>
         <ssl ca-certificate-file="${modcluster.ca-certificate-file:/home/rhusar/client-keystore.jks}"
              ca-revocation-url="${modcluster.ca-revocation-url:/home/rhusar/revocations}"
              certificate-key-file="${modcluster.certificate-key-file:/home/rhusar/client-keystore.jks}"
@@ -91,5 +93,11 @@
              key-alias="${modcluster.key-alias:mykeyalias}"
              password="${modcluster.password:mypassword}"
              protocol="${modcluster.protocol:TLSv1}"/>
+    </proxy>
+    <proxy name="with-floating-decay-load-provider"
+           listener="default">
+        <dynamic-load-provider decay="${modcluster.dynamic-load-provider.decay.floating:0.5}">
+            <load-metric type="sessions"/>
+        </dynamic-load-provider>
     </proxy>
 </subsystem>
