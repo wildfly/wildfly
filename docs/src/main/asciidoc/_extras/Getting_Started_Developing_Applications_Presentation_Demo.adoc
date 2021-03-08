@@ -108,7 +108,7 @@ $ JBOSS_HOME/bin/jboss-admin.sh --connect
 The command line also uses the Deptyped Management API to communicate
 with the server. It's designed to be as "unixy" as possible, allowing
 you to "cd" into nodes, with full tab completion etc. The CLI allows you
-to deploy and undeploy applications, create JMS queues, topics etc.,
+to deploy and undeploy applications, create Jakarta Messaging queues, topics etc.,
 create datasources (normal and XA). It also fully supports the domain
 node.
 

@@ -101,11 +101,11 @@ class AddressSettingsValidator {
         final String childType;
 
         if (address.startsWith(JMS_QUEUE_ADDRESS_PREFIX)) {
-            // JMS Queue
+            // Jakarta Messaging Queue
             childType = CommonAttributes.JMS_QUEUE;
             addressPrefix = JMS_QUEUE_ADDRESS_PREFIX;
         } else if (address.startsWith(JMS_TOPIC_ADDRESS_PREFIX)) {
-            // JMS Topic
+            // Jakarta Messaging Topic
             childType = CommonAttributes.JMS_TOPIC;
             addressPrefix = JMS_TOPIC_ADDRESS_PREFIX;
         } else {

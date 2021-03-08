@@ -121,7 +121,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(jsfAPI);
     }
 
-    // Is Jakarta Server Faces spec greater than 1.1?  If we add JSF 1.1 support we'll need this to keep from calling addJSFInjection()
+    // Is Jakarta Server Faces spec greater than 1.1?  If we add Faces 1.1 support we'll need this to keep from calling addJSFInjection()
   /*  private boolean isJSFSpecOver1_1(ModuleIdentifier jsfModule, ModuleDependency jsfAPI) throws DeploymentUnitProcessingException {
         try {
             return (jsfAPI.getModuleLoader().loadModule(jsfModule).getClassLoader().getResource("/javax/faces/component/ActionSource2.class") != null);
@@ -156,7 +156,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
             } else {
                 JSFLogger.ROOT_LOGGER.loadingJsf2x();
                 jsfInjectionDependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
-                // Exclude JSF 1.2 faces-config.xml to make extra sure it won't interfere with JSF 2.0 deployments
+                // Exclude Faces 1.2 faces-config.xml to make extra sure it won't interfere with Faces 2.0 deployments
                 jsfInjectionDependency.addImportFilter(PathFilters.is("META-INF/1.2/faces-config.xml"), false);
             }
         } catch (ModuleLoadException e) {
@@ -168,7 +168,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
 
     private boolean isJSF12(ModuleDependency moduleDependency, String identifier) throws ModuleLoadException {
 
-        // The class javax.faces.event.NamedEvent was introduced in JSF 2.0
+        // The class javax.faces.event.NamedEvent was introduced in Faces 2.0
         return (moduleDependency.getModuleLoader().loadModule(identifier)
                                 .getClassLoader().getResource("/javax/faces/event/NamedEvent.class") == null);
     }

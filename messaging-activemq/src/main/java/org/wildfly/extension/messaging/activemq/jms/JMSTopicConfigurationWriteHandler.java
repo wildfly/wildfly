@@ -26,7 +26,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 
 /**
- * Write attribute handler for attributes that update the persistent configuration of a JMS topic resource.
+ * Write attribute handler for attributes that update the persistent configuration of a Jakarta Messaging topic resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

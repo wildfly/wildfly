@@ -111,11 +111,11 @@ public interface JSFLogger extends BasicLogger {
     DeploymentUnitProcessingException jsfInjectionFailed(String slotName, @Cause Throwable cause);
 
     @LogMessage(level = DEBUG)
-    @Message(id = 17, value = "JSF 1.2 classes detected. Using org.jboss.as.jsf.injection.weld.legacy.WeldApplicationFactoryLegacy.")
+    @Message(id = 17, value = "Faces 1.2 classes detected. Using org.jboss.as.jsf.injection.weld.legacy.WeldApplicationFactoryLegacy.")
     void loadingJsf12();
 
     @LogMessage(level = DEBUG)
-    @Message(id = 18, value = "JSF 1.2 classes not detected. Using org.jboss.as.jsf.injection.weld.WeldApplicationFactory.")
+    @Message(id = 18, value = "Faces 1.2 classes not detected. Using org.jboss.as.jsf.injection.weld.WeldApplicationFactory.")
     void loadingJsf2x();
 
     @LogMessage(level = INFO)

@@ -89,7 +89,7 @@ public class GCPreDestroyTestCase {
             try {
                 responseString = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
 
-                // Get the JSF view state
+                // Get the Jakarta Server Faces view state
                 Matcher jsfViewMatcher = viewStatePattern.matcher(responseString);
                 if (jsfViewMatcher.find()) {
                     jsfViewState = jsfViewMatcher.group(1);

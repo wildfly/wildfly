@@ -111,7 +111,7 @@ public interface PicketLinkLogger extends BasicLogger {
     @Message(id = 50, value = "Entities module not found [%s].")
     SecurityConfigurationException idmJpaEntityModuleNotFound(String entityModuleName);
 
-    @Message(id = 51, value = "Could not configure JPA store.")
+    @Message(id = 51, value = "Could not configure Jakarta Persistence store.")
     SecurityConfigurationException idmJpaStartFailed(@Cause Throwable e);
 
     @Message(id = 52, value = "Could not lookup EntityManagerFactory [%s].")

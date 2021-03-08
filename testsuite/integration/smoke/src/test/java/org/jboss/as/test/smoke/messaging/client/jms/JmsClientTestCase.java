@@ -57,7 +57,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Demo using the AS management API to create and destroy a JMS queue.
+ * Demo using the AS management API to create and destroy a Jakarta Messaging queue.
  *
  * @author Emanuel Muckenhuber
  */

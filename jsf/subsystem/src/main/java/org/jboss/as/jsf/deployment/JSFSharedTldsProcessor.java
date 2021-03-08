@@ -44,7 +44,7 @@ import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
 
 /**
- * Cache the TLDs for JSF and add them to deployments as needed.
+ * Cache the TLDs for Jakarta Server Faces and add them to deployments as needed.
  *
  * @author Stan Silvert
  */

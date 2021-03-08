@@ -95,10 +95,10 @@ javax/faces/api/1.2
 ----
 
 Both modules have the same module name: "javax.faces.api" but one in the
-main directory is for JSF 2.0 and the one located in the 1.2 directory
-is for JSF 1.2. If there was only one module available, we could simply
+main directory is for Faces 2.0 and the one located in the 1.2 directory
+is for Faces 1.2. If there was only one module available, we could simply
 create a `MANIFEST.MF` file and added the module dependency. But in this
-case, we want to use the JSF 1.2 version and not the 2.0 version in
+case, we want to use the Faces 1.2 version and not the 2.0 version in
 main, so we need to be able to specify one and exclude the other. To do
 this, we create a `jboss-deployment-structure.xml` file in the EAR
 `META-INF/` directory that contains the following data:
@@ -123,9 +123,9 @@ this, we create a `jboss-deployment-structure.xml` file in the EAR
 ----
 
 In the "deployment" section, we add the dependency for the
-`javax.faces.api` for the JSF 1.2 module. We also add the dependency for
-the JSF 1.2 module in the sub-deployment section for the WAR and exclude
-the module for JSF 2.0.
+`javax.faces.api` for the Faces 1.2 module. We also add the dependency for
+the Faces 1.2 module in the sub-deployment section for the WAR and exclude
+the module for Faces 2.0.
 
 Redeploy the application by deleting the
 `standalone/deployments/jboss-seam-booking.ear.failed` file and creating
@@ -353,11 +353,11 @@ com.sun.jsf-impl modules. A quick check of the jsf-impl-1.2_13.jar in
 the 1.2 directory shows it contains the com.sun.faces classes.
 
 As we did with the javax.faces.FacesException ClassNotFoundException, we
-want to use the JSF 1.2 version and not the JSF 2.0 version in main, so
+want to use the Faces 1.2 version and not the Faces 2.0 version in main, so
 we need to be able to specify one and exclude the other. We need to
 modify the jboss-deployment-structure.xml to add the module dependency
 to the deployment section of the file. We also need to add it to the WAR
-subdeployment and exclude the JSF 2.0 module. The file should now look
+subdeployment and exclude the Faces 2.0 module. The file should now look
 like this:
 
 [source,xml,options="nowrap"]

@@ -66,7 +66,7 @@ import org.wildfly.security.credential.source.CredentialSource;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * JMS Bridge add update.
+ * Jakarta Messaging Bridge add update.
  *
  * @author Jeff Mesnil (c) 2012 Red Hat Inc.
  */
@@ -112,8 +112,8 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
                     addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.TARGET_CONNECTION_FACTORY);
                     addDependencyForJNDIResource(jmsBridgeServiceBuilder, model, context, JMSBridgeDefinition.TARGET_DESTINATION);
                 }
-                // add a dependency to the Artemis thread pool so that if either the source or target JMS broker
-                // corresponds to a local Artemis server, the pool will be cleaned up after the JMS bridge is stopped.
+                // add a dependency to the Artemis thread pool so that if either the source or target Jakarta Messaging broker
+                // corresponds to a local Artemis server, the pool will be cleaned up after the Jakarta Messaging bridge is stopped.
                 jmsBridgeServiceBuilder.requires(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL);
                 // adding credential source supplier which will later resolve password from CredentialStore using credential-reference
                 final JMSBridgeService bridgeService = new JMSBridgeService(moduleName, bridgeName, bridge, executorSupplier,
@@ -135,7 +135,7 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
     }
 
     private boolean dependsOnLocalResources(OperationContext context, ModelNode model, AttributeDefinition attr) throws OperationFailedException {
-        // if either the source or target context attribute is resolved to a null or empty Properties, this means that the JMS resources will be
+        // if either the source or target context attribute is resolved to a null or empty Properties, this means that the Jakarta Messaging resources will be
         // looked up from the local ActiveMQ server.
         return resolveContextProperties(attr, context, model).isEmpty();
     }

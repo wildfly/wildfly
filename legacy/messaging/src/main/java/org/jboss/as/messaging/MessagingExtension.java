@@ -228,14 +228,14 @@ public class MessagingExtension extends AbstractLegacyExtension {
         // Resource Adapter Pooled connection factories
         serverRegistration.registerSubModel(PooledConnectionFactoryDefinition.INSTANCE);
 
-        // JMS Queues
+        // Jakarta Messaging Queues
         serverRegistration.registerSubModel(JMSQueueDefinition.INSTANCE);
-        // JMS Topics
+        // Jakarta Messaging Topics
         serverRegistration.registerSubModel(JMSTopicDefinition.INSTANCE);
 
         serverRegistration.registerSubModel(SecuritySettingDefinition.INSTANCE);
 
-        // JMS Bridges
+        // Jakarta Messaging Bridges
         rootRegistration.registerSubModel(JMSBridgeDefinition.INSTANCE);
 
         if (context.isRegisterTransformers()) {

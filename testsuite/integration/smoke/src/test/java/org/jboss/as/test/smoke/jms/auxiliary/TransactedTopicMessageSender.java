@@ -39,7 +39,7 @@ import javax.jms.Session;
 import javax.jms.Topic;
 
 /**
- * Auxiliary class for JMS smoke tests - sends messages to a topic from within a transaction
+ * Auxiliary class for Jakarta Messaging smoke tests - sends messages to a topic from within a transaction
  *
  * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
  */

@@ -36,7 +36,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
- * Removes a JMS Bridge.
+ * Removes a Jakarta Messaging Bridge.
  *
  * @author Jeff Mesnil (c) 2011 Red Hat Inc.
  */

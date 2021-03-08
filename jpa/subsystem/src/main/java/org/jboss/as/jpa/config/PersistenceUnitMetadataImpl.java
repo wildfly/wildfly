@@ -55,10 +55,10 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     // required: name of the persistent unit scoped to deployment file
     private volatile String scopedName;
 
-    // optional: jndi name of non-jta datasource
+    // optional: jndi name of non-Jakarta Transactions datasource
     private volatile String nonJtaDataSourceName;
 
-    // optional: jndi name of jta datasource
+    // optional: jndi name of Jakarta Transactions datasource
     private volatile String jtaDataSourceName;
 
 
@@ -69,7 +69,7 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     // optional: provider classname (must implement javax.persistence.spi.PersistenceProvider)
     private volatile String provider;
 
-    // optional: specifies if EntityManagers will be JTA (default) or RESOURCE_LOCAL
+    // optional: specifies if EntityManagers will be Jakarta Transactions (default) or RESOURCE_LOCAL
     private volatile PersistenceUnitTransactionType transactionType;
 
     // optional: collection of individually named managed entity classes

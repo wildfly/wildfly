@@ -56,7 +56,7 @@ public interface Utils {
         logger.info("java:comp/DefaultManagedThreadFactory: "+initialContext.lookup("java:comp/DefaultManagedThreadFactory"));
         // lookup default datasource
         logger.info("java:comp/DefaultDataSource: "+initialContext.lookup("java:comp/DefaultDataSource"));
-        // lookup default jms connection factory
+        // lookup default Jakarta Messaging connection factory
         logger.info("java:comp/DefaultJMSConnectionFactory: "+initialContext.lookup("java:comp/DefaultJMSConnectionFactory"));
         // lookup tx resources
         logger.info("java:comp/TransactionSynchronizationRegistry: "+initialContext.lookup("java:comp/TransactionSynchronizationRegistry"));

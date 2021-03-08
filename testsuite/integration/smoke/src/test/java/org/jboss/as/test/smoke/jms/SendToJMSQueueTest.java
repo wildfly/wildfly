@@ -47,7 +47,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Basic JMS test using a customly created JMS queue
+ * Basic Jakarta Messaging test using a customly created Jakarta Messaging queue
  *
  * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
  */

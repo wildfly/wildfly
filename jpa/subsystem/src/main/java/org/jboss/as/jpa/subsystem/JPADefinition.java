@@ -48,7 +48,7 @@ public class JPADefinition extends SimpleResourceDefinition {
 
     // This a private capability. Its runtime API or capability service tyoe are subject to change.
     // See WFLY-7521
-    // Currently it exists to indicate a model dependency from the jpa subsystem to the transactions subsystem
+    // Currently it exists to indicate a model dependency from the Jakarta Persistence subsystem to the transactions subsystem
     private static final RuntimeCapability<Void> JPA_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.jpa")
             .addRequirements(JPAServiceNames.LOCAL_TRANSACTION_PROVIDER_CAPABILITY)
             .build();

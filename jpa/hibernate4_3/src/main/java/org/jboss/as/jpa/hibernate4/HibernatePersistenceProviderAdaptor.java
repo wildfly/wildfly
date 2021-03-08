@@ -60,7 +60,7 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         // Hibernate service loader related leak and uncomment the following)
         // also remove the appServerJtaPlatform and stop setting AvailableSettings.JTA_PLATFORM
 /*
-        // specify JTA integration to use with Hibernate
+        // specify Jakarta Transactions integration to use with Hibernate
         if (DefaultJtaPlatform.getDelegate() == null ||
                 DefaultJtaPlatform.getDelegate().getJtaManager() != jtaManager) {
             synchronized (DefaultJtaPlatform.class) {

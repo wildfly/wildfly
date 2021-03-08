@@ -44,7 +44,7 @@ public class JSFModuleIdFactory {
 
     private static final JSFModuleIdFactory instance = new JSFModuleIdFactory();
 
-    // The default JSF impl slot.  This can be overridden by the management layer.
+    // The default Jakarta Server Faces impl slot.  This can be overridden by the management layer.
     private String defaultSlot = JSFResourceDefinition.DEFAULT_SLOT;
 
     private Map<String, ModuleIdentifier> apiIds = new HashMap<String, ModuleIdentifier>();
@@ -184,9 +184,9 @@ public class JSFModuleIdFactory {
     }
 
     /**
-     * Return the slot id's of all active JSF versions.
+     * Return the slot id's of all active Jakarta Server Faces versions.
      *
-     * @return The slot id's of all active JSF versions.
+     * @return The slot id's of all active Jakarta Server Faces versions.
      */
     public List<String> getActiveJSFVersions() {
         return Collections.unmodifiableList(activeVersions);

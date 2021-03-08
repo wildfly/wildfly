@@ -7,21 +7,21 @@ as JBoss AS7, WildFly {wildflyVersion} & 9). +
 These two compatibility modes are provided by the ActiveMQ Artemis
 project that supports the HornetQ's CORE protocol:
 
-* backward compatibility: WildFly 10 JMS clients (using Artemis) can
+* backward compatibility: WildFly 10 Jakarta Messaging clients (using Artemis) can
 connect to legacy app server (running HornetQ)
-* forward compatibility: legacy JMS clients (using HornetQ) can connect
+* forward compatibility: legacy Jakarta Messaging clients (using HornetQ) can connect
 to WildFly 10 app server (running Artemis).
 
 [[forward-compatibility]]
 == Forward Compatibility
 
-Forward compatibility requires no code change in legacy JMS clients. It
+Forward compatibility requires no code change in legacy Jakarta Messaging clients. It
 is provided by WildFly 10 messaging-activemq subsystem and its
 resources.
 
 * `legacy-connection-factory` is a subresource of the
 `messaging-activemq`'s `server` and can be used to store in JNDI a
-HornetQ-based JMS ConnectionFactory.
+HornetQ-based Jakarta Messaging ConnectionFactory.
 
 [source,xml,options="nowrap"]
 ----
@@ -35,7 +35,7 @@ HornetQ-based JMS ConnectionFactory.
 </subsystem>
 ----
 
-* Legacy HornetQ-based JMS destinations can also be configured by
+* Legacy HornetQ-based Jakarta Messaging destinations can also be configured by
 providing a `legacy-entries` attribute to the `jms-queue` and
 `jms-topic` resource.
 
@@ -49,14 +49,14 @@ providing a `legacy-entries` attribute to the `jms-queue` and
                legacy-entries="java:jboss/exported/jms/myTopic" />
 ----
 
-The `legacy-entries` must be used by legacy JMS clients (using HornetQ)
-while the regular `entries` are for WildFly 10 JMS clients (using
+The `legacy-entries` must be used by legacy Jakarta Messaging clients (using HornetQ)
+while the regular `entries` are for WildFly 10 Jakarta Messaging clients (using
 Artemis).
 
-The legacy JMS client will then lookup this `legacy` JMS resources to
+The legacy Jakarta Messaging client will then lookup this `legacy` Jakarta Messaging resources to
 communicate with WildFly 10. +
-To avoid any code change in the legacy JMS clients, the legacy JNDI
-entries must match the lookup expected by the legacy JMS client.
+To avoid any code change in the legacy Jakarta Messaging clients, the legacy JNDI
+entries must match the lookup expected by the legacy Jakarta Messaging client.
 
 [[migration]]
 === Migration
@@ -71,7 +71,7 @@ in the legacy `messaging` subsystem and the regular entries will be
 created with a `-new` suffix. +
 If `add-legacy-entries` is set to `false` during migration, no legacy
 resources will be created in the `messaging-activemq` subsystem and
-legacy JMS clients will not be able to communicate with WildFly 10
+legacy Jakarta Messaging clients will not be able to communicate with WildFly 10
 servers.
 
 [[backward-compatibility]]
@@ -79,17 +79,17 @@ servers.
 
 Backward compatibility requires no configuration change in the legacy
 server. +
-WildFly 10 JMS clients do not look up resources on the legacy server but
-uses client-side JNDI to create their JMS resources. Artemis JMS client
+WildFly 10 Jakarta Messaging clients do not look up resources on the legacy server but
+uses client-side JNDI to create their Jakarta Messaging resources. Artemis Jakarta Messaging client
 can then uses these resources to communicate with the legacy server
 using the HornetQ CORE protocol.
 
 Artemis supports
 http://activemq.apache.org/artemis/docs/1.1.0/using-jms.html#jndi-configuration[Client-side
-JNDI] to create JMS resources ( `ConnectionFactory` and `Destination`).
+JNDI] to create Jakarta Messaging resources ( `ConnectionFactory` and `Destination`).
 
-For example, if a WidFly 10 JMS clients wants to communicate with a
-legacy server using a JMS queue named `myQueue`, it must use the
+For example, if a WidFly 10 Jakarta Messaging clients wants to communicate with a
+legacy server using a Jakarta Messaging queue named `myQueue`, it must use the
 following properties to configure its JNDI `InitialContext`:
 
 [source,options="nowrap"]
@@ -100,10 +100,10 @@ connectionFactory.jms/ConnectionFactory=tcp://<legacy server address>:5445? \
 queue.jms/myQueue=myQueue
 ----
 
-It can then use the `jms/ConnectionFactory` name to create the JMS
-ConnectionFactory and `jms/myQueue` to create the JMS Queue. +
+It can then use the `jms/ConnectionFactory` name to create the Jakarta Messaging
+ConnectionFactory and `jms/myQueue` to create the Jakarta Messaging Queue. +
 Note that the property
 `protocolManagerFactoryStr=org.apache.activemq.artemis.core.protocol.hornetq.client.HornetQClientProtocolManagerFactory`
 is mandatory when specifying the URL of the legacy connection factory so
-that the Artemis JMS client can communicate with the HornetQ broker in
+that the Artemis Jakarta Messaging client can communicate with the HornetQ broker in
 the legacy server.

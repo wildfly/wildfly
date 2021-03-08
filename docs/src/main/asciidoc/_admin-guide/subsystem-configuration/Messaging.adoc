@@ -1,7 +1,7 @@
 [[Messaging]]
 = Messaging configuration
 
-The JMS server configuration is done through the _messaging-activemq_
+The Jakarta Messaging server configuration is done through the _messaging-activemq_
 subsystem. In this chapter we are going outline the frequently used
 configuration options. For a more detailed explanation please consult
 the Artemis user guide (See "Component Reference").
@@ -29,7 +29,7 @@ element to the xml or by using the following CLI operation:
 == Connectors
 
 There are three kind of connectors that can be used to connect to
-WildFly JMS Server
+WildFly Jakarta Messaging Server
 
 * `invm-connector` can be used by a local client (i.e. one running in
 the same JVM as the server)
@@ -38,10 +38,10 @@ TCP for the communication)
 * `http-connector` can be used by a remote client (and uses Undertow Web
 Server to upgrade from a HTTP connection)
 
-[[jms-connection-factories]]
-== JMS Connection Factories
+[[Jakarta-Messaging-connection-factories]]
+== Jakarta Messaging Connection Factories
 
-There are three kinds of _basic_ JMS `connection-factory` that depends
+There are three kinds of _basic_ Jakarta Messaging `connection-factory` that depends
 on the type of connectors that is used.
 
 There is also a `pooled-connection-factory` which is special in that it
@@ -140,12 +140,12 @@ _not_ have any `entry` bound in the " `java:jboss/exported`" namespace
 because a `pooled-connection-factory` is not suitable for remote
 clients.
 
-Since JMS 2.0, a default JMS connection factory is accessible to EE
+Since Jakarta Messaging 2.0, a default Jakarta Messaging connection factory is accessible to EE
 application under the JNDI name `java:comp/DefaultJMSConnectionFactory.`
 WildFly messaging subsystem defines a `pooled-connection-factory` that
 is used to provide this default connection factory. Any parameter change
 on this `pooled-connection-factory` will be take into account by any EE
-application looking the default JMS provider under the JNDI name
+application looking the default Jakarta Messaging provider under the JNDI name
 `java:comp/DefaultJMSConnectionFactory.`
 
 [source,xml,options="nowrap"]
@@ -179,10 +179,10 @@ application looking the default JMS provider under the JNDI name
 
 ~(See standalone/configuration/standalone-full.xml)~
 
-[[jms-queues-and-topics]]
-== JMS Queues and Topics
+[[Jakarta-Messaging-queues-and-topics]]
+== Jakarta Messaging Queues and Topics
 
-JMS queues and topics are sub resources of the messaging-actively
+Jakarta Messaging queues and topics are sub resources of the messaging-actively
 subsystem. One can define either a `jms-queue` or `jms-topic`. Each
 destination _must_ be given a `name` and contain at least one entry in
 its `entries` element (separated by whitespace).
@@ -214,7 +214,7 @@ simply "jms/queue/test":
 
 ~(See standalone/configuration/standalone-full.xml)~
 
-JMS endpoints can easily be created through the CLI:
+Jakarta Messaging endpoints can easily be created through the CLI:
 
 [source,options="nowrap"]
 ----
@@ -250,7 +250,7 @@ When a topic is paused, it will receive messages but will not deliver them. Newl
 [standalone@localhost:9990 /] /subsystem=messaging-activemq/server=default/jms-topic=myTopic:pause()
 ----
 
-A number of additional commands to maintain the JMS subsystem are
+A number of additional commands to maintain the Jakarta Messaging subsystem are
 available as well:
 
 [source,options="nowrap"]
@@ -282,8 +282,8 @@ settings belong into this group:
 
 ~(See standalone/configuration/standalone-full.xml)~
 
-[[security-settings-for-artemis-addresses-and-jms-destinations]]
-== Security Settings for Artemis addresses and JMS destinations
+[[security-settings-for-artemis-addresses-and-Jakarta-Messaging-destinations]]
+== Security Settings for Artemis addresses and Jakarta Messaging destinations
 
 Security constraints are matched against an address wildcard, similar to
 the DLQ and redelivery settings.
@@ -376,7 +376,7 @@ the command line.
 == Deployment of -jms.xml files
 
 Starting with WildFly {wildflyVersion}, you have the ability to deploy a -jms.xml file
-defining JMS destinations, e.g.:
+defining Jakarta Messaging destinations, e.g.:
 
 [source,xml,options="nowrap"]
 ----
@@ -397,30 +397,30 @@ WARNING: This feature **is primarily intended for development** as destinations
 deployed this way can not be managed with any of the provided management
 tools (e.g. console, CLI, etc).
 
-[[jms-bridge]]
-== JMS Bridge
+[[Jakarta-Messaging-bridge]]
+== Jakarta Messaging Bridge
 
-The function of a JMS bridge is to consume messages from a source JMS
-destination, and send them to a target JMS destination. Typically either
+The function of a Jakarta Messaging bridge is to consume messages from a source Jakarta Messaging
+destination, and send them to a target Jakarta Messaging destination. Typically either
 the source or the target destinations are on different servers.
 The bridge can also be used to bridge messages from other non Artemis
-JMS servers, as long as they are JMS 1.1 compliant.
+Jakarta Messaging servers, as long as they are JMS 1.1 compliant.
 
-The JMS Bridge is provided by the Artemis project. For a detailed
+The Jakarta Messaging Bridge is provided by the Artemis project. For a detailed
 description of the available configuration properties, please consult
 the project documentation.
 
 [[modules-for-other-messaging-brokers]]
 === Modules for other messaging brokers
 
-Source and target JMS resources (destination and connection factories)
+Source and target Jakarta Messaging resources (destination and connection factories)
 are looked up using JNDI.
 If either the source or the target resources are managed by another
 messaging server than WildFly, the required client classes must be
 bundled in a module. The name of the module must then be declared when
-the JMS Bridge is configured.
+the Jakarta Messaging Bridge is configured.
 
-The use of a JMS bridges with any messaging provider will require to
+The use of a Jakarta Messaging bridges with any messaging provider will require to
 create a module containing the jar of this provider.
 
 Let's suppose we want to use an hypothetical messaging provider named
@@ -429,9 +429,9 @@ destination to a target destination on the local WildFly messaging
 server. To lookup AcmeMQ resources from JNDI, 2 jars are required,
 acmemq-1.2.3.jar, mylogapi-0.0.1.jar (please note these jars do not
 exist, this is just for the example purpose). We must _not_ include a
-JMS jar since it will be provided by a WildFly module directly.
+Jakarta Messaging jar since it will be provided by a WildFly module directly.
 
-To use these resources in a JMS bridge, we must bundle them in a WildFly
+To use these resources in a Jakarta Messaging bridge, we must bundle them in a WildFly
 module:
 
 in JBOSS_HOME/modules, we create the layout:
@@ -482,7 +482,7 @@ We define the module in `module.xml`:
 [[configuration]]
 === Configuration
 
-A JMS bridge is defined inside a `jms-bridge` section of the
+A Jakarta Messaging bridge is defined inside a `jms-bridge` section of the
 `messaging-activemq` subsystem in the XML configuration files.
 
 [source,xml,options="nowrap"]
@@ -513,22 +513,22 @@ A JMS bridge is defined inside a `jms-bridge` section of the
 </subsystem>
 ----
 
-The `source` and `target` sections contain the name of the JMS resource
+The `source` and `target` sections contain the name of the Jakarta Messaging resource
 ( `connection-factory` and `destination`) that will be looked up in
 JNDI.
 It optionally defines the `user` and `password` credentials. If they are
-set, they will be passed as arguments when creating the JMS connection
+set, they will be passed as arguments when creating the Jakarta Messaging connection
 from the looked up ConnectionFactory.
 It is also possible to define JNDI context properties in the
 `source-context` and `target-context` sections. If these sections are
-absent, the JMS resources will be looked up in the local WildFly
+absent, the Jakarta Messaging resources will be looked up in the local WildFly
 instance (as it is the case in the `target` section in the example
 above).
 
 [[management-commands]]
 === Management commands
 
-A JMS Bridge can also be managed using the WildFly command line
+A Jakarta Messaging Bridge can also be managed using the WildFly command line
 interface:
 
 [source,options="nowrap"]
@@ -551,7 +551,7 @@ interface:
 {"outcome" => "success"}
 ----
 
-You can also see the complete JMS Bridge resource description from the
+You can also see the complete Jakarta Messaging Bridge resource description from the
 CLI:
 
 [source,options="nowrap"]
@@ -574,10 +574,10 @@ CLI:
 }
 ----
 
-[[jms-bridge-statistics]]
-=== Statistics of a JMS Bridge
+[[Jakarta-Messaging-bridge-statistics]]
+=== Statistics of a Jakarta Messaging Bridge
 
-Currently two statistics are available on a JMS bridge: the number of processed messages and the number of aborted/rolled back messages.
+Currently two statistics are available on a Jakarta Messaging bridge: the number of processed messages and the number of aborted/rolled back messages.
 Those are available with the following command :
 
 [source, ruby]

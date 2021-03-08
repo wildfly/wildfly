@@ -38,7 +38,7 @@ import org.junit.runner.RunWith;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
- * Test the situation when connection factory or JMS destination is configured for resource adapter
+ * Test the situation when connection factory or Jakarta Messaging destination is configured for resource adapter
  *
  * @author <a href="parsharma@redhat.com">Parul Sharma</a>
  */

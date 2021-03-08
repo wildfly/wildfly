@@ -1,5 +1,5 @@
-[[Java_Message_Service_API_(JMS)]]
-= Java Message Service API (JMS)
+[[Jakarta_Messaging_API]]
+= Jakarta Messaging API
 
 Coming Soon
 
@@ -10,8 +10,8 @@ This guide is still under development, check back soon!
 [[configure-jbossas-for-messaging]]
 == Configure JBossAS for Messaging
 
-Currently, the default configuration does not include the JMS subsystem.
-To enable JMS in the standalone server you need to add these
+Currently, the default configuration does not include the Jakarta Messagin subsystem.
+To enable Jakarta Messagin in the standalone server you need to add these
 configuration items to standalone.xml or simply use standalone-full.xml.
 
 [source,java,options="nowrap"]

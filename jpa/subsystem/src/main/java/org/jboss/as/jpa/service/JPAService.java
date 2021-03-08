@@ -173,7 +173,7 @@ public class JPAService implements Service<Void> {
 
                 existingResourceDescriptionResolver.add(managementAdaptor.getVersion());
             }
-            // create (per deployment) dynamic Resource implementation that can reflect the deployment specific names (e.g. jpa entity classname/Hibernate region name)
+            // create (per deployment) dynamic Resource implementation that can reflect the deployment specific names (e.g. Jakarta Persistence entity classname/Hibernate region name)
             return new DynamicManagementStatisticsResource(statistics, scopedPersistenceUnitName, managementAdaptor.getIdentificationLabel(), entityManagerFactoryLookup);
         }
     }

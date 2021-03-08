@@ -34,7 +34,7 @@ import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 
 /**
- * Auxiliary class for JMS smoke tests - receives messages from a queue and fires events afterwards
+ * Auxiliary class for Jakarta Messaging smoke tests - receives messages from a queue and fires events afterwards
  *
  * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
  */

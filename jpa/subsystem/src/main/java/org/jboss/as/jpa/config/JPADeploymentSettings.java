@@ -23,7 +23,7 @@
 package org.jboss.as.jpa.config;
 
 /**
- * Represents the JPA per application deployment settings read from jboss-all.xml
+ * Represents the Jakarta Persistence per application deployment settings read from jboss-all.xml
  *
 * @author Scott Marlow
 */

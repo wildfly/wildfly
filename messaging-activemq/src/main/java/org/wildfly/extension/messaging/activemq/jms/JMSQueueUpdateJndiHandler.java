@@ -29,7 +29,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
- * Handler for "add-jndi" and "remove-jndi" operations on a JMS queue resource.
+ * Handler for "add-jndi" and "remove-jndi" operations on a Jakarta Messaging queue resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

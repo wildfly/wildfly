@@ -461,7 +461,7 @@ TRACE [com.arjuna.ats.arjuna] (default task-1) TransactionReaper::remove ( Basic
   It refers to the transaction id. You can track it through the log and follow
   what is happening with the particular transaction.
 * the `section-2` refers to the part of business logic processing. That's the time
-  when a database insertion is run or JMS sends a message to a queue.
+  when a database insertion is run or Jakarta Messaging sends a message to a queue.
   That's where you spot message containing `enlistResource`. After the resource
   is enlisted to the transaction the transaction manager saves a record
   persistently under transaction log store.

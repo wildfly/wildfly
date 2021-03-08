@@ -33,7 +33,7 @@ import org.jboss.wsf.spi.metadata.jms.JMSEndpointMetaData;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
 
 /**
- * Creates new JAXWS JMS deployment.
+ * Creates new JAXWS Jakarta Messaging deployment.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
@@ -49,14 +49,14 @@ final class DeploymentModelBuilderJAXWS_JMS extends AbstractDeploymentModelBuild
         final JMSEndpointsMetaData jmsEndpointsMD = getOptionalAttachment(unit, JMS_ENDPOINT_METADATA_KEY);
         dep.addAttachment(JMSEndpointsMetaData.class, jmsEndpointsMD);
 
-        WSLogger.ROOT_LOGGER.trace("Creating JAXWS JMS endpoints meta data model");
+        WSLogger.ROOT_LOGGER.trace("Creating JAXWS Jakarta Messaging endpoints meta data model");
         for (final JMSEndpointMetaData jmsEndpoint : jmsEndpointsMD.getEndpointsMetaData()) {
             final String jmsEndpointName = jmsEndpoint.getName();
-            WSLogger.ROOT_LOGGER.tracef("JMS name: %s", jmsEndpointName);
+            WSLogger.ROOT_LOGGER.tracef("Jakarta Messaging name: %s", jmsEndpointName);
             final String jmsEndpointClassName = jmsEndpoint.getImplementor();
-            WSLogger.ROOT_LOGGER.tracef("JMS class: %s", jmsEndpointClassName);
+            WSLogger.ROOT_LOGGER.tracef("Jakarta Messaging class: %s", jmsEndpointClassName);
             final String jmsEndpointAddress = jmsEndpoint.getSoapAddress();
-            WSLogger.ROOT_LOGGER.tracef("JMS address: %s", jmsEndpointAddress);
+            WSLogger.ROOT_LOGGER.tracef("Jakarta Messaging address: %s", jmsEndpointAddress);
             Endpoint ep =newJMSEndpoint(jmsEndpointClassName, jmsEndpointName, jmsEndpointAddress, dep);
             markWeldDeployment(unit, ep);
         }

@@ -34,7 +34,7 @@ import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingExtension;
 
 /**
- * JMS Queue resource definition
+ * Jakarta Messaging Queue resource definition
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */

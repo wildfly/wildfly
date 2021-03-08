@@ -41,7 +41,7 @@ import org.junit.runner.RunWith;
 
 /**
  * <p>Test to check that annotation FaceletsResourceResolverTest is correctly
- * managed by the JSF subsystem.</p>
+ * managed by the Jakarta Server Faces subsystem.</p>
  *
  * @author rmartinc
  */

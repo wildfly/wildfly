@@ -362,7 +362,7 @@ include::Jakarta_XML_Web_Services/WS-Trust_and_STS.adoc[]
 
 include::Jakarta_XML_Web_Services/WS-Reliable_Messaging.adoc[]
 
-include::Jakarta_XML_Web_Services/SOAP_over_JMS.adoc[]
+include::Jakarta_XML_Web_Services/SOAP_over_Jakarta_Messaging.adoc[]
 
 include::Jakarta_XML_Web_Services/HTTP_Proxy.adoc[]
 

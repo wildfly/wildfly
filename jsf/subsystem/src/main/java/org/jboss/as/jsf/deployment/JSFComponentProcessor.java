@@ -63,7 +63,7 @@ import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 import org.jboss.as.weld.WeldCapability;
 
 /**
- * Sets up JSF managed beans as components using information in the annotations and
+ * Sets up Jakarta Server Faces managed beans as components using information in the annotations and
  *
  * @author Stuart Douglas
  */
@@ -76,7 +76,7 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
     private static final String CONFIG_FILES = "javax.faces.CONFIG_FILES";
 
     /**
-     * JSF tags that should be checked in the configuration file. All the
+     * Jakarta Server Faces tags that should be checked in the configuration file. All the
      * tags that are needed for injection are taken into account.
      * If more artifacts should be included just add it to the enum and to
      * the <em>facesConfigElement</em> tree in order to be parsed.
@@ -150,7 +150,7 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
     }
 
     /**
-     * Helper class to queue tags read from the JSF XML configuration file. The
+     * Helper class to queue tags read from the Jakarta Server Faces XML configuration file. The
      * idea is saving the element which can be a known tree element or another
      * one that is not interested for injection.
      */
@@ -187,7 +187,7 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
     private static final JsfTree facesConfigElement;
 
     static {
-        // tree of jsf artifact tags with order
+        // tree of Jakarta Server Faces artifact tags with order
         facesConfigElement = new JsfTree(JsfTag.FACES_CONFIG,
                 new JsfTree(JsfTag.FACTORY,
                         new JsfTree(JsfTag.APPLICATION_FACTORY),
@@ -240,14 +240,14 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
         for (String managedBean : managedBeanClasses) {
             installManagedBeanComponent(managedBean, moduleDescription, module, deploymentUnit, applicationClassesDescription);
         }
-        // process all the other elements elegible for injection in the JSF spec
+        // process all the other elements elegible for injection in the Jakarta Server Faces spec
         processJSFArtifactsForInjection(deploymentUnit, managedBeanClasses);
     }
 
     /**
-     * According to JSF specification there is a table of eligible components
-     * for Jakarta Contexts and Dependency Injection (TABLE 5-3 JSF Artifacts Eligible for Injection in chapter
-     * 5.4.1 JSF Managed Classes and Jakarta EE Annotations). This method parses
+     * According to Jakarta Server Faces specification there is a table of eligible components
+     * for Jakarta Contexts and Dependency Injection (TABLE 5-3 Jakarta Server Faces Artifacts Eligible for Injection in chapter
+     * 5.4.1 Jakarta Server Faces Managed Classes and Jakarta EE Annotations). This method parses
      * the faces-config configuration files and registers the classes.
      * The parser is quite simplistic. The tags are saved into a queue and
      * using the facesConfigElement tree it is known when a tag is one of the
