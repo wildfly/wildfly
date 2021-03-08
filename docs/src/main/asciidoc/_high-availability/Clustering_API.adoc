@@ -308,6 +308,7 @@ WildFly exposes a ServiceProviderRegistry (from which a ServiceProviderRegistrat
 The following is an example of using a ServiceProviderRegistry to publish the availability of a given singleton EJB.
 The getProviders() method will return the set of nodes on which the ServiceProviderRegistrationBean is deployed.
 
+[source,java,options="nowrap"]
 ----
 @Singleton
 @Startup
@@ -365,6 +366,7 @@ WildFly exposes a RegistryFactory (from which a Registry is created) for each ca
 
 The following Registry example assigns a UUID to each group member, allowing each member to query the identifier of any other member:
 
+[source,java,options="nowrap"]
 ----
 @Singleton
 @Startup
