@@ -39,7 +39,7 @@ import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 
 /**
- * Update handler removing a queue from the JMS subsystem. The
+ * Update handler removing a queue from the Jakarta Messaging subsystem. The
  * runtime action will remove the corresponding {@link JMSQueueService}.
  *
  * @author Emanuel Muckenhuber

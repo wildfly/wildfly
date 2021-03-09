@@ -6,7 +6,7 @@ for each of the following resources:
 
 * Context Service
 * Datasource
-* JMS Connection Factory
+* Jakarta Messaging Connection Factory
 * Managed Executor Service
 * Managed Scheduled Executor Service
 * Managed Thread Factory

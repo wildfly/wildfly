@@ -47,7 +47,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests the behaviour of allowing local transactions for a JMS session from a Servlet.
+ * Tests the behaviour of allowing local transactions for a Jakarta Messaging session from a Servlet.
  *
  * Default behaviour is to disallow it.
  * It can be overridden by specifying allow-local-transactions=true on the pooled-connection-factory resource.

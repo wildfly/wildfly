@@ -59,7 +59,7 @@ public class SimplifiedMessageProducer {
     }
 
     private void send(ConnectionFactory cf, Destination destination, String text) throws Exception {
-        // TODO use JMS 2.0 context when HornetQ supports it
+        // TODO use Jakarta Messaging 2.0 context when HornetQ supports it
         Connection connection = cf.createConnection();
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         MessageProducer producer = session.createProducer(destination);

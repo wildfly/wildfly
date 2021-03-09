@@ -18,7 +18,7 @@ JNDI over traditional remote JNDI access. However, to make this
 possible, it does require that all names follow a strict layout, so user
 customizations are not possible. Currently only access to remote Jakarta Enterprise Beans
 are supported via the `ejb:` namespace. Future revisions will likely add a
-JMS client JNDI namespace.
+Jakarta Messaging client JNDI namespace.
 * Traditional Remote JNDI - This is a more familiar approach to EE
 application developers, where the client performs a remote component
 name lookup against a server, and a proxy/stub to the component is

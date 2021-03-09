@@ -53,7 +53,7 @@ import org.jboss.wsf.spi.metadata.jms.JMSEndpointMetaData;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
 
 /**
- * DUP for detecting JMS WS endpoints
+ * DUP for detecting Jakarta Messaging WS endpoints
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */

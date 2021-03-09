@@ -26,7 +26,7 @@ import org.jboss.as.ee.component.deployers.AbstractPlatformBindingProcessor;
 import org.jboss.as.server.deployment.DeploymentUnit;
 
 /**
- * Processor responsible for binding the default jms connection factory to the naming context of EE modules/components.
+ * Processor responsible for binding the default Jakarta Messaging connection factory to the naming context of EE modules/components.
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2013 Red Hat Inc.
  * @author Eduardo Martins

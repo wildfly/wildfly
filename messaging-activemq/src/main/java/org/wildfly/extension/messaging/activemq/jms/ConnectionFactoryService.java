@@ -91,7 +91,7 @@ class ConnectionFactoryService implements Service<Void> {
                 context.complete();
             }
         };
-        // JMS Server Manager uses locking which waits on service completion, use async to prevent starvation
+        // Jakarta Messaging Server Manager uses locking which waits on service completion, use async to prevent starvation
         try {
             executorInjector.getValue().execute(task);
         } catch (RejectedExecutionException e) {

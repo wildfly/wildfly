@@ -113,7 +113,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
     int minPoolSize() default -1;
     */
 
-    // not used: ActiveMQ CF implements all JMS CF interfaces
+    // not used: ActiveMQ CF implements all Jakarta Messaging CF interfaces
     private String interfaceName;
     // not used
     private String className;
@@ -441,7 +441,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
     }
 
     /**
-     * The JMS connection factory can specify another server to deploy its destinations
+     * The Jakarta Messaging connection factory can specify another server to deploy its destinations
      * by passing a property server=&lt;name of the server>. Otherwise, "default" is used by default.
      */
     static String getActiveMQServerName(Map<String, String> properties) {

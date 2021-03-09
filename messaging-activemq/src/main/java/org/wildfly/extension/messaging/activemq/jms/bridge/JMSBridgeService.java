@@ -43,7 +43,7 @@ import org.wildfly.security.password.interfaces.ClearPassword;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
- * Service responsible for JMS Bridges.
+ * Service responsible for Jakarta Messaging Bridges.
  *
  * @author Jeff Mesnil (c) 2012 Red Hat Inc.
  */

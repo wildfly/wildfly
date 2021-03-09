@@ -60,7 +60,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test that a legacy (HornetQ) clients can lookup JMS resources managed by the messaging-activemq subsystem
+ * Test that a legacy (HornetQ) clients can lookup Jakarta Messaging resources managed by the messaging-activemq subsystem
  * when they lookup a legacy entry.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.

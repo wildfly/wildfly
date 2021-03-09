@@ -123,7 +123,7 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         } else if (TOPIC_ADDRESS.getName().equals(attributeName)) {
             context.getResult().set(control.getAddress());
         } else if (CommonAttributes.TEMPORARY.getName().equals(attributeName)) {
-            // This attribute does not make sense. JMS topics created by the management API are always
+            // This attribute does not make sense. Jakarta Messaging topics created by the management API are always
             // managed and not temporary. Only topics created by the Clients can be temporary.
             context.getResult().set(false);
         } else if (PAUSED.getName().equals(attributeName)) {

@@ -55,7 +55,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test that invoking a management operation that removes a JMS resource that is used by a deployed archive must fail:
+ * Test that invoking a management operation that removes a Jakarta Messaging resource that is used by a deployed archive must fail:
  * the resource must not be removed and any depending services must be recovered.
  * The deployment must still be operating after the failing management operation.
 

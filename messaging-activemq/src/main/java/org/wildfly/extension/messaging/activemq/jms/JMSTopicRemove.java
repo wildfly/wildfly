@@ -38,7 +38,7 @@ import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 
 /**
- * Update handler removing a topic from the JMS subsystem. The
+ * Update handler removing a topic from the Jakarta Messaging subsystem. The
  * runtime action will remove the corresponding {@link JMSTopicService}.
  *
  * @author Emanuel Muckenhuber

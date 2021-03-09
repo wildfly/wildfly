@@ -84,12 +84,12 @@ public interface MessagingLogger extends BasicLogger {
     void boundJndiName(String jndiName);
 
     /**
-     * Logs an error message indicating an exception occurred while stopping the JMS server.
+     * Logs an error message indicating an exception occurred while stopping the Jakarta Messaging server.
      *
      * @param cause the cause of the error.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 3, value = "Exception while stopping JMS server")
+    @Message(id = 3, value = "Exception while stopping Jakarta Messaging server")
     void errorStoppingJmsServer(@Cause Throwable cause);
 
     /**
@@ -728,7 +728,7 @@ public interface MessagingLogger extends BasicLogger {
      *
      * @return an {@link IllegalStateRuntimeException} for the error.
      */
-    @Message(id = 68, value = "It is not permitted to call this method on injected JMSContext (see JMS 2.0 spec, §12.4.5).")
+    @Message(id = 68, value = "It is not permitted to call this method on injected JMSContext (see Jakarta Messaging 2.0 spec, §12.4.5).")
     IllegalStateRuntimeException callNotPermittedOnInjectedJMSContext();
 
 //    /**

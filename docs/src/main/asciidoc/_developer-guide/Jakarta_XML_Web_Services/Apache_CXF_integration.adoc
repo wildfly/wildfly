@@ -12,7 +12,7 @@ modules.
 Apache CXF is an open source services framework. It allows building and
 developing services using frontend programming APIs (including Jakarta XML Web Services),
 with services speaking a variety of protocols such as SOAP and XML/HTTP
-over a variety of transports such as HTTP and JMS.
+over a variety of transports such as HTTP and Jakarta Messaging.
 
 The integration layer ( _JBossWS-CXF_ in short hereafter) is mainly
 meant for:

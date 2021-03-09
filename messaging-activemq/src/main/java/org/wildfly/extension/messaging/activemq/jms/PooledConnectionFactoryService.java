@@ -430,7 +430,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
             configureCredential(properties);
 
-            // for backwards compatibility, the RA inbound is configured to prefix the JMS resources if JNDI lookups fail
+            // for backwards compatibility, the RA inbound is configured to prefix the Jakarta Messaging resources if JNDI lookups fail
             // and the destination are inferred from the JNDI name.
             inboundProperties.add(simpleProperty15("queuePrefix", String.class.getName(), JMS_QUEUE_PREFIX));
             inboundProperties.add(simpleProperty15("topicPrefix", String.class.getName(), JMS_TOPIC_PREFIX));

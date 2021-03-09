@@ -25,7 +25,7 @@ package org.wildfly.extension.messaging.activemq.jms;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 
 /**
- * Write attribute handler for attributes that update the persistent configuration of a JMS queue resource.
+ * Write attribute handler for attributes that update the persistent configuration of a Jakarta Messaging queue resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

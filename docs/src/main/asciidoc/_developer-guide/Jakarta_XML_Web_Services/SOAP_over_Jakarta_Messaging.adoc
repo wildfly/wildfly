@@ -1,32 +1,32 @@
-[[SOAP_over_JMS]]
-= SOAP over JMS
+[[SOAP_over_Jakarta_Messaging]]
+= SOAP over Jakarta Messaging
 
-JBoss Web Services allows communication over the _JMS_ transport. The
+JBoss Web Services allows communication over the _Jakarta Messaging_ transport. The
 functionality comes from Apache CXF support for the
 http://www.w3.org/TR/soapjms/[SOAP over Java Message Service 1.0]
 specification, which is aimed at a set of standards for interoperable
-transport of _SOAP_ messages over _JMS_.
+transport of _SOAP_ messages over _Jakarta Messaging_.
 
 On top of Apache CXF functionalities, the JBossWS integration allows
-users to deploy WS archives containing both _JMS_ and _HTTP_ endpoints
+users to deploy WS archives containing both _Jakarta Messaging_ and _HTTP_ endpoints
 the same way as they do for basic _HTTP_ WS endpoints (in _war_
 archives). The webservices layer of WildFly takes care of looking for
-_JMS_ enpdoints in the deployed archive and starts them delegating to
+_Jakarta Messaging_ enpdoints in the deployed archive and starts them delegating to
 the Apache CXF core similarly as with _HTTP_ endpoints.
 
-[[configuring-soap-over-jms]]
-== Configuring SOAP over JMS
+[[configuring-soap-over-Jakarta-Messaging]]
+== Configuring SOAP over Jakarta Messaging
 
-As per specification, the _SOAP over JMS_ transport configuration is
+As per specification, the _SOAP over Jakarta Messaging_ transport configuration is
 controlled by proper elements and attributes in the `binding` and
-`service` elements of the WSDL contract. So a _JMS_ endpoint is usually
+`service` elements of the WSDL contract. So a _Jakarta Messaging_ endpoint is usually
 developed using a contract-first approach.
 
 The http://cxf.apache.org/docs/soap-over-jms-10-support.html[Apache CXF
 documentation] covers all the details of the supported configurations.
 The minimum configuration implies:
 
-* setting a proper JMS URI in the `soap:address` `location` [1]
+* setting a proper Jakarta Messaging URI in the `soap:address` `location` [1]
 * providing a JNDI connection factory name to be used for connecting to
 the queues [2]
 * setting the transport binding [3]
@@ -61,25 +61,25 @@ the queues [2]
 </wsdl:service>
 ----
 
-Apache CXF takes care of setting up the JMS transport for endpoint
+Apache CXF takes care of setting up the Jakarta Messaging transport for endpoint
 implementations whose `@WebService` annotation points to a port declared
-for JMS transport as explained above.
+for Jakarta Messaging transport as explained above.
 
 [NOTE]
 
-JBossWS currently supports POJO endpoints only for JMS transport use.
+JBossWS currently supports POJO endpoints only for Jakarta Messaging transport use.
 The endpoint classes can be deployed as part of _jar_ or _war_ archives.
 
 The _web.xml_ descriptor in _war_ archives doesn't need any entry for
-JMS endpoints.
+Jakarta Messaging endpoints.
 
 [[examples-soap-over-jms]]
 == Examples
 
-[[jms-endpoint-only-deployment]]
-=== JMS endpoint only deployment
+[[Jakarta-Messaging-endpoint-only-deployment]]
+=== Jakarta Messaging endpoint only deployment
 
-In this example we create a simple endpoint relying on _SOAP over JMS_
+In this example we create a simple endpoint relying on _SOAP over Jakarta Messaging_
 and deploy it as part of a jar archive.
 
 The endpoint is created using wsconsume tool from a WSDL contract such
@@ -245,7 +245,7 @@ Created-By: 17.0-b16 (Sun Microsystems Inc.)
 Dependencies: org.hornetq
 ....
 
-A Jakarta XML Web Services client can interact with the JMS endpoint the usual way:
+A Jakarta XML Web Services client can interact with the Jakarta Messaging endpoint the usual way:
 
 [source,java,options="nowrap"]
 ----
@@ -270,7 +270,7 @@ finally
 [IMPORTANT]
 
 The WSDL location URL needs to be retrieved in a custom way, depending
-on the client application. Given the endpoint is JMS only, there's no
+on the client application. Given the endpoint is Jakarta Messaging only, there's no
 automatically published WSDL contract.
 
 in order for performing the remote invocation (which internally goes
@@ -297,9 +297,9 @@ finding out the actual security requirements. At the time of writing, a
 user with `guest` role is required and that's internally checked using
 the `other` security domain.
 
-Of course once the endpoint is exposed over JMS transport, any plain JMS
+Of course once the endpoint is exposed over Jakarta Messaging transport, any plain Jakarta Messaging
 client can also be used to send messages to the webservice endpoint. You
-can have a look at the SOAP over JMS spec details and code the client
+can have a look at the SOAP over Jakarta Messaging spec details and code the client
 similarly to
 
 [source,java,options="nowrap"]
@@ -333,11 +333,11 @@ sender.close();
 ...
 ----
 
-[[jms-and-http-endpoints-deployment]]
-=== JMS and HTTP endpoints deployment
+[[Jakarta-Messaging-and-http-endpoints-deployment]]
+=== Jakarta Messaging and HTTP endpoints deployment
 
 In this example we create a deployment containing an endpoint that
-serves over both HTTP and JMS transports.
+serves over both HTTP and Jakarta Messaging transports.
 
 We from a WSDL contract such as below (please note we've two `binding` /
 `portType` for the same `service`):
@@ -428,10 +428,10 @@ We from a WSDL contract such as below (please note we've two `binding` /
 </wsdl:definitions>
 ----
 
-The same considerations of the previous example regarding the JMS queue
+The same considerations of the previous example regarding the Jakarta Messaging queue
 and JNDI connection factory still apply. +
 Here we can implement the endpoint in multiple ways, either with a
-common implementation class that's extended by the JMS and HTTP ones, or
+common implementation class that's extended by the Jakarta Messaging and HTTP ones, or
 keep the two implementation classes independent and just have them
 implement the same service endpoint interface:
 
@@ -533,7 +533,7 @@ endpoint publish:
 Here too the MANIFEST.MF needs to declare a dependency on _org.hornetq_
 module when deploying to WildFly.
 
-Finally, the Jakarta XML Web Services client can ineract with both JMS and HTTP endpoints
+Finally, the Jakarta XML Web Services client can ineract with both Jakarta Messaging and HTTP endpoints
 as usual:
 
 [source,java,options="nowrap"]
@@ -563,7 +563,7 @@ finally
 [[use-of-endpoint.publish-api]]
 === Use of Endpoint.publish() API
 
-An alternative to deploying an archive containing JMS endpoints is in
+An alternative to deploying an archive containing Jakarta Messaging endpoints is in
 starting them directly using the Jakarta XML Web Services `Endpoint.publish(..)` API.
 
 That's as easy as doing:
@@ -583,7 +583,7 @@ finally
 ----
 
 where `HelloWorldImpl` is a POJO endpoint implementation referencing a
-JMS _port_ in a given WSDL contract, as explained in the previous
+Jakarta Messaging _port_ in a given WSDL contract, as explained in the previous
 examples.
 
 The main difference among the deployment approach is in the direct

@@ -59,7 +59,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Basic JMS test using a customly created JMS topic
+ * Basic Jakarta Messaging test using a customly created Jakarta Messaging topic
  *
  * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
  */
