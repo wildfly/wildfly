@@ -24,15 +24,14 @@ package org.jboss.as.test.clustering.single.web;
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.CONTAINER_SINGLE;
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -40,6 +39,8 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.WildFlyContainerController;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
@@ -59,6 +60,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class NonHaWebSessionPersistenceTestCase {
     private static final String MODULE_NAME = NonHaWebSessionPersistenceTestCase.class.getSimpleName();
+    private static final String APPLICATION_NAME = MODULE_NAME + ".war";
 
     @ArquillianResource
     private WildFlyContainerController controller;
@@ -68,7 +70,7 @@ public class NonHaWebSessionPersistenceTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     public static Archive<?> deployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, APPLICATION_NAME);
         war.addClasses(SimpleServlet.class, Mutable.class);
         war.setWebXML(NonHaWebSessionPersistenceTestCase.class.getPackage(), "web.xml");
         return war;
@@ -87,21 +89,24 @@ public class NonHaWebSessionPersistenceTestCase {
     }
 
     @Test
-    public void testSessionPersistence(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL) throws IOException, URISyntaxException {
+    public void testSessionPersistence(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL, @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient managementClient) throws Exception {
 
         URI url = SimpleServlet.createURI(baseURL);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
-            HttpResponse response = client.execute(new HttpGet(url));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
-            response.getEntity().getContent().close();
+            String sessionId = null;
+            try (CloseableHttpResponse response = client.execute(new HttpGet(url))) {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
+                sessionId = response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue();
+            }
 
-            response = client.execute(new HttpGet(url));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
-            Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
-            response.getEntity().getContent().close();
+            try (CloseableHttpResponse response = client.execute(new HttpGet(url))) {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
+                Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+                Assert.assertEquals(sessionId, response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+            }
 
             NodeUtil.stop(this.controller, CONTAINER_SINGLE);
             NodeUtil.start(this.controller, CONTAINER_SINGLE);
@@ -109,12 +114,21 @@ public class NonHaWebSessionPersistenceTestCase {
                 NodeUtil.deploy(this.deployer, DEPLOYMENT_1);
             }
 
-            response = client.execute(new HttpGet(url));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals("Session passivation was configured but session was lost after restart.",
-                    3, Integer.parseInt(response.getFirstHeader("value").getValue()));
-            Assert.assertTrue(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
-            response.getEntity().getContent().close();
+            try (CloseableHttpResponse response = client.execute(new HttpGet(url))) {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertEquals("Session passivation was configured but session was lost after restart.",
+                        3, Integer.parseInt(response.getFirstHeader("value").getValue()));
+                Assert.assertTrue(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+                Assert.assertEquals(sessionId, response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+            }
+
+            String invalidationRequest = String.format("/deployment=%s/subsystem=undertow:invalidate-session(session-id=%s)", APPLICATION_NAME, sessionId);
+            ClusterTestUtil.execute(managementClient, invalidationRequest);
+
+            try (CloseableHttpResponse response = client.execute(new HttpHead(url))) {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertFalse(response.containsHeader(SimpleServlet.SESSION_ID_HEADER));
+            }
         }
     }
 }

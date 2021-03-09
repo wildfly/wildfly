@@ -26,7 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.wildfly.clustering.web.LocalContextFactory;
 
-public class LocalSessionContextFactory implements LocalContextFactory<Map<String, Object>> {
+public enum LocalSessionContextFactory implements LocalContextFactory<Map<String, Object>> {
+    INSTANCE;
 
     @Override
     public Map<String, Object> createLocalContext() {

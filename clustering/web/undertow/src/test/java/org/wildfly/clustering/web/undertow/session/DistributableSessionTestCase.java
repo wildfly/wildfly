@@ -909,34 +909,6 @@ public class DistributableSessionTestCase {
     }
 
     @Test
-    public void invalidateWhenResponseDone() {
-        when(this.session.getMetaData()).thenReturn(this.metaData);
-        when(this.metaData.isNew()).thenReturn(false);
-
-        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.batch, this.closeTask);
-
-        HttpServerExchange exchange = new HttpServerExchange(null);
-        this.validate(session, exchange, s -> s.invalidate(exchange));
-
-        SessionManager<Map<String, Object>, Batch> manager = mock(SessionManager.class);
-        Batcher<Batch> batcher = mock(Batcher.class);
-        BatchContext context = mock(BatchContext.class);
-        SessionListener listener = mock(SessionListener.class);
-        SessionListeners listeners = new SessionListeners();
-        listeners.addSessionListener(listener);
-        String sessionId = "session";
-
-        when(this.manager.getSessionListeners()).thenReturn(listeners);
-        when(this.session.getId()).thenReturn(sessionId);
-        when(this.manager.getSessionManager()).thenReturn(manager);
-        when(manager.getBatcher()).thenReturn(batcher);
-        when(batcher.resumeBatch(this.batch)).thenReturn(context);
-        when(this.batch.getState()).thenReturn(Batch.State.CLOSED);
-
-        Assert.assertThrows(IllegalStateException.class, () -> session.invalidate(exchange));
-    }
-
-    @Test
     public void getSessionManager() {
         when(this.session.getMetaData()).thenReturn(this.metaData);
         when(this.metaData.isNew()).thenReturn(false);

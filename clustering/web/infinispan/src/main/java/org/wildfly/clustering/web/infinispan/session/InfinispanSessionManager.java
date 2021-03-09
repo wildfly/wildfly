@@ -212,7 +212,7 @@ public class InfinispanSessionManager<S, SC, AL, MV, AV, LC> implements SessionM
     }
 
     @Override
-    public ImmutableSession viewSession(String id) {
+    public ImmutableSession readSession(String id) {
         Map.Entry<MV, AV> value = this.factory.findValue(id);
         return (value != null) ? new SimpleImmutableSession(this.factory.createImmutableSession(id, value)) : null;
     }
