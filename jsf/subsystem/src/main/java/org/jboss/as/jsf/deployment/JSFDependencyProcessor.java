@@ -121,15 +121,6 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(jsfAPI);
     }
 
-    // Is Jakarta Server Faces spec greater than 1.1?  If we add Faces 1.1 support we'll need this to keep from calling addJSFInjection()
-  /*  private boolean isJSFSpecOver1_1(ModuleIdentifier jsfModule, ModuleDependency jsfAPI) throws DeploymentUnitProcessingException {
-        try {
-            return (jsfAPI.getModuleLoader().loadModule(jsfModule).getClassLoader().getResource("/javax/faces/component/ActionSource2.class") != null);
-        } catch (ModuleLoadException e) {
-            throw new DeploymentUnitProcessingException(e);
-        }
-    } */
-
     private void addJSFImpl(String jsfVersion,
             ModuleSpecification moduleSpecification,
             ModuleLoader moduleLoader) {
