@@ -3214,7 +3214,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 517, value = "[EJB3.2 spec, section 4.1] Spec violation for class %s. Session EJBs should have only one of the following types : Stateful, Stateless, Singleton.")
     void typeSpecViolation(String className);
 
-    @Message(id = 518, value = "Exception resolving class %s for unmarshalling; it has either been blacklisted or not whitelisted")
+    @Message(id = 518, value = "Exception resolving class %s for unmarshalling; it has either been blocklisted or not allowlisted")
     InvalidClassException cannotResolveFilteredClass(String clazz);
 
     @Message(id = 519, value = "Invalid unmarshalling filter specfication %s; specifications must describe class or package name matching patterns")

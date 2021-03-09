@@ -32,8 +32,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 /**
  * Class name filtering {@code Function<String, Boolean>} implementation that is configured by a {@code filterSpec}
  * string provided to the constructor. The function returns {@code true} if the given class name is acceptable
- * for class resolution, {@code false} otherwise. The function is meant to be used for implementation blacklists
- * or whitelists of classes that would be loaded when remote EJB invocations are received.
+ * for class resolution, {@code false} otherwise. The function is meant to be used for implementation blocklists
+ * or allowlists of classes that would be loaded when remote EJB invocations are received.
  * <p>
  * The {@code filterSpec} string is composed of one or more filter spec elements separated by the {@code ';'} char.
  * A filter spec element that begins with the {@code '!'} char is a 'rejecting element' and indicates resolution of a
@@ -61,17 +61,17 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * </p>
  * <p>
  * If any element in the filter spec indicates a class name should be rejected, it will be rejected. If any element
- * in the filter spec does not begin with the {@code '!'} char, then the filter will act like a whitelist, and
+ * in the filter spec does not begin with the {@code '!'} char, then the filter will act like a allowlist, and
  * at least one non-rejecting filter spec element must match the class name for the filter to return {@code true}.
- * Rejecting elements can be used in an overall filter spec for a whitelist, for example to exclude a particular
- * class from a package that is otherwise whitelisted.
+ * Rejecting elements can be used in an overall filter spec for a allowlist, for example to exclude a particular
+ * class from a package that is otherwise allowlisted.
  * </p>
  *
  * @author Brian Stansberry
  */
 final class FilterSpecClassResolverFilter implements Function<String, Boolean> {
 
-    // Note -- the default filter spec represents a blacklist.
+    // Note -- the default filter spec represents a blocklist.
     /**
      * Value provided to {@link #FilterSpecClassResolverFilter(String)} by the default no-arg constructor.
      * Represents the default filtering rules for this library.
@@ -111,7 +111,7 @@ final class FilterSpecClassResolverFilter implements Function<String, Boolean> {
     private final String filterSpec;
     private final List<String> parsedFilterSpecs;
     private final List<Function<String, Boolean>> unmarshallingFilters;
-    private final boolean whitelistUnmarshalling;
+    private final boolean allowlistUnmarshalling;
 
     /**
      * Creates a filter using the default rules.
@@ -122,7 +122,7 @@ final class FilterSpecClassResolverFilter implements Function<String, Boolean> {
 
 
     private static String getUnmarshallingFilterSpec() {
-        // The default blacklisting can be disabled via system property
+        // The default blocklisting can be disabled via system property
         String disabled = WildFlySecurityManager.getPropertyPrivileged("jboss.ejb.unmarshalling.filter.disabled", null);
         if ("true".equalsIgnoreCase(disabled)) {
             return "";  // empty string disables filtering
@@ -147,14 +147,14 @@ final class FilterSpecClassResolverFilter implements Function<String, Boolean> {
         if (filterSpec.isEmpty()) {
             parsedFilterSpecs = null;
             unmarshallingFilters = null;
-            whitelistUnmarshalling = false;
+            allowlistUnmarshalling = false;
         } else {
 
             parsedFilterSpecs = new ArrayList<>(Arrays.asList(filterSpec.split(";")));
             unmarshallingFilters = new ArrayList<>(parsedFilterSpecs.size());
-            ExactMatchFilter exactMatchWhitelist = null;
-            ExactMatchFilter exactMatchBlacklist = null;
-            boolean whitelist = false;
+            ExactMatchFilter exactMatchAllowlist = null;
+            ExactMatchFilter exactMatchBlocklist = null;
+            boolean allowlist = false;
 
             for (String spec : parsedFilterSpecs) {
 
@@ -163,15 +163,15 @@ final class FilterSpecClassResolverFilter implements Function<String, Boolean> {
                     throw REMOTE_LOGGER.invalidFilterSpec(spec);
                 }
 
-                boolean blacklistElement = spec.startsWith("!");
-                whitelist |= !blacklistElement;
+                boolean blocklistElement = spec.startsWith("!");
+                allowlist |= !blocklistElement;
 
-                // For a blacklist element, return FALSE for a match; i.e. don't resolve
-                // For a whitelist, return TRUE for a match; i.e. definitely do resolve
+                // For a blocklist element, return FALSE for a match; i.e. don't resolve
+                // For a allowlist, return TRUE for a match; i.e. definitely do resolve
                 // For any non-match, return null which means that check has no opinion
-                final Boolean matchReturn = blacklistElement ? Boolean.FALSE : Boolean.TRUE;
+                final Boolean matchReturn = blocklistElement ? Boolean.FALSE : Boolean.TRUE;
 
-                if (blacklistElement) {
+                if (blocklistElement) {
                     if (spec.length() == 1) {
                         throw REMOTE_LOGGER.invalidFilterSpec(spec);
                     }
@@ -209,16 +209,16 @@ final class FilterSpecClassResolverFilter implements Function<String, Boolean> {
                     }
                 } else {
                     // For exact matches store them in a set and just do a single set.contains check
-                    if (blacklistElement) {
-                        if (exactMatchBlacklist == null) {
-                            filter = exactMatchBlacklist = new ExactMatchFilter(false);
+                    if (blocklistElement) {
+                        if (exactMatchBlocklist == null) {
+                            filter = exactMatchBlocklist = new ExactMatchFilter(false);
                         }
-                        exactMatchBlacklist.addMatchingClass(spec);
+                        exactMatchBlocklist.addMatchingClass(spec);
                     } else {
-                        if (exactMatchWhitelist == null) {
-                            filter = exactMatchWhitelist = new ExactMatchFilter(true);
+                        if (exactMatchAllowlist == null) {
+                            filter = exactMatchAllowlist = new ExactMatchFilter(true);
                         }
-                        exactMatchWhitelist.addMatchingClass(spec);
+                        exactMatchAllowlist.addMatchingClass(spec);
                     }
                      if (filter == null) {
                          // An ExactMatchFilter earlier in the list would have already handled this.
@@ -228,15 +228,15 @@ final class FilterSpecClassResolverFilter implements Function<String, Boolean> {
                 }
                 unmarshallingFilters.add(filter);
             }
-            if (whitelist) {
-                // Don't force users to whitelist the classes we send. Add a whitelist spec for their package
+            if (allowlist) {
+                // Don't force users to allowlist the classes we send. Add a allowlist spec for their package
                 // TODO is this a good idea?
                 final String pkg = "org.jboss.ejb.client.";
                 parsedFilterSpecs.add(pkg + "*");
                 unmarshallingFilters.add(cName -> cName.startsWith(pkg) && cName.lastIndexOf('.') == pkg.length() - 1 ? true : null);
             }
             assert parsedFilterSpecs.size() == unmarshallingFilters.size();
-            whitelistUnmarshalling = whitelist;
+            allowlistUnmarshalling = allowlist;
         }
     }
 
@@ -257,8 +257,8 @@ final class FilterSpecClassResolverFilter implements Function<String, Boolean> {
                     anyAccept |= accept != null;
                 }
             }
-            if (whitelistUnmarshalling && !anyAccept) {
-                REMOTE_LOGGER.debugf("Class %s has not been explicitly whitelisted by filter spec %s", className, filterSpec);
+            if (allowlistUnmarshalling && !anyAccept) {
+                REMOTE_LOGGER.debugf("Class %s has not been explicitly allowlisted by filter spec %s", className, filterSpec);
                 return false;
             }
         }
@@ -269,8 +269,8 @@ final class FilterSpecClassResolverFilter implements Function<String, Boolean> {
         private final Set<String> matches = new HashSet<>();
         private final Boolean matchResult;
 
-        private ExactMatchFilter(boolean forWhitelist) {
-            this.matchResult = forWhitelist;
+        private ExactMatchFilter(boolean forAllowlist) {
+            this.matchResult = forAllowlist;
         }
 
         private void addMatchingClass(String name) {

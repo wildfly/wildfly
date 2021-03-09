@@ -162,7 +162,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.LOG_EJB_EXCEPTIONS)
                 .end();
 
-        // We can always discard this attribute, because it's meaningless without the security-manager subsystem, and a legacy slave can't have that subsystem in its profile.
+        // We can always discard this attribute, because it's meaningless without the security-manager subsystem, and a legacy secondary node can't have that subsystem in its profile.
         subsystemBuilder.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.FALSE), EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)

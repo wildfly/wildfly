@@ -30,7 +30,7 @@ public class FilterSpecClassResolverFilterUnitTestCase {
     private static final String[] DEFAULT_SPECS = DEFAULT_FILTER_SPEC.split(";");
 
     @Test
-    public void testBlackListSanity() {
+    public void testBlockListSanity() {
         // It's fine to change this list if we change what we want.
         // This test is just a guard against unintended modification
         final String sanityFilterSpec =
@@ -51,7 +51,7 @@ public class FilterSpecClassResolverFilterUnitTestCase {
     }
 
     @Test
-    public void testDefaultBlacklist() {
+    public void testDefaultBlocklist() {
         FilterSpecClassResolverFilter filter = new FilterSpecClassResolverFilter();
         for (String spec : DEFAULT_SPECS) {
             boolean negate = spec.startsWith("!");
@@ -64,7 +64,7 @@ public class FilterSpecClassResolverFilterUnitTestCase {
     }
 
     @Test
-    public void testDefaultBlacklistDisabled() {
+    public void testDefaultBlocklistDisabled() {
         String currentFlag = System.getProperty("jboss.ejb.unmarshalling.filter.disabled");
         try {
             System.setProperty("jboss.ejb.unmarshalling.filter.disabled", "true");
@@ -83,14 +83,14 @@ public class FilterSpecClassResolverFilterUnitTestCase {
     }
 
     @Test
-    public void testBasicWhitelist() {
+    public void testBasicAllowlist() {
         FilterSpecClassResolverFilter filter = new FilterSpecClassResolverFilter("java.lang.String");
         Assert.assertTrue(filter.apply("java.lang.String"));
         Assert.assertFalse(filter.apply("java.lang.Integer"));
     }
 
     @Test
-    public void testWhitelistAllowsEjbClient() {
+    public void testAllowlistAllowsEjbClient() {
         FilterSpecClassResolverFilter filter = new FilterSpecClassResolverFilter("java.lang.String");
         Assert.assertTrue(filter.apply("org.jboss.ejb.client.SessionId"));
         Assert.assertTrue(filter.apply("org.jboss.ejb.client.Foo"));
@@ -117,7 +117,7 @@ public class FilterSpecClassResolverFilterUnitTestCase {
     }
 
     @Test
-    public void testPackageWhitelist() {
+    public void testPackageAllowlist() {
         FilterSpecClassResolverFilter filter = new FilterSpecClassResolverFilter("foo.bar.*");
         Assert.assertTrue(filter.apply("foo.bar.FooBar"));
         Assert.assertTrue(filter.apply("foo.bar.Baz"));
@@ -127,7 +127,7 @@ public class FilterSpecClassResolverFilterUnitTestCase {
     }
 
     @Test
-    public void testPackageBlacklist() {
+    public void testPackageBlocklist() {
         FilterSpecClassResolverFilter filter = new FilterSpecClassResolverFilter("!foo.bar.*");
         Assert.assertFalse(filter.apply("foo.bar.FooBar"));
         Assert.assertFalse(filter.apply("foo.bar.Baz"));
@@ -137,7 +137,7 @@ public class FilterSpecClassResolverFilterUnitTestCase {
     }
 
     @Test
-    public void testPackageHierarchyWhitelist() {
+    public void testPackageHierarchyAllowlist() {
         FilterSpecClassResolverFilter filter = new FilterSpecClassResolverFilter("foo.bar.**");
         Assert.assertTrue(filter.apply("foo.bar.FooBar"));
         Assert.assertTrue(filter.apply("foo.bar.Baz"));
@@ -147,7 +147,7 @@ public class FilterSpecClassResolverFilterUnitTestCase {
     }
 
     @Test
-    public void testPackageHierarchyBlacklist() {
+    public void testPackageHierarchyBlocklist() {
         FilterSpecClassResolverFilter filter = new FilterSpecClassResolverFilter("!foo.bar.**");
         Assert.assertFalse(filter.apply("foo.bar.FooBar"));
         Assert.assertFalse(filter.apply("foo.bar.Baz"));
@@ -157,7 +157,7 @@ public class FilterSpecClassResolverFilterUnitTestCase {
     }
 
     @Test
-    public void testEndsWithWhitelist() {
+    public void testEndsWithAllowlist() {
         FilterSpecClassResolverFilter filter = new FilterSpecClassResolverFilter("foo.bar*");
         Assert.assertTrue(filter.apply("foo.bar.FooBar"));
         Assert.assertTrue(filter.apply("foo.bar.Baz"));
@@ -168,7 +168,7 @@ public class FilterSpecClassResolverFilterUnitTestCase {
     }
 
     @Test
-    public void testEndsWithBlacklist() {
+    public void testEndsWithBlocklist() {
         FilterSpecClassResolverFilter filter = new FilterSpecClassResolverFilter("!foo.bar*");
         Assert.assertFalse(filter.apply("foo.bar.FooBar"));
         Assert.assertFalse(filter.apply("foo.bar.Baz"));
@@ -179,7 +179,7 @@ public class FilterSpecClassResolverFilterUnitTestCase {
     }
 
     @Test
-    public void testGlobalWhitelist() {
+    public void testGlobalAllowlist() {
         FilterSpecClassResolverFilter filter = new FilterSpecClassResolverFilter("*");
 
         for (String spec : DEFAULT_SPECS) {
@@ -205,7 +205,7 @@ public class FilterSpecClassResolverFilterUnitTestCase {
     }
 
     @Test
-    public void testGlobalBlacklist() {
+    public void testGlobalBlocklist() {
         FilterSpecClassResolverFilter filter = new FilterSpecClassResolverFilter("!*");
 
         for (String spec : DEFAULT_SPECS) {
@@ -218,7 +218,7 @@ public class FilterSpecClassResolverFilterUnitTestCase {
     }
 
     @Test
-    public void testWhiteListExceptions() {
+    public void testAllowlistExceptions() {
         exceptionTest("!foo.bar.Baz;foo.bar.*");
         exceptionTest("foo.bar.*;!foo.bar.Baz");
         exceptionTest("!foo.bar.Baz;foo.bar.**");
@@ -227,7 +227,7 @@ public class FilterSpecClassResolverFilterUnitTestCase {
         exceptionTest("foo.bar*;!foo.bar.Baz");
         exceptionTest("!foo.bar.Baz;foo.bar.FooBar");
         exceptionTest("foo.bar.FooBar;!foo.bar.Baz");
-        // Negation overrules even exact whitelisting
+        // Negation overrules even exact allowlisting
         FilterSpecClassResolverFilter filter = new FilterSpecClassResolverFilter("!foo.bar.Baz;foo.bar.Baz");
         Assert.assertFalse(filter.apply("foo.bar.Baz"));
     }

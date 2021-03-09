@@ -55,27 +55,27 @@ public class UnmarshallingFilterTestCase extends AbstactUnmarshallingFilterTestC
     }
 
     @Test
-    public void testRemotingBlacklist() throws NamingException {
-        testBlacklist(false);
+    public void testRemotingBlocklist() throws NamingException {
+        testBlocklist(false);
     }
 
     @Test
-    public void testHttpBlacklist() throws NamingException {
-        testBlacklist(true);
+    public void testHttpBlocklist() throws NamingException {
+        testBlocklist(true);
     }
 
-    private void testBlacklist(boolean http) throws NamingException {
+    private void testBlocklist(boolean http) throws NamingException {
         HelloRemote bean = lookup(HelloBean.class.getSimpleName(), HelloRemote.class, http);
-        Serializable blacklisted = getTemplatesImpl();
+        Serializable blocklisted = getTemplatesImpl();
         try {
-            Response response = bean.sayHello(new Request(blacklisted));
+            Response response = bean.sayHello(new Request(blocklisted));
             Assert.fail(response.getGreeting());
         } catch (EJBException good) {
             //
         }
         try {
             HashSet<Serializable> set = new HashSet<>();
-            set.add(blacklisted);
+            set.add(blocklisted);
             Response response = bean.sayHello(new Request(set));
             Assert.fail(response.getGreeting());
         } catch (EJBException good) {
