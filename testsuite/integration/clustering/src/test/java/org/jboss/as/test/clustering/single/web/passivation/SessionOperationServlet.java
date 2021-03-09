@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.cluster.web.passivation;
+package org.jboss.as.test.clustering.single.web.passivation;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -47,25 +47,15 @@ public class SessionOperationServlet extends HttpServlet {
     private static final String SERVLET_NAME = "listener";
     static final String SERVLET_PATH = "/" + SERVLET_NAME;
     private static final String OPERATION = "operation";
-    private static final String INVALIDATE = "invalidate";
     private static final String GET = "get";
     private static final String SET = "set";
-    private static final String REMOVE = "remove";
-    private static final String TIMEOUT = "timeout";
     private static final String NAME = "name";
     private static final String VALUE = "value";
     public static final String RESULT = "result";
     public static final String SESSION_ID = "jsessionid";
 
     public static URI createGetURI(URL baseURL, String name) throws URISyntaxException {
-        return createGetURI(baseURL, name, null);
-    }
-
-    public static URI createGetURI(URL baseURL, String name, String value) throws URISyntaxException {
         StringBuilder builder = appendParameter(buildURI(GET), NAME, name);
-        if (value != null) {
-            appendParameter(builder, VALUE, value);
-        }
         return baseURL.toURI().resolve(builder.toString());
     }
 
@@ -77,18 +67,6 @@ public class SessionOperationServlet extends HttpServlet {
         return baseURL.toURI().resolve(builder.toString());
     }
 
-    public static URI createRemoveURI(URL baseURL, String name) throws URISyntaxException {
-        return baseURL.toURI().resolve(appendParameter(buildURI(REMOVE), NAME, name).toString());
-    }
-
-    public static URI createInvalidateURI(URL baseURL) throws URISyntaxException {
-        return baseURL.toURI().resolve(buildURI(INVALIDATE).toString());
-    }
-
-    public static URI createTimeoutURI(URL baseURL, int timeout) throws URISyntaxException {
-        return baseURL.toURI().resolve(appendParameter(buildURI(TIMEOUT), TIMEOUT, Integer.toString(timeout)).toString());
-    }
-
     private static StringBuilder buildURI(String operation) {
         return new StringBuilder(SERVLET_NAME).append('?').append(OPERATION).append('=').append(operation);
     }
@@ -97,26 +75,18 @@ public class SessionOperationServlet extends HttpServlet {
         return builder.append('&').append(parameter).append('=').append(value);
     }
 
+    static final BlockingQueue<Map.Entry<String, EventType>> EVENTS = new LinkedBlockingQueue<>();
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
         String operation = getRequiredParameter(req, OPERATION);
         HttpSession session = req.getSession(true);
         resp.addHeader(SESSION_ID, session.getId());
-        //System.out.println(String.format("%s?%s;jsessionid=%s", req.getRequestURL(), req.getQueryString(), session.getId()));
         switch (operation) {
             case SET: {
                 String name = getRequiredParameter(req, NAME);
                 String value = req.getParameter(VALUE);
                 session.setAttribute(name, (value != null) ? new SessionAttributeValue(value) : null);
-                break;
-            }
-            case REMOVE: {
-                String name = getRequiredParameter(req, NAME);
-                session.removeAttribute(name);
-                break;
-            }
-            case INVALIDATE: {
-                session.invalidate();
                 break;
             }
             case GET: {
@@ -127,21 +97,14 @@ public class SessionOperationServlet extends HttpServlet {
                 }
                 break;
             }
-            case TIMEOUT: {
-                String timeout = getRequiredParameter(req, TIMEOUT);
-                session.setMaxInactiveInterval(Integer.parseInt(timeout));
-                break;
-            }
             default: {
                 throw new ServletException("Unrecognized operation: " + operation);
             }
         }
 
         List<Map.Entry<String, EventType>> events = new LinkedList<>();
-        if (SessionAttributeValue.events.drainTo(events) > 0) {
-            events.forEach((Map.Entry<String, EventType> entry) -> {
-                resp.addHeader(entry.getKey(), entry.getValue().name());
-            });
+        if (EVENTS.drainTo(events) > 0) {
+            events.forEach(entry -> resp.addHeader(entry.getKey(), entry.getValue().name()));
         }
     }
 
@@ -159,7 +122,6 @@ public class SessionOperationServlet extends HttpServlet {
 
     public static class SessionAttributeValue implements Serializable, HttpSessionActivationListener {
         private static final long serialVersionUID = -8824497321979784527L;
-        static BlockingQueue<Map.Entry<String, EventType>> events = new LinkedBlockingQueue<>();
 
         private final String value;
 
@@ -173,12 +135,12 @@ public class SessionOperationServlet extends HttpServlet {
 
         @Override
         public void sessionWillPassivate(HttpSessionEvent event) {
-            events.add(new SimpleImmutableEntry<>(event.getSession().getId(), EventType.PASSIVATION));
+            EVENTS.add(new SimpleImmutableEntry<>(event.getSession().getId(), EventType.PASSIVATION));
         }
 
         @Override
         public void sessionDidActivate(HttpSessionEvent event) {
-            events.add(new SimpleImmutableEntry<>(event.getSession().getId(), EventType.ACTIVATION));
+            EVENTS.add(new SimpleImmutableEntry<>(event.getSession().getId(), EventType.ACTIVATION));
         }
     }
 }
