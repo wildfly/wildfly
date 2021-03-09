@@ -141,8 +141,8 @@ because a `pooled-connection-factory` is not suitable for remote
 clients.
 
 Since Jakarta Messaging 2.0, a default Jakarta Messaging connection factory is accessible to Jakarta EE
-application under the JNDI name `java:comp/DefaultJMSConnectionFactory.`
-WildFly messaging subsystem defines a `pooled-connection-factory` that
+applications under the JNDI name `java:comp/DefaultJMSConnectionFactory.`
+The WildFly messaging subsystem defines a `pooled-connection-factory` that
 is used to provide this default connection factory. Any parameter change
 on this `pooled-connection-factory` will be take into account by any EE
 application looking the default Jakarta Messaging provider under the JNDI name
@@ -404,7 +404,7 @@ The function of a Jakarta Messaging bridge is to consume messages from a source 
 destination, and send them to a target Jakarta Messaging destination. Typically either
 the source or the target destinations are on different servers.
 The bridge can also be used to bridge messages from other non Artemis
-JMS servers, as long as they are JMS 1.1 compliant.
+messaging servers, as long as they are JMS 1.1 compliant.
 
 The Jakarta Messaging Bridge is provided by the Artemis project. For a detailed
 description of the available configuration properties, please consult
@@ -467,7 +467,7 @@ We define the module in `module.xml`:
  
  
     <dependencies>
-       <!-- add the dependencies required by JMS Bridge code                -->
+       <!-- add the dependencies required by messaging Bridge code                -->
        <module name="javax.api" />
        <module name="javax.jms.api" />
        <module name="javax.transaction.api"/>
@@ -566,7 +566,7 @@ CLI:
         ],
         "outcome" => "success",
         "result" => {
-            "description" => "A JMS bridge instance.",
+            "description" => "A Jakarta Messaging bridge instance.",
             "attributes" => {
                 ...
         }
@@ -712,7 +712,7 @@ ATTACHMENT a69b87f3-ffeb-4596-be51-d73ebdc48b66:
 
 include::Messaging_Connect_a_pooled-connection-factory_to_a_Remote_Artemis_Server.adoc[]
 
-include::Messaging_Backward_&_Forward_Compatibility.adoc[]
+include::Messaging_Backward_and_Forward_Compatibility.adoc[]
 
 include::Mesaging_AIO_-_NIO_for_messaging_journal.adoc[]
 

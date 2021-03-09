@@ -8,7 +8,7 @@ Coming Soon
 This guide is still under development, check back soon!
 
 [[configure-jbossas-for-messaging]]
-== Configure JBossAS for Messaging
+== Configure WildFly for Messaging
 
 Currently, the default configuration does not include the Jakarta Messaging subsystem.
 To enable Jakarta Messaging in the standalone server you need to add these
@@ -114,11 +114,11 @@ configuration items to standalone.xml or simply use standalone-full.xml.
 <socket-binding name="messaging-throughput" port="5455"/>
 ----
 
-Alternatively run the server using the preview configuration
+Alternatively run the server using the 'full' or 'full-ha' configuration
 
 [source,java,options="nowrap"]
 ----
-$ bin/standalone.sh --server-config=standalone-preview.xml
+$ bin/standalone.sh --server-config=standalone-full.xml
 ----
 
 [[adding-the-message-destinations]]
@@ -134,7 +134,7 @@ Interface (CLI)
 
 [source,java,options="nowrap"]
 ----
-$ bin/jboss-admin.sh --connect
+$ bin/jboss-cli.sh --connect
 Connected to standalone controller at localhost:9999
 [standalone@localhost:9999 /] jms-queue add --queue-address=BidQueue --entries=queue/bid
 [standalone@localhost:9999 /] jms-topic add --topic-address=AuctionTopic --entries=topic/auction
