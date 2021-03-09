@@ -32,6 +32,11 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * @param <V> the marshalled value type
  * @author Paul Ferraro
  */
-public interface SessionAttributesFactory<C, V> extends ImmutableSessionAttributesFactory<V>, Creator<String, V, Void>, Remover<String> {
+public interface SessionAttributesFactory<C, V> extends ImmutableSessionAttributesFactory<V>, Creator<String, V, Void>, Remover<String>, AutoCloseable {
     SessionAttributes createSessionAttributes(String id, V value, ImmutableSessionMetaData metaData, C context);
+
+    @Override
+    default void close() {
+        // Nothing to close
+    }
 }
