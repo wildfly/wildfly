@@ -111,6 +111,14 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
 
         ResourceTransformationDescriptionBuilder bridge = server.addChildResource(MessagingExtension.BRIDGE_PATH);
         rejectDefinedAttributeWithDefaultValue(bridge, BridgeDefinition.CALL_TIMEOUT);
+        bridge.getAttributeBuilder()
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE)
+                .end();
+
+        ResourceTransformationDescriptionBuilder clusterConnection = server.addChildResource(MessagingExtension.CLUSTER_CONNECTION_PATH);
+        clusterConnection.getAttributeBuilder()
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE)
+                .end();
     }
 
     private static void registerTransformers_WF_22(ResourceTransformationDescriptionBuilder subsystem) {
