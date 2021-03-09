@@ -393,3 +393,5 @@ public class FooInterceptor implements EJBClientInterceptor {
     }
 }
 ----
+
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

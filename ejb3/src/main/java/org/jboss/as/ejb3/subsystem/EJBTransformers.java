@@ -78,7 +78,7 @@ import org.jboss.as.threads.PoolAttributeDefinitions;
 import org.jboss.dmr.ModelNode;
 
 /**
- * EJB Transformers used to transform current model version to legacy model versions for domain mode.
+ * Jakarta Enterprise Beans Transformers used to transform current model version to legacy model versions for domain mode.
  *
  * @author Tomaz Cerar (c) 2017 Red Hat Inc.
  * @author Richard Achmatowicz (c) 2020 Red Hat Inc.

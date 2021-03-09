@@ -47,7 +47,7 @@ public class InterceptorOrder {
         // WS handlers, user and Jakarta Contexts and Dependency Injection Interceptors plus the bean method are considered user execution time
         public static final int EJB_EXECUTION_TIME_INTERCEPTOR = 0x850;
         // JSR 109 - Version 1.3 - 6.2.2.4 Security
-        // For EJB based service implementations, Handlers run after method level authorization has occurred.
+        // For Jakarta Enterprise Beans based service implementations, Handlers run after method level authorization has occurred.
         // JSR 109 - Version 1.3 - 6.2.2.5 Transaction
         // Handlers run under the transaction context of the component they are associated with.
         public static final int WS_HANDLERS_INTERCEPTOR = 0x900;

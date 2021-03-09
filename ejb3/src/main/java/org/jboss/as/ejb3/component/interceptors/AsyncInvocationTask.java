@@ -33,7 +33,7 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.wildfly.common.Assert;
 
 /**
- * runnable used to invoke local ejb async methods
+ * runnable used to invoke local Jakarta Enterprise Beans async methods
  *
 * @author Stuart Douglas
 */

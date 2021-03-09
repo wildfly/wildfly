@@ -79,7 +79,7 @@ by setting the annotation's value to `false`. Similarly, a custom operation name
 Note that Jakarta Contexts and Dependency Injection support for the deployment is required in order to activate the MicroProfile OpenTracing support. A simple
 Jakarta RESTful Web Services application with no Jakarta Contexts and Dependency Injection support will *not* be traced.
 
-Managed beans with multiple facets, such as EJBs, can also be traced by annotating them with `@Traced`, but with
+Managed beans with multiple facets, such as Jakarta Enterprise Beans, can also be traced by annotating them with `@Traced`, but with
 limitations. For instance, asynchronous invocations will yield a new trace, instead of having the span to join an
 existing trace.
 

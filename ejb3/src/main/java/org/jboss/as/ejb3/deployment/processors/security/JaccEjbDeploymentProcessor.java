@@ -71,7 +71,7 @@ public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
         JaccService<?> service = deployer.deploy(deploymentUnit);
         if (service != null) {
             final DeploymentUnit parentDU = deploymentUnit.getParent();
-            // EJBs maybe included directly in war deployment
+            // Jakarta Enterprise Beans maybe included directly in war deployment
             ServiceName jaccServiceName = getJaccServiceName(deploymentUnit);
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
             ServiceBuilder<?> builder = serviceTarget.addService(jaccServiceName, service);
@@ -103,7 +103,7 @@ public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
         deployer = new EjbSecurityDeployer();
         deployer.undeploy(deploymentUnit);
 
-        // EJBs maybe included directly in war deployment
+        // Jakarta Enterprise Beans maybe included directly in war deployment
         ServiceName jaccServiceName = getJaccServiceName(deploymentUnit);
         ServiceRegistry registry = deploymentUnit.getServiceRegistry();
         if(registry != null){
@@ -116,7 +116,7 @@ public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
 
     private ServiceName getJaccServiceName(DeploymentUnit deploymentUnit){
         final DeploymentUnit parentDU = deploymentUnit.getParent();
-        // EJBs maybe included directly in war deployment
+        // Jakarta Enterprise Beans maybe included directly in war deployment
         ServiceName jaccServiceName = deploymentUnit.getServiceName().append(JaccService.SERVICE_NAME).append("ejb");
         //Qualify the service name properly with parent DU
         if(parentDU != null) {

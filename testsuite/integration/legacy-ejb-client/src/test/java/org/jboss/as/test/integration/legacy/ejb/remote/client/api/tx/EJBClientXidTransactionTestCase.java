@@ -63,7 +63,7 @@ public class EJBClientXidTransactionTestCase {
     private static TransactionSynchronizationRegistry txSyncRegistry;
 
     /**
-     * Creates an EJB deployment
+     * Creates an Jakarta Enterprise Beans deployment
      *
      * @return
      */
@@ -93,7 +93,7 @@ public class EJBClientXidTransactionTestCase {
     }
 
     /**
-     * Create and setup the EJB client context backed by the remoting receiver
+     * Create and setup the Jakarta Enterprise Beans client context backed by the remoting receiver
      *
      * @throws Exception
      */

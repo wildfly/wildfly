@@ -47,7 +47,7 @@ authentication configuration to use during authentication.
 You can use one of the following approaches to use security information
 when establishing a client connection.
 
-*IMPORTANT*: When using Elytron Client to make EJB calls, any hard-coded
+*IMPORTANT*: When using Elytron Client to make Jakarta Enterprise Beans calls, any hard-coded
 programatic authentication information, such as setting
 _Context.SECURITY_PRINCIPAL_ in the _javax.naming.InitialContext_, will
 override the Elytron Client configuration.

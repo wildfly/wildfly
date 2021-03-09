@@ -66,9 +66,9 @@ up in JNDI or injected.
 `user` and `password` attributes. This is useful if the remote server to
 which it is pointing is secured.
 * Resources acquired from it will be automatically enlisted any on-going
-Jakarta Transactions. If you want to send a message from an EJB using CMT
+Jakarta Transactions. If you want to send a message from an Jakarta Enterprise Beans using CMT
 then this is likely the connection factory you want to use so the send
-operation will be atomically committed along with the rest of the EJB's
+operation will be atomically committed along with the rest of the Jakarta Enterprise Beans's
 transaction operations.
 
 To be clear, the _inbound connector_ of the Artemis Jakarta Connectors RA (which is for

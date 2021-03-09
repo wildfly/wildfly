@@ -75,7 +75,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        // Only process EJB deployments
+        // Only process Jakarta Enterprise Beans deployments
         if (!EjbDeploymentMarker.isEjbDeployment(deploymentUnit)) {
             return;
         }
@@ -85,7 +85,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         Map<String, SessionBeanComponentDescription> sessionBeanComponentDescriptions = new HashMap<>();
         if (componentDescriptions != null) {
             for (ComponentDescription componentDescription : componentDescriptions) {
-                // process only EJB session beans
+                // process only Jakarta Enterprise Beans session beans
                 if (componentDescription instanceof SessionBeanComponentDescription) {
                     SessionBeanComponentDescription sessionBeanComponentDescription = (SessionBeanComponentDescription) componentDescription;
                     String ejbClassName = sessionBeanComponentDescription.getEJBClassName();
@@ -119,7 +119,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             return;
         }
 
-        // In case of EJB bindings, appname == .ear file name/application-name set in the application.xml (if it's an .ear deployment)
+        // In case of Jakarta Enterprise Beans bindings, appname == .ear file name/application-name set in the application.xml (if it's an .ear deployment)
         // NOTE: Do NOT use the app name from the EEModuleDescription.getApplicationName() because the Jakarta EE spec has a different and conflicting meaning for app name
         // (where app name == module name in the absence of a .ear). Use EEModuleDescription.getEarApplicationName() instead
         final String applicationName = sessionBean.getModuleDescription().getEarApplicationName();
@@ -176,7 +176,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
                 logBinding(jndiBindingsLogMessage, remoteJNDIName);
             }
 
-            // log EJB's ejb:/ namespace binding
+            // log Jakarta Enterprise Beans's ejb:/ namespace binding
             final String ejbNamespaceBindingName =  sessionBean.isStateful() ? ejbNamespaceBindingBaseName + "!" + viewClassName + "?stateful" : ejbNamespaceBindingBaseName + "!" + viewClassName;
 
             if(!isEjbNamespaceBindingBaseName){
@@ -186,7 +186,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
 
         }
 
-        // EJB3.1 spec, section 4.4.1 Global JNDI Access states:
+        //  Enterprise Beans 3.1 spec, section 4.4.1 Global JNDI Access states:
         // In addition to the previous requirements, if the bean exposes only one of the
         // applicable client interfaces(or alternatively has only a no-interface view), the container
         // registers an entry for that view with the following syntax :

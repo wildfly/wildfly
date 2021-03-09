@@ -498,3 +498,5 @@ public void invokeOnBean() {
 
 That's it! The above code will invoke on the bean deployed on the
 "Destination Server" and return the result.
+
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

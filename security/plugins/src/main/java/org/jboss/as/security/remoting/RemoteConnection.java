@@ -27,7 +27,7 @@ import javax.net.ssl.SSLSession;
 import org.wildfly.security.auth.server.SecurityIdentity;
 
 /**
- * Represents a remote connection to the application server, either via remoting or via EJB over HTTP
+ * Represents a remote connection to the application server, either via remoting or via Jakarta Enterprise Beans over HTTP
  *
  * @author Stuart Douglas
  */

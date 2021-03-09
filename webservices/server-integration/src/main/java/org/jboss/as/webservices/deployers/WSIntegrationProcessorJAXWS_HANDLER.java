@@ -149,7 +149,7 @@ public final class WSIntegrationProcessorJAXWS_HANDLER extends AbstractIntegrati
     private static void propagateNamingContext(final ComponentDescription jaxwsHandlerDescription, final EJBEndpoint ejbEndpoint) {
         final ServiceName ejbContextServiceName = ejbEndpoint.getContextServiceName();
         final DeploymentDescriptorEnvironment ejbEnv = ejbEndpoint.getDeploymentDescriptorEnvironment();
-        // configure JAXWS EJB3 handler to be able to see EJB3 environment
+        // configure Jakarta XML Web Services Enterprise Beans 3 handler to be able to see Enterprise Beans 3 environment
         jaxwsHandlerDescription.setContextServiceName(ejbContextServiceName);
         jaxwsHandlerDescription.setDeploymentDescriptorEnvironment(ejbEnv);
         jaxwsHandlerDescription.addDependency(ejbContextServiceName);

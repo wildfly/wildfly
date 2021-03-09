@@ -581,8 +581,8 @@ public class ComponentDescription implements ResourceInjectionTarget {
      *
      * For most components this is not necessary.
      *
-     * Also not that even though EJB's are intercepted, their interceptor is done through
-     * a different method that integrates with the existing EJB interceptor chain
+     * Also not that even though Jakarta Enterprise Beans's are intercepted, their interceptor is done through
+     * a different method that integrates with the existing Jakarta Enterprise Beans interceptor chain
      *
      */
     public boolean isCDIInterceptorEnabled() {

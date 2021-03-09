@@ -57,12 +57,12 @@ public class ApplicationExceptions {
         if (applicationException == null) {
             throw EjbLogger.ROOT_LOGGER.paramCannotBeNull("ApplicationException");
         }
-        // EJB 3.1 spec, section 14.1.1
+        // Enterprise Beans 3.1 spec, section 14.1.1
         // application exception *must* be of type Exception
         if (!Exception.class.isAssignableFrom(exceptionClass)) {
             throw EjbLogger.ROOT_LOGGER.cannotBeApplicationExceptionBecauseNotAnExceptionType(exceptionClass);
         }
-        // EJB 3.1 spec, section 14.1.1:
+        // Enterprise Beans 3.1 spec, section 14.1.1:
         // application exception *cannot* be of type java.rmi.RemoteException
         if (RemoteException.class.isAssignableFrom(exceptionClass)) {
             throw EjbLogger.ROOT_LOGGER.rmiRemoteExceptionCannotBeApplicationException(exceptionClass);

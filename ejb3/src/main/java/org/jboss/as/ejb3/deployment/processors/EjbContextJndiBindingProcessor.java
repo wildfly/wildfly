@@ -51,7 +51,7 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 
 /**
- * Deployment processor responsible for detecting EJB components and adding a {@link BindingConfiguration} for the
+ * Deployment processor responsible for detecting Jakarta Enterprise Beans components and adding a {@link BindingConfiguration} for the
  * java:comp/EJBContext entry.
  *
  * @author John Bailey
@@ -94,9 +94,9 @@ public class EjbContextJndiBindingProcessor implements DeploymentUnitProcessor {
 
     protected void processComponentConfig(final ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         if (!(componentDescription instanceof EJBComponentDescription)) {
-            return;  // Only process EJBs
+            return;  // Only process Jakarta Enterprise Beans
         }
-        // if the EJB is packaged in a .war, then we need to bind the java:comp/EJBContext only once for the entire module
+        // if the Jakarta Enterprise Beans are packaged in a .war, then we need to bind the java:comp/EJBContext only once for the entire module
         if (componentDescription.getNamingMode() != ComponentNamingMode.CREATE) {
             // get the module description
             final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
@@ -106,7 +106,7 @@ public class EjbContextJndiBindingProcessor implements DeploymentUnitProcessor {
             // a web ENC. So binding to java:module/EJBContext is OK.
             final BindingConfiguration ejbContextBinding = new BindingConfiguration("java:module/EJBContext", directEjbContextReferenceSource);
             moduleDescription.getBindingConfigurations().add(ejbContextBinding);
-        } else { // EJB packaged outside of a .war. So process normally.
+        } else { // Jakarta Enterprise Beans packaged outside of a .war. So process normally.
             // add the binding configuration to the component description
             final BindingConfiguration ejbContextBinding = new BindingConfiguration("java:comp/EJBContext", directEjbContextReferenceSource);
             componentDescription.getBindingConfigurations().add(ejbContextBinding);

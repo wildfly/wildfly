@@ -185,7 +185,7 @@ public class LastNodeToLeaveRemoteEJBTestCase extends AbstractClusteringTestCase
                 LOGGER.debugf("%s *** Starting test thread %s%s", Thread.currentThread().getName());
                 EJBClientContext oldContext = null;
                 try {
-                    // install the correct EJB client context
+                    // install the correct Jakarta Enterprise Beans client context
                     oldContext = EJBClientContext.getContextManager().getGlobalDefault();
                     EJBClientContext newContext = createModifiedEJBClientContext(oldContext);
                     EJBClientContext.getContextManager().setThreadDefault(newContext);

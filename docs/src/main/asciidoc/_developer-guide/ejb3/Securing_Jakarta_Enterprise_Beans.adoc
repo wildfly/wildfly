@@ -1,8 +1,8 @@
-[[Securing_EJBs]]
-= Securing EJBs
+[[Securing_Jakarta_Enterprise_Beans]]
+= Securing Jakarta Enterprise Beans
 
 The Jakarta EE spec specifies certain annotations (like @RolesAllowed,
-@PermitAll, @DenyAll) which can be used on EJB implementation classes
+@PermitAll, @DenyAll) which can be used on Jakarta Enterprise Beans implementation classes
 and/or the business method implementations of the beans. Like with all
 other configurations, these security related configurations can also be
 done via the deployment descriptor (ejb-jar.xml). We _won't_ be going
@@ -35,8 +35,8 @@ import javax.ejb.Stateless;
 
 The use of @SecurityDomain annotation lets the developer to point the
 container to the name of the security domain which is configured in the
-EJB3 subsystem in the standalone/domain configuration. The configuration
-of the security domain in the EJB3 subsystem is out of the scope of this
+Jakarta Enterprise Beans 3 subsystem in the standalone/domain configuration. The configuration
+of the security domain in the Jakarta Enterprise Beans 3 subsystem is out of the scope of this
 chapter.
 
 An alternate way of configuring a security domain, instead of using
@@ -172,8 +172,8 @@ configurations, on secured beans. Setting this to false allows access to
 such methods for all users i.e. the behaviour will be switched to be
 similar to `@PermitAll`.
 
-This behaviour can also be configured at the EJB3 subsystem level so
-that it applies to all EJB3 deployments on the server, as follows:
+This behaviour can also be configured at the Jakarta Enterprise Beans 3 subsystem level so
+that it applies to all Jakarta Enterprise Beans 3 deployments on the server, as follows:
 
 [source,xml,options="nowrap"]
 ----

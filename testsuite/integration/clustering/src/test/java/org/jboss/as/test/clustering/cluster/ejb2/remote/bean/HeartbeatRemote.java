@@ -4,7 +4,7 @@ import javax.ejb.EJBObject;
 import java.util.Date;
 
 /**
- * The remote / business interface for the Heartbeat EJB 2.x bean
+ * The remote / business interface for the Heartbeat Enterprise Beans 2.x bean
  *
  * @author Richard Achmatowicz
  */

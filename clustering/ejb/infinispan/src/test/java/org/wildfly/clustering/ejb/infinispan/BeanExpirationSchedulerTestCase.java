@@ -51,7 +51,7 @@ public class BeanExpirationSchedulerTestCase {
 
         when(group.isSingleton()).thenReturn(true);
 
-        // Fun fact: the EJB specification allows a timeout value of 0, so only negative timeouts are treated as immortal
+        // Fun fact: the Jakarta Enterprise Beans specification allows a timeout value of 0, so only negative timeouts are treated as immortal
         when(config.getTimeout()).thenReturn(Duration.ofMinutes(-1L));
         when(config.getRemoveListener()).thenReturn(listener);
         when(entry.getLastAccessedTime()).thenReturn(Instant.now());

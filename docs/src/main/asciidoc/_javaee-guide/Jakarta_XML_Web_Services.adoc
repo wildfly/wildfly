@@ -383,3 +383,5 @@ stub
    </service>
 </definitions>
 ----
+
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

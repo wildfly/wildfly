@@ -52,7 +52,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.security.auth.client.AuthenticationContext;
 
 /**
- * The EJB client context service.
+ * The Jakarta Enterprise Beans client context service.
  *
  * @author Stuart Douglas
  * @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
@@ -100,7 +100,7 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
         final EJBClientContext.Builder builder = new EJBClientContext.Builder();
 
 
-        // apply subsystem-level configuration that applies to all EJB client contexts
+        // apply subsystem-level configuration that applies to all Jakarta Enterprise Beans client contexts
         configuratorServiceInjector.getValue().accept(builder);
 
         builder.setInvocationTimeout(invocationTimeout);

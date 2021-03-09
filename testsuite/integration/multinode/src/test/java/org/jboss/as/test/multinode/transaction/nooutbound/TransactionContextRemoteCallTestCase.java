@@ -46,7 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * A simple EJB Remoting transaction context propagation.
+ * A simple Jakarta Enterprise Beans Remoting transaction context propagation.
  */
 @RunWith(Arquillian.class)
 public class TransactionContextRemoteCallTestCase {

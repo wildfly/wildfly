@@ -21,7 +21,7 @@ capabilities people associate with an application server are provided
 via extensions and their subsystems. The WildFly distribution includes
 many extensions and subsystems; the webserver integration is via a
 subsystem; the transaction manager integration is via a subsystem, the
-EJB container integration is via a subsystem, etc.
+Jakarta Enterprise Beans container integration is via a subsystem, etc.
 
 This document is divided into two main sections. The
 link:Extending_WildFly{outfilesuffix}#Example_subsystem[first] is focused on learning by doing. This

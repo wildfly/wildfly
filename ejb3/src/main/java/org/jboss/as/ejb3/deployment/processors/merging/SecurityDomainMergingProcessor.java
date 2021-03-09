@@ -64,7 +64,7 @@ public class SecurityDomainMergingProcessor extends AbstractMergingProcessor<EJB
         }
         if (!securityDomain.getClassLevelAnnotations().isEmpty()) {
             if (ROOT_LOGGER.isDebugEnabled()) {
-                ROOT_LOGGER.debug("EJB " + description.getEJBName() + " is part of security domain " + securityDomain.getClassLevelAnnotations().get(0));
+                ROOT_LOGGER.debug("Jakarta Enterprise Beans " + description.getEJBName() + " is part of security domain " + securityDomain.getClassLevelAnnotations().get(0));
             }
             description.setDefinedSecurityDomain(securityDomain.getClassLevelAnnotations().get(0));
         }

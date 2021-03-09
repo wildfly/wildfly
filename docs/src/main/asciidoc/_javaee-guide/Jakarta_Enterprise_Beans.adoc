@@ -1,5 +1,5 @@
-[[Enterprise_JavaBeans_Technology_(EJB)]]
-= Enterprise JavaBeans Technology (EJB)
+[[Jakarta_Enterprise_Beans]]
+= Jakarta Enterprise Beans
 
 In this section we'll look at the two main types of beans (Session Beans
 and Message Driven Beans), the methods to access and the packaging

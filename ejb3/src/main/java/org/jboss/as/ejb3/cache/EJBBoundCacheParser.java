@@ -30,7 +30,7 @@ import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * Parser for <code>urn:ejb-cache</code> namespace. The <code>urn:ejb-cache</code> namespace elements
- * can be used to configure cache names for EJBs.
+ * can be used to configure cache names for Jakarta Enterprise Beans.
  *
  * @author Jaikiran Pai
  * @author Stuart Douglas

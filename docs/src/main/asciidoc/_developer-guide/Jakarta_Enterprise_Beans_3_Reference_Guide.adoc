@@ -1,5 +1,5 @@
-[[EJB3_Reference_Guide]]
-= EJB 3 Reference Guide
+[[Jakarta_Enterprise_Beans_3_Reference_Guide]]
+= Jakarta Enterprise Beans 3 Reference Guide
 
 This chapter details the extensions that are available when developing
 Enterprise Java Beans ^tm^ on WildFly {wildflyVersion}.
@@ -57,18 +57,18 @@ For example:
 @RunAsPrincipal("MyBean")
 ----
 
-[[security-domain-ejb3-ref]]
+[[security-domain-Jakarta-Enterprise-Beans-3-ref]]
 == Security Domain
 
 Each Enterprise Java Bean ^tm^ can be associated with a security domain.
-Only when an EJB is associated with a security domain will
+Only when an Jakarta Enterprise Beans are associated with a security domain will
 authentication and authorization be enforced.
 
 [[specification-of-security-domain-using-metadata-annotations]]
 === Specification of Security Domain using Metadata Annotations
 
 The `SecurityDomain` annotation is used to specify the security domain
-to associate with the EJB.
+to associate with the Jakarta Enterprise Beans.
 
 The `value` of the annotation is the name of the security domain to be
 used.
@@ -254,22 +254,22 @@ fired only once like a recurring timer!
 
 include::ejb3/Container_interceptors.adoc[]
 
-include::ejb3/EJB3_Clustered_Database_Timers.adoc[]
+include::ejb3/Jakarta_Enterprise_Beans_3_Clustered_Database_Timers.adoc[]
 
-include::ejb3/EJB_IIOP_Guide.adoc[]
+include::ejb3/Jakarta_Enterprise_Beans_IIOP_Guide.adoc[]
 
-include::ejb3/EJB_over_HTTP.adoc[]
+include::ejb3/Jakarta_Enterprise_Beans_over_HTTP.adoc[]
 
 include::ejb3/jboss-ejb3.xml_Reference.adoc[]
 
 include::ejb3/Message_Driven_Beans_Controlled_Delivery.adoc[]
 
-include::ejb3/Securing_EJBs.adoc[]
+include::ejb3/Securing_Jakarta_Enterprise_Beans.adoc[]
 
-include::ejb3/EJB_Client_Interceptors.adoc[]
+include::ejb3/Jakarta_Enterprise_Beans_Client_Interceptors.adoc[]
 
-include::ejb3/EJB_on_Kubernetes.adoc[]
+include::ejb3/Jakarta_Enterprise_Beans_on_Kubernetes.adoc[]
 
-include::ejb3/EJB_Deployment_Runtime_Resources.adoc[]
+include::ejb3/Jakarta_Enterprise_Beans_Deployment_Runtime_Resources.adoc[]
 
 :leveloffset: -1

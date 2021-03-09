@@ -39,7 +39,7 @@ import org.jboss.msc.value.Value;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * Managed reference factory for remote EJB views that are bound to java: JNDI locations
+ * Managed reference factory for remote Jakarta Enterprise Beans views that are bound to java: JNDI locations
  *
  * @author Stuart Douglas
  * @author Eduardo Martins

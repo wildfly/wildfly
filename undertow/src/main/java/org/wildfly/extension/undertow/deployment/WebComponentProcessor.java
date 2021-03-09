@@ -110,7 +110,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
             ComponentDescription description = componentByClass.get(clazz);
             if (description != null) {
                 //for now just make sure it has a single view
-                //this will generally be a managed bean, but it could also be an EJB
+                //this will generally be a managed bean, but it could also be an Jakarta Enterprise Beans
                 //TODO: make sure the component is a managed bean
                 if (!(description.getViews().size() == 1)) {
                     throw UndertowLogger.ROOT_LOGGER.wrongComponentType(clazz);

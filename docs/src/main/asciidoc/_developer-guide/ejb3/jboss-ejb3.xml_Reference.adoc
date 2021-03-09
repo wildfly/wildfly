@@ -70,7 +70,7 @@ or to all beans in the deployment by using `*` as the `ejb-name`.
 ==== The security namespace urn:security
 
 This allows you to set the security domain and the run-as principal for
-an EJB.
+an Jakarta Enterprise Beans.
 
 [source,xml,options="nowrap"]
 ----
@@ -99,7 +99,7 @@ This allows you to set the resource adaptor for an MDB.
 
 The IIOP namespace is where IIOP settings are configured. As there are
 quite a large number of options these are covered in the
-<<EJB_IIOP_Guide,IIOP guide>>.
+<<Jakarta_Enterprise_Beans_IIOP_Guide,IIOP guide>>.
 
 [[the-pool-namespace-urnejb-pool1.0]]
 ==== The pool namespace urn:ejb-pool:1.0
@@ -135,5 +135,5 @@ defined in the server configuration (i.e. `standalone.xml` or
 ==== The clustering namespace urn:clustering:1.0
 
 This namespace is deprecated and as of WildFly {wildflyVersion} its use has no effect.
-The clustering behavior of EJBs is determined by the profile in use on
+The clustering behavior of Jakarta Enterprise Beans are determined by the profile in use on
 the server.

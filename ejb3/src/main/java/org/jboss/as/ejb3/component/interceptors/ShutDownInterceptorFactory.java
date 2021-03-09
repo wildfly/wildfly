@@ -31,7 +31,7 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
- * A per component interceptor that allows the EJB to shutdown gracefully.
+ * A per component interceptor that allows the Jakarta Enterprise Beans to shutdown gracefully.
  *
  * @author Stuart Douglas
  */
@@ -88,7 +88,7 @@ public class ShutDownInterceptorFactory implements InterceptorFactory {
     }
 
     /**
-     * Upon calling this method the EJB will be set to a shutdown state, and no further invocations will be allowed.
+     * Upon calling this method the Jakarta Enterprise Beans will be set to a shutdown state, and no further invocations will be allowed.
      * It will then wait for all active invocation to finish and then return.
      */
     public void shutdown() {

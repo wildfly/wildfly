@@ -37,7 +37,7 @@ import org.jboss.dmr.ModelType;
 import java.util.concurrent.ExecutorService;
 
 /**
- * A {@link org.jboss.as.controller.ResourceDefinition} for the EJB async service
+ * A {@link org.jboss.as.controller.ResourceDefinition} for the Jakarta Enterprise Beans async service
  * <p/>
  * @author Stuart Douglas
  */

@@ -37,9 +37,9 @@ import org.jboss.vfs.VirtualFile;
 
 /**
  * Processor that only runs for ear deployments where no application.xml is provided. It examines jars in the ear to determine
- * which are EJB sub-deployments.
+ * which are Jakarta Enterprise Beans sub-deployments.
  * <p/>
- * TODO: Move this to the EJB subsystem.
+ * TODO: Move this to the Jakarta Enterprise Beans subsystem.
  *
  * @author Stuart Douglas
  */
@@ -81,8 +81,8 @@ public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
                             !index.getAnnotations(STATELESS).isEmpty() ||
                             !index.getAnnotations(MESSAGE_DRIVEN).isEmpty() ||
                             !index.getAnnotations(SINGLETON).isEmpty()) {
-                        //this is an EJB deployment
-                        //TODO: we need to mark EJB sub deployments so the sub deployers know they are EJB deployments
+                        //this is an Jakarta Enterprise Beans deployment
+                        //TODO: we need to mark Jakarta Enterprise Beans sub deployments so the sub deployers know they are Jakarta Enterprise Beans deployments
                         SubDeploymentMarker.mark(resourceRoot);
                         ModuleRootMarker.mark(resourceRoot);
                     }

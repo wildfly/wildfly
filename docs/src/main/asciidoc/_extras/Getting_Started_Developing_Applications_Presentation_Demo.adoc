@@ -376,7 +376,7 @@ instance at runtime
 The login quickstart builds on the knowledge of CDI and Jakarta Server Faces we have got
 from numberguess. New stuff we will learn about is how to use Jakarta Persistence to
 store data in a database, how to use Jakarta Transactions to control transactions, and
-how to use EJB for declarative TX control.
+how to use Jakarta Enterprise Beans for declarative TX control.
 
 [[run-the-app-1]]
 === Run the app
@@ -403,7 +403,7 @@ auto-create tables - as you always have.
 ..  `import.sql` Again, the same old thing you are used to in Hibernate
 - auto-import data when the app starts.
 .  `pom.xml` is the same again, but just adds in dependencies for Jakarta Persistence,
-Jakarta Transactions and EJB
+Jakarta Transactions and Jakarta Enterprise Beans
 
 [[views-1]]
 === Views
@@ -468,7 +468,7 @@ newUser bean) and no need to change the view layer.
 ..  It's an alternative – explain alternatives, and that they allow
 selection of beans at deployment time
 ..  Much simple now we have declarative TX control.
-..  Start to see how we can introduce EJB to get useful enterprise
+..  Start to see how we can introduce Jakarta Enterprise Beans to get useful enterprise
 services such as declarative TX control
 .  `Resources.java`
 ..  `{EntityManager}` - explain resource producer pattern

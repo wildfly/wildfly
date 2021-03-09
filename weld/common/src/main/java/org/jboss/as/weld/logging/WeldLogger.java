@@ -93,7 +93,7 @@ public interface WeldLogger extends BasicLogger {
     void couldNotLoadPortableExceptionClass(String className, @Cause Throwable throwable);
 
     @LogMessage(level = Logger.Level.WARN)
-    @Message(id = 8, value = "@Resource injection of type %s is not supported for non-ejb components. Injection point: %s")
+    @Message(id = 8, value = "@Resource injection of type %s is not supported for non-Jakarta Enterprise Beans components. Injection point: %s")
     void injectionTypeNotValue(String type, Member injectionPoint);
 
     @LogMessage(level = Logger.Level.DEBUG)
@@ -145,10 +145,10 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 21, value = "Service %s didn't implement the javax.enterprise.inject.spi.Extension interface")
     DeploymentUnitProcessingException extensionDoesNotImplementExtension(Class<?> clazz);
 
-    @Message(id = 22, value = "View of type %s not found on EJB %s")
+    @Message(id = 22, value = "View of type %s not found on Jakarta Enterprise Beans %s")
     IllegalArgumentException viewNotFoundOnEJB(String viewType, String ejb);
 
-    // @Message(id = 23, value = "EJB has been removed")
+    // @Message(id = 23, value = "Jakarta Enterprise Beans has been removed")
     // NoSuchEJBException ejbHashBeenRemoved();
 
 //    @Message(id = 24, value = "Failed to perform Jakarta Contexts and Dependency Injection injection of field: %s on %s")
@@ -184,7 +184,7 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 34, value = "Could not resolve @EJB injection for %s on %s")
     IllegalStateException ejbNotResolved(Object ejb, Member member);
 
-    @Message(id = 35, value = "Resolved more than one EJB for @EJB injection of %s on %s. Found %s")
+    @Message(id = 35, value = "Resolved more than one Jakarta Enterprise Beans for @EJB injection of %s on %s. Found %s")
     IllegalStateException moreThanOneEjbResolved(Object ejb, Member member, final Set<ViewDescription> viewService);
 
     @Message(id = 36, value = "Could not determine bean class from injection point type of %s")

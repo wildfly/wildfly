@@ -46,7 +46,7 @@ public class ApplicableMethodInformation<T> {
     private final String componentName;
 
     /**
-     * EJB 3.1 FR 13.3.7, the default transaction attribute is <i>REQUIRED</i>.
+     * Enterprise Beans 3.1 FR 13.3.7, the default transaction attribute is <i>REQUIRED</i>.
      */
     private T defaultAttribute;
 
@@ -244,7 +244,7 @@ public class ApplicableMethodInformation<T> {
     /**
      * Style 1 (13.3.7.2.1 @1)
      *
-     * @param methodIntf the method-intf the annotations apply to or null if EJB class itself
+     * @param methodIntf the method-intf the annotations apply to or null if Jakarta Enterprise Beans class itself
      * @param attribute
      */
     public void setAttribute(MethodIntf methodIntf, String className, T attribute) {
@@ -269,7 +269,7 @@ public class ApplicableMethodInformation<T> {
     /**
      * Style 2 (13.3.7.2.1 @2)
      *
-     * @param methodIntf           the method-intf the annotations apply to or null if EJB class itself
+     * @param methodIntf           the method-intf the annotations apply to or null if Jakarta Enterprise Beans class itself
      * @param transactionAttribute
      * @param methodName
      */
@@ -290,7 +290,7 @@ public class ApplicableMethodInformation<T> {
     /**
      * Style 3 (13.3.7.2.1 @3)
      *
-     * @param methodIntf           the method-intf the annotations apply to or null if EJB class itself
+     * @param methodIntf           the method-intf the annotations apply to or null if Jakarta Enterprise Beans class itself
      * @param transactionAttribute
      * @param methodName
      * @param methodParams

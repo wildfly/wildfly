@@ -33,7 +33,7 @@ public interface BeanManagerFactoryServiceConfiguratorFactory {
     Iterable<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(ServiceName name);
 
     /**
-     * Builds a bean manager factory for an EJB within a deployment.
+     * Builds a bean manager factory for an Jakarta Enterprise Beans within a deployment.
      * @param context the bean context
      * @return a service builder
      */

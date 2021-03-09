@@ -28,7 +28,7 @@ import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * EJB specific view configuration.
+ * Jakarta Enterprise Beans specific view configuration.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */

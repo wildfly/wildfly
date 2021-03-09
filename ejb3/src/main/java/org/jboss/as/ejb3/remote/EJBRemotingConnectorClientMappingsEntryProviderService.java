@@ -93,7 +93,7 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService extends Simp
     }
 
     /**
-     * This method provides client-mapping entries for all connected EJB clients.
+     * This method provides client-mapping entries for all connected Jakarta Enterprise Beans clients.
      * It returns either a set of user-defined client mappings for a multi-homed host or a single default client mapping for the single-homed host.
      * Hostnames are preferred over literal IP addresses for the destination address part (due to EJBCLIENT-349).
      *

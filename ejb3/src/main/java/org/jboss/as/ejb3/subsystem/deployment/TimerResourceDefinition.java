@@ -54,7 +54,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link org.jboss.as.controller.ResourceDefinition} for the timer resource for runtime ejb deployment. This definition declares operations and
+ * {@link org.jboss.as.controller.ResourceDefinition} for the timer resource for runtime Jakarta Enterprise Beans deployment. This definition declares operations and
  * attributes of single timer.
  *
  * @author baranowb

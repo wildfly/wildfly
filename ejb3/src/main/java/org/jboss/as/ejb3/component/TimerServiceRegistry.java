@@ -35,9 +35,9 @@ import java.util.Set;
  * {@link javax.ejb.TimerService#getTimers() active timers} after querying each of the {@link javax.ejb.TimerService timer services} registered
  * with this {@link TimerServiceRegistry registry}.
  * <p/>
- * Typical use of this registry is to maintain one instance of this registry, per deployment unit (also known as EJB module) and register the timer
- * services of all EJB components that belong to that deployment unit. Effectively, such an instance can then be used to fetch all active timers
- * that are applicable to that deployment unit (a.k.a EJB module).
+ * Typical use of this registry is to maintain one instance of this registry, per deployment unit (also known as Jakarta Enterprise Beans module) and register the timer
+ * services of all Jakarta Enterprise Beans components that belong to that deployment unit. Effectively, such an instance can then be used to fetch all active timers
+ * that are applicable to that deployment unit (a.k.a Jakarta Enterprise Beans module).
  *
  * @author Jaikiran Pai
  */

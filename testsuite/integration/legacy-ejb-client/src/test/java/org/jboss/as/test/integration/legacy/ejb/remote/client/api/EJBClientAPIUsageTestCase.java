@@ -53,7 +53,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests the various common use cases of the EJB remote client API
+ * Tests the various common use cases of the Jakarta Enterprise Beans remote client API
  * <p/>
  * User: Jaikiran Pai
  */
@@ -68,7 +68,7 @@ public class EJBClientAPIUsageTestCase {
     private static final String MODULE_NAME = "ejb";
 
     /**
-     * Creates an EJB deployment
+     * Creates an Jakarta Enterprise Beans deployment
      *
      * @return
      */
@@ -86,7 +86,7 @@ public class EJBClientAPIUsageTestCase {
 
 
     /**
-     * Create and setup the EJB client context backed by the remoting receiver
+     * Create and setup the Jakarta Enterprise Beans client context backed by the remoting receiver
      *
      * @throws Exception
      */
@@ -222,8 +222,8 @@ public class EJBClientAPIUsageTestCase {
     }
 
     /**
-     * Tests that invoking a non-existent EJB leads to a {@link IllegalStateException} as a result of
-     * no EJB receivers able to handle the invocation
+     * Tests that invoking a non-existent Jakarta Enterprise Beans leads to a {@link IllegalStateException} as a result of
+     * no Jakarta Enterprise Beans receivers able to handle the invocation
      *
      * @throws Exception
      */
@@ -243,7 +243,7 @@ public class EJBClientAPIUsageTestCase {
     }
 
     /**
-     * Tests that the invocation on a non-existent view of an (existing) EJB leads to a {@link NoSuchEJBException}
+     * Tests that the invocation on a non-existent view of an (existing) Jakarta Enterprise Beans leads to a {@link NoSuchEJBException}
      *
      * @throws Exception
      */

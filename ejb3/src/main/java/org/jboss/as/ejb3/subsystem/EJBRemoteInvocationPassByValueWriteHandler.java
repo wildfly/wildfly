@@ -82,13 +82,13 @@ class EJBRemoteInvocationPassByValueWriteHandler extends AbstractWriteAttributeH
         } else {
             localTransportProviderServiceName = LocalTransportProvider.BY_VALUE_SERVICE_NAME;
         }
-        // uninstall the existing default local EJB receiver service
+        // uninstall the existing default local Jakarta Enterprise Beans receiver service
         final ServiceController<?> existingDefaultLocalEJBReceiverServiceController = registry.getService(LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME);
         if (existingDefaultLocalEJBReceiverServiceController != null) {
             context.removeService(existingDefaultLocalEJBReceiverServiceController);
         }
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        // now install the new default local EJB receiver service which points to an existing Local EJB receiver service
+        // now install the new default local Jakarta Enterprise Beans receiver service which points to an existing Local Jakarta Enterprise Beans receiver service
         final ValueInjectionService<LocalTransportProvider> newDefaultLocalTransportProviderService = new ValueInjectionService<LocalTransportProvider>();
         final ServiceBuilder<LocalTransportProvider> defaultLocalEJBReceiverServiceBuilder = serviceTarget.addService(LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME, newDefaultLocalTransportProviderService);
         defaultLocalEJBReceiverServiceBuilder.addDependency(localTransportProviderServiceName, LocalTransportProvider.class, newDefaultLocalTransportProviderService.getInjector());

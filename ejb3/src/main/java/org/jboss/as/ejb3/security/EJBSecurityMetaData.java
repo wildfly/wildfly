@@ -33,7 +33,7 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 
 /**
- * Holds the EJB component level security metadata.
+ * Holds the Jakarta Enterprise Beans component level security metadata.
  * <p/>
  * For per method specific security metadata, take a look at {@link EJBMethodSecurityAttribute}
  * <p/>
@@ -42,22 +42,22 @@ import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 public class EJBSecurityMetaData {
 
     /**
-     * The security domain for this EJB component
+     * The security domain for this Jakarta Enterprise Beans component
      */
     private final String securityDomainName;
 
     /**
-     * The run-as role (if any) for this EJB component
+     * The run-as role (if any) for this Jakarta Enterprise Beans component
      */
     private final String runAsRole;
 
     /**
-     * The roles declared (via @DeclareRoles) on this EJB component
+     * The roles declared (via @DeclareRoles) on this Jakarta Enterprise Beans component
      */
     private final Set<String> declaredRoles;
 
     /**
-     * The run-as principal (if any) for this EJB component
+     * The run-as principal (if any) for this Jakarta Enterprise Beans component
      */
     private final String runAsPrincipal;
 
@@ -72,7 +72,7 @@ public class EJBSecurityMetaData {
     private final Map<String, Collection<String>> securityRoleLinks;
 
     /**
-     * @param componentConfiguration Component configuration of the EJB component
+     * @param componentConfiguration Component configuration of the Jakarta Enterprise Beans component
      */
     public EJBSecurityMetaData(final ComponentConfiguration componentConfiguration) {
         if (componentConfiguration.getComponentDescription() instanceof EJBComponentDescription == false) {
@@ -138,7 +138,7 @@ public class EJBSecurityMetaData {
 
     /**
      * Returns the security role links (configured via <security-role-ref>) applicable for the
-     * EJB. Returns an empty map if no role links are configured
+     * Jakarta Enterprise Beans. Returns an empty map if no role links are configured
      *
      * @return
      */

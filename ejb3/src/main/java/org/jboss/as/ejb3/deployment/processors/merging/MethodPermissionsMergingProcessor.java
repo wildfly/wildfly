@@ -57,9 +57,9 @@ import org.jboss.metadata.ejb.spec.MethodsMetaData;
 /**
  * Handles the {@link javax.annotation.security.RolesAllowed} {@link DenyAll} {@link javax.annotation.security.PermitAll} annotations
  * <p/>
- * Also processes the &lt;method-permission&gt; elements of an EJB and sets up appropriate security permissions on the EJB.
+ * Also processes the &lt;method-permission&gt; elements of an Jakarta Enterprise Beans and sets up appropriate security permissions on the Jakarta Enterprise Beans.
  * <p/>
- * This processor should be run *after* all the views of the EJB have been identified and set in the {@link EJBComponentDescription}
+ * This processor should be run *after* all the views of the Jakarta Enterprise Beans have been identified and set in the {@link EJBComponentDescription}
  *
  * @author Stuart Douglas
  */
@@ -155,7 +155,7 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
             final MethodsMetaData methods = methodPermissionMetaData.getMethods();
             for (final MethodMetaData method : methods) {
                 EJBMethodSecurityAttribute ejbMethodSecurityMetaData;
-                // EJB 3.1 FR 17.3.2.2 The unchecked element is used instead of a role name in the method-permission element to indicate that all roles are permitted.
+                // Enterprise Beans 3.1 FR 17.3.2.2 The unchecked element is used instead of a role name in the method-permission element to indicate that all roles are permitted.
                 if (methodPermissionMetaData.isNotChecked()) {
                     ejbMethodSecurityMetaData = EJBMethodSecurityAttribute.permitAll();
                 } else {

@@ -30,7 +30,7 @@ import org.wildfly.security.evidence.PasswordGuessEvidence;
 import org.wildfly.security.sasl.SaslMechanismSelector;
 
 /**
- * Util class for Elytron security context propagation tests. It helps to switch identities and lookup EJBs.
+ * Util class for Elytron security context propagation tests. It helps to switch identities and lookup Jakarta Enterprise Beans.
  *
  * @author Josef Cacek
  */
@@ -51,7 +51,7 @@ public class SeccontextUtil {
     public static final String SERVER3 = "seccontext-server3";
 
     /**
-     * Name of deployment which contains EntryBean EJB.
+     * Name of deployment which contains EntryBean Jakarta Enterprise Beans.
      */
     public static final String JAR_ENTRY_EJB = "entry-ejb";
     /**
@@ -157,7 +157,7 @@ public class SeccontextUtil {
     /**
      * Creates "ejb:/..." name for JNDI lookup.
      *
-     * @return name to be used for EJB lookup.
+     * @return name to be used for Jakarta Enterprise Beans lookup.
      */
     public static String getRemoteEjbName(String appName, String beanSimpleNameBase, String remoteInterfaceName,
             boolean stateful) {

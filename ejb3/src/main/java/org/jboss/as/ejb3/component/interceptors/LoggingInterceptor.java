@@ -36,8 +36,8 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Logs any exceptions/errors that happen during invocation of EJB methods, as specified by the
- * EJB3 spec, section 14.3
+ * Logs any exceptions/errors that happen during invocation of Jakarta Enterprise Beans methods, as specified by the
+ * Enterprise Beans 3 spec, section 14.3
  * <p/>
  * Note: This should be the near the start of interceptor in the chain of interceptors, for this to be able to
  * catch all kinds of errors/exceptions.
@@ -79,7 +79,7 @@ public class LoggingInterceptor implements Interceptor {
             if (t instanceof Exception) {
                 throw (Exception) t;
             }
-            // Typically, this interceptor (which would be the first one in the chain) would catch Exception and not Throwable since the other EJB interceptors
+            // Typically, this interceptor (which would be the first one in the chain) would catch Exception and not Throwable since the other Jakarta Enterprise Beans interceptors
             // down the chain would have already wrapped the Throwable accordingly. However, if for some reason,
             // the failure happened even before those interceptors could come into play, then we just wrap the throwable
             // here and return it as an exception

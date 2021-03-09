@@ -11,7 +11,7 @@ suspended it will immediately stop accepting new requests, but wait for
 existing requests to complete. A suspended server can be resumed at any
 point, and will begin processing requests immediately. Suspending and
 resuming has no effect on deployment state (e.g. if a server is
-suspended singleton EJB's will not be destroyed). As of WildFly 11 it is
+suspended singleton Jakarta Enterprise Beans's will not be destroyed). As of WildFly 11 it is
 also possible to start a server in suspended mode which means it will
 not accept requests until it has been resumed. Servers will also be
 suspended during the boot process, so no requests will be accepted until
@@ -99,9 +99,10 @@ web connector.
 * *Undertow* - Undertow will wait for all requests to finish.
 * *mod_cluster* - The mod_cluster subsystem will notify the load
 balancer that the server is suspending in the PRE_SUSPEND phase.
-* *EJB* - EJB will wait for all remote EJB requests and MDB message
+* *Jakarta Enterprise Beans* - Jakarta Enterprise Beans will wait
+for all remote Jakarta Enterprise Beans requests and MDB message
 deliveries to finish. Delivery to MDB's is stopped in the PRE_SUSPEND
-phase. EJB timers are suspended, and missed timers will be activated
+phase. Jakarta Enterprise Beans timers are suspended, and missed timers will be activated
 when the server is resumed.
 * *Batch* - Batch jobs will be stopped at a checkpoint while the server
 is suspending. They will be restarted from that checkpoint when the
@@ -115,9 +116,9 @@ transaction will be serviced - e.g. the server will accept any
 incoming remote call which carries the context of a transaction already
 started at the suspending server.
 
-[[transactions-and-ejbs]]
-=== Transactions and EJBs
-When you work with EJBs you have to enable the graceful shutdown
+[[transactions-and-Jakarta-Enterprise-Beans]]
+=== Transactions and Jakarta Enterprise Beans
+When you work with Jakarta Enterprise Beans you have to enable the graceful shutdown
 functionality by setting the attribute `enable-graceful-txn-shutdown` to
 `true`. For example, in the ejb3 subsystem section of `standalone.xml`:
 
@@ -134,7 +135,7 @@ finished. During that brief window of time, the client of a cluster may
 send a new request to a node that is shutting down and it will refuse the
 request because it is not related to an existing transaction.
 If this attribute `enable-graceful-txn-shutdown` is set to `false`, we
-disable the graceful behavior and EJB clients will not attempt to invoke
+disable the graceful behavior and Jakarta Enterprise Beans clients will not attempt to invoke
 the node when it suspends, regardless of active transactions.
 
 [[standalone-mode]]

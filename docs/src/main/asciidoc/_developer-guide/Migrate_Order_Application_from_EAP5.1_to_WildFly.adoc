@@ -253,3 +253,5 @@ tier in its own WAR.
 
 The source files for both versions is attached so you can view the
 changes that were made to the application.
+
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

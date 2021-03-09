@@ -38,7 +38,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
 
 /**
- * EJB specific view description.
+ * Jakarta Enterprise Beans specific view description.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */

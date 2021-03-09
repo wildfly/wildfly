@@ -114,7 +114,7 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
             sessionBeanDescription.addRemoteBusinessInterfaceViews(businessRemotes);
         }
 
-        // process EJB3.1 specific session bean description
+        // process Enterprise Beans 3.1 specific session bean description
         if (sessionBean instanceof SessionBean31MetaData) {
             this.processSessionBean31((SessionBean31MetaData) sessionBean, sessionBeanDescription);
         }

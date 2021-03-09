@@ -68,3 +68,5 @@ This element is used to specify an EJB client connection. It has one required at
 == <interceptors />
 
 This element is used to specify EJB client interceptors and can contain any number of _<interceptor />_ elements.
+
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

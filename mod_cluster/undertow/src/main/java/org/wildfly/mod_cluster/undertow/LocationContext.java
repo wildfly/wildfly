@@ -29,7 +29,7 @@ import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Host;
 
 /**
- * A simulated context, for use by EJB/HTTP and static locations.
+ * A simulated context, for use by Jakarta Enterprise Beans/HTTP and static locations.
  *
  * @author Stuart Douglas
  * @author Radoslav Husar

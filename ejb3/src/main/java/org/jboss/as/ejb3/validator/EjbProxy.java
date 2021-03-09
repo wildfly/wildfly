@@ -21,7 +21,7 @@
  */
 
 /**
- * Markup inteface for EJB proxies.
+ * Markup inteface for Jakarta Enterprise Beans proxies.
  *
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */

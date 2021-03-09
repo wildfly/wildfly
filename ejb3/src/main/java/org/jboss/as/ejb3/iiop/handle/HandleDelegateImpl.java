@@ -40,10 +40,10 @@ import org.omg.CORBA.portable.ObjectImpl;
 /**
  * <P>Implementation of the javax.ejb.spi.HandleDelegate interface</P>
  * <p/>
- * <P>The HandleDelegate interface is implemented by the EJB container.
+ * <P>The HandleDelegate interface is implemented by the Jakarta Enterprise Beans container.
  * It is used by portable implementations of javax.ejb.Handle and
- * javax.ejb.HomeHandle. It is not used by EJB components or by client components.
- * It provides methods to serialize and deserialize EJBObject and EJBHome
+ * javax.ejb.HomeHandle. It is not used by Jakarta Enterprise Beans components or by client components.
+ * It provides methods to serialize and deserialize Jakarta Enterprise Beans Object and Jakarta Enterprise Beans Home
  * references to streams.</P>
  * <p/>
  * <P>The HandleDelegate object is obtained by JNDI lookup at the reserved name

@@ -45,7 +45,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Timed object invoker for an EJB. This is analogous to a view service for timer invocations
+ * Timed object invoker for an Jakarta Enterprise Beans. This is analogous to a view service for timer invocations
  *
  * @author Stuart Douglas
  */

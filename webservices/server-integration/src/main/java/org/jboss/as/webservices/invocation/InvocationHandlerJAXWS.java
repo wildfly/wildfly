@@ -29,7 +29,7 @@ import org.jboss.wsf.spi.invocation.Invocation;
 import org.jboss.wsf.spi.invocation.InvocationContext;
 
 /**
- * Handles invocations on EJB3 endpoints.
+ * Handles invocations on Enterprise Beans 3 endpoints.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */

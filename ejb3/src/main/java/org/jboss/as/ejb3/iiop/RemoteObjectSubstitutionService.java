@@ -105,7 +105,7 @@ public class RemoteObjectSubstitutionService implements RemoteObjectSubstitution
         try {
             locator = EJBClient.getLocatorFor(object);
         } catch (Exception e) {
-            //not an EJB proxy
+            //not an Jakarta Enterprise Beans proxy
             locator = null;
         }
         if (locator != null) {

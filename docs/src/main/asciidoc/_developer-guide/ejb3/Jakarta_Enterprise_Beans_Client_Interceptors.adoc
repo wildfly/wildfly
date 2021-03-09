@@ -1,8 +1,8 @@
-= EJB Client Interceptors
+= Jakarta Enterprise Beans Client Interceptors
 
 == Implementing Client Interceptors
 
-The EJB client supports the notion of client side interceptors. These are interceptors
+The Jakarta Enterprise Beans client supports the notion of client side interceptors. These are interceptors
 that are run before an invocation is dispatched, and can modify various properties of
 the request before it is sent, as well as modifying parameters and the return value.
 
@@ -10,7 +10,7 @@ These interceptors are represented by the class `org.jboss.ejb.client.EJBClientI
 and are generally registered placing interceptor class names in
 `META-INF/services/org.jboss.ejb.client.EJBClientInterceptor`.
 
-For more details about what can be modified refer to the EJB client JavaDoc.
+For more details about what can be modified refer to the Jakarta Enterprise Beans client JavaDoc.
 
 == Accessing invocation context data
 

@@ -44,7 +44,7 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 
 /**
  * A test case for testing the feature introduced in https://issues.jboss.org/browse/EJBCLIENT-34 which
- * allows applications to pass JNDI context properties during JNDI context creation for (scoped) EJB client
+ * allows applications to pass JNDI context properties during JNDI context creation for (scoped) Jakarta Enterprise Beans client
  * context creation
  *
  * @author Jaikiran Pai
@@ -85,7 +85,7 @@ public class DynamicJNDIContextEJBInvocationTestCase {
 
     /**
      * Tests that a SFSB hosted on server X can lookup and invoke a SFSB and SLSB hosted on a different server,
-     * by using a JNDI context which was created by passing the EJB client context creation properties
+     * by using a JNDI context which was created by passing the Jakarta Enterprise Beans client context creation properties
      *
      * @throws Exception
      */
@@ -111,7 +111,7 @@ public class DynamicJNDIContextEJBInvocationTestCase {
 
     /**
      * Tests that a SFSB Foo hosted on server X can lookup and store a SFSB and a SLSB hosted on a different server Y,
-     * by using a JNDI context which was created by passing the EJB client context creation properties. The SFSB Foo
+     * by using a JNDI context which was created by passing the Jakarta Enterprise Beans client context creation properties. The SFSB Foo
      * on server X is then allowed to passivate and after activation the invocations on the SFSB and SLSB members held
      * as state by SFSB Foo are expected to correcty end up on the remote server Y and return the correct state information
      *
@@ -173,8 +173,8 @@ public class DynamicJNDIContextEJBInvocationTestCase {
     }
 
     /**
-     * Tests that a SFSB hosted on server X can lookup and invoke a SFSB hosted on a different server, through the EJB 2.x
-     * home view, by using a JNDI context which was created by passing the EJB client context creation properties
+     * Tests that a SFSB hosted on server X can lookup and invoke a SFSB hosted on a different server, through the Enterprise Beans 2.x
+     * home view, by using a JNDI context which was created by passing the Jakarta Enterprise Beans client context creation properties
      * @see https://issues.jboss.org/browse/EJBCLIENT-51
      *
      * @throws Exception

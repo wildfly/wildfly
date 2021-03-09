@@ -56,7 +56,7 @@ import org.junit.runner.RunWith;
 import org.wildfly.common.function.ExceptionSupplier;
 
 /**
- * Test EJBClient functionality across two clusters with fail-over.
+ * Test Jakarta Enterprise Beans Client functionality across two clusters with fail-over.
  * <p/>
  * A client makes an invocation on one clustered app (on cluster A) which in turn
  * forwards the invocation on a second clustered app (on cluster B).
@@ -133,7 +133,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
     }
 
     /**
-     * Tests that EJBClient invocations on stateful session beans can still successfully be processed
+     * Tests that Jakarta Enterprise Beans Client invocations on stateful session beans can still successfully be processed
      * as long as one node in each cluster is available.
      */
     @Test
@@ -231,14 +231,14 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
 
             try {
                 int serial = this.bean.getSerialAndIncrement();
-                logger.debugf("EJB client invocation #%d on bean, received serial #%d.", this.invocationCount, serial);
+                logger.debugf("Jakarta Enterprise Beans client invocation #%d on bean, received serial #%d.", this.invocationCount, serial);
 
                 if (serial != ++expectedSerial) {
                     logger.warnf("Expected (%d) and received serial (%d) numbers do not match! Resetting.", expectedSerial, serial);
                     expectedSerial = serial;
                 }
             } catch (Exception clientException) {
-                logger.warnf("EJB client invocation #%d on bean, exception occurred %s", this.invocationCount, clientException);
+                logger.warnf("Jakarta Enterprise Beans client invocation #%d on bean, exception occurred %s", this.invocationCount, clientException);
                 if (this.firstException == null) {
                     this.firstException = clientException;
                 }

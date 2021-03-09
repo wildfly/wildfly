@@ -72,7 +72,7 @@ public class AuthenticationWithSourceAddressRoleDecoderMismatchTestCase {
     }
 
     /*
-     The EJB being used in this test class is secured using the "elytron-tests" security domain. This security
+     The Jakarta Enterprise Beans being used in this test class is secured using the "elytron-tests" security domain. This security
      domain is configured with:
       1) a source-address-role-decoder that assigns the "admin" role if the IP address of the remote client is 999.999.999.999
       2) a permission-mapper that assigns the "LoginPermission" if the identity has the "admin" role unless the principal

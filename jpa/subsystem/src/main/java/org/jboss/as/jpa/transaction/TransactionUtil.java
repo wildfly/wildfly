@@ -129,7 +129,7 @@ public class TransactionUtil {
      *   1. application thread is disassociated from transaction
      *   2. Synchronization.afterCompletion has been called
      *
-     *   Note that entity managers do not get propagated on remote EJB invocations.
+     *   Note that entity managers do not get propagated on remote Jakarta Enterprise Beans invocations.
      *
      * See discussions for more details about how we arrived at using the AssociationListener (TransactionListener):
      *     https://developer.jboss.org/message/919807

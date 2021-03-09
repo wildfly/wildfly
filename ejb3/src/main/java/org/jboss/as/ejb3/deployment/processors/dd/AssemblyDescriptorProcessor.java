@@ -38,7 +38,7 @@ import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 
 /**
- * Processes the assembly-descriptor section of a ejb-jar.xml of an EJB deployment and updates the {@link EjbJarDescription}
+ * Processes the assembly-descriptor section of a ejb-jar.xml of an Jakarta Enterprise Beans deployment and updates the {@link EjbJarDescription}
  * appropriately with this info.
  *
  * @author Jaikiran Pai
@@ -50,7 +50,7 @@ public class AssemblyDescriptorProcessor implements DeploymentUnitProcessor {
         // get the deployment unit
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        // find the EJB jar metadata and start processing it
+        // find the Jakarta Enterprise Beans jar metadata and start processing it
         final EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbJarMetaData == null) {
             return;
@@ -93,7 +93,7 @@ public class AssemblyDescriptorProcessor implements DeploymentUnitProcessor {
             final String roleName = securityRole.getRoleName();
             if (roleName != null && !roleName.trim().isEmpty()) {
                 // Augment the security roles
-                // EJB 3.1 spec, section 17.3.1:
+                // Enterprise Beans 3.1 spec, section 17.3.1:
                 // The Bean Provider may augment the set of security roles defined for the application by annotations in
                 // this way by means of the security-role deployment descriptor element.
                 ejbJarDescription.addSecurityRole(roleName);

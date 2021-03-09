@@ -33,7 +33,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * Class name filtering {@code Function<String, Boolean>} implementation that is configured by a {@code filterSpec}
  * string provided to the constructor. The function returns {@code true} if the given class name is acceptable
  * for class resolution, {@code false} otherwise. The function is meant to be used for implementation blacklists
- * or whitelists of classes that would be loaded when remote EJB invocations are received.
+ * or whitelists of classes that would be loaded when remote Jakarta Enterprise Beans invocations are received.
  * <p>
  * The {@code filterSpec} string is composed of one or more filter spec elements separated by the {@code ';'} char.
  * A filter spec element that begins with the {@code '!'} char is a 'rejecting element' and indicates resolution of a

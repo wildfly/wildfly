@@ -72,8 +72,5 @@ References a remoting profile configured in the remoting subsystem.
 
 * `name` The name of the profile.
 
-
-
-
-
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
 

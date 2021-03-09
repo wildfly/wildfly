@@ -30,7 +30,7 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 
 /**
- * Handles ejb jar deployments
+ * Handles Jakarta Enterprise Beans jar deployments
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */

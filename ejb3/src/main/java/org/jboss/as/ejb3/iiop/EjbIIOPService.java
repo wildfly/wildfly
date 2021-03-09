@@ -102,6 +102,9 @@ import com.sun.corba.se.spi.extension.ZeroPortPolicy;
  * <code>EjbHomeCorbaServant</code> for the bean's
  * <code>EJBHome</code> and an <code>EjbObjectCorbaServant</code> for the
  * bean's <code>EJBObject</code>s.
+ *
+ * NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ *
  */
 public class EjbIIOPService implements Service<EjbIIOPService> {
 

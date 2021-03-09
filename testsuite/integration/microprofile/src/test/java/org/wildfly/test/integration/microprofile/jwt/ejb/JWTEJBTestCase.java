@@ -47,8 +47,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * A test case for an EJB endpoint secured using the MP-JWT mechanism and invoking a
- * second EJB with role restrictions.
+ * A test case for an Jakarta Enterprise Beans endpoint secured using the MP-JWT mechanism and invoking a
+ * second Jakarta Enterprise Beans with role restrictions.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */

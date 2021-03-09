@@ -40,7 +40,7 @@ import javax.naming.InitialContext;
  * <p>
  * Specification says at such case that no transaction context is provided
  * <p>
- * EJB 3.2 4.5.3 Transactions<br>
+ * Jakarta Enterprise Beans 3.2 4.5.3 Transactions<br>
  * The client’s transaction context does not propagate with an asynchronous method invocation. From the
  * Bean Provider’s point of view, there is never a transaction context flowing in from the client. This
  * means, for example, that the semantics of the REQUIRED transaction attribute on an asynchronous

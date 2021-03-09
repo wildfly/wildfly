@@ -41,8 +41,8 @@
 
     <name>WildFly: SFSB clustering - SPI</name>
     <description>
-        A set of SPIs for managing distributable @Stateful bean instances for use by the the distributed EJB cache implementation found in the wildfly-ejb3 module.
-        This module decouples the mechanism for managing @Stateful bean instances from the EJB subsystem.
+        A set of SPIs for managing distributable @Stateful bean instances for use by the the distributed Jakarta Enterprise Beans cache implementation found in the wildfly-ejb3 module.
+        This module decouples the mechanism for managing @Stateful bean instances from the Jakarta Enterprise Beans subsystem.
     </description>
 
     <dependencies>

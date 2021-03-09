@@ -140,7 +140,7 @@ galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cloud-server
 galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cloud-server,undertow-legacy-https
 ----
 
-==== Installation of a cloud-server and ejb with ejb-dist-cache as an alternative to ejb-local-cache
+==== Installation of a cloud-server and Jakarta Enterprise Beans with ejb-dist-cache as an alternative to ejb-local-cache
 
 This is done by excluding the _ejb_ layer's optional _ejb-local-cache_ dependency and specifying its _ejb-dist-cache_
 alternative:

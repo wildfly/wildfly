@@ -22,7 +22,7 @@
 package org.jboss.as.test.integration.security.common.ejb3;
 
 /**
- * An interface for basic EJB tests.
+ * An interface for basic Jakarta Enterprise Beans tests.
  *
  * @author Josef Cacek
  */

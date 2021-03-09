@@ -13,7 +13,7 @@ use.
 The EE Concurrency Utilities support the propagation of the invocation
 context, capturing the existent context in the application threads to
 use in their own threads, the same way a logged-in user principal is
-propagated when a servlet invokes an EJB asynchronously. The propagation
+propagated when a servlet invokes an Jakarta Enterprise Beans asynchronously. The propagation
 of the invocation context includes, by default, the class loading, JNDI
 and security contexts.
 

@@ -46,7 +46,7 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
- * A simple EJB Remoting transaction context propagation in JTS style from one AS7 server to another.
+ * A simple Jakarta Enterprise Beans Remoting transaction context propagation in JTS style from one AS7 server to another.
  *
  * @author Stuart Douglas
  * @author Ivo Studensky

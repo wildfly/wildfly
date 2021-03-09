@@ -1,5 +1,5 @@
-[[EJB3_Clustered_Database_Timers]]
-= EJB3 Clustered Database Timers
+[[Jakarta_Enterprise_Beans_Clustered_Database_Timers]]
+= Jakarta Enterprise Beans 3 Clustered Database Timers
 
 [abstract]
 
@@ -117,10 +117,10 @@ in jboss-ejb3.xml:
 
 In a clustered deployment, multiple nodes updating timer datastore may cause the in-memory timer state to be temporarily
 out of sync. Some application may find the `refresh-interval` configuration not sufficient in some cases, and
-need to programmatically refresh timers. This can be done with EE interceptors configured for those business methods
+need to programmatically refresh timers. This can be done with Jakarta Interceptors configured for those business methods
 that need this capability, as illustrated in the following steps:
 
-* Implement an EE interceptor that enables `wildfly.ejb.timer.refresh.enabled` to true. For example,
+* Implement an Jakarta Interceptors that enables `wildfly.ejb.timer.refresh.enabled` to true. For example,
 
 [source,java,options="nowrap"]
 ----
@@ -141,7 +141,7 @@ public class RefreshInterceptor {
 }
 ----
 
-* Configure the EE interceptor to the target stateless or singleton bean business methods.
+* Configure the Jakarta Interceptors to the target stateless or singleton bean business methods.
 When `wildfly.ejb.timer.refresh.enabled` is set to true, calling `TimerService.getAllTimers()`
 will first refresh from timer datastore before returning timers. For example,
 

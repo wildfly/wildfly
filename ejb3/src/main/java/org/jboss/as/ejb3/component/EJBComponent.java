@@ -264,7 +264,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         }
         // AS7-1317: examine the throws clause of the method
         // An unchecked-exception is only an application exception if annotated (or described) as such.
-        // (see EJB 3.1 FR 14.2.1)
+        // (see Enterprise Beans 3.1 FR 14.2.1)
         if (RuntimeException.class.isAssignableFrom(exceptionClass) || Error.class.isAssignableFrom(exceptionClass))
             return null;
         if (invokedMethod != null) {
@@ -355,7 +355,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
             }
 
             // EJBTHREE-805, consider an asynchronous rollback due to timeout
-            // This is counter to EJB 3.1 where an asynchronous call does not inherit the transaction context!
+            // This is counter to Enterprise Beans 3.1 where an asynchronous call does not inherit the transaction context!
 
             int status = tm.getStatus();
             EjbLogger.ROOT_LOGGER.tracef("Current transaction status is %d", status);
@@ -660,7 +660,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
             } else if (securityRequired) {
                 return securityDomain.getCurrentSecurityIdentity();
             } else {
-                // unsecured EJB
+                // unsecured Jakarta Enterprise Beans
                 return securityDomain.getAnonymousSecurityIdentity();
             }
         }

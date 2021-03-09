@@ -221,7 +221,7 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
      * <p>If {@link javax.transaction.Transaction} is {@link Status#STATUS_ACTIVE}, this method tries to return an entity manager
      * already associated with it. If there is no entity manager a new one is created.</p>
      *
-     * <p>This method is specially useful when IDM is being called from an EJB or any other component that have already started
+     * <p>This method is specially useful when IDM is being called from an Jakarta Enterprise Beans or any other component that have already started
      * a transaction. In this case, the client code is responsible to commit or rollback the transaction accordingly.</p>
      *
      * <p>The returned {@link EntityManager} is always closed before the transaction completes.</p>

@@ -49,7 +49,7 @@ public class StatefulIdentityInterceptor implements Interceptor {
                 final Class<?> proxyType = componentView.getProxyClass();
                 final SessionID sessionId = context.getPrivateData(SessionID.class);
                 if( proxyType.isAssignableFrom(other.getClass())) {
-                    //now we know that this is an ejb for the correct component view
+                    //now we know that this is an Jakarta Enterprise Beans for the correct component view
                     //as digging out the session id from the proxy object is not really
                     //a viable option, we invoke equals() for the other instance with a
                     //SessionIdHolder as the other side

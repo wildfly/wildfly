@@ -91,7 +91,7 @@ public class EjbInjectionSource extends InjectionSource {
         }
 
         if (remoteFactory != null) {
-            //because we are using the ejb: lookup namespace we do not need a dependency
+            //because we are using the Jakarta Enterprise Beans: lookup namespace we do not need a dependency
             injector.inject(remoteFactory);
         } else if (!appclient) {
             //we do not add a dependency if this is the appclient
@@ -101,7 +101,7 @@ public class EjbInjectionSource extends InjectionSource {
     }
 
     /**
-     * Checks if this ejb injection has been resolved yet, and if not resolves it.
+     * Checks if this Jakarta Enterprise Beans injection has been resolved yet, and if not resolves it.
      */
     private void resolve() {
         if (!resolved) {

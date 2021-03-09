@@ -136,7 +136,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
             sessionBeanComponentDescription.addNoInterfaceView();
         }
 
-        // EJB 3.1 FR 4.9.7 & 4.9.8, if the bean exposes no views
+        // Enterprise Beans 3.1 FR 4.9.7 & 4.9.8, if the bean exposes no views
         if (hasNoViews(sessionBeanComponentDescription)) {
             final Set<Class<?>> potentialBusinessInterfaces = getPotentialBusinessInterfaces(sessionBeanClass);
             if (potentialBusinessInterfaces.isEmpty()) {
@@ -144,7 +144,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
             } else if (potentialBusinessInterfaces.size() == 1) {
                 sessionBeanComponentDescription.addLocalBusinessInterfaceViews(potentialBusinessInterfaces.iterator().next().getName());
             } else if (isEjbVersionGreaterThanOrEqualTo32(deploymentUnit)) {
-                // EJB 3.2 spec states (section 4.9.7):
+                // Jakarta Enterprise Beans 3.2 spec states (section 4.9.7):
                 // ... or if the bean class is annotated with neither the Local nor the Remote annotation, all implemented interfaces (excluding the interfaces listed above)
                 // are assumed to be local business interfaces of the bean
                 sessionBeanComponentDescription.addLocalBusinessInterfaceViews(toString(potentialBusinessInterfaces));
@@ -171,8 +171,8 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         Class<?>[] remoteViews = remoteViewAnnotation.value();
         if (remoteViews == null || remoteViews.length == 0) {
             Set<Class<?>> interfaces = getPotentialBusinessInterfaces(sessionBeanClass);
-            // For version < 3.2, the EJB spec didn't allow more than one implementing interfaces to be considered as remote when the bean class had the @Remote annotation without any explicit value.
-            // EJB 3.2 allows it (core spec, section 4.9.7)
+            // For version < 3.2, the Jakarta Enterprise Beans spec didn't allow more than one implementing interfaces to be considered as remote when the bean class had the @Remote annotation without any explicit value.
+            // Jakarta Enterprise Beans 3.2 allows it (core spec, section 4.9.7)
             if (interfaces.size() != 1 && !isEjbVersionGreaterThanOrEqualTo32(deploymentUnit)) {
                 throw EjbLogger.ROOT_LOGGER.beanWithRemoteAnnotationImplementsMoreThanOneInterface(sessionBeanClass);
             }
@@ -200,8 +200,8 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         Class<?>[] localViews = localViewAnnotation.value();
         if (localViews == null || localViews.length == 0) {
             Set<Class<?>> interfaces = getPotentialBusinessInterfaces(sessionBeanClass);
-            // For version < 3.2, the EJB spec didn't allow more than one implementing interfaces to be considered as local when the bean class had the @Local annotation without any explicit value.
-            // EJB 3.2 allows it (core spec, section 4.9.7)
+            // For version < 3.2, the Jakarta Enterprise Beans spec didn't allow more than one implementing interfaces to be considered as local when the bean class had the @Local annotation without any explicit value.
+            // Jakarta Enterprise Beans 3.2 allows it (core spec, section 4.9.7)
             if (interfaces.size() != 1 && !isEjbVersionGreaterThanOrEqualTo32(deploymentUnit)) {
                 throw EjbLogger.ROOT_LOGGER.beanWithLocalAnnotationImplementsMoreThanOneInterface(sessionBeanClass);
             }
@@ -274,7 +274,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
             return false;
         }
         final EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
-        // if there's no EjbJarMetadata then it means that there's no ejb-jar.xml. That effectively means that the version of this EJB deployment is the "latest"
+        // if there's no EjbJarMetadata then it means that there's no ejb-jar.xml. That effectively means that the version of this Jakarta Enterprise Beans deployment is the "latest"
         // which in this case (i.e. starting WildFly 8 version) is "greater than or equal to 3.2". Hence return true.
         if (ejbJarMetaData == null) {
             return true;

@@ -36,7 +36,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.naming.NamingException;
 
 /**
- * Stateless EJB responsible for calling remote EJB or Servlet.
+ * Stateless Jakarta Enterprise Beans responsible for calling remote Jakarta Enterprise Beans or Servlet.
  *
  * @author Josef Cacek
  */

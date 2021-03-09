@@ -174,7 +174,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
      */
     @Override
     public void close() {
-        // An extended entity manager will be closed when the EJB SFSB @remove method is invoked.
+        // An extended entity manager will be closed when the Jakarta Enterprise Beans SFSB @remove method is invoked.
         throw JpaLogger.ROOT_LOGGER.cannotCloseContainerManagedEntityManager();
 
     }

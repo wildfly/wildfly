@@ -43,7 +43,7 @@ import java.util.concurrent.CountDownLatch;
 @Stateful
 @Remote(LocalServerStatefulRemote.class)
 @LocalBean
-@Cache("passivating") // reference to the passivating cache configuration which comes shipped in EJB3 subsystem
+@Cache("passivating") // reference to the passivating cache configuration which comes shipped in Enterprise Beans 3 subsystem
 public class StatefulBeanA implements LocalServerStatefulRemote {
 
     @Resource(name = "other-server-remoting-port")
@@ -73,28 +73,28 @@ public class StatefulBeanA implements LocalServerStatefulRemote {
         this.statefulBeanOnOtherServer = (StatefulRemoteOnOtherServer) context.lookup("ejb:/deployment-on-other-server//StatefulBeanOnOtherServer!" + StatefulRemoteOnOtherServer.class.getName() + "?stateful");
         // lookup and set the SLSB from remote server
         this.statelessRemoteOnOtherServer = (StatelessRemoteOnOtherServer) context.lookup("ejb:/deployment-on-other-server//StatelessBeanOnOtherServer!" + StatelessRemoteOnOtherServer.class.getName());
-        // EJB 2.x remote home view of bean on other server
+        // Enterprise Beans 2.x remote home view of bean on other server
         this.statefulRemoteHomeForBeanOnOtherServer = (StatefulRemoteHomeForBeanOnOtherServer) context.lookup("ejb:/deployment-on-other-server//StatefulBeanOnOtherServer!" + StatefulRemoteHomeForBeanOnOtherServer.class.getName());
     }
 
     @Override
     public int getCountByInvokingOnRemoteServerBean() {
         // invoke the SFSB which resides on a remote server and was looked up via JNDI
-        // using the scoped EJB client context feature
+        // using the scoped Jakarta Enterprise Beans client context feature
         return this.statefulBeanOnOtherServer.getCount();
     }
 
     @Override
     public int incrementCountByInvokingOnRemoteServerBean() {
         // invoke the SFSB which resides on a remote server and was looked up via JNDI
-        // using the scoped EJB client context feature
+        // using the scoped Jakarta Enterprise Beans client context feature
         return this.statefulBeanOnOtherServer.incrementCount();
     }
 
     @Override
     public String getEchoByInvokingOnRemoteServerBean(final String msg) {
         // invoke the SLSB which resides on a remote server and was looked up via JNDI
-        // using the scoped EJB client context feature
+        // using the scoped Jakarta Enterprise Beans client context feature
         return this.statelessRemoteOnOtherServer.echo(msg);
     }
 
@@ -163,7 +163,7 @@ public class StatefulBeanA implements LocalServerStatefulRemote {
 
     private Properties getInitialContextProperties() {
         final Properties jndiProps = new Properties();
-        // Property to enable scoped EJB client context which will be tied to the JNDI context
+        // Property to enable scoped Jakarta Enterprise Beans client context which will be tied to the JNDI context
         jndiProps.put("org.jboss.ejb.client.scoped.context", true);
         // Property which will handle the ejb: namespace during JNDI lookup
         jndiProps.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
@@ -175,7 +175,7 @@ public class StatefulBeanA implements LocalServerStatefulRemote {
         jndiProps.put("remote.connections", connectionName);
         // add a property which points to the host server of the "foo-bar-connection"
         jndiProps.put("remote.connection." + connectionName + ".host", this.otherServerHostAddress);
-        // add a property which points to the port on which the server is listening for EJB invocations
+        // add a property which points to the port on which the server is listening for Jakarta Enterprise Beans invocations
         jndiProps.put("remote.connection." + connectionName + ".port", this.otherServerRemotingPort);
         // add the username and password properties which will be used to establish this connection
         jndiProps.put("remote.connection." + connectionName + ".username", this.otherServerAuthUserName);

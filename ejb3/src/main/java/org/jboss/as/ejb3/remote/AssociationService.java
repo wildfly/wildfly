@@ -61,7 +61,7 @@ import org.wildfly.discovery.spi.DiscoveryProvider;
 import org.wildfly.discovery.spi.DiscoveryRequest;
 
 /**
- * The EJB server association service.
+ * The Jakarta Enterprise Beans server association service.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */

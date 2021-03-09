@@ -113,7 +113,7 @@ public interface WSLogger extends BasicLogger {
     void mBeanServerNotAvailable(Object bean);
 
     @LogMessage(level = WARN)
-    @Message(id = 14, value = "Multiple EJB3 endpoints in the same deployment with different declared security roles; be aware this might be a security risk if you're not controlling allowed roles (@RolesAllowed) on each ws endpoint method.")
+    @Message(id = 14, value = "Multiple Enterprise Beans 3 endpoints in the same deployment with different declared security roles; be aware this might be a security risk if you're not controlling allowed roles (@RolesAllowed) on each ws endpoint method.")
     void multipleEndpointsWithDifferentDeclaredSecurityRoles();
 
     @LogMessage(level = ERROR)

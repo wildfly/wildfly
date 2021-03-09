@@ -80,7 +80,7 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
         weldSubsystemDependency.addExportFilter(PathFilters.getMetaInfFilter(), true);
         moduleSpecification.addSystemDependency(weldSubsystemDependency);
 
-        // Due to serialization of EJBs
+        // Due to serialization of Jakarta Enterprise Beans
         ModuleDependency weldEjbDependency = new ModuleDependency(moduleLoader, JBOSS_AS_WELD_EJB_ID, true, false, false, false);
         weldEjbDependency.addImportFilter(PathFilters.is("org/jboss/as/weld/ejb"), true);
         weldEjbDependency.addImportFilter(PathFilters.acceptAll(), false);

@@ -36,7 +36,7 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 
 /**
- * Implementation of EJB3.1 {@link Timer}
+ * Implementation of Enterprise Beans 3.1 {@link Timer}
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @version $Revision: $
@@ -197,9 +197,9 @@ public class TimerImpl implements Timer {
         // make sure it's in correct state
         this.assertTimerState();
 
-        // for non-persistent timers throws an exception (mandated by EJB3 spec)
+        // for non-persistent timers throws an exception (mandated by Enterprise Beans 3 spec)
         if (this.persistent == false) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.invalidTimerHandlersForPersistentTimers("EJB3.1 Spec 18.2.6");
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidTimerHandlersForPersistentTimers("Enterprise Beans 3.1 Spec 18.2.6");
         }
         return this.handle;
     }

@@ -19,7 +19,7 @@ ifndef::ebook-format[:leveloffset: 1]
 
 == Introduction
 
-As of WildFly 11 a common configuration framework has been introduced for use by the client libraries to define configuration, this allows for the configuration to be shared across multiple clients rather than relying on their own configuration files.  As an example the configuration used by an EJB client can be shared with the JBoss CLI, if both of these required SSL configuration this can now be defined once and re-used.
+As of WildFly 11 a common configuration framework has been introduced for use by the client libraries to define configuration, this allows for the configuration to be shared across multiple clients rather than relying on their own configuration files.  As an example the configuration used by a Jakarta Enterprise Beans client can be shared with the JBoss CLI, if both of these required SSL configuration this can now be defined once and re-used.
 
 Programmatic APIs are also available for many of the options however this document is focusing on the configuration available within the common `wildfly-config.xml` configuration file.
 

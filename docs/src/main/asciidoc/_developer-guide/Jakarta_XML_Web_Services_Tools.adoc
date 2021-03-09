@@ -20,7 +20,7 @@ generate the annotated code for you.
 
 Bottom-up use cases:
 
-* Exposing an already existing EJB3 bean as a Web Service
+* Exposing an already existing Jakarta Enterprise Beans 3 bean as a Web Service
 * Providing a new service, and you want the contract to be generated for
 you
 
@@ -74,7 +74,7 @@ public class Echo
 }
 ----
 
-A JSE or EJB3 deployment can be built using this class, and it is the
+A JSE or Jakarta Enterprise Beans 3 deployment can be built using this class, and it is the
 only Java code needed to deploy on JBossWS. The WSDL, and all other Java
 artifacts called "wrapper classes" will be generated for you at deploy
 time. This actually goes beyond the Jakarta XML Web Services specification, which requires

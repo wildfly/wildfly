@@ -28,7 +28,7 @@ import org.jboss.as.ejb3.security.service.EJBViewMethodSecurityAttributesService
 import org.jboss.wsf.spi.security.EJBMethodSecurityAttribute;
 
 /**
- * Adaptor of ejb3 EJBViewMethodSecurityAttributesService to JBossWS SPI EJBMethodSecurityAttributeProvider
+ * Adaptor of Enterprise Beans 3 EJBViewMethodSecurityAttributesService to JBossWS SPI EJBMethodSecurityAttributeProvider
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  *

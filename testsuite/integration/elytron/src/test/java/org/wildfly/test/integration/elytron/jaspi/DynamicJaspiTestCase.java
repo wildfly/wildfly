@@ -111,7 +111,7 @@ public class DynamicJaspiTestCase extends JaspiTestBase {
             }
 
             if (ejbSupported) {
-                // Now try and EJB call
+                // Now try and Jakarta Enterprise Beans call
                 request = new HttpGet(new URI(url.toExternalForm()) + "?action=ejb");
                 request.addHeader("X-USERNAME", "user1");
                 request.addHeader("X-PASSWORD", "password1");

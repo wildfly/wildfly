@@ -241,3 +241,5 @@ Callable<Void> callable = () -> {
 // use your authentication context to run your callable
 context.runCallable(callable);
 ----
+
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

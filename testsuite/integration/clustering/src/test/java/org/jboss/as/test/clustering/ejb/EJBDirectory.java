@@ -27,7 +27,7 @@ import javax.ejb.SessionBean;
 import javax.transaction.UserTransaction;
 
 /**
- * EJB lookup helper
+ * Jakarta Enterprise Beans lookup helper
  *
  * @author Paul Ferraro
  */

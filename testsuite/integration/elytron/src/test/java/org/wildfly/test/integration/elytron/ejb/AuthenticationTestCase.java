@@ -69,6 +69,8 @@ import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ *
+ * NOTE: References in this file to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
  */
 @RunWith(Arquillian.class)
 @ServerSetup({ AuthenticationTestCase.ElytronDomainSetupOverride.class, EjbElytronDomainSetup.class, ServletElytronDomainSetup.class })

@@ -106,7 +106,7 @@ public class WeldComponentService implements Service {
 
             if (ejbName != null) {
                 EjbDescriptor<Object> descriptor = beanManager.getEjbDescriptor(ejbName);
-                //may happen if the EJB was vetoed
+                //may happen if the Jakarta Enterprise Beans were vetoed
                 if (descriptor != null) {
                     bean = beanManager.getBean(descriptor);
                 }

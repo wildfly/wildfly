@@ -128,12 +128,12 @@ public interface EjbLogger extends BasicLogger {
     EjbLogger REMOTE_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.remote");
 
     /**
-     * logger use to log EJB invocation errors
+     * logger use to log Jakarta Enterprise Beans invocation errors
      */
     EjbLogger EJB3_INVOCATION_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.invocation");
 
     /**
-     * logger use to log EJB timer messages
+     * logger use to log Jakarta Enterprise Beans timer messages
      */
     EjbLogger EJB3_TIMER_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.timer");
 
@@ -147,7 +147,7 @@ public interface EjbLogger extends BasicLogger {
 //    void cacheRemoveFailed(Object id);
 
 //    /**
-//     * Logs a warning message indicating an EJB for the specific id could not be found
+//     * Logs a warning message indicating an Jakarta Enterprise Beans for the specific id could not be found
 //     *
 //     * @param id the session id that could not be released
 //     */
@@ -225,31 +225,31 @@ public interface EjbLogger extends BasicLogger {
     void defaultInterceptorClassNotListed(String clazz);
 
 //    /**
-//     * Logs a warning message indicating No method found on EJB while processing exclude-list element in ejb-jar.xml
+//     * Logs a warning message indicating No method found on Jakarta Enterprise Beans while processing exclude-list element in ejb-jar.xml
 //     */
 //    @LogMessage(level = WARN)
-//    @Message(id = 11, value = "No method named: %s found on EJB: %s while processing exclude-list element in ejb-jar.xml")
+//    @Message(id = 11, value = "No method named: %s found on Jakarta Enterprise Beans: %s while processing exclude-list element in ejb-jar.xml")
 //    void noMethodFoundOnEjbExcludeList(String methodName, String ejbName);
 
 //    /**
-//     * Logs a warning message indicating No method with param types found on EJB while processing exclude-list element in ejb-jar.xml
+//     * Logs a warning message indicating No method with param types found on Jakarta Enterprise Beans while processing exclude-list element in ejb-jar.xml
 //     */
 //    @LogMessage(level = WARN)
-//    @Message(id = 12, value = "No method named: %s with param types: %s found on EJB: %s while processing exclude-list element in ejb-jar.xml")
+//    @Message(id = 12, value = "No method named: %s with param types: %s found on Jakarta Enterprise Beans: %s while processing exclude-list element in ejb-jar.xml")
 //    void noMethodFoundOnEjbWithParamExcludeList(String methodName, String s, String ejbName);
 
 //    /**
-//     * Logs a warning message indicating no method named found on EJB while processing method-permission element in ejb-jar.xml
+//     * Logs a warning message indicating no method named found on Jakarta Enterprise Beans while processing method-permission element in ejb-jar.xml
 //     */
 //    @LogMessage(level = WARN)
-//    @Message(id = 13, value = "No method named: %s found on EJB: %s while processing method-permission element in ejb-jar.xml")
+//    @Message(id = 13, value = "No method named: %s found on Jakarta Enterprise Beans: %s while processing method-permission element in ejb-jar.xml")
 //    void noMethodFoundOnEjbPermission(String methodName, String ejbName);
 
 //    /**
-//     * Logs a warning message indicating No method with param type found on EJB while processing method-permission element in ejb-jar.xml
+//     * Logs a warning message indicating No method with param type found on Jakarta Enterprise Beans while processing method-permission element in ejb-jar.xml
 //     */
 //    @LogMessage(level = WARN)
-//    @Message(id = 14, value = "No method named: %s with param types: %s found on EJB: %s while processing method-permission element in ejb-jar.xml")
+//    @Message(id = 14, value = "No method named: %s with param types: %s found on Jakarta Enterprise Beans: %s while processing method-permission element in ejb-jar.xml")
 //    void noMethodFoundWithParamOnEjbMethodPermission(String methodName, String s, String ejbName);
 
 
@@ -324,10 +324,10 @@ public interface EjbLogger extends BasicLogger {
     void timerNotActive(Timer timer);
 
     /**
-     * Logs a warning message indicating could not read timer information for EJB component
+     * Logs a warning message indicating could not read timer information for Jakarta Enterprise Beans component
      */
     @LogMessage(level = WARN)
-    @Message(id = 26, value = "Could not read timer information for EJB component %s")
+    @Message(id = 26, value = "Could not read timer information for Jakarta Enterprise Beans component %s")
     void failToReadTimerInformation(String componentName);
 
 //    /**
@@ -369,7 +369,7 @@ public interface EjbLogger extends BasicLogger {
      * Logs an error message indicating Could not restore timers for specified id
      */
     @LogMessage(level = ERROR)
-    @Message(id = 32, value = "Could not create directory %s to persist EJB timers.")
+    @Message(id = 32, value = "Could not create directory %s to persist Jakarta Enterprise Beans timers.")
     void failToCreateDirectoryForPersistTimers(File file);
 
 //    /**
@@ -383,22 +383,22 @@ public interface EjbLogger extends BasicLogger {
      * Logs an error message indicating that an invocation failed
      */
     @LogMessage(level = ERROR)
-    @Message(id = 34, value = "EJB Invocation failed on component %s for method %s")
+    @Message(id = 34, value = "Jakarta Enterprise Beans Invocation failed on component %s for method %s")
     void invocationFailed(String component, Method method, @Cause Throwable t);
 
     /**
-     * Logs an error message indicating that an ejb client proxy could not be swapped out in a RMI invocation
+     * Logs an error message indicating that an Jakarta Enterprise Beans client proxy could not be swapped out in a RMI invocation
      */
     @LogMessage(level = WARN)
-    @Message(id = 35, value = "Could not find EJB for locator %s, EJB client proxy will not be replaced")
+    @Message(id = 35, value = "Could not find Jakarta Enterprise Beans for locator %s, Jakarta Enterprise Beans client proxy will not be replaced")
     void couldNotFindEjbForLocatorIIOP(EJBLocator<?> locator);
 
 
     /**
-     * Logs an error message indicating that an ejb client proxy could not be swapped out in a RMI invocation
+     * Logs an error message indicating that an Jakarta Enterprise Beans client proxy could not be swapped out in a RMI invocation
      */
     @LogMessage(level = WARN)
-    @Message(id = 36, value = "EJB %s is not being replaced with a Stub as it is not exposed over IIOP")
+    @Message(id = 36, value = "Jakarta Enterprise Beans %s is not being replaced with a Stub as it is not exposed over IIOP")
     void ejbNotExposedOverIIOP(EJBLocator<?> locator);
 
     /**
@@ -516,7 +516,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 50, value = "Failed to parse property %s due to %s")
     void failedToCreateOptionForProperty(String propertyName, String reason);
 
-    @Message(id = 51, value = "Could not find view %s for EJB %s")
+    @Message(id = 51, value = "Could not find view %s for Jakarta Enterprise Beans %s")
     IllegalStateException viewNotFound(String viewClass, String ejbName);
 
     @Message(id = 52, value = "Cannot perform asynchronous local invocation for component that is not a session bean")
@@ -525,13 +525,13 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 53, value = "%s is not a Stateful Session bean in app: %s module: %s distinct-name: %s")
     IllegalArgumentException notStatefulSessionBean(String ejbName, String appName, String moduleName, String distinctName);
 
-    @Message(id = 54, value = "Failed to marshal EJB parameters")
+    @Message(id = 54, value = "Failed to marshal Jakarta Enterprise Beans parameters")
     RuntimeException failedToMarshalEjbParameters(@Cause Exception e);
 
-    @Message(id = 55, value = "No matching deployment for EJB: %s")
+    @Message(id = 55, value = "No matching deployment for Jakarta Enterprise Beans: %s")
     NoSuchEJBException unknownDeployment(EJBLocator<?> locator);
 
-    @Message(id = 56, value = "Could not find EJB in matching deployment: %s")
+    @Message(id = 56, value = "Could not find Jakarta Enterprise Beans in matching deployment: %s")
     NoSuchEJBException ejbNotFoundInDeployment(EJBLocator<?> locator);
 
     @Message(id = 57, value = "%s annotation is only valid on method targets")
@@ -552,7 +552,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 62, value = "Transaction is required for invocation %s")
     EJBTransactionRequiredException txRequiredForInvocation(InterceptorContext invocation);
 
-    @Message(id = 63, value = "Transaction present on server in Never call (EJB3 13.6.2.6)")
+    @Message(id = 63, value = "Transaction present on server in Never call (Enterprise Beans 3 13.6.2.6)")
     EJBException txPresentForNeverTxAttribute();
 
     @LogMessage(level = ERROR)
@@ -586,13 +586,13 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 73, value = "Illegal call to EJBHome.remove(Object) on a session bean")
     RemoveException illegalCallToEjbHomeRemove();
 
-    @Message(id = 74, value = "EJB 3.1 FR 13.6.2.8 setRollbackOnly is not allowed with SUPPORTS transaction attribute")
+    @Message(id = 74, value = "Enterprise Beans 3.1 FR 13.6.2.8 setRollbackOnly is not allowed with SUPPORTS transaction attribute")
     IllegalStateException setRollbackOnlyNotAllowedForSupportsTxAttr();
 
     @Message(id = 75, value = "Cannot call getPrimaryKey on a session bean")
     EJBException cannotCallGetPKOnSessionBean();
 
-    @Message(id = 76, value = "Singleton beans cannot have EJB 2.x views")
+    @Message(id = 76, value = "Singleton beans cannot have Enterprise Beans 2.x views")
     RuntimeException ejb2xViewNotApplicableForSingletonBeans();
 
 //    @Message(id = 77, value = "ClassTable %s cannot find a class for class index %d")
@@ -601,10 +601,10 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 78, value = "Bean %s does not have an EJBLocalObject")
     IllegalStateException ejbLocalObjectUnavailable(String beanName);
 
-    @Message(id = 79, value = "[EJB 3.1 spec, section 14.1.1] Class: %s cannot be marked as an application exception because it is not of type java.lang.Exception")
+    @Message(id = 79, value = "[Enterprise Beans 3.1 spec, section 14.1.1] Class: %s cannot be marked as an application exception because it is not of type java.lang.Exception")
     IllegalArgumentException cannotBeApplicationExceptionBecauseNotAnExceptionType(Class<?> klass);
 
-    @Message(id = 80, value = "[EJB 3.1 spec, section 14.1.1] Exception class: %s cannot be marked as an application exception because it is of type java.rmi.RemoteException")
+    @Message(id = 80, value = "[Enterprise Beans 3.1 spec, section 14.1.1] Exception class: %s cannot be marked as an application exception because it is of type java.rmi.RemoteException")
     IllegalArgumentException rmiRemoteExceptionCannotBeApplicationException(Class<?> klass);
 
     @Message(id = 81, value = "%s annotation is allowed only on classes. %s is not a class")
@@ -646,7 +646,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 93, value = "Module hasn't been attached to deployment unit %s")
     IllegalStateException moduleNotAttachedToDeploymentUnit(DeploymentUnit deploymentUnit);
 
-    @Message(id = 94, value = "EJB 3.1 FR 5.4.2 MessageDrivenBean %s does not implement 1 interface nor specifies message listener interface")
+    @Message(id = 94, value = "Enterprise Beans 3.1 FR 5.4.2 MessageDrivenBean %s does not implement 1 interface nor specifies message listener interface")
     DeploymentUnitProcessingException mdbDoesNotImplementNorSpecifyMessageListener(ClassInfo beanClass);
 
     @Message(id = 95, value = "Unknown session bean type %s")
@@ -655,13 +655,13 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 96, value = "More than one method found with name %s on %s")
     DeploymentUnitProcessingException moreThanOneMethodWithSameNameOnComponent(String methodName, Class<?> componentClass);
 
-    @Message(id = 97, value = "Unknown EJB locator type %s")
+    @Message(id = 97, value = "Unknown Jakarta Enterprise Beans locator type %s")
     RuntimeException unknownEJBLocatorType(EJBLocator<?> locator);
 
     @Message(id = 98, value = "Could not create CORBA object for %s")
     RuntimeException couldNotCreateCorbaObject(@Cause Exception cause, EJBLocator<?> locator);
 
-    @Message(id = 99, value = "Provided locator %s was not for EJB %s")
+    @Message(id = 99, value = "Provided locator %s was not for Jakarta Enterprise Beans %s")
     IllegalArgumentException incorrectEJBLocatorForBean(EJBLocator<?> locator, String beanName);
 
     @Message(id = 100, value = "Failed to lookup java:comp/ORB")
@@ -679,7 +679,7 @@ public interface EjbLogger extends BasicLogger {
 //    @Message(id = 104, value = "Could not find marshaller factory for marshaller strategy %s")
 //    RuntimeException failedToFindMarshallerFactoryForStrategy(String marshallerStrategy);
 
-    @Message(id = 105, value = "%s is not an EJB component")
+    @Message(id = 105, value = "%s is not an Jakarta Enterprise Beans component")
     IllegalArgumentException notAnEJBComponent(Component component);
 
     @Message(id = 106, value = "Could not load method param class %s of timeout method")
@@ -698,7 +698,7 @@ public interface EjbLogger extends BasicLogger {
     TimerTransactionRolledBackException timerInvocationRolledBack();
 
     @LogMessage(level = INFO)
-    @Message(id = 111, value = "No jndi bindings will be created for EJB %s since no views are exposed")
+    @Message(id = 111, value = "No jndi bindings will be created for Jakarta Enterprise Beans %s since no views are exposed")
     void noJNDIBindingsForSessionBean(String beanName);
 
 //    @LogMessage(level = WARN)
@@ -730,19 +730,19 @@ public interface EjbLogger extends BasicLogger {
 //    void failedToSendClusterNodeRemovalMessageToClient(@Cause Exception e, Channel channel);
 
     @LogMessage(level = WARN)
-    @Message(id = 118, value = "[EJB3.1 spec, section 4.9.2] Session bean implementation class MUST NOT be a interface - %s is an interface, hence won't be considered as a session bean")
+    @Message(id = 118, value = "[Enterprise Beans 3.1 spec, section 4.9.2] Session bean implementation class MUST NOT be a interface - %s is an interface, hence won't be considered as a session bean")
     void sessionBeanClassCannotBeAnInterface(String className);
 
     @LogMessage(level = WARN)
-    @Message(id = 119, value = "[EJB3.1 spec, section 4.9.2] Session bean implementation class MUST be public, not abstract and not final - %s won't be considered as a session bean, since it doesn't meet that requirement")
+    @Message(id = 119, value = "[Enterprise Beans 3.1 spec, section 4.9.2] Session bean implementation class MUST be public, not abstract and not final - %s won't be considered as a session bean, since it doesn't meet that requirement")
     void sessionBeanClassMustBePublicNonAbstractNonFinal(String className);
 
     @LogMessage(level = WARN)
-    @Message(id = 120, value = "[EJB3.1 spec, section 5.6.2] Message driven bean implementation class MUST NOT be a interface - %s is an interface, hence won't be considered as a message driven bean")
+    @Message(id = 120, value = "[Enterprise Beans 3.1 spec, section 5.6.2] Message driven bean implementation class MUST NOT be a interface - %s is an interface, hence won't be considered as a message driven bean")
     void mdbClassCannotBeAnInterface(String className);
 
     @LogMessage(level = WARN)
-    @Message(id = 121, value = "[EJB3.1 spec, section 5.6.2] Message driven bean implementation class MUST be public, not abstract and not final - %s won't be considered as a message driven bean, since it doesn't meet that requirement")
+    @Message(id = 121, value = "[Enterprise Beans 3.1 spec, section 5.6.2] Message driven bean implementation class MUST be public, not abstract and not final - %s won't be considered as a message driven bean, since it doesn't meet that requirement")
     void mdbClassMustBePublicNonAbstractNonFinal(String className);
 
 //    @LogMessage(level = WARN)
@@ -763,32 +763,32 @@ public interface EjbLogger extends BasicLogger {
 //    @Message(id = 126, value = "Could not lookup service %s")
 //    IllegalStateException serviceNotFound(ServiceName serviceName);
 
-    @Message(id = 127, value = "EJB %s of type %s must have public default constructor")
+    @Message(id = 127, value = "Jakarta Enterprise Beans %s of type %s must have public default constructor")
     DeploymentUnitProcessingException ejbMustHavePublicDefaultConstructor(String componentName, String componentClassName);
 
-    @Message(id = 128, value = "EJB %s of type %s must not be inner class")
+    @Message(id = 128, value = "Jakarta Enterprise Beans %s of type %s must not be inner class")
     DeploymentUnitProcessingException ejbMustNotBeInnerClass(String componentName, String componentClassName);
 
-    @Message(id = 129, value = "EJB %s of type %s must be declared public")
+    @Message(id = 129, value = "Jakarta Enterprise Beans %s of type %s must be declared public")
     DeploymentUnitProcessingException ejbMustBePublicClass(String componentName, String componentClassName);
 
-    @Message(id = 130, value = "EJB %s of type %s must not be declared final")
+    @Message(id = 130, value = "Jakarta Enterprise Beans %s of type %s must not be declared final")
     DeploymentUnitProcessingException ejbMustNotBeFinalClass(String componentName, String componentClassName);
 
     @LogMessage(level = WARN)
-    @Message(id = 131, value = "EJB %s should not have a final or static method (%s)")
+    @Message(id = 131, value = "Jakarta Enterprise Beans %s should not have a final or static method (%s)")
     void ejbMethodMustNotBeFinalNorStatic(String ejbName, String methodName);
 
-//    @Message(id = 131, value = "EJB client context selector failed due to unavailability of %s service")
+//    @Message(id = 131, value = "Jakarta Enterprise Beans client context selector failed due to unavailability of %s service")
 //    IllegalStateException ejbClientContextSelectorUnableToFunctionDueToMissingService(ServiceName serviceName);
 
-    @Message(id = 132, value = "@PostConstruct method of EJB singleton %s of type %s has been recursively invoked")
+    @Message(id = 132, value = "@PostConstruct method of Jakarta Enterprise Beans singleton %s of type %s has been recursively invoked")
     IllegalStateException reentrantSingletonCreation(String componentName, String componentClassName);
 
-//    @Message(id = 133, value = "Failed to read EJB info")
+//    @Message(id = 133, value = "Failed to read Jakarta Enterprise Beans info")
 //    IOException failedToReadEjbInfo(@Cause Throwable e);
 //
-//    @Message(id = 134, value = "Failed to read EJB Locator")
+//    @Message(id = 134, value = "Failed to read Jakarta Enterprise Beans Locator")
 //    IOException failedToReadEJBLocator(@Cause Throwable e);
 //
 //    @Message(id = 135, value = "default-security-domain was defined")
@@ -803,10 +803,10 @@ public interface EjbLogger extends BasicLogger {
 //    @Message(id = 138, value = "More than one timer found in database with id %s")
 //    RuntimeException moreThanOneTimerFoundWithId(String id);
 
-    @Message(id = 139, value = "The timer service has been disabled. Please add a <timer-service> entry into the ejb section of the server configuration to enable it.")
+    @Message(id = 139, value = "The timer service has been disabled. Please add a <timer-service> entry into the Jakarta Enterprise Beans section of the server configuration to enable it.")
     String timerServiceIsNotActive();
 
-    @Message(id = 140, value = "This EJB does not have any timeout methods")
+    @Message(id = 140, value = "This Jakarta Enterprise Beans does not have any timeout methods")
     String ejbHasNoTimerMethods();
 
     @LogMessage(level = ERROR)
@@ -905,7 +905,7 @@ public interface EjbLogger extends BasicLogger {
     void couldNotCreateTable(@Cause SQLException e);
 
     @LogMessage(level = ERROR)
-    @Message(id = 164, value = "Exception running timer task for timer %s on EJB %s")
+    @Message(id = 164, value = "Exception running timer task for timer %s on Jakarta Enterprise Beans %s")
     void exceptionRunningTimerTask(Timer timer, String timedObjectId, @Cause  Exception e);
 
 //    @LogMessage(level = ERROR)
@@ -921,12 +921,12 @@ public interface EjbLogger extends BasicLogger {
     void deprecatedNamespace(String namespace, String element);
 
     /**
-     * Creates an exception indicating it could not find the EJB with specific id
+     * Creates an exception indicating it could not find the Jakarta Enterprise Beans with specific id
      *
      * @param sessionId Session id
      * @return a {@link NoSuchEJBException} for the error.
      */
-    @Message(id = 168, value = "Could not find EJB with id %s")
+    @Message(id = 168, value = "Could not find Jakarta Enterprise Beans with id %s")
     NoSuchEJBException couldNotFindEjb(String sessionId);
 
     /**
@@ -967,7 +967,7 @@ public interface EjbLogger extends BasicLogger {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 173, value = "EJB 3.1 FR 13.6.1 Only beans with container-managed transaction demarcation " +
+    @Message(id = 173, value = "Enterprise Beans 3.1 FR 13.6.1 Only beans with container-managed transaction demarcation " +
             "can use getRollbackOnly.")
     IllegalStateException failToCallgetRollbackOnly();
 
@@ -992,7 +992,7 @@ public interface EjbLogger extends BasicLogger {
 //     *
 //     * @return a {@link IllegalStateException} for the error.
 //     */
-//    @Message(id = 176, value = "EJB 3.1 FR 4.3.3 & 5.4.5 Only beans with bean-managed transaction demarcation can use this method.")
+//    @Message(id = 176, value = "Enterprise Beans 3.1 FR 4.3.3 & 5.4.5 Only beans with bean-managed transaction demarcation can use this method.")
 //    IllegalStateException failToCallIsBeanManagedTransaction();
 
     /**
@@ -1048,7 +1048,7 @@ public interface EjbLogger extends BasicLogger {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 182, value = "EJB 3.1 FR 13.6.1 Only beans with container-managed transaction demarcation " +
+    @Message(id = 182, value = "Enterprise Beans 3.1 FR 13.6.1 Only beans with container-managed transaction demarcation " +
             "can use setRollbackOnly.")
     IllegalStateException failToCallSetRollbackOnlyOnNoneCMB();
 
@@ -1093,11 +1093,11 @@ public interface EjbLogger extends BasicLogger {
 //    IllegalArgumentException setRolesForClassIsNull(String className);
 //
 //    /**
-//     * Creates an exception indicating EJB method identifier cannot be null while setting roles on method
+//     * Creates an exception indicating Jakarta Enterprise Beans method identifier cannot be null while setting roles on method
 //     *
 //     * @return a {@link IllegalArgumentException} for the error.
 //     */
-//    @Message(id = 188, value = "EJB method identifier cannot be null while setting roles on method")
+//    @Message(id = 188, value = "Jakarta Enterprise Beans method identifier cannot be null while setting roles on method")
 //    IllegalArgumentException ejbMethodIsNull();
 //
 //    /**
@@ -1109,11 +1109,11 @@ public interface EjbLogger extends BasicLogger {
 //    IllegalArgumentException rolesIsNull(EJBMethodIdentifier ejbMethodIdentifier);
 
 //    /**
-//     * Creates an exception indicating EJB method identifier cannot be null while setting roles on view type
+//     * Creates an exception indicating Jakarta Enterprise Beans method identifier cannot be null while setting roles on view type
 //     *
 //     * @return a {@link IllegalArgumentException} for the error.
 //     */
-//    @Message(id = 190, value = "EJB method identifier cannot be null while setting roles on view type: %s")
+//    @Message(id = 190, value = "Jakarta Enterprise Beans method identifier cannot be null while setting roles on view type: %s")
 //    IllegalArgumentException ejbMethodIsNullForViewType(MethodIntf viewType);
 
 //    /**
@@ -1229,19 +1229,19 @@ public interface EjbLogger extends BasicLogger {
     CancellationException taskWasCancelled();
 
 //    /**
-//     * Creates an exception indicating that it could not resolve ejbRemove method for interface method on EJB
+//     * Creates an exception indicating that it could not resolve ejbRemove method for interface method on Jakarta Enterprise Beans
 //     *
 //     * @return a {@link DeploymentUnitProcessingException} for the error.
 //     */
-//    @Message(id = 204, value = "Could not resolve ejbRemove method for interface method on EJB %s")
+//    @Message(id = 204, value = "Could not resolve ejbRemove method for interface method on Jakarta Enterprise Beans %s")
 //    DeploymentUnitProcessingException failToResolveEjbRemoveForInterface(String ejbName);
 //
 //    /**
-//     * Creates an exception indicating that it could not resolve corresponding method for home interface method on EJB
+//     * Creates an exception indicating that it could not resolve corresponding method for home interface method on Jakarta Enterprise Beans
 //     *
 //     * @return a {@link DeploymentUnitProcessingException} for the error.
 //     */
-//    @Message(id = 205, value = "Could not resolve corresponding %s for home interface method %s on EJB %s")
+//    @Message(id = 205, value = "Could not resolve corresponding %s for home interface method %s on Jakarta Enterprise Beans %s")
 //    DeploymentUnitProcessingException failToResolveMethodForHomeInterface(String ejbMethodName, Method method, String ejbName);
 
     /**
@@ -1315,7 +1315,7 @@ public interface EjbLogger extends BasicLogger {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 214, value = "EjbJarConfiguration hasn't been set in %s Cannot create component create service for EJB %S")
+    @Message(id = 214, value = "EjbJarConfiguration hasn't been set in %s Cannot create component create service for Jakarta Enterprise Beans %S")
     IllegalStateException ejbJarConfigNotBeenSet(ComponentCreateServiceFactory serviceFactory, String componentName);
 
 //    /**
@@ -1363,7 +1363,7 @@ public interface EjbLogger extends BasicLogger {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 220, value = "[EJB 3.1 spec, section 4.9.7] - Can't add view class: %s as local view since it's already marked as remote view for bean: %s")
+    @Message(id = 220, value = "[Enterprise Beans 3.1 spec, section 4.9.7] - Can't add view class: %s as local view since it's already marked as remote view for bean: %s")
     IllegalStateException failToAddClassToLocalView(String viewClassName, String ejbName);
 
     /**
@@ -1383,19 +1383,19 @@ public interface EjbLogger extends BasicLogger {
     IllegalStateException beanComponentMissingEjbObject(String componentName, String ejbLocalObject);
 
     /**
-     * Creates an exception indicating EJB 3.1 FR 13.6.2.9 getRollbackOnly is not allowed with SUPPORTS attribute
+     * Creates an exception indicating Jakarta Enterprise Beans 3.1 FR 13.6.2.9 getRollbackOnly is not allowed with SUPPORTS attribute
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 223, value = "EJB 3.1 FR 13.6.2.9 getRollbackOnly is not allowed with SUPPORTS attribute")
+    @Message(id = 223, value = "Jakarta Enterprise Beans 3.1 FR 13.6.2.9 getRollbackOnly is not allowed with SUPPORTS attribute")
     IllegalStateException getRollBackOnlyIsNotAllowWithSupportsAttribute();
 
     /**
-     * Creates an exception indicating not a business method. Do not call non-public methods on EJB's
+     * Creates an exception indicating not a business method. Do not call non-public methods on Jakarta Enterprise Beans's
      *
      * @return a {@link EJBException} for the error.
      */
-    @Message(id = 224, value = "Not a business method %s. Do not call non-public methods on EJB's")
+    @Message(id = 224, value = "Not a business method %s. Do not call non-public methods on Jakarta Enterprise Beans's")
     EJBException failToCallBusinessOnNonePublicMethod(Method method);
 
     /**
@@ -1427,7 +1427,7 @@ public interface EjbLogger extends BasicLogger {
      *
      * @return a {@link ConcurrentAccessTimeoutException} for the error.
      */
-    @Message(id = 228, value = "EJB 3.1 FR 4.3.14.1 concurrent access timeout on %s - could not obtain lock within %s %s")
+    @Message(id = 228, value = "Enterprise Beans 3.1 FR 4.3.14.1 concurrent access timeout on %s - could not obtain lock within %s %s")
     ConcurrentAccessTimeoutException failToObtainLock(String ejb, long value, TimeUnit timeUnit);
 
 //    /**
@@ -1503,11 +1503,11 @@ public interface EjbLogger extends BasicLogger {
     IllegalArgumentException bothMethodIntAndClassNameSet(String componentName);
 
     /**
-     * Creates an exception indicating EJB 3.1 PFD2 4.8.5.1.1 upgrading from read to write lock is not allowed
+     * Creates an exception indicating Enterprise Beans 3.1 PFD2 4.8.5.1.1 upgrading from read to write lock is not allowed
      *
      * @return a {@link IllegalLoopbackException} for the error.
      */
-    @Message(id = 238, value = "EJB 3.1 PFD2 4.8.5.1.1 upgrading from read to write lock is not allowed")
+    @Message(id = 238, value = "Enterprise Beans 3.1 PFD2 4.8.5.1.1 upgrading from read to write lock is not allowed")
     IllegalLoopbackException failToUpgradeToWriteLock();
 
     /**
@@ -1527,11 +1527,11 @@ public interface EjbLogger extends BasicLogger {
     IllegalArgumentException invocationNotApplicableForMethodInvocation(InvocationContext invocationContext);
 
     /**
-     * Creates an exception EJB 3.1 PFD2 4.8.5.5.1 concurrent access timeout on invocation - could not obtain lock within
+     * Creates an exception Enterprise Beans 3.1 PFD2 4.8.5.5.1 concurrent access timeout on invocation - could not obtain lock within
      *
      * @return a {@link ConcurrentAccessTimeoutException} for the error.
      */
-    @Message(id = 241, value = "EJB 3.1 PFD2 4.8.5.5.1 concurrent access timeout on %s - could not obtain lock within %s")
+    @Message(id = 241, value = "Enterprise Beans 3.1 PFD2 4.8.5.5.1 concurrent access timeout on %s - could not obtain lock within %s")
     ConcurrentAccessTimeoutException concurrentAccessTimeoutException(String ejb, String s);
 
     /**
@@ -1587,11 +1587,11 @@ public interface EjbLogger extends BasicLogger {
 //    IllegalStateException gettingParametersNotAllowLifeCycleCallbacks();
 //
 //    /**
-//     * Creates an exception indicating method is not allowed in lifecycle callbacks (EJB 3.1 FR 4.6.1, 4.7.2, 4.8.6, 5.5.1)
+//     * Creates an exception indicating method is not allowed in lifecycle callbacks (Enterprise Beans 3.1 FR 4.6.1, 4.7.2, 4.8.6, 5.5.1)
 //     *
 //     * @return a {@link IllegalStateException} for the error.
 //     */
-//    @Message(id = 248, value = "%s is not allowed in lifecycle callbacks (EJB 3.1 FR 4.6.1, 4.7.2, 4.8.6, 5.5.1)")
+//    @Message(id = 248, value = "%s is not allowed in lifecycle callbacks (Enterprise Beans 3.1 FR 4.6.1, 4.7.2, 4.8.6, 5.5.1)")
 //    IllegalStateException notAllowedInLifecycleCallbacks(String name);
 //
 //    /**
@@ -1707,11 +1707,11 @@ public interface EjbLogger extends BasicLogger {
     DeploymentUnitProcessingException failToLoadComponentClass(@Cause Throwable t, String componentName);
 
     /**
-     * Creates an exception indicating Could not load EJB view class
+     * Creates an exception indicating Could not load Jakarta Enterprise Beans view class
      *
      * @return a {@link RuntimeException} for the error.
      */
-//    @Message(id = 263, value = "Could not load EJB view class ")
+//    @Message(id = 263, value = "Could not load Jakarta Enterprise Beans view class ")
 //    RuntimeException failToLoadEjbViewClass(@Cause Throwable e);
 
 
@@ -1724,11 +1724,11 @@ public interface EjbLogger extends BasicLogger {
     DeploymentUnitProcessingException failToMergeData(String componentName, @Cause Throwable e);
 
     /**
-     * Creates an exception indicating it could not load EJB class
+     * Creates an exception indicating it could not load Jakarta Enterprise Beans class
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 265, value = "Could not load EJB class %s")
+    @Message(id = 265, value = "Could not load Jakarta Enterprise Beans class %s")
     DeploymentUnitProcessingException failToLoadEjbClass(String ejbClassName, @Cause Throwable e);
 
     /**
@@ -1740,28 +1740,28 @@ public interface EjbLogger extends BasicLogger {
     RuntimeException multipleAnnotationsOnBean(String annotationType, String ejbClassName);
 
     /**
-     * Creates an exception indicating it could not determine type of corresponding implied EJB 2.x local interface (see EJB 3.1 21.4.5)
+     * Creates an exception indicating it could not determine type of corresponding implied Enterprise Beans 2.x local interface (see Enterprise Beans 3.1 21.4.5)
      * due to  multiple create* methods with different return types on home
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 267, value = "Could not determine type of corresponding implied EJB 2.x local interface (see EJB 3.1 21.4.5)%n due to multiple create* methods with different return types on home %s")
+    @Message(id = 267, value = "Could not determine type of corresponding implied Enterprise Beans 2.x local interface (see Enterprise Beans 3.1 21.4.5)%n due to multiple create* methods with different return types on home %s")
     DeploymentUnitProcessingException multipleCreateMethod(Class<?> localHomeClass);
 
     /**
-     * Creates an exception indicating it Could not find EJB referenced by @DependsOn annotation
+     * Creates an exception indicating it Could not find Jakarta Enterprise Beans referenced by @DependsOn annotation
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 268, value = "Could not find EJB %s referenced by @DependsOn annotation in %s")
+    @Message(id = 268, value = "Could not find Jakarta Enterprise Beans %s referenced by @DependsOn annotation in %s")
     DeploymentUnitProcessingException failToFindEjbRefByDependsOn(String annotationValue, String componentClassName);
 
     /**
-     * Creates an exception indicating more than one EJB called referenced by @DependsOn annotation in Components
+     * Creates an exception indicating more than one Jakarta Enterprise Beans called referenced by @DependsOn annotation in Components
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 269, value = "More than one EJB called %s referenced by @DependsOn annotation in %s Components:%s")
+    @Message(id = 269, value = "More than one Jakarta Enterprise Beans called %s referenced by @DependsOn annotation in %s Components:%s")
     DeploymentUnitProcessingException failToCallEjbRefByDependsOn(String annotationValue, String componentClassName, Set<ComponentDescription> components);
 
     /**
@@ -1781,21 +1781,21 @@ public interface EjbLogger extends BasicLogger {
     DeploymentUnitProcessingException failToLoadAppExceptionClassInEjbJarXml(String exceptionClassName, @Cause Throwable e);
 
     /**
-     * Creates an exception indicating the EJB entity bean implemented TimedObject but has a different
+     * Creates an exception indicating the Jakarta Enterprise Beans entity bean implemented TimedObject but has a different
      * timeout method specified either via annotations or via the deployment descriptor.
      *
      * @return an {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 272, value = "EJB %s entity bean %s implemented TimedObject, but has a different timeout " +
+    @Message(id = 272, value = "Jakarta Enterprise Beans %s entity bean %s implemented TimedObject, but has a different timeout " +
             "method specified either via annotations or via the deployment descriptor")
     DeploymentUnitProcessingException invalidEjbEntityTimeout(String versionId, Class<?> componentClass);
 
     /**
-     * Creates an exception indicating component does not have an EJB 2.x local interface
+     * Creates an exception indicating component does not have an Enterprise Beans 2.x local interface
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 273, value = "%s does not have an EJB 2.x local interface")
+    @Message(id = 273, value = "%s does not have an Enterprise Beans 2.x local interface")
     RuntimeException invalidEjbLocalInterface(String componentName);
 
     /**
@@ -1807,11 +1807,11 @@ public interface EjbLogger extends BasicLogger {
     DeploymentUnitProcessingException localHomeNotAllow(EJBComponentDescription description);
 
     /**
-     * Creates an exception indicating Could not resolve corresponding ejbCreate or @Init method for home interface method on EJB
+     * Creates an exception indicating Could not resolve corresponding ejbCreate or @Init method for home interface method on Jakarta Enterprise Beans
      *
      * @return an {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 275, value = "Could not resolve corresponding ejbCreate or @Init method for home interface method %s on EJB %s")
+    @Message(id = 275, value = "Could not resolve corresponding ejbCreate or @Init method for home interface method %s on Jakarta Enterprise Beans %s")
     DeploymentUnitProcessingException failToCallEjbCreateForHomeInterface(Method method, String ejbClassName);
 
     /**
@@ -2151,11 +2151,11 @@ public interface EjbLogger extends BasicLogger {
     IllegalArgumentException invalidIntervalDurationTimer();
 
     /**
-     * Creates an exception indicating the creation of timers is not allowed during lifecycle callback of non-singleton EJBs
+     * Creates an exception indicating the creation of timers is not allowed during lifecycle callback of non-singleton Jakarta Enterprise Beans
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 318, value = "Creation of timers is not allowed during lifecycle callback of non-singleton EJBs")
+    @Message(id = 318, value = "Creation of timers is not allowed during lifecycle callback of non-singleton Jakarta Enterprise Beans")
     IllegalStateException failToCreateTimerDoLifecycle();
 
     /**
@@ -2383,19 +2383,19 @@ public interface EjbLogger extends BasicLogger {
     RuntimeException invalidTimerFileStoreDir(File baseDir);
 
     /**
-     * Creates an exception indicating EJB is enabled for security but doesn't have a security domain set
+     * Creates an exception indicating Jakarta Enterprise Beans are enabled for security but doesn't have a security domain set
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 347, value = "EJB %s is enabled for security but doesn't have a security domain set")
+    @Message(id = 347, value = "Jakarta Enterprise Beans %s are enabled for security but doesn't have a security domain set")
     IllegalStateException invalidSecurityForDomainSet(String componentName);
 
     /**
-     * Creates an exception indicating component configuration is not an EJB component"
+     * Creates an exception indicating component configuration is not an Jakarta Enterprise Beans component"
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 348, value = "%s is not an EJB component")
+    @Message(id = 348, value = "%s is not an Jakarta Enterprise Beans component")
     IllegalArgumentException invalidComponentConfiguration(String componentName);
 
     /**
@@ -2407,11 +2407,11 @@ public interface EjbLogger extends BasicLogger {
     RuntimeException failToLoadViewClassEjb(String beanName, @Cause Throwable e);
 
     /**
-     * Creates an exception indicating the component named with component class is not an EJB component
+     * Creates an exception indicating the component named with component class is not an Jakarta Enterprise Beans component
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 350, value = "Component named %s with component class %s is not an EJB component")
+    @Message(id = 350, value = "Component named %s with component class %s is not an Jakarta Enterprise Beans component")
     IllegalArgumentException invalidEjbComponent(String componentName, Class<?> componentClass);
 
 //    /**
@@ -2455,19 +2455,19 @@ public interface EjbLogger extends BasicLogger {
 //    String invalidValueForElement(String value, String element, Location location);
 
     /**
-     * Creates an exception indicating EJB component type does not support pools
+     * Creates an exception indicating Jakarta Enterprise Beans component type does not support pools
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 356, value = "EJB component type %s does not support pools")
+    @Message(id = 356, value = "Jakarta Enterprise Beans component type %s does not support pools")
     IllegalStateException invalidComponentType(String simpleName);
 
     /**
-     * Creates an exception indicating Unknown EJBComponent type
+     * Creates an exception indicating Unknown Jakarta Enterprise Beans Component type
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 357, value = "Unknown EJBComponent type %s")
+    @Message(id = 357, value = "Unknown Jakarta Enterprise Beans Component type %s")
     IllegalStateException unknownComponentType(EJBComponentType ejbComponentType);
 
 //    /**
@@ -2488,11 +2488,11 @@ public interface EjbLogger extends BasicLogger {
 //    RuntimeException failToFindComponentMethod(String name, String s, Class<?> componentClass);
 
     /**
-     * Creates an exception indicating the EJB method security metadata cannot be null
+     * Creates an exception indicating the Jakarta Enterprise Beans method security metadata cannot be null
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 360, value = "EJB method security metadata cannot be null")
+    @Message(id = 360, value = "Jakarta Enterprise Beans method security metadata cannot be null")
     IllegalArgumentException ejbMethodSecurityMetaDataIsNull();
 
     /**
@@ -2528,11 +2528,11 @@ public interface EjbLogger extends BasicLogger {
     EJBAccessException invocationOfMethodNotAllowed(Method invokedMethod, String componentName);
 
     /**
-     * Creates an exception indicating an unknown EJB Component description type
+     * Creates an exception indicating an unknown Jakarta Enterprise Beans Component description type
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 365, value = "Unknown EJB Component description type %s")
+    @Message(id = 365, value = "Unknown Jakarta Enterprise Beans Component description type %s")
     IllegalArgumentException unknownComponentDescriptionType(Class<?> aClass);
 
     /**
@@ -2552,37 +2552,37 @@ public interface EjbLogger extends BasicLogger {
     IllegalStateException unknownOperations(String opName);
 
     /**
-     * Creates an exception indicating no EJB component registered for address
+     * Creates an exception indicating no Jakarta Enterprise Beans component registered for address
      *
      * @return an {@link String} for the error.
      */
-    @Message(id = 368, value = "No EJB component registered for address %s")
+    @Message(id = 368, value = "No Jakarta Enterprise Beans component registered for address %s")
     String noComponentRegisteredForAddress(PathAddress operationAddress);
 
     /**
-     * Creates an exception indicating No EJB component is available for address
+     * Creates an exception indicating No Jakarta Enterprise Beans component is available for address
      *
      * @return an {@link String} for the error.
      */
-    @Message(id = 369, value = "No EJB component is available for address %s")
+    @Message(id = 369, value = "No Jakarta Enterprise Beans component is available for address %s")
     String noComponentAvailableForAddress(PathAddress operationAddress);
 
     /**
-     * Creates an exception indicating EJB component for specified address is in invalid state
+     * Creates an exception indicating Jakarta Enterprise Beans component for specified address is in invalid state
      *
      * @return an {@link String} for the error.
      */
-    @Message(id = 370, value = "EJB component for address %s is in %n state %s, must be in state %s")
+    @Message(id = 370, value = "Jakarta Enterprise Beans component for address %s is in %n state %s, must be in state %s")
     String invalidComponentState(PathAddress operationAddress, ServiceController.State controllerState, ServiceController.State up);
 
 
 //    /**
-//     * Creates an exception indicating specified components is not an EJB component"
+//     * Creates an exception indicating specified components is not an Jakarta Enterprise Beans component"
 //     *
 //     * @param componentName
 //     * @return an {@link IllegalArgumentException} for the error.
 //     */
-//    @Message(id = 371, value = "%s is not an EJB component")
+//    @Message(id = 371, value = "%s is not an Jakarta Enterprise Beans component")
 //    IllegalArgumentException invalidComponentIsNotEjbComponent(final String componentName);
 
     /**
@@ -2594,12 +2594,12 @@ public interface EjbLogger extends BasicLogger {
     DeploymentUnitProcessingException componentClassHasMultipleTimeoutAnnotations(Class<?> componentClass);
 
     /**
-     * Creates an exception indicating the current component is not an EJB.
+     * Creates an exception indicating the current component is not an Jakarta Enterprise Beans.
      *
      * @param component the component.
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 373, value = "Current component is not an EJB %s")
+    @Message(id = 373, value = "Current component is not an Jakarta Enterprise Beans %s")
     IllegalStateException currentComponentNotAEjb(ComponentInstance component);
 
     /**
@@ -2659,13 +2659,13 @@ public interface EjbLogger extends BasicLogger {
     IllegalStateException unknownMessageListenerType(String resourceAdapterName, String messageListenerType);
 
     /**
-     * Thrown when an EJB 2 EJB does not implement a method on an EJB 2
+     * Thrown when an Jakarta Enterprise Beans 2 Jakarta Enterprise Beans does not implement a method on an Jakarta Enterprise Beans 2
      *
      * @param method    The method
      * @param viewClass The view
      * @param ejb       The ejb
      */
-    @Message(id = 384, value = "Could not find method %s from view %s on EJB class %s")
+    @Message(id = 384, value = "Could not find method %s from view %s on Jakarta Enterprise Beans class %s")
     DeploymentUnitProcessingException couldNotFindViewMethodOnEjb(final Method method, String viewClass, String ejb);
 
     /**
@@ -2679,9 +2679,9 @@ public interface EjbLogger extends BasicLogger {
     IllegalArgumentException stringParamCannotBeNullOrEmpty(final String paramName);
 
     /**
-     * Exception that is thrown when invoking remove while an EJB is in a transaction
+     * Exception that is thrown when invoking remove while an Jakarta Enterprise Beans is in a transaction
      */
-    @Message(id = 386, value = "EJB 4.6.4 Cannot remove EJB via EJB 2.x remove() method while participating in a transaction")
+    @Message(id = 386, value = "Jakarta Enterprise Beans 4.6.4 Cannot remove Jakarta Enterprise Beans via Enterprise Beans 2.x remove() method while participating in a transaction")
     RemoveException cannotRemoveWhileParticipatingInTransaction();
 
     @Message(id = 387, value = "Transaction propagation over IIOP is not supported")
@@ -2756,16 +2756,16 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 404, value = "Group creation context already exists")
     IllegalStateException groupCreationContextAlreadyExists();
 
-    @Message(id = 405, value = "No EJB found with interface of type '%s' and name '%s' for binding %s")
+    @Message(id = 405, value = "No Jakarta Enterprise Beans found with interface of type '%s' and name '%s' for binding %s")
     String ejbNotFound(String typeName, String beanName, String binding);
 
-    @Message(id = 406, value = "No EJB found with interface of type '%s' for binding %s")
+    @Message(id = 406, value = "No Jakarta Enterprise Beans found with interface of type '%s' for binding %s")
     String ejbNotFound(String typeName, String binding);
 
-    @Message(id = 407, value = "More than one EJB found with interface of type '%s' and name '%s' for binding %s. Found: %s")
+    @Message(id = 407, value = "More than one Jakarta Enterprise Beans found with interface of type '%s' and name '%s' for binding %s. Found: %s")
     String moreThanOneEjbFound(String typeName, String beanName, String binding, Set<EJBViewDescription> componentViews);
 
-    @Message(id = 408, value = "More than one EJB found with interface of type '%s' for binding %s. Found: %s")
+    @Message(id = 408, value = "More than one Jakarta Enterprise Beans found with interface of type '%s' for binding %s. Found: %s")
     String moreThanOneEjbFound(String typeName, String binding, Set<EJBViewDescription> componentViews);
 
     /**
@@ -2796,7 +2796,7 @@ public interface EjbLogger extends BasicLogger {
 
     /**
      * Returns a {@link DeploymentUnitProcessingException} to indicate that the {@link org.jboss.ejb3.annotation.Clustered}
-     * annotation is <b>currently</b> not supported on singleton EJB.
+     * annotation is <b>currently</b> not supported on singleton Jakarta Enterprise Beans.
      *
      * @param unit               The deployment unit
      * @param componentName      The singleton bean component name
@@ -2804,12 +2804,12 @@ public interface EjbLogger extends BasicLogger {
      * @return  the exception
      */
     @Deprecated
-    @Message(id = 411, value = "@Clustered annotation is currently not supported for singleton EJB. %s failed since %s bean is marked with @Clustered on class %s")
+    @Message(id = 411, value = "@Clustered annotation is currently not supported for singleton Jakarta Enterprise Beans. %s failed since %s bean is marked with @Clustered on class %s")
     DeploymentUnitProcessingException clusteredAnnotationNotYetImplementedForSingletonBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
 
     /**
      * Returns a {@link DeploymentUnitProcessingException} to indicate that the {@link org.jboss.ejb3.annotation.Clustered}
-     * annotation cannot be used on the EJB component represented by <code>componentName</code>
+     * annotation cannot be used on the Jakarta Enterprise Beans component represented by <code>componentName</code>
      *
      * @param unit               The deployment unit
      * @param componentName      The component name
@@ -2826,7 +2826,7 @@ public interface EjbLogger extends BasicLogger {
     /**
      * Exception thrown if the session-type of a session bean is not specified
      */
-    @Message(id = 413, value = "<session-type> not specified for ejb %s. This must be present in ejb-jar.xml")
+    @Message(id = 413, value = "<session-type> not specified for Jakarta Enterprise Beans %s. This must be present in ejb-jar.xml")
     DeploymentUnitProcessingException sessionTypeNotSpecified(String bean);
 
 
@@ -2871,9 +2871,9 @@ public interface EjbLogger extends BasicLogger {
     IllegalArgumentException poolNameCannotBeEmptyString(final String ejbName);
 
     /**
-     * The user attempts to look up the ejb context in a war when no ejb context is active
+     * The user attempts to look up the Jakarta Enterprise Beans context in a war when no Jakarta Enterprise Beans context is active
      */
-    @Message(id = 420, value = "No EjbContext available as no EJB invocation is active")
+    @Message(id = 420, value = "No EjbContext available as no Jakarta Enterprise Beans invocation is active")
     IllegalStateException noEjbContextAvailable();
     @Message(id = 421, value = "Invocation cannot proceed as component is shutting down")
     EJBComponentUnavailableException componentIsShuttingDown();
@@ -2896,7 +2896,7 @@ public interface EjbLogger extends BasicLogger {
 //    @Message(id = 427, value = "Could not load class")
 //    RuntimeException classNotFoundException(@Cause ClassNotFoundException cnfe);
 //
-//    @Message(id = 428, value = "EJB module identifiers cannot be null")
+//    @Message(id = 428, value = "Jakarta Enterprise Beans module identifiers cannot be null")
 //    IllegalArgumentException ejbModuleIdentifiersCannotBeNull();
 //
 //    @Message(id = 429, value = "MessageInputStream cannot be null")
@@ -2935,14 +2935,14 @@ public interface EjbLogger extends BasicLogger {
 //    @Message(id = 440, value = "%s method %s must be public")
 //    DeploymentUnitProcessingException ejbMethodMustBePublic(final String type, final Method method);
 
-    @Message(id = 441, value = "EJB business method %s must be public")
+    @Message(id = 441, value = "Jakarta Enterprise Beans business method %s must be public")
     DeploymentUnitProcessingException ejbBusinessMethodMustBePublic(final Method method);
 
     @Message(id = 442, value = "Unexpected Error")
     @Signature(String.class)
     EJBException unexpectedError(@Cause Throwable cause);
 
-    @Message(id = 443, value = "EJB 3.1 FR 13.3.3: BMT bean %s should complete transaction before returning.")
+    @Message(id = 443, value = "Enterprise Beans 3.1 FR 13.3.3: BMT bean %s should complete transaction before returning.")
     String transactionNotComplete(String componentName);
 
     @Message(id = 444, value = "Timer service resource %s is not suitable for the target. Only a configuration with a single file-store and no other configured data-store is supported on target")
@@ -2985,7 +2985,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 454, value = "Only one instance on <container-transaction> with an ejb-name of * can be present.")
     DeploymentUnitProcessingException mustOnlyBeSingleContainerTransactionElementWithWildcard();
 
-    @Message(id = 455, value = "<container-transaction> elements that use the wildcard EJB name * can only use a method name of *")
+    @Message(id = 455, value = "<container-transaction> elements that use the wildcard Jakarta Enterprise Beans name * can only use a method name of *")
     DeploymentUnitProcessingException wildcardContainerTransactionElementsMustHaveWildcardMethodName();
 
     @LogMessage(level = ERROR)
@@ -3034,7 +3034,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 465, value = "Invalid client descriptor configuration: 'profile' and 'remoting-ejb-receivers' cannot be used together")
     DeploymentUnitProcessingException profileAndRemotingEjbReceiversUsedTogether();
 
-    @Message(id = 466, value = "Failed to process business interfaces for EJB class %s")
+    @Message(id = 466, value = "Failed to process business interfaces for Jakarta Enterprise Beans class %s")
     DeploymentUnitProcessingException failedToProcessBusinessInterfaces(Class<?> ejbClass, @Cause Exception e);
 
     @Message(id = 467, value = "The request was rejected as the container is suspended")
@@ -3076,7 +3076,7 @@ public interface EjbLogger extends BasicLogger {
     DeploymentUnitProcessingException missingMdbDeliveryGroup(String deliveryGroupName);
 
     @LogMessage(level = ERROR)
-    @Message(id = 480, value = "Loaded timer (%s) for EJB (%s) and this node that is marked as being in a timeout. The original timeout may not have been processed. Please use graceful shutdown to ensure timeout tasks are finished before shutting down.")
+    @Message(id = 480, value = "Loaded timer (%s) for Jakarta Enterprise Beans (%s) and this node that is marked as being in a timeout. The original timeout may not have been processed. Please use graceful shutdown to ensure timeout tasks are finished before shutting down.")
     void loadedPersistentTimerInTimeout(String timer, String timedObject);
 
     @LogMessage(level = INFO)
@@ -3109,7 +3109,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 487, value = "Unexpected invocation state %s")
     void unexpectedInvocationState(int state);
 
-    @Message(id = 488, value = "Unauthenticated (anonymous) access to this EJB method is not authorized")
+    @Message(id = 488, value = "Unauthenticated (anonymous) access to this Jakarta Enterprise Beans method is not authorized")
     SecurityException ejbAuthenticationRequired();
 
     @LogMessage(level = ERROR)
@@ -3123,11 +3123,11 @@ public interface EjbLogger extends BasicLogger {
     EJBException cannotBeginUserTransaction();
 
     @LogMessage(level = INFO)
-    @Message(id = 492, value = "EJB subsystem suspension waiting for active transactions, %d transaction(s) remaining")
+    @Message(id = 492, value = "Jakarta Enterprise Beans subsystem suspension waiting for active transactions, %d transaction(s) remaining")
     void suspensionWaitingActiveTransactions(int activeTransactionCount);
 
     @LogMessage(level = INFO)
-    @Message(id = 493, value = "EJB subsystem suspension complete")
+    @Message(id = 493, value = "Jakarta Enterprise Beans subsystem suspension complete")
     void suspensionComplete();
 
     @Message(id = 494, value = "Failed to obtain SSLContext")
@@ -3137,7 +3137,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 495, value = "Ignoring the persisted start or end date for scheduled expression of timer ID:%s as it is not valid : %s.")
     void scheduleExpressionDateFromTimerPersistenceInvalid(String timerId, String parserMessage);
 
-    @Message(id = 496, value = "Could not create an instance of EJB client interceptor %s")
+    @Message(id = 496, value = "Could not create an instance of Jakarta Enterprise Beans client interceptor %s")
     DeploymentUnitProcessingException failedToCreateEJBClientInterceptor(@Cause Exception e, String ejbClientInterceptorClassName);
 
     @LogMessage(level = WARN)
@@ -3159,19 +3159,19 @@ public interface EjbLogger extends BasicLogger {
     void exceptionCheckingIfTimerShouldRun(Timer timer, @Cause Exception e);
 
     @LogMessage(level = WARN)
-    @Message(id = 503, value = "[EJB3.2 spec, section 5.6.4] Message Driven Bean 'onMessage' method can not be final (MDB: %s).")
+    @Message(id = 503, value = "[Jakarta Enterprise Beans 3.2 spec, section 5.6.4] Message Driven Bean 'onMessage' method can not be final (MDB: %s).")
     void mdbOnMessageMethodCantBeFinal(String className);
 
     @LogMessage(level = WARN)
-    @Message(id = 504, value = "[EJB3.2 spec, section 5.6.4] Message Driven Bean 'onMessage' method can not be private (MDB: %s).")
+    @Message(id = 504, value = "[Jakarta Enterprise Beans 3.2 spec, section 5.6.4] Message Driven Bean 'onMessage' method can not be private (MDB: %s).")
     void mdbOnMessageMethodCantBePrivate(String className);
 
     @LogMessage(level = WARN)
-    @Message(id = 505, value = "[EJB3.2 spec, section 5.6.4] Message Driven Bean 'onMessage' method can not be static (MDB: %s).")
+    @Message(id = 505, value = "[Jakarta Enterprise Beans 3.2 spec, section 5.6.4] Message Driven Bean 'onMessage' method can not be static (MDB: %s).")
     void mdbOnMessageMethodCantBeStatic(String className);
 
     @LogMessage(level = WARN)
-    @Message(id = 506, value = "[EJB3.2 spec, section 5.6.2] Message Driven Bean can not have a 'finalize' method. (MDB: %s)")
+    @Message(id = 506, value = "[Jakarta Enterprise Beans 3.2 spec, section 5.6.2] Message Driven Bean can not have a 'finalize' method. (MDB: %s)")
     void mdbCantHaveFinalizeMethod(String className);
 
     @LogMessage(level = ERROR)
@@ -3183,7 +3183,7 @@ public interface EjbLogger extends BasicLogger {
     void exceptionPersistTimerState(Timer timer, Exception e);
 
     @LogMessage(level = WARN)
-    @Message(id = 509, value = "Clustered EJBs in Node: %s are bound to INADDR_ANY(%s). Either use a non-wildcard server bind address or add client-mapping entries to the relevant socket-binding for the Remoting connector")
+    @Message(id = 509, value = "Clustered Jakarta Enterprise Beans in Node: %s are bound to INADDR_ANY(%s). Either use a non-wildcard server bind address or add client-mapping entries to the relevant socket-binding for the Remoting connector")
     void clusteredEJBsBoundToINADDRANY(String nodeName, String ip);
 
     @LogMessage(level = WARN)
@@ -3203,7 +3203,7 @@ public interface EjbLogger extends BasicLogger {
     RuntimeException cannotLoadServerInterceptorModule(ModuleIdentifier moduleId, @Cause Exception e);
 
     @LogMessage(level = WARN)
-    @Message(id = 515, value = "[EJB3.2 spec, section 4.9.2] Singleton session beans are not allowed to implement 'javax.ejb.SessionBean' interface. This interface on bean '%s' is going to be ignored and should be removed.")
+    @Message(id = 515, value = "[Jakarta Enterprise Beans 3.2 spec, section 4.9.2] Singleton session beans are not allowed to implement 'javax.ejb.SessionBean' interface. This interface on bean '%s' is going to be ignored and should be removed.")
     void singletonCantImplementSessionBean(String className);
 
     @LogMessage(level = INFO)
@@ -3211,7 +3211,7 @@ public interface EjbLogger extends BasicLogger {
     void iiopBindings(final String componentName, final String moduleName, final String name);
 
     @LogMessage(level = ERROR)
-    @Message(id = 517, value = "[EJB3.2 spec, section 4.1] Spec violation for class %s. Session EJBs should have only one of the following types : Stateful, Stateless, Singleton.")
+    @Message(id = 517, value = "[Jakarta Enterprise Beans 3.2 spec, section 4.1] Spec violation for class %s. Session Jakarta Enterprise Beans should have only one of the following types : Stateful, Stateless, Singleton.")
     void typeSpecViolation(String className);
 
     @Message(id = 518, value = "Exception resolving class %s for unmarshalling; it has either been blacklisted or not whitelisted")
@@ -3235,7 +3235,7 @@ public interface EjbLogger extends BasicLogger {
     RuntimeException timerCannotBeAdded(TimerImpl timer);
 
     @LogMessage(level = WARN)
-    @Message(id = 525, value = "The 'mappedName' in EJB annotations is not supported. Value of '%s' for EJB '%s' will be ignored.")
+    @Message(id = 525, value = "The 'mappedName' in Jakarta Enterprise Beans  annotations is not supported. Value of '%s' for Jakarta Enterprise Beans '%s' will be ignored.")
     void mappedNameNotSupported(String mappedName, String ejb);
 
 }

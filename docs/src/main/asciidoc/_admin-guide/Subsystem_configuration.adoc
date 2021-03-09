@@ -30,7 +30,7 @@ include::subsystem-configuration/Datasources_Agroal.adoc[]
 
 include::subsystem-configuration/Logging.adoc[]
 
-include::subsystem-configuration/EJB3.adoc[]
+include::subsystem-configuration/Jakarta_Enterprise_Beans_3.adoc[]
 
 include::subsystem-configuration/Undertow.adoc[]
 

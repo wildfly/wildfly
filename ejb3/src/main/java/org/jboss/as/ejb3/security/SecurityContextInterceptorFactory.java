@@ -75,7 +75,7 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
             securityDomainName = DEFAULT_DOMAIN;
         }
         if (ROOT_LOGGER.isTraceEnabled()) {
-            ROOT_LOGGER.trace("Using security domain: " + securityDomainName + " for EJB " + ejbComponent.getComponentName());
+            ROOT_LOGGER.trace("Using security domain: " + securityDomainName + " for Jakarta Enterprise Beans " + ejbComponent.getComponentName());
         }
         final String runAs = securityMetaData.getRunAs();
         // TODO - We should do something with DeclaredRoles although it never has much meaning in JBoss AS
