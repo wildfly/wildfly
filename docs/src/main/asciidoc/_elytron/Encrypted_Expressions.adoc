@@ -11,7 +11,7 @@ single credential store which it will use to decrypt the expressions.  Encrypted
  * `${ENC::ResolverName:RUxZAUMQXUj3qP1hbXyO5PpmsbgkepjoscIf3tKXvGiPDXYqNAc=}`
  * `${ENC::RUxZAUMQXUj3qP1hbXyO5PpmsbgkepjoscIf3tKXvGiPDXYqNAc=}`
 
-In both cases the `ENC` prefix is used to identify the expression is an encrypted expression, this prefix is the default however it is possible to define an alternative prefix for use
+In both cases the `ENC` prefix is used to identify the expression is an encrypted expression.  This prefix is the default however it is possible to define an alternative prefix for use
 across the configuration.
 
 Within the first example the `ResolverName` is the name of an individual resolver definition.  The name of the resolver has been omitted in the second example as it is also possible
@@ -46,7 +46,7 @@ default and an alternative prefix.
 
 == Creating Expressions
 
-NOTE: The following section illustrates how to create an encrypted expression, if you repeat the same command for the same clear text is it normal that a different
+NOTE: The following section illustrates how to create an encrypted expression.  If you repeat the same command for the same clear text it is normal that a different
 result is returned for the same key.  This is because a unique initialisation vector is used for each call.
 
 === Management Operation
@@ -99,7 +99,7 @@ Clear text encrypted to token 'RUxZAUMQvGzk6Vaadp2cahhZ6rlPhHOZcWyjXALlAthrENvRT
 ----
 
 The `--encrypt` action is used with the `credential-store` command, the argument to this action is the alias of the secret key to use.  In this form the tool will prompt
-twice for the clear text which is being encrypted.  When using the command line tool the output is just the Base64 encoded encrypted ciphertext, to use this in the management model
+twice for the clear text which is being encrypted.  When using the command line tool the output is just the Base64 encoded encrypted ciphertext.  To use this in the management model
 it will need to be included in an expression as described earlier i.e. using the appropriate prefix and if required resolver name.
 
 When using the `--encrypt` action it is also possible to pass in `--clear-text` parameter to pass in the clear text directly but this may be visible to other users and may also
@@ -109,8 +109,8 @@ be cached in the command history of your shell.
 
 When using encrypted expressions in domain mode things are slightly different to how the legacy vault may have been used in the past.
 
-To make use of encrypted expressions in the host controler configuration the `expression=encryption` resource and relevant `*credential-store` definitions must be defined within the `elytron` subsystem definition of the
-host controller i.e. in the same `host.xml` configuration.
+To make use of encrypted expressions in the host controller configuration the `expression=encryption` resource and relevant `*credential-store` definitions must be defined 
+within the `elytron` subsystem definition of the host controller i.e. in the same `host.xml` configuration.
 
 For expressions within a domain profile being used to configure one or more servers the `expression=encryption` resource and relevant `*credential-store` definitions must be defined within the `elytron` subsystem 
 definition of the same profile.
