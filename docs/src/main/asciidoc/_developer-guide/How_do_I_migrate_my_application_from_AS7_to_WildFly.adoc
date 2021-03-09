@@ -18,7 +18,7 @@ The list of {ProductName} new functionality is extensive, being the most relevan
 
 * Jakarta EE - {ProductName} is a certified implementation of Jakarta EE, meeting both the Web and the Full Platform, and already includes support for the latest iterations of CDI (1.2) and Web Sockets (1.1).
 * Undertow - A new cutting-edge web server in {ProductName}, designed for maximum throughput and scalability, including environments with over a million connections. And the latest web technologies, such as the new HTTP/2 standard, are already onboard.
-* Apache ActiveMQ Artemis - {ProductName}'s new JMS broker. Based on an code donation from HornetQ, this Apache subproject provides outstanding performance based on a proven non-blocking architecture.
+* Apache ActiveMQ Artemis - {ProductName}'s new Jakarta Messaging broker. Based on an code donation from HornetQ, this Apache subproject provides outstanding performance based on a proven non-blocking architecture.
 * IronJacamar 1.2 - The latest IronJacamar provides a stable and feature rich Jakarta Connectors & Datasources support.
 * JBossWS 5 - The fifth generation of JBossWS, a major leap forward, brings new features and performances improvements to {ProductName} Web Services
 * RESTEasy 3 - {ProductName} which goes beyond the standard Jakarta EE REST APIs (Jakarta RESTful Web Services 2.1), by also providing a number of useful extensions, such as JSON Web Encryption, Jackson, Yaml, Jakarta JSON Processing, and reactive facilities.
@@ -554,10 +554,10 @@ With respect to the server XML configuration, the user must now specify the modu
 </subsystem>
 ----
 
-[[jms-destinations]]
-===== JMS Destinations
+[[Jakarta-Messaging-destinations]]
+===== Jakarta Messaging Destinations
 
-In previous releases, JMS destination queues were configured in the `<jms-destinations>` element under the hornetq-server section of the `messaging` subsystem.
+In previous releases, Jakarta Messaging destination queues were configured in the `<jms-destinations>` element under the hornetq-server section of the `messaging` subsystem.
 
 [source,xml,options="nowrap"]
 ----
@@ -569,7 +569,7 @@ In previous releases, JMS destination queues were configured in the `<jms-destin
 </jms-destinations>
 ----
 
-In {ProductName}, the JMS destination queue is configured in the default server of the `messaging-activemq` subsystem.
+In {ProductName}, the Jakarta Messaging destination queue is configured in the default server of the `messaging-activemq` subsystem.
 
 [source,xml,options="nowrap"]
 ----
@@ -683,20 +683,20 @@ remote.connection.default.protocol=remote
 
 External applications using JNDI, to remotely lookup up EJBs in a {ProductName} {ProductVersion} server, may also need to be migrated, see  <<remote-jndi-clients,#Remote JNDI Clients>> section for further information.
 
-[[jms]]
-=== JMS
+[[Jakarta-Messaging]]
+=== Jakarta Messaging
 
-[[proprietary-jms-resource-definitions]]
-==== Proprietary JMS Resource Definitions
+[[proprietary-Jakarta-Messaging-resource-definitions]]
+==== Proprietary Jakarta Messaging Resource Definitions
 
-The proprietary XML descriptors, previously used to setup JMS resources, are deprecated in {ProductName}. Jakarta EE (section EE.5.18) standardized such functionality.
+The proprietary XML descriptors, previously used to setup Jakarta Messaging resources, are deprecated in {ProductName}. Jakarta EE (section EE.5.18) standardized such functionality.
 
 The deprecated descriptors are files bundled in the application package, which name ends with `-jms.xml`. Their namespace has been changed to `urn:jboss:messaging-activemq-deployment:1.0`.
 
-[[external-jms-clients]]
-==== External JMS Clients
+[[external-Jakarta-Messaging-clients]]
+==== External Jakarta Messaging Clients
 
-JMS Resources are remotely looked up using JNDI, and looking up resources in a {ProductName} {ProductVersion} server may require changes in the application code, see  <<remote-jndi-clients,#Remote JNDI Clients>> section for further information.
+Jakarta Messaging Resources are remotely looked up using JNDI, and looking up resources in a {ProductName} {ProductVersion} server may require changes in the application code, see  <<remote-jndi-clients,#Remote JNDI Clients>> section for further information.
 
 [[Jakarta-Persistence-and-hibernate]]
 === Jakarta Persistence (and Hibernate)
@@ -943,7 +943,7 @@ Previously, the value defined by this attribute defined a policy for triggering 
 [[remote-jndi-clients]]
 ==== Remote JNDI Clients
 
-{ProductName} {ProductVersion}'s default JNDI Provider URL has changed, which means that external applications, using JNDI to lookup remote resources, for instance an EJB or a JMS Queue, may need to change the value for the JNDI `InitialContext` environment's property named
+{ProductName} {ProductVersion}'s default JNDI Provider URL has changed, which means that external applications, using JNDI to lookup remote resources, for instance an EJB or a Jakarta Messaging Queue, may need to change the value for the JNDI `InitialContext` environment's property named
 `java.naming.provider.url`. The default URL scheme is now
 `http-remoting`, and the default URL port is now `8080`.
 
@@ -975,6 +975,5 @@ A JSR-88 deployment plan is identified by a XML descriptor named `deployment-pla
 ==== Module Dependencies
 
 Applications defining dependencies to {ProductName} modules, through the application's package `MANIFEST.MF` or `jboss-deployment-structure.xml`, may be referencing missing modules. When migrating an application, relying on such functionality, the presence of the referenced modules should be validated in advance.
-----
 
 NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

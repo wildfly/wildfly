@@ -35,7 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
 /**
- * Processor responsible for adding an EEResourceReferenceProcessor, which defaults @resource ConnectionFactory injection to the default JMS Connection Factory.
+ * Processor responsible for adding an EEResourceReferenceProcessor, which defaults @resource ConnectionFactory injection to the default Jakarta Messaging Connection Factory.
  *
  * @author Eduardo Martins
  */

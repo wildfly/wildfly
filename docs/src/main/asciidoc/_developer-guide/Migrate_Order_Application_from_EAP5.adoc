@@ -1,8 +1,8 @@
 [[Migrate_Order_Application_from_EAP5]]
-= Porting the Order Application from EAP 5.1 to WildFly {wildflyVersion}
+= Porting the Order Application from EAP 5.1 to JBoss AS 7
 
 Andy Miller ported an example Order application that was used for
-performance testing from EAP 5.1 to WildFly {wildflyVersion}. These are the notes he
+performance testing from EAP 5.1 to JBoss AS 7. These are the notes he
 made during the migration process.
 
 [[overview-of-the-application]]

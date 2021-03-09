@@ -46,7 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests sending JMS messages to a topic within a transaction
+ * Tests sending Jakarta Messaging messages to a topic within a transaction
  *
  * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
  */

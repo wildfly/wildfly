@@ -439,7 +439,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         recoveryManagerServiceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
 
 
-        // add dependency on JTA environment bean
+        // add dependency on Jakarta Transactions environment bean
         for (final ServiceName dep : deps) {
             recoveryManagerServiceServiceBuilder.requires(dep);
         }
@@ -474,7 +474,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, model).asString();
-        // install JTA environment bean service
+        // install Jakarta Transactions environment bean service
         final JTAEnvironmentBeanService jtaEnvironmentBeanService = new JTAEnvironmentBeanService(nodeIdentifier);
         serviceTarget.addService(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, jtaEnvironmentBeanService)
                 .setInitialMode(Mode.ACTIVE)
@@ -532,7 +532,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
         final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable, jts);
         final ServiceBuilder<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerServiceServiceBuilder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService);
-        // add dependency on JTA environment bean service
+        // add dependency on Jakarta Transactions environment bean service
         transactionManagerServiceServiceBuilder.addDependency(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, JTAEnvironmentBean.class, transactionManagerService.getJTAEnvironmentBeanInjector());
 
         //if jts is enabled we need the ORB

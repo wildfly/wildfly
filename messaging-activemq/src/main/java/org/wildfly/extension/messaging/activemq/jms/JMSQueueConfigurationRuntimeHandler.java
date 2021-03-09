@@ -28,7 +28,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Read handler for XML deployed JMS queues
+ * Read handler for XML deployed Jakarta Messaging queues
  *
  * @author Stuart Douglas
  */

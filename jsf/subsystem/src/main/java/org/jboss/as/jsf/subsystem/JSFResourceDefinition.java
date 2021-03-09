@@ -33,7 +33,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 /**
- * Defines attributes and operations for the JSF Subsystem
+ * Defines attributes and operations for the Jakarta Server Faces Subsystem
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */

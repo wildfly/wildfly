@@ -67,7 +67,7 @@ public class SFSB1 {
 
         employee.setName(employee.getName() + " +1");
 
-        // load the entity with no jta transaction (entity should be detached from persistence context)
+        // load the entity with no Jakarta Transactions transaction (entity should be detached from persistence context)
         getEmployeeNoTX(employee.getId());
 
         // update the entity, which will increment the version field
@@ -79,7 +79,7 @@ public class SFSB1 {
             em.flush();
             tx1.commit();
 
-            // load the entity with no jta transaction (should get fresh copy of entity with updated version field)
+            // load the entity with no Jakarta Transactions transaction (should get fresh copy of entity with updated version field)
             return getEmployeeNoTX(employee.getId());
         } catch (Exception e) {
             throw new RuntimeException("mutateEmployee couldn't start tx", e);

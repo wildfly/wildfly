@@ -58,7 +58,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests the management API for JMS topics.
+ * Tests the management API for Jakarta Messaging topics.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

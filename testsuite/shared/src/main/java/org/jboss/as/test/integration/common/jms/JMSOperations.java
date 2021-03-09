@@ -28,8 +28,8 @@ import org.jboss.dmr.ModelNode;
 import java.util.Map;
 
 /**
- * Utility to administrate JMS-related resources on the server. An separate implementation should be created for
- * every possible JMS provider to be tested.
+ * Utility to administrate Jakarta Messaging related resources on the server. An separate implementation should be created for
+ * every possible Jakarta Messaging provider to be tested.
  * Use JMSOperationsProvider to get instances of implementing classes.
  *
  * Specify the fully qualified name of the activated implementation class in resources/jmsoperations.properties file.

@@ -28,7 +28,7 @@ import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 
 /**
- * JMS Queue resource definition
+ * Jakarta Messaging Queue resource definition
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */
 public class ExternalJMSQueueDefinition extends PersistentResourceDefinition {

@@ -32,7 +32,7 @@ import org.jboss.metadata.property.PropertyReplacer;
 import org.wildfly.extension.messaging.activemq.deployment.DefaultJMSConnectionFactoryBindingProcessor;
 
 /**
- * Data structure containing the JMS information that can be annotated on an injected JMSContext.
+ * Data structure containing the Jakarta Messaging information that can be annotated on an injected JMSContext.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2016 Red Hat inc.
  */

@@ -46,7 +46,7 @@ import javax.jms.Topic;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
- * Wrapper to restrict use of methods for injected JMSContext (JMS 2.0 spec, §12.4.5).
+ * Wrapper to restrict use of methods for injected JMSContext (Jakarta Messaging 2.0 spec, §12.4.5).
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2016 Red Hat inc.
  */

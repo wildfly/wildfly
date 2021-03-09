@@ -330,7 +330,7 @@ link:#gal.elytron[elytron] +
 link:#gal.base-server[base-server] +
 
 |[[gal.messaging-activemq]]messaging-activemq
-|Support for connections to a remote JMS broker.
+|Support for connections to a remote Jakarta Messaging broker.
 |
 link:#gal.resource-adapters[resource-adapters] +
 
@@ -436,7 +436,7 @@ link:#gal.microprofile-config[microprofile-config] +
 link:#gal.base-server[base-server] +
 
 |[[gal.remote-activemq]]remote-activemq
-|Support for connections to a remote Apache Activemq Artemis JMS broker.
+|Support for connections to a remote Apache Activemq Artemis Jakarta Messaging broker.
 |
 link:#gal.resource-adapters[resource-adapters] +
 

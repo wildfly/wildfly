@@ -54,7 +54,7 @@ resource adaptor deployments |IronJacamar Reference Guide Schema
 |ironjacamar.xml |META-INF of a rar archive |  |JBoss deployment
 descriptor for resource adaptor deployments |IronJacamar Reference Guide
 
-|*-jms.xml |META-INF or WEB-INF |  |JMS message destination deployment
+|*-jms.xml |META-INF or WEB-INF |  |Jakarta Messaging message destination deployment
 descriptor, used to deploy message destinations with a deployment | 
 
 |*-ds.xml |META-INF or WEB-INF |  |Datasource deployment descriptor, use

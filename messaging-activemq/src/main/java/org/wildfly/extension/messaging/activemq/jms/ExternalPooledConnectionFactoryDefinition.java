@@ -48,7 +48,7 @@ import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled;
 
 /**
- * JMS external pooled Connection Factory resource definition.
+ * Jakarta Messaging external pooled Connection Factory resource definition.
  * By 'external' it means that this PCF is targeting an external broker.
  * @author Emmanuel Hugonnet (c) 2019 Red Hat, Inc.
  */

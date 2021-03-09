@@ -57,7 +57,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Running tests on data-source in non-jta mode.
+ * Running tests on data-source in non-Jakarta Transactions mode.
  *
  * @author <a href="mailto:lgao@redhat.com>Lin Gao</a>
  */

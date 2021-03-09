@@ -57,7 +57,7 @@ public class DefaultJsfProfileCompletionHandler implements ProfileParsingComplet
 
         List<ModelNode> legacyWebOps = null;
 
-        // Check all namespace versions less than 1.4 (the first in a release where the JSF subsystem was added)
+        // Check all namespace versions less than 1.4 (the first in a release where the Jakarta Server Faces subsystem was added)
         for (Namespace namespace : EnumSet.allOf(Namespace.class)) {
             String namespaceName = namespace.getUriString();
             if (namespaceName != null && namespaceName.startsWith("urn:jboss:domain:web:1.")) {

@@ -36,7 +36,7 @@ import javax.servlet.ServletContext;
 
 /**
  * This class retrieves the annotation map from application scope.  This map was placed there by the JSFAnnotationProcessor
- * in the jsf subsystem.
+ * in the Jakarta Server Faces subsystem.
  *
  * The class also reloads the map if needed.  The reason why the map must be reloaded is because the Jakarta Server Faces Annotation classes used as the map keys are always
  * loaded by the Jakarta Server Faces subsystem and thus always correspond to the default Jakarta Server Faces implementation.  If a different Jakarta Server Faces
@@ -60,7 +60,7 @@ public class AnnotationMap {
     static {
         // These classes need to be loaded in order!  Some can't be loaded if the Jakarta Server Faces version is too old.
 
-        try { // all of the following classes are available from JSF 2.0 and JSF 2.1
+        try { // all of the following classes are available from Faces 2.0 and Faces 2.1
             stringToAnnoMap.put(FacesComponent.class.getName(), FacesComponent.class);
             stringToAnnoMap.put(FacesConverter.class.getName(), FacesConverter.class);
             stringToAnnoMap.put(FacesValidator.class.getName(), FacesValidator.class);
@@ -70,7 +70,7 @@ public class AnnotationMap {
             stringToAnnoMap.put(FacesBehavior.class.getName(), FacesBehavior.class);
             stringToAnnoMap.put(FacesBehaviorRenderer.class.getName(), FacesBehaviorRenderer.class);
 
-            // Put JSF 2.2+ annotations below this line if any new ones are to be scanned.
+            // Put Jakarta Server Faces 2.2+ annotations below this line if any new ones are to be scanned.
             // Load the class to avoid a NoClassDefFoundError if it is not present in the impl
             ClassLoader loader = AnnotationMap.class.getClassLoader();
             addAnnotationIfPresent(loader, "javax.faces.view.facelets.FaceletsResourceResolver");
