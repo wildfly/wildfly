@@ -662,6 +662,8 @@ To disable the critical analyzer, you can execute the following CLI command:
         "process-state" => "reload-required"
     }
 }
+----
+
 You can configure the critical analyzer with the following attributes:
 
  * critical-analyzer-enabled
