@@ -165,12 +165,12 @@ public class TransactionUtil {
         }
 
         /**
-         * After the JTA transaction is ended (Synchronization.afterCompletion has been called) and
-         * the JTA transaction is no longer associated with application thread (application thread called
+         * After the Jakarta Transactions transaction is ended (Synchronization.afterCompletion has been called) and
+         * the Jakarta Transactions transaction is no longer associated with application thread (application thread called
          * transaction.rollback/commit/suspend), the entity manager can safely be closed.
          *
          * NOTE: caller must call with synchronized(this), where this == instance of SessionSynchronization associated with
-         * the JTA transaction.
+         * the Jakarta Transactions transaction.
          */
         private void safeCloseEntityManager() {
             if ( afterCompletionCalled == true && associationCounter == 0) {
@@ -190,7 +190,7 @@ public class TransactionUtil {
 
         public void associationChanged(final AbstractTransaction transaction, final boolean associated) {
             synchronized (this) {
-                // associationCounter is set to zero when application thread is no longer associated with JTA transaction.
+                // associationCounter is set to zero when application thread is no longer associated with Jakarta Transactions transaction.
                 // We are tracking when the application thread
                 // is no longer associated with the transaction, as that indicates that it is safe to
                 // close the entity manager (since the application is no longer using the entity manager).

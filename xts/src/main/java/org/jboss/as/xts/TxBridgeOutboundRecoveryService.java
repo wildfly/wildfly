@@ -30,7 +30,7 @@ import org.jboss.msc.service.StartException;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * JTA / WS-AT transaction bridge - outbound recovery handling.
+ * Jakarta Transactions / WS-AT transaction bridge - outbound recovery handling.
  *
  * @author <a href="mailto:jonathan.halliday@redhat.com">Jonathan Halliday</a>
  */

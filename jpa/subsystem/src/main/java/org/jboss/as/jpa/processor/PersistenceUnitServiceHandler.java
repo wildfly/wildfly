@@ -378,7 +378,7 @@ public class PersistenceUnitServiceHandler {
                 builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
                 useDefaultDataSource = false;
             }
-            // JPA 2.0 8.2.1.5, container provides default JTA datasource
+            // JPA 2.0 8.2.1.5, container provides default Jakarta Transactions datasource
             if (useDefaultDataSource) {
                 // try the default datasource defined in the ee subsystem
                 String defaultJtaDataSource = null;
@@ -388,7 +388,7 @@ public class PersistenceUnitServiceHandler {
 
                 if (defaultJtaDataSource == null ||
                         defaultJtaDataSource.isEmpty()) {
-                    // try the datasource defined in the jpa subsystem
+                    // try the datasource defined in the Jakarta Persistence subsystem
                     defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
                 }
                 if (defaultJtaDataSource != null &&
@@ -510,9 +510,9 @@ public class PersistenceUnitServiceHandler {
                 builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
                 useDefaultDataSource = false;
             }
-            // JPA 2.0 8.2.1.5, container provides default JTA datasource
+            // JPA 2.0 8.2.1.5, container provides default Jakarta Transactions datasource
             if (useDefaultDataSource) {
-                // try the one defined in the jpa subsystem
+                // try the one defined in the Jakarta Persistence subsystem
                 String defaultJtaDataSource = null;
                 if (eeModuleDescription != null) {
                     defaultJtaDataSource = eeModuleDescription.getDefaultResourceJndiNames().getDataSource();
@@ -623,7 +623,7 @@ public class PersistenceUnitServiceHandler {
                 builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
                 useDefaultDataSource = false;
             }
-            // JPA 2.0 8.2.1.5, container provides default JTA datasource
+            // JPA 2.0 8.2.1.5, container provides default Jakarta Transactions datasource
             if (useDefaultDataSource) {
                 // try the default datasource defined in the ee subsystem
                 String defaultJtaDataSource = null;
@@ -633,7 +633,7 @@ public class PersistenceUnitServiceHandler {
 
                 if (defaultJtaDataSource == null ||
                         defaultJtaDataSource.isEmpty()) {
-                    // try the datasource defined in the jpa subsystem
+                    // try the datasource defined in the Jakarta Persistence subsystem
                     defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
                 }
                 if (defaultJtaDataSource != null &&

@@ -41,7 +41,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * JSF subsystem transformer tests.
+ * Jakarta Server Faces subsystem transformer tests.
  *
  * @author <a href="fjuma@redhat.com">Farah Juma</a>
  */

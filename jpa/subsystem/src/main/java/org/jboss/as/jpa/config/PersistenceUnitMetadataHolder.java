@@ -37,7 +37,7 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 public class PersistenceUnitMetadataHolder {
 
     /**
-     * List<PersistenceUnitMetadataImpl> that represents the JPA persistent units
+     * List<PersistenceUnitMetadataImpl> that represents the Jakarta Persistence persistent units
      */
     public static final AttachmentKey<PersistenceUnitMetadataHolder> PERSISTENCE_UNITS = AttachmentKey.create(PersistenceUnitMetadataHolder.class);
 

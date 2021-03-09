@@ -40,7 +40,7 @@ include::_javaee-guide/Jakarta_Transactions.adoc[]
 
 include::_javaee-guide/Managed_Beans.adoc[]
 
-include::_javaee-guide/Contexts_and_Dependency_Injection_(CDI).adoc[]
+include::_javaee-guide/Jakarta_Contexts_and_Dependency_Injection.adoc.adoc[]
 
 include::_javaee-guide/Jakarta_Bean_Validation.adoc[]
 
