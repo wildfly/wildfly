@@ -53,7 +53,7 @@ include::_developer-guide/Jakarta_RESTful_Web_Services_Reference_Guide.adoc[]
 
 include::_developer-guide/Web_(Undertow)_Reference_Guide.adoc[]
 
-include::_developer-guide/Jakarta_XML_Web_Services_Reference_guide.adoc[]
+include::_developer-guide/Jakarta_XML_Web_Services_Reference_Guide.adoc[]
 
 include::_developer-guide/Scoped_Jakarta_Enterprise_Beans_client_contexts.adoc[]
 

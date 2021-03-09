@@ -328,7 +328,7 @@ Sample configuration:
 ----
 
 Sample interceptor implementation:
-[source:java,options="nowrap"]
+[source,java,options="nowrap"]
 ----
 package org.foo;
 
@@ -373,7 +373,7 @@ Sample configuration:
 ----
 
 Sample interceptor implementation:
-[source:java,options="nowrap"]
+[source,java,options="nowrap"]
 ----
 package org.foo;
 
