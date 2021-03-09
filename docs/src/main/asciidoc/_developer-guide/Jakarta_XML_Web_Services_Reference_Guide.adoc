@@ -16,8 +16,8 @@ include::Jakarta_XML_Web_Services_User_Guide.adoc[]
 
 include::Jakarta_XML_Web_Services_Tools.adoc[]
 
-include::JAX_WS_Advanced_User_Guide.adoc[]
+include::Jakarta_XML_Web_Services_Advanced_User_Guide.adoc[]
 
-include::JAX_WS_JBoss_Modules_and_WS_applications.adoc[]
+include::Jakarta_XML_Web_Services_JBoss_Modules_and_WS_applications.adoc[]
 
 :leveloffset: -1
