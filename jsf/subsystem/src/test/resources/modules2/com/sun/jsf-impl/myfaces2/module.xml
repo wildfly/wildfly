@@ -22,13 +22,13 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="com.sun.jsf-impl" slot="myfaces2">
+<module xmlns="urn:jboss:module:1.9" name="com.sun.jsf-impl:myfaces2">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <dependencies>
-        <module name="javax.faces.api" slot="myfaces"/>
+        <module name="javax.faces.api:myfaces"/>
         <module name="javax.annotation.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.servlet.jsp.api"/>
