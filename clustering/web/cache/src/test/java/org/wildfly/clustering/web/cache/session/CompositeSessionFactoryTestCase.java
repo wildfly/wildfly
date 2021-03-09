@@ -164,4 +164,12 @@ public class CompositeSessionFactoryTestCase {
         assertSame(metaData, result.getMetaData());
         assertSame(attributes, result.getAttributes());
     }
+
+    @Test
+    public void close() {
+        this.factory.close();
+
+        verify(this.metaDataFactory).close();
+        verify(this.attributesFactory).close();
+    }
 }
