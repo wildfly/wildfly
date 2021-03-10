@@ -246,8 +246,8 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         assertEquals("false", mdbDeliveryGroupActive);
 
         final ModelNode passivationStore = ejb3.get("passivation-store").asPropertyList().get(0).getValue();
-        assertEquals("default", passivationStore.get("bean-cache").resolve().asString());
-        assertEquals("ejb", passivationStore.get("cache-container").resolve().asString());
+        assertEquals("default", passivationStore.get("bean-cache").asString());
+        assertEquals("ejb", passivationStore.get("cache-container").asString());
         assertEquals(10, passivationStore.get("max-size").resolve().asInt());
 
         final ModelNode remotingProfile = ejb3.get("remoting-profile").asPropertyList().get(0).getValue();

@@ -42,7 +42,7 @@
         <cache name="distributable" passivation-store-ref="${sysprop:infinispan}"/>
     </caches>
     <passivation-stores>
-        <passivation-store name="infinispan" cache-container="${sysprop:ejb}" bean-cache="${sysprop:default}" max-size="${sysprop:10}"/>
+        <passivation-store name="infinispan" cache-container="ejb" bean-cache="default" max-size="${sysprop:10}"/>
     </passivation-stores>
     <async thread-pool-name="${sysprop:default}"/>
     <timer-service thread-pool-name="default" default-data-store="file-data-store">
