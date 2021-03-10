@@ -44,6 +44,8 @@ public class ImmutableSessionActivationNotifier<S, C, L> implements SessionActiv
     private final C context;
     private final SessionAttributesFilter filter;
     private final AtomicBoolean active = new AtomicBoolean(false);
+    private final Function<L, Consumer<S>> prePassivateNotifier;
+    private final Function<L, Consumer<S>> postActivateNotifier;
 
     public ImmutableSessionActivationNotifier(HttpSessionActivationListenerProvider<S, C, L> provider, ImmutableSession session, C context) {
         this(provider, session, context, new ImmutableSessionAttributesFilter(session));
@@ -54,19 +56,21 @@ public class ImmutableSessionActivationNotifier<S, C, L> implements SessionActiv
         this.session = session;
         this.context = context;
         this.filter = filter;
+        this.prePassivateNotifier = this.provider::prePassivateNotifier;
+        this.postActivateNotifier = this.provider::postActivateNotifier;
     }
 
     @Override
     public void prePassivate() {
         if (this.active.compareAndSet(true, false)) {
-            this.notify(this.provider::prePassivateNotifier);
+            this.notify(this.prePassivateNotifier);
         }
     }
 
     @Override
     public void postActivate() {
         if (this.active.compareAndSet(false, true)) {
-            this.notify(this.provider::postActivateNotifier);
+            this.notify(this.postActivateNotifier);
         }
     }
 
