@@ -21,7 +21,7 @@
     <parent>
         <artifactId>wildfly-testsuite</artifactId>
         <groupId>org.wildfly</groupId>
-        <version>23.0.0.Final</version>
+        <version>24.0.0.Beta1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
