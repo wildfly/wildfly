@@ -61,6 +61,7 @@ import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
  * Resource definition for the transaction component of a remote cache container.
  * @author Paul Ferraro
  */
+@Deprecated
 public class RemoteTransactionResourceDefinition extends ComponentResourceDefinition implements ResourceServiceConfiguratorFactory {
 
     public static final PathElement PATH = pathElement("transaction");
@@ -109,6 +110,7 @@ public class RemoteTransactionResourceDefinition extends ComponentResourceDefini
 
     public RemoteTransactionResourceDefinition() {
         super(PATH);
+        this.setDeprecated(InfinispanModel.VERSION_14_0_0.getVersion());
     }
 
     @Override
