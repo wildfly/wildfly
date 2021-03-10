@@ -273,7 +273,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         assertEquals("true", useQualifiedName);
 
         final ModelNode remote = ejb3.get("service", "remote");
-        assertEquals("ejb", remote.get("cluster").resolve().asString());
+        assertEquals("ejb", remote.get("cluster").asString());
         assertEquals("false", remote.get("execute-in-worker").resolve().asString());
         assertEquals("default", remote.get("thread-pool-name").resolve().asString());
         assertEquals(20, remote.get("channel-creation-options").asPropertyList().get(0).getValue().get("value").resolve().asInt());
