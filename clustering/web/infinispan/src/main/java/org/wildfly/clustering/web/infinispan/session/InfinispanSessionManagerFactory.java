@@ -190,11 +190,6 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
             }
 
             @Override
-            public Executor getExecutor() {
-                return InfinispanSessionManagerFactory.this.executor;
-            }
-
-            @Override
             public Registrar<Map.Entry<SC, SessionManager<LC, TransactionBatch>>> getContextRegistrar() {
                 return InfinispanSessionManagerFactory.this.notifierFactory;
             }

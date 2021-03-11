@@ -22,7 +22,6 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.util.Map;
-import java.util.concurrent.Executor;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.Registrar;
@@ -55,5 +54,4 @@ public interface InfinispanSessionManagerConfiguration<SC, LC> {
     Registrar<SessionExpirationListener> getExpirationRegistar();
     Runnable getStartTask();
     Registrar<Map.Entry<SC, SessionManager<LC, TransactionBatch>>> getContextRegistrar();
-    Executor getExecutor();
 }

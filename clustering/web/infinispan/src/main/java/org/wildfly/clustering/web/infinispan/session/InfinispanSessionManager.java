@@ -25,10 +25,7 @@ import java.time.Duration;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.Executor;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,7 +35,6 @@ import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
-import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 import org.infinispan.util.concurrent.CompletableFutures;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
@@ -84,7 +80,6 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
     private final SC context;
     private final Runnable startTask;
     private final Consumer<ImmutableSession> closeTask;
-    private final Executor executor;
     private final Registrar<Map.Entry<SC, SessionManager<LC, TransactionBatch>>> contextRegistrar;
 
     private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
@@ -103,7 +98,6 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
         this.context = configuration.getServletContext();
         this.contextRegistrar = configuration.getContextRegistrar();
         this.startTask = configuration.getStartTask();
-        this.executor = configuration.getExecutor();
         this.closeTask = new Consumer<ImmutableSession>() {
             @Override
             public void accept(ImmutableSession session) {
@@ -119,18 +113,19 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
         this.contextRegistration = this.contextRegistrar.register(new SimpleImmutableEntry<>(this.context, this));
         if (this.recorder != null) {
             this.recorder.reset();
+            this.cache.addListener(this, new PredicateKeyFilter<>(SessionCreationMetaDataKeyFilter.INSTANCE), null);
         }
         this.identifierFactory.start();
         this.expirationRegistration = this.expirationRegistrar.register(this.expirationListener);
-        CacheEventFilter<Object, Object> filter = new PredicateKeyFilter<>(SessionCreationMetaDataKeyFilter.INSTANCE);
-        this.cache.addListener(this, filter, null);
         this.startTask.run();
     }
 
     @Override
     public void stop() {
         this.expirationRegistration.close();
-        this.cache.removeListener(this);
+        if (this.recorder != null) {
+            this.cache.removeListener(this);
+        }
         this.identifierFactory.stop();
         this.contextRegistration.close();
     }
@@ -223,19 +218,11 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
         if (event.isPre()) {
             String id = event.getKey().getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
-            if (this.recorder != null) {
-                SessionMetaDataFactory<MV> factory = this.factory.getMetaDataFactory();
-                MV value = factory.tryValue(id);
-                if (value != null) {
-                    try {
-                        return CompletableFuture.runAsync(() -> {
-                            ImmutableSessionMetaData metaData = factory.createImmutableSessionMetaData(id, value);
-                            this.recorder.record(metaData);
-                        }, this.executor);
-                    } catch (RejectedExecutionException e) {
-                        // Session manager is stopped
-                    }
-                }
+            SessionMetaDataFactory<MV> factory = this.factory.getMetaDataFactory();
+            MV value = factory.tryValue(id);
+            if (value != null) {
+                ImmutableSessionMetaData metaData = factory.createImmutableSessionMetaData(id, value);
+                this.recorder.record(metaData);
             }
         }
         return CompletableFutures.completedNull();
