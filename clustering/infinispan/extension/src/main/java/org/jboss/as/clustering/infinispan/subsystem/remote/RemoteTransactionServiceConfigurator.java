@@ -45,6 +45,7 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  * Configures the transaction component of a remote cache container.
  * @author Paul Ferraro
  */
+@Deprecated
 public class RemoteTransactionServiceConfigurator extends ComponentServiceConfigurator<TransactionConfiguration> {
 
     private volatile long timeout;
