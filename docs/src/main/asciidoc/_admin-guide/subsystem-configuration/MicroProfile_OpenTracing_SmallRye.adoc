@@ -1,7 +1,7 @@
 [[MicroProfile_OpenTracing_SmallRye]]
 = MicroProfile OpenTracing Subsystem Configuration
 
-Support for https://microprofile.io/project/eclipse/microprofile-opentracing[Eclipse MicroProfile OpenTracing] is
+Support for https://microprofile.io/project/eclipse/microprofile-opentracing[MicroProfile OpenTracing] is
 provided as a Tech Preview feature by the _microprofile-opentracing-smallrye_ subsystem.
 
 [[required-extension-microprofile-opentracing-smallrye]]
@@ -85,11 +85,11 @@ existing trace.
 
 == Component Reference
 
-The Eclipse MicroProfile OpenTracing is implemented by the SmallRye OpenTracing project.
+The MicroProfile OpenTracing implementation is provided by the SmallRye OpenTracing project.
 
 ****
 
-* https://microprofile.io/project/eclipse/microprofile-opentracing[Eclipse MicroProfile OpenTracing]
+* https://microprofile.io/project/eclipse/microprofile-opentracing[MicroProfile OpenTracing]
 * https://github.com/smallrye/smallrye-opentracing/[SmallRye OpenTracing]
 
 ****

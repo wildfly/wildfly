@@ -82,11 +82,11 @@ If the Undertow server/host of a given application defines an HTTPS listener, th
 
 == Component Reference
 
-The Eclipse MicroProfile OpenAPI implementation is provided by the SmallRye OpenAPI project.
+The MicroProfile OpenAPI implementation is provided by the SmallRye OpenAPI project.
 
 ****
 
-* https://microprofile.io/project/eclipse/microprofile-open-api[Eclipse MicroProfile OpenAPI]
+* https://microprofile.io/project/eclipse/microprofile-open-api[MicroProfile OpenAPI]
 * http://github.com/smallrye/smallrye-open-api/[SmallRye OpenAPI]
 
 ****

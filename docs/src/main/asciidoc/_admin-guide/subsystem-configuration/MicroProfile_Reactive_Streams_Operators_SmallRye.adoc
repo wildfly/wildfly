@@ -1,7 +1,7 @@
 [[MicroProfile_Reactive_Streams_Operators_SmallRye]]
 = MicroProfile Reactive Streams Operators Subsystem Configuration
 
-Support for https://microprofile.io/project/eclipse/microprofile-reactive-streams[Eclipse MicroProfile Reactive Streams Operators] is
+Support for https://microprofile.io/project/eclipse/microprofile-reactive-streams[MicroProfile Reactive Streams Operators] is
 provided as a Tech Preview feature by the _microprofile-reactive-streams-operators-smallrye_ subsystem.
 
 [[required-extension-microprofile-reactive-streams-operators-smallrye]]
@@ -43,11 +43,11 @@ If the subsystem is present, the MicroProfile Reactive Streams Operators functio
 
 == Component Reference
 
-The Eclipse MicroProfile Reactive Streams Operators specification is implemented by the SmallRye Mutiny project.
+The MicroProfile Reactive Streams Operators implementation is provided by the SmallRye Mutiny project.
 
 ****
 
-* https://microprofile.io/project/eclipse/microprofile-reactive-streams[Eclipse MicroProfile Reactive Streams Operators]
+* https://microprofile.io/project/eclipse/microprofile-reactive-streams[MicroProfile Reactive Streams Operators]
 * https://github.com/smallrye/smallrye-mutiny[SmallRye Mutiny]
 
 ****

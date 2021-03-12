@@ -1,7 +1,7 @@
 [[MicroProfile-Fault-Tolerance-SmallRye]]
 = MicroProfile Fault Tolerance Subsystem Configuration
 
-Support for https://microprofile.io/project/eclipse/microprofile-fault-tolerance[Eclipse MicroProfile Fault Tolerance] is
+Support for https://microprofile.io/project/eclipse/microprofile-fault-tolerance[MicroProfile Fault Tolerance] is
 provided as by the `microprofile-fault-tolerance-smallrye` subsystem.
 
 [[required-extension-microprofile-fault-tolerance-smallrye]]
@@ -70,11 +70,11 @@ configuration properties:
 
 == Component Reference
 
-The Eclipse MicroProfile Fault Tolerance is implemented by the SmallRye Fault Tolerance project.
+The MicroProfile Fault Tolerance implementation is provided by the SmallRye Fault Tolerance project.
 
 ****
 
-* https://microprofile.io/project/eclipse/microprofile-fault-tolerance[Eclipse MicroProfile Fault Tolerance]
+* https://microprofile.io/project/eclipse/microprofile-fault-tolerance[MicroProfile Fault Tolerance]
 * https://github.com/smallrye/smallrye-fault-tolerance[SmallRye Fault Tolerance]
 
 ****
