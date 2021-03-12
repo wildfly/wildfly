@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.jsf.version;
 
 import java.io.FilePermission;
+import java.lang.reflect.ReflectPermission;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
@@ -97,6 +98,7 @@ public class JSFDeploymentProcessorTestCase {
         ear.addAsManifestResource(createPermissionsXmlAsset(
                 new RuntimePermission("getClassLoader"),
                 new RuntimePermission("accessDeclaredMembers"),
+                new ReflectPermission("suppressAccessChecks"),
                 new PropertyPermission("*", "read"),
                 new FilePermission("/-", "read")), "permissions.xml");
 
