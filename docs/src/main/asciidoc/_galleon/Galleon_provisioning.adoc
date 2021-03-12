@@ -79,7 +79,7 @@ The _configuration name_ is the XML configuration file name (e.g.: _standalone.x
 WildFly Galleon feature-packs expose some link:++https://docs.wildfly.org/galleon/#_layers++[Galleon layers]. 
 A layer identifies one or more server capabilities that can be installed on its own or
 in combination with other layers. For example, if your application (e.g. a microservice)
-is only making use of _Jakarta-RESTful-Web-Services_, Eclipse MicroProfile Config and _CDI_ server capabilities, you can choose to only install
+is only making use of _Jakarta-RESTful-Web-Services_, MicroProfile Config and _CDI_ server capabilities, you can choose to only install
 the _jaxrs_, _microprofile-config_ and _cdi_ layers. The _standalone.xml_ configuration would then only contain the 
 required subsystems and their dependencies.
 

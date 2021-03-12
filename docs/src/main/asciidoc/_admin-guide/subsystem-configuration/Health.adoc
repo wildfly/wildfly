@@ -4,7 +4,7 @@
 [NOTE]
 ====
 This subsystem exposes only healthiness checks for the WildFly runtime.
-Support for https://microprofile.io/project/eclipse/microprofile-health[Eclipse MicroProfile Health] is provided by
+Support for https://microprofile.io/project/eclipse/microprofile-health[MicroProfile Health] is provided by
 the _microprofile-health-smallrye_ subsystem.
 ====
 
