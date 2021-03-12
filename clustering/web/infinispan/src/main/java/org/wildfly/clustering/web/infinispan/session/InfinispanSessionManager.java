@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.PersistenceConfiguration;
+import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
@@ -41,6 +43,7 @@ import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.Scheduler;
+import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.cache.Key;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.PredicateKeyFilter;
@@ -73,6 +76,7 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
     private final SessionExpirationListener expirationListener;
     private final Batcher<TransactionBatch> batcher;
     private final Cache<Key<String>, ?> cache;
+    private final CacheProperties properties;
     private final SessionFactory<SC, MV, AV, LC> factory;
     private final IdentifierFactory<String> identifierFactory;
     private final Scheduler<String, ImmutableSessionMetaData> expirationScheduler;
@@ -89,6 +93,7 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
     public InfinispanSessionManager(SessionFactory<SC, MV, AV, LC> factory, InfinispanSessionManagerConfiguration<SC, LC> configuration) {
         this.factory = factory;
         this.cache = configuration.getCache();
+        this.properties = configuration.getProperties();
         this.expirationRegistrar = configuration.getExpirationRegistar();
         this.expirationListener = configuration.getExpirationListener();
         this.identifierFactory = configuration.getIdentifierFactory();
@@ -122,6 +127,15 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
 
     @Override
     public void stop() {
+        if (!this.properties.isPersistent()) {
+            PersistenceConfiguration persistence = this.cache.getCacheConfiguration().persistence();
+            // Don't passivate sessions on stop if we will purge the store on startup
+            if (persistence.passivation() && !persistence.stores().stream().allMatch(StoreConfiguration::purgeOnStartup)) {
+                try (Stream<Key<String>> stream = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet().stream()) {
+                    stream.filter(SessionCreationMetaDataKeyFilter.INSTANCE).forEach(this.cache::evict);
+                }
+            }
+        }
         this.expirationRegistration.close();
         if (this.recorder != null) {
             this.cache.removeListener(this);
