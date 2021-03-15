@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.microprofile.health._private;
 
-import static org.jboss.logging.Logger.Level.DEBUG;
+import static org.jboss.logging.Logger.Level.INFO;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
@@ -46,7 +46,7 @@ public interface MicroProfileHealthLogger extends BasicLogger {
     /**
      * Logs an informational message indicating the naming subsystem is being activated.
      */
-    @LogMessage(level = DEBUG)
+    @LogMessage(level = INFO)
     @Message(id = 1, value = "Activating MicroProfile Health Subsystem")
     void activatingSubsystem();
 

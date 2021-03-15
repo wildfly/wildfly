@@ -30,6 +30,7 @@ import org.jboss.logging.annotations.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
 
 import org.jboss.logging.annotations.Cause;
 
@@ -37,7 +38,7 @@ import org.jboss.logging.annotations.Cause;
 public interface TracingExtensionLogger extends BasicLogger {
     TracingExtensionLogger ROOT_LOGGER = Logger.getMessageLogger(TracingExtensionLogger.class, TracingExtensionLogger.class.getPackage().getName());
 
-    @LogMessage(level = DEBUG)
+    @LogMessage(level = INFO)
     @Message(id = 1, value = "Activating MicroProfile OpenTracing Subsystem")
     void activatingSubsystem();
 

@@ -29,13 +29,14 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.DEBUG;
+import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 @MessageLogger(projectCode = "WFLYTRAC", length = 4)
 public interface TracingLogger extends BasicLogger {
     TracingLogger ROOT_LOGGER = Logger.getMessageLogger(TracingLogger.class, TracingLogger.class.getPackage().getName());
 
-    @LogMessage(level = DEBUG)
+    @LogMessage(level = INFO)
     @Message(id = 1, value = "Tracer initialized: %s")
     void initializing(String message);
 
