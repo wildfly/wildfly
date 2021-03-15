@@ -47,7 +47,7 @@ public interface MicroProfileHealthLogger extends BasicLogger {
      * Logs an informational message indicating the naming subsystem is being activated.
      */
     @LogMessage(level = DEBUG)
-    @Message(id = 1, value = "Activating WildFly MicroProfile Health Subsystem")
+    @Message(id = 1, value = "Activating MicroProfile Health Subsystem")
     void activatingSubsystem();
 
     @Message(id = 2, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")

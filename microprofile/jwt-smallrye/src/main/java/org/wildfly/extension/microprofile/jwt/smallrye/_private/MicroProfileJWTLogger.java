@@ -43,7 +43,7 @@ public interface MicroProfileJWTLogger extends BasicLogger {
      * Logs an informational message indicating the naming subsystem is being activated.
      */
     @LogMessage(level = DEBUG)
-    @Message(id = 1, value = "Activating WildFly MicroProfile JWT Subsystem")
+    @Message(id = 1, value = "Activating MicroProfile JWT Subsystem")
     void activatingSubsystem();
 
     @LogMessage(level = WARN)

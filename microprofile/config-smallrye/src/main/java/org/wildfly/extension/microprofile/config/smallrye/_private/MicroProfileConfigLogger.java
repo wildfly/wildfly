@@ -46,7 +46,7 @@ public interface MicroProfileConfigLogger extends BasicLogger {
      * Logs an informational message indicating the naming subsystem is being activated.
      */
     @LogMessage(level = DEBUG)
-    @Message(id = 1, value = "Activating WildFly MicroProfile Config Subsystem")
+    @Message(id = 1, value = "Activating MicroProfile Config Subsystem")
     void activatingSubsystem();
 
     @Message(id = 2, value = "Unable to load class %s from module %s")

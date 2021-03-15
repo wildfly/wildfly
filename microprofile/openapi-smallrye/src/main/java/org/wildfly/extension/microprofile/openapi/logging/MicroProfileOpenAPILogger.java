@@ -45,33 +45,33 @@ public interface MicroProfileOpenAPILogger extends BasicLogger {
     MicroProfileOpenAPILogger LOGGER = Logger.getMessageLogger(MicroProfileOpenAPILogger.class, "org.wildfly.extension.microprofile.openapi.smallrye");
 
     @LogMessage(level = DEBUG)
-    @Message(id = 1, value = "Activating WildFly MicroProfile OpenAPI Subsystem")
+    @Message(id = 1, value = "Activating MicroProfile OpenAPI Subsystem")
     void activatingSubsystem();
 
     @Message(id = 2, value = "Failed to load OpenAPI '%s' from deployment '%s'")
     IllegalArgumentException failedToLoadStaticFile(@Cause IOException e, String fileName, String deploymentName);
 
     @LogMessage(level = WARN)
-    @Message(id = 3, value = "WildFly MicroProfile OpenAPI endpoint already registered for host '%s'.  Skipping OpenAPI documentation of '%s'.")
+    @Message(id = 3, value = "MicroProfile OpenAPI endpoint already registered for host '%s'.  Skipping OpenAPI documentation of '%s'.")
     void endpointAlreadyRegistered(String hostName, String deployment);
 
     @LogMessage(level = INFO)
-    @Message(id = 4, value = "Registered WildFly MicroProfile OpenAPI endpoint '%s' for host '%s'")
+    @Message(id = 4, value = "Registered MicroProfile OpenAPI endpoint '%s' for host '%s'")
     void endpointRegistered(String path, String hostName);
 
     @LogMessage(level = INFO)
-    @Message(id = 5, value = "Unregistered WildFly MicroProfile OpenAPI endpoint '%s' for host '%s'")
+    @Message(id = 5, value = "Unregistered MicroProfile OpenAPI endpoint '%s' for host '%s'")
     void endpointUnregistered(String path, String hostName);
 
     @LogMessage(level = WARN)
-    @Message(id = 6, value = "\u00A75.1 of WildFly MicroProfile OpenAPI specification requires that the endpoint be accessible via %2$s, but no such listeners exists for server '%1$s'.")
+    @Message(id = 6, value = "\u00A75.1 of MicroProfile OpenAPI specification requires that the endpoint be accessible via %2$s, but no such listeners exists for server '%1$s'.")
     void requiredListenersNotFound(String serverName, Set<String> requisiteSchemes);
 
     @LogMessage(level = WARN)
-    @Message(id = 7, value = "\u00A75.1 of WildFly MicroProfile OpenAPI specification requires documentation to be available at '%3$s', but '%1$s' is configured to use '%2$s'")
+    @Message(id = 7, value = "\u00A75.1 of MicroProfile OpenAPI specification requires documentation to be available at '%3$s', but '%1$s' is configured to use '%2$s'")
     void nonStandardEndpoint(String deploymentName, String deploymentEndpoint, String standardEndpoint);
 
     @LogMessage(level = INFO)
-    @Message(id = 8, value = "WildFly MicroProfile OpenAPI documentation disabled for '%s'")
+    @Message(id = 8, value = "MicroProfile OpenAPI documentation disabled for '%s'")
     void disabled(String deploymentName);
 }

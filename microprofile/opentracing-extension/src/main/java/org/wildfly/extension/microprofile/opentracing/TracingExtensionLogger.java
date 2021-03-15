@@ -38,11 +38,11 @@ public interface TracingExtensionLogger extends BasicLogger {
     TracingExtensionLogger ROOT_LOGGER = Logger.getMessageLogger(TracingExtensionLogger.class, TracingExtensionLogger.class.getPackage().getName());
 
     @LogMessage(level = DEBUG)
-    @Message(id = 1, value = "Activating WildFly MicroProfile OpenTracing Subsystem")
+    @Message(id = 1, value = "Activating MicroProfile OpenTracing Subsystem")
     void activatingSubsystem();
 
     @LogMessage(level = DEBUG)
-    @Message(id = 2, value = "WildFly MicroProfile OpenTracing Subsystem is processing deployment")
+    @Message(id = 2, value = "MicroProfile OpenTracing Subsystem is processing deployment")
     void processingDeployment();
 
     @LogMessage(level = DEBUG)
