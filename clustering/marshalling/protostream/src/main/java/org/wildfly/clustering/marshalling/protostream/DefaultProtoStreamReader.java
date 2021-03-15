@@ -23,15 +23,13 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.infinispan.protostream.EnumMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.ProtobufUtil;
 import org.infinispan.protostream.RawProtoStreamReader;
+import org.infinispan.protostream.RawProtobufMarshaller;
 import org.infinispan.protostream.impl.RawProtoStreamReaderImpl;
-import org.wildfly.clustering.marshalling.spi.ByteBufferInputStream;
 
 import protostream.com.google.protobuf.CodedInputStream;
 
@@ -60,8 +58,17 @@ public class DefaultProtoStreamReader implements ProtoStreamReader {
 
     @Override
     public <T> T readObject(Class<T> targetClass) throws IOException {
-        try (InputStream input = new ByteBufferInputStream(this.input.readByteBuffer())) {
-            return ProtobufUtil.readFrom(this.context, input, targetClass);
+        int limit = this.input.readUInt32();
+        int oldLimit = this.input.pushLimit(limit);
+        try {
+            RawProtobufMarshaller<T> marshaller = (RawProtobufMarshaller<T>) this.context.getMarshaller(targetClass);
+            // Avoid redundant wrapping of the RawProtoStreamReader
+            T result = (marshaller instanceof ProtoStreamMarshaller) ? ((ProtoStreamMarshaller<T>) marshaller).readFrom(this) : marshaller.readFrom(this.context, this);
+            // Ensure marshaller reached limit
+            this.input.checkLastTagWas(0);
+            return result;
+        } finally {
+            this.input.popLimit(oldLimit);
         }
     }
 
