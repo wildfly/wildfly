@@ -201,7 +201,7 @@ public enum AnyField implements Field<Object> {
     private static final AnyField[] VALUES = AnyField.values();
 
     static AnyField fromIndex(int index) {
-        return (index > 0) ? VALUES[index - 1] : null;
+        return (index > 0) && (index <= VALUES.length) ? VALUES[index - 1] : null;
     }
 
     private static final Map<Class<?>, AnyField> FIELDS = new IdentityHashMap<>();

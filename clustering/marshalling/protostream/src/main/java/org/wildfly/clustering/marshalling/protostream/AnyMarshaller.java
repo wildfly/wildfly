@@ -23,7 +23,6 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.io.StreamCorruptedException;
 import java.lang.reflect.Proxy;
 
 import org.infinispan.protostream.BaseMarshaller;
@@ -45,19 +44,20 @@ public enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
     @Override
     public Any readFrom(ProtoStreamReader reader) throws IOException {
         Object value = null;
-        int tag = reader.readTag();
-        if (tag != 0) {
+        boolean reading = true;
+        while (reading) {
+            int tag = reader.readTag();
             AnyField field = AnyField.fromIndex(WireFormat.getTagFieldNumber(tag));
-            if (field == null) {
-                throw new StreamCorruptedException(String.valueOf(tag));
-            }
+            if (field != null) {
+                value = field.getMarshaller().readFrom(reader);
 
-            value = field.getMarshaller().readFrom(reader);
-
-            if (field == AnyField.REFERENCE) {
-                value = ProtoStreamReaderContext.INSTANCE.get().findByReference((Integer) value);
+                if (field == AnyField.REFERENCE) {
+                    value = ProtoStreamReaderContext.INSTANCE.get().findByReference((Integer) value);
+                } else {
+                    ProtoStreamReaderContext.INSTANCE.get().setReference(value);
+                }
             } else {
-                ProtoStreamReaderContext.INSTANCE.get().setReference(value);
+                reading = (tag != 0) && reader.skipField(tag);
             }
         }
         return new Any(value);

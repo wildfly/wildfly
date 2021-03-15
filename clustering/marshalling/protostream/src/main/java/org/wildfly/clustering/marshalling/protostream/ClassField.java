@@ -106,6 +106,6 @@ public enum ClassField implements Field<Class<?>> {
     private static final ClassField[] FIELDS = values();
 
     static ClassField fromIndex(int index) {
-        return (index > 0) ? FIELDS[index - 1] : null;
+        return (index > 0) && (index <= FIELDS.length) ? FIELDS[index - 1] : null;
     }
 }
