@@ -22,10 +22,10 @@
 
 <subsystem xmlns="urn:jboss:domain:jgroups:8.0">
     <channels default="ee">
-        <channel name="ee" stack="maximal" cluster="${test.expr:mycluster}">
+        <channel name="ee" stack="maximal" cluster="${jgroups.ee.cluster:mycluster}" module="${jgroups.ee.module:org.wildfly.clustering.server}" statistics-enabled="${jgroups.ee.statistics-enabled:true}">
             <fork name="web">
-                <protocol type="CENTRAL_LOCK" statistics-enabled="true">
-                    <property name="num_backups">1</property>
+                <protocol type="CENTRAL_LOCK" statistics-enabled="${jgroups.ee.statistics-enabled:true}">
+                    <property name="num_backups">${jgroups.ee.central-lock.num-backups:1}</property>
                 </protocol>
             </fork>
         </channel>
@@ -35,30 +35,31 @@
         <stack name="minimal" statistics-enabled="true">
             <transport type="UDP" socket-binding="some-binding" statistics-enabled="false"/>
         </stack>
-        <stack name="maximal">
+        <stack name="maximal" statistics-enabled="${jgroups.maximal.statistics-enabled:true}">
             <transport type="TCP"
-                       module="org.jgroups"
+                       module="${jgroups.maximal.module:org.jgroups}"
                        socket-binding="some-binding"
                        client-socket-binding="some-other-binding"
                        diagnostics-socket-binding="jgroups-diagnostics"
-                       shared="${test.expr:false}"
-                       machine="${test.expr:machine1}"
-                       rack="${test.expr:rack1}"
-                       site="${test.expr:site1}">
-                <property name="enable_bundling">${test.expr:true}</property>
-                <default-thread-pool min-threads="11"
-                                     max-threads="12"
-                                     keepalive-time="13"/>
+                       shared="${jgroups.maximal.shared:false}"
+                       machine="${jgroups.maximal.machine:machine1}"
+                       rack="${jgroups.maximal.rack:rack1}"
+                       site="${jgroups.maximal.site:site1}">
+                <property name="enable_bundling">${jgroups.maximal.bundling:true}</property>
+                <default-thread-pool min-threads="${jgroups.maximal.min-threads:11}"
+                                     max-threads="${jgroups.maximal.max-threads:12}"
+                                     keepalive-time="${jgroups.maximal.keepalive-time:13}"/>
             </transport>
-            <socket-protocol type="MPING" module="org.jgroups" socket-binding="jgroups-mping">
-                <property name="name">${test.expr:value}</property>
+            <socket-protocol type="MPING" module="${jgroups.maximal.mping.module:org.jgroups}" socket-binding="jgroups-mping">
+                <property name="name">${jgroups.maximal.property:value}</property>
             </socket-protocol>
             <jdbc-protocol type="JDBC_PING" data-source="ExampleDS"/>
+            <socket-discovery-protocol type="TCPPING" socket-bindings="node1 node2"/>
             <protocol type="MERGE3"/>
             <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd" client-socket-binding="jgroups-client-fd"/>
             <protocol type="FD"/>
             <protocol type="VERIFY_SUSPECT"/>
-            <encrypt-protocol type="SYM_ENCRYPT" key-store="my-key-store" key-alias="alias">
+            <encrypt-protocol type="SYM_ENCRYPT" key-store="my-key-store" key-alias="${jgroups.maximal.key-alias:alias}">
                 <key-credential-reference store="my-credential-store" alias="credential-alias" type="PASSWORD"/>
             </encrypt-protocol>
             <protocol type="pbcast.NAKACK2"/>
@@ -66,7 +67,7 @@
             <protocol type="pbcast.STABLE"/>
             <protocol type="pbcast.GMS"/>
             <auth-protocol type="AUTH">
-                <cipher-token algorithm="RSA" key-store="my-key-store" key-alias="alias">
+                <cipher-token algorithm="${jgroups.maximal.auth.algorithm:RSA}" key-store="my-key-store" key-alias="${jgroups.maximal.auth.alias:alias}">
                     <shared-secret-reference clear-text="changeme"/>
                     <key-credential-reference store="my-credential-store" alias="credential-alias" type="PASSWORD"/>
                 </cipher-token>
@@ -75,7 +76,7 @@
             <protocol type="MFC"/>
             <protocol type="FRAG2"/>
             <protocol type="RSVP"/>
-            <relay site="LON">
+            <relay site="${jgroups.maximal.relay.site:LON}">
                 <remote-site name="SFO" channel="bridge"/>
                 <remote-site name="NYC" channel="bridge"/>
             </relay>
