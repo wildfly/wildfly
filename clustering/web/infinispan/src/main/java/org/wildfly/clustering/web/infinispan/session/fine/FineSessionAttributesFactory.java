@@ -25,23 +25,21 @@ package org.wildfly.clustering.web.infinispan.session.fine;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntriesEvicted;
-import org.infinispan.notifications.cachelistener.event.CacheEntriesEvictedEvent;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
+import org.wildfly.clustering.infinispan.spi.PredicateKeyFilter;
+import org.wildfly.clustering.infinispan.spi.listener.PostActivateListener;
+import org.wildfly.clustering.infinispan.spi.listener.PrePassivateListener;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.CompositeImmutableSession;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionAttributeActivationNotifier;
@@ -53,6 +51,7 @@ import org.wildfly.clustering.web.cache.session.fine.FineSessionAttributes;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionAttributesFactoryConfiguration;
 import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKey;
+import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKeyFilter;
 import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -63,7 +62,6 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * A separate cache entry stores the activate attribute names for the session.
  * @author Paul Ferraro
  */
-@Listener(sync = false)
 public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, AtomicReference<Map<String, UUID>>> {
 
     private final Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache;
@@ -73,6 +71,11 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     private final CacheProperties properties;
     private final MutatorFactory<SessionAttributeKey, V> mutatorFactory;
     private final HttpSessionActivationListenerProvider<S, C, L> provider;
+    private final Function<String, SessionAttributeActivationNotifier> notifierFactory;
+    private final Object evictListener;
+    private final Object evictAttributesListener;
+    private final Object prePassivateListener;
+    private final Object postActivateListener;
 
     public FineSessionAttributesFactory(InfinispanSessionAttributesFactoryConfiguration<S, C, L, Object, V> configuration) {
         this.namesCache = configuration.getCache();
@@ -82,6 +85,31 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
         this.properties = configuration.getCacheProperties();
         this.mutatorFactory = new InfinispanMutatorFactory<>(this.attributeCache, this.properties);
         this.provider = configuration.getHttpSessionActivationListenerProvider();
+        this.notifierFactory = configuration.getActivationNotifierFactory();
+        this.evictListener = new PrePassivateListener<>(this::cascadeEvict, configuration.getExecutor());
+        this.evictAttributesListener = new PrePassivateListener<>(this::cascadeEvictAttributes, configuration.getExecutor());
+        this.prePassivateListener = !this.properties.isPersistent() ? new PrePassivateListener<>(this::prePassivate, configuration.getExecutor()) : null;
+        this.postActivateListener = !this.properties.isPersistent() ? new PostActivateListener<>(this::postActivate, configuration.getExecutor()) : null;
+        if (this.prePassivateListener != null) {
+            this.attributeCache.addListener(this.prePassivateListener, new PredicateKeyFilter<>(SessionAttributeKeyFilter.INSTANCE), null);
+        }
+        if (this.postActivateListener != null) {
+            this.attributeCache.addListener(this.postActivateListener, new PredicateKeyFilter<>(SessionAttributeKeyFilter.INSTANCE), null);
+        }
+        this.namesCache.addListener(this.evictAttributesListener, new PredicateKeyFilter<>(SessionAttributeNamesKeyFilter.INSTANCE), null);
+        this.namesCache.addListener(this.evictListener, new PredicateKeyFilter<>(SessionCreationMetaDataKeyFilter.INSTANCE), null);
+    }
+
+    @Override
+    public void close() {
+        this.namesCache.removeListener(this.evictListener);
+        this.namesCache.removeListener(this.evictAttributesListener);
+        if (this.prePassivateListener != null) {
+            this.attributeCache.removeListener(this.prePassivateListener);
+        }
+        if (this.postActivateListener != null) {
+            this.attributeCache.removeListener(this.postActivateListener);
+        }
     }
 
     @Override
@@ -164,29 +192,31 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
         };
     }
 
-    @CacheEntriesEvicted
-    public void evicted(CacheEntriesEvictedEvent<GroupedKey<String>, ?> event) {
-        if (!event.isPre()) {
-            Set<SessionAttributeNamesKey> keys = new HashSet<>();
-            for (GroupedKey<String> key : event.getEntries().keySet()) {
-                // Workaround for ISPN-8324
-                if (key instanceof SessionCreationMetaDataKey) {
-                    keys.add(new SessionAttributeNamesKey(key.getId()));
-                }
-            }
-            if (!keys.isEmpty()) {
-                Cache<SessionAttributeKey, V> cache = this.attributeCache.getAdvancedCache().withFlags(Flag.SKIP_LISTENER_NOTIFICATION);
-                for (Map.Entry<SessionAttributeNamesKey, Map<String, UUID>> entry : this.namesCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).getAll(keys).entrySet()) {
-                    Map<String, UUID> names = entry.getValue();
-                    if (names != null) {
-                        String sessionId = entry.getKey().getId();
-                        for (UUID attributeId : names.values()) {
-                            cache.evict(new SessionAttributeKey(sessionId, attributeId));
-                        }
-                    }
-                    this.namesCache.getAdvancedCache().withFlags(Flag.SKIP_LISTENER_NOTIFICATION).evict(entry.getKey());
-                }
-            }
+    private void cascadeEvict(SessionCreationMetaDataKey key, Object value) {
+        this.namesCache.evict(new SessionAttributeNamesKey(key.getId()));
+    }
+
+    private void cascadeEvictAttributes(SessionAttributeNamesKey key, Map<String, UUID> value) {
+        String sessionId = key.getId();
+        for (UUID attributeId : value.values()) {
+            this.attributeCache.evict(new SessionAttributeKey(sessionId, attributeId));
+        }
+    }
+
+    private void prePassivate(SessionAttributeKey key, V value) {
+        this.notify(SessionAttributeActivationNotifier.PRE_PASSIVATE, key, value);
+    }
+
+    private void postActivate(SessionAttributeKey key, V value) {
+        this.notify(SessionAttributeActivationNotifier.POST_ACTIVATE, key, value);
+    }
+
+    private void notify(BiConsumer<SessionAttributeActivationNotifier, Object> notification, SessionAttributeKey key, V value) {
+        String sessionId = key.getId();
+        try (SessionAttributeActivationNotifier notifier = this.notifierFactory.apply(key.getId())) {
+            notification.accept(notifier, this.marshaller.read(value));
+        } catch (IOException e) {
+            InfinispanWebLogger.ROOT_LOGGER.failedToActivateSessionAttribute(e, sessionId, key.getAttributeId().toString());
         }
     }
 }

@@ -20,14 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.web.infinispan.session.fine;
 
-import java.util.concurrent.Executor;
+import org.infinispan.util.function.SerializablePredicate;
 
 /**
+ * Filter for cache keys of type {@link SessionAttributeNamesKey}.
  * @author Paul Ferraro
  */
-public interface InfinispanSessionMetaDataFactoryConfiguration extends InfinispanConfiguration {
+public enum SessionAttributeNamesKeyFilter implements SerializablePredicate<Object> {
+    INSTANCE;
 
-    Executor getExecutor();
+    @Override
+    public boolean test(Object key) {
+        return key instanceof SessionAttributeNamesKey;
+    }
 }

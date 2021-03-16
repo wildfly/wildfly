@@ -36,7 +36,7 @@ import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public interface InfinispanSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> extends DistributableSessionManagementConfiguration, SessionManagerFactoryConfiguration<S, SC, AL, MC, LC>, InfinispanSessionMetaDataFactoryConfiguration {
+public interface InfinispanSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> extends DistributableSessionManagementConfiguration, SessionManagerFactoryConfiguration<S, SC, AL, MC, LC>, InfinispanConfiguration {
 
     KeyAffinityServiceFactory getKeyAffinityServiceFactory();
 
