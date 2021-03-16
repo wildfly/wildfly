@@ -246,8 +246,8 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         assertEquals("false", mdbDeliveryGroupActive);
 
         final ModelNode passivationStore = ejb3.get("passivation-store").asPropertyList().get(0).getValue();
-        assertEquals("default", passivationStore.get("bean-cache").resolve().asString());
-        assertEquals("ejb", passivationStore.get("cache-container").resolve().asString());
+        assertEquals("default", passivationStore.get("bean-cache").asString());
+        assertEquals("ejb", passivationStore.get("cache-container").asString());
         assertEquals(10, passivationStore.get("max-size").resolve().asInt());
 
         final ModelNode remotingProfile = ejb3.get("remoting-profile").asPropertyList().get(0).getValue();
@@ -273,7 +273,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         assertEquals("true", useQualifiedName);
 
         final ModelNode remote = ejb3.get("service", "remote");
-        assertEquals("ejb", remote.get("cluster").resolve().asString());
+        assertEquals("ejb", remote.get("cluster").asString());
         assertEquals("false", remote.get("execute-in-worker").resolve().asString());
         assertEquals("default", remote.get("thread-pool-name").resolve().asString());
         assertEquals(20, remote.get("channel-creation-options").asPropertyList().get(0).getValue().get("value").resolve().asInt());

@@ -72,7 +72,8 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
 
     static final SimpleAttributeDefinition CLIENT_MAPPINGS_CLUSTER_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME, ModelType.STRING, true)
-                    .setAllowExpression(true)
+                    // Capability references should not allow expressions
+                    .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(BeanManagerFactoryServiceConfiguratorConfiguration.DEFAULT_CONTAINER_NAME))
                     // TODO: replace this with a Requirement reference when the ejb-spi module for clustering is available

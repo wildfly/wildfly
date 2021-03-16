@@ -57,7 +57,8 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
     static final SimpleAttributeDefinition CACHE_CONTAINER = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CACHE_CONTAINER, ModelType.STRING, true)
             .setXmlName(EJB3SubsystemXMLAttribute.CACHE_CONTAINER.getLocalName())
             .setDefaultValue(new ModelNode(BeanManagerFactoryServiceConfiguratorConfiguration.DEFAULT_CONTAINER_NAME))
-            .setAllowExpression(true)
+            // Capability references should not allow expressions
+            .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
             // a CapabilityReference to a UnaryRequirement
             .setCapabilityReference(new CapabilityReference(()->CLUSTER_PASSIVATION_STORE_CAPABILITY, InfinispanDefaultCacheRequirement.CONFIGURATION))
@@ -66,7 +67,8 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
     @Deprecated
     static final SimpleAttributeDefinition BEAN_CACHE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.BEAN_CACHE, ModelType.STRING, true)
             .setXmlName(EJB3SubsystemXMLAttribute.BEAN_CACHE.getLocalName())
-            .setAllowExpression(true)
+            // Capability references should not allow expressions
+            .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
             // a CapabilityReference to a BinaryRequirement (including a parent attribute)
             .setCapabilityReference(new CapabilityReference(()->CLUSTER_PASSIVATION_STORE_CAPABILITY, InfinispanCacheRequirement.CONFIGURATION, ()->CACHE_CONTAINER))
@@ -76,7 +78,8 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
     static final SimpleAttributeDefinition CLIENT_MAPPINGS_CACHE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE, ModelType.STRING, true)
             .setXmlName(EJB3SubsystemXMLAttribute.CLIENT_MAPPINGS_CACHE.getLocalName())
             .setDefaultValue(new ModelNode("remote-connector-client-mappings"))
-            .setAllowExpression(true)
+            // Capability references should not allow expressions
+            .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
             .setDeprecated(DEPRECATED_VERSION)
             // TODO: replace this with a Requirement reference when the ejb-spi module for clustering is available

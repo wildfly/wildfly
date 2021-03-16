@@ -42,7 +42,7 @@
         <cache name="distributable" passivation-store-ref="${sysprop:infinispan}"/>
     </caches>
     <passivation-stores>
-        <passivation-store name="infinispan" cache-container="${sysprop:ejb}" bean-cache="${sysprop:default}" max-size="${sysprop:10}"/>
+        <passivation-store name="infinispan" cache-container="ejb" bean-cache="default" max-size="${sysprop:10}"/>
     </passivation-stores>
     <async thread-pool-name="${sysprop:default}"/>
     <timer-service thread-pool-name="default" default-data-store="file-data-store">
@@ -56,7 +56,7 @@
                                  refresh-interval="${sysprop:100}"/>
         </data-stores>
     </timer-service>
-    <remote connectors="http-remoting-connector" thread-pool-name="${sysprop:default}" cluster="${sysprop:ejb}" execute-in-worker="${sysprop:false}">
+    <remote connectors="http-remoting-connector" thread-pool-name="${sysprop:default}" cluster="ejb" execute-in-worker="${sysprop:false}">
         <channel-creation-options>
             <option name="READ_TIMEOUT" value="${prop.remoting-connector.read.timeout:20}" type="xnio"/>
             <option name="MAX_OUTBOUND_MESSAGES" value="1234" type="remoting"/>
