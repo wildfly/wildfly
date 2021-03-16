@@ -32,7 +32,7 @@ If you provision your own server and include the `microprofile-reactive-streams-
 
 == Specification
 
-WildFly's MicroProfile Reactive Streams Operators subsystem implements MicroProfile Reactive Streams Operators 1.0, which adds support for asynchronous streaming of data. It essentially replicates the the interfaces, and their implementations, that were made available in the https://docs.oracle.com/javase/9/docs/api/java/util/concurrent/Flow.html[java.util.concurrent.Flow] class introduced in Java 9. Thus MicroProfile Reactive Streams Operators can be considered a stop-gap until Java 9 and later is ubiquitous.
+WildFly's MicroProfile Reactive Streams Operators subsystem implements MicroProfile Reactive Streams Operators 2.0, which adds support for asynchronous streaming of data. It essentially replicates the the interfaces, and their implementations, that were made available in the https://docs.oracle.com/javase/9/docs/api/java/util/concurrent/Flow.html[java.util.concurrent.Flow] class introduced in Java 9. Thus MicroProfile Reactive Streams Operators can be considered a stop-gap until Java 9 and later is ubiquitous.
 
 == Configuration
 The `microprofile-reactive-streams-operators-smallrye` subsystem contains no configurable attributes or resources. Its presence makes the interfaces
