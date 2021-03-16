@@ -22,9 +22,9 @@
 
 <subsystem xmlns="urn:jboss:domain:singleton:1.0">
     <singleton-policies default="simple">
-        <singleton-policy name="simple" cache-container="singleton-container" cache="singleton-cache" quorum="2">
-            <simple-election-policy position="-1">
-                <name-preferences>node0 node1</name-preferences>
+        <singleton-policy name="simple" cache-container="singleton-container" cache="singleton-cache" quorum="${singleton.simple.quorum:2}">
+            <simple-election-policy position="${singleton.simple.position:-1}">
+                <name-preferences>${singleton.simple.name-preferences-1:node0} ${singleton.simple.name-preferences-2:node1}</name-preferences>
             </simple-election-policy>
         </singleton-policy>
         <singleton-policy name="random" cache-container="singleton-container">
