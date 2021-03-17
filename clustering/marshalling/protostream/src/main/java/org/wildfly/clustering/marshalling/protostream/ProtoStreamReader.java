@@ -40,4 +40,14 @@ public interface ProtoStreamReader extends RawProtoStreamReader {
     <E extends Enum<E>> E readEnum(Class<E> enumClass) throws IOException;
 
     byte readRawByte() throws IOException;
+
+    /**
+     * Ignores the field with the specified tag.
+     * @param tag a field tag
+     * @return true, if the caller should continue reading the stream, false otherwise.
+     * @throws IOException if the field could not be skipped.
+     */
+    default boolean ignoreField(int tag) throws IOException {
+        return (tag != 0) && this.skipField(tag);
+    }
 }
