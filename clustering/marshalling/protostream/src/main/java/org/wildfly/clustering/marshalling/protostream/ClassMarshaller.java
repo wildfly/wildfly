@@ -52,7 +52,7 @@ public class ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
             if (field != null) {
                 result = field.getMarshaller().readFrom(reader);
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         return result;

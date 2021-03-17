@@ -70,7 +70,7 @@ public class ClientMappingMarshaller implements ProtoStreamMarshaller<ClientMapp
                     destinationPort = reader.readUInt32();
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         return new ClientMapping(sourceAddress, sourceMask, destinationAddress, destinationPort);

@@ -57,7 +57,7 @@ public class InetSocketAddressMarshaller implements ProtoStreamMarshaller<InetSo
                 int port = reader.readUInt32();
                 result = result.isUnresolved() ? InetSocketAddress.createUnresolved(result.getHostName(), port) : new InetSocketAddress(result.getAddress(), port);
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         return result;

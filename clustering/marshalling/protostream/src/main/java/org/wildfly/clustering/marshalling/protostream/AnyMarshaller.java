@@ -57,7 +57,7 @@ public enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
                     ProtoStreamReaderContext.INSTANCE.get().setReference(value);
                 }
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         return new Any(value);

@@ -48,7 +48,7 @@ public enum ClassField implements Field<Class<?>> {
                 if (index == ANY.getIndex()) {
                     componentClass = ScalarClass.ANY.readFrom(reader);
                 } else {
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
                 }
             }
             for (int i = 0; i < dimensions; ++i) {

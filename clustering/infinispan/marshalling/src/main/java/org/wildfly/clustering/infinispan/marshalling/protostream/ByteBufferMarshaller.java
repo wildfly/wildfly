@@ -50,7 +50,7 @@ public enum ByteBufferMarshaller implements ProtoStreamMarshaller<ByteBufferImpl
                     buffer = ByteBufferImpl.create(reader.readByteArray());
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         return buffer;

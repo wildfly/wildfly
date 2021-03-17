@@ -52,7 +52,7 @@ public class TypedArrayMarshaller implements FieldMarshaller<Object> {
             if (index == AnyField.ANY.getIndex()) {
                 list.add(Scalar.ANY.readFrom(reader));
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         Object array = Array.newInstance((componentType == Any.class) ? Object.class : componentType, list.size());

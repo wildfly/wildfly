@@ -49,7 +49,7 @@ public class TypedObjectMarshaller implements FieldMarshaller<Object> {
             if (index == AnyField.ANY.getIndex()) {
                 result = reader.readObject(targetClass);
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         return result;

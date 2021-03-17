@@ -58,7 +58,7 @@ public class SessionCreationMetaDataEntryMarshaller implements ProtoStreamMarsha
                     maxInactiveInterval = reader.readObject(Duration.class);
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         SessionCreationMetaData metaData = new SimpleSessionCreationMetaData(creationTime);

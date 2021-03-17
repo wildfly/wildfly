@@ -161,7 +161,7 @@ public class FunctionalScalarMarshaller<T, V> implements ProtoStreamMarshaller<T
                     value = this.factory.apply(this.marshaller.readFrom(reader));
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         return value;

@@ -58,7 +58,7 @@ public class InfinispanBeanEntryMarshaller implements ProtoStreamMarshaller<Infi
                     lastAccessed = reader.readObject(Instant.class);
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         InfinispanBeanEntry<SessionID> entry = new InfinispanBeanEntry<>(beanName, groupId);

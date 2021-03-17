@@ -61,7 +61,7 @@ public class ElytronAuthenticationMarshaller implements ProtoStreamMarshaller<El
                     name = reader.readString();
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         return new ElytronAuthentication(mechanism, programmatic, name);

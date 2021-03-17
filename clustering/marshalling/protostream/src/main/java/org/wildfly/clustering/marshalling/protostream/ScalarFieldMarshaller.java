@@ -46,7 +46,7 @@ public class ScalarFieldMarshaller<T> implements FieldMarshaller<T> {
         boolean reading = true;
         while (reading) {
             int tag = reader.readTag();
-            reading = (tag != 0) && reader.skipField(tag);
+            reading = reader.ignoreField(tag);
         }
         return result;
     }

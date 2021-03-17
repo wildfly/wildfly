@@ -57,7 +57,7 @@ public class CollectionMarshaller<T extends Collection<Object>> extends Abstract
                     collection.add(reader.readObject(Any.class).get());
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         return collection;

@@ -66,7 +66,7 @@ public class SortedSetMarshaller<T extends SortedSet<Object>> extends AbstractCo
                 set = this.factory.apply(comparator);
                 set.addAll(existing);
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         return set;

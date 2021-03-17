@@ -71,7 +71,7 @@ public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends Ab
                 comparator = (Comparator<Object>) ComparatorMarshaller.INSTANCE.readField(reader, index - COMPARATOR_INDEX, comparator);
                 map = this.factory.apply(comparator);
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         Iterator<Object> keyIterator = keys.iterator();

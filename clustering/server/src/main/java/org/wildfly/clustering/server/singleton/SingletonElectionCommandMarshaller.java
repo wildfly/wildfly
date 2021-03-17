@@ -61,7 +61,7 @@ public class SingletonElectionCommandMarshaller implements ProtoStreamMarshaller
                     elected = Integer.valueOf(reader.readUInt32());
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         return new SingletonElectionCommand(candidates, elected);

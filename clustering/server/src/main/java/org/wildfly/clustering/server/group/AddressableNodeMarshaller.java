@@ -58,7 +58,7 @@ public class AddressableNodeMarshaller implements ProtoStreamMarshaller<Addressa
                 IpAddress ipAddress = reader.readObject(IpAddress.class);
                 socketAddress = new InetSocketAddress(ipAddress.getIpAddress(), ipAddress.getPort());
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         return (address instanceof IpAddress) ? new AddressableNode((IpAddress) address, name) : new AddressableNode(address, name, socketAddress);

@@ -58,7 +58,7 @@ public class MonthDayMarshaller implements ProtoStreamMarshaller<MonthDay> {
                     result = result.withDayOfMonth(reader.readUInt32() + 1);
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         return result;
