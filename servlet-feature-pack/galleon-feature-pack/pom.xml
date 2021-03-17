@@ -188,6 +188,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <overwrite>true</overwrite>
+                </configuration>
                 <executions>
                     <execution>
                         <id>copy-common-feature-pack-resources</id>
