@@ -5,7 +5,7 @@
 ----
 
 
-Support for https://microprofile.io/project/eclipse/microprofile-reactive-messaging[Eclipse MicroProfile Reactive Messaging] is
+Support for https://microprofile.io/project/eclipse/microprofile-reactive-messaging[MicroProfile Reactive Messaging] is
 provided as a Tech Preview feature by the _microprofile-reactive-messaging-smallrye_ subsystem.
 
 [[required-extension-microprofile-reactive-messaging-smallrye]]
@@ -123,9 +123,9 @@ The prefixes discussed above are stripped off before passing the property to Kaf
 
 == Component Reference
 
-The Eclipse MicroProfile Reactive Messaging specification is implemented by the SmallRye Reactive Messaging project.
+The MicroProfile Reactive Messaging implementation is provided by the SmallRye Reactive Messaging project.
 
 ****
-* https://github.com/eclipse/microprofile-reactive-messaging[Eclipse MicroProfile Reactive Messaging]
+* https://github.com/eclipse/microprofile-reactive-messaging[MicroProfile Reactive Messaging]
 * https://github.com/smallrye/smallrye-reactive-messaging[SmallRye Reactive Messaging]
 ****

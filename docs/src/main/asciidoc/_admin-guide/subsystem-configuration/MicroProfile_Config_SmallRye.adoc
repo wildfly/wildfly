@@ -1,7 +1,7 @@
 [[MicroProfile_Config_SmallRye]]
 = MicroProfile Config Subsystem Configuration
 
-Support for https://microprofile.io/project/eclipse/microprofile-config[Eclipse MicroProfile Config] is provided by
+Support for https://microprofile.io/project/eclipse/microprofile-config[MicroProfile Config] is provided by
  the _microprofile-config-smallrye_ subsystem.
 
 [[required-extension-microprofile-config-smallrye]]
@@ -153,11 +153,11 @@ or by having Jakarta Contexts and Dependency Injection Bean annotation) to be ab
 
 == Component Reference
 
-The Eclipse MicroProfile Config is implemented by the SmallRye Config project.
+The MicroProfile Config implementation is provided by the SmallRye Config project.
 
 ****
 
-* https://microprofile.io/project/eclipse/microprofile-config[Eclipse MicroProfile Config]
+* https://microprofile.io/project/eclipse/microprofile-config[MicroProfile Config]
 * http://github.com/smallrye/smallrye-config/[SmallRye Config]
 
 ****

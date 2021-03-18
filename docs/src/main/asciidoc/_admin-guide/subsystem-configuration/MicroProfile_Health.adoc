@@ -1,7 +1,7 @@
 [[MicroProfile_Health_SmallRye]]
 = MicroProfile Health Subsystem Configuration
 
-Support for https://microprofile.io/project/eclipse/microprofile-health[Eclipse MicroProfile Health] is provided by
+Support for https://microprofile.io/project/eclipse/microprofile-health[MicroProfile Health] is provided by
  the _microprofile-health-smallrye_ subsystem.
 
 [[required-extension-microprofile-health-smallrye]]
@@ -157,11 +157,11 @@ The MicroProfile Config property `mp.health.disable-default-procedures` is read 
 
 == Component Reference
 
-The Eclipse MicroProfile Health is implemented by the SmallRye Health project.
+The MicroProfile Health implementation is provided by the SmallRye Health project.
 
 ****
 
-* https://microprofile.io/project/eclipse/microprofile-health[Eclipse MicroProfile Health]
+* https://microprofile.io/project/eclipse/microprofile-health[MicroProfile Health]
 * http://github.com/smallrye/smallrye-health/[SmallRye Health]
 
 ****
