@@ -87,7 +87,7 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
-            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
+            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                     .setRequired(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     ).build();
@@ -106,7 +106,7 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
         private final AttributeDefinition definition;
 
         DeprecatedAttribute(String name, ModelType type, JGroupsModel deprecation) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setRequired(false)
                     .setAllowExpression(true)
                     .setDeprecated(deprecation.getVersion())
@@ -118,13 +118,6 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type) {
-        return new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-        ;
     }
 
     @SuppressWarnings("deprecation")
