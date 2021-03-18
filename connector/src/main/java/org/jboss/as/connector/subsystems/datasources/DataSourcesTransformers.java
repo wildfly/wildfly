@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Red Hat, Inc.
+ * Copyright 2021 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MOD
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENLISTMENT_TRACE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MCP;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
@@ -33,7 +34,9 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.PROFILE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_ELYTRON_ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceDefinition.PATH_DATASOURCE;
 import static org.jboss.as.connector.subsystems.datasources.DataSourcesExtension.SUBSYSTEM_NAME;
 import static org.jboss.as.connector.subsystems.datasources.JdbcDriverDefinition.PATH_DRIVER;
@@ -73,6 +76,7 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
     private static final ModelVersion EAP_6_3 = ModelVersion.create(1, 3, 0);
     private static final ModelVersion EAP_7_0 = ModelVersion.create(4, 0, 0);
     private static final ModelVersion EAP_7_1 = ModelVersion.create(5, 0, 0);
+    private static final ModelVersion EAP_7_3 = ModelVersion.create(6, 0, 0);
 
     @Override
     public String getSubsystemName() {
@@ -82,7 +86,8 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystemRegistration.getCurrentSubsystemVersion());
-        get500TransformationDescription(chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), EAP_7_1));
+        get600TransformationDescription(chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), EAP_7_3));
+        get500TransformationDescription(chainedBuilder.createBuilder(EAP_7_3, EAP_7_1));
         get400TransformationDescription(chainedBuilder.createBuilder(EAP_7_1, EAP_7_0));
         get130TransformationDescription(chainedBuilder.createBuilder(EAP_7_0, EAP_6_3));
         get120TransformationDescription(chainedBuilder.createBuilder(EAP_6_3, EAP_6_2));
@@ -91,7 +96,8 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
                 EAP_6_2,
                 EAP_6_3,
                 EAP_7_0,
-                EAP_7_1
+                EAP_7_1,
+                EAP_7_3
         });
 
     }
@@ -228,6 +234,32 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
         builder.getAttributeBuilder()
                 .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, CREDENTIAL_REFERENCE)
                 .addRejectCheck(REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, RECOVERY_CREDENTIAL_REFERENCE)
+                .end();
+        return parentBuilder.build();
+    }
+
+    private static TransformationDescription get600TransformationDescription(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
+        builder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED,
+                        EXCEPTION_SORTER_MODULE,
+                        VALID_CONNECTION_CHECKER_MODULE,
+                        STALE_CONNECTION_CHECKER_MODULE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED,
+                        EXCEPTION_SORTER_MODULE,
+                        VALID_CONNECTION_CHECKER_MODULE,
+                        STALE_CONNECTION_CHECKER_MODULE)
+                .end();
+        builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
+        builder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED,
+                        EXCEPTION_SORTER_MODULE,
+                        VALID_CONNECTION_CHECKER_MODULE,
+                        STALE_CONNECTION_CHECKER_MODULE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED,
+                        EXCEPTION_SORTER_MODULE,
+                        VALID_CONNECTION_CHECKER_MODULE,
+                        STALE_CONNECTION_CHECKER_MODULE)
                 .end();
         return parentBuilder.build();
     }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -45,12 +45,14 @@ public enum Namespace {
 
     DATASOURCES_5_0("urn:jboss:domain:datasources:5.0"),
 
-    DATASOURCES_6_0("urn:jboss:domain:datasources:6.0");
+    DATASOURCES_6_0("urn:jboss:domain:datasources:6.0"),
+
+    DATASOURCES_6_1("urn:jboss:domain:datasources:6.1");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = DATASOURCES_6_0;
+    public static final Namespace CURRENT = DATASOURCES_6_1;
 
     private final String name;
 

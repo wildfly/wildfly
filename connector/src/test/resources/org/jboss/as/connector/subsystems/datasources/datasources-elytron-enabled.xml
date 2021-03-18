@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:datasources:6.0">
+<subsystem xmlns="urn:jboss:domain:datasources:6.1">
   <datasources>
     <!--You have a CHOICE of the next 2 items at this level-->
     <datasource jta="true" jndi-name="java:/token" pool-name="token" enabled="true" use-java-context="true" spy="false" use-ccm="true" connectable="${test.expr:true}" statistics-enabled="true" tracking="true">

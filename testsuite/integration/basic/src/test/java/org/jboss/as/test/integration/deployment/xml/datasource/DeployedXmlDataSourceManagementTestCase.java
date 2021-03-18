@@ -153,7 +153,8 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(OP).set("read-resource");
         operation.get(OP_ADDR).set(address);
         operation.get(INCLUDE_RUNTIME).set(true);
-        ModelNode result = managementClient.getControllerClient().execute(operation).get(RESULT);
+        ModelNode execute = managementClient.getControllerClient().execute(operation);
+        ModelNode result = execute.get(RESULT);
         Assert.assertEquals("h2", result.get("driver-name").asString());
     }
 

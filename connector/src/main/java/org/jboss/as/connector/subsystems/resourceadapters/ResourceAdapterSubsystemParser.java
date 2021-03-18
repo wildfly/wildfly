@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -64,8 +64,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODUL
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVER_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVER_PLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
@@ -410,8 +410,8 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         }
 
         if (conDef.hasDefined(RECOVERY_USERNAME.getName()) || conDef.hasDefined(RECOVERY_PASSWORD.getName())
-                || conDef.hasDefined(RECOVERY_SECURITY_DOMAIN.getName()) || conDef.hasDefined(RECOVERLUGIN_CLASSNAME.getName())
-                || conDef.hasDefined(RECOVERLUGIN_PROPERTIES.getName()) || conDef.hasDefined(NO_RECOVERY.getName())
+                || conDef.hasDefined(RECOVERY_SECURITY_DOMAIN.getName()) || conDef.hasDefined(RECOVER_PLUGIN_CLASSNAME.getName())
+                || conDef.hasDefined(RECOVER_PLUGIN_PROPERTIES.getName()) || conDef.hasDefined(NO_RECOVERY.getName())
                 || conDef.hasDefined(ELYTRON_ENABLED.getName())) {
 
             streamWriter.writeStartElement(ConnectionDefinition.Tag.RECOVERY.getLocalName());
@@ -430,11 +430,11 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
                 RECOVERY_AUTHENTICATION_CONTEXT.marshallAsElement(conDef, streamWriter);
                 streamWriter.writeEndElement();
             }
-            if (conDef.hasDefined(RECOVERLUGIN_CLASSNAME.getName()) || conDef.hasDefined(RECOVERLUGIN_PROPERTIES.getName())) {
+            if (conDef.hasDefined(RECOVER_PLUGIN_CLASSNAME.getName()) || conDef.hasDefined(RECOVER_PLUGIN_PROPERTIES.getName())) {
                 streamWriter.writeStartElement(Recovery.Tag.RECOVER_PLUGIN.getLocalName());
-                RECOVERLUGIN_CLASSNAME.marshallAsAttribute(conDef, streamWriter);
-                if (conDef.hasDefined(RECOVERLUGIN_PROPERTIES.getName())) {
-                    for (Property property : conDef.get(RECOVERLUGIN_PROPERTIES.getName()).asPropertyList()) {
+                RECOVER_PLUGIN_CLASSNAME.marshallAsAttribute(conDef, streamWriter);
+                if (conDef.hasDefined(RECOVER_PLUGIN_PROPERTIES.getName())) {
+                    for (Property property : conDef.get(RECOVER_PLUGIN_PROPERTIES.getName()).asPropertyList()) {
                         writeProperty(streamWriter, conDef, property.getName(), property
                                     .getValue().asString(), org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName());
                     }

@@ -44,6 +44,7 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
 
@@ -953,4 +954,7 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 122, value = "Thread pool name %s(type: %s) must match the workmanager name %s.")
     OperationFailedException threadPoolNameMustMatchWorkManagerName(String threadPoolName, String threadPoolType, String workManagerName);
+
+    @Message(id = 123, value = "Cannot load module")
+    OperationFailedException cannotLoadModule(@Cause ModuleLoadException e);
 }

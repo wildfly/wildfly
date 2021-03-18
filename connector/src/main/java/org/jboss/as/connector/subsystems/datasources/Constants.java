@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -167,6 +167,8 @@ public class Constants {
 
     private static final String VALID_CONNECTION_CHECKER_CLASSNAME_NAME = "valid-connection-checker-class-name";
 
+    private static final String VALID_CONNECTION_CHECKER_MODULE_NAME = "valid-connection-checker-module";
+
     private static final String CHECKVALIDCONNECTIONSQL_NAME = "check-valid-connection-sql";
 
     private static final String VALIDATEONMATCH_NAME = "validate-on-match";
@@ -177,7 +179,11 @@ public class Constants {
 
     private static final String STALECONNECTIONCHECKERCLASSNAME_NAME = "stale-connection-checker-class-name";
 
+    private static final String STALECONNECTIONCHECKERMODULE_NAME = "stale-connection-checker-module";
+
     private static final String EXCEPTIONSORTERCLASSNAME_NAME = "exception-sorter-class-name";
+
+    private static final String EXCEPTIONSORTERMODULE_NAME = "exception-sorter-module";
 
     private static final String XADATASOURCEPROPERTIES_NAME = "xa-datasource-properties";
 
@@ -504,13 +510,13 @@ public class Constants {
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
             .setRestartAllServices()
             .build();
+
     static PropertiesAttributeDefinition CONNECTION_LISTENER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CONNECTION_LISTENER_PROPERTY_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
-
 
     static SimpleAttributeDefinition QUERY_TIMEOUT = new SimpleAttributeDefinitionBuilder(QUERYTIMEOUT_NAME, ModelType.LONG, true)
             .setXmlName(TimeOut.Tag.QUERY_TIMEOUT.getLocalName())
@@ -549,6 +555,12 @@ public class Constants {
             .setRestartAllServices()
             .build();
 
+    static SimpleAttributeDefinition EXCEPTION_SORTER_MODULE = new SimpleAttributeDefinitionBuilder(EXCEPTIONSORTERMODULE_NAME, ModelType.STRING, true)
+            .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.MODULE.getLocalName())
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     static PropertiesAttributeDefinition EXCEPTION_SORTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(EXCEPTIONSORTER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowExpression(true)
@@ -563,6 +575,12 @@ public class Constants {
             .setRestartAllServices()
             .build();
 
+    static SimpleAttributeDefinition STALE_CONNECTION_CHECKER_MODULE = new SimpleAttributeDefinitionBuilder(STALECONNECTIONCHECKERMODULE_NAME, ModelType.STRING, true)
+            .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.MODULE.getLocalName())
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     static PropertiesAttributeDefinition STALE_CONNECTION_CHECKER_PROPERTIES = new PropertiesAttributeDefinition.Builder(STALECONNECTIONCHECKER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setRequired(false)
@@ -573,6 +591,12 @@ public class Constants {
 
     static SimpleAttributeDefinition VALID_CONNECTION_CHECKER_CLASSNAME = new SimpleAttributeDefinitionBuilder(VALID_CONNECTION_CHECKER_CLASSNAME_NAME, ModelType.STRING, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    static SimpleAttributeDefinition VALID_CONNECTION_CHECKER_MODULE = new SimpleAttributeDefinitionBuilder(VALID_CONNECTION_CHECKER_MODULE_NAME, ModelType.STRING, true)
+            .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.MODULE.getLocalName())
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -699,8 +723,11 @@ public class Constants {
             TRANSACTION_ISOLATION,
             CHECK_VALID_CONNECTION_SQL,
             EXCEPTION_SORTER_CLASSNAME,
+            EXCEPTION_SORTER_MODULE,
             STALE_CONNECTION_CHECKER_CLASSNAME,
+            STALE_CONNECTION_CHECKER_MODULE,
             VALID_CONNECTION_CHECKER_CLASSNAME,
+            VALID_CONNECTION_CHECKER_MODULE,
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS,
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
@@ -807,8 +834,11 @@ public class Constants {
             QUERY_TIMEOUT, USE_TRY_LOCK, SET_TX_QUERY_TIMEOUT,
             TRANSACTION_ISOLATION, CHECK_VALID_CONNECTION_SQL,
             EXCEPTION_SORTER_CLASSNAME,
+            EXCEPTION_SORTER_MODULE,
             STALE_CONNECTION_CHECKER_CLASSNAME,
+            STALE_CONNECTION_CHECKER_MODULE,
             VALID_CONNECTION_CHECKER_CLASSNAME,
+            VALID_CONNECTION_CHECKER_MODULE,
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS,
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,

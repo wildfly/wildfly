@@ -1,108 +1,73 @@
 <subsystem xmlns="urn:jboss:domain:datasources:6.1">
     <datasources>
-        <datasource jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool" jta="false"
-                    use-java-context="true" spy="false" use-ccm="true" connectable="false" statistics-enabled="true" tracking="true">
-            <connection-url>
-                jdbc:h2:mem:test;DB_CLOSE_DELAY=-1
-            </connection-url>
-            <driver-class>
-                org.hsqldb.jdbcDriver
-            </driver-class>
-            <datasource-class>
-                org.jboss.as.connector.subsystems.datasources.ModifiableDataSource
-            </datasource-class>
-            <connection-property name="char.encoding">
-                UTF-8
-            </connection-property>
-            <driver>
-                h2
-            </driver>
-            <new-connection-sql>
-                select 1
-            </new-connection-sql>
-            <transaction-isolation>
-                TRANSACTION_READ_COMMITTED
-            </transaction-isolation>
-            <url-delimiter>
-                :
-            </url-delimiter>
-            <url-selector-strategy-class-name>
-                someClass
-            </url-selector-strategy-class-name>
+        <datasource jta="true" jndi-name="java:/token" pool-name="token" enabled="true" use-java-context="true" spy="false" use-ccm="true" connectable="${test.expr:true}" statistics-enabled="true" tracking="true">
+            <connection-url>token</connection-url>
+            <driver-class>token</driver-class>
+            <datasource-class>token</datasource-class>
+            <!--connection-property name="token">e gero</connection-property-->
+            <driver>token</driver>
+            <new-connection-sql>string</new-connection-sql>
+            <transaction-isolation>TRANSACTION_REPEATABLE_READ</transaction-isolation>
+            <url-delimiter>token</url-delimiter>
+            <url-selector-strategy-class-name>token</url-selector-strategy-class-name>
             <pool>
-                <min-pool-size>1</min-pool-size>
-                <max-pool-size>5</max-pool-size>
+                <min-pool-size>200</min-pool-size>
+                <initial-pool-size>200</initial-pool-size>
+                <max-pool-size>200</max-pool-size>
                 <prefill>true</prefill>
                 <use-strict-min>true</use-strict-min>
                 <flush-strategy>EntirePool</flush-strategy>
                 <allow-multiple-users>true</allow-multiple-users>
+                <connection-listener class-name="token">
+                    <config-property name="token">token</config-property>
+                </connection-listener>
+                <capacity>
+                    <incrementer class-name="token">
+                        <config-property name="token">token</config-property>
+                    </incrementer>
+                    <decrementer class-name="token">
+                        <config-property name="token">token</config-property>
+                    </decrementer>
+                </capacity>
             </pool>
             <security>
-                <user-name>
-                    sa
-                </user-name>
-                <password>
-                    sa
-                </password>
-                <reauth-plugin class-name="someClass1">
-                    <config-property name="name">Property1</config-property>
-                </reauth-plugin>
+                <credential-reference store="test-store" alias="test-alias" clear-text="test-pass" type="org.wildfly.Foo" />
+                <elytron-enabled>true</elytron-enabled>
+                <authentication-context>DsAuthCtxt</authentication-context>
             </security>
             <validation>
-                <valid-connection-checker class-name="someClass2" module="someModule1">
-                    <config-property name="name">Property2</config-property>
+                <valid-connection-checker class-name="token">
+                    <config-property name="token">token</config-property>
                 </valid-connection-checker>
-                <check-valid-connection-sql>
-                    select 1
-                </check-valid-connection-sql>
-                <validate-on-match>
-                    true
-                </validate-on-match>
-                <background-validation>
-                    true
-                </background-validation>
-                <background-validation-millis>
-                    2000
-                </background-validation-millis>
-                <use-fast-fail>
-                    true
-                </use-fast-fail>
-                <stale-connection-checker class-name="someClass3" module="someModule2">
-                    <config-property name="name">Property3</config-property>
+                <check-valid-connection-sql>string</check-valid-connection-sql>
+                <validate-on-match>true</validate-on-match>
+                <background-validation>true</background-validation>
+                <background-validation-millis>200</background-validation-millis>
+                <use-fast-fail>false</use-fast-fail>
+                <stale-connection-checker class-name="token">
+                    <config-property name="token">token</config-property>
                 </stale-connection-checker>
-                <exception-sorter class-name="someClass4" module="someModule3">
-                    <config-property name="name">Property4</config-property>
+                <exception-sorter class-name="token">
+                    <config-property name="token">token</config-property>
                 </exception-sorter>
             </validation>
             <timeout>
                 <set-tx-query-timeout>true</set-tx-query-timeout>
-                <blocking-timeout-millis>20000</blocking-timeout-millis>
-                <idle-timeout-minutes>4</idle-timeout-minutes>
-                <query-timeout>
-                    120
-                </query-timeout>
-                <use-try-lock>
-                    100
-                </use-try-lock>
-                <allocation-retry>
-                    2
-                </allocation-retry>
-                <allocation-retry-wait-millis>
-                    3000
-                </allocation-retry-wait-millis>
+                <blocking-timeout-millis>200</blocking-timeout-millis>
+                <idle-timeout-minutes>200</idle-timeout-minutes>
+                <query-timeout>200</query-timeout>
+                <use-try-lock>200</use-try-lock>
+                <allocation-retry>200</allocation-retry>
+                <allocation-retry-wait-millis>200</allocation-retry-wait-millis>
             </timeout>
             <statement>
-                <track-statements>nowarn</track-statements>
-                <prepared-statement-cache-size>30</prepared-statement-cache-size>
+                <track-statements>false</track-statements>
+                <prepared-statement-cache-size>200</prepared-statement-cache-size>
                 <share-prepared-statements>true</share-prepared-statements>
-
             </statement>
         </datasource>
-        <xa-datasource jndi-name="java:jboss/xa-datasources/complexXaDs" pool-name="complexXaDs_Pool"
+        <xa-datasource jndi-name="java:/token" pool-name="xa-token"
                        use-java-context="true" spy="false" use-ccm="true" connectable="false" statistics-enabled="true" tracking="true">
-            <xa-datasource-property name="URL">
-                jdbc:h2:mem:test
-            </xa-datasource-property>
             <xa-datasource-class>
                 org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource
             </xa-datasource-class>
@@ -152,24 +117,11 @@
 
             </xa-pool>
             <security>
-                <user-name>
-                    sa
-                </user-name>
-                <password>
-                    sa
-                </password>
-                <reauth-plugin class-name="someClass1">
-                    <config-property name="name">Property1</config-property>
-                </reauth-plugin>
+                <credential-reference store="test-store" type="org.wildfly.Foo" clear-text="123456"/>
             </security>
             <recovery no-recovery="false">
                 <recover-credential>
-                    <user-name>
-                        sa
-                    </user-name>
-                    <password>
-                        sa
-                    </password>
+                    <credential-reference store="test-store" type="org.wildfly.Foo" clear-text="123456"/>
                 </recover-credential>
                 <recover-plugin class-name="someClass5">
                     <config-property name="name">Property5</config-property>
@@ -177,7 +129,7 @@
                 </recover-plugin>
             </recovery>
             <validation>
-                <valid-connection-checker class-name="someClass2" module="someModule4">
+                <valid-connection-checker class-name="someClass2">
                     <config-property name="name">Property2</config-property>
                 </valid-connection-checker>
                 <check-valid-connection-sql>
@@ -195,10 +147,10 @@
                 <use-fast-fail>
                     true
                 </use-fast-fail>
-                <stale-connection-checker class-name="someClass3" module="someModule5">
+                <stale-connection-checker class-name="someClass3">
                     <config-property name="name">Property3</config-property>
                 </stale-connection-checker>
-                <exception-sorter class-name="someClass4" module="someModule6">
+                <exception-sorter class-name="someClass4">
                     <config-property name="name">Property4</config-property>
                 </exception-sorter>
             </validation>
