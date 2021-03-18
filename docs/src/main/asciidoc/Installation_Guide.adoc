@@ -34,7 +34,7 @@ contains a large number of default configurations allowing you to select the ser
 A WildFly distribution based installation is well suited when:
 
 * You want to rely on a traditional Jakarta EE application deployment.
-* You want a Jakarta EE or Eclipse MicroProfile platform compliant server that offers all Jakarta EE or MicroProfile features.
+* You want a Jakarta EE or MicroProfile platform compliant server that offers all Jakarta EE or MicroProfile features.
 * You are not (yet) concerned by server installation size and memory footprint.
 * You are not yet sure of the kind of operating mode and application you are targeting.
 * Your server instances will contain one or more application deployments.
@@ -58,7 +58,7 @@ A WildFly server provisioned with Galleon is well suited when:
 
 * You want to rely on a traditional Jakarta EE application deployment.
 * You want to easily update an installation to the latest WildFly version.
-* Your application requires only a subset of the Jakarta EE or Eclipse MicroProfile platform APIs
+* Your application requires only a subset of the Jakarta EE or MicroProfile platform APIs
 (although Galleon can provision a server that supports the full set of Jakarta EE and MicroProfile platform APIs).
 * You are concerned by server installation size and memory footprint.
 * You are only using standalone operating mode (with support for High Availability or not).
