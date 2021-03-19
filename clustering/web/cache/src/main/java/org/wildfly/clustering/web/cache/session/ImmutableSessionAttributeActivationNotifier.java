@@ -44,11 +44,15 @@ public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements Ses
     private final Function<Supplier<L>, L> prePassivateListenerFactory;
     private final Function<Supplier<L>, L> postActivateListenerFactory;
     private final HttpSessionActivationListenerProvider<S, C, L> provider;
+    private final Function<L, Consumer<S>> prePassivateNotifier;
+    private final Function<L, Consumer<S>> postActivateNotifier;
     private final S session;
     private final Map<Supplier<L>, L> listeners = new ConcurrentHashMap<>();
 
     public ImmutableSessionAttributeActivationNotifier(HttpSessionActivationListenerProvider<S, C, L> provider, ImmutableSession session, C context) {
         this.provider = provider;
+        this.prePassivateNotifier = this.provider::prePassivateNotifier;
+        this.postActivateNotifier = this.provider::postActivateNotifier;
         this.prePassivateListenerFactory = new HttpSessionActivationListenerFactory<>(provider, true);
         this.postActivateListenerFactory = new HttpSessionActivationListenerFactory<>(provider, false);
         this.session = provider.createHttpSession(session, context);
@@ -56,12 +60,12 @@ public class ImmutableSessionAttributeActivationNotifier<S, C, L> implements Ses
 
     @Override
     public void prePassivate(Object object) {
-        this.notify(object, this.prePassivateListenerFactory, this.provider::prePassivateNotifier);
+        this.notify(object, this.prePassivateListenerFactory, this.prePassivateNotifier);
     }
 
     @Override
     public void postActivate(Object object) {
-        this.notify(object, this.postActivateListenerFactory, this.provider::postActivateNotifier);
+        this.notify(object, this.postActivateListenerFactory, this.postActivateNotifier);
     }
 
     private void notify(Object object, Function<Supplier<L>, L> listenerFactory, Function<L, Consumer<S>> notifierFactory) {

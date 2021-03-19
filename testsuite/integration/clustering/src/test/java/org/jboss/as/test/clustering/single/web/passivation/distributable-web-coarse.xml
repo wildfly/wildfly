@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<distributable-web xmlns="urn:jboss:distributable-web:2.0">
+    <infinispan-session-management cache-container="web" granularity="SESSION">
+        <local-affinity/>
+    </infinispan-session-management>
+</distributable-web>

@@ -127,6 +127,7 @@ public class CompositeSessionFactory<C, V, L> extends CompositeImmutableSessionF
 
     @Override
     public void close() {
-        // Nothing to close
+        this.metaDataFactory.close();
+        this.attributesFactory.close();
     }
 }

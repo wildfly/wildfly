@@ -22,10 +22,15 @@
 
 package org.wildfly.clustering.web.cache.session;
 
+import java.util.function.BiConsumer;
+
 /**
  * @author Paul Ferraro
  */
 public interface SessionAttributeActivationNotifier extends AutoCloseable {
+    BiConsumer<SessionAttributeActivationNotifier, Object> PRE_PASSIVATE = SessionAttributeActivationNotifier::prePassivate;
+    BiConsumer<SessionAttributeActivationNotifier, Object> POST_ACTIVATE = SessionAttributeActivationNotifier::postActivate;
+
     /**
      * Notifies the specified attribute that it will be passivated, if interested.
      */
