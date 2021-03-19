@@ -53,6 +53,11 @@ public class ValueMarshaller<T> implements ProtoStreamMarshaller<T> {
 
     @Override
     public T readFrom(ProtoStreamReader reader) throws IOException {
+        boolean reading = true;
+        while (reading) {
+            int tag = reader.readTag();
+            reading = (tag != 0) && reader.skipField(tag);
+        }
         return this.factory.get();
     }
 

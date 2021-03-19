@@ -44,11 +44,16 @@ public class ClassMarshaller implements ProtoStreamMarshaller<Class<?>> {
     @Override
     public Class<?> readFrom(ProtoStreamReader reader) throws IOException {
         Class<?> result = Object.class;
-        int tag = reader.readTag();
-        if (tag != 0) {
+        boolean reading = true;
+        while (reading) {
+            int tag = reader.readTag();
             int index = WireFormat.getTagFieldNumber(tag);
             Field<Class<?>> field = index == this.field.getIndex() ? this.field : ClassField.fromIndex(index);
-            result = field.getMarshaller().readFrom(reader);
+            if (field != null) {
+                result = field.getMarshaller().readFrom(reader);
+            } else {
+                reading = (tag != 0) && reader.skipField(tag);
+            }
         }
         return result;
     }
