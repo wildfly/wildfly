@@ -63,6 +63,5 @@
         <!-- For the ContextPropagationAsyncHandler used with the context propagation feature pack -->
         <module name="org.wildfly.reactive.dep.jts" services="import" optional="true"/>
         <module name="java.xml"/>
-        <module name="jdk.jconsole"/>
     </dependencies>
 </module>
