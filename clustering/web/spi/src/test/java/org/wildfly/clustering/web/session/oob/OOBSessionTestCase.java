@@ -24,11 +24,18 @@ package org.wildfly.clustering.web.session.oob;
 
 import static org.mockito.Mockito.*;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Set;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionManager;
@@ -124,6 +131,336 @@ public class OOBSessionTestCase {
         this.session.invalidate();
 
         verify(session).invalidate();
+        verify(session).close();
+        verify(batch).close();
+    }
+
+
+    @Test
+    public void isNew() {
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
+
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
+        when(this.manager.readSession(this.id)).thenReturn(null);
+
+        Assert.assertThrows(IllegalStateException.class, this.session.getMetaData()::isNew);
+
+        verify(batch).close();
+        reset(batch);
+
+        ImmutableSession session = mock(ImmutableSession.class);
+        ImmutableSessionMetaData metaData = mock(ImmutableSessionMetaData.class);
+        boolean expected = true;
+
+        when(this.manager.readSession(this.id)).thenReturn(session);
+        when(session.getMetaData()).thenReturn(metaData);
+        when(metaData.isNew()).thenReturn(expected);
+
+        boolean result = this.session.getMetaData().isNew();
+
+        Assert.assertEquals(expected, result);
+
+        verify(batch).close();
+    }
+
+    @Test
+    public void isExpired() {
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
+
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
+        when(this.manager.readSession(this.id)).thenReturn(null);
+
+        Assert.assertThrows(IllegalStateException.class, this.session.getMetaData()::isExpired);
+
+        verify(batch).close();
+        reset(batch);
+
+        ImmutableSession session = mock(ImmutableSession.class);
+        ImmutableSessionMetaData metaData = mock(ImmutableSessionMetaData.class);
+        boolean expected = true;
+
+        when(this.manager.readSession(this.id)).thenReturn(session);
+        when(session.getMetaData()).thenReturn(metaData);
+        when(metaData.isExpired()).thenReturn(expected);
+
+        boolean result = this.session.getMetaData().isExpired();
+
+        Assert.assertEquals(expected, result);
+
+        verify(batch).close();
+    }
+
+    @Test
+    public void getCreationTime() {
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
+
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
+        when(this.manager.readSession(this.id)).thenReturn(null);
+
+        Assert.assertThrows(IllegalStateException.class, this.session.getMetaData()::getCreationTime);
+
+        verify(batch).close();
+        reset(batch);
+
+        ImmutableSession session = mock(ImmutableSession.class);
+        ImmutableSessionMetaData metaData = mock(ImmutableSessionMetaData.class);
+        Instant expected = Instant.now();
+
+        when(this.manager.readSession(this.id)).thenReturn(session);
+        when(session.getMetaData()).thenReturn(metaData);
+        when(metaData.getCreationTime()).thenReturn(expected);
+
+        Instant result = this.session.getMetaData().getCreationTime();
+
+        Assert.assertSame(expected, result);
+
+        verify(batch).close();
+    }
+
+    @Test
+    public void getLastAccessStartTime() {
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
+
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
+        when(this.manager.readSession(this.id)).thenReturn(null);
+
+        Assert.assertThrows(IllegalStateException.class, this.session.getMetaData()::getLastAccessStartTime);
+
+        verify(batch).close();
+        reset(batch);
+
+        ImmutableSession session = mock(ImmutableSession.class);
+        ImmutableSessionMetaData metaData = mock(ImmutableSessionMetaData.class);
+        Instant expected = Instant.now();
+
+        when(this.manager.readSession(this.id)).thenReturn(session);
+        when(session.getMetaData()).thenReturn(metaData);
+        when(metaData.getLastAccessStartTime()).thenReturn(expected);
+
+        Instant result = this.session.getMetaData().getLastAccessStartTime();
+
+        Assert.assertSame(expected, result);
+
+        verify(batch).close();
+    }
+
+    @Test
+    public void getLastAccessEndTime() {
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
+
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
+        when(this.manager.readSession(this.id)).thenReturn(null);
+
+        Assert.assertThrows(IllegalStateException.class, this.session.getMetaData()::getLastAccessEndTime);
+
+        verify(batch).close();
+        reset(batch);
+
+        ImmutableSession session = mock(ImmutableSession.class);
+        ImmutableSessionMetaData metaData = mock(ImmutableSessionMetaData.class);
+        Instant expected = Instant.now();
+
+        when(this.manager.readSession(this.id)).thenReturn(session);
+        when(session.getMetaData()).thenReturn(metaData);
+        when(metaData.getLastAccessEndTime()).thenReturn(expected);
+
+        Instant result = this.session.getMetaData().getLastAccessEndTime();
+
+        Assert.assertSame(expected, result);
+
+        verify(batch).close();
+    }
+
+    @Test
+    public void getMaxInactiveInterval() {
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
+
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
+        when(this.manager.readSession(this.id)).thenReturn(null);
+
+        Assert.assertThrows(IllegalStateException.class, this.session.getMetaData()::getMaxInactiveInterval);
+
+        verify(batch).close();
+        reset(batch);
+
+        ImmutableSession session = mock(ImmutableSession.class);
+        ImmutableSessionMetaData metaData = mock(ImmutableSessionMetaData.class);
+        Duration expected = Duration.ZERO;
+
+        when(this.manager.readSession(this.id)).thenReturn(session);
+        when(session.getMetaData()).thenReturn(metaData);
+        when(metaData.getMaxInactiveInterval()).thenReturn(expected);
+
+        Duration result = this.session.getMetaData().getMaxInactiveInterval();
+
+        Assert.assertSame(expected, result);
+
+        verify(batch).close();
+    }
+
+    @Test
+    public void setLastAccess() {
+        Assert.assertThrows(IllegalStateException.class, () -> this.session.getMetaData().setLastAccess(Instant.now(), Instant.now()));
+    }
+
+    @Test
+    public void setMaxInactiveInterval() {
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
+        Duration duration = Duration.ZERO;
+
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
+        when(this.manager.findSession(this.id)).thenReturn(null);
+
+        Assert.assertThrows(IllegalStateException.class, () -> this.session.getMetaData().setMaxInactiveInterval(duration));
+
+        verify(batch).close();
+        reset(batch);
+
+        Session<Object> session = mock(Session.class);
+        SessionMetaData metaData = mock(SessionMetaData.class);
+
+        when(this.manager.findSession(this.id)).thenReturn(session);
+        when(session.getMetaData()).thenReturn(metaData);
+
+        this.session.getMetaData().setMaxInactiveInterval(duration);
+
+        verify(metaData).setMaxInactiveInterval(duration);
+        verify(session).close();
+        verify(batch).close();
+    }
+
+    @Test
+    public void getAttributeNames() {
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
+
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
+        when(this.manager.readSession(this.id)).thenReturn(null);
+
+        Assert.assertThrows(IllegalStateException.class, this.session.getAttributes()::getAttributeNames);
+
+        verify(batch).close();
+        reset(batch);
+
+        ImmutableSession session = mock(ImmutableSession.class);
+        ImmutableSessionAttributes attributes = mock(ImmutableSessionAttributes.class);
+        Set<String> expected = Collections.singleton("foo");
+
+        when(this.manager.readSession(this.id)).thenReturn(session);
+        when(session.getAttributes()).thenReturn(attributes);
+        when(attributes.getAttributeNames()).thenReturn(expected);
+
+        Set<String> result = this.session.getAttributes().getAttributeNames();
+
+        Assert.assertSame(expected, result);
+
+        verify(batch).close();
+    }
+
+    @Test
+    public void getAttribute() {
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
+        String attributeName = "foo";
+
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
+        when(this.manager.readSession(this.id)).thenReturn(null);
+
+        Assert.assertThrows(IllegalStateException.class, () -> this.session.getAttributes().getAttribute(attributeName));
+
+        verify(batch).close();
+        reset(batch);
+
+        ImmutableSession session = mock(ImmutableSession.class);
+        ImmutableSessionAttributes attributes = mock(ImmutableSessionAttributes.class);
+        Object expected = new Object();
+
+        when(this.manager.readSession(this.id)).thenReturn(session);
+        when(session.getAttributes()).thenReturn(attributes);
+        when(attributes.getAttribute(attributeName)).thenReturn(expected);
+
+        Object result = this.session.getAttributes().getAttribute(attributeName);
+
+        Assert.assertSame(expected, result);
+
+        verify(batch).close();
+    }
+
+    @Test
+    public void setAttribute() {
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
+        String attributeName = "foo";
+        Object attributeValue = "bar";
+
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
+        when(this.manager.findSession(this.id)).thenReturn(null);
+
+        Assert.assertThrows(IllegalStateException.class, () -> this.session.getAttributes().setAttribute(attributeName, attributeValue));
+
+        verify(batch).close();
+        reset(batch);
+
+        Session<Object> session = mock(Session.class);
+        SessionAttributes attributes = mock(SessionAttributes.class);
+        Object expected = new Object();
+
+        when(this.manager.findSession(this.id)).thenReturn(session);
+        when(session.getAttributes()).thenReturn(attributes);
+        when(attributes.setAttribute(attributeName, attributeValue)).thenReturn(expected);
+
+        Object result = this.session.getAttributes().setAttribute(attributeName, attributeValue);
+
+        Assert.assertSame(expected, result);
+
+        verify(session).close();
+        verify(batch).close();
+    }
+
+    @Test
+    public void removeAttribute() {
+        Batcher<Batch> batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
+        String attributeName = "foo";
+
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(batcher.createBatch()).thenReturn(batch);
+        when(this.manager.findSession(this.id)).thenReturn(null);
+
+        Assert.assertThrows(IllegalStateException.class, () -> this.session.getAttributes().removeAttribute(attributeName));
+
+        verify(batch).close();
+        reset(batch);
+
+        Session<Object> session = mock(Session.class);
+        SessionAttributes attributes = mock(SessionAttributes.class);
+        Object expected = new Object();
+
+        when(this.manager.findSession(this.id)).thenReturn(session);
+        when(session.getAttributes()).thenReturn(attributes);
+        when(attributes.removeAttribute(attributeName)).thenReturn(expected);
+
+        Object result = this.session.getAttributes().removeAttribute(attributeName);
+
+        Assert.assertSame(expected, result);
+
         verify(session).close();
         verify(batch).close();
     }
