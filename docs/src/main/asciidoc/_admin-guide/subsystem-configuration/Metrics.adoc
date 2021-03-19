@@ -5,7 +5,7 @@
 ====
 This subsystem exposes only base metrics from the WildFly Management Model and JVM MBeans.
 
-Support for https://microprofile.io/project/eclipse/microprofile-metrics[Eclipse MicroProfile Metrics] is provided by
+Support for https://microprofile.io/project/eclipse/microprofile-metrics[MicroProfile Metrics] is provided by
 the _microprofile-metrics-smallrye_ subsystem.
 ====
 
