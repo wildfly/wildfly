@@ -138,7 +138,7 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                     resourceRegistration.registerReadWriteAttribute(attribute, PoolConfigurationRWHandler.PoolConfigurationReadHandler.INSTANCE, PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE);
                 } else  if (attribute.getName().equals(ENLISTMENT_TRACE.getName())) {
                     resourceRegistration.registerReadWriteAttribute(attribute, null, new EnlistmentTraceAttributeWriteHandler());
-                } else if (attribute.getName().equals(CREDENTIAL_REFERENCE) || attribute.getName().equals(RECOVERY_CREDENTIAL_REFERENCE)) {
+                } else if (attribute.getName().equals(CREDENTIAL_REFERENCE.getName()) || attribute.getName().equals(RECOVERY_CREDENTIAL_REFERENCE.getName())) {
                     resourceRegistration.registerReadWriteAttribute(attribute, null, credentialReferenceWriteAttributeHandler);
                 } else {
                     resourceRegistration.registerReadWriteAttribute(attribute, null, reloadRequiredWriteAttributeHandler);
