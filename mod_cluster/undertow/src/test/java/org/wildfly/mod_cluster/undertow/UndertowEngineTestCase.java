@@ -35,8 +35,8 @@ import java.util.Iterator;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
-import org.junit.Test;
 import org.wildfly.extension.undertow.Constants;
+import org.junit.Test;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.HttpsListenerService;
 import org.wildfly.extension.undertow.Server;
@@ -53,10 +53,10 @@ public class UndertowEngineTestCase {
     private final String serverName = "default-server";
     private final String hostName = "default-host";
     private final String route = "route";
-    private final Host host = new Host(this.hostName, Collections.emptyList(), "ROOT.war", StatusCodes.NOT_FOUND, false);
-    private final HttpsListenerService listener = new HttpsListenerService(PathAddress.pathAddress(Constants.HTTPS_LISTENER, "default"), "https", OptionMap.EMPTY, null, OptionMap.EMPTY, false);
+    private final Host host = new Host(null, null, null, null, null, this.hostName, Collections.emptyList(), "ROOT.war", StatusCodes.NOT_FOUND, false);
+    private final HttpsListenerService listener = new HttpsListenerService(null, PathAddress.pathAddress(Constants.HTTPS_LISTENER, "default"), "https", OptionMap.EMPTY, null, OptionMap.EMPTY, false);
 
-    private final UndertowService service = new TestUndertowService("default-container", this.serverName, this.hostName, this.route, false, this.server);
+    private final UndertowService service = new TestUndertowService(null, "default-container", this.serverName, this.hostName, this.route, false, this.server);
     private final Server server = new TestServer(this.serverName, this.hostName, this.service, this.host, this.listener);
     private final Connector connector = mock(Connector.class);
     private final Engine engine = new UndertowEngine(this.serverName, this.server, this.service, this.connector);
@@ -108,16 +108,16 @@ public class UndertowEngineTestCase {
     @Test
     public void getObfuscatedJvmRoute() {
         // scenario 1, just create a service with obfuscated route but same config as this.service
-        final TestUndertowService service1 = new TestUndertowService("default-container", this.serverName, this.hostName, this.route, true, null);
+        final TestUndertowService service1 = new TestUndertowService(null, "default-container", this.serverName, this.hostName, this.route, true, null);
         final Server server1 = new TestServer(this.serverName, this.hostName, service1, this.host, this.listener);
         final Engine engine1 = new UndertowEngine(this.serverName, server1, service1, this.connector);
 
         assertNotEquals(this.route, engine1.getJvmRoute());
 
         // after restart, recreate all objects, is the route still the same if config is kept unchanged?
-        final Host host2 = new Host(this.hostName, Collections.emptyList(), "ROOT.war", StatusCodes.NOT_FOUND, false);
-        final HttpsListenerService listener2 = new HttpsListenerService(PathAddress.pathAddress(Constants.HTTPS_LISTENER, "default"), "https", OptionMap.EMPTY, null, OptionMap.EMPTY, false);
-        final UndertowService service2 = new TestUndertowService("default-container", this.serverName, this.hostName, this.route, true, null);
+        final Host host2 = new Host(null, null, null, null, null, this.hostName, Collections.emptyList(), "ROOT.war", StatusCodes.NOT_FOUND, false);
+        final HttpsListenerService listener2 = new HttpsListenerService(null, PathAddress.pathAddress(Constants.HTTPS_LISTENER, "default"), "https", OptionMap.EMPTY, null, OptionMap.EMPTY, false);
+        final UndertowService service2 = new TestUndertowService(null, "default-container", this.serverName, this.hostName, this.route, true, null);
         final Server server2 = new TestServer(this.serverName, this.hostName, service2, host2, listener2);
         final Connector connector2 = mock(Connector.class);
         final Engine engine2 = new UndertowEngine(this.serverName, server2, service2, connector2);
@@ -125,7 +125,7 @@ public class UndertowEngineTestCase {
         assertEquals(engine1.getJvmRoute(), engine2.getJvmRoute());
 
         // with a different route, is the obfuscated route different from previous one?
-        final TestUndertowService service3 = new TestUndertowService("default-container", this.serverName, this.hostName, "adifferentroute", true, null);
+        final TestUndertowService service3 = new TestUndertowService(null, "default-container", this.serverName, this.hostName, "adifferentroute", true, null);
         final Server server3 = new TestServer(this.serverName, this.hostName, service3, this.host, this.listener);
         final Engine engine3 = new UndertowEngine(this.serverName, server3, service3, this.connector);
 
@@ -134,7 +134,7 @@ public class UndertowEngineTestCase {
         assertNotEquals("adifferentroute", engine3.getJvmRoute());
 
         // with a different server name, is the obfuscated route different from previous one?
-        final TestUndertowService service4 = new TestUndertowService("default-container", "another.server", this.hostName, "this.route", true, null);
+        final TestUndertowService service4 = new TestUndertowService(null,"default-container", "another.server", this.hostName, "this.route", true, null);
         final Server server4 = new TestServer("another.server", this.hostName, service4, this.host, this.listener);
         final Engine engine4 = new UndertowEngine(this.serverName, server4, service4, this.connector);
 

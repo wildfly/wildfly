@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
@@ -51,13 +52,13 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.junit.Assert;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.io.WorkerService;
@@ -242,13 +243,10 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
             try {
                 SSLContext sslContext = SSLContext.getDefault();
 
-                target.addService(ServiceName.parse(Capabilities.REF_SUSPEND_CONTROLLER), new SuspendController()).install();
-
-                target.addService(Services.JBOSS_SERVICE_MODULE_LOADER, new ServiceModuleLoader(null)).install();
-                target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new NamingStoreService())
-                        .setInitialMode(ServiceController.Mode.ACTIVE).install();
-                target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, new NamingStoreService())
-                        .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                target.addService(ServiceName.parse(Capabilities.REF_SUSPEND_CONTROLLER)).setInstance(new SuspendController()).install();
+                target.addService(Services.JBOSS_SERVICE_MODULE_LOADER).setInstance(new ServiceModuleLoader(null)).install();
+                target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME).setInstance(new NamingStoreService()).install();
+                target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME).setInstance(new NamingStoreService()).install();
 
                 ServiceBuilder<?> builder1 = target.addService(IOServices.WORKER.append("default"));
                 Consumer<XnioWorker> workerConsumer1 = builder1.provides(IOServices.WORKER.append("default"));
@@ -268,42 +266,68 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
                                 Xnio.getInstance().createWorkerBuilder().populateFromOptions(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap())));
                 builder2.install();
 
-                target.addService(ControlledProcessStateService.SERVICE_NAME).setInstance(new AbstractService<ControlledProcessStateService>() {}).install();
+                target.addService(ControlledProcessStateService.SERVICE_NAME).setInstance(new NullService()).install();
 
-                target.addService(ServiceName.parse(Capabilities.CAPABILITY_BYTE_BUFFER_POOL + ".default"), new ValueService<>(new ImmediateValue<>(new DefaultByteBufferPool(true, 2048))))
-                        .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                final ServiceBuilder<?> sb0 = target.addService(ServiceName.parse(Capabilities.CAPABILITY_BYTE_BUFFER_POOL + ".default"));
+                final Consumer<DefaultByteBufferPool> dbbpConsumer = sb0.provides(ServiceName.parse(Capabilities.CAPABILITY_BYTE_BUFFER_POOL + ".default"));
+                sb0.setInstance(Service.newInstance(dbbpConsumer, new DefaultByteBufferPool(true, 2048)));
+                sb0.install();
+
                 // ListenerRegistry.Listener listener = new ListenerRegistry.Listener("http", "default", "default",
                 // InetSocketAddress.createUnresolved("localhost",8080));
-                target.addService(ServiceName.parse(Capabilities.REF_HTTP_LISTENER_REGISTRY), new HttpListenerRegistryService())
-                        .setInitialMode(ServiceController.Mode.ACTIVE).install();
-                SecurityRealmService srs = new SecurityRealmService("UndertowRealm", false);
+                target.addService(ServiceName.parse(Capabilities.REF_HTTP_LISTENER_REGISTRY)).setInstance(new HttpListenerRegistryService()).install();
                 final ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "temp");
-                target.addService(tmpDirPath, new ValueService<>(new ImmediateValue<>(System.getProperty("java.io.tmpdir"))))
-                        .setInitialMode(ServiceController.Mode.ACTIVE).install();
-                srs.getSSLContextInjector().inject(sslContext);
-                target.addService(SecurityRealm.ServiceUtil.createServiceName("UndertowRealm"),
-                        srs)
-                        .addDependency(tmpDirPath, String.class, srs.getTmpDirPathInjector())
-                        .setInitialMode(ServiceController.Mode.ACTIVE)
-                        .install();
-                SecurityRealmService other = new SecurityRealmService("other", false);
-                target.addService(SecurityRealm.ServiceUtil.createServiceName("other"), other)
-                        .addDependency(tmpDirPath, String.class, other.getTmpDirPathInjector())
-                        .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                final ServiceBuilder<?> sb1 = target.addService(tmpDirPath);
+                final Consumer<String> c = sb1.provides(tmpDirPath);
+                sb1.setInstance(Service.newInstance(c, System.getProperty("java.io.tmpdir")));
+                sb1.install();
+
+                final ServiceBuilder<?> sb2 = target.addService(SecurityRealm.ServiceUtil.createServiceName("UndertowRealm"));
+                final Consumer<SecurityRealm> securityRealmConsumer = sb2.provides(SecurityRealm.ServiceUtil.createServiceName("UndertowRealm"));
+                final Supplier<SSLContext> sslContextSupplier = () -> sslContext;
+                final Supplier<String> tmpDirPathSupplier = sb2.requires(tmpDirPath);
+                sb2.setInstance(new SecurityRealmService(securityRealmConsumer, null, null, null, sslContextSupplier, tmpDirPathSupplier, null, "UndertowRealm", false));
+                sb2.install();
+
+                final ServiceBuilder<?> sb3 = target.addService(SecurityRealm.ServiceUtil.createServiceName("other"));
+                final Consumer<SecurityRealm> srConsumer = sb3.provides(SecurityRealm.ServiceUtil.createServiceName("other"));
+                final Supplier<String> tdpSupplier = sb3.requires(tmpDirPath);
+                sb3.setInstance(new SecurityRealmService(srConsumer, null, null, null, null, tdpSupplier, null, "other", false));
+                sb3.install();
 
                 HttpAuthenticationFactory authenticationFactory = HttpAuthenticationFactory.builder()
                         .build();
-                target.addService(ServiceName.parse("org.wildfly.security.http-authentication-factory.factory"),
-                        new ValueService<>(new ImmediateValue<>(authenticationFactory)))
-                        .install();
+                final ServiceBuilder<?> sb4 = target.addService(ServiceName.parse("org.wildfly.security.http-authentication-factory.factory"));
+                final Consumer<HttpAuthenticationFactory> hafConsumer = sb4.provides(ServiceName.parse("org.wildfly.security.http-authentication-factory.factory"));
+                sb4.setInstance(Service.newInstance(hafConsumer, authenticationFactory));
+                sb4.install();
 
                 ServiceName sslContextServiceName = ServiceName.parse("org.wildfly.security.ssl-context.TestContext");
-                target.addService(sslContextServiceName, new ValueService<>(new ImmediateValue<>(sslContext)))
-                        .install();
+                final ServiceBuilder<?> sb5 = target.addService(sslContextServiceName);
+                final Consumer<SSLContext> scConsumer = sb5.provides(sslContextServiceName);
+                sb5.setInstance(Service.newInstance(scConsumer, sslContext));
+                sb5.install();
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             }
 
+        }
+    }
+
+    private static final class NullService implements org.jboss.msc.service.Service<ControlledProcessStateService> {
+        @Override
+        public void start(StartContext context) {
+
+        }
+
+        @Override
+        public void stop(StopContext context) {
+
+        }
+
+        @Override
+        public ControlledProcessStateService getValue() throws IllegalStateException, IllegalArgumentException {
+            return null;
         }
     }
 }

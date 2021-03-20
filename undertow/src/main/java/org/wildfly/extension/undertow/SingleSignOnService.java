@@ -22,32 +22,38 @@
 
 package org.wildfly.extension.undertow;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import io.undertow.security.impl.SingleSignOnManager;
 import io.undertow.servlet.handlers.security.ServletSingleSignOnAuthenticationMechanism;
 
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  * @author Paul Ferraro
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class SingleSignOnService implements Service<SingleSignOnService> {
-
     public static final String AUTHENTICATION_MECHANISM_NAME = "SSO";
-
     private final String domain;
     private final String path;
     private final String cookieName;
     private final boolean httpOnly;
     private final boolean secure;
-    private final InjectedValue<Host> host = new InjectedValue<>();
-    private final InjectedValue<SingleSignOnManager> manager = new InjectedValue<>();
+    private final Consumer<SingleSignOnService> serviceConsumer;
+    private final Supplier<Host> host;
+    private final Supplier<SingleSignOnManager> manager;
 
-    SingleSignOnService(String domain, String path, boolean httpOnly, boolean secure, String cookieName) {
+    SingleSignOnService(final Consumer<SingleSignOnService> serviceConsumer, final Supplier<Host> host,
+                        final Supplier<SingleSignOnManager> manager, final String domain, final String path,
+                        final boolean httpOnly, final boolean secure, final String cookieName) {
+        this.serviceConsumer = serviceConsumer;
+        this.host = host;
+        this.manager = manager;
         this.domain = domain;
         this.path = path;
         this.httpOnly = httpOnly;
@@ -56,31 +62,25 @@ public class SingleSignOnService implements Service<SingleSignOnService> {
     }
 
     @Override
-    public void start(StartContext startContext) {
-        ServletSingleSignOnAuthenticationMechanism mechanism = new ServletSingleSignOnAuthenticationMechanism(this.manager.getValue());
+    public void start(final StartContext startContext) {
+        ServletSingleSignOnAuthenticationMechanism mechanism = new ServletSingleSignOnAuthenticationMechanism(manager.get());
         mechanism.setDomain(this.domain);
         mechanism.setPath(this.path);
         mechanism.setHttpOnly(this.httpOnly);
         mechanism.setSecure(this.secure);
         mechanism.setCookieName(this.cookieName);
-        this.host.getValue().registerAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME, mechanism);
+        host.get().registerAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME, mechanism);
+        serviceConsumer.accept(this);
     }
 
     @Override
-    public void stop(StopContext stopContext) {
-        this.host.getValue().unregisterAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME);
+    public void stop(final StopContext stopContext) {
+        serviceConsumer.accept(null);
+        host.get().unregisterAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME);
     }
 
     @Override
     public SingleSignOnService getValue() {
         return this;
-    }
-
-    Injector<Host> getHost() {
-        return this.host;
-    }
-
-    Injector<SingleSignOnManager> getSingleSignOnSessionManager() {
-        return this.manager;
     }
 }

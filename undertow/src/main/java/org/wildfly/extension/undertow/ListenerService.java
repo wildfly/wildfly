@@ -43,12 +43,12 @@ import io.undertow.util.StatusCodes;
 
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.server.deployment.DelegatingSupplier;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
@@ -62,6 +62,7 @@ import org.xnio.channels.AcceptingChannel;
 
 /**
  * @author Tomaz Cerar
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public abstract class ListenerService implements Service<UndertowListener>, UndertowListener {
 
@@ -72,12 +73,13 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
             .set(Options.BALANCING_CONNECTIONS, 2)
             .getMap();
 
-    protected final InjectedValue<XnioWorker> worker = new InjectedValue<>();
-    protected final InjectedValue<SocketBinding> binding = new InjectedValue<>();
-    protected final InjectedValue<SocketBinding> redirectSocket = new InjectedValue<>();
+    protected Consumer<ListenerService> serviceConsumer;
+    protected final DelegatingSupplier<XnioWorker> worker = new DelegatingSupplier<>();
+    protected final DelegatingSupplier<SocketBinding> binding = new DelegatingSupplier<>();
+    protected final DelegatingSupplier<SocketBinding> redirectSocket = new DelegatingSupplier<>();
     @SuppressWarnings("rawtypes")
-    protected final InjectedValue<ByteBufferPool> bufferPool = new InjectedValue<>();
-    protected final InjectedValue<Server> serverService = new InjectedValue<>();
+    protected final DelegatingSupplier<ByteBufferPool> bufferPool = new DelegatingSupplier<>();
+    protected final DelegatingSupplier<Server> serverService = new DelegatingSupplier<>();
     private final List<HandlerWrapper> listenerHandlerWrappers = new ArrayList<>();
 
     private final String name;
@@ -90,36 +92,37 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
     private final boolean proxyProtocol;
     private volatile HandlerWrapper stoppingWrapper;
 
-    protected ListenerService(String name, OptionMap listenerOptions, OptionMap socketOptions, boolean proxyProtocol) {
+    protected ListenerService(Consumer<ListenerService> serviceConsumer, String name, OptionMap listenerOptions, OptionMap socketOptions, boolean proxyProtocol) {
+        this.serviceConsumer = serviceConsumer;
         this.name = name;
         this.listenerOptions = listenerOptions;
         this.socketOptions = socketOptions;
         this.proxyProtocol = proxyProtocol;
     }
 
-    public InjectedValue<XnioWorker> getWorker() {
+    public DelegatingSupplier<XnioWorker> getWorker() {
         return worker;
     }
 
-    public InjectedValue<SocketBinding> getBinding() {
+    public DelegatingSupplier<SocketBinding> getBinding() {
         return binding;
     }
 
-    public InjectedValue<SocketBinding> getRedirectSocket() {
+    public DelegatingSupplier<SocketBinding> getRedirectSocket() {
         return redirectSocket;
     }
 
     @SuppressWarnings("rawtypes")
-    public InjectedValue<ByteBufferPool> getBufferPool() {
+    public DelegatingSupplier<ByteBufferPool> getBufferPool() {
         return bufferPool;
     }
 
-    public InjectedValue<Server> getServerService() {
+    public DelegatingSupplier<Server> getServerService() {
         return serverService;
     }
 
     protected UndertowService getUndertowService() {
-        return serverService.getValue().getUndertowService();
+        return serverService.get().getUndertowService();
     }
 
     public String getName() {
@@ -128,7 +131,7 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
 
     @Override
     public Server getServer() {
-        return this.serverService.getValue();
+        return this.serverService.get();
     }
 
     public boolean isEnabled() {
@@ -146,10 +149,10 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
     public synchronized void setEnabled(boolean enabled) {
         if(started && enabled != this.enabled) {
             if(enabled) {
-                final InetSocketAddress socketAddress = binding.getValue().getSocketAddress();
+                final InetSocketAddress socketAddress = binding.get().getSocketAddress();
                 final ChannelListener<AcceptingChannel<StreamConnection>> acceptListener = ChannelListeners.openListenerAdapter(openListener);
                 try {
-                    startListening(worker.getValue(), socketAddress, acceptListener);
+                    startListening(worker.get(), socketAddress, acceptListener);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -163,11 +166,11 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
     public abstract boolean isSecure();
 
     protected void registerBinding() {
-        binding.getValue().getSocketBindings().getNamedRegistry().registerBinding(new ListenerBinding(binding.getValue()));
+        binding.get().getSocketBindings().getNamedRegistry().registerBinding(new ListenerBinding(binding.get()));
     }
 
     protected void unregisterBinding() {
-        final SocketBinding binding = this.binding.getValue();
+        final SocketBinding binding = this.binding.get();
         binding.getSocketBindings().getNamedRegistry().unregisterBinding(binding.getName());
     }
 
@@ -177,33 +180,33 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
     public void start(final StartContext context) throws StartException {
         started = true;
         preStart(context);
-        serverService.getValue().registerListener(this);
+        serverService.get().registerListener(this);
         try {
             openListener = createOpenListener();
-            HttpHandler handler = serverService.getValue().getRoot();
+            HttpHandler handler = serverService.get().getRoot();
             for(HandlerWrapper wrapper : listenerHandlerWrappers) {
                 handler = wrapper.wrap(handler);
             }
             openListener.setRootHandler(handler);
             if(enabled) {
-                final InetSocketAddress socketAddress = binding.getValue().getSocketAddress();
+                final InetSocketAddress socketAddress = binding.get().getSocketAddress();
 
 
                 final ChannelListener<AcceptingChannel<StreamConnection>> acceptListener;
                 if(proxyProtocol) {
                     UndertowXnioSsl xnioSsl = getSsl();
-                    acceptListener = ChannelListeners.openListenerAdapter(new ProxyProtocolOpenListener(openListener, xnioSsl, bufferPool.getValue(), xnioSsl != null ? getSSLOptions(xnioSsl.getSslContext()) : null));
+                    acceptListener = ChannelListeners.openListenerAdapter(new ProxyProtocolOpenListener(openListener, xnioSsl, bufferPool.get(), xnioSsl != null ? getSSLOptions(xnioSsl.getSslContext()) : null));
                 } else {
                     acceptListener = ChannelListeners.openListenerAdapter(openListener);
                 }
-                startListening(worker.getValue(), socketAddress, acceptListener);
+                startListening(worker.get(), socketAddress, acceptListener);
             }
             registerBinding();
         } catch (IOException e) {
             cleanFailedStart();
             if (e instanceof BindException) {
                 final StringBuilder sb = new StringBuilder().append(e.getLocalizedMessage());
-                final InetSocketAddress socketAddress = binding.getValue().getSocketAddress();
+                final InetSocketAddress socketAddress = binding.get().getSocketAddress();
                 if (socketAddress != null)
                     sb.append(" ").append(socketAddress);
                 throw new StartException(sb.toString());
@@ -238,14 +241,16 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
             }
         };
         addWrapperHandler(stoppingWrapper);
+        serviceConsumer.accept(this);
     }
 
     protected abstract void cleanFailedStart();
 
     @Override
     public void stop(StopContext context) {
+        serviceConsumer.accept(null);
         started = false;
-        serverService.getValue().unregisterListener(this);
+        serverService.get().unregisterListener(this);
         if(enabled) {
             stopListening();
         }
@@ -274,13 +279,14 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
 
     @Override
     public boolean isShutdown() {
-        XnioWorker worker = getWorker().getOptionalValue();
+        final DelegatingSupplier<XnioWorker> workerSupplier = getWorker();
+        XnioWorker worker = workerSupplier != null ? workerSupplier.get() : null;
         return worker == null || worker.isShutdown();
     }
 
     @Override
     public SocketBinding getSocketBinding() {
-        return binding.getValue();
+        return binding.get();
     }
 
     private static class ListenerBinding implements ManagedBinding {

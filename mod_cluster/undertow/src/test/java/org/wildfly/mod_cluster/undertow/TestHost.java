@@ -27,10 +27,8 @@ import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.Server;
 import org.wildfly.extension.undertow.UndertowService;
 
-public class TestHost extends Host {
-    public TestHost(String name, List<String> aliases, UndertowService service, Server server) {
-        super(name, aliases, "ROOT.war", 404, true);
-        this.getUndertowService().inject(service);
-        this.getServerInjection().inject(server);
+class TestHost extends Host {
+    TestHost(String name, List<String> aliases, UndertowService service, Server server) {
+        super(null, () -> server, () -> service, null, null, name, aliases, "ROOT.war", 404, true);
     }
 }

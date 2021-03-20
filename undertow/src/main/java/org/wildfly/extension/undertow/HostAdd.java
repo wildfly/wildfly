@@ -27,6 +27,8 @@ import static org.wildfly.extension.undertow.ServerDefinition.SERVER_CAPABILITY;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
@@ -36,6 +38,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.server.suspend.SuspendController;
@@ -52,7 +55,7 @@ import org.wildfly.extension.undertow.deployment.DefaultDeploymentMappingProvide
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-class HostAdd extends AbstractAddStepHandler {
+final class HostAdd extends AbstractAddStepHandler {
 
     static final HostAdd INSTANCE = new HostAdd();
 
@@ -98,70 +101,67 @@ class HostAdd extends AbstractAddStepHandler {
 
         final ServiceName virtualHostServiceName = HostDefinition.HOST_CAPABILITY.fromBaseCapability(address).getCapabilityServiceName();
 
-        final Host service = new Host(name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode, queueRequestsOnStart);
-
-        final ServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(HostDefinition.HOST_CAPABILITY)
-                .setInstance(service)
-                .addCapabilityRequirement(Capabilities.CAPABILITY_SERVER, Server.class, service.getServerInjection(), serverName)
-                .addCapabilityRequirement(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class, service.getUndertowService())
-                .addDependency(context.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER, SuspendController.class), SuspendController.class, service.getSuspendControllerInjectedValue())
-                .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, service.getControlledProcessStateServiceInjectedValue());
-
-        builder.setInitialMode(Mode.ON_DEMAND);
-
+        final CapabilityServiceBuilder<?> csb = context.getCapabilityServiceTarget().addCapability(HostDefinition.HOST_CAPABILITY);
+        Consumer<Host> hostConsumer;
         if (isDefaultHost) {
             addCommonHost(context, aliases, serverName, virtualHostServiceName);
-            builder.addAliases(UndertowService.DEFAULT_HOST);//add alias for default host of default server service
+            final RuntimeCapability<?>[] capabilitiesParam = new RuntimeCapability<?>[] {HostDefinition.HOST_CAPABILITY};
+            final ServiceName[] serviceNamesParam = new ServiceName[] {UndertowService.virtualHostName(serverName, name), UndertowService.DEFAULT_HOST};
+            hostConsumer = csb.provides(capabilitiesParam, serviceNamesParam);
+        } else {
+            hostConsumer = csb.provides(HostDefinition.HOST_CAPABILITY, UndertowService.virtualHostName(serverName, name));
         }
-        //this is workaround for a bit so old service names still work!
-        builder.addAliases(UndertowService.virtualHostName(serverName, name));
-        builder.install();
+        final Supplier<Server> sSupplier = csb.requiresCapability(Capabilities.CAPABILITY_SERVER, Server.class, serverName);
+        final Supplier<UndertowService> usSupplier = csb.requiresCapability(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class);
+        final Supplier<ControlledProcessStateService> cpssSupplier = csb.requires(ControlledProcessStateService.SERVICE_NAME);
+        final Supplier<SuspendController> scSupplier = csb.requires(context.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER, SuspendController.class));
+        csb.setInstance(new Host(hostConsumer, sSupplier, usSupplier, cpssSupplier, scSupplier, name, aliases == null ? new LinkedList<>(): aliases, defaultWebModule, defaultResponseCode, queueRequestsOnStart));
+        csb.setInitialMode(Mode.ON_DEMAND);
+        csb.install();
 
         if (enableConsoleRedirect) {
             // Setup the web console redirect
             final ServiceName consoleRedirectName = UndertowService.consoleRedirectServiceName(serverName, name);
             // A standalone server is the only process type with a console redirect
             if (context.getProcessType() == ProcessType.STANDALONE_SERVER) {
-                final ConsoleRedirectService redirectService = new ConsoleRedirectService();
-                final ServiceBuilder<ConsoleRedirectService> redirectBuilder = context.getServiceTarget().addService(consoleRedirectName, redirectService)
-                        .addDependency(UndertowHttpManagementService.SERVICE_NAME, HttpManagement.class, redirectService.getHttpManagementInjector())
-                        .addDependency(virtualHostServiceName, Host.class, redirectService.getHostInjector())
-                        .setInitialMode(Mode.PASSIVE);
-                redirectBuilder.install();
+                final ServiceBuilder<?> sb = context.getServiceTarget().addService(consoleRedirectName);
+                final Supplier<HttpManagement> hmSupplier = sb.requires(UndertowHttpManagementService.SERVICE_NAME);
+                final Supplier<Host> hSupplier = sb.requires(virtualHostServiceName);
+                sb.setInstance(new ConsoleRedirectService(hmSupplier, hSupplier));
+                sb.setInitialMode(Mode.PASSIVE);
+                sb.install();
             } else {
                 // Other process types don't have a console, not depending on the UndertowHttpManagementService should
                 // result in a null dependency in the service and redirect accordingly
-                final ConsoleRedirectService redirectService = new ConsoleRedirectService();
-                final ServiceBuilder<ConsoleRedirectService> redirectBuilder = context.getServiceTarget().addService(consoleRedirectName, redirectService)
-                        .addDependency(virtualHostServiceName, Host.class, redirectService.getHostInjector())
-                        .setInitialMode(Mode.PASSIVE);
-                redirectBuilder.install();
+                final ServiceBuilder<?> sb = context.getServiceTarget().addService(consoleRedirectName);
+                final Supplier<Host> hSupplier = sb.requires(virtualHostServiceName);
+                sb.setInstance(new ConsoleRedirectService(null, hSupplier));
+                sb.setInitialMode(Mode.PASSIVE);
+                sb.install();
             }
         }
     }
 
-    private void addCommonHost(OperationContext context, List<String> aliases,
-                                                     String serverName, ServiceName virtualHostServiceName) {
-        WebHostService service = new WebHostService();
-        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget()
-                .addCapability(WebHost.CAPABILITY)
-                .setInstance(service)
-                .addCapabilityRequirement(Capabilities.CAPABILITY_SERVER, Server.class, service.getServer(), serverName)
-                .addCapabilityRequirement(CommonWebServer.CAPABILITY_NAME, CommonWebServer.class)
-                .addDependency(virtualHostServiceName, Host.class, service.getHost());
-
-        if(context.hasOptionalCapability(Capabilities.REF_REQUEST_CONTROLLER, null, null)) {
-            builder.addCapabilityRequirement(Capabilities.REF_REQUEST_CONTROLLER, RequestController.class, service.getRequestControllerInjectedValue());
-        }
-
-        builder.addAliases(WebHost.SERVICE_NAME.append(context.getCurrentAddressValue()));
+    private void addCommonHost(OperationContext context, List<String> aliases, String serverName, ServiceName virtualHostServiceName) {
+        final RuntimeCapability<?>[] capabilitiesParam = new RuntimeCapability<?>[] {WebHost.CAPABILITY};
+        final ServiceName[] serviceNamesParam = new ServiceName[aliases == null ? 1 : aliases.size() + 1];
         if (aliases != null) {
-            for (String alias : aliases) {
-                builder.addAliases(WebHost.SERVICE_NAME.append(alias));
+            int i = 0;
+            for (final String alias : aliases) {
+                serviceNamesParam[i++] = WebHost.SERVICE_NAME.append(alias);
             }
         }
+        serviceNamesParam[serviceNamesParam.length - 1] = WebHost.SERVICE_NAME.append(context.getCurrentAddressValue());
+        final boolean rqCapabilityAvailable = context.hasOptionalCapability(Capabilities.REF_REQUEST_CONTROLLER, null, null);
 
-        builder.setInitialMode(Mode.PASSIVE);
-        builder.install();
+        final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(WebHost.CAPABILITY);
+        final Consumer<WebHost> whConsumer = sb.provides(capabilitiesParam, serviceNamesParam);
+        final Supplier<Server> sSupplier = sb.requiresCapability(Capabilities.CAPABILITY_SERVER, Server.class, serverName);
+        final Supplier<Host> hSupplier = sb.requires(virtualHostServiceName);
+        final Supplier<RequestController> rcSupplier = rqCapabilityAvailable ? sb.requiresCapability(Capabilities.REF_REQUEST_CONTROLLER, RequestController.class) : null;
+        sb.setInstance(new WebHostService(whConsumer, sSupplier, hSupplier, rcSupplier));
+        sb.requiresCapability(CommonWebServer.CAPABILITY_NAME, CommonWebServer.class);
+        sb.setInitialMode(Mode.PASSIVE);
+        sb.install();
     }
 }

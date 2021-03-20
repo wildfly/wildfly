@@ -31,26 +31,32 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.undertow.Handler;
 
+import java.util.function.Consumer;
+
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class FilterService implements Service<FilterService> {
+
+    private final Consumer<FilterService> serviceConsumer;
     private final Handler handler;
     private final ModelNode model;
 
-    FilterService(Handler handler, ModelNode model) {
+    FilterService(final Consumer<FilterService> serviceConsumer, final Handler handler, final ModelNode model) {
+        this.serviceConsumer = serviceConsumer;
         this.handler = handler;
         this.model = model;
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
-
+    public void start(final StartContext context) throws StartException {
+        serviceConsumer.accept(this);
     }
 
     @Override
-    public void stop(StopContext context) {
-
+    public void stop(final StopContext context) {
+        serviceConsumer.accept(null);
     }
 
     public HttpHandler createHttpHandler(final Predicate predicate, HttpHandler next) {
@@ -61,4 +67,5 @@ public class FilterService implements Service<FilterService> {
     public FilterService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
+
 }
