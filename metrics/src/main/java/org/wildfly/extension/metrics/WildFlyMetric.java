@@ -36,13 +36,18 @@ import org.jboss.as.controller.LocalModelControllerClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 public class WildFlyMetric implements Metric {
+
+    private static final ModelNode UNDEFINED = new ModelNode();
 
     private LocalModelControllerClient modelControllerClient;
     private final PathAddress address;
     private final String attributeName;
+
+    static {
+        UNDEFINED.protect();
+    }
 
     public WildFlyMetric(LocalModelControllerClient modelControllerClient, PathAddress address, String attributeName) {
         this.modelControllerClient = modelControllerClient;
@@ -79,7 +84,7 @@ public class WildFlyMetric implements Metric {
             } else{
                 LOGGER.unableToReadAttribute(attributeName, address, error);
             }
-            return new ModelNode(ModelType.UNDEFINED);
+            return UNDEFINED;
         }
         return  response.get(RESULT);
     }
