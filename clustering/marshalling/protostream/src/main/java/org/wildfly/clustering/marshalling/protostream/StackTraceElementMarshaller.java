@@ -64,7 +64,7 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
                     }
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         return new StackTraceElement(className, methodName, fileName, line);

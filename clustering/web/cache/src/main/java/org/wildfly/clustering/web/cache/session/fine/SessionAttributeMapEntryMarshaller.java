@@ -56,7 +56,7 @@ public enum SessionAttributeMapEntryMarshaller implements ProtoStreamMarshaller<
             } else if (index >= ATTRIBUTE_ID_INDEX && index < ATTRIBUTE_ID_INDEX + UUIDMarshaller.INSTANCE.getFields()) {
                 attributeIdBuilder = UUIDMarshaller.INSTANCE.readField(reader, index - ATTRIBUTE_ID_INDEX, attributeIdBuilder);
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         return new SessionAttributeMapEntry(attributeName, attributeIdBuilder.build());

@@ -81,7 +81,7 @@ public class ExceptionMarshaller<E extends Throwable> implements ProtoStreamMars
                     suppressed.add((Throwable) reader.readObject(Any.class).get());
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         E exception = this.createException(exceptionClass, message, cause);

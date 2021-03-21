@@ -56,7 +56,7 @@ public class ClientMappingsRegistryEntryMarshaller implements ProtoStreamMarshal
                     mappings.add(reader.readObject(ClientMapping.class));
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         return new ClientMappingsRegistryEntry(memberName, mappings);

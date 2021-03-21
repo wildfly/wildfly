@@ -22,32 +22,14 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.IOException;
-
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
+import org.wildfly.clustering.marshalling.AbstractMathTestCase;
 
 /**
- * A {@link RawProtoStreamReader} with the additional ability to read an arbitrary embedded object.
  * @author Paul Ferraro
  */
-public interface ProtoStreamReader extends RawProtoStreamReader {
+public class ProtoStreamMathTestCase extends AbstractMathTestCase {
 
-    ImmutableSerializationContext getSerializationContext();
-
-    <T> T readObject(Class<T> targetClass) throws IOException;
-
-    <E extends Enum<E>> E readEnum(Class<E> enumClass) throws IOException;
-
-    byte readRawByte() throws IOException;
-
-    /**
-     * Ignores the field with the specified tag.
-     * @param tag a field tag
-     * @return true, if the caller should continue reading the stream, false otherwise.
-     * @throws IOException if the field could not be skipped.
-     */
-    default boolean ignoreField(int tag) throws IOException {
-        return (tag != 0) && this.skipField(tag);
+    public ProtoStreamMathTestCase() {
+        super(ProtoStreamTesterFactory.INSTANCE);
     }
 }

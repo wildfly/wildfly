@@ -69,7 +69,7 @@ public class MapEntryMarshaller<T extends Map.Entry<Object, Object>> implements 
                     entry.setValue(value);
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         return this.factory.apply(entry);

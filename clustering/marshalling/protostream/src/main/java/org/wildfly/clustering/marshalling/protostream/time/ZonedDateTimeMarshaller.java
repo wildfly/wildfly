@@ -67,7 +67,7 @@ public class ZonedDateTimeMarshaller implements ProtoStreamMarshaller<ZonedDateT
             } else if (index == ZONE_INDEX) {
                 zone = ZoneId.of(reader.readString());
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         return ZonedDateTime.of(date, time, zone);

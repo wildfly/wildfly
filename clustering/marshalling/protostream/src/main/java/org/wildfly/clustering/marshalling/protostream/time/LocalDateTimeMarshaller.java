@@ -59,7 +59,7 @@ public class LocalDateTimeMarshaller implements ProtoStreamMarshaller<LocalDateT
             } else if (index >= TIME_INDEX && index < TIME_INDEX + LocalTimeMarshaller.INSTANCE.getFields()) {
                 time = LocalTimeMarshaller.INSTANCE.readField(reader, index - TIME_INDEX, time);
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         return LocalDateTime.of(date, time);

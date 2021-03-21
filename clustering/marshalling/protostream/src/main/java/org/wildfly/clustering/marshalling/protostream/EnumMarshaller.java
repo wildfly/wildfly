@@ -71,7 +71,7 @@ public class EnumMarshaller<E extends Enum<E>> implements org.infinispan.protost
                     result = reader.readEnum(this.enumClass);
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         return result;

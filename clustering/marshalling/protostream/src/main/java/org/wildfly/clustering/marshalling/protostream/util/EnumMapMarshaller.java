@@ -64,7 +64,7 @@ public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
             } else if (index == this.valueIndex) {
                 values.add(reader.readObject(Any.class).get());
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         EnumSet<E> enumSet = builder.build();

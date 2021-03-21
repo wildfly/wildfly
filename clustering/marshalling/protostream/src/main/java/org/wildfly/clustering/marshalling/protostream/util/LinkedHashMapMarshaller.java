@@ -67,7 +67,7 @@ public class LinkedHashMapMarshaller extends AbstractMapMarshaller<LinkedHashMap
                     map = new LinkedHashMap<>(16, 0.75f, reader.readBool());
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         Iterator<Object> keyIterator = keys.iterator();

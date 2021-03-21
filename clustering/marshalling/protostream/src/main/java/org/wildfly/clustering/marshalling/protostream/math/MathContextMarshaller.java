@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,10 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.protostream.time;
+package org.wildfly.clustering.marshalling.protostream.math;
 
 import java.io.IOException;
-import java.time.Period;
+import java.math.MathContext;
+import java.math.RoundingMode;
 
 import org.infinispan.protostream.impl.WireFormat;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -31,62 +32,52 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
- * Marshaller for {@link Period} instances, using the following strategy:
- * <ol>
- * <li>Marshal {@link Period#ZERO} as zero bytes</li>
- * <li>Marshal number of years of period as signed integer</li>
- * <li>Marshal number of months of period as signed integer</li>
- * <li>Marshal number of days of period as signed integer</li>
- * </ol>
+ * Marshaller for {@link MathContext}.
  * @author Paul Ferraro
  */
-public class PeriodMarshaller implements ProtoStreamMarshaller<Period> {
+public class MathContextMarshaller implements ProtoStreamMarshaller<MathContext> {
 
-    private static final int YEARS_INDEX = 1;
-    private static final int MONTHS_INDEX = 2;
-    private static final int DAYS_INDEX = 3;
+    private static final int PRECISION_INDEX = 1;
+    private static final int ROUNDING_MODE_INDEX = 2;
+
+    private static final int DEFAULT_PRECISION = 0;
+    private static final RoundingMode DEFAULT_ROUNDING_MODE = RoundingMode.HALF_UP;
 
     @Override
-    public Period readFrom(ProtoStreamReader reader) throws IOException {
-        Period period = Period.ZERO;
+    public MathContext readFrom(ProtoStreamReader reader) throws IOException {
+        int precision = DEFAULT_PRECISION;
+        RoundingMode mode = DEFAULT_ROUNDING_MODE;
         boolean reading = true;
         while (reading) {
             int tag = reader.readTag();
             switch (WireFormat.getTagFieldNumber(tag)) {
-                case YEARS_INDEX:
-                    period = period.withYears(reader.readSInt32());
+                case PRECISION_INDEX:
+                    precision = reader.readUInt32();
                     break;
-                case MONTHS_INDEX:
-                    period = period.withMonths(reader.readSInt32());
-                    break;
-                case DAYS_INDEX:
-                    period = period.withDays(reader.readSInt32());
+                case ROUNDING_MODE_INDEX:
+                    mode = reader.readEnum(RoundingMode.class);
                     break;
                 default:
                     reading = reader.ignoreField(tag);
             }
         }
-        return period;
+        return new MathContext(precision, mode);
     }
 
     @Override
-    public void writeTo(ProtoStreamWriter writer, Period period) throws IOException {
-        int years = period.getYears();
-        if (years != 0) {
-            writer.writeSInt32(YEARS_INDEX, years);
+    public void writeTo(ProtoStreamWriter writer, MathContext context) throws IOException {
+        int precision = context.getPrecision();
+        if (precision != DEFAULT_PRECISION) {
+            writer.writeUInt32(PRECISION_INDEX, precision);
         }
-        int months = period.getMonths();
-        if (months != 0) {
-            writer.writeSInt32(MONTHS_INDEX, months);
-        }
-        int days = period.getDays();
-        if (days != 0) {
-            writer.writeSInt32(DAYS_INDEX, days);
+        RoundingMode mode = context.getRoundingMode();
+        if (mode != DEFAULT_ROUNDING_MODE) {
+            writer.writeEnum(ROUNDING_MODE_INDEX, mode);
         }
     }
 
     @Override
-    public Class<? extends Period> getJavaClass() {
-        return Period.class;
+    public Class<? extends MathContext> getJavaClass() {
+        return MathContext.class;
     }
 }

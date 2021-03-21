@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,11 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.protostream.time;
+package org.wildfly.clustering.marshalling.protostream.math;
 
 import java.io.IOException;
-import java.time.Month;
-import java.time.MonthDay;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import org.infinispan.protostream.impl.WireFormat;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -32,52 +32,46 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
- * Marshals {@link MonthDay} instances.
+ * Marshaller for {@link BigDecimal}.
  * @author Paul Ferraro
  */
-public class MonthDayMarshaller implements ProtoStreamMarshaller<MonthDay> {
+public class BigDecimalMarshaller implements ProtoStreamMarshaller<BigDecimal> {
 
-    private static final Month[] MONTHS = Month.values();
-    private static final MonthDay DEFAULT = MonthDay.of(Month.JANUARY, 1);
+    private static final int BIG_INTEGER_INDEX = 1;
+    private static final int SCALE_INDEX = BIG_INTEGER_INDEX + BigIntegerMarshaller.INSTANCE.getFields();
 
-    private static final int MONTH_INDEX = 1;
-    private static final int DAY_OF_MONTH_INDEX = 2;
+    private static final int DEFAULT_SCALE = 0;
 
     @Override
-    public MonthDay readFrom(ProtoStreamReader reader) throws IOException {
-        MonthDay result = DEFAULT;
+    public BigDecimal readFrom(ProtoStreamReader reader) throws IOException {
+        BigInteger unscaledValue = BigIntegerMarshaller.INSTANCE.getBuilder();
+        int scale = DEFAULT_SCALE;
         boolean reading = true;
         while (reading) {
             int tag = reader.readTag();
             int index = WireFormat.getTagFieldNumber(tag);
-            switch (index) {
-                case MONTH_INDEX:
-                    result = result.with(MONTHS[reader.readEnum()]);
-                    break;
-                case DAY_OF_MONTH_INDEX:
-                    result = result.withDayOfMonth(reader.readUInt32() + 1);
-                    break;
-                default:
-                    reading = reader.ignoreField(tag);
+            if (index >= BIG_INTEGER_INDEX && index < SCALE_INDEX) {
+                unscaledValue = BigIntegerMarshaller.INSTANCE.readField(reader, index - BIG_INTEGER_INDEX, unscaledValue);
+            } else if (index == SCALE_INDEX) {
+                scale = reader.readSInt32();
+            } else {
+                reading = reader.ignoreField(tag);
             }
         }
-        return result;
+        return new BigDecimal(unscaledValue, scale);
     }
 
     @Override
-    public void writeTo(ProtoStreamWriter writer, MonthDay value) throws IOException {
-        Month month = value.getMonth();
-        if (month != DEFAULT.getMonth()) {
-            writer.writeEnum(MONTH_INDEX, month.ordinal());
-        }
-        int dayOfMonth = value.getDayOfMonth();
-        if (dayOfMonth != DEFAULT.getDayOfMonth()) {
-            writer.writeUInt32(DAY_OF_MONTH_INDEX, dayOfMonth - 1);
+    public void writeTo(ProtoStreamWriter writer, BigDecimal value) throws IOException {
+        BigIntegerMarshaller.INSTANCE.writeFields(writer, BIG_INTEGER_INDEX, value.unscaledValue());
+        int scale = value.scale();
+        if (scale != DEFAULT_SCALE) {
+            writer.writeSInt32(SCALE_INDEX, scale);
         }
     }
 
     @Override
-    public Class<? extends MonthDay> getJavaClass() {
-        return MonthDay.class;
+    public Class<? extends BigDecimal> getJavaClass() {
+        return BigDecimal.class;
     }
 }

@@ -80,7 +80,7 @@ public class AuthenticatedSessionMarshaller implements ProtoStreamMarshaller<Aut
                     original = new AccountImpl(reader.readString()).getPrincipal();
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         Account account = new AccountImpl(principal, new CopyOnWriteArraySet<>(roles), credential, original);

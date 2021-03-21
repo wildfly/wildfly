@@ -58,7 +58,7 @@ public class SessionAccessMetaDataMarshaller implements ProtoStreamMarshaller<Si
                     lastAccess = reader.readObject(Duration.class);
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
         }
         SimpleSessionAccessMetaData metaData = new SimpleSessionAccessMetaData();

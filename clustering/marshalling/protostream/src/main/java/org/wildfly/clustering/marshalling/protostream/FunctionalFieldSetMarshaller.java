@@ -57,7 +57,7 @@ public class FunctionalFieldSetMarshaller<T, B> implements ProtoStreamMarshaller
             if ((index >= START_INDEX) && (index < START_INDEX + this.marshaller.getFields())) {
                 builder = this.marshaller.readField(reader, index - START_INDEX, builder);
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         return this.build.apply(builder);

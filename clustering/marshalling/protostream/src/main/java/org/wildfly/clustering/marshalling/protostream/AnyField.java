@@ -92,7 +92,7 @@ public enum AnyField implements Field<Object> {
                     // Adjust length of boolean[]
                     length = ((bytes.length - 1) * Byte.SIZE) + reader.readUInt32();
                 } else {
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
                 }
             }
             BitSet set = BitSet.valueOf(bytes);
@@ -150,7 +150,7 @@ public enum AnyField implements Field<Object> {
                 if (index == ANY.getIndex()) {
                     interfaces.add(ScalarClass.ANY.readFrom(reader));
                 } else {
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
                 }
             }
             return Proxy.newProxyInstance(WildFlySecurityManager.getClassLoaderPrivileged(handler.getClass()), interfaces.toArray(new Class<?>[0]), handler);

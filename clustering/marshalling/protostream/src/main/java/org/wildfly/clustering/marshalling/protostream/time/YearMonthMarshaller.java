@@ -60,7 +60,7 @@ public class YearMonthMarshaller implements ProtoStreamMarshaller<YearMonth> {
             } else if (index == MONTH_INDEX) {
                 result = result.withMonth(MONTHS[reader.readEnum()].getValue());
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         return result;

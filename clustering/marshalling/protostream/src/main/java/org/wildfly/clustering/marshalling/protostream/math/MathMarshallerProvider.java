@@ -20,34 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.protostream;
+package org.wildfly.clustering.marshalling.protostream.math;
 
-import java.io.IOException;
+import java.math.RoundingMode;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
+import org.wildfly.clustering.marshalling.protostream.EnumMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
+import org.wildfly.clustering.marshalling.protostream.SimpleFieldSetMarshaller;
 
 /**
- * A {@link RawProtoStreamReader} with the additional ability to read an arbitrary embedded object.
+ * Provider for java.math marshallers.
  * @author Paul Ferraro
  */
-public interface ProtoStreamReader extends RawProtoStreamReader {
+public enum MathMarshallerProvider implements ProtoStreamMarshallerProvider {
 
-    ImmutableSerializationContext getSerializationContext();
+    BIG_DECIMAL(new BigDecimalMarshaller()),
+    BIG_INTEGER(new SimpleFieldSetMarshaller<>(BigIntegerMarshaller.INSTANCE)),
+    MATH_CONTEXT(new MathContextMarshaller()),
+    ROUNDING_MODE(new EnumMarshaller<>(RoundingMode.class)),
+    ;
+    private final ProtoStreamMarshaller<?> marshaller;
 
-    <T> T readObject(Class<T> targetClass) throws IOException;
+    MathMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
+        this.marshaller = marshaller;
+    }
 
-    <E extends Enum<E>> E readEnum(Class<E> enumClass) throws IOException;
-
-    byte readRawByte() throws IOException;
-
-    /**
-     * Ignores the field with the specified tag.
-     * @param tag a field tag
-     * @return true, if the caller should continue reading the stream, false otherwise.
-     * @throws IOException if the field could not be skipped.
-     */
-    default boolean ignoreField(int tag) throws IOException {
-        return (tag != 0) && this.skipField(tag);
+    @Override
+    public ProtoStreamMarshaller<?> getMarshaller() {
+        return this.marshaller;
     }
 }

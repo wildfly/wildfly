@@ -75,7 +75,7 @@ public class EmbeddedMetadataMarshaller<MD extends EmbeddedMetadata> implements 
                     break;
                 }
                 default: {
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
                 }
             }
         }

@@ -60,7 +60,7 @@ public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<
             if ((index >= this.loaderIndex) && (index < this.loaderIndex + this.loaderMarshaller.getFields())) {
                 loader = this.loaderMarshaller.readField(reader, index, loader);
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         try {

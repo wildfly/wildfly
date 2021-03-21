@@ -56,7 +56,7 @@ public class ValueMarshaller<T> implements ProtoStreamMarshaller<T> {
         boolean reading = true;
         while (reading) {
             int tag = reader.readTag();
-            reading = (tag != 0) && reader.skipField(tag);
+            reading = reader.ignoreField(tag);
         }
         return this.factory.get();
     }

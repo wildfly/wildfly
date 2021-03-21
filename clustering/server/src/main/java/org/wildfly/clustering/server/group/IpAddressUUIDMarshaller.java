@@ -61,7 +61,7 @@ public class IpAddressUUIDMarshaller implements ProtoStreamMarshaller<IpAddressU
             } else if (index == HIGH_INDEX) {
                 high = reader.readSFixed32();
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         return new DefaultIpAddressUUID(ipAddressBuilder.build(), low, high);

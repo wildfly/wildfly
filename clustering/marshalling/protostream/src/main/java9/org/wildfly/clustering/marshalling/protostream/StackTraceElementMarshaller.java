@@ -49,8 +49,9 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
         String classLoaderName = null;
         String moduleName = null;
         String moduleVersion = null;
-        int tag = reader.readTag();
-        while (tag != 0) {
+        boolean reading = true;
+        while (reading) {
+            int tag = reader.readTag();
             switch (WireFormat.getTagFieldNumber(tag)) {
                 case CLASS_NAME_INDEX:
                     className = (String) reader.readObject(Any.class).get();
@@ -78,9 +79,8 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
                     moduleVersion = (String) reader.readObject(Any.class).get();
                     break;
                 default:
-                    reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
             }
-            tag = reader.readTag();
         }
         return new StackTraceElement(classLoaderName, moduleName, moduleVersion, className, methodName, fileName, line);
     }

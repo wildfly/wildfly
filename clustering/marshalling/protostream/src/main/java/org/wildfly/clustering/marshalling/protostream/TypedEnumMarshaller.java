@@ -53,7 +53,7 @@ public class TypedEnumMarshaller<E extends Enum<E>> implements FieldMarshaller<E
             if (index == AnyField.ANY.getIndex()) {
                 result = reader.readEnum(enumClass);
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         return result;

@@ -64,7 +64,7 @@ public class OffsetDateTimeMarshaller implements ProtoStreamMarshaller<OffsetDat
             } else if (index >= OFFSET_INDEX && index < OFFSET_INDEX + ZoneOffsetMarshaller.INSTANCE.getFields()) {
                 offset = ZoneOffsetMarshaller.INSTANCE.readField(reader, index - OFFSET_INDEX, offset);
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         return OffsetDateTime.of(date, time, offset);

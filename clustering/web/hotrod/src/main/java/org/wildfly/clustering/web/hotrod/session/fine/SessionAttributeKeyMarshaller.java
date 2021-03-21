@@ -53,7 +53,7 @@ public class SessionAttributeKeyMarshaller implements ProtoStreamMarshaller<Sess
             } else if (index >= ATTRIBUTE_IDENTIFIER_INDEX && index < ATTRIBUTE_IDENTIFIER_INDEX + UUIDMarshaller.INSTANCE.getFields()) {
                 attributeId = UUIDMarshaller.INSTANCE.readField(reader, index - ATTRIBUTE_IDENTIFIER_INDEX, attributeId);
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reading = reader.ignoreField(tag);
             }
         }
         return new SessionAttributeKey(sessionId, attributeId.build());

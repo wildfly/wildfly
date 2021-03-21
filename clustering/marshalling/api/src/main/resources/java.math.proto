@@ -1,0 +1,42 @@
+package java.math;
+
+// IDs: 120 - 124
+
+/**
+ * @TypeId(120)
+ */
+message BigDecimal {
+	optional	bytes	positiveBytes	= 1;
+	optional	bytes	negativeBytes	= 2;
+	optional	uint32	scale	= 3;
+}
+
+/**
+ * @TypeId(121)
+ */
+message BigInteger {
+	optional	bytes	positiveBytes	= 1;
+	optional	bytes	negativeBytes	= 2;
+}
+
+/**
+ * @TypeId(122)
+ */
+message MathContext {
+	optional	uint32	precision	= 1;
+	optional	RoundingMode	mode	= 2;
+}
+
+/**
+ * @TypeId(123)
+ */
+enum RoundingMode {
+	UP	= 0;
+	DOWN	= 1;
+	CEILING	= 2;
+	FLOOR	= 3;
+	HALF_UP	= 4;
+	HALF_DOWN	= 5;
+	HALF_EVEN	= 6;
+	UNNECESSARY	= 7;
+}
