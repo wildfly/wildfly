@@ -120,8 +120,8 @@ public interface JGroupsLogger extends BasicLogger {
     @Message(id = 16, value = "Unable to load protocol class %s")
     OperationFailedException unableToLoadProtocolClass(String protocolName);
 
-    @Message(id = 17, value = "Privileged access exception on attribute/method %s")
-    String privilegedAccessExceptionForAttribute(String attrName);
+//    @Message(id = 17, value = "Privileged access exception on attribute/method %s")
+//    String privilegedAccessExceptionForAttribute(String attrName);
 
 //    @Message(id = 18, value = "Instantiation exception on converter for attribute/method %s")
 //    String instantiationExceptionOnConverterForAttribute(String attrName);
@@ -138,8 +138,8 @@ public interface JGroupsLogger extends BasicLogger {
     @Message(id = 23, value = "%s key store entry is not of the expected type: %s")
     IllegalArgumentException unexpectedKeyStoreEntryType(String alias, String type);
 
-    @Message(id = 24, value = "%s key store entry does not contain a secret key")
-    IllegalArgumentException secretKeyStoreEntryExpected(String alias);
+//    @Message(id = 24, value = "%s key store entry does not contain a secret key")
+//    IllegalArgumentException secretKeyStoreEntryExpected(String alias);
 
     @Message(id = 25, value = "Configured credential source does not reference a clear-text password credential")
     IllegalArgumentException unexpectedCredentialSource();
