@@ -34,6 +34,7 @@
     <dependencies>
         <module name="com.fasterxml.jackson.core.jackson-databind"/>
         <module name="java.management"/>
+        <module name="java.security.jgss"/>
         <module name="java.security.sasl"/>
         <module name="org.slf4j"/>
     </dependencies>
