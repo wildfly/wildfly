@@ -83,8 +83,8 @@
         <version.org.hibernate.validator>7.0.1.Final</version.org.hibernate.validator>
         <version.org.jboss.activemq.artemis.integration>1.0.3</version.org.jboss.activemq.artemis.integration>
         <version.org.jboss.metadata>14.0.0.Beta1</version.org.jboss.metadata>
-        <version.org.jboss.weld.weld>4.0.0.Final</version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld-api>4.0.Final</version.org.jboss.weld.weld-api>
+        <version.org.jboss.weld.weld>4.0.1.Final</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>4.0.SP1</version.org.jboss.weld.weld-api>
 
         <!-- TODO Glassfish uses org.glassfish:jakarta-el for this, which we use for the impl
              but we have a separate API jar -->
