@@ -75,6 +75,13 @@ else
   echo INFO: microprofile-openapi-smallrye already in configuration, subsystem not added.
 end-if
 
+if (outcome != success) of /subsystem=microprofile-opentracing-smallrye:read-resource
+  /extension=org.wildfly.extension.microprofile.opentracing-smallrye:add
+  /subsystem=microprofile-opentracing-smallrye:add
+else
+  echo INFO: microprofile-opentracing-smallrye already in configuration, subsystem not added.
+end-if
+
 echo INFO: Configuration done.
 
 stop-embedded-server
