@@ -22,11 +22,13 @@
 
 package org.wildfly.clustering.web;
 
-import org.wildfly.clustering.marshalling.spi.Serializer;
+import java.nio.ByteBuffer;
+
+import org.wildfly.clustering.marshalling.spi.Marshaller;
 
 /**
  * @author Paul Ferraro
  */
-public interface IdentifierSerializerProvider {
-    Serializer<String> getSerializer();
+public interface IdentifierMarshallerProvider {
+    Marshaller<String, ByteBuffer> getMarshaller();
 }

@@ -34,7 +34,7 @@ import java.util.function.LongConsumer;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.web.IdentifierSerializer;
+import org.wildfly.clustering.web.IdentifierMarshaller;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.oob.OOBSession;
@@ -56,7 +56,7 @@ import io.undertow.util.AttachmentKey;
  */
 public class DistributableSessionManager implements UndertowSessionManager, Consumer<HttpServerExchange>, LongConsumer {
 
-    private static final IdentifierSerializer IDENTIFIER_SERIALIZER = new UndertowIdentifierSerializerProvider().getSerializer();
+    private static final IdentifierMarshaller IDENTIFIER_MARSHALLER = new UndertowIdentifierSerializerProvider().getMarshaller();
 
     private final AttachmentKey<io.undertow.server.session.Session> key = AttachmentKey.create(io.undertow.server.session.Session.class);
     private final String deploymentName;
@@ -216,7 +216,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Cons
         }
 
         // If requested id contains invalid characters, then session cannot exist and would otherwise cause session lookup to fail
-        if (!IDENTIFIER_SERIALIZER.validate(id)) {
+        if (!IDENTIFIER_MARSHALLER.validate(id)) {
             return null;
         }
 
@@ -286,7 +286,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Cons
     @Override
     public io.undertow.server.session.Session getSession(String sessionId) {
         // If requested id contains invalid characters, then session cannot exist and would otherwise cause session lookup to fail
-        if (!IDENTIFIER_SERIALIZER.validate(sessionId)) {
+        if (!IDENTIFIER_MARSHALLER.validate(sessionId)) {
             return null;
         }
         Session<Map<String, Object>> session = new OOBSession<>(this.manager, sessionId, LocalSessionContextFactory.INSTANCE.createLocalContext());
