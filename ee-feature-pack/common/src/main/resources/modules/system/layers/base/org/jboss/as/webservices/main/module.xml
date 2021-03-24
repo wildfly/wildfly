@@ -34,7 +34,7 @@
 
     <resources>
         <artifact name="${org.wildfly:wildfly-webservices-server-integration}"/>
-        <artifact name="${org.jboss.ws.cxf:jbossws-cxf-resources::wildfly1900}"/>
+        <artifact name="${org.jboss.ws.cxf:jbossws-cxf-resources::wildfly2000}"/>
     </resources>
 
     <dependencies>
