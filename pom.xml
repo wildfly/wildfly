@@ -326,6 +326,7 @@
         <version.io.undertow.jastow>2.0.9.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
         <version.io.vertx.vertx>4.0.2</version.io.vertx.vertx>
+        <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
         <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
         <version.jakarta.json.bind.api>1.0.2</version.jakarta.json.bind.api>
         <version.jakarta.mail>1.6.5</version.jakarta.mail>
@@ -2458,7 +2459,7 @@
             <dependency>
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-kafka-client</artifactId>
-                <version>${version.io.vertx.vertx}</version>
+                <version>${version.io.vertx.vertx-kafka-client}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
