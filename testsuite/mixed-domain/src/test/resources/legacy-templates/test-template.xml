@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<server xmlns="urn:jboss:domain:16.0">
+<server xmlns="urn:jboss:domain:17.0">
 
     <extensions>
         <?EXTENSIONS?>
