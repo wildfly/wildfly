@@ -39,8 +39,6 @@ public interface ProtoStreamReader extends RawProtoStreamReader {
 
     <E extends Enum<E>> E readEnum(Class<E> enumClass) throws IOException;
 
-    byte readRawByte() throws IOException;
-
     /**
      * Ignores the field with the specified tag.
      * @param tag a field tag
