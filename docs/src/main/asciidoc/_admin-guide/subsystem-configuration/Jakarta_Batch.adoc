@@ -41,6 +41,24 @@ The read function allows users to use the getter methods from the
 deployment resource, for example
 `/deployment=my.war/subsystem=batch-jberet:read-resource`.
 
+[[job-repository]]
+== Job Repository
+
+The batch subsystem supports 2 types of job repository:
+
+* in-memory job repository: all job execution data are kept in the memory
+of WildFly instance. When the server shuts down, all job execution data
+are lost. In a clustered environment, each WildFly server instance has its
+own in-memory job repository, and it is not possible to share job execution
+data between WildFly instances. This is the default job repository in
+batch subsystem.
+
+* jdbc job repository: all job execution data are saved in a relational
+database accessed via jdbc. In a clustered environment, a jdbc job repository
+can be used to share job execution data between WildFly instances.
+For example, one may start a job execution in one instance, stop and restart
+it from a different WildFly instance.
+
 [[deployment-descriptors]]
 == Deployment Descriptors
 

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<job id="batchlet1" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/jobXML_1_0.xsd"
+     version="1.0">
+    <step id="batchlet1.step1" next="batchlet1.step2">
+        <batchlet ref="batchlet1">
+            <properties>
+                <property name="seconds" value="#{jobParameters['seconds']}?:1;"/>
+            </properties>
+        </batchlet>
+    </step>
+    <step id="batchlet1.step2">
+        <batchlet ref="batchlet1">
+            <properties>
+                <property name="seconds" value="0"/>
+            </properties>
+        </batchlet>
+    </step>
+
+</job>
