@@ -239,7 +239,7 @@
         <version.asciidoctor.plugin>1.5.6</version.asciidoctor.plugin>
         <version.help.plugin>2.2</version.help.plugin>
         <version.jacoco.plugin>0.8.2</version.jacoco.plugin><!-- TODO property does not follow verion.groupId format -->
-        <version.org.jboss.galleon>4.2.7.Final</version.org.jboss.galleon>
+        <version.org.jboss.galleon>4.2.8.Final</version.org.jboss.galleon>
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.5.2.Final</version.org.wildfly.common>
