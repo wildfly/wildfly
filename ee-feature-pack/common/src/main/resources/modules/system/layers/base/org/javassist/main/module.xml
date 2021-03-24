@@ -34,7 +34,5 @@
 
     <dependencies>
         <module name="sun.jdk"/>
-        <module name="jdk.attach"/>
-        <module name="jdk.jdi"/>
     </dependencies>
 </module>
