@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,29 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.domain.mixed.eap730;
+package org.jboss.as.test.integration.domain.mixed.eap740;
 
-import static org.jboss.as.test.integration.domain.mixed.Version.AsVersion.EAP_7_3_0;
-
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
-
-import org.jboss.as.test.integration.domain.mixed.DomainHostExcludesTest;
+import org.jboss.as.test.integration.domain.mixed.MixedDomainTestSuite;
 import org.jboss.as.test.integration.domain.mixed.Version;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 /**
- * Tests of the ability of a DC to exclude resources from visibility to an EAP 7.3.0 slave.
+ * Tests of using EAP 7.4 domain.xml with a current DC and a 7.4 slave.
  *
  * @author Brian Stansberry
  */
-@Version(EAP_7_3_0)
-public class DomainHostExcludes730TestCase extends DomainHostExcludesTest {
+@RunWith(Suite.class)
+@Suite.SuiteClasses(value= {LegacyConfig740TestCase.class, DomainHostExcludes740TestCase.class})
+@Version(Version.AsVersion.EAP_7_4_0)
+public class LegacyConfig740TestSuite extends MixedDomainTestSuite {
 
     @BeforeClass
-    public static void beforeClass() throws InterruptedException, TimeoutException, MgmtOperationException, IOException {
-        LegacyConfig730TestSuite.initializeDomain();
-        setup(DomainHostExcludes730TestCase.class, EAP_7_3_0.getHostExclude(), EAP_7_3_0.getModelVersion());
+    public static void initializeDomain() {
+        MixedDomainTestSuite.getSupportForLegacyConfig(LegacyConfig740TestSuite.class, Version.AsVersion.EAP_7_4_0);
     }
 }

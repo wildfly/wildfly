@@ -16,10 +16,11 @@ limitations under the License.
 
 package org.jboss.as.test.integration.domain.mixed.eap640;
 
+import static org.jboss.as.test.integration.domain.mixed.Version.AsVersion.EAP_6_4_0;
+
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.test.integration.domain.mixed.DomainHostExcludesTest;
 import org.jboss.as.test.integration.domain.mixed.Version;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -30,12 +31,12 @@ import org.junit.BeforeClass;
  *
  * @author Brian Stansberry
  */
-@Version(Version.AsVersion.EAP_6_4_0)
+@Version(EAP_6_4_0)
 public class DomainHostExcludes640TestCase extends DomainHostExcludesTest {
 
     @BeforeClass
     public static void beforeClass() throws InterruptedException, TimeoutException, MgmtOperationException, IOException {
         LegacyConfig640TestSuite.initializeDomain();
-        setup(DomainHostExcludes640TestCase.class, "EAP6.4", ModelVersion.create(1, 7));
+        setup(DomainHostExcludes640TestCase.class, EAP_6_4_0.getHostExclude(), EAP_6_4_0.getModelVersion());
     }
 }

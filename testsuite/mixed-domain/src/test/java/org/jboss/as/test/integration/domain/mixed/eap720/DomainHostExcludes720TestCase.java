@@ -22,10 +22,11 @@
 
 package org.jboss.as.test.integration.domain.mixed.eap720;
 
+import static org.jboss.as.test.integration.domain.mixed.Version.AsVersion.EAP_7_2_0;
+
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.test.integration.domain.mixed.DomainHostExcludesTest;
 import org.jboss.as.test.integration.domain.mixed.Version;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -36,14 +37,12 @@ import org.junit.BeforeClass;
  *
  * @author Brian Stansberry
  */
-@Version(Version.AsVersion.EAP_7_2_0)
+@Version(EAP_7_2_0)
 public class DomainHostExcludes720TestCase extends DomainHostExcludesTest {
 
     @BeforeClass
     public static void beforeClass() throws InterruptedException, TimeoutException, MgmtOperationException, IOException {
         LegacyConfig720TestSuite.initializeDomain();
-        // FIXME Test is failing if WildFly14.0 is passed to the hostRelease.
-        // Using the 8.0 management version (which corresponds to WildFly 14) works...
-        setup(DomainHostExcludes720TestCase.class, "WildFly14.0", ModelVersion.create(8, 0));
+        setup(DomainHostExcludes720TestCase.class, EAP_7_2_0.getHostExclude(), EAP_7_2_0.getModelVersion());
     }
 }
