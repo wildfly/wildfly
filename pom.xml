@@ -301,7 +301,7 @@
         <version.httpunit>1.7.2</version.httpunit>
         <version.io.agroal>1.3</version.io.agroal>
         <version.io.jaegertracing>1.5.0</version.io.jaegertracing>
-        <version.io.netty>4.1.59.Final</version.io.netty>
+        <version.io.netty>4.1.60.Final</version.io.netty>
         <version.io.opentelemetry.opentelemetry>0.16.0</version.io.opentelemetry.opentelemetry>
         <version.io.opentracing>0.33.0</version.io.opentracing>
         <version.io.opentracing.concurrent>0.4.0</version.io.opentracing.concurrent>
