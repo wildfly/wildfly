@@ -45,7 +45,7 @@ public interface MicroProfileReactiveStreamsOperatorsLogger extends BasicLogger 
      * Logs an informational message indicating the subsystem is being activated.
      */
     @LogMessage(level = INFO)
-    @Message(id = 1, value = "Activating Eclipse MicroProfile Reactive Streams Operators Subsystem")
+    @Message(id = 1, value = "Activating MicroProfile Reactive Streams Operators Subsystem")
     void activatingSubsystem();
 
 

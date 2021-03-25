@@ -46,7 +46,7 @@ public interface MicroProfileReactiveMessagingLogger extends BasicLogger {
      * Logs an informational message indicating the subsystem is being activated.
      */
     @LogMessage(level = INFO)
-    @Message(id = 1, value = "Activating Eclipse MicroProfile Reactive Messaging Subsystem")
+    @Message(id = 1, value = "Activating MicroProfile Reactive Messaging Subsystem")
     void activatingSubsystem();
 
 

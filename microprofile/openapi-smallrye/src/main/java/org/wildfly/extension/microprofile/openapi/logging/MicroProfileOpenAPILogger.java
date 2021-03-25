@@ -44,7 +44,7 @@ public interface MicroProfileOpenAPILogger extends BasicLogger {
     MicroProfileOpenAPILogger LOGGER = Logger.getMessageLogger(MicroProfileOpenAPILogger.class, "org.wildfly.extension.microprofile.openapi.smallrye");
 
     @LogMessage(level = INFO)
-    @Message(id = 1, value = "Activating Eclipse MicroProfile OpenAPI Subsystem")
+    @Message(id = 1, value = "Activating MicroProfile OpenAPI Subsystem")
     void activatingSubsystem();
 
     @Message(id = 2, value = "Failed to load OpenAPI '%s' from deployment '%s'")
@@ -71,6 +71,6 @@ public interface MicroProfileOpenAPILogger extends BasicLogger {
     void nonStandardEndpoint(String deploymentName, String deploymentEndpoint, String standardEndpoint);
 
     @LogMessage(level = INFO)
-    @Message(id = 8, value = "OpenAPI documentation disabled for '%s'")
+    @Message(id = 8, value = "MicroProfile OpenAPI documentation disabled for '%s'")
     void disabled(String deploymentName);
 }

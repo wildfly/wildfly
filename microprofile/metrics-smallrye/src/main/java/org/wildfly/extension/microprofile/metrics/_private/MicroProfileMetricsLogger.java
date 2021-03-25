@@ -49,7 +49,7 @@ public interface MicroProfileMetricsLogger extends BasicLogger {
      * Logs an informational message indicating the subsystem is being activated.
      */
     @LogMessage(level = INFO)
-    @Message(id = 1, value = "Activating Eclipse MicroProfile Metrics Subsystem")
+    @Message(id = 1, value = "Activating MicroProfile Metrics Subsystem")
     void activatingSubsystem();
 
 
