@@ -219,6 +219,16 @@
         <cve>CVE-2018-1337</cve>
     </suppress>
 
+    <!-- [wildfly] WildFly PSI-21.x ships with jackson-databind 2.10.5.1 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jackson-xc-1.9.13.redhat-00007.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.codehaus\.jackson/jackson\-.*@.*$</packageUrl>
+        <cve>CVE-2018-14718</cve>
+        <cve>CVE-2018-7489</cve>
+    </suppress>
+
     <!-- [wildfly-core] The vulnerability applies to io.undertow package, undertow-server from org.wildfly.security.elytron-web package is a different module -->
     <suppress>
         <notes><![CDATA[
