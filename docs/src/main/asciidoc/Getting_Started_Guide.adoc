@@ -111,13 +111,17 @@ Missing ActiveMQ Artemis and Jakarta Messaging?
 
 [WARNING]
 
-The WildFly Web Profile doesn't include Jakarta Messaging (provided by ActiveMQ Artemis) by
-default. If you want to use messaging, make sure you start the server
- using the "Full Platform" configuration.
+WildFly's default configuration provides Jakarta EE Web Profile support and thus
+doesn't include Jakarta Messaging (provided by ActiveMQ Artemis). As noted in the 
+link:#wildfly-configurations[WildFly Configurations] section, other configuration
+profiles do provide all features required by the Jakarta EE Full Platform. If you 
+want to use messaging, make sure you 
+link:#starting-wildfly-with-an-alternate-configuration[start the server using an alternate configuration]
+that provides the Jakarta EE Full Platform.
 
 This document provides a quick overview on how to download and get
 started using WildFly {wildflyVersion} for your application development. For in-depth
-content on administrative features, refer to the WildFly {wildflyVersion} Admin Guide.
+content on administrative features, refer to the WildFly {wildflyVersion} link:Admin_Guide{outfilesuffix}[Admin Guide].
 
 [[requirements]]
 == Requirements
@@ -577,8 +581,8 @@ the new file and deploy it.
 [NOTE]
 
 If you are running a WildFly managed domain, the `deployment-scanner` subsystem is not
-available so you will need to use the CLI or web console to deploy your application, as
-detailed in the link:Admin_Guide{outfilesuffix}#application-deployment[Admin Guide].
+available so you will need to use the CLI or web console to deploy your application. For more, 
+see the link:Admin_Guide{outfilesuffix}#application-deployment[Admin Guide].
 
 [[modifying-the-example-datasource]]
 === Modifying the Example DataSource
