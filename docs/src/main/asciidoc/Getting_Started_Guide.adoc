@@ -466,9 +466,20 @@ Re-enter Password :
 ----
 
 It is important to leave the name of the realm as 'ManagementRealm' as
-this needs to match the name used in the server's configuration, for the
+this needs to match the name used in the server's configuration. For the
 remaining fields enter the new username, password and password
 confirmation.
+
+Users can be associated with arbitrary groups of your choosing, so you will be prompted if you would like 
+to do this.
+
+[source,options="nowrap"]
+----
+What groups do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)[  ]:
+----
+
+Groups can be useful for simplified administration of things like access permissions, but for simply getting
+started, leaving this blank is fine.
 
 Provided there are no errors in the values entered you will then be
 asked to confirm that you want to add the user, the user will be written
@@ -476,8 +487,20 @@ to the properties files used for authentication and a confirmation
 message will be displayed.
 
 The modified time of the properties files are inspected at the time of
-authentication and the files reloaded if they have changed, for this
+authentication and the files reloaded if they have changed. For this
 reason you do not need to re-start the server after adding a new user.
+
+Finally, you will be asked whether the account you've added is going to be to used
+to identify one WildFly process to another, typically in a WildFly managed domain:
+
+[source,options="nowrap"]
+----
+Is this new user going to be used for one AS process to connect to another AS process? 
+e.g. for a slave host controller connecting to the master or for a Remoting connection for server to server Jakarta Enterprise Beans calls.
+yes/no?
+----
+
+The answer for this should be `no`; the account you are adding here is for use by a human administrator.
 
 [[administration-console]]
 === Administration Console
