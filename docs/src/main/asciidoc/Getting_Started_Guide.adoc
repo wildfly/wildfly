@@ -120,14 +120,14 @@ started using WildFly {wildflyVersion} for your application development. For in-
 content on administrative features, refer to the WildFly {wildflyVersion} Admin Guide.
 
 [[requirements]]
-=== Requirements
+== Requirements
 
 * Java SE 8 or later. We recommend that you use the latest available update
 of the current long-term support Java release.
 
 
 [[installation-options]]
-=== Installation Options
+== Installation Options
 
 There are a number of ways you can install WildFly, including unzipping our traditional download zip, provisioning a
 custom installation using Galleon, or building a bootable jar. The link:Installation_Guide{outfilesuffix}[Installation Guide]
@@ -156,7 +156,7 @@ tar formats. Refer to the Release Notes for additional information
 related to the release.
 
 [[wildfly---a-quick-tour]]
-=== WildFly - A Quick Tour
+== WildFly - A Quick Tour
 
 Now that you've downloaded WildFly {wildflyVersion}, the next thing to discuss is the
 layout of the distribution and explore the server directory structure,
@@ -165,7 +165,7 @@ worth familiarizing yourself with the layout so that you'll be able to
 find your way around when it comes to deploying your own applications.
 
 [[wildfly-directory-structure]]
-==== WildFly Directory Structure
+=== WildFly Directory Structure
 
 [cols=",",options="header"]
 |=======================================================================
@@ -198,7 +198,7 @@ used by the single standalone server run from this installation.
 |=======================================================================
 
 [[standalone-directory-structure]]
-===== Standalone Directory Structure
+==== Standalone Directory Structure
 
 In " *_standalone_* " mode each WildFly {wildflyVersion} server instance is an
 independent process (similar to previous JBoss AS versions; e.g., 3, 4,
@@ -238,7 +238,7 @@ process.
 |=======================================================================
 
 [[domain-directory-structure]]
-===== Domain Directory Structure
+==== Domain Directory Structure
 
 A key feature of WildFly {wildflyVersion} is the managing multiple servers from a
 single control point. A collection of multiple servers are referred to
@@ -289,11 +289,11 @@ local clients so they can confirm that they are local to the running AS
 process.
 |=======================================================================
 
-[[wildfly-10-configurations]]
-==== WildFly {wildflyVersion} Configurations
+[[wildfly-configurations]]
+=== WildFly {wildflyVersion} Configurations
 
 [[standalone-server-configurations]]
-===== Standalone Server Configurations
+==== Standalone Server Configurations
 
 * standalone.xml (_default_)
 ** Jakarta web profile certified configuration with
@@ -323,7 +323,7 @@ _standalone-microprofile.xml_ but with support for high availability
 web sessions and distributed Hibernate second level caching.
 
 [[domain-server-configurations]]
-===== Domain Server Configurations
+==== Domain Server Configurations
 
 * domain.xml
 ** Jakarta full and web profiles available with or
@@ -334,7 +334,7 @@ determine how the servers are managed not what capabilities they
 provide.
 
 [[starting-wildfly-10]]
-==== Starting WildFly {wildflyVersion}
+== Starting WildFly {wildflyVersion}
 
 To start WildFly {wildflyVersion} using the default web profile configuration in "
 _standalone_" mode, change directory to $JBOSS_HOME/bin.
@@ -353,7 +353,7 @@ capabilities,
 ----
 
 [[starting-wildfly-with-an-alternate-configuration]]
-==== Starting WildFly with an Alternate Configuration
+=== Starting WildFly with an Alternate Configuration
 
 If you choose to start your server with one of the other provided
 configurations, they can be accessed by passing the --server-config
@@ -378,7 +378,7 @@ Alternatively, you can create your own selecting the additional
 subsystems you want to add, remove, or modify.
 
 [[test-your-installation]]
-===== Test Your Installation
+=== Test Your Installation
 
 After executing one of the above commands, you should see output similar
 to what's shown below.
@@ -419,20 +419,23 @@ landing page is recommended for convenient access to information about
 WildFly {wildflyVersion} but can easily be replaced with your own if desired.
 
 [[managing-your-wildfly-10]]
-==== Managing your WildFly {wildflyVersion}
+== Managing your WildFly {wildflyVersion}
 
 WildFly {wildflyVersion} offers two administrative mechanisms for managing your
 running instance:
 
-* web-based Administration Console
-* command-line interface
+* a web-based Administration Console
+* a command-line interface
 
-===== Authentication
+The link:Admin_Guide{outfilesuffix}[Admin Guide] covers the details on managing your WildFly
+installation. Here we'll just touch on some of the basics.
 
-By default WildFly {wildflyVersion} is now distributed with security enabled for the
-management interfaces, this means that before you connect using the
+=== Authentication
+
+By default WildFly {wildflyVersion} is distributed with security enabled for the
+management interfaces. This means that before you connect using the
 administration console or remotely using the CLI you will need to add a
-new user, this can be achieved simply by using the _add-user.sh_ script
+new user. This can be achieved simply by using the _add-user.sh_ script
 in the bin folder.
 
 After starting the script you will be guided through the process to add
@@ -477,7 +480,7 @@ authentication and the files reloaded if they have changed, for this
 reason you do not need to re-start the server after adding a new user.
 
 [[administration-console]]
-===== Administration Console
+=== Administration Console
 
 To access the web-based Administration Console, simply follow the link
 from the Welcome Screen. To directly access the Management Console,
@@ -510,7 +513,7 @@ added you can click on the 'Try Again' link at the bottom of the error
 page to try connecting to the administration console again.
 
 [[command-line-interface]]
-===== Command-Line Interface
+=== Command-Line Interface
 
 If you prefer to manage your server from the command line (or batching),
 the _jboss-cli.sh_ script provides the same capabilities available via
@@ -538,7 +541,7 @@ undeploy applications. For a complete list of commands and command
 syntax, type *_help_* once connected.
 
 [[modifying-the-example-datasource]]
-==== Modifying the Example DataSource
+=== Modifying the Example DataSource
 
 As with previous JBoss application server releases, a default data
 source, *_ExampleDS_* , is configured using the embedded H2 database for
@@ -602,19 +605,22 @@ the project documentation.
 http://docs.jboss.org/ironjacamar/userguide/1.0/en-US/html/deployment.html#deployingds_descriptor
 
 [[configure-logging-in-wildfly]]
-===== Configure Logging in WildFly
+=== Configure Logging in WildFly
 
 WildFly logging can be configured with the web console or the command
 line interface. You can get more detail on the link:Admin_Guide{outfilesuffix}#Logging[Logging
 Configuration] page.
 
-Turn on debugging for a specific category with CLI:
+Turn on debugging for a specific category with the CLI:
 
 [source,options="nowrap"]
 ----
 /subsystem=logging/logger=org.jboss.as:add(level=DEBUG)
 ----
 
-By default the `server.log` is configured to include all levels in it's
+In the example above the `org.jboss.as` log category was configured. Use a different value
+for the `logger` key to configure a different log category.
+
+By default the `server.log` is configured to include all levels in its
 log output. In the above example we changed the console to also display
 debug messages.
