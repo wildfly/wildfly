@@ -563,6 +563,23 @@ Once connected you can add, modify, remove resources and deploy or
 undeploy applications. For a complete list of commands and command
 syntax, type *_help_* once connected.
 
+[[deploying-an-application]]
+=== Deploying an Application
+
+WildFly provides a number of ways you can deploy your application into the server.
+These are covered in detail in the link:Admin_Guide{outfilesuffix}#application-deployment[Admin Guide].
+
+If you are running a standalone WildFly server, the simplest way to deploy
+your application is to copy the application archive (war/ear/jar) into the `$JBOSS_HOME/standalone/deployments`
+directory in the server installation. The server's `deployment-scanner` subsystem will detect
+the new file and deploy it.
+
+[NOTE]
+
+If you are running a WildFly managed domain, the `deployment-scanner` subsystem is not
+available so you will need to use the CLI or web console to deploy your application, as
+detailed in the link:Admin_Guide{outfilesuffix}#application-deployment[Admin Guide].
+
 [[modifying-the-example-datasource]]
 === Modifying the Example DataSource
 
