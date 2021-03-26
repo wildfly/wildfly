@@ -30,32 +30,36 @@ import org.infinispan.protostream.impl.WireFormat;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
+import org.wildfly.common.function.ExceptionPredicate;
 
 /**
  * Marshaller for {@link BigDecimal}.
  * @author Paul Ferraro
  */
-public class BigDecimalMarshaller implements ProtoStreamMarshaller<BigDecimal> {
+public enum BigDecimalMarshaller implements ProtoStreamMarshaller<BigDecimal>, ExceptionPredicate<BigInteger, IOException> {
+    INSTANCE;
 
-    private static final int BIG_INTEGER_INDEX = 1;
-    private static final int SCALE_INDEX = BIG_INTEGER_INDEX + BigIntegerMarshaller.INSTANCE.getFields();
+    private static final int UNSCALED_VALUE_INDEX = 1;
+    private static final int SCALE_INDEX = 2;
 
     private static final int DEFAULT_SCALE = 0;
 
     @Override
     public BigDecimal readFrom(ProtoStreamReader reader) throws IOException {
-        BigInteger unscaledValue = BigIntegerMarshaller.INSTANCE.getBuilder();
+        BigInteger unscaledValue = BigInteger.ZERO;
         int scale = DEFAULT_SCALE;
         boolean reading = true;
         while (reading) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
-            if (index >= BIG_INTEGER_INDEX && index < SCALE_INDEX) {
-                unscaledValue = BigIntegerMarshaller.INSTANCE.readField(reader, index - BIG_INTEGER_INDEX, unscaledValue);
-            } else if (index == SCALE_INDEX) {
-                scale = reader.readSInt32();
-            } else {
-                reading = reader.ignoreField(tag);
+            switch (WireFormat.getTagFieldNumber(tag)) {
+                case UNSCALED_VALUE_INDEX:
+                    unscaledValue = new BigInteger(reader.readByteArray());
+                    break;
+                case SCALE_INDEX:
+                    scale = reader.readSInt32();
+                    break;
+                default:
+                    reading = reader.ignoreField(tag);
             }
         }
         return new BigDecimal(unscaledValue, scale);
@@ -63,7 +67,10 @@ public class BigDecimalMarshaller implements ProtoStreamMarshaller<BigDecimal> {
 
     @Override
     public void writeTo(ProtoStreamWriter writer, BigDecimal value) throws IOException {
-        BigIntegerMarshaller.INSTANCE.writeFields(writer, BIG_INTEGER_INDEX, value.unscaledValue());
+        BigInteger unscaledValue = value.unscaledValue();
+        if (!this.test(unscaledValue)) {
+            writer.writeBytes(UNSCALED_VALUE_INDEX, unscaledValue.toByteArray());
+        }
         int scale = value.scale();
         if (scale != DEFAULT_SCALE) {
             writer.writeSInt32(SCALE_INDEX, scale);
@@ -73,5 +80,10 @@ public class BigDecimalMarshaller implements ProtoStreamMarshaller<BigDecimal> {
     @Override
     public Class<? extends BigDecimal> getJavaClass() {
         return BigDecimal.class;
+    }
+
+    @Override
+    public boolean test(BigInteger value) {
+        return value.signum() == 0;
     }
 }
