@@ -119,6 +119,21 @@ This document provides a quick overview on how to download and get
 started using WildFly {wildflyVersion} for your application development. For in-depth
 content on administrative features, refer to the WildFly {wildflyVersion} Admin Guide.
 
+[[requirements]]
+=== Requirements
+
+* Java SE 8 or later. We recommend that you use the latest available update
+of the current long-term support Java release.
+
+
+[[installation-options]]
+=== Installation Options
+
+There are a number of ways you can install WildFly, including unzipping our traditional download zip, provisioning a
+custom installation using Galleon, or building a bootable jar. The link:Installation_Guide{outfilesuffix}[Installation Guide]
+helps you identify the kind of WildFly installation that best fits your application's deployment needs. In this guide
+we'll focus on the common approach of installing the download zip.
+
 [[download]]
 === Download
 
@@ -131,12 +146,6 @@ formats.
 
 * *wildfly-{wildflyVersion}.0.0.Final.zip*
 * *wildfly-{wildflyVersion}.0.0.Final.tar.gz*
-
-[[requirements]]
-=== Requirements
-
-* Java SE 8 or later. We recommend that you use the latest available update
-of the current long-term support Java release.
 
 [[installation]]
 === Installation
