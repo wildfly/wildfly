@@ -134,10 +134,11 @@ public abstract class DomainHostExcludesTest {
         WildFlyManagedConfiguration slaveCfg = testSupport.getDomainSlaveConfiguration();
         slaveCfg.setRewriteConfigFiles(false);
 
+        // Setup a host exclude for the slave ignoring some extensions
         ModelControllerClient client = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
         setupExclude(client, hostRelease, slaveApiVersion);
 
-        // Add some ignored extensions to verify they are ignored
+        // Now, add some ignored extensions to verify they are ignored due to the host-excluded configured before
         addExtensions(true, client);
 
         startSlave();
@@ -389,7 +390,6 @@ public abstract class DomainHostExcludesTest {
         if (version.getMajor() == 6) {
             return EXCLUDED_EXTENSIONS_6X;
         } else if (version.getMajor() >= 7) {
-            // until EAP 7.2.0 is released, WildFly 14 is used to test EAP 7.2 mixed domain
             return EXCLUDED_EXTENSIONS_7X;
         }
         throw new IllegalStateException("Unknown version " + version);
