@@ -22,43 +22,40 @@
 
 package org.wildfly.clustering.web.session;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.UUID;
 import java.util.function.Supplier;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.marshalling.spi.Serializer;
-import org.wildfly.clustering.web.IdentifierSerializer;
+import org.wildfly.clustering.marshalling.spi.Marshaller;
+import org.wildfly.clustering.web.IdentifierMarshaller;
 
 import io.undertow.server.session.SecureRandomSessionIdGenerator;
 
 /**
- * Unit test for {@link IdentifierSerializer}.
+ * Unit test for {@link IdentifierMarshaller}.
  *
  * @author Paul Ferraro
  */
 public class IdentifierSerializerTestCase {
 
     @Test
-    public void testUTF8() throws IOException {
-        test(IdentifierSerializer.UTF8, () -> UUID.randomUUID().toString());
+    public void testString() throws IOException {
+        test(IdentifierMarshaller.ISO_LATIN_1, () -> UUID.randomUUID().toString());
     }
 
     @Test
     public void testBase64() throws IOException {
         io.undertow.server.session.SessionIdGenerator generator = new SecureRandomSessionIdGenerator();
-        test(IdentifierSerializer.BASE64, () -> generator.createSessionId());
+        test(IdentifierMarshaller.BASE64, () -> generator.createSessionId());
     }
 
     @Test
     public void testHex() throws IOException {
-        test(IdentifierSerializer.HEX, () -> {
+        test(IdentifierMarshaller.HEX, () -> {
             // Adapted from org.apache.catalina.util.StandardSessionIdGenerator
             byte[] buffer = new byte[16];
             int sessionIdLength = 16;
@@ -89,16 +86,11 @@ public class IdentifierSerializerTestCase {
         });
     }
 
-    private static void test(Serializer<String> externalizer, Supplier<String> generator) throws IOException {
+    private static void test(Marshaller<String, ByteBuffer> marshaller, Supplier<String> generator) throws IOException {
         for (int i = 0; i < 100; ++i) {
             String id = generator.get();
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            try (ObjectOutputStream output = new ObjectOutputStream(bytes)) {
-                externalizer.write(output, id);
-            }
-            try (ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray()))) {
-                Assert.assertEquals(id, externalizer.read(input));
-            }
+            ByteBuffer buffer = marshaller.write(id);
+            Assert.assertEquals(id, marshaller.read(buffer));
         }
     }
 }

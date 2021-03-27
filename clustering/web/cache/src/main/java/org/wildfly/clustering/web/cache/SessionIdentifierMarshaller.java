@@ -23,19 +23,18 @@
 package org.wildfly.clustering.web.cache;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.security.PrivilegedAction;
 import java.util.Iterator;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 import org.infinispan.protostream.impl.WireFormat;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamDataInput;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamDataOutput;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.ScalarMarshaller;
-import org.wildfly.clustering.marshalling.spi.Serializer;
-import org.wildfly.clustering.web.IdentifierSerializerProvider;
+import org.wildfly.clustering.marshalling.spi.Marshaller;
+import org.wildfly.clustering.web.IdentifierMarshallerProvider;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -45,14 +44,14 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public enum SessionIdentifierMarshaller implements ScalarMarshaller<String> {
     INSTANCE;
 
-    private final Serializer<String> serializer = loadSerializer();
+    private final Marshaller<String, ByteBuffer> marshaller = loadMarshaller();
 
-    private static Serializer<String> loadSerializer() {
-        Iterator<IdentifierSerializerProvider> providers = load(IdentifierSerializerProvider.class).iterator();
+    private static Marshaller<String, ByteBuffer> loadMarshaller() {
+        Iterator<IdentifierMarshallerProvider> providers = load(IdentifierMarshallerProvider.class).iterator();
         if (!providers.hasNext()) {
-            throw new ServiceConfigurationError(IdentifierSerializerProvider.class.getName());
+            throw new ServiceConfigurationError(IdentifierMarshallerProvider.class.getName());
         }
-        return providers.next().getSerializer();
+        return providers.next().getMarshaller();
     }
 
     private static <T> Iterable<T> load(Class<T> providerClass) {
@@ -67,12 +66,16 @@ public enum SessionIdentifierMarshaller implements ScalarMarshaller<String> {
 
     @Override
     public String readFrom(ProtoStreamReader reader) throws IOException {
-        return this.serializer.read(new ProtoStreamDataInput(reader));
+        return this.marshaller.read(reader.readByteBuffer());
     }
 
     @Override
     public void writeTo(ProtoStreamWriter writer, String id) throws IOException {
-        this.serializer.write(new ProtoStreamDataOutput(writer), id);
+        ByteBuffer buffer = this.marshaller.write(id);
+        int offset = buffer.arrayOffset();
+        int length = buffer.limit() - offset;
+        writer.writeUInt32NoTag(length);
+        writer.writeRawBytes(buffer.array(), offset, length);
     }
 
     @Override

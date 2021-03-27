@@ -22,19 +22,21 @@
 
 package org.wildfly.clustering.web.hotrod;
 
+import java.nio.ByteBuffer;
+
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.spi.Serializer;
-import org.wildfly.clustering.web.IdentifierSerializer;
-import org.wildfly.clustering.web.IdentifierSerializerProvider;
+import org.wildfly.clustering.marshalling.spi.Marshaller;
+import org.wildfly.clustering.web.IdentifierMarshaller;
+import org.wildfly.clustering.web.IdentifierMarshallerProvider;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(IdentifierSerializerProvider.class)
-public class TestIdentifierSerializerProvider implements IdentifierSerializerProvider {
+@MetaInfServices(IdentifierMarshallerProvider.class)
+public class TestIdentifierSerializerProvider implements IdentifierMarshallerProvider {
 
     @Override
-    public Serializer<String> getSerializer() {
-        return IdentifierSerializer.UTF8;
+    public Marshaller<String, ByteBuffer> getMarshaller() {
+        return IdentifierMarshaller.ISO_LATIN_1;
     }
 }
