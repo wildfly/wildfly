@@ -329,7 +329,7 @@
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
         <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
         <version.jakarta.json.bind.api>1.0.2</version.jakarta.json.bind.api>
-        <version.jakarta.mail>1.6.5</version.jakarta.mail>
+        <version.jakarta.mail>1.6.6</version.jakarta.mail>
         <version.jakarta.persistence>2.2.3</version.jakarta.persistence>
         <version.jakarta.security.enterprise>1.0.2</version.jakarta.security.enterprise>
         <version.jakarta.validation>2.0.2</version.jakarta.validation>
