@@ -35,7 +35,7 @@ final class ServiceNameFactory {
     private static final ServiceName MBEAN_SERVICE_NAME_BASE = ServiceName.JBOSS.append("mbean","service");
     private static final String CREATE_SUFFIX = "create";
     private static final String START_SUFFIX = "start";
-
+    private static final String REGISTRATION_SUFFIX = "registration";
     private ServiceNameFactory() {
         // forbidden instantiation
     }
@@ -46,6 +46,10 @@ final class ServiceNameFactory {
 
     static ServiceName newStartStop(final String mBeanName) {
         return newServiceName(mBeanName).append(START_SUFFIX);
+    }
+
+    static ServiceName newRegisterUnregister(final String mBeanName) {
+        return newServiceName(mBeanName).append(REGISTRATION_SUFFIX);
     }
 
     private static ServiceName newServiceName(final String name) {

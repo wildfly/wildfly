@@ -47,6 +47,8 @@ import org.jboss.msc.service.StopContext;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class MBeanRegistrationService implements Service {
+    /** @deprecated Use {@link ServiceNameFactory#newRegisterUnregister(String)} -- only kept for a while in case user code looks for this */
+    @Deprecated
     static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("mbean", "registration");
     private final Supplier<MBeanServer> mBeanServerSupplier;
     private final Supplier<Object> objectSupplier;
