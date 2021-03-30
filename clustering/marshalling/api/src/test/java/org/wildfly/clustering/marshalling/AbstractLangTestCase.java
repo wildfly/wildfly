@@ -85,17 +85,23 @@ public abstract class AbstractLangTestCase {
     @Test
     public void testFloat() throws IOException {
         Tester<Float> tester = this.factory.createTester();
+        tester.test(Float.NEGATIVE_INFINITY);
         tester.test(Float.MIN_VALUE);
         tester.test(0F);
         tester.test(Float.MAX_VALUE);
+        tester.test(Float.POSITIVE_INFINITY);
+        tester.test(Float.NaN);
     }
 
     @Test
     public void testDouble() throws IOException {
         Tester<Double> tester = this.factory.createTester();
+        tester.test(Double.NEGATIVE_INFINITY);
         tester.test(Double.MIN_VALUE);
         tester.test(0D);
         tester.test(Double.MAX_VALUE);
+        tester.test(Double.POSITIVE_INFINITY);
+        tester.test(Double.NaN);
     }
 
     @Test
