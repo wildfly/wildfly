@@ -370,7 +370,9 @@ import org.wildfly.clustering.service.SupplierDependency;
 
             });
         }
-        builder.mcmp().setProxyConfigurations(proxies);
+        if (!proxies.isEmpty()) {
+            builder.mcmp().setProxyConfigurations(proxies);
+        }
 
         // SSL
         if (sslContextDependency != null) {
