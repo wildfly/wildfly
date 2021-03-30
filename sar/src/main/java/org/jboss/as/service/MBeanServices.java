@@ -51,10 +51,7 @@ final class MBeanServices {
     private static final String START_METHOD_NAME = "start";
     private static final String STOP_METHOD_NAME = "stop";
 
-    private final ServiceName createDestroyServiceName;
-    private final ServiceName startStopServiceName;
     private final CreateDestroyService createDestroyService;
-    private final StartStopService startStopService;
     private final ServiceBuilder<?> createDestroyServiceBuilder;
     private final ServiceBuilder<?> startStopServiceBuilder;
     private final ServiceBuilder<?> registerUnregisterServiceBuilder;
@@ -78,7 +75,7 @@ final class MBeanServices {
 
         final Method createMethod = ReflectionUtils.getNoArgMethod(mBeanClassHierarchy, CREATE_METHOD_NAME);
         final Method destroyMethod = ReflectionUtils.getNoArgMethod(mBeanClassHierarchy, DESTROY_METHOD_NAME);
-        createDestroyServiceName = ServiceNameFactory.newCreateDestroy(mBeanName);
+        ServiceName createDestroyServiceName = ServiceNameFactory.newCreateDestroy(mBeanName);
         createDestroyServiceBuilder = target.addService(createDestroyServiceName);
         Consumer<Object> mBeanInstanceConsumer = createDestroyServiceBuilder.provides(createDestroyServiceName);
         Supplier<ExecutorService> executorSupplier = createDestroyServiceBuilder.requires(AbstractControllerService.EXECUTOR_CAPABILITY.getCapabilityServiceName());
@@ -91,11 +88,11 @@ final class MBeanServices {
 
         final Method startMethod = ReflectionUtils.getNoArgMethod(mBeanClassHierarchy, START_METHOD_NAME);
         final Method stopMethod = ReflectionUtils.getNoArgMethod(mBeanClassHierarchy, STOP_METHOD_NAME);
-        startStopServiceName = ServiceNameFactory.newStartStop(mBeanName);
+        ServiceName startStopServiceName = ServiceNameFactory.newStartStop(mBeanName);
         startStopServiceBuilder = target.addService(startStopServiceName);
         mBeanInstanceConsumer = startStopServiceBuilder.provides(startStopServiceName);
         executorSupplier = startStopServiceBuilder.requires(AbstractControllerService.EXECUTOR_CAPABILITY.getCapabilityServiceName());
-        startStopService = new StartStopService(mBeanInstance, startMethod, stopMethod, setupActions, mbeanContextClassLoader, mBeanInstanceConsumer, executorSupplier);
+        StartStopService startStopService = new StartStopService(mBeanInstance, startMethod, stopMethod, setupActions, mbeanContextClassLoader, mBeanInstanceConsumer, executorSupplier);
         startStopServiceBuilder.setInstance(startStopService);
         startStopServiceBuilder.requires(createDestroyServiceName);
 
