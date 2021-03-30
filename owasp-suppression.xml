@@ -528,4 +528,12 @@
         <packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-artemis\-native@.*$</packageUrl>
         <cve>CVE-2017-12174</cve>
     </suppress>
+    <!-- The activemq-artemis-native is not responsible for handling LDAP login. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: activemq-artemis-native-1.0.2.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-artemis\-native@.*$</packageUrl>
+        <cve>CVE-2021-26117</cve>
+    </suppress>
 </suppressions>
