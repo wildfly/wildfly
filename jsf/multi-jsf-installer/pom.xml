@@ -121,7 +121,7 @@
             </activation>
             <properties>
                 <jsf-impl-name>myfaces</jsf-impl-name>
-                <jsf-version>2.3.7</jsf-version>
+                <jsf-version>2.3.8</jsf-version>
             </properties>
             <dependencies>
                 <dependency>
