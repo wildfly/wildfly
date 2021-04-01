@@ -155,7 +155,7 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
             @Override
             void executeRuntime(OperationContext context, ModelNode operation) throws OperationFailedException {
-                final TimerImpl timer = getTimer(context, operation);
+                final TimerImpl timer = getTimer(context, operation, true);
                 timer.suspend();
                 context.completeStep(new OperationContext.RollbackHandler() {
 
@@ -171,7 +171,7 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
             @Override
             void executeRuntime(OperationContext context, ModelNode operation) throws OperationFailedException {
-                final TimerImpl timer = getTimer(context, operation);
+                final TimerImpl timer = getTimer(context, operation, true);
                 if (!timer.isActive()) {
                     timer.scheduleTimeout(true);
                     context.completeStep(new OperationContext.RollbackHandler() {
@@ -191,7 +191,7 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
             @Override
             void executeRuntime(OperationContext context, ModelNode operation) throws OperationFailedException {
-                final TimerImpl timer = getTimer(context, operation);
+                final TimerImpl timer = getTimer(context, operation, true);
                 // this is TX aware
                 timer.cancel();
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
@@ -203,7 +203,7 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
             @Override
             void executeRuntime(OperationContext context, ModelNode operation) throws OperationFailedException {
                 // This will invoke timer in 'management-handler-thread'
-                final TimerImpl timer = getTimer(context, operation);
+                final TimerImpl timer = getTimer(context, operation, true);
                 try {
                     timer.invokeOneOff();
                 } catch (Exception e) {
@@ -365,7 +365,12 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
                 }, OperationContext.Stage.RUNTIME);
             }
         }
+
         protected TimerImpl getTimer(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+            return getTimer(context, operation, false);
+        }
+
+        protected TimerImpl getTimer(final OperationContext context, final ModelNode operation, final boolean notNull) throws OperationFailedException {
             final T ejbcomponent = parentHandler.getComponent(context, operation);
             final TimerServiceImpl timerService = (TimerServiceImpl) ejbcomponent.getTimerService();
 
@@ -373,11 +378,16 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
             final String timerId = address.getLastElement().getValue();
             final String timedInvokerObjectId = timerService.getTimedObjectInvoker().getValue().getTimedObjectId();
             final TimerHandle handle = new TimerHandleImpl(timerId, timedInvokerObjectId, timerService);
+            TimerImpl timer = null;
             try {
-                return timerService.getTimer(handle);
+                timer = timerService.getTimer(handle);
             } catch (Exception e) {
                 throw new OperationFailedException(e, null);
             }
+            if (timer == null && notNull) {
+                throw EjbLogger.ROOT_LOGGER.timerNotFound(timerId);
+            }
+            return timer;
         }
 
         abstract void executeRuntime(OperationContext context, ModelNode operation) throws OperationFailedException;

@@ -3238,4 +3238,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 525, value = "The 'mappedName' in Jakarta Enterprise Beans  annotations is not supported. Value of '%s' for Jakarta Enterprise Beans '%s' will be ignored.")
     void mappedNameNotSupported(String mappedName, String ejb);
 
+    @Message(id = 526, value = "Timer %s does not exist")
+    OperationFailedException timerNotFound(String timerId);
+
 }
