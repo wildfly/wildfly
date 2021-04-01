@@ -33,10 +33,6 @@
     </resources>
 
     <dependencies>
-        <module name="org.codehaus.jackson.jackson-core-asl" export="true"/>
-        <module name="org.codehaus.jackson.jackson-jaxrs"/>
-        <module name="org.codehaus.jackson.jackson-mapper-asl" export="true"/>
-        <module name="org.codehaus.jackson.jackson-xc" export="true"/>
         <module name="javax.xml.bind.api"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.enterprise.api"/>
