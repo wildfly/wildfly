@@ -33,6 +33,7 @@
 
     <dependencies>
         <module name="java.logging"/>
+        <module name="java.management"/>
         <module name="java.naming"/>
         <module name="java.xml"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
