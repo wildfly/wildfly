@@ -6,17 +6,15 @@ package java.math;
  * @TypeId(120)
  */
 message BigDecimal {
-	optional	bytes	positiveBytes	= 1;
-	optional	bytes	negativeBytes	= 2;
-	optional	uint32	scale	= 3;
+	optional	bytes	unscaledValue	= 1;
+	optional	uint32	scale	= 2;
 }
 
 /**
  * @TypeId(121)
  */
 message BigInteger {
-	optional	bytes	positiveBytes	= 1;
-	optional	bytes	negativeBytes	= 2;
+	optional	bytes	bytes	= 1;
 }
 
 /**
