@@ -107,7 +107,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
         this.properties = config.getCacheProperties();
         this.provider = config.getSpecificationProvider();
         this.notifierFactory = new SessionAttributeActivationNotifierFactory<>(this.provider);
-        SessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory = new InfinispanSessionMetaDataFactory<>(new InfinispanSessionMetaDataFactoryConfiguration() {
+        InfinispanSessionMetaDataFactoryConfiguration metaDataFactoryConfig = new InfinispanSessionMetaDataFactoryConfiguration() {
             @Override
             public <K, V> Cache<K, V> getCache() {
                 return config.getCache();
@@ -117,7 +117,8 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
             public Executor getExecutor() {
                 return InfinispanSessionManagerFactory.this.executor;
             }
-        });
+        };
+        SessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory = this.properties.isLockOnRead() ? new LockOnReadInfinispanSessionMetaDataFactory<>(metaDataFactoryConfig) : new InfinispanSessionMetaDataFactory<>(metaDataFactoryConfig);
         this.factory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(config), config.getLocalContextFactory());
         ExpiredSessionRemover<SC, ?, ?, LC> remover = new ExpiredSessionRemover<>(this.factory);
         this.expirationRegistrar = remover;

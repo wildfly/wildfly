@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -130,17 +131,23 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     private AtomicReference<Map<String, UUID>> getValue(String id, boolean purgeIfInvalid) {
         Map<String, UUID> names = this.namesCache.get(new SessionAttributeNamesKey(id));
         if (names != null) {
-            for (Map.Entry<String, UUID> nameEntry : names.entrySet()) {
-                V value = this.attributeCache.get(new SessionAttributeKey(id, nameEntry.getValue()));
+            // Validate all attributes
+            Map<SessionAttributeKey, String> attributes = new TreeMap<>();
+            for (Map.Entry<String, UUID> entry : names.entrySet()) {
+                attributes.put(new SessionAttributeKey(id, entry.getValue()), entry.getKey());
+            }
+            Map<SessionAttributeKey, V> entries = this.attributeCache.getAdvancedCache().getAll(attributes.keySet());
+            for (Map.Entry<SessionAttributeKey, String> attribute : attributes.entrySet()) {
+                V value = entries.get(attribute.getKey());
                 if (value != null) {
                     try {
                         this.marshaller.read(value);
                         continue;
                     } catch (IOException e) {
-                        InfinispanWebLogger.ROOT_LOGGER.failedToActivateSessionAttribute(e, id, nameEntry.getKey());
+                        InfinispanWebLogger.ROOT_LOGGER.failedToActivateSessionAttribute(e, id, attribute.getValue());
                     }
                 } else {
-                    InfinispanWebLogger.ROOT_LOGGER.missingSessionAttributeCacheEntry(id, nameEntry.getKey());
+                    InfinispanWebLogger.ROOT_LOGGER.missingSessionAttributeCacheEntry(id, attribute.getValue());
                 }
                 if (purgeIfInvalid) {
                     this.purge(id);
