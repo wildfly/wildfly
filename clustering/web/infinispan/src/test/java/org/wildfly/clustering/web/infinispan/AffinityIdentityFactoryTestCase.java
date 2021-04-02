@@ -37,7 +37,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
-import org.wildfly.clustering.ee.cache.Key;
+import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
