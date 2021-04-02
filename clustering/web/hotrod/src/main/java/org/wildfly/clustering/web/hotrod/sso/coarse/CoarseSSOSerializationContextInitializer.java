@@ -27,7 +27,7 @@ import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
-import org.wildfly.clustering.web.hotrod.SessionKeyMarshaller;
+import org.wildfly.clustering.web.cache.SessionKeyMarshaller;
 
 /**
  * @author Paul Ferraro
