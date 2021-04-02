@@ -24,7 +24,7 @@ package org.wildfly.clustering.web.hotrod;
 
 import java.io.IOException;
 
-import org.wildfly.clustering.infinispan.client.Key;
+import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
 import org.wildfly.clustering.web.cache.SessionIdentifierMarshaller;
 import org.wildfly.common.function.ExceptionFunction;

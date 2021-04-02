@@ -21,13 +21,13 @@
  */
 package org.wildfly.clustering.web.hotrod.session.coarse;
 
-import org.wildfly.clustering.infinispan.client.Key;
+import org.wildfly.clustering.ee.hotrod.RemoteCacheKey;
 
 /**
  * Cache key for session attributes.
  * @author Paul Ferraro
  */
-public class SessionAttributesKey extends Key<String> {
+public class SessionAttributesKey extends RemoteCacheKey<String> {
 
     public SessionAttributesKey(String id) {
         super(id);

@@ -20,22 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.client;
+package org.wildfly.clustering.ee.hotrod;
 
 import java.util.Objects;
 
+import org.wildfly.clustering.ee.Key;
+
 /**
- * Base type for cache keys.
+ * Base type for remote cache keys.
  * @author Paul Ferraro
  */
-public class Key<I> {
+public class RemoteCacheKey<I> implements Key<I> {
 
     private I id;
 
-    public Key(I id) {
+    public RemoteCacheKey(I id) {
         this.id = id;
     }
 
+    @Override
     public I getId() {
         return this.id;
     }
@@ -47,7 +50,7 @@ public class Key<I> {
 
     @Override
     public boolean equals(Object object) {
-        return this.getClass().equals(object.getClass()) && this.id.equals(((Key<?>) object).id);
+        return this.getClass().equals(object.getClass()) && this.id.equals(((RemoteCacheKey<?>) object).id);
     }
 
     @Override

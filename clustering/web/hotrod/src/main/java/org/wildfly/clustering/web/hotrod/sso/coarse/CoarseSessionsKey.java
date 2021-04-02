@@ -22,12 +22,12 @@
 
 package org.wildfly.clustering.web.hotrod.sso.coarse;
 
-import org.wildfly.clustering.infinispan.client.Key;
+import org.wildfly.clustering.ee.hotrod.RemoteCacheKey;
 
 /**
  * @author Paul Ferraro
  */
-public class CoarseSessionsKey extends Key<String> {
+public class CoarseSessionsKey extends RemoteCacheKey<String> {
 
     public CoarseSessionsKey(String id) {
         super(id);
