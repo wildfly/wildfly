@@ -46,5 +46,6 @@
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.wildfly.common"/>
     </dependencies>
 </module>

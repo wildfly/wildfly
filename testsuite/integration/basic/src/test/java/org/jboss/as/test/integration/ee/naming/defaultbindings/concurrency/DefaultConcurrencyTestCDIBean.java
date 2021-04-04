@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.naming.defaultbindings.concurrency;
 
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
+
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.annotation.Resource;
@@ -52,18 +54,11 @@ public class DefaultConcurrencyTestCDIBean {
      */
     public void test() throws Throwable {
         // check injected resources
-        if(contextService == null) {
-            throw new NullPointerException("contextService");
-        }
-        if(managedExecutorService == null) {
-            throw new NullPointerException("managedExecutorService");
-        }
-        if(managedScheduledExecutorService == null) {
-            throw new NullPointerException("managedScheduledExecutorService");
-        }
-        if(managedThreadFactory == null) {
-            throw new NullPointerException("managedThreadFactory");
-        }
+        checkNotNullParamWithNullPointerException("contextService", contextService);
+        checkNotNullParamWithNullPointerException("managedExecutorService", managedExecutorService);
+        checkNotNullParamWithNullPointerException("managedScheduledExecutorService", managedScheduledExecutorService);
+        checkNotNullParamWithNullPointerException("managedThreadFactory", managedThreadFactory);
+
         // WFLY-12039 regression check
         managedExecutorService.submit((Runnable) () -> {
             if (WildFlySecurityManager.getCurrentContextClassLoaderPrivileged() == null) {

@@ -18,11 +18,11 @@ package org.jboss.as.test.integration.security.credentialreference;
 
 import static org.jboss.as.controller.security.CredentialReference.CREDENTIAL_REFERENCE;
 import static org.junit.Assert.fail;
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.Objects;
 
 import org.h2.tools.Server;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -71,8 +71,7 @@ public class CredentialReferenceDatasourceTestCase {
         private final String datasourceName;
 
         Scenario(String datasourceName) {
-            Objects.requireNonNull(datasourceName);
-            this.datasourceName = datasourceName;
+            this.datasourceName = checkNotNullParamWithNullPointerException("datasourceName", datasourceName);
         }
 
         private PathAddress getDatasourceAddress() {

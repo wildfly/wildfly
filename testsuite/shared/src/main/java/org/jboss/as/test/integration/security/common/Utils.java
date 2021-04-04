@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -52,7 +53,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.security.auth.Subject;
@@ -1198,7 +1198,7 @@ public class Utils extends CoreUtils {
      */
     public static byte[] createKerberosTicketForServer(final String user, final String pass, final GSSName serverName)
             throws MalformedURLException, LoginException, PrivilegedActionException {
-        Objects.requireNonNull(serverName);
+        checkNotNullParamWithNullPointerException("serverName", serverName);
         final Krb5LoginConfiguration krb5Configuration = new Krb5LoginConfiguration(getLoginConfiguration());
         try {
             Configuration.setConfiguration(krb5Configuration);

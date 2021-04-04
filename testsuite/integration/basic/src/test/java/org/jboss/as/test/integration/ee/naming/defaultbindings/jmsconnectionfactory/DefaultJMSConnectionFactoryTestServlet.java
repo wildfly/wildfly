@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.naming.defaultbindings.jmsconnectionfactory;
 
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
+
 import javax.annotation.Resource;
 import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
@@ -44,9 +46,8 @@ public class DefaultJMSConnectionFactoryTestServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             // check injected resource
-            if(injectedResource == null) {
-                throw new NullPointerException("injected resource");
-            }
+            checkNotNullParamWithNullPointerException("injectedResource", injectedResource);
+
             // checked jndi lookup
             new InitialContext().lookup("java:comp/DefaultJMSConnectionFactory");
         } catch (Throwable e) {

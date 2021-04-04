@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.naming.defaultbindings.datasource;
 
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
+
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 
@@ -38,8 +40,6 @@ public class DefaultDataSourceTestCDIBean {
      */
     public void test() throws Throwable {
         // check injected resource
-        if(injectedResource == null) {
-            throw new NullPointerException("injected resource");
-        }
+        checkNotNullParamWithNullPointerException("injectedResource", injectedResource);
     }
 }

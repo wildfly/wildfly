@@ -22,6 +22,7 @@
 package org.wildfly.extension.metrics.jmx;
 
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.NONE;
+import static org.wildfly.common.Assert.checkNotNullParam;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -200,10 +201,9 @@ public class JmxMetricCollector {
     }
 
     private static OptionalDouble getValueFromMBean(MBeanServer mbs, String mbeanExpression) {
+        checkNotNullParam("mbs", mbs);
+        checkNotNullParam("mbeanExpression", mbeanExpression);
 
-        if (mbeanExpression == null) {
-            throw new IllegalArgumentException("MBean Expression is null");
-        }
         if (!mbeanExpression.contains("/")) {
             throw new IllegalArgumentException(mbeanExpression);
         }

@@ -21,7 +21,7 @@
  */
 package org.wildfly.extension.metrics;
 
-import static java.util.Objects.requireNonNull;
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
 
 import java.io.Closeable;
 import java.util.HashMap;
@@ -61,8 +61,8 @@ public class WildFlyMetricRegistry implements Closeable, MetricRegistry {
 
     @Override
     public synchronized void registerMetric(Metric metric, MetricMetadata metadata) {
-        requireNonNull(metadata);
-        requireNonNull(metric);
+        checkNotNullParamWithNullPointerException("metric", metric);
+        checkNotNullParamWithNullPointerException("metadata", metadata);
 
         lock.writeLock().lock();
         try {

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -165,8 +166,8 @@ public enum XMLElement {
     }
 
     public static XMLElement forAuthTokenName(String token) {
-        XMLElement element = tokens.get(token);
-        if (element == null) throw new IllegalArgumentException(token);
+        //token may be valid null. String.valueOf is intended.
+        XMLElement element = checkNotNullParam(String.valueOf(token), tokens.get(token));
         return element;
     }
 }

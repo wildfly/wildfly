@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
+
 import javax.el.ELClass;
 import javax.el.ELContext;
 import javax.el.ELResolver;
@@ -108,9 +110,7 @@ public class ImportedClassELResolver extends ELResolver {
 
     @Override
     public boolean isReadOnly(final ELContext context, final Object base, final Object property) {
-        if (context == null) {
-            throw new NullPointerException("ELContext cannot be null");
-        }
+        checkNotNullParamWithNullPointerException("context", context);
         // we don't allow setting any value via this resolver, so this is always read-only
         return true;
     }

@@ -24,6 +24,8 @@
 
 package org.wildfly.clustering.ee.cache.scheduler;
 
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
+
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.security.AccessController;
@@ -358,7 +360,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
      * Links e as first element.
      */
     private Node<E> linkFirst(E e) {
-        checkNotNull(e);
+        checkNotNullParamWithNullPointerException("e", e);
         final Node<E> newNode = new Node<>(e);
 
         restartFromHead:
@@ -391,7 +393,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
      * Links e as last element.
      */
     private Node<E> linkLast(E e) {
-        checkNotNull(e);
+        checkNotNullParamWithNullPointerException("e", e);
         final Node<E> newNode = new Node<>(e);
 
         restartFromTail:
@@ -795,16 +797,6 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
     // Minor convenience utilities
 
     /**
-     * Throws NullPointerException if argument is null.
-     *
-     * @param v the element
-     */
-    private static void checkNotNull(Object v) {
-        if (v == null)
-            throw new NullPointerException();
-    }
-
-    /**
      * Returns element unless it is null, in which case throws
      * NoSuchElementException.
      *
@@ -853,7 +845,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
         // Copy c into a private chain of Nodes
         Node<E> h = null, t = null;
         for (E e : c) {
-            checkNotNull(e);
+            checkNotNullParamWithNullPointerException("e", e);
             Node<E> newNode = new Node<>(e);
             if (h == null)
                 h = t = newNode;
@@ -1048,7 +1040,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
      */
     @Override
     public boolean removeFirstOccurrence(Object o) {
-        checkNotNull(o);
+        checkNotNullParamWithNullPointerException("o", o);
         for (Node<E> p = first(); p != null; p = succ(p)) {
             E item = p.item;
             if (item != null && o.equals(item) && p.casItem(item, null)) {
@@ -1070,7 +1062,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
      */
     @Override
     public boolean removeLastOccurrence(Object o) {
-        checkNotNull(o);
+        checkNotNullParamWithNullPointerException("o", o);
         for (Node<E> p = last(); p != null; p = pred(p)) {
             E item = p.item;
             if (item != null && o.equals(item) && p.casItem(item, null)) {
@@ -1157,7 +1149,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
         // Copy c into a private chain of Nodes
         Node<E> beginningOfTheEnd = null, last = null;
         for (E e : c) {
-            checkNotNull(e);
+            checkNotNullParamWithNullPointerException("e", e);
             Node<E> newNode = new Node<>(e);
             if (beginningOfTheEnd == null)
                 beginningOfTheEnd = last = newNode;
@@ -1457,8 +1449,8 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
 
         @Override
         public void forEachRemaining(Consumer<? super E> action) {
+            checkNotNullParamWithNullPointerException("action", action);
             Node<E> p;
-            if (action == null) throw new NullPointerException();
             final FastConcurrentDirectDeque<E> q = this.queue;
             if (!exhausted &&
                 ((p = current) != null || (p = q.first()) != null)) {
@@ -1475,8 +1467,8 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
 
         @Override
         public boolean tryAdvance(Consumer<? super E> action) {
+            checkNotNullParamWithNullPointerException("action", action);
             Node<E> p;
-            if (action == null) throw new NullPointerException();
             final FastConcurrentDirectDeque<E> q = this.queue;
             if (!exhausted &&
                 ((p = current) != null || (p = q.first()) != null)) {

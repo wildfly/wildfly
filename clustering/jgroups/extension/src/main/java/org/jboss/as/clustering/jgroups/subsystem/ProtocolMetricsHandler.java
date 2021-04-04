@@ -21,6 +21,9 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
+
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -234,18 +237,15 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
 
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-
+        checkNotNullParamWithNullPointerException("context", context);
         String name = Operations.getAttributeName(operation);
-        String protocolName = context.getCurrentAddressValue();
+        String protocolName = checkNotNullParamWithNullPointerException("protocolName", context.getCurrentAddressValue());
         ServiceName channelServiceName = JGroupsRequirement.CHANNEL.getServiceName(context, UnaryCapabilityNameResolver.PARENT);
         ExceptionFunction<JChannel, ModelNode, Exception> function = new ExceptionFunction<JChannel, ModelNode, Exception>() {
             @Override
             public ModelNode apply(JChannel channel) throws Exception {
                 int index = protocolName.lastIndexOf('.');
-                Protocol protocol = channel.getProtocolStack().findProtocol((index < 0) ? protocolName : protocolName.substring(index + 1));
-                if (protocol == null) {
-                    throw new IllegalArgumentException(protocolName);
-                }
+                Protocol protocol = checkNotNullParam(protocolName, channel.getProtocolStack().findProtocol((index < 0) ? protocolName : protocolName.substring(index + 1)));
                 Attribute attribute = getAttribute(protocol.getClass(), name);
                 if (attribute == null) {
                     throw new OperationFailedException(JGroupsLogger.ROOT_LOGGER.unknownMetric(name));

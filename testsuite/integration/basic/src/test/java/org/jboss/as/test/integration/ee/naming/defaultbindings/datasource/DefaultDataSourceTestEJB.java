@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ee.naming.defaultbindings.datasource;
 
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
+
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.naming.InitialContext;
@@ -42,9 +44,7 @@ public class DefaultDataSourceTestEJB {
      */
     public void test() throws Throwable {
         // check injected resource
-        if(injectedResource == null) {
-            throw new NullPointerException("injected resource");
-        }
+        checkNotNullParamWithNullPointerException("injectedResource", injectedResource);
         // checked jndi lookup
         new InitialContext().lookup("java:comp/DefaultDataSource");
     }

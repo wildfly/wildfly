@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.pojo.support;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 import java.net.URL;
 
 /**
@@ -29,8 +31,6 @@ import java.net.URL;
  */
 public class TcclChecker {
     public void start() {
-        URL url = Thread.currentThread().getContextClassLoader().getResource("tccl.txt");
-        if (url == null)
-            throw new IllegalArgumentException("tccl.txt should not be null!");
+        URL url = checkNotNullParam("tccl.txt", Thread.currentThread().getContextClassLoader().getResource("tccl.txt"));
     }
 }

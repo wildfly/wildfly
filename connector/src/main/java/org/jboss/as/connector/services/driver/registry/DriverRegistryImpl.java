@@ -22,6 +22,7 @@
 package org.jboss.as.connector.services.driver.registry;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER;
+import static org.wildfly.common.Assert.checkNotNullParam;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,7 +30,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.driver.InstalledDriver;
 
 /**
@@ -43,8 +43,7 @@ public class DriverRegistryImpl implements DriverRegistry {
 
     @Override
     public void registerInstalledDriver(InstalledDriver driver) throws IllegalArgumentException {
-        if (driver == null)
-            throw new IllegalArgumentException(ConnectorLogger.ROOT_LOGGER.nullVar("driver"));
+        checkNotNullParam("driver", driver);
 
         DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.tracef("Adding driver: %s", driver);
         drivers.put(driver.getDriverName(), driver);
@@ -53,8 +52,7 @@ public class DriverRegistryImpl implements DriverRegistry {
 
     @Override
     public void unregisterInstalledDriver(InstalledDriver driver) {
-        if (driver == null)
-            throw new IllegalArgumentException(ConnectorLogger.ROOT_LOGGER.nullVar("driver"));
+        checkNotNullParam("driver", driver);
 
         DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.tracef("Removing deployment: %s", driver);
         drivers.remove(driver.getDriverName());

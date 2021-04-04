@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ee.naming.defaultbindings.concurrency;
 
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
+
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.enterprise.concurrent.ContextService;
@@ -54,18 +56,11 @@ public class DefaultConcurrencyTestEJB {
      */
     public void test() throws Throwable {
         // check injected resources
-        if(contextService == null) {
-            throw new NullPointerException("contextService");
-        }
-        if(managedExecutorService == null) {
-            throw new NullPointerException("managedExecutorService");
-        }
-        if(managedScheduledExecutorService == null) {
-            throw new NullPointerException("managedScheduledExecutorService");
-        }
-        if(managedThreadFactory == null) {
-            throw new NullPointerException("managedThreadFactory");
-        }
+        checkNotNullParamWithNullPointerException("contextService", contextService);
+        checkNotNullParamWithNullPointerException("managedExecutorService", managedExecutorService);
+        checkNotNullParamWithNullPointerException("managedScheduledExecutorService", "contextService");
+        checkNotNullParamWithNullPointerException("managedThreadFactory", managedThreadFactory);
+
         // checked jndi lookup
         new InitialContext().lookup("java:comp/DefaultContextService");
         new InitialContext().lookup("java:comp/DefaultManagedExecutorService");

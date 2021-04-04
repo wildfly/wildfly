@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.deployment;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.iiop.EjbIIOPService;
@@ -106,10 +108,7 @@ public class EjbDeploymentInformation {
     }
 
     public ComponentView getView(String name) {
-        final InjectedValue<ComponentView> value = componentViews.get(name);
-        if (value == null) {
-            throw new IllegalArgumentException("View " + name + " was not found");
-        }
+        final InjectedValue<ComponentView> value = checkNotNullParam(String.valueOf(name), componentViews.get(name));
         return value.getValue();
     }
 

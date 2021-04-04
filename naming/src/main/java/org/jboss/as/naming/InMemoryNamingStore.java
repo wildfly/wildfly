@@ -30,6 +30,7 @@ import static org.jboss.as.naming.util.NamingUtils.isLastComponentEmpty;
 import static org.jboss.as.naming.util.NamingUtils.nameAlreadyBoundException;
 import static org.jboss.as.naming.util.NamingUtils.nameNotFoundException;
 import static org.jboss.as.naming.util.NamingUtils.notAContextException;
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,7 +53,6 @@ import javax.naming.event.EventContext;
 import javax.naming.event.NamingEvent;
 import javax.naming.event.NamingListener;
 import javax.naming.spi.ResolveResult;
-import org.jboss.as.naming.logging.NamingLogger;
 
 /**
  * In-memory implementation of the NamingStore.  The backing for the entries is a basic tree structure with either context
@@ -106,10 +106,7 @@ public class InMemoryNamingStore implements WritableNamingStore {
      */
     public InMemoryNamingStore(final NamingEventCoordinator eventCoordinator, final Name baseName) {
         this.eventCoordinator = eventCoordinator;
-        if(baseName == null) {
-            throw new NullPointerException(NamingLogger.ROOT_LOGGER.cannotBeNull("baseName"));
-        }
-        this.baseName = baseName;
+        this.baseName = checkNotNullParamWithNullPointerException("baseName", baseName);
     }
 
     /** {@inheritDoc} */

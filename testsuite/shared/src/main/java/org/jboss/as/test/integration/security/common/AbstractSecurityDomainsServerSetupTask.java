@@ -43,6 +43,7 @@ import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.security.Constants.TRUSTSTORE;
 import static org.jboss.as.security.Constants.TYPE;
 import static org.jboss.as.security.Constants.URL;
+import static org.wildfly.common.Assert.checkNotEmptyParam;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -216,11 +217,8 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
             LOGGER.trace("No security configuration for JASPI module.");
             return null;
         }
-        if (securityConfigurations.getAuthnModules() == null || securityConfigurations.getAuthnModules().length == 0
-                || securityConfigurations.getLoginModuleStacks() == null
-                || securityConfigurations.getLoginModuleStacks().length == 0) {
-            throw new IllegalArgumentException("Missing mandatory part of JASPI configuration in the security domain.");
-        }
+        checkNotEmptyParam("securityConfigurations.getAuthnModules", securityConfigurations.getAuthnModules());
+        checkNotEmptyParam("securityConfigurations.getLoginModuleStacks", securityConfigurations.getLoginModuleStacks());
 
         final List<ModelNode> steps = new ArrayList<ModelNode>();
 

@@ -72,6 +72,7 @@
         <module name="org.wildfly.extension.undertow" />
         <module name="io.undertow.core" />
         <module name="io.undertow.servlet"/>
+        <module name="org.wildfly.common"/>
         <module name="org.wildfly.transaction.client"/>
         <module name="javax.transaction.api"/>
         <!-- Only used if capability org.wildfly.weld is available-->

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.security.common.negotiation;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.codec.binary.Base64;
@@ -127,9 +129,8 @@ public class JBossNegotiateScheme extends AuthSchemeBase {
     @Override
     public Header authenticate(final Credentials credentials, final HttpRequest request, final HttpContext context)
             throws AuthenticationException {
-        if (request == null) {
-            throw new IllegalArgumentException("HTTP request may not be null");
-        }
+        checkNotNullParam("request", request);
+
         if (state == State.TOKEN_GENERATED) {
             // hack for auto redirects
             return new BasicHeader("X-dummy", "Token already generated");
@@ -211,9 +212,7 @@ public class JBossNegotiateScheme extends AuthSchemeBase {
      * @return the parameter with the given name
      */
     public String getParameter(String name) {
-        if (name == null) {
-            throw new IllegalArgumentException("Parameter name may not be null");
-        }
+        checkNotNullParam("name", name);
         return null;
     }
 

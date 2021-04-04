@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.naming.defaultbindings.datasource;
 
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
+
 import javax.annotation.Resource;
 import javax.naming.InitialContext;
 import javax.servlet.ServletException;
@@ -44,9 +46,8 @@ public class DefaultDataSourceTestServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             // check injected resource
-            if(injectedResource == null) {
-                throw new NullPointerException("injected resource");
-            }
+            checkNotNullParamWithNullPointerException("injectedResource", injectedResource);
+
             // checked jndi lookup
             new InitialContext().lookup("java:comp/DefaultDataSource");
         } catch (Throwable e) {
