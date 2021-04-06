@@ -21,12 +21,13 @@
  */
 package org.jboss.as.connector.annotations.repository.jandex;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -60,9 +61,7 @@ public class JandexAnnotationRepositoryImpl implements AnnotationRepository {
      * @throws IllegalArgumentException in case pas sed repository is null
      */
     public JandexAnnotationRepositoryImpl(Index backingRepository, ClassLoader cl) throws IllegalArgumentException {
-        if (backingRepository == null)
-            throw new IllegalArgumentException(ConnectorLogger.ROOT_LOGGER.nullVar("backingRepository"));
-        this.backingRepository = backingRepository;
+        this.backingRepository = checkNotNullParam("backingRepository", backingRepository);
         this.cl = cl;
     }
 
