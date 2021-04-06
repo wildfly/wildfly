@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.EnumSet;
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.client.hotrod.ProtocolVersion;
@@ -54,6 +55,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.AttributeConverter;
@@ -108,7 +110,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         KEY_SIZE_ESTIMATE("key-size-estimate", ModelType.INT, new ModelNode(64)),
         MAX_RETRIES("max-retries", ModelType.INT, new ModelNode(10)),
         PROPERTIES("properties"),
-        PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_30.toString())) {
+        PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_31.toString())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setValidator(new EnumValidator<>(ProtocolVersion.class, EnumSet.complementOf(EnumSet.of(ProtocolVersion.PROTOCOL_VERSION_AUTO))));
@@ -118,6 +120,12 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN, ModelNode.FALSE),
         TCP_NO_DELAY("tcp-no-delay", ModelType.BOOLEAN, ModelNode.TRUE),
         TCP_KEEP_ALIVE("tcp-keep-alive", ModelType.BOOLEAN, ModelNode.FALSE),
+        TRANSACTION_TIMEOUT("transaction-timeout", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(1))) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
+            }
+        },
         VALUE_SIZE_ESTIMATE("value-size-estimate", ModelType.INT, new ModelNode(512)),
         ;
 
@@ -216,6 +224,12 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         } else {
             ResourceTransformationDescriptionBuilder builder = parent.addChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
 
+            if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
+                builder.getAttributeBuilder()
+                        .setDiscard(DiscardAttributeChecker.ALWAYS, Attribute.TRANSACTION_TIMEOUT.getDefinition())
+                        .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getName())
+                        .end();
+            }
             if (InfinispanModel.VERSION_14_0_0.requiresTransformation(version)) {
                 builder.getAttributeBuilder()
                         .setValueConverter(new SingletonListAttributeConverter(ListAttribute.MODULES), DeprecatedAttribute.MODULE.getDefinition())
@@ -228,9 +242,6 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                         .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.PROPERTIES.getDefinition())
                         .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.PROPERTIES.getDefinition())
                         .end();
-            }
-            if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getName());
             }
             if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
                 builder.getAttributeBuilder()

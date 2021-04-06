@@ -1966,6 +1966,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                         break;
                     }
                 }
+                case TRANSACTION_TIMEOUT: {
+                    if (this.schema.since(InfinispanSchema.VERSION_13_0)) {
+                        readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.TRANSACTION_TIMEOUT);
+                        break;
+                    }
+                }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
@@ -2146,6 +2152,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case TIMEOUT: {
+                    if (this.schema.since(InfinispanSchema.VERSION_13_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
                     readAttribute(reader, i, operation, RemoteTransactionResourceDefinition.Attribute.TIMEOUT);
                     break;
                 }

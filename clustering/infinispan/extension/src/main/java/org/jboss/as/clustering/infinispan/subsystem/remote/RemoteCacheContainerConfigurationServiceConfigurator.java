@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -43,7 +44,6 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.ConnectionPoolConfiguration;
 import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
 import org.infinispan.client.hotrod.configuration.SecurityConfiguration;
-import org.infinispan.client.hotrod.configuration.TransactionConfiguration;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.AggregatedClassLoader;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
@@ -94,19 +94,17 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
     private final Properties properties = new Properties();
     private final SupplierDependency<ConnectionPoolConfiguration> connectionPool;
     private final SupplierDependency<SecurityConfiguration> security;
-    private final SupplierDependency<TransactionConfiguration> transaction;
 
     private volatile SupplierDependency<MBeanServer> server;
     private volatile int connectionTimeout;
     private volatile String defaultRemoteCluster;
-    private volatile int keySizeEstimate;
     private volatile int maxRetries;
     private volatile String protocolVersion;
     private volatile int socketTimeout;
     private volatile boolean tcpNoDelay;
     private volatile boolean tcpKeepAlive;
-    private volatile int valueSizeEstimate;
     private volatile boolean statisticsEnabled;
+    private volatile long transactionTimeout;
 
     RemoteCacheContainerConfigurationServiceConfigurator(PathAddress address) {
         super(RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION, address);
@@ -115,21 +113,19 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
         this.modules = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.MODULES.getServiceName(address));
         this.connectionPool = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.CONNECTION_POOL.getServiceName(address));
         this.security = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.SECURITY.getServiceName(address));
-        this.transaction = new ServiceSupplierDependency<>(RemoteCacheContainerComponent.TRANSACTION.getServiceName(address));
     }
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.connectionTimeout = Attribute.CONNECTION_TIMEOUT.resolveModelAttribute(context, model).asInt();
         this.defaultRemoteCluster = Attribute.DEFAULT_REMOTE_CLUSTER.resolveModelAttribute(context, model).asString();
-        this.keySizeEstimate = Attribute.KEY_SIZE_ESTIMATE.resolveModelAttribute(context, model).asInt();
         this.maxRetries = Attribute.MAX_RETRIES.resolveModelAttribute(context, model).asInt();
         this.protocolVersion = Attribute.PROTOCOL_VERSION.resolveModelAttribute(context, model).asString();
         this.socketTimeout = Attribute.SOCKET_TIMEOUT.resolveModelAttribute(context, model).asInt();
         this.tcpNoDelay = Attribute.TCP_NO_DELAY.resolveModelAttribute(context, model).asBoolean();
         this.tcpKeepAlive = Attribute.TCP_KEEP_ALIVE.resolveModelAttribute(context, model).asBoolean();
-        this.valueSizeEstimate = Attribute.VALUE_SIZE_ESTIMATE.resolveModelAttribute(context, model).asInt();
         this.statisticsEnabled = Attribute.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
+        this.transactionTimeout = Attribute.TRANSACTION_TIMEOUT.resolveModelAttribute(context, model).asLong();
 
         this.clusters.clear();
 
@@ -158,7 +154,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<Configuration> configuration = new CompositeDependency(this.loader, this.modules, this.connectionPool, this.security, this.transaction, this.server).register(builder).provides(this.getServiceName());
+        Consumer<Configuration> configuration = new CompositeDependency(this.loader, this.modules, this.connectionPool, this.security, this.server).register(builder).provides(this.getServiceName());
         for (Dependency dependency : this.threadPools.values()) {
             dependency.register(builder);
         }
@@ -180,7 +176,6 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
         // Apply properties next, which may override formal security configuration
         builder.withProperties(this.properties)
                 .connectionTimeout(this.connectionTimeout)
-                .keySizeEstimate(this.keySizeEstimate)
                 .maxRetries(this.maxRetries)
                 .version(ProtocolVersion.parseVersion(this.protocolVersion))
                 .socketTimeout(this.socketTimeout)
@@ -192,7 +187,8 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
                     .mBeanServerLookup((this.server != null) ? new MBeanServerProvider(this.server.get()) : null)
                 .tcpNoDelay(this.tcpNoDelay)
                 .tcpKeepAlive(this.tcpKeepAlive)
-                .valueSizeEstimate(this.valueSizeEstimate);
+                .transactionTimeout(this.transactionTimeout, TimeUnit.MILLISECONDS)
+                ;
 
         List<Module> modules = this.modules.get();
         List<ClassLoader> loaders = new ArrayList<>(modules.size());
@@ -224,8 +220,6 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
                 }
             }
         }
-
-        builder.transaction().read(this.transaction.get());
 
         return builder.build();
     }

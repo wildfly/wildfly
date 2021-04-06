@@ -154,6 +154,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
             public void registerSchema(SerializationContext context) {
             }
         });
+
         builder.classLoader(loader);
 
         builder.blockingThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.BLOCKING).get());

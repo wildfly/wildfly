@@ -167,6 +167,7 @@
                             socket-timeout="1000"
                             tcp-no-delay="false"
                             tcp-keep-alive="true"
+                            transaction-timeout="1000"
                             value-size-estimate="1234">
         <async-thread-pool min-threads="90"
                            max-threads="100"
@@ -189,6 +190,6 @@
             <remote-cluster name="failover-site" socket-bindings="jdg4 jdg5 jdg6"/>
         </remote-clusters>
         <security ssl-context="hotrod-elytron"/>
-        <transaction mode="BATCH" timeout="1000"/>
+        <transaction mode="BATCH"/>
     </remote-cache-container>
 </subsystem>

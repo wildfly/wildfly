@@ -150,6 +150,7 @@ public enum XMLAttribute {
     SOCKET_TIMEOUT(RemoteCacheContainerResourceDefinition.Attribute.SOCKET_TIMEOUT),
     TCP_NO_DELAY(RemoteCacheContainerResourceDefinition.Attribute.TCP_NO_DELAY),
     TCP_KEEP_ALIVE(RemoteCacheContainerResourceDefinition.Attribute.TCP_KEEP_ALIVE),
+    TRANSACTION_TIMEOUT(RemoteCacheContainerResourceDefinition.Attribute.TRANSACTION_TIMEOUT),
     VALUE_SIZE_ESTIMATE(RemoteCacheContainerResourceDefinition.Attribute.VALUE_SIZE_ESTIMATE),
 
     // remote-cache-container -> connection-pool
