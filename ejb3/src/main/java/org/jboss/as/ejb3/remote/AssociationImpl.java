@@ -417,7 +417,15 @@ final class AssociationImpl implements Association, AutoCloseable {
 
     @Override
     public ListenerHandle registerClusterTopologyListener(@NotNull final ClusterTopologyListener listener) {
-        ClusterTopologyRegistrar registrar = this.findClusterTopologyRegistrar(listener.getConnection().getLocalAddress());
+        SocketAddress localAddress = listener.getConnection().getLocalAddress();
+        ClusterTopologyRegistrar registrar = this.findClusterTopologyRegistrar(localAddress);
+        // if the registrar is null, this means that the connector has not been registered on the <remote connectors=/> attribute
+        // and this represents an invalid server configuration (see WFLY-14567)
+        if (registrar == null) {
+            int port = (localAddress instanceof InetSocketAddress) ? ((InetSocketAddress)localAddress).getPort() : 0 ;
+            String address = (localAddress instanceof InetSocketAddress) ? ((InetSocketAddress)localAddress).getAddress().toString() : "0.0.0.0" ;
+            EjbLogger.EJB3_INVOCATION_LOGGER.connectorNotConfiguredForEJBClientInvocations(address, port);
+        }
         return (registrar != null) ? registrar.registerClusterTopologyListener(listener) : NOOP_LISTENER_HANDLE;
     }
 

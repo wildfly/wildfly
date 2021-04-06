@@ -3241,4 +3241,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 526, value = "Timer %s does not exist")
     OperationFailedException timerNotFound(String timerId);
 
+    @LogMessage(level = ERROR)
+    @Message(id = 527, value = "Remoting connector (address %s, port %s) is not correctly configured for EJB client invocations, the connector must be listed in <remote/> 'connectors' attribute to receive EJB client invocations")
+    void connectorNotConfiguredForEJBClientInvocations(String address, int port);
 }
