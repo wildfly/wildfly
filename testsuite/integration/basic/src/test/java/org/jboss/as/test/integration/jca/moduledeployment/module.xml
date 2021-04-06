@@ -41,5 +41,6 @@
         <module name="org.jboss.threads"/>
         <module name="javax.xml.stream.api"/>
         <module name="javax.jms.api"/>
+        <module name="org.wildfly.common"/>
     </dependencies>
 </module>

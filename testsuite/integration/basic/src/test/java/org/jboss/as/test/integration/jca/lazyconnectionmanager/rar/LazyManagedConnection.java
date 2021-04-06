@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jca.lazyconnectionmanager.rar;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -132,7 +134,7 @@ public class LazyManagedConnection implements ManagedConnection, DissociatableMa
     @Override
     public void addConnectionEventListener(ConnectionEventListener listener) {
         logger.trace("#LazyManagedConnection.addConnectionEventListener");
-        if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
+        checkNotNullParam("listener", listener);
         listeners.add(listener);
 
     }
@@ -140,7 +142,7 @@ public class LazyManagedConnection implements ManagedConnection, DissociatableMa
     @Override
     public void removeConnectionEventListener(ConnectionEventListener listener) {
         logger.trace("#LazyManagedConnection.removeConnectionEventListener");
-        if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
+        checkNotNullParam("listener", listener);
         listeners.remove(listener);
     }
 
