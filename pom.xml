@@ -1175,7 +1175,13 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-messaging-activemq</artifactId>
+                <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
+                <version>${ee.maven.version}</version>
+            </dependency>
+ 
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-messaging-activemq-injection</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
 

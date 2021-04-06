@@ -21,6 +21,8 @@
  */
 package org.wildfly.extension.messaging.activemq.deployment;
 
+import static org.wildfly.extension.messaging.activemq.deployment.DefaultJMSConnectionFactoryBinding.COMP_DEFAULT_JMS_CONNECTION_FACTORY;
+
 import javax.jms.ConnectionFactory;
 
 import org.jboss.as.ee.component.Attachments;
@@ -64,7 +66,7 @@ public class DefaultJMSConnectionFactoryResourceReferenceProcessor implements De
     private static class JMSConnectionFactoryResourceReferenceProcessor implements EEResourceReferenceProcessor {
 
         private static final String TYPE = ConnectionFactory.class.getName();
-        private static final InjectionSource INJECTION_SOURCE = new LookupInjectionSource(DefaultJMSConnectionFactoryBindingProcessor.COMP_DEFAULT_JMS_CONNECTION_FACTORY);
+        private static final InjectionSource INJECTION_SOURCE = new LookupInjectionSource(COMP_DEFAULT_JMS_CONNECTION_FACTORY);
 
         @Override
         public String getResourceReferenceType() {
