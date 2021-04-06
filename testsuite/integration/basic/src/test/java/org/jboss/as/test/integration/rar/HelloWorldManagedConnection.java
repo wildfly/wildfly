@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.rar;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -142,9 +144,7 @@ public class HelloWorldManagedConnection implements ManagedConnection {
      */
 
     public void addConnectionEventListener(ConnectionEventListener listener) {
-
-        if (listener == null)
-            throw new IllegalArgumentException("Listener is null");
+        checkNotNullParam("listener", listener);
 
         listeners.add(listener);
 
@@ -159,9 +159,7 @@ public class HelloWorldManagedConnection implements ManagedConnection {
      * @param listener Already registered connection event listener to be removed
      */
     public void removeConnectionEventListener(ConnectionEventListener listener) {
-
-        if (listener == null)
-            throw new IllegalArgumentException("Listener is null");
+        checkNotNullParam("listener", listener);
 
         listeners.remove(listener);
 
