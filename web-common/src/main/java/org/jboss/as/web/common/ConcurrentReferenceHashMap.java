@@ -27,6 +27,9 @@
  */
 
 package org.jboss.as.web.common;
+
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.Reference;
@@ -1138,8 +1141,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      * @throws NullPointerException if the specified value is null
      */
     public boolean containsValue(Object value) {
-        if (value == null)
-            throw new NullPointerException();
+        checkNotNullParamWithNullPointerException("value", value);
 
         // See explanation of modCount use above
 
@@ -1217,8 +1219,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      * @throws NullPointerException if the specified key or value is null
      */
     public V put(K key, V value) {
-        if (value == null)
-            throw new NullPointerException();
+        checkNotNullParamWithNullPointerException("value", value);
         int hash = hashOf(key);
         return segmentFor(hash).put(key, hash, value, false);
     }
@@ -1231,8 +1232,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      * @throws NullPointerException if the specified key or value is null
      */
     public V putIfAbsent(K key, V value) {
-        if (value == null)
-            throw new NullPointerException();
+        checkNotNullParamWithNullPointerException("value", value);
         int hash = hashOf(key);
         return segmentFor(hash).put(key, hash, value, true);
     }
@@ -1281,8 +1281,8 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      * @throws NullPointerException if any of the arguments are null
      */
     public boolean replace(K key, V oldValue, V newValue) {
-        if (oldValue == null || newValue == null)
-            throw new NullPointerException();
+        checkNotNullParamWithNullPointerException("oldValue", oldValue);
+        checkNotNullParamWithNullPointerException("newValue", newValue);
         int hash = hashOf(key);
         return segmentFor(hash).replace(key, hash, oldValue, newValue);
     }
@@ -1295,8 +1295,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      * @throws NullPointerException if the specified key or value is null
      */
     public V replace(K key, V value) {
-        if (value == null)
-            throw new NullPointerException();
+        checkNotNullParamWithNullPointerException("value", value);
         int hash = hashOf(key);
         return segmentFor(hash).replace(key, hash, value);
     }
@@ -1582,7 +1581,7 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
          * and cannot guarantee more.
          */
         public V setValue(V value) {
-            if (value == null) throw new NullPointerException();
+            checkNotNullParamWithNullPointerException("value", value);
             V v = super.setValue(value);
             ConcurrentReferenceHashMap.this.put(getKey(), value);
             return v;
