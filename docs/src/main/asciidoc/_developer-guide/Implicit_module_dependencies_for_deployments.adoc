@@ -89,7 +89,7 @@ annotation based Jakarta Enterprise Beans (ex: @Stateless, @Stateful, @MessageDr
 |org.jboss.resteasy.resteasy-atom-provider
 org.jboss.resteasy.resteasy-cdi org.jboss.resteasy.resteasy-jaxrs
 org.jboss.resteasy.resteasy-jaxb-provider
-org.jboss.resteasy.resteasy-jackson-provider
+org.jboss.resteasy.resteasy-jackson2-provider
 org.jboss.resteasy.resteasy-jsapi
 org.jboss.resteasy.resteasy-multipart-provider
 org.jboss.resteasy.async-http-servlet-30 |The presence of Jakarta RESTful Web Services

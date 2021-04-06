@@ -64,7 +64,7 @@
         <module name="org.jboss.resteasy.resteasy-crypto" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-jaxb-provider" optional="true"/>
-        <module name="org.jboss.resteasy.resteasy-jackson-provider" optional="true"/>
+        <module name="org.jboss.resteasy.resteasy-jackson2-provider" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-jettison-provider" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-jsapi" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-multipart-provider" optional="true"/>

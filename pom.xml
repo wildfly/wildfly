@@ -7746,30 +7746,6 @@
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-jackson-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.codehaus.jackson</groupId>
-                        <artifactId>jackson-core-asl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.jackson</groupId>
-                        <artifactId>jackson-mapper-asl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.jackson</groupId>
-                        <artifactId>jackson-jaxrs</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.jackson</groupId>
-                        <artifactId>jackson-xc</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jackson2-provider</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
@@ -9791,6 +9767,7 @@
                                             <!-- replaced by io.netty:netty-all -->
                                             <exclude>io.netty:netty</exclude>
                                             <exclude>org.jboss.remoting3:jboss-remoting</exclude>
+                                            <exclude>org.jboss.resteasy:resteasy-jackson-provider</exclude>
                                             <exclude>org.jboss.security:jbosssx</exclude>
                                             <!-- replaced by wildfly-elytron -->
                                             <exclude>org.jboss.sasl:jboss-sasl</exclude>

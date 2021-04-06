@@ -87,7 +87,6 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
                     // The following ones are optional dependencies located in org.jboss.as.jaxrs module.xml
                     // To be provisioned, they need to be explicitly added as optional packages.
                     RuntimePackageDependency.optional("org.jboss.resteasy.resteasy-jettison-provider"),
-                    RuntimePackageDependency.optional("org.jboss.resteasy.resteasy-jackson-provider"),
                     RuntimePackageDependency.optional("org.jboss.resteasy.resteasy-spring"));
     }
 }
