@@ -45,6 +45,7 @@ import org.apache.activemq.artemis.api.core.client.loadbalance.RoundRobinConnect
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ParameterCorrector;
@@ -212,6 +213,7 @@ public interface ConnectionFactoryAttributes {
                 .setListValidator(Validators.noDuplicateElements(new StringLengthValidator(1, true, true)))
                 .setAttributeParser(AttributeParser.STRING_LIST)
                 .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
+                .setDeprecated(ModelVersion.create(13, 0, 0), false)
                 .setRestartAllServices()
                 .build();
 
@@ -221,6 +223,7 @@ public interface ConnectionFactoryAttributes {
                 .setListValidator(Validators.noDuplicateElements(new StringLengthValidator(1, true, true)))
                 .setAttributeParser(AttributeParser.STRING_LIST)
                 .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
+                .setDeprecated(ModelVersion.create(13, 0, 0), false)
                 .setRestartAllServices()
                 .build();
 
