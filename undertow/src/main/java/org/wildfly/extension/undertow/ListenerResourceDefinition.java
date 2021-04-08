@@ -338,6 +338,11 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     }
 
     private static class EnabledAttributeHandler extends AbstractWriteAttributeHandler<Boolean> {
+
+        protected EnabledAttributeHandler() {
+            super(ListenerResourceDefinition.ENABLED);
+        }
+
         @Override
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Boolean> handbackHolder) throws OperationFailedException {
 
