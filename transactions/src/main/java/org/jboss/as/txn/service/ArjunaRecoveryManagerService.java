@@ -22,12 +22,21 @@
 
 package org.jboss.as.txn.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import com.arjuna.ats.arjuna.common.RecoveryEnvironmentBean;
+import com.arjuna.ats.arjuna.common.recoveryPropertyManager;
+import com.arjuna.ats.internal.arjuna.recovery.AtomicActionRecoveryModule;
+import com.arjuna.ats.internal.arjuna.recovery.ExpiredTransactionStatusManagerScanner;
+import com.arjuna.ats.internal.jta.recovery.arjunacore.CommitMarkableResourceRecordRecoveryModule;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.SubordinateAtomicActionRecoveryModule;
 import com.arjuna.ats.internal.jta.recovery.jts.JCAServerTransactionRecoveryModule;
+import com.arjuna.ats.internal.jts.recovery.contact.ExpiredContactScanner;
+import com.arjuna.ats.internal.jts.recovery.transactions.ExpiredServerScanner;
+import com.arjuna.ats.internal.jts.recovery.transactions.ExpiredToplevelScanner;
+import com.arjuna.ats.internal.jts.recovery.transactions.ServerTransactionRecoveryModule;
+import com.arjuna.ats.internal.jts.recovery.transactions.TopLevelTransactionRecoveryModule;
+import com.arjuna.ats.internal.txoj.recovery.TORecoveryModule;
+import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+import com.arjuna.orbportability.internal.utils.PostInitLoader;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
@@ -44,19 +53,9 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.omg.CORBA.ORB;
 
-import com.arjuna.ats.arjuna.common.RecoveryEnvironmentBean;
-import com.arjuna.ats.arjuna.common.recoveryPropertyManager;
-import com.arjuna.ats.internal.arjuna.recovery.AtomicActionRecoveryModule;
-import com.arjuna.ats.internal.arjuna.recovery.ExpiredTransactionStatusManagerScanner;
-import com.arjuna.ats.internal.jta.recovery.arjunacore.CommitMarkableResourceRecordRecoveryModule;
-import com.arjuna.ats.internal.jts.recovery.contact.ExpiredContactScanner;
-import com.arjuna.ats.internal.jts.recovery.transactions.ExpiredServerScanner;
-import com.arjuna.ats.internal.jts.recovery.transactions.ExpiredToplevelScanner;
-import com.arjuna.ats.internal.jts.recovery.transactions.ServerTransactionRecoveryModule;
-import com.arjuna.ats.internal.jts.recovery.transactions.TopLevelTransactionRecoveryModule;
-import com.arjuna.ats.internal.txoj.recovery.TORecoveryModule;
-import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
-import com.arjuna.orbportability.internal.utils.PostInitLoader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A service responsible for exposing the proprietary Arjuna {@link RecoveryManagerService}.
@@ -76,16 +75,23 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
     private final InjectedValue<SocketBinding> statusBindingInjector = new InjectedValue<SocketBinding>();
     private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
     private final InjectedValue<ProcessStateNotifier> processStateInjector = new InjectedValue<>();
+    private final InjectedValue<TransactionRuntimeConfigurator> runtimeConfiguratorInjector = new InjectedValue<>();
+    private final InjectedValue<SocketBindingManager> bindingManager = new InjectedValue<SocketBindingManager>();
 
     private RecoveryManagerService recoveryManagerService;
     private RecoverySuspendController recoverySuspendController;
-    private boolean recoveryListener;
-    private final boolean jts;
-    private InjectedValue<SocketBindingManager> bindingManager = new InjectedValue<SocketBindingManager>();
 
-    public ArjunaRecoveryManagerService(final boolean recoveryListener, final boolean jts) {
+    private final boolean recoveryListener, jts;
+    private final int recoveryPeriod, recoveryBackoffPeriod;
+    private final TransactionRuntimeConfigurator transactionConfigurator;
+
+    public ArjunaRecoveryManagerService(final boolean recoveryListener, final boolean jts, final int recoveryPeriod, final int recoveryBackoffPeriod,
+                                        final TransactionRuntimeConfigurator transactionConfigurator) {
         this.recoveryListener = recoveryListener;
         this.jts = jts;
+        this.recoveryPeriod = recoveryPeriod;
+        this.recoveryBackoffPeriod = recoveryBackoffPeriod;
+        this.transactionConfigurator = transactionConfigurator;
     }
 
     public synchronized void start(StartContext context) throws StartException {
@@ -99,6 +105,8 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
         recoveryEnvironmentBean.setTransactionStatusManagerInetAddress(statusBinding.getSocketAddress().getAddress());
         recoveryEnvironmentBean.setTransactionStatusManagerPort(statusBinding.getSocketAddress().getPort());
         recoveryEnvironmentBean.setRecoveryListener(recoveryListener);
+        recoveryEnvironmentBean.setPeriodicRecoveryPeriod(recoveryPeriod);
+        recoveryEnvironmentBean.setRecoveryBackoffPeriod(recoveryBackoffPeriod);
 
         if (recoveryListener){
             ManagedBinding binding = ManagedBinding.Factory.createSimpleManagedBinding(recoveryBinding);
@@ -152,7 +160,6 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
             recoveryEnvironmentBean.setExpiryScannerClassNames(expiryScanners);
             recoveryEnvironmentBean.setRecoveryActivatorClassNames(Collections.singletonList(com.arjuna.ats.internal.jts.orbspecific.recovery.RecoveryEnablement.class.getName()));
 
-
             try {
                 final RecoveryManagerService recoveryManagerService = new com.arjuna.ats.jbossatx.jts.RecoveryManagerService(orb);
                 recoveryManagerService.create();
@@ -163,7 +170,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
             }
         }
 
-        recoverySuspendController = new RecoverySuspendController(recoveryManagerService);
+        recoverySuspendController = new RecoverySuspendController(recoveryManagerService, transactionConfigurator);
         processStateInjector.getValue().addPropertyChangeListener(recoverySuspendController);
         suspendControllerInjector.getValue().registerActivity(recoverySuspendController);
     }

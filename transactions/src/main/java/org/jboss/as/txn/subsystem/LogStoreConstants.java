@@ -44,6 +44,7 @@ class LogStoreConstants {
     static final String RECOVER = "recover";
     static final String DELETE = "delete";
     static final String REFRESH = "refresh";
+    static final String PROCESS_RECOVERY = "process-recovery";
 
     public static final String LOG_STORE = "log-store";
     public static final String TRANSACTIONS = "transactions";
@@ -51,7 +52,7 @@ class LogStoreConstants {
 
 
 
-    static enum ParticipantStatus {
+    enum ParticipantStatus {
         PENDING,
         PREPARED,
         FAILED,
@@ -87,8 +88,8 @@ class LogStoreConstants {
                 put("eis-product-version", "EisProductVersion");
             }});
 
-    static final String[] TXN_JMX_NAMES = MODEL_TO_JMX_TXN_NAMES.values().toArray(new String[MODEL_TO_JMX_TXN_NAMES.size()]);
-    static final String[] PARTICIPANT_JMX_NAMES = MODEL_TO_JMX_PARTICIPANT_NAMES.values().toArray(new String[MODEL_TO_JMX_PARTICIPANT_NAMES.size()]);
+    static final String[] TXN_JMX_NAMES = MODEL_TO_JMX_TXN_NAMES.values().toArray(new String[0]);
+    static final String[] PARTICIPANT_JMX_NAMES = MODEL_TO_JMX_PARTICIPANT_NAMES.values().toArray(new String[0]);
 
     static SimpleAttributeDefinition LOG_STORE_TYPE = (new SimpleAttributeDefinitionBuilder(LOG_STORE_TYPE_ATTRIBUTE, ModelType.STRING))
             .setAllowExpression(false)

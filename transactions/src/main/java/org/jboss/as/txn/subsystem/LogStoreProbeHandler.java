@@ -75,7 +75,7 @@ public class LogStoreProbeHandler implements OperationStepHandler {
         }
 
         AttributeList attributes = cnx.getAttributes(on, attributeNames);
-        Map<String, String> values = new HashMap<String, String>();
+        Map<String, String> values = new HashMap<>();
 
         for (javax.management.Attribute attribute : attributes.asList()) {
             Object value = attribute.getValue();
@@ -162,9 +162,7 @@ public class LogStoreProbeHandler implements OperationStepHandler {
             addTransactions(resource, transactions, mbs);
             return resource;
 
-        } catch (JMException e) {
-            throw new OperationFailedException("Transaction discovery error: ", e);
-        } catch (IOException e) {
+        } catch (JMException | IOException e) {
             throw new OperationFailedException("Transaction discovery error: ", e);
         }
     }

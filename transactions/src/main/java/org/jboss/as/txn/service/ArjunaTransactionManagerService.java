@@ -82,12 +82,11 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
-
         final CoordinatorEnvironmentBean coordinatorEnvironmentBean = arjPropertyManager.getCoordinatorEnvironmentBean();
         coordinatorEnvironmentBean.setEnableStatistics(coordinatorEnableStatistics);
         coordinatorEnvironmentBean.setDefaultTimeout(coordinatorDefaultTimeout);
         coordinatorEnvironmentBean.setTransactionStatusManagerEnable(transactionStatusManagerEnable);
-
+        // ensure to define the applicable variables in the TxControl as well
         TxControl.setDefaultTimeout(coordinatorDefaultTimeout);
 
         // Object Store Browser bean

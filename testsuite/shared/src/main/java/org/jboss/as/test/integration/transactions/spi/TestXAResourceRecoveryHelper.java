@@ -76,8 +76,8 @@ public class TestXAResourceRecoveryHelper implements XAResourceRecoveryHelper {
     @PostConstruct
     public void postConstruct() {
         log.debug("TestXAResourceRecoveryHelper starting");
-        this.testXaResourceInstance = new TestXAResource(transactionCheckerSingleton);
         this.persistentTestXaResourceInstance = new PersistentTestXAResource(transactionCheckerSingleton);
+        this.testXaResourceInstance = new TestXAResource(transactionCheckerSingleton);
         getRecoveryModule().addXAResourceRecoveryHelper(this);
     }
 
@@ -107,6 +107,7 @@ public class TestXAResourceRecoveryHelper implements XAResourceRecoveryHelper {
     public XAResource[] getXAResources() throws Exception {
         log.debugf("getXAResources() instances: %s and %s", testXaResourceInstance, persistentTestXaResourceInstance);
         return new XAResource[]{testXaResourceInstance, persistentTestXaResourceInstance};
+
     }
 
     /**

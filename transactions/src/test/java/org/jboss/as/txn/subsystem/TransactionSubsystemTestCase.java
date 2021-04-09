@@ -51,7 +51,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-txn_6_0.xsd";
+        return "schema/wildfly-txn_6_1.xsd";
     }
 
     @Override
@@ -119,6 +119,11 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testParser_EAP_7_4() throws Exception {
+        standardSubsystemTest("full-6.0.0.xml");
+    }
+
+    @Test
+    public void testParser_EAP_NEXT() throws Exception {
         standardSubsystemTest("full.xml");
     }
 

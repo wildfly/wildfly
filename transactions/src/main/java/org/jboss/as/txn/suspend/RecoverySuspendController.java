@@ -26,14 +26,22 @@ import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
+import org.jboss.as.txn.service.TransactionRuntimeConfigurator;
+import org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
+ * <p>
  * Listens for notifications from a {@code SuspendController} and a {@code ProcessStateNotifier} and reacts
  * to them by {@link RecoveryManagerService#suspend() suspending} or {@link RecoveryManagerService#resume() resuming}
  * the {@link RecoveryManagerService}.
+ * </p>
+ * <p>
+ * If the {@link TransactionSubsystemRootResourceDefinition#STOP_RECOVERY_WHEN_SUSPENDED} is configured with value {@code false}
+ * then the {@code suspend()} method execution is omitted and the recovery manager is not suspended.
+ * </p>
  *
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  */
@@ -42,20 +50,27 @@ public class RecoverySuspendController implements ServerActivity, PropertyChange
     private final RecoveryManagerService recoveryManagerService;
     private boolean suspended;
     private boolean running;
+    private final TransactionRuntimeConfigurator configurator;
 
-    public RecoverySuspendController(RecoveryManagerService recoveryManagerService) {
+    public RecoverySuspendController(RecoveryManagerService recoveryManagerService, TransactionRuntimeConfigurator configurator) {
         this.recoveryManagerService = recoveryManagerService;
+        this.configurator = configurator;
     }
 
     /**
-     * {@link RecoveryManagerService#suspend() Suspends} the {@link RecoveryManagerService}.
+     * {@link RecoveryManagerService#suspend() Suspends} the {@link RecoveryManagerService}
+     * when not disallowed by attribute {@link TransactionSubsystemRootResourceDefinition#STOP_RECOVERY_WHEN_SUSPENDED}
+     * being set to {@code true}.
      */
     @Override
     public void preSuspend(ServerActivityCallback serverActivityCallback) {
         synchronized (this) {
             suspended = true;
         }
-        recoveryManagerService.suspend();
+        if (configurator.isStopRecoveryManagerOnSuspend()) {
+            recoveryManagerService.suspend();
+        }
+
         serverActivityCallback.done();
     }
 
@@ -105,4 +120,5 @@ public class RecoverySuspendController implements ServerActivity, PropertyChange
     private void resumeRecovery() {
         recoveryManagerService.resume();
     }
+
 }

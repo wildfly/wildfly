@@ -22,21 +22,9 @@
 
 package org.jboss.as.txn.subsystem;
 
-import static org.jboss.as.txn.subsystem.CommonAttributes.CM_RESOURCE;
-import static org.jboss.as.txn.subsystem.CommonAttributes.JDBC_STORE_DATASOURCE;
-import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
-import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JOURNAL_STORE;
-import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JDBC_STORE;
-import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.REMOTE_TRANSACTION_SERVICE_CAPABILITY;
-import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY;
-
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
-
+import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
+import com.arjuna.ats.jta.common.JTAEnvironmentBean;
+import com.arjuna.ats.jts.common.jtsPropertyManager;
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -72,14 +60,15 @@ import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.as.txn.service.ArjunaObjectStoreEnvironmentService;
 import org.jboss.as.txn.service.ArjunaRecoveryManagerService;
 import org.jboss.as.txn.service.ArjunaTransactionManagerService;
-import org.jboss.as.txn.service.JBossContextXATerminatorService;
 import org.jboss.as.txn.service.CoreEnvironmentService;
 import org.jboss.as.txn.service.ExtendedJBossXATerminatorService;
+import org.jboss.as.txn.service.JBossContextXATerminatorService;
 import org.jboss.as.txn.service.JTAEnvironmentBeanService;
 import org.jboss.as.txn.service.LocalTransactionContextService;
 import org.jboss.as.txn.service.RemotingTransactionServiceService;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.TransactionRemoteHTTPService;
+import org.jboss.as.txn.service.TransactionRuntimeConfigurator;
 import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.as.txn.service.UserTransactionAccessControlService;
@@ -102,12 +91,22 @@ import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
 import org.wildfly.iiop.openjdk.service.CorbaNamingService;
-
-import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
-import com.arjuna.ats.jta.common.JTAEnvironmentBean;
-import com.arjuna.ats.jts.common.jtsPropertyManager;
 import org.wildfly.transaction.client.ContextTransactionManager;
 import org.wildfly.transaction.client.LocalTransactionContext;
+
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
+import java.util.LinkedList;
+import java.util.List;
+
+import static org.jboss.as.txn.subsystem.CommonAttributes.CM_RESOURCE;
+import static org.jboss.as.txn.subsystem.CommonAttributes.JDBC_STORE_DATASOURCE;
+import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
+import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JDBC_STORE;
+import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JOURNAL_STORE;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.REMOTE_TRANSACTION_SERVICE_CAPABILITY;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY;
 
 /**
  * Adds the transaction management subsystem.
@@ -191,6 +190,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         //core environment
         TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.validateAndSet(operation, model);
 
+        TransactionSubsystemRootResourceDefinition.ORPHAN_SAFETY_INTERVAL.validateAndSet(operation, model);
+
         // We have some complex logic for the 'process-id' stuff because of the alternatives
         if (operation.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()) && operation.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).asBoolean()) {
             TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.validateAndSet(operation, model);
@@ -221,6 +222,9 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         TransactionSubsystemRootResourceDefinition.BINDING.validateAndSet(operation, model);
         TransactionSubsystemRootResourceDefinition.STATUS_BINDING.validateAndSet(operation, model);
         TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.validateAndSet(operation, model);
+        TransactionSubsystemRootResourceDefinition.RECOVERY_PERIOD.validateAndSet(operation, model);
+        TransactionSubsystemRootResourceDefinition.RECOVERY_BACKOFF_PERIOD.validateAndSet(operation, model);
+        TransactionSubsystemRootResourceDefinition.STOP_RECOVERY_WHEN_SUSPENDED.validateAndSet(operation, model);
     }
 
     private void validateStoreConfig(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -423,8 +427,16 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String recoveryBindingName = TransactionSubsystemRootResourceDefinition.BINDING.resolveModelAttribute(context, model).asString();
         final String recoveryStatusBindingName = TransactionSubsystemRootResourceDefinition.STATUS_BINDING.resolveModelAttribute(context, model).asString();
         final boolean recoveryListener = TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.resolveModelAttribute(context, model).asBoolean();
+        final int recoveryPeriod = TransactionSubsystemRootResourceDefinition.RECOVERY_PERIOD.resolveModelAttribute(context, model).asInt();
+        final int recoveryBackoffPeriod = TransactionSubsystemRootResourceDefinition.RECOVERY_BACKOFF_PERIOD.resolveModelAttribute(context, model).asInt();
+        final boolean isStopRecoveryWhenSuspended = TransactionSubsystemRootResourceDefinition.STOP_RECOVERY_WHEN_SUSPENDED.resolveModelAttribute(context, model).asBoolean();
 
-        final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService(recoveryListener, jts);
+        TransactionRuntimeConfigurator configurator =
+                context.getCapabilityRuntimeAPI(TransactionSubsystemRootResourceDefinition.TRANSACTION_RUNTIME_CONFIGURATOR_CAPABILITY.getName(),
+                        TransactionRuntimeConfigurator.class);
+        configurator.setStopRecoveryManagerOnSuspend(isStopRecoveryWhenSuspended);
+
+        final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService(recoveryListener, jts, recoveryPeriod, recoveryBackoffPeriod, configurator);
         final ServiceBuilder<?> recoveryManagerServiceServiceBuilder = serviceTarget
                 .addCapability(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY)
                 .setInstance(recoveryManagerService)
@@ -474,8 +486,10 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, model).asString();
+        final int orphanSafetyInterval = TransactionSubsystemRootResourceDefinition.ORPHAN_SAFETY_INTERVAL.resolveModelAttribute(context, model).asInt();
+
         // install Jakarta Transactions environment bean service
-        final JTAEnvironmentBeanService jtaEnvironmentBeanService = new JTAEnvironmentBeanService(nodeIdentifier);
+        final JTAEnvironmentBeanService jtaEnvironmentBeanService = new JTAEnvironmentBeanService(nodeIdentifier, orphanSafetyInterval);
         serviceTarget.addService(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, jtaEnvironmentBeanService)
                 .setInitialMode(Mode.ACTIVE)
                 .install();

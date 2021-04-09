@@ -41,18 +41,40 @@ import java.util.Collection;
  * to the file under <code>jboss.server.data.dir</code>.
  * This capability is needed when server crash with recovery is tested.
  */
-class XidsPersister {
+public class XidsPersister {
     private static final Logger log = Logger.getLogger(XidsPersister.class);
 
-    private String fileToPersit;
+    private final String fileToPersit;
+    private final File directoryToPersist;
 
     XidsPersister(String fileToPersit) {
         this.fileToPersit = fileToPersit;
+        this.directoryToPersist = new File(System.getProperty("jboss.server.data.dir"));
     }
 
-    synchronized void writeToDisk(Collection<Xid> xidsToSave) {
+    public XidsPersister(File directoryToPersist, String fileToPersit) {
+        if (fileToPersit == null || directoryToPersist == null) {
+            throw new NullPointerException("directoryToPersist: " + directoryToPersist + ", fileToPersist: " + fileToPersit);
+        }
+        this.fileToPersit = fileToPersit;
+        this.directoryToPersist = directoryToPersist;
+    }
+
+    /**
+     * Writing the Xids as they are (expecting being {@link java.io.Serializable})
+     * to the persisted log file. It replaces the content existing before this method is executed.
+     *
+     * When {@code null} is provided as parameter then it's equal to removing the content
+     * of the file and replacing it with empty set of Xids.
+     *
+     * @param xidsToSave {@link Xid}s to be saved to file
+     */
+    public synchronized void writeToDisk(Collection<Xid> xidsToSave) {
         Path logFile = getLogFile();
         FileOutputStream fos = null;
+        if (xidsToSave == null) { // when null is provided then save just a clean set of Xids
+            xidsToSave = new ArrayList<>();
+        }
         try {
             fos = new FileOutputStream(logFile.toFile());
             ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -69,8 +91,13 @@ class XidsPersister {
         }
     }
 
+    /**
+     * Returning the list of {@link Xid} which were saved to the persisted log file.
+     *
+     * @return list of {@link Xid}s
+     */
     @SuppressWarnings("unchecked")
-    synchronized Collection<Xid> recoverFromDisk() {
+    public synchronized Collection<Xid> recoverFromDisk() {
         Path logFile = getLogFile();
         if (!logFile.toFile().exists()) {
             log.debugf("There is no file %s with recovery data for the test XAResource, no data for recovery", logFile);
@@ -97,11 +124,10 @@ class XidsPersister {
         }
     }
 
-    private Path getLogFile() {
+    Path getLogFile() {
         try {
-            File dataDir = new File(System.getProperty("jboss.server.data.dir"));
-            dataDir.mkdirs();
-            return dataDir.toPath().resolve(this.fileToPersit);
+            directoryToPersist.mkdirs();
+            return directoryToPersist.toPath().resolve(this.fileToPersit);
         } catch (InvalidPathException e) {
             throw new IllegalStateException("Cannot resolve path of recovery file " + this.fileToPersit
                     + " for storing test XAResource data persistently");

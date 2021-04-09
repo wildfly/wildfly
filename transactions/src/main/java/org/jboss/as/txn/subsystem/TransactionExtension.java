@@ -52,14 +52,13 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class TransactionExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "transactions";
-    /**
-     * The operation name to resolve the object store path
-     */
+
+    // The operation name to resolve the object store path
     public static final String RESOLVE_OBJECT_STORE_PATH = "resolve-object-store-path";
 
     private static final String RESOURCE_NAME = TransactionExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(6, 0, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(6, 1, 0);
 
 
     private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
@@ -135,5 +134,6 @@ public class TransactionExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_4_0.getUriString(), TransactionSubsystem40Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_5_0.getUriString(), TransactionSubsystem50Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_6_0.getUriString(), TransactionSubsystem60Parser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_6_1.getUriString(), TransactionSubsystem61Parser::new);
     }
 }

@@ -57,12 +57,19 @@ public class LogStoreDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
+
         final OperationDefinition probe = new SimpleOperationDefinitionBuilder(LogStoreConstants.PROBE, getResourceDescriptionResolver())
                                 .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY) // TODO WFLY-8852 decide how we want to handle this in a domain
                                 .setRuntimeOnly()
                                 .setReadOnly()
                                 .build();
         resourceRegistration.registerOperationHandler(probe, LogStoreProbeHandler.INSTANCE);
+
+        final OperationDefinition processRecovery = new SimpleOperationDefinitionBuilder(LogStoreConstants.PROCESS_RECOVERY, getResourceDescriptionResolver())
+                .setRuntimeOnly()
+                .setReadOnly()
+                .build();
+        resourceRegistration.registerOperationHandler(processRecovery, LogStoreProcessRecoveryHandler.INSTANCE);
     }
 
 
