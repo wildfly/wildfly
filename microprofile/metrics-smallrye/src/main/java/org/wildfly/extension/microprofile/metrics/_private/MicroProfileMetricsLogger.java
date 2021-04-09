@@ -67,4 +67,7 @@ public interface MicroProfileMetricsLogger extends BasicLogger {
     // no longer used
     // @Message(id = 5, value = "Metric attribute %s on %s is undefined and will not be exposed.")
     // IllegalStateException undefinedMetric(String attributeName, PathAddress address);
+
+    @Message(id = 6, value = "The metric was unavailable")
+    IllegalStateException metricUnavailable();
 }
