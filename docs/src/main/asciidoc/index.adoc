@@ -30,7 +30,10 @@ of configuration options available via the WildFly management model.
 [[installation-guides]]
 == Installation Guides
 
-* The link:Installation_Guide{outfilesuffix}[Installation Guide] help you identify 
+* The link:WildFly_and_WildFly_Preview{outfilesuffix}[WildFly and WildFly Preview] document introduces the different
+appserver variants produced by the WildFly project: the standard WildFly variant and the early-look tech preview
+WildFly Preview variant.
+* The link:Installation_Guide{outfilesuffix}[Installation Guide] helps you identify
 the kind of WildFly installation that best fits your application's deployment needs:
 a WildFly zip installation, a WildFly server provisioned with Galleon or a WildFly bootable JAR.
 
