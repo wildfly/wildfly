@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.url;
 
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
+
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import java.net.URL;
@@ -43,12 +45,8 @@ public class URLConnectionFactoryResourceInjectionTestEJB {
      * @throws Exception
      */
     public void validateResourceInjection() throws Exception {
-        if (url1 == null) {
-           throw new NullPointerException("url1 resource not injected");
-        }
-        if (url2 == null) {
-            throw new NullPointerException("url2 resource not injected");
-        }
+        checkNotNullParamWithNullPointerException("url1", url1);
+        checkNotNullParamWithNullPointerException("url2", url2);
     }
 
 }

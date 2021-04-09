@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ee.injection.support.servlet;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -38,10 +40,7 @@ public class TestReadListener implements ReadListener {
     private final TestHttpUpgradeHandler handler;
 
     public TestReadListener(TestHttpUpgradeHandler handler) {
-        if (handler == null) {
-            throw new IllegalArgumentException("No upgrade handler set");
-        }
-        this.handler = handler;
+        this.handler = checkNotNullParam("handler", handler);
     }
 
     @Override
