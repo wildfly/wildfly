@@ -34,6 +34,8 @@
 
     <dependencies>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
+        <!-- Required for the IBM J9 1.8 -->
+        <module name="java.se"/>
         <module name="javax.mail.api" optional="true"/>
         <module name="javax.activation.api" optional="true"/>
         <module name="org.bouncycastle.bcpkix"/>
