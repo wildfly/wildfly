@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.util;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
@@ -104,8 +106,7 @@ public class Injection {
                        String propertyName, Object propertyValue, String propertyType,
                        boolean includeFields)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        if (object == null)
-            throw new IllegalArgumentException(ConnectorLogger.ROOT_LOGGER.nullVar("Object"));
+        checkNotNullParam("object", object);
 
         if (propertyName == null || propertyName.trim().equals(""))
             throw ConnectorLogger.ROOT_LOGGER.undefinedVar("PropertyName");
