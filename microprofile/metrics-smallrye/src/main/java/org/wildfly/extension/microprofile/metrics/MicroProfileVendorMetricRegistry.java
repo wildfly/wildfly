@@ -24,6 +24,8 @@ package org.wildfly.extension.microprofile.metrics;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.BASE;
 import static org.eclipse.microprofile.metrics.MetricRegistry.Type.VENDOR;
 import static org.wildfly.extension.metrics.MetricMetadata.Type.COUNTER;
+import static org.wildfly.extension.microprofile.metrics._private.MicroProfileMetricsLogger.LOGGER;
+
 
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -66,14 +68,27 @@ public class MicroProfileVendorMetricRegistry implements MetricRegistry {
                 @Override
                 public long getCount() {
                     OptionalDouble value = metric.getValue();
-                    return  Double.valueOf(value.orElse(0)).longValue();
+
+                    if (!value.isPresent()) {
+                        // Smallrye will discard reporting this metric if we throw a
+                        // RuntimeException, after logging at DEBUG. That's what we want.
+                        throw LOGGER.metricUnavailable();
+                    }
+                    return Double.valueOf(value.getAsDouble()).longValue();
                 }
             };
         } else {
             mpMetric = new Gauge<Number>() {
                 @Override
                 public Double getValue() {
-                    return metric.getValue().orElse(0);
+                    OptionalDouble value = metric.getValue();
+
+                    if (!value.isPresent()) {
+                        // Smallrye will discard reporting this metric if we throw a
+                        // RuntimeException, after logging at DEBUG. That's what we want.
+                        throw LOGGER.metricUnavailable();
+                    }
+                    return value.getAsDouble();
                 }
             };
         }
