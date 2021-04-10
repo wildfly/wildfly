@@ -144,6 +144,9 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
                 && !entrySet.iterator().next().equals(threadPoolPath.getLastElement().getValue())) {
             throw ConnectorLogger.ROOT_LOGGER.oneThreadPoolWorkManager(threadPoolPath.getLastElement().getValue(), type, workManagerPath.getLastElement().getValue());
         }
+        if(!context.getCurrentAddressValue().equals(workManagerPath.getLastElement().getValue())) {
+            throw ConnectorLogger.ROOT_LOGGER.threadPoolNameMustMatchWorkManagerName(threadPoolPath.getLastElement().getValue(), type, workManagerPath.getLastElement().getValue());
+        }
     }
 
     public enum WmParameters {
