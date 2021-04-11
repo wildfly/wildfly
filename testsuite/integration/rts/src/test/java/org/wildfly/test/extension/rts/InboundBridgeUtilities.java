@@ -1,5 +1,7 @@
 package org.wildfly.test.extension.rts;
 
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
+
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.jboss.jbossts.star.util.TxLinkNames;
@@ -65,7 +67,7 @@ final class InboundBridgeUtilities {
      * is placed exactly once in the {@link JSONArray}.
      */
     protected void assertJsonArray(JSONArray invocationsJSONArray, String recordToAssert, int expectedRecordFoundCount) throws JSONException {
-        if(recordToAssert == null) throw new NullPointerException("recordToAssert");
+        checkNotNullParamWithNullPointerException("recordToAssert", recordToAssert);
         int recordFoundCount = 0;
         for(int i = 0; i < invocationsJSONArray.length(); i++) {
             if(recordToAssert.equals(invocationsJSONArray.get(i))) {
