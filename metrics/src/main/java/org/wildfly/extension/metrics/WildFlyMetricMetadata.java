@@ -21,10 +21,10 @@
  */
 package org.wildfly.extension.metrics;
 
-import static java.util.Objects.requireNonNull;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,18 +50,13 @@ public class WildFlyMetricMetadata implements MetricMetadata {
     private MetricID metricID;
 
     public WildFlyMetricMetadata(String attributeName, PathAddress address, String prefix, String description, MeasurementUnit unit, Type type) {
-        requireNonNull(attributeName);
-        requireNonNull(address);
-        requireNonNull(prefix);
-        requireNonNull(description);
-        requireNonNull(type);
+        this.attributeName = checkNotNullParamWithNullPointerException("attributeName", attributeName);
+        this.address = checkNotNullParamWithNullPointerException("address", address);
+        this.globalPrefix =checkNotNullParamWithNullPointerException("prefix", prefix);
+        this.description = checkNotNullParamWithNullPointerException("description", description);
+        this.type = checkNotNullParamWithNullPointerException("type", type);
 
-        this.attributeName = attributeName;
-        this.address = address;
-        this.globalPrefix = prefix;
-        this.description = description;
         this.unit = unit != null ? unit : MeasurementUnit.NONE;
-        this.type = type;
 
         init();
     }
