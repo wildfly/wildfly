@@ -56,10 +56,10 @@ import java.util.Properties;
 import java.util.PropertyPermission;
 
 /**
- * <p>Validates that the provided implementation of {@link ClusterNodeSelector} is being used by the ejb client to
+ * <p>Validates that the provided implementation of {@link ClusterNodeSelector} is being used by the Jakarta Enterprise Beans client to
  * select the node of the cluster to route the request to;</p>
  * <p>This relies on the cluster provisioning the client with a cluster view containing the correct affinity for the
- * EJB being invoked;</p>
+ * Jakarta Enterprise Beans being invoked;</p>
  * <p>This test basically replicates test org.jboss.ejb.client.test.ClusterNodeSelectorTestCase in project
  * jboss-ejb-client (credits to <a href="mailto:rachmato@redhat.com">Richard Achmatowicz</a>);</p>
  * <p>This test was added after the functionality was broken because of the affinity not being correctly sent to the
@@ -184,7 +184,7 @@ public class ClientClusterNodeSelectorTestCase extends AbstractClusteringTestCas
     }
 
     /**
-     * Test archive containing the EJB to call
+     * Test archive containing the Jakarta Enterprise Beans to call
      */
     private static Archive<?> createDeployment() {
         return ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar")

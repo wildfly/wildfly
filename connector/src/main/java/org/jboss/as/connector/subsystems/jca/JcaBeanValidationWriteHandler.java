@@ -30,7 +30,7 @@ import org.jboss.dmr.ModelNode;
 
 /**
  * {@link org.jboss.as.controller.OperationStepHandler} for the {@code write-attribute} operation for the
- * {@link JcaArchiveValidationDefinition bean validation resource}.
+ * {@link JcaArchiveValidationDefinition Jakarta Bean Validation resource}.
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */

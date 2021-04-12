@@ -22,7 +22,6 @@
 
 package org.wildfly.clustering.web.infinispan.routing;
 
-import java.util.AbstractMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -56,7 +55,7 @@ public class RouteRegistryEntryProviderServiceConfigurator extends SimpleService
 
     @Override
     public Map.Entry<String, Void> apply(String route) {
-        return new AbstractMap.SimpleImmutableEntry<>(route, null);
+        return new RouteRegistryEntry(route);
     }
 
     @Override

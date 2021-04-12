@@ -28,14 +28,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
-import javax.management.ServiceNotFoundException;
-
 import org.jboss.msc.service.LifecycleEvent;
 import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.clustering.service.CountDownLifecycleListener;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
+import org.jboss.msc.service.ServiceNotFoundException;
 
 /**
  * Starts/stops a given {@link ServiceController}.

@@ -24,7 +24,6 @@ package org.wildfly.clustering.infinispan.client.manager;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 import javax.transaction.TransactionManager;
 
@@ -32,11 +31,12 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
-import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.near.NearCacheService;
 import org.wildfly.clustering.Registrar;
+import org.wildfly.clustering.infinispan.client.NearCacheFactory;
 import org.wildfly.clustering.infinispan.client.RegisteredRemoteCache;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
+import org.wildfly.clustering.infinispan.client.near.SimpleNearCacheFactory;
 
 /**
  * Extends Infinispan's {@link org.infinispan.client.hotrod.RemoteCacheManager}
@@ -45,7 +45,7 @@ import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
  */
 public class RemoteCacheManager extends org.infinispan.client.hotrod.RemoteCacheManager implements RemoteCacheContainer {
 
-    private final Map<String, Function<ClientListenerNotifier, NearCacheService<?, ?>>> nearCacheFactories = new ConcurrentHashMap<>();
+    private final Map<String, NearCacheFactory<?, ?>> nearCacheFactories = new ConcurrentHashMap<>();
     private final String name;
     private final Registrar<String> registrar;
 
@@ -70,11 +70,10 @@ public class RemoteCacheManager extends org.infinispan.client.hotrod.RemoteCache
         return new RegisteredRemoteCache<>(this, super.getCache(cacheName, forceReturnValue, transactionMode, transactionManager), this.registrar);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <K, V> NearCacheRegistration registerNearCacheFactory(String cacheName, Function<ClientListenerNotifier, NearCacheService<K, V>> factory) {
-        Map<String, Function<ClientListenerNotifier, NearCacheService<?, ?>>> factories = this.nearCacheFactories;
-        factories.put(cacheName, (Function<ClientListenerNotifier, NearCacheService<?, ?>>) (Function<?, ?>) factory);
+    public <K, V> NearCacheRegistration registerNearCacheFactory(String cacheName, NearCacheFactory<K, V> factory) {
+        Map<String, NearCacheFactory<?, ?>> factories = this.nearCacheFactories;
+        factories.put(cacheName, factory);
         return new NearCacheRegistration() {
             @Override
             public void close() {
@@ -85,8 +84,9 @@ public class RemoteCacheManager extends org.infinispan.client.hotrod.RemoteCache
 
     @Override
     protected <K, V> NearCacheService<K, V> createNearCacheService(String cacheName, NearCacheConfiguration config) {
+        NearCacheFactory<K, V> defaultFactory = new SimpleNearCacheFactory<>(config);
         @SuppressWarnings("unchecked")
-        Function<ClientListenerNotifier, NearCacheService<K, V>> factory = (cacheName != null) ? (Function<ClientListenerNotifier, NearCacheService<K, V>>) (Function<?, ?>) this.nearCacheFactories.get(cacheName) : null;
-        return (factory != null) ? factory.apply(this.listenerNotifier) : super.createNearCacheService(cacheName, config);
+        NearCacheFactory<K, V> factory = (cacheName != null) ? (NearCacheFactory<K, V>) this.nearCacheFactories.getOrDefault(cacheName, defaultFactory) : defaultFactory;
+        return factory.createService(this.listenerNotifier);
     }
 }

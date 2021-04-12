@@ -22,12 +22,14 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.connector">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.connector">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <exports>
+        <exclude path="org/jboss/as/connector/_drivermanager"/>
         <exclude path="org/jboss/as/connector/logging"/>
     </exports>
 
@@ -36,9 +38,13 @@
     </resources>
 
     <dependencies>
+        <module name="java.logging"/>
+        <module name="java.naming"/>
+        <module name="java.security.jgss"/>
+        <module name="java.sql"/>
         <module name="javax.security.auth.message.api" />
         <module name="sun.jdk"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.resource.api"/>
         <module name="javax.transaction.api"/>
         <module name="javax.annotation.api"/>
@@ -74,6 +80,7 @@
         <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.common"/>
         <module name="org.glassfish.jakarta.el"/>
+        <module name="java.xml"/>
     </dependencies>
 
 </module>

@@ -35,8 +35,8 @@ The most significant part of the configuration in `domain.xml` and
 more (in `domain.xml`) "profiles". A profile is a named set of subsystem
 configurations. A subsystem is an added set of capabilities added to the
 core server by an extension (see "Extensions" above). A subsystem
-provides servlet handling capabilities; a subsystem provides an EJB
-container; a subsystem provides JTA, etc. A profile is a named list of
+provides servlet handling capabilities; a subsystem provides an Jakarta Enterprise Beans
+container; a subsystem provides Jakarta Transactions, etc. A profile is a named list of
 subsystems, along with the details of each subsystem's configuration. A
 profile with a large number of subsystems results in a server with a
 large set of capabilities. A profile with a small, focused set of
@@ -213,3 +213,44 @@ element, the value in a `host.xml` taking precedence over anything from
 `domain.xml`, and a value in a `<server-group/>` element taking
 precedence over a value specified directly under the `domain.xml` root
 element.
+
+== Script Configuration Files
+
+Scripts are located in the `$JBOSS_HOME/bin` directory. Within this directory you will find script configuration files
+for standalone and domain startup scripts for each platform. These files can be used to configure your environment
+without having to edit the scripts themselves. For example, you can configure the `JAVA_OPTS` environment variable to
+configure the JVM before the container is launched.
+
+=== Standalone Script Configuration Files:
+
+* `standalone.conf` invoked from `standalone.sh`
+* `standalone.conf.bat` invoked from `standalone.bat`
+* `standalone.conf.ps1` invoked from `standalone.ps1`
+
+=== Domain Script Configuration Files:
+
+* `domain.conf` invoked from `domain.sh`
+* `domain.conf.bat` invoked from `domain.bat`
+* `domain.conf.ps1` invoked from `domain.ps1`
+
+By default, these are in the `$JBOSS_HOME/bin` directory. However, you can set the `STANDALONE_CONF` environment
+variable for standalone servers or `DOMAIN_CONF` environment variable for domain servers with a value of the
+absolute path to the file.
+
+=== Common Script Configuration Files
+
+Starting with WildFly 23, common configuration files were introduced. These files are invoked from every script in the
+`$JBOSS_HOME/bin` directory. While these configuration files are not present in the directory by default, they
+can be added. You can simply just add the `common.conf` configuration file for the script type you want to
+execute and all scripts in the directory will invoke the configuration script.
+
+* `common.conf` for bash scripts
+* `common.conf.bat` for Windows batch scripts
+* `common.conf.ps1` for PowerShell scripts
+
+You can also set the `COMMON_CONF` environment variable to have this configuration script live outside the
+`$JBOSS_HOME/bin` directory.
+
+NOTE: If you provide a common configuration file it will be invoked before the standalone and domain script
+configuration files. For example invoking `standalone.sh` first invokes the `common.conf` then later invokes
+the `standalone.conf`.

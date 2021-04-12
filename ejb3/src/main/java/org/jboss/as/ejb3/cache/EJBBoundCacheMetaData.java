@@ -25,7 +25,7 @@ package org.jboss.as.ejb3.cache;
 import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaData;
 
 /**
- * Metadata represents the pool name configured for EJBs via the jboss-ejb3.xml deployment descriptor
+ * Metadata represents the pool name configured for Jakarta Enterprise Beans via the jboss-ejb3.xml deployment descriptor
  *
  * @author Jaikiran Pai
  */

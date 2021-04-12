@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>24.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-servlet-galleon-pack</artifactId>
@@ -49,9 +49,6 @@
         <galleon-common.resources.directory>${basedir}/../galleon-common/src/main/resources</galleon-common.resources.directory>
         <galleon-pruned.resources.directory>${basedir}/../galleon-pruned/src/main/resources</galleon-pruned.resources.directory>
         <pruned.resources.directory>${basedir}/../pruned/src/main/resources</pruned.resources.directory>
-        <common.license.directory>${basedir}/../common/src/license</common.license.directory>
-        <ee-8-api.license.directory>${basedir}/../ee-8-api/src/license</ee-8-api.license.directory>
-        <pruned.license.directory>${basedir}/../pruned/src/license</pruned.license.directory>
     </properties>
 
     <dependencies>
@@ -59,24 +56,48 @@
         <!-- feature pack dependencies -->
 
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-core-galleon-pack</artifactId>
-            <type>zip</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>org.wildfly.galleon-plugins</groupId>
             <artifactId>wildfly-galleon-plugins</artifactId>
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly.galleon-plugins</groupId>
+            <artifactId>wildfly-config-gen</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- module and copy artifact dependencies -->
+
+        <!-- WildFly Core feature pack content -->
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-feature-pack-common</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-feature-pack-ee-8-api</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-feature-pack-galleon-pruned</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- Bring in all the common deps in one go -->
         <dependency>
@@ -113,8 +134,63 @@
         <finalName>${server.output.dir.prefix}-servlet-galleon-pack-${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
+                <!-- Feature pack generation is vulnerable to leftover files in the target
+                     folder from previous builds, so always clean even if the clean lifecycle is not invoked -->
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-core-common-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wildfly.core</groupId>
+                                    <artifactId>wildfly-core-feature-pack-common</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wildfly.core</groupId>
+                                    <artifactId>wildfly-core-feature-pack-ee-8-api</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wildfly.core</groupId>
+                                    <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wildfly.core</groupId>
+                                    <artifactId>wildfly-core-feature-pack-galleon-pruned</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <overwrite>true</overwrite>
+                </configuration>
                 <executions>
                     <execution>
                         <id>copy-common-feature-pack-resources</id>
@@ -207,12 +283,14 @@
                         <configuration>
                             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                             <licensesConfigFiles>
-                                <licensesConfigFile>${common.license.directory}/feature-pack-licenses.xml</licensesConfigFile>
-                                <licensesConfigFile>${ee-8-api.license.directory}/feature-pack-licenses.xml</licensesConfigFile>
-                                <licensesConfigFile>${pruned.license.directory}/feature-pack-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-ee-8-api-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/servlet-feature-pack-common-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/servlet-feature-pack-ee-8-api-licenses.xml</licensesConfigFile>
                             </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/servlet-feature-pack-licenses.xml</licensesOutputFile>
-                            <excludedArtifacts>wildfly-core-galleon-pack|wildfly-servlet-feature-pack-common|wildfly-servlet-feature-pack-ee-8-api|wildfly-servlet-feature-pack-galleon-common|wildfly-servlet-feature-pack-galleon-pruned</excludedArtifacts>
+                            <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
+                            <excludedArtifacts>wildfly-jar-boot|wildfly-core-feature-pack-galleon-pruned|wildfly-core-feature-pack-common|wildfly-core-feature-pack-ee-8-api|wildfly-core-feature-pack-galleon-common|wildfly-servlet-feature-pack-common|wildfly-servlet-feature-pack-ee-8-api|wildfly-servlet-feature-pack-galleon-common|wildfly-servlet-feature-pack-galleon-legacy|wildfly-elytron\z</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>
@@ -269,8 +347,13 @@
                                                 <exclude>sun.jdk:jconsole</exclude>
                                                 <!-- Ignore the shared resource poms as those we want their
                                                      transitives. Those poms ban transitives at their level -->
+                                                <exclude>org.wildfly.core:wildfly-core-feature-pack-common</exclude>
+                                                <exclude>org.wildfly.core:wildfly-core-feature-pack-ee-8-api</exclude>
+                                                <exclude>org.wildfly.core:wildfly-core-feature-pack-galleon-pruned</exclude>
+                                                <exclude>org.wildfly.core:wildfly-core-feature-pack-galleon-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-servlet-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-servlet-feature-pack-ee-8-api</exclude>
+                                                <exclude>${ee.maven.groupId}:wildfly-servlet-feature-pack-galleon-legacy</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>

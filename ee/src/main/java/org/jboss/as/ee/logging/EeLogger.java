@@ -23,6 +23,7 @@
 package org.jboss.as.ee.logging;
 
 import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
@@ -1151,7 +1152,7 @@ public interface EeLogger extends BasicLogger {
     //void notUsingEE8PreviewMode();
 
     @Message(id = 120, value = "Failed to locate executor service '%s'")
-    OperationFailedException executorServiceNotFoundForMetrics(ServiceName serviceName);
+    OperationFailedException executorServiceNotFound(ServiceName serviceName);
 
     @Message(id = 121, value = "Unsupported attribute '%s'")
     IllegalStateException unsupportedExecutorServiceMetric(String attributeName);
@@ -1163,7 +1164,7 @@ public interface EeLogger extends BasicLogger {
     OperationFailedException oneGlobalDirectory(String newGlobalDirectory, String existingGlobalDirectory);
 
     @LogMessage(level = Level.WARN)
-    @Message(id = 124, value = "Error deleting JACC Policy")
+    @Message(id = 124, value = "Error deleting Jakarta Authorization Policy")
     void errorDeletingJACCPolicy(@Cause Throwable t);
 
     @Message(id = 125, value = "Unable to start the %s service")
@@ -1175,4 +1176,32 @@ public interface EeLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 127, value = "Invalid '%s' name segment for env, name can't start with '/' prefix, prefix has been removed")
     void invalidNamePrefix(String name);
+
+    /**
+     * Logs a warning message indicating a failure when terminating a managed executor's hung task.
+     * @param cause     the cause of the error.
+     * @param executorName the name of the executor.
+     * @param taskName the name of the hung task.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 128, value = "Failure when terminating %s hung task %s")
+    void huntTaskTerminationFailure(@Cause Throwable cause, String executorName, String taskName);
+
+    /**
+     * Logs a message indicating a hung task was cancelled.
+     * @param executorName the name of the executor.
+     * @param taskName the name of the hung task.
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 129, value = "%s hung task %s cancelled")
+    void hungTaskCancelled(String executorName, String taskName);
+
+    /**
+     * Logs a message indicating a hung task was not cancelled.
+     * @param executorName the name of the executor.
+     * @param taskName the name of the hung task.
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 130, value = "%s hung task %s not cancelled")
+    void hungTaskNotCancelled(String executorName, String taskName);
 }

@@ -32,6 +32,8 @@ import org.jboss.as.test.xts.suspend.AbstractTestCase;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+import java.io.FilePermission;
 import java.net.SocketPermission;
 import java.util.Arrays;
 import java.util.List;
@@ -54,10 +56,23 @@ public class AtomicTransactionSuspendTestCase extends AbstractTestCase {
                 AtomicTransactionRemoteService.class, TransactionParticipant.class);
 
         if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
-            war.addAsManifestResource(
-                    PermissionUtils.createPermissionsXmlAsset(new SocketPermission(serverHostPort, "connect, resolve"),
-                            new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp")),
-                    "permissions.xml");
+            war.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                    //This is not catastrophic if absent
+                    ///.../testsuite/integration/xts/xcatalog
+                    //$JAVA_HOME/jre/conf/jaxm.properties
+                    //$JAVA_HOME/jre/lib/jaxws.properties
+                    //$JAVA_HOME/jre/conf/jaxws.properties
+                    new FilePermission(System.getProperties().getProperty("jbossas.ts.integ.dir") + File.separator + "xts" + File.separator
+                            + "xcatalog", "read"),
+                    new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
+                            + "conf" + File.separator + "jaxm.properties", "read"),
+                    new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
+                            + "conf" + File.separator + "jaxws.properties", "read"),
+                    new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
+                            + "lib" + File.separator + "jaxws.properties", "read"),
+                    new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp"),
+                    new SocketPermission(serverHostPort, "connect, resolve")
+            ), "permissions.xml");
         } else {
             war.addAsManifestResource(
                     PermissionUtils.createPermissionsXmlAsset(new SocketPermission(serverHostPort, "connect, resolve")),
@@ -73,10 +88,23 @@ public class AtomicTransactionSuspendTestCase extends AbstractTestCase {
         WebArchive war = getRemoteServiceArchiveBase().addClasses(AtomicTransactionRemoteService.class,
                 TransactionParticipant.class);
         if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
-            war.addAsManifestResource(
-                    PermissionUtils.createPermissionsXmlAsset(new SocketPermission(serverHostPort, "connect, resolve"),
-                            new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp")),
-                    "permissions.xml");
+            war.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                    //This is not catastrophic if absent
+                    ///.../testsuite/integration/xts/xcatalog
+                    //$JAVA_HOME/jre/conf/jaxm.properties
+                    //$JAVA_HOME/jre/lib/jaxws.properties
+                    //$JAVA_HOME/jre/conf/jaxws.properties
+                    new FilePermission(System.getProperties().getProperty("jbossas.ts.integ.dir") + File.separator + "xts" + File.separator
+                            + "xcatalog", "read"),
+                    new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
+                            + "conf" + File.separator + "jaxm.properties", "read"),
+                    new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
+                            + "conf" + File.separator + "jaxws.properties", "read"),
+                    new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
+                            + "lib" + File.separator + "jaxws.properties", "read"),
+                    new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp"),
+                    new SocketPermission(serverHostPort, "connect, resolve")
+            ), "permissions.xml");
         } else {
             war.addAsManifestResource(
                     PermissionUtils.createPermissionsXmlAsset(new SocketPermission(serverHostPort, "connect, resolve")),

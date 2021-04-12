@@ -32,7 +32,7 @@ import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 
 /**
- * Update handler removing a connection factory from the JMS subsystem. The
+ * Update handler removing a connection factory from the Jakarta Messaging subsystem. The
  * runtime action will remove the corresponding {@link ConnectionFactoryService}.
  *
  * @author Emanuel Muckenhuber

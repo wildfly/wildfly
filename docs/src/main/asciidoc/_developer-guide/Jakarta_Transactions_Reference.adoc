@@ -1,0 +1,500 @@
+[[JTA_Reference]]
+= JTA Reference
+
+WildFly uses http://narayana.io[Narayana] as the implementation of the JTA specification.
+Narayana manages transactions in the application server.
+
+== Transactions in Enterprise Java applications
+
+Transactions are one of the core functionalities provided by the container
+for the applications. A developer can manage transactions either with
+the programmatic approach - with API defined by JTA specification.
+Or he can use annotations. There are two types.
+
+* first - EJB annotations, their meaning and capabilities are defined under
+  EJB specification and are valid when used in the EJB component
+* second - CDI annotations, their meaning is defined under JTA specification
+
+[[programmatic-jta]]
+=== Transactions managed with programmatic JTA API
+
+The JTA API is defined under
+https://javaee.github.io/javaee-spec/javadocs/javax/transaction/package-summary.html[`javax.transaction`]
+package. The package could be considered a bit misguiding as it presents classes
+which are expected to be used by application developer. These classes
+are intended as an API for the application server (as the WildFly is).
+
+The user is expected to interact with
+https://javaee.github.io/javaee-spec/javadocs/javax/transaction/UserTransaction.html[`javax.transaction.UserTransaction`]
+which defines the transaction boundaries. The `UserTransaction` could be used
+in case the transaction is not defined by annotation at the method
+- aka. the transaction is not managed by the container. Those are places like
+servlets, CDI bean which is not annotated with `@Transactional` and
+EJBs defined as bean managed.
+
+`UserTransaction` is available via CDI injection
+
+[source,java,options="nowrap"]
+----
+@Inject
+UserTransaction txn;
+----
+
+or with EJB `@Resource` injection where you can additionally define the JNDI
+name to be looked-up. The specification says it's `java:comp/UserTransaction`.
+
+[source,java,options="nowrap"]
+----
+@Resource(lookup = "java:comp/UserTransaction")
+UserTransaction txn;
+----
+
+The code can then look like
+
+[source,java,options="nowrap"]
+----
+@WebServlet(name="TestServlet", urlPatterns={"/"})
+public class TestServlet extends HttpServlet {
+    private static final Logger LOG = Logger.getLogger(TestServlet.class);
+
+    @Inject
+    private UserTransaction txn;
+
+    @PersistenceContext
+    private EntityManager em;
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            txn.begin();
+
+            em.persist(new TestEntity(1, "Mr. Transaction"));
+
+            txn.commit();
+          } catch (NotSupportedException beginExceptions) {
+              LOG.errorf(beginExceptions, "Cannot start transaction: '%s'", txn);
+          } catch (SecurityException | IllegalStateException | RollbackException
+                  | HeuristicMixedException | HeuristicRollbackException commitExceptions) {
+              LOG.errorf(commitExceptions, "Cannot commit transaction: '%s'", txn);
+          } catch (SystemException systemException) {
+              LOG.errorf(systemException, "Unexpected error condition on work with transaction: '%s'", txn);
+          }
+    }
+}
+----
+
+https://javaee.github.io/javaee-spec/javadocs/javax/transaction/TransactionManager.html[`javax.transaction.TransactionManager`]
+is not meant to be used by business logic but if you need to register
+https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html[a synchronization]
+or you need to change transaction timeout (before the `begin()` method is called)
+then it will be the option for you.
+
+The `TransactionManager` could be taken with injection
+and looked-up with the JNDI name
+
+[source,java,options="nowrap"]
+----
+@Inject
+TransactionManager tm;
+
+// or
+
+@Resource(lookup = "java:/TransactionManager")
+TransactionManager tm;
+----
+
+[[in-cdi]]
+=== Transactions in CDI beans
+
+If you start using CDI beans then you can manage transactions either programmatically
+or you can use annotations.
+The https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Transactional.html[`@Transactional`]
+defines transaction boundaries
+(start of the method starts the transaction, while the transaction is finished at its end).
+If the method finishes sucessfully the transaction is committed.
+If the transaction ends with `RuntimeException` then it's rolled-back.
+
+When you define the method to be `@Transactional` you define the behaviour
+of incoming (or non-existent) transactional context.
+Please refer the to documentation for
+https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Transactional.TxType.html[`Transactional.TxType`].
+
+It's important to note that the `TxType` influences the transaction management
+*only* when called with the managed CDI bean. If you call the method directly -
+without the CDI container wraps the invocation then the `TxType` has no effect.
+
+[source,java,options="nowrap"]
+----
+@RequestScope
+public class MyCDIBean {
+  @Inject
+  MyCDIBean myBean;
+
+  @Transactional(TxType.REQUIRED)
+  public void mainMethod() {
+    // CDI container does not wrap the invocation
+    // no new transaction is started
+    innerFunctionality();
+
+    // CDI container starts a new transaction
+    // the method uses TxType.REQUIRES_NEW and is called from the CDI bean
+    myBean.innerFunctionality();
+  }
+
+  @Transactional(TxType.REQUIRES_NEW)
+  private void innerFunctionality() {
+    // some business logic
+  }
+}
+----
+
+NOTE: the exception handling could be influenced by attributes
+      `rollbackOn` and `dontRollbackOn` (of the `@Transactional` annotation)
+
+WARNING: if you use the `@Transactional` for managing transactions boundaries
+         you won't be permitted to use the `UserTransaction` methods.
+         If you do so you can expect a runtime exception being thrown.
+
+The CDI introduces as well a new scope for use with transactions -
+https://javaee.github.io/javaee-spec/javadocs/javax/ejb/SessionContext.html[`@TransactionScoped`].
+
+[[in-ejbs]]
+=== Transactions in EJBs
+
+Transaction management in EJB is administered with two annotations:
+https://javaee.github.io/javaee-spec/javadocs/javax/ejb/TransactionManagement.html[`@TransactionManagement`]
+ https://javaee.github.io/javaee-spec/javadocs/javax/ejb/TransactionAttribute.html[`@TransactionAttribute`].
+
+NOTE: you can define the same behaviour when you use the `ejb-jar.xml`
+      descriptor instead of the annotations
+
+The WildFly provides specific annotation `org.jboss.ejb3.annotation.TransactionTimeout`
+which gives you the chance to change the transaction timeout for a particular bean/method.
+
+NOTE: when you use message-driven bean then the `@TransactionTimeout` does not work
+      and you need to define the timeout through the `@ActivationConfigProperty`:
+      `@ActivationConfigProperty(propertyName="transactionTimeout", propertyValue="1")`
+
+The default behaviour of an EJB is to be
+
+* container managed - transaction boundaries are driven by annotations
+* when the EJB method is invoked - a new transaction is started when no transaction context is available,
+or the method joins the existing transactions when the transaction context is passed by the call
+
+It's the same transactional behaviour as if the EJB is annotated with
+
+[source,java,options="nowrap"]
+----
+@TransactionManagement(TransactionManagementType.CONTAINER)
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+----
+
+==== Container managed transactions
+
+Using the `@TransactionManagement(TransactionManagementType.CONTAINER)` means
+the container is responsible to manage transactions. The boundary of the transaction
+is defined by the start and end of the method and you influence the behaviour by using
+https://javaee.github.io/javaee-spec/javadocs/javax/ejb/TransactionAttribute.html[`@TransactionAttribute`].
+
+If `java.lang.RuntimeException` is thrown the transaction is rolled back.
+https://javaee.github.io/javaee-spec/javadocs/javax/ejb/EJBContext.html[EJBContext]
+could be used to define the transaction should be rolled-back
+by the end of the method when `setRollbackOnly` is used.
+
+[source,java,options="nowrap"]
+----
+@Stateless
+public class MyBean {
+  @PersistenceContext
+  private EntityManager em;
+
+  @Resource
+  EJBContext ctx;
+
+  public void method() {
+    em.persist(new TestEntity());
+    // at the end of the method the rollback is called
+    ctx.setRollbackOnly();
+  }
+}
+----
+
+NOTE: the `EJBContext` let you get the `UserTransaction` but you are not allowed
+      to do any operation with that when you run container managed transaction.
+      You can expect to receive a runtime exception in such case.
+
+==== Bean managed transactions
+
+Using the `@TransactionManagement(TransactionManagementType.BEAN)` means
+the transaction will be managed manually with the use of the JTA API.
+That's with the `UserTransaction` injections and methods on it.
+You can inject the `EJBContext` to get the `UserTransaction` instance too.
+
+NOTE: if a call is made from the container-managed method,
+      passing the transaction context to the bean managed method
+      then the context is suspended. It's similar(!) to
+      call transaction managed bean annotated with
+      `@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)`
+
+==== Transaction synchronization
+
+JTA API gives a chance to react to the event of a finishing transaction.
+The definition says that transaction manager announces the even of `beforeCompletion` and `afterCompletion`
+which are defined by the interface https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html[javax.transaction.Synchronization].
+The https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html#beforeCompletion--[`beforeCompletion`]
+callback is invoked at time the transaction manager starts to commit the global transaction. The invocation is processed in the transaction context.
+The https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html#afterCompletion-int-[`afterCompletion`]
+is invoked after the transaction is committed or rolled-back (and is processed outside of the transaction context).
+
+The user needs just to create a simple Java POJO and implement the interface.
+
+[source,java,options="nowrap"]
+----
+public class MySynchronization
+        implements javax.transaction.Synchronization {
+  @Override
+  public void beforeCompletion() {
+    System.out.println("Transaction is about to be finished"):
+  }
+
+  @Override
+  public void afterCompletion(int status) {
+    System.out.println("Transaction finished with status " + status):
+  }
+}
+----
+
+For registration of the synchronization callback, the user can inject the
+https://docs.oracle.com/javaee/7/api/javax/transaction/TransactionSynchronizationRegistry.html[javax.transaction.TransactionSynchronizationRegistry].
+(the mandated JNDI location for the object is at `java:comp/TransactionSynchronizationRegistry`) and then to register
+the synchronization instance. The instance is bound to the currently active transaction.
+
+[source,java,options="nowrap"]
+----
+@Resource
+TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+
+public void method() {
+  transactionSynchronizationRegistry
+    .registerInterposedSynchronization(new MySynchronization());
+}
+----
+
+The transaction synchronization registry adds other useful methods which are `putResource(Object key, Object value)`
+and `getResource(Object key)`. Their purpose is saving data objects alongside the transaction context.
+When the transaction is active you can store and retrieve the saved data. When the transaction is finished
+and there is no transaction context available (e.g. at `afterCompletion`) the `java.lang.IllegalStateException`
+is thrown.
+
+The other option for the user is to use https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Transaction.html[the transaction object]
+to register the synchronization.
+
+[source,java,options="nowrap"]
+----
+@Resource(lookup = "java:/TransactionManager")
+TransactionManager tm;
+
+public void method() {
+tm.getTransaction().registerSynchronization(new MySynchronization());
+----
+
+When the user runs the Stateful Session Bean he can implement
+interface https://javaee.github.io/javaee-spec/javadocs/javax/ejb/SessionSynchronization.html[javax.ejb.SessionSynchronization]
+(or to use annotations) for the definition of the synchronization callbacks onto the bean.
+The session synchronization defines three methods.
+Of these three methods `afterBegin` is not connected to the transaction synchronization so we will not discuss it further.
+The  following example works with annotations but the bean may just implement the `SessionSynchronization`
+interface and it would work the same way.
+
+[source,java,options="nowrap"]
+----
+// only(!) SFSB can use the capability of SessionSynchronization
+@Stateful
+public class MyStatefulBean {
+  public void method() {
+    System.out.println("Running an important business logic...");
+    Thread.sleep(42000);
+  }
+
+  @BeforeCompletion
+  public void beforeCompletion() {
+    System.out.println("Transaction is about to be finished"):
+  }
+
+  @AfterCompletion
+  public void afterCompletion(boolean committed) {
+    System.out.println("Transaction finished with the outcome "
+      + (committed ? "committed" : "rolled-back")):
+  }
+}
+----
+
+NOTE: for more information about CDI and registration of transaction synchronization
+      look at https://jbossts.blogspot.com/2019/04/jta-and-cdi-integration.html[the article about Narayana integration of CDI events].
+
+[[classloading]]
+== Transactions subsystem class loading
+
+The WildFly classloading is based
+on the https://github.com/jboss-modules/jboss-modules[jboss modules]
+which define the modular class loading system.
+The transactions for CDI comes as the extension and because of it
+this extension has to be available at the application classpath.
+If the application/deployment uses annotations `@Transactional`
+or `@TransactionScoped` then class loading handling is done automatically.
+
+There is one limitation with the CDI with this approach.
+If your application adds the transactional annotations dynamically
+(you adds the annotations dynamically during runtime) then the
+transaction module has to be
+https://docs.jboss.org/author/display/WFLY/Class+Loading+in+WildFly[explicitly added]
+to the application classpath.
+
+This can be done with creating `META-INF/MANIFEST.MF` or
+with use of `jboss-deployment-structure.xml` descriptor. The `MANIFEST.MF`
+could look like
+
+[source]
+----
+Manifest-Version: 1.0
+Dependencies: org.jboss.jts export services
+----
+
+[[troubleshooting]]
+== Transactions troubleshooting
+
+The Narayana component is configured to log only messages with level `WARN`
+(see category `com.arjuna` in the `standalone-*.xml`).
+If you struggle issues of the transactional handling
+you can get a better insight into transaction processing by setting the level to `TRACE`.
+
+```bash
+/subsystem=logging/logger=com.arjuna:write-attribute(name=level,value=TRACE)
+```
+
+The `TRACE` could overwhelm you with information from the transactions subsystem.
+Let's quickly review what are the most important points to look at in the log.
+
+NOTE: It's beneficial to understand how
+      the https://developer.jboss.org/wiki/TwoPhaseCommit2PC[two-phase commit] works.
+
+An example of the log messages produces by Narayana is (the content is shortened for sake of brevity)
+
+```
+[section 1]
+2019-02-05 14:19:39,745 TRACE [com.arjuna.ats.jta] (default task-1) BaseTransaction.begin
+2019-02-05 14:19:39,745 TRACE [com.arjuna.ats.arjuna] (default task-1) StateManager::StateManager( 2, 0 )
+2019-02-05 14:19:39,745 TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::BasicAction()
+2019-02-05 14:19:39,745 TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::Begin() for action-id 0:ffff0a28050c:-a09a5fe:5c598d64:3b
+2019-02-05 14:19:39,745 TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::actionInitialise() for action-id 0:ffff0a28050c:-a09a5fe:5c598d64:3b
+2019-02-05 14:19:39,745 TRACE [com.arjuna.ats.arjuna] (default task-1) ActionHierarchy::ActionHierarchy(1)
+2019-02-05 14:19:39,745 TRACE [com.arjuna.ats.arjuna] (default task-1) ActionHierarchy::add(0:ffff0a28050c:-a09a5fe:5c598d64:3b, 1)
+2019-02-05 14:19:39,745 TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::addChildThread () action 0:ffff0a28050c:-a09a5fe:5c598d64:3b adding Thread[default task-1,5,main]
+2019-02-05 14:19:39,745 TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::addChildThread () action 0:ffff0a28050c:-a09a5fe:5c598d64:3b adding Thread[default task-1,5,main] result = true
+2019-02-05 14:19:39,745 TRACE [com.arjuna.ats.arjuna] (default task-1) TransactionReaper::insert ( BasicAction: 0:ffff0a28050c:-a09a5fe:5c598d64:3b status: ActionStatus.RUNNING, 300 )
+2019-02-05 14:19:39,745 TRACE [com.arjuna.ats.arjuna] (default task-1) ReaperElement::ReaperElement ( BasicAction: 0:ffff0a28050c:-a09a5fe:5c598d64:3b status: ActionStatus.RUNNING, 300 )
+2019-02-05 14:19:39,745 TRACE [com.arjuna.ats.jta] (default task-1) TransactionImple.registerSynchronization - Class: class org.wildfly.transaction.client.AbstractTransaction$AssociatingSynchronization HashCode: 1114413551 toString: org.wildfly.transaction.client.AbstractTransaction$AssociatingSynchronization@426c99ef
+
+
+[section 2]
+TRACE [com.arjuna.ats.jta] (default task-1) TransactionImple.enlistResource ( TestXAResource(TestXAResourceCommon(id:944, xid:null, timeout:299, prepareReturn:0)) )
+TRACE [com.arjuna.ats.jta] (default task-1) TransactionImple.getStatus: javax.transaction.Status.STATUS_ACTIVE
+TRACE [com.arjuna.ats.arjuna] (default task-1) OutputObjectState::OutputObjectState()
+TRACE [com.arjuna.ats.arjuna] (default task-1) FileSystemStore.write_committed(0:ffff0a28050c:-a09a5fe:5c598d64:43, EISNAME)
+TRACE [com.arjuna.ats.arjuna] (default task-1) ShadowingStore.write_state(0:ffff0a28050c:-a09a5fe:5c598d64:43, EISNAME, StateType.OS_ORIGINAL)
+TRACE [com.arjuna.ats.arjuna] (default task-1) ShadowingStore.genPathName(0:ffff0a28050c:-a09a5fe:5c598d64:43, EISNAME, StateType.OS_ORIGINAL)
+TRACE [com.arjuna.ats.arjuna] (default task-1) FileSystemStore.genPathName(0:ffff0a28050c:-a09a5fe:5c598d64:43, EISNAME, 11)
+TRACE [com.arjuna.ats.arjuna] (default task-1) FileSystemStore.openAndLock(data/tx-object-store/ShadowNoFileLockStore/defaultStore/EISNAME/0_ffff0a28050c_-a09a5fe_5c598d64_43, FileLock.F_WRLCK, true)
+TRACE [com.arjuna.ats.arjuna] (default task-1) FileSystemStore.closeAndUnlock(data/tx-object-store/ShadowNoFileLockStore/defaultStore/EISNAME/0_ffff0a28050c_-a09a5fe_5c598d64_43, null, java.io.FileOutputStream@72d0d91)
+TRACE [com.arjuna.ats.arjuna] (default task-1) StateManager::StateManager( 1, 0 )
+TRACE [com.arjuna.ats.arjuna] (default task-1) AbstractRecord::AbstractRecord (0:ffff0a28050c:-a09a5fe:5c598d64:45, 1)
+TRACE [com.arjuna.ats.jta] (default task-1) XAResourceRecord.XAResourceRecord ( < formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffff0a28050c:-a09a5fe:5c598d64:3b, node_name=1, branch_uid=0:ffff0a28050c:-a09a5fe:5c598d64:44, subordinatenodename=null, eis_name=java:/TestXAResource >, TestXAResource(TestXAResourceCommon(id:944, xid:null, timeout:300, prepareReturn:0)) ), record id=0:ffff0a28050c:-a09a5fe:5c598d64:45
+TRACE [com.arjuna.ats.arjuna] (default task-1) RecordList::insert(RecordList: empty) : appending /StateManager/AbstractRecord/XAResourceRecord for 0:ffff0a28050c:-a09a5fe:5c598d64:45
+
+[section 3]
+TRACE [com.arjuna.ats.jta] (default task-1) BaseTransaction.commit
+TRACE [com.arjuna.ats.jta] (default task-1) TransactionImple.commitAndDisassociate
+TRACE [com.arjuna.ats.jta] (default task-1) TransactionImple.getStatus: javax.transaction.Status.STATUS_ACTIVE
+TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::End() for action-id 0:ffff0a28050c:-a09a5fe:5c598d64:3b
+
+[section 4]
+TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::prepare () for action-id 0:ffff0a28050c:-a09a5fe:5c598d64:3b
+TRACE [com.arjuna.ats.jta] (default task-1) XAResourceRecord.topLevelPrepare for XAResourceRecord < resource:TestXAResource(TestXAResourceCommon(id:944, xid:< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffff0a28050c:-a09a5fe:5c598d64:3b, node_name=1, branch_uid=0:ffff0a28050c:-a09a5fe:5c598d64:44, subordinatenodename=null, eis_name=java:/TestXAResource >, timeout:300, prepareReturn:0)), txid:< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffff0a28050c:-a09a5fe:5c598d64:3b, node_name=1, branch_uid=0:ffff0a28050c:-a09a5fe:5c598d64:44, subordinatenodename=null, eis_name=java:/TestXAResource >, heuristic: TwoPhaseOutcome.FINISH_OK, product: Crash Recovery Test/EAP Test, jndiName: java:/TestXAResource com.arjuna.ats.internal.jta.resources.arjunacore.XAResourceRecord@6454bcb3 >, record id=0:ffff0a28050c:-a09a5fe:5c598d64:45
+TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::doPrepare() result for action-id (0:ffff0a28050c:-a09a5fe:5c598d64:3b) on record id: (0:ffff0a28050c:-a09a5fe:5c598d64:45) is (TwoPhaseOutcome.PREPARE_OK) node id: (1)
+TRACE [com.arjuna.ats.arjuna] (default task-1) RecordList::insert(RecordList: empty) : appending /StateManager/AbstractRecord/XAResourceRecord for 0:ffff0a28050c:-a09a5fe:5c598d64:45
+TRACE [com.arjuna.ats.arjuna] (default task-1) OutputObjectState::OutputObjectState(0:ffff0a28050c:-a09a5fe:5c598d64:3b, /StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction)
+TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::save_state ()
+TRACE [com.arjuna.ats.arjuna] (default task-1) StateManager.packHeader for object-id 0:ffff0a28050c:-a09a5fe:5c598d64:3b birth-date 1549372780127
+TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::save_state - next record to pack is a 171 record /StateManager/AbstractRecord/XAResourceRecord should save it? = true
+
+[section 5]
+TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::phase2Commit() for action-id 0:ffff0a28050c:-a09a5fe:5c598d64:3b
+TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::doCommit (XAResourceRecord < resource:TestXAResource(TestXAResourceCommon(id:944, xid:< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffff0a28050c:-a09a5fe:5c598d64:3b, node_name=1, branch_uid=0:ffff0a28050c:-a09a5fe:5c598d64:44, subordinatenodename=null, eis_name=java:/TestXAResource >, timeout:300, prepareReturn:0)), txid:< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffff0a28050c:-a09a5fe:5c598d64:3b, node_name=1, branch_uid=0:ffff0a28050c:-a09a5fe:5c598d64:44, subordinatenodename=null, eis_name=java:/TestXAResource >, heuristic: TwoPhaseOutcome.FINISH_OK, product: Crash Recovery Test/EAP Test, jndiName: java:/TestXAResource com.arjuna.ats.internal.jta.resources.arjunacore.XAResourceRecord@6454bcb3 >)
+TRACE [com.arjuna.ats.jta] (default task-1) XAResourceRecord.topLevelCommit for XAResourceRecord < resource:TestXAResource(TestXAResourceCommon(id:944, xid:< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffff0a28050c:-a09a5fe:5c598d64:3b, node_name=1, branch_uid=0:ffff0a28050c:-a09a5fe:5c598d64:44, subordinatenodename=null, eis_name=java:/TestXAResource >, timeout:300, prepareReturn:0)), txid:< formatId=131077, gtrid_length=29, bqual_length=36, tx_uid=0:ffff0a28050c:-a09a5fe:5c598d64:3b, node_name=1, branch_uid=0:ffff0a28050c:-a09a5fe:5c598d64:44, subordinatenodename=null, eis_name=java:/TestXAResource >, heuristic: TwoPhaseOutcome.FINISH_OK, product: Crash Recovery Test/EAP Test, jndiName: java:/TestXAResource com.arjuna.ats.internal.jta.resources.arjunacore.XAResourceRecord@6454bcb3 >, record id=0:ffff0a28050c:-a09a5fe:5c598d64:45
+TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::doCommit() result for action-id (0:ffff0a28050c:-a09a5fe:5c598d64:3b) on record id: (0:ffff0a28050c:-a09a5fe:5c598d64:45) is (TwoPhaseOutcome.FINISH_OK) node id: (1)
+
+[section 6]
+TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::updateState() for action-id 0:ffff0a28050c:-a09a5fe:5c598d64:3b
+TRACE [com.arjuna.ats.arjuna] (default task-1) FileSystemStore.remove_committed(0:ffff0a28050c:-a09a5fe:5c598d64:3b, /StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction)
+TRACE [com.arjuna.ats.arjuna] (default task-1) ShadowingStore.remove_state(0:ffff0a28050c:-a09a5fe:5c598d64:3b, /StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction, StateType.OS_ORIGINAL)
+TRACE [com.arjuna.ats.arjuna] (default task-1) FileSystemStore.closeAndUnlock(data/tx-object-store/ShadowNoFileLockStore/defaultStore/StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction/0_ffff0a28050c_-a09a5fe_5c598d64_3b, null, null)
+TRACE [com.arjuna.ats.arjuna] (default task-1) BasicAction::End() result for action-id (0:ffff0a28050c:-a09a5fe:5c598d64:3b) is (TwoPhaseOutcome.FINISH_OK) node id: (1)
+TRACE [com.arjuna.ats.jta] (default task-1) SynchronizationImple.afterCompletion - Class: class org.wildfly.transaction.client.AbstractTransaction$AssociatingSynchronization HashCode: 1685304571 toString: org.wildfly.transaction.client.AbstractTransaction$AssociatingSynchronization@6473b4fb
+TRACE [com.arjuna.ats.jta] (default task-1) SynchronizationImple.afterCompletion - Class: class org.wildfly.transaction.client.provider.jboss.JBossLocalTransactionProvider$1 HashCode: 1429380276 toString: org.wildfly.transaction.client.provider.jboss.JBossLocalTransactionProvider$1@55329cb4
+TRACE [com.arjuna.ats.arjuna] (default task-1) TransactionReaper::remove ( BasicAction: 0:ffff0a28050c:-a09a5fe:5c598d64:3b status: ActionStatus.COMMITTED )
+```
+
+* It's good to consider to follow with the thread id (in the log above it's `default-task-1`).
+  The transaction could be suspended and started at the different thread
+  but it's not usual.
+* The log shows the Narayana processes the two-phase commit. Bear in mind that the example above
+   shows only one resource to be part of the two-phase commit handling.
+   That's intentional for the log not being too long.
+* the `section-1` refers to the point where the transaction is started. The
+  https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html[JTA synchronizations]
+  are registered and the transaction is added to be handled by transaction reaper
+  (the transaction reaper is an independent thread taking care of transaction timeouts,
+    see more at http://narayana.io/docs/project/index.html#d0e2032[section Transaction timeouts]
+    in the Narayana documentation).
+* At this place consider the `BasicAction` (a Narayana abstraction for the transaction)
+  is identified by string `0:ffff0a28050c:-a09a5fe:5c598d64:3b`.
+  It refers to the transaction id. You can track it through the log and follow
+  what is happening with the particular transaction.
+* the `section-2` refers to the part of business logic processing. That's the time
+  when a database insertion is run or Jakarta Messaging sends a message to a queue.
+  That's where you spot message containing `enlistResource`. After the resource
+  is enlisted to the transaction the transaction manager saves a record
+  persistently under transaction log store.
+* the `section-3` refers to the time when the transaction is about to be committed.
+  That means all business logic was finished (that could be the time a method
+  annotated with `@Transactional` reached its end).
+* the `section-4` refers to the first phase of 2PC which is _prepare_. You can see
+  `XAResourceRecord.topLevelPrepare` informing what's the global transaction id
+  (already defined at the start of the transaction) and the branch id
+  (particular to each resource). The resource is then prepared.
+* when whole prepare phase finishes Narayana saves the state into object store
+* the `section-5` refers to the second phase of 2PC which is _commit_. You can see
+  `XAResourceRecord.topLevelCommit` with similar information as for prepare.
+* the `section-6` shows the transaction is finished, information about the transaction
+  is removed from the Narayana object store and unregistered from the transaction reaper.
+
+For more grained troubleshooting you can consider using
+http://byteman.jboss.org[Byteman tool].
+
+== Transactions configuration
+
+Configuration related to the behaviour of the Narayana transaction manager
+is covered under `transactions` subsystem. For the details of the configuration
+options please check the description in the transactions subsystem model
+and see the http://narayana.io/documentation[Narayana documentation].
+
+To check the subsystem model you can use the link:wildscribe[WildFly model reference^]
+or you can list all the configuration options of the subsystem in `jboss-cli`
+
+```bash
+/subsystem=transactions:read-resource-description(recursive=true)
+```
+
+NOTE: References in this document to CDI refer to Jakarta Contexts and Dependency Injection unless otherwise noted.
+      References in this document to Java Transaction API(JTA) refer to Jakarta Transactions unless otherwise noted.
+      References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

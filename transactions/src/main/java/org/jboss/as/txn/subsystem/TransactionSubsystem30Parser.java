@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -102,7 +102,7 @@ class TransactionSubsystem30Parser extends TransactionSubsystem20Parser {
         }
     }
 
-    private void parseCMs(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    protected void parseCMs(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {

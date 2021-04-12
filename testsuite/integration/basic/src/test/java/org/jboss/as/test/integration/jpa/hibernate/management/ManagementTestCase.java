@@ -47,7 +47,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * JPA management operations to ensure jboss-cli.sh/admin console will work with jpa statistics
+ * Jakarta Persistence management operations to ensure jboss-cli.sh/admin console will work with Jakarta Persistence statistics
  *
  * @author Scott Marlow
  */

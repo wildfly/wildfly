@@ -1,7 +1,7 @@
 [[MicroProfile-Fault-Tolerance-SmallRye]]
 = MicroProfile Fault Tolerance Subsystem Configuration
 
-Support for https://microprofile.io/project/eclipse/microprofile-fault-tolerance[Eclipse MicroProfile Fault Tolerance] is
+Support for https://microprofile.io/project/eclipse/microprofile-fault-tolerance[MicroProfile Fault Tolerance] is
 provided as by the `microprofile-fault-tolerance-smallrye` subsystem.
 
 [[required-extension-microprofile-fault-tolerance-smallrye]]
@@ -15,10 +15,10 @@ element to the XML or by using the following CLI operation:
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 /] /extension=org.wildfly.extension.microprofile.fault-tolerance-smallrye:add
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.microprofile.fault-tolerance-smallrye:add()
 {"outcome" => "success"}
 
-[standalone@localhost:9990 /] /subsystem=microprofile-fault-tolerance-smallrye:add
+[standalone@localhost:9990 /] /subsystem=microprofile-fault-tolerance-smallrye:add()
 {
     "outcome" => "success",
     "response-headers" => {
@@ -33,7 +33,7 @@ The subsystem does not have any configurable elements.
 
 == Specification
 
-WildFly's MicroProfile Fault Tolerance subsystem implements MicroProfile 2.1.
+WildFly's MicroProfile Fault Tolerance subsystem implements MicroProfile 3.0.
 
 This MicroProfile specification provides the following interceptor bindings:
 
@@ -44,7 +44,7 @@ This MicroProfile specification provides the following interceptor bindings:
 * `@Bulkhead`
 * `@Asynchronous`
 
-For usage please refer to MicroProfile Fault Tolerance 2.1 https://download.eclipse.org/microprofile/microprofile-fault-tolerance-2.1/microprofile-fault-tolerance-spec.html[specification].
+For usage please refer to MicroProfile Fault Tolerance 3.0 https://download.eclipse.org/microprofile/microprofile-fault-tolerance-3.0/microprofile-fault-tolerance-spec-3.0.html[specification].
 
 == Configuration
 
@@ -55,13 +55,13 @@ configuration properties:
 |===
 |Name |Default |Description
 
-|`io.smallrye.faulttolerance.globalThreadPoolSize`
+|`io.smallrye.faulttolerance.mainThreadPoolSize`
 |100
-|Number of threads used by the fault tolerance mechanisms. This does not include bulkhead thread pools.
+|Maximum number of threads in the thread pool.
 
-|`io.smallrye.faulttolerance.timeoutExecutorThreads`
-|5
-|Size of the thread pool used for scheduling timeouts.
+|`io.smallrye.faulttolerance.mainThreadPoolQueueSize`
+|-1 (unbounded)
+|Size of the queue that the thread pool should use.
 
 |===
 
@@ -70,11 +70,11 @@ configuration properties:
 
 == Component Reference
 
-The Eclipse MicroProfile Fault Tolerance is implemented by the SmallRye Fault Tolerance project.
+The MicroProfile Fault Tolerance implementation is provided by the SmallRye Fault Tolerance project.
 
 ****
 
-* https://microprofile.io/project/eclipse/microprofile-fault-tolerance[Eclipse MicroProfile Fault Tolerance]
+* https://microprofile.io/project/eclipse/microprofile-fault-tolerance[MicroProfile Fault Tolerance]
 * https://github.com/smallrye/smallrye-fault-tolerance[SmallRye Fault Tolerance]
 
 ****

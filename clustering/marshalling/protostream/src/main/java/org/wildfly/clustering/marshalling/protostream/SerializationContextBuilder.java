@@ -24,6 +24,7 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.security.PrivilegedAction;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -44,53 +45,92 @@ public class SerializationContextBuilder {
 
     private final SerializationContext context = new SerializationContextImpl(Configuration.builder().build());
 
-    public SerializationContextBuilder() {
+    /**
+     * Constructs a builder for a {@link SerializationContext} using a default set of initializers.
+     * @param marshaller a class loader marshaller
+     */
+    public SerializationContextBuilder(ClassLoaderMarshaller marshaller) {
         // Load default schemas first, so they can be referenced by loader-specific schemas
-        this.register(EnumSet.allOf(DefaultSerializationContextInitializer.class));
+        this.register(Collections.singleton(new LangSerializationContextInitializer(marshaller)));
+        this.register(EnumSet.allOf(DefaultSerializationContextInitializerProvider.class));
     }
 
+    /**
+     * Returns an immutable {@link SerializationContext}.
+     * @return the completed and immutable serialization context
+     */
     public ImmutableSerializationContext build() {
         return this.context;
     }
 
+    /**
+     * Registers an initializer with the {@link SerializationContext}.
+     * @param initializer an initializer for the {@link SerializationContext}.
+     * @return this builder
+     */
     public SerializationContextBuilder register(SerializationContextInitializer initializer) {
         this.init(initializer);
         return this;
     }
 
+    /**
+     * Registers a number of initializers with the {@link SerializationContext}.
+     * @param initializers one or more initializers for the {@link SerializationContext}.
+     * @return this builder
+     */
     public SerializationContextBuilder register(SerializationContextInitializer... initializers) {
         return this.register(Arrays.asList(initializers));
     }
 
+    /**
+     * Registers a number of initializers with the {@link SerializationContext}.
+     * @param initializers one or more initializers for the {@link SerializationContext}.
+     * @return this builder
+     */
     public SerializationContextBuilder register(Iterable<? extends SerializationContextInitializer> initializers) {
-        this.init(initializers);
+        this.init(initializers.iterator());
         return this;
     }
 
-    public SerializationContextBuilder register(ClassLoader... loaders) throws NoSuchElementException {
-        PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>() {
-            @Override
-            public Boolean run() {
-                boolean init = false;
-                for (ClassLoader loader : loaders) {
-                    init |= SerializationContextBuilder.this.init(ServiceLoader.load(SerializationContextInitializer.class, loader));
-                }
-                return init;
-            }
-        };
-        if (!WildFlySecurityManager.doUnchecked(action).booleanValue()) {
+    /**
+     * Loads {@link SerializationContextInitializer} instances from the specified {@link ClassLoader} and registers then with the {@link SerializationContext}.
+     * @param loader a class loader
+     * @return this builder
+     */
+    public SerializationContextBuilder load(ClassLoader loader) {
+        this.tryLoad(loader);
+        return this;
+    }
+
+    /**
+     * Similar to {@link #load(ClassLoader)}, but throws a {@link NoSuchElementException} if no {@link SerializationContextInitializer} instances were found.
+     * @param loader a class loader
+     * @return this builder
+     */
+    public SerializationContextBuilder require(ClassLoader loader) {
+        if (!this.tryLoad(loader)) {
             throw new NoSuchElementException();
         }
         return this;
     }
 
-    boolean init(Iterable<? extends SerializationContextInitializer> initializers) {
-        Iterator<? extends SerializationContextInitializer> iter = initializers.iterator();
-        boolean result = iter.hasNext();
-        while (iter.hasNext()) {
-            this.init(iter.next());
+    private boolean tryLoad(ClassLoader loader) {
+        PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>() {
+            @Override
+            public Boolean run() {
+                Iterator<SerializationContextInitializer> initializers = ServiceLoader.load(SerializationContextInitializer.class, loader).iterator();
+                boolean init = initializers.hasNext();
+                SerializationContextBuilder.this.init(initializers);
+                return init;
+            }
+        };
+        return WildFlySecurityManager.doUnchecked(action).booleanValue();
+    }
+
+    void init(Iterator<? extends SerializationContextInitializer> initializers) {
+        while (initializers.hasNext()) {
+            this.init(initializers.next());
         }
-        return result;
     }
 
     private void init(SerializationContextInitializer initializer) {

@@ -27,13 +27,13 @@ import java.util.Map;
 import javax.transaction.SystemException;
 
 /**
- * Listens for UserTransaction events and handles associating the extended persistence context with the JTA transaction.
+ * Listens for UserTransaction events and handles associating the extended persistence context with the Jakarta Transactions transaction.
  *
  * JPA 2.0 section 7.9.1 Container Responsibilities:
  *  "For stateful session beans with extended persistence contexts:
  *    When a business method of the stateful session bean is invoked, if the stateful session bean
  *    uses bean managed transaction demarcation and a UserTransaction is begun within the
- *    method, the container associates the persistence context with the JTA transaction and calls
+ *    method, the container associates the persistence context with the Jakarta Transactions transaction and calls
  *    EntityManager.joinTransaction.
  *  "
  *

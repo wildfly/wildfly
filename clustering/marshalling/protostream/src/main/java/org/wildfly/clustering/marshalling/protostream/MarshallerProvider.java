@@ -22,45 +22,78 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.IOException;
-import java.util.OptionalInt;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
+import org.infinispan.protostream.BaseMarshaller;
+import org.infinispan.protostream.SerializationContext;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * Provides a {@link ProtoStreamMarshaller}.
+ * Provides marshallers whose {@link BaseMarshaller#getJavaClass()} defines an abstract class.
  * @author Paul Ferraro
  */
-public interface MarshallerProvider extends ProtoStreamMarshaller<Object> {
-    ProtoStreamMarshaller<?> getMarshaller();
+public class MarshallerProvider implements SerializationContext.MarshallerProvider {
 
-    @Override
-    default Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        return this.getMarshaller().readFrom(context, reader);
+    public static enum ClassPredicate implements Predicate<Class<?>> {
+        ABSTRACT() {
+            @Override
+            public boolean test(Class<?> superClass) {
+                return Modifier.isAbstract(superClass.getModifiers());
+            }
+        },
+        ;
     }
 
-    @Override
-    default void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object object) throws IOException {
-        this.cast(Object.class).writeTo(context, writer, object);
+    private final Predicate<Class<?>> superClassPredicate;
+    private final Map<String, BaseMarshaller<?>> marshallerByName = new HashMap<>();
+    private final Map<Class<?>, BaseMarshaller<?>> marshallerByType = new IdentityHashMap<>();
+
+    public MarshallerProvider(Predicate<Class<?>> superClassPredicate, BaseMarshaller<?>... marshallers) {
+        this(superClassPredicate, Arrays.asList(marshallers));
     }
 
-    @Override
-    default OptionalInt size(ImmutableSerializationContext context, Object value) {
-        return this.cast(Object.class).size(context, value);
+    public MarshallerProvider(Predicate<Class<?>> superClassPredicate, Iterable<? extends BaseMarshaller<?>> marshallers) {
+        this(superClassPredicate, marshallers.iterator());
     }
 
-    @Override
-    default Class<? extends Object> getJavaClass() {
-        return this.getMarshaller().getJavaClass();
+    public MarshallerProvider(Predicate<Class<?>> superClassPredicate, Stream<? extends BaseMarshaller<?>> marshallers) {
+        this(superClassPredicate, marshallers.iterator());
     }
 
-    @SuppressWarnings("unchecked")
-    default <T> ProtoStreamMarshaller<T> cast(Class<T> type) {
-        if (!type.isAssignableFrom(this.getJavaClass())) {
-            throw new IllegalArgumentException(type.getName());
+    private MarshallerProvider(Predicate<Class<?>> superClassPredicate, Iterator<? extends BaseMarshaller<?>> marshallers) {
+        this.superClassPredicate = superClassPredicate;
+        while (marshallers.hasNext()) {
+            BaseMarshaller<?> marshaller = marshallers.next();
+            if (marshaller.getJavaClass().isEnum() && !(marshaller instanceof org.infinispan.protostream.EnumMarshaller)) {
+                marshaller = new EnumMarshaller<>(marshaller.getJavaClass().asSubclass(Enum.class));
+            }
+            this.marshallerByName.put(marshaller.getTypeName(), marshaller);
+            this.marshallerByType.put(marshaller.getJavaClass(), marshaller);
         }
-        return (ProtoStreamMarshaller<T>) this.getMarshaller();
+    }
+
+    @Override
+    public BaseMarshaller<?> getMarshaller(String typeName) {
+        return this.marshallerByName.get(typeName);
+    }
+
+    @Override
+    public BaseMarshaller<?> getMarshaller(Class<?> javaClass) {
+        Class<?> targetClass = javaClass;
+        Class<?> superClass = javaClass.getSuperclass();
+        // If implementation class has no marshaller, search any superclasses within the same classloader
+        ClassLoader loader = WildFlySecurityManager.getClassLoaderPrivileged(targetClass);
+        while (!this.marshallerByType.containsKey(targetClass) && (superClass != null) && this.superClassPredicate.test(superClass) && WildFlySecurityManager.getClassLoaderPrivileged(superClass) == loader) {
+            targetClass = superClass;
+            superClass = targetClass.getSuperclass();
+        }
+        return this.marshallerByType.get(targetClass);
     }
 }

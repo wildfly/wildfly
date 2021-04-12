@@ -43,7 +43,6 @@ public final class Constants {
     // subsystem configuration constants (elements and attributes).
 
     public static final String CLIENT = "client";
-    public static final String CONFIGURATION = "configuration";
     public static final String SETTING = "setting";
     public static final String ORB = "orb";
     public static final String ORB_GIOP_VERSION = "giop-version";
@@ -103,7 +102,6 @@ public final class Constants {
     public static final String PROPERTIES = "properties";
     public static final String PROPERTY = "property";
     public static final String PROPERTY_NAME = "name";
-    public static final String PROPERTY_VALUE = "value";
 
     // constants for common org.omg properties.
     public static final String ORB_ADDRESS = "OAIAddr";

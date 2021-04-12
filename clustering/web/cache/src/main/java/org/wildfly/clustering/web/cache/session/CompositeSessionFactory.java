@@ -124,4 +124,10 @@ public class CompositeSessionFactory<C, V, L> extends CompositeImmutableSessionF
     public ImmutableSession createImmutableSession(String id, ImmutableSessionMetaData metaData, ImmutableSessionAttributes attributes) {
         return new CompositeImmutableSession(id, metaData, attributes);
     }
+
+    @Override
+    public void close() {
+        this.metaDataFactory.close();
+        this.attributesFactory.close();
+    }
 }

@@ -47,7 +47,7 @@ class ViewInterfaces {
         }
         final Set<Class<?>> potentialBusinessInterfaces = new HashSet<Class<?>>();
         for (Class<?> klass : interfaces) {
-            // EJB 3.1 FR 4.9.7 bullet 5.3
+            // Enterprise Beans 3.1 FR 4.9.7 bullet 5.3
             if (klass.equals(Serializable.class) ||
                     klass.equals(Externalizable.class) ||
                     klass.getName().startsWith("javax.ejb.") ||
@@ -73,7 +73,7 @@ class ViewInterfaces {
         final Set<DotName> names = new HashSet<DotName>();
         for (DotName dotName : interfaces) {
             String name = dotName.toString();
-            // EJB 3.1 FR 4.9.7 bullet 5.3
+            // Enterprise Beans 3.1 FR 4.9.7 bullet 5.3
             // & FR 5.4.2
             if (name.equals(Serializable.class.getName()) ||
                     name.equals(Externalizable.class.getName()) ||

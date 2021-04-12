@@ -28,8 +28,8 @@ import org.jboss.dmr.ModelNode;
 import java.util.Map;
 
 /**
- * Utility to administrate JMS-related resources on the server. An separate implementation should be created for
- * every possible JMS provider to be tested.
+ * Utility to administrate Jakarta Messaging related resources on the server. An separate implementation should be created for
+ * every possible Jakarta Messaging provider to be tested.
  * Use JMSOperationsProvider to get instances of implementing classes.
  *
  * Specify the fully qualified name of the activated implementation class in resources/jmsoperations.properties file.
@@ -68,6 +68,10 @@ public interface JMSOperations {
     void addJmsBridge(String name, ModelNode attributes);
 
     void removeJmsBridge(String name);
+
+    void addCoreBridge(String name, ModelNode attributes);
+
+    void removeCoreBridge(String name);
 
     void addCoreQueue(final String queueName, final String queueAddress, boolean durable, String routing);
 
@@ -125,4 +129,8 @@ public interface JMSOperations {
     void createSocketBinding(String name, String interfaceName, int port);
 
     boolean isRemoteBroker();
+
+    void disableSecurity();
+
+    void enableSecurity();
 }

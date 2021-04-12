@@ -39,7 +39,7 @@ import io.opentracing.Tracer;
 import java.util.Map;
 import java.util.function.Supplier;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
@@ -61,8 +61,8 @@ public class JaegerTracerConfiguration implements TracerConfiguration {
     private final ModelNode model;
     private final String name;
 
-    public JaegerTracerConfiguration(OperationContext context, ModelNode configuration, Supplier<OutboundSocketBinding> outboundSocketBindingSupplier) throws OperationFailedException {
-        this.name= TRACER_CAPABILITY.getCapabilityServiceName(context.getCurrentAddressValue()).getCanonicalName();
+    public JaegerTracerConfiguration(ExpressionResolver context, String name, ModelNode configuration, Supplier<OutboundSocketBinding> outboundSocketBindingSupplier) throws OperationFailedException {
+        this.name= TRACER_CAPABILITY.getCapabilityServiceName(name).getCanonicalName();
         this.outboundSocketBindingSupplier = outboundSocketBindingSupplier;
         model = new ModelNode();
         for(AttributeDefinition att : ATTRIBUTES) {
@@ -101,6 +101,19 @@ public class JaegerTracerConfiguration implements TracerConfiguration {
 
     @Override
     public Tracer createTracer(String serviceName) {
+        return createConfiguration(serviceName)
+                .getTracerBuilder()
+                    .withMetricsFactory(new WildflyJaegerMetricsFactory())
+                    .withManualShutdown()
+                    .build();
+    }
+
+    /**
+     * For testing purpose only.
+     * @param serviceName
+     * @return the jaeger tracer configuration.
+     */
+    Configuration createConfiguration(String serviceName) {
         Configuration.SenderConfiguration senderConfiguration = reporterConfig.getSenderConfiguration();
         OutboundSocketBinding outboundSocketBinding = outboundSocketBindingSupplier.get();
         if(outboundSocketBinding != null) {
@@ -112,13 +125,8 @@ public class JaegerTracerConfiguration implements TracerConfiguration {
                 .withReporter(reporterConfig)
                 .withSampler(samplerConfig)
                 .withTraceId128Bit(traceId128Bit)
-                .withTracerTags(tracerTags)
-                .getTracerBuilder()
-                    .withMetricsFactory(new WildflyJaegerMetricsFactory())
-                    .withManualShutdown()
-                    .build();
+                .withTracerTags(tracerTags);
     }
-
     @Override
     public String getModuleName() {
         return "io.jaegertracing.jaeger";

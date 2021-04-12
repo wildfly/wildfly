@@ -49,7 +49,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class JaxrsSubsystemParser_2_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-    static final PathAddress PATH_ADDRESS = PathAddress.pathAddress(JaxrsExtension.SUBSYSTEM_PATH);
+    private static final String NAMESPACE = "urn:jboss:domain:jaxrs:2.0";
 
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
@@ -158,7 +158,7 @@ public class JaxrsSubsystemParser_2_0 implements XMLStreamConstants, XMLElementR
      */
     @Override
     public void writeContent(final XMLExtendedStreamWriter streamWriter, final SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(JaxrsExtension.NAMESPACE_2_0, false);
+        context.startSubsystemElement(NAMESPACE, false);
         ModelNode subsystem = context.getModelNode();
         for (AttributeDefinition attr : JaxrsAttribute.ATTRIBUTES) {
             attr.marshallAsElement(subsystem, true, streamWriter);

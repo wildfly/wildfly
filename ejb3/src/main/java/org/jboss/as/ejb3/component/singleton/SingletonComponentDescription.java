@@ -113,7 +113,8 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         // setup the component create service
         singletonComponentConfiguration.setComponentCreateServiceFactory(new SingletonComponentCreateServiceFactory(this.isInitOnStartup(), dependsOn));
         final boolean definedSecurityDomain = getDefinedSecurityDomain() != null;
-        if(definedSecurityDomain) {
+        final boolean securityRequired = hasBeanLevelSecurityMetadata();
+        if (securityRequired) {
             getConfigurators().add(new ComponentConfigurator() {
                     @Override
                     public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
@@ -123,11 +124,12 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                             contextID = deploymentUnit.getParent().getName() + "!" + contextID;
                         }
                         EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) description;
-                        ejbComponentDescription.setSecurityRequired(definedSecurityDomain);
                         if (getSecurityDomainServiceName() != null) {
+                            ejbComponentDescription.setSecurityRequired(securityRequired);
                             final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(contextID, ejbComponentDescription.requiresJacc(), false);
                             elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> configuration.addPostConstructInterceptor(elytronInterceptorFactory, priority));
-                        } else {
+                        } else if (definedSecurityDomain){
+                            ejbComponentDescription.setSecurityRequired(definedSecurityDomain);
                             configuration.addPostConstructInterceptor(new SecurityContextInterceptorFactory(definedSecurityDomain, false, contextID), InterceptorOrder.View.SECURITY_CONTEXT);
                         }
                     }

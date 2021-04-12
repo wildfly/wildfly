@@ -1,24 +1,24 @@
 /*
-* JBoss, Home of Professional Open Source.
-* Copyright 2011, Red Hat Middleware LLC, and individual contributors
-* as indicated by the @author tags. See the copyright.txt file in the
-* distribution for a full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.controller.PropertiesTestUtil.checkMapModels;
@@ -97,6 +97,8 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                 return InfinispanModel.VERSION_5_0_0;
             case EAP_7_2_0:
                 return InfinispanModel.VERSION_8_0_0;
+            case EAP_7_3_0:
+                return InfinispanModel.VERSION_11_0_0;
             default:
                 throw new IllegalArgumentException();
         }
@@ -122,6 +124,24 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                         "org.infinispan:infinispan-client-hotrod:9.3.8.Final-redhat-00001",
                         // Following are needed for InfinispanSubsystemInitialization
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-singleton-api:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-connector:%s", version),
+                };
+            case EAP_7_3_0:
+                return new String[] {
+                        formatEAP7SubsystemArtifact(version),
+                        "org.infinispan:infinispan-commons:9.4.16.Final-redhat-00002",
+                        "org.infinispan:infinispan-core:9.4.16.Final-redhat-00002",
+                        "org.infinispan:infinispan-cachestore-jdbc:9.4.16.Final-redhat-00002",
+                        "org.infinispan:infinispan-client-hotrod:9.4.16.Final-redhat-00002",
+                        // Following are needed for InfinispanSubsystemInitialization
+                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-client:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-spi:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
@@ -169,6 +189,11 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     @Test
     public void testTransformerEAP720() throws Exception {
         testTransformation(ModelTestControllerVersion.EAP_7_2_0);
+    }
+
+    @Test
+    public void testTransformerEAP730() throws Exception {
+        testTransformation(ModelTestControllerVersion.EAP_7_3_0);
     }
 
     private KernelServices buildKernelServices(String xml, ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
@@ -349,6 +374,11 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         testRejections(ModelTestControllerVersion.EAP_7_2_0);
     }
 
+    @Test
+    public void testRejectionsEAP730() throws Exception {
+        testRejections(ModelTestControllerVersion.EAP_7_3_0);
+    }
+
     private void testRejections(final ModelTestControllerVersion controller) throws Exception {
         final ModelVersion version = getModelVersion(controller).getVersion();
         final String[] dependencies = getDependencies(controller);
@@ -386,9 +416,14 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         PathAddress subsystemAddress = PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH);
         PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
         PathAddress remoteContainerAddress = subsystemAddress.append(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
+        List<String> rejectedRemoteContainerAttributes = new LinkedList<>();
+
+        if (InfinispanModel.VERSION_14_0_0.requiresTransformation(version)) {
+            rejectedRemoteContainerAttributes.add(RemoteCacheContainerResourceDefinition.ListAttribute.MODULES.getName());
+        }
 
         if (InfinispanModel.VERSION_13_0_0.requiresTransformation(version)) {
-            config.addFailedAttribute(remoteContainerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES.getName()));
+            rejectedRemoteContainerAttributes.add(RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES.getName());
         }
 
         if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version) && !InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
@@ -396,7 +431,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         }
 
         if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
-            config.addFailedAttribute(remoteContainerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(RemoteCacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getName(), RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES.getName()));
+            rejectedRemoteContainerAttributes.add(RemoteCacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getName());
 
             if (!InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
                 PathAddress storeAddress = containerAddress.append(DistributedCacheResourceDefinition.WILDCARD_PATH, MixedKeyedJDBCStoreResourceDefinition.PATH);
@@ -405,10 +440,14 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
             }
         }
 
+        if (!rejectedRemoteContainerAttributes.isEmpty()) {
+            config.addFailedAttribute(remoteContainerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(rejectedRemoteContainerAttributes.toArray(new String[rejectedRemoteContainerAttributes.size()])));
+        }
+
         if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
             config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH, StateTransferResourceDefinition.PATH), new RejectedValueConfig(StateTransferResourceDefinition.Attribute.TIMEOUT, value -> value.asLong() <= 0));
             config.addFailedAttribute(remoteContainerAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
-            for (PathElement path : Arrays.asList(ThreadPoolResourceDefinition.CLIENT.getPathElement(), ConnectionPoolResourceDefinition.PATH, org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition.PATH, RemoteClusterResourceDefinition.WILDCARD_PATH, RemoteTransactionResourceDefinition.PATH, SecurityResourceDefinition.PATH) ) {
+            for (PathElement path : Arrays.asList(ThreadPoolResourceDefinition.CLIENT.getPathElement(), ConnectionPoolResourceDefinition.PATH, org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition.PATH, RemoteClusterResourceDefinition.WILDCARD_PATH, RemoteTransactionResourceDefinition.PATH, SecurityResourceDefinition.PATH)) {
                 config.addFailedAttribute(remoteContainerAddress.append(path), FailedOperationTransformationConfig.REJECTED_RESOURCE);
             }
 

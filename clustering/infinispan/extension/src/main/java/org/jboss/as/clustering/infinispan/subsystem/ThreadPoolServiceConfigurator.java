@@ -25,17 +25,17 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
-import org.infinispan.commons.executors.BlockingThreadPoolExecutorFactory;
-import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
 import org.infinispan.commons.util.ProcessorInfo;
 import org.infinispan.configuration.global.ThreadPoolConfiguration;
 import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
+import org.infinispan.factories.threads.EnhancedQueueExecutorFactory;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
-import org.jboss.as.clustering.infinispan.DefaultNonBlockingThreadFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.jboss.threads.management.ManageableThreadPoolExecutorService;
+import org.wildfly.clustering.infinispan.spi.DefaultNonBlockingThreadFactory;
 import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
@@ -65,13 +65,7 @@ public class ThreadPoolServiceConfigurator extends GlobalComponentServiceConfigu
             minThreads *= availableProcessors;
             maxThreads *= availableProcessors;
         }
-        ThreadPoolExecutorFactory<?> factory = new BlockingThreadPoolExecutorFactory(maxThreads, minThreads, queueLength, keepAliveTime, nonBlocking) {
-            @Override
-            public ExecutorService createExecutor(ThreadFactory factory) {
-                return super.createExecutor(this.createsNonBlockingThreads() ? new DefaultNonBlockingThreadFactory(factory) : new DefaultThreadFactory(factory));
-            }
-        };
-        this.builder.threadPoolFactory(factory);
+        this.builder.threadPoolFactory(nonBlocking ? new NonBlockingThreadPoolExecutorFactory(maxThreads, minThreads, queueLength, keepAliveTime) : new BlockingThreadPoolExecutorFactory(maxThreads, minThreads, queueLength, keepAliveTime));
 
         return this;
     }
@@ -79,6 +73,30 @@ public class ThreadPoolServiceConfigurator extends GlobalComponentServiceConfigu
     @Override
     public ThreadPoolConfiguration get() {
         return this.builder.create();
+    }
+
+    private static class BlockingThreadPoolExecutorFactory extends EnhancedQueueExecutorFactory {
+
+        BlockingThreadPoolExecutorFactory(int maxThreads, int coreThreads, int queueLength, long keepAlive) {
+            super(maxThreads, coreThreads, queueLength, keepAlive);
+        }
+
+        @Override
+        public ManageableThreadPoolExecutorService createExecutor(ThreadFactory factory) {
+            return super.createExecutor(new DefaultThreadFactory(factory));
+        }
+    }
+
+    private static class NonBlockingThreadPoolExecutorFactory extends org.infinispan.factories.threads.NonBlockingThreadPoolExecutorFactory {
+
+        NonBlockingThreadPoolExecutorFactory(int maxThreads, int coreThreads, int queueLength, long keepAlive) {
+            super(maxThreads, coreThreads, queueLength, keepAlive);
+        }
+
+        @Override
+        public ExecutorService createExecutor(ThreadFactory factory) {
+            return super.createExecutor(new DefaultNonBlockingThreadFactory(factory));
+        }
     }
 }
 

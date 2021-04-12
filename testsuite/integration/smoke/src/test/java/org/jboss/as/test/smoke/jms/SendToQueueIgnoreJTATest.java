@@ -46,7 +46,7 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * Test of fix for WFLY-9762.
- * JMS message s send and verified if is delivered. Difference is in creation if ConectionFactory (based JMSConnectionFactoryDefinition annotation with the transactional attribute)
+ * Jakarta Messaging message s send and verified if is delivered. Difference is in creation if ConectionFactory (based JMSConnectionFactoryDefinition annotation with the transactional attribute)
  * and also tries rollback.
  *
  * Test is based on test from issue - https://github.com/javaee-samples/javaee7-samples/tree/master/jms/jms-xa
@@ -87,7 +87,7 @@ public class SendToQueueIgnoreJTATest {
     }
 
     /**
-     * JMS message is send using connection factory with transactional = false. Message should be delivered - main reason of fix.
+     * Jakarta Messaging message is send using connection factory with transactional = false. Message should be delivered - main reason of fix.
      */
     @Test
     public void sendIgnoreJTA() throws Exception {
@@ -99,8 +99,8 @@ public class SendToQueueIgnoreJTATest {
     }
 
     /**
-     * JMS message is send using connection factory with transactional = false and with rollback of JTA transaction.
-     * Message should be still delivered as JTA transaction is ignored.
+     * Jakarta Messaging message is send using connection factory with transactional = false and with rollback of Jakarta Transactions transaction.
+     * Message should be still delivered as Jakarta Transactions transaction is ignored.
      */
     @Test
     public void sendAndRollbackIgnoreJTA() throws Exception {
@@ -112,8 +112,8 @@ public class SendToQueueIgnoreJTATest {
     }
 
     /**
-     * JMS message is send using connection factory with transactional = true.
-     * Messaging behaves as a part of JTA transaction, message should be delivered.
+     * Jakarta Messaging message is send using connection factory with transactional = true.
+     * Messaging behaves as a part of Jakarta Transactions transaction, message should be delivered.
      */
     @Test
     public void sendInJTA() throws Exception {
@@ -125,8 +125,8 @@ public class SendToQueueIgnoreJTATest {
     }
 
     /**
-     * JMS message is send using connection factory with transactional = true and JTA rollback
-     * Messaging behaves as a part of JTA transaction, message should NOT be delivered.
+     * Jakarta Messaging message is send using connection factory with transactional = true and Jakarta Transactions rollback
+     * Messaging behaves as a part of Jakarta Transactions transaction, message should NOT be delivered.
      */
     @Test
     public void sendAndRollbackInJTA() throws  Exception {

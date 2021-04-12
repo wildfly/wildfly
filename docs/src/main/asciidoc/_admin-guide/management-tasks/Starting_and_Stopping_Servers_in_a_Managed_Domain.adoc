@@ -1,0 +1,69 @@
+[[Starting_and_Stopping_Servers_in_a_Managed_Domain]]
+= Starting and Stopping Servers in a Managed Domain
+
+Starting a standalone server is done through the `bin/standalone.sh`
+script. However in a managed domain server instances are managed by the
+domain controller and need to be started through the management layer:
+
+First of all, get to know which `servers` are configured on a particular
+`host`:
+
+[source,options="nowrap"]
+----
+[domain@localhost:9990 /] :read-children-names(child-type=host)
+{
+   "outcome" => "success",
+   "result" => ["local"]
+}
+ 
+ 
+[domain@localhost:9990 /] /host=local:read-children-names(child-type=server-config)
+{
+   "outcome" => "success",
+   "result" => [
+       "my-server",
+       "server-one",
+       "server-three"
+   ]
+}
+----
+
+Now that we know, that there are two `servers` configured on `host` "
+_local_", we can go ahead and check their status:
+
+[source,options="nowrap"]
+----
+[domain@localhost:9990 /] /host=local/server-config=server-one:read-resource(include-runtime=true)
+{
+   "outcome" => "success",
+   "result" => {
+       "auto-start" => true,
+       "group" => "main-server-group",
+       "interface" => undefined,
+       "name" => "server-one",
+       "path" => undefined,
+       "socket-binding-group" => undefined,
+       "socket-binding-port-offset" => undefined,
+       "status" => "STARTED",
+       "system-property" => undefined,
+       "jvm" => {"default" => undefined}
+   }
+}
+----
+
+You can change the server state through the " _start_" and " _stop_"
+operations
+
+[source,options="nowrap"]
+----
+[domain@localhost:9990 /] /host=local/server-config=server-one:stop
+{
+   "outcome" => "success",
+   "result" => "STOPPING"
+}
+----
+
+[TIP]
+
+Navigating through the domain topology is much more simple when you use
+the web interface.

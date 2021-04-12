@@ -42,7 +42,7 @@ import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 
 /**
- * JMS Queue resource definition
+ * Jakarta Messaging Queue resource definition
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
@@ -56,7 +56,7 @@ public class JMSQueueDefinition extends PersistentResourceDefinition {
     };
 
     /**
-     * Attributes for deployed JMS queue are stored in runtime
+     * Attributes for deployed Jakarta Messaging queue are stored in runtime
      */
     static AttributeDefinition[] DEPLOYMENT_ATTRIBUTES = {
             new StringListAttributeDefinition.Builder(CommonAttributes.DESTINATION_ENTRIES)

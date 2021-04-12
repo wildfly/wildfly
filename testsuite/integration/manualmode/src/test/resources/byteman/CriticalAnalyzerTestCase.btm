@@ -1,0 +1,11 @@
+RULE Simulate block on append record
+CLASS org.apache.activemq.artemis.core.journal.impl.JournalImpl
+METHOD appendAddRecord
+AT ENTRY 
+BIND
+  test:int = incrementCounter($0);
+IF test > 10
+DO
+  traceln("counting " + test);
+  Thread.sleep(2000L);
+ENDRULE

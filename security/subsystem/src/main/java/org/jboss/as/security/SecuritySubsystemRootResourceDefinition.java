@@ -27,6 +27,7 @@ import javax.security.auth.login.Configuration;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -38,6 +39,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -95,6 +97,9 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
     private static final RuntimeCapability<Void> JACC_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.legacy-security.jacc")
             .setServiceType(Policy.class)
             .build();
+    private static final RuntimeCapability<Void> JACC_CAPABILITY_TOMBSTONE = RuntimeCapability.Builder.of("org.wildfly.legacy-security.jacc.tombstone")
+       .setServiceType(Void.class)
+       .build();
 
     private static final SensitiveTargetAccessConstraintDefinition MISC_SECURITY_SENSITIVITY = new SensitiveTargetAccessConstraintDefinition(
             new SensitivityClassification(SecurityExtension.SUBSYSTEM_NAME, "misc-security", false, true, true));
@@ -108,6 +113,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
                     .build();
     static final SimpleAttributeDefinition INITIALIZE_JACC = new SimpleAttributeDefinitionBuilder(Constants.INITIALIZE_JACC, ModelType.BOOLEAN, true)
             .setDefaultValue(ModelNode.TRUE)
+            .setRestartJVM()
             .setAllowExpression(true)
             .build();
 
@@ -131,7 +137,45 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
     @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
          resourceRegistration.registerReadWriteAttribute(DEEP_COPY_SUBJECT_MODE, null, new ReloadRequiredWriteAttributeHandler(DEEP_COPY_SUBJECT_MODE));
-        resourceRegistration.registerReadWriteAttribute(INITIALIZE_JACC, null, new ReloadRequiredWriteAttributeHandler(INITIALIZE_JACC));
+        resourceRegistration.registerReadWriteAttribute(INITIALIZE_JACC, null, new ReloadRequiredWriteAttributeHandler(INITIALIZE_JACC) {
+            @Override
+            protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandback) throws OperationFailedException {
+                // As the PolicyConfigurationFactory is a singleton, once it's initialized any changes will require a restart
+                CapabilityServiceSupport capabilitySupport = context.getCapabilityServiceSupport();
+                final boolean elytronJacc = capabilitySupport.hasCapability("org.wildfly.security.jacc-policy");
+                if (resolvedValue.asBoolean() == true && elytronJacc) {
+                    throw SecurityLogger.ROOT_LOGGER.unableToEnableJaccSupport();
+                }
+                return super.applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, voidHandback);
+            }
+
+             @Override
+            protected void recordCapabilitiesAndRequirements(OperationContext context,
+                                                             AttributeDefinition attributeDefinition,
+                                                             ModelNode newValue,
+                                                             ModelNode oldValue) {
+                super.recordCapabilitiesAndRequirements(context, attributeDefinition, newValue, oldValue);
+
+                boolean shouldRegister = resolveValue(context, attributeDefinition, newValue);
+                boolean registered = resolveValue(context, attributeDefinition, oldValue);
+
+                if (!shouldRegister) {
+                    context.deregisterCapability(JACC_CAPABILITY.getName());
+                }
+                if (!registered && shouldRegister) {
+                    context.registerCapability(JACC_CAPABILITY);
+                    // do not register the JACC_CAPABILITY_TOMBSTONE at this point - it will be registered on restart
+                }
+            }
+
+            private boolean resolveValue(OperationContext context, AttributeDefinition attributeDefinition, ModelNode node) {
+                try {
+                    return attributeDefinition.resolveValue(context, node).asBoolean();
+                } catch (OperationFailedException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        });
     }
 
     private static class SecuritySubsystemAdd extends AbstractBoottimeAddStepHandler {
@@ -170,6 +214,10 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
             super.recordCapabilitiesAndRequirements(context, operation, resource);
             if (INITIALIZE_JACC.resolveModelAttribute(context, resource.getModel()).asBoolean()) {
                 context.registerCapability(JACC_CAPABILITY);
+                // tombstone marks the Policy being initiated and should not be removed until restart
+                if (context.isBooting()) {
+                    context.registerCapability(JACC_CAPABILITY_TOMBSTONE);
+                }
             }
         }
 

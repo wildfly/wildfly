@@ -57,7 +57,7 @@ public class EJBClientUserTransactionTestCase {
     private static String nodeName;
 
     /**
-     * Creates an EJB deployment
+     * Creates an Jakarta Enterprise Beans deployment
      *
      * @return
      */
@@ -113,7 +113,7 @@ public class EJBClientUserTransactionTestCase {
     }
 
     /**
-     * Create and setup the EJB client context backed by the remoting receiver
+     * Create and setup the Jakarta Enterprise Beans client context backed by the remoting receiver
      *
      * @throws Exception
      */

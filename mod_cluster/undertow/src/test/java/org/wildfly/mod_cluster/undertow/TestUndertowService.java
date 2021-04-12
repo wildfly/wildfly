@@ -24,10 +24,12 @@ package org.wildfly.mod_cluster.undertow;
 import org.wildfly.extension.undertow.Server;
 import org.wildfly.extension.undertow.UndertowService;
 
+import java.util.function.Consumer;
+
 public class TestUndertowService extends UndertowService {
 
-    public TestUndertowService(String defaultContainer, String defaultServer, String defaultVirtualHost, String instanceId, Server server) {
-        super(defaultContainer, defaultServer, defaultVirtualHost, instanceId, true);
+    public TestUndertowService(final Consumer<UndertowService> serviceConsumer, String defaultContainer, String defaultServer, String defaultVirtualHost, String instanceId, boolean obfuscateRoute, Server server) {
+    super(serviceConsumer, defaultContainer, defaultServer, defaultVirtualHost, instanceId, obfuscateRoute, true);
         this.registerServer(server);
     }
 }

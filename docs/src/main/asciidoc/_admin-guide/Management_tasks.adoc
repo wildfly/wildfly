@@ -8,7 +8,7 @@ include::management-tasks/Command_line_parameters.adoc[]
 
 include::management-tasks/Suspend,_Resume_and_Graceful_shutdown.adoc[]
 
-include::management-tasks/Starting_&_stopping_Servers_in_a_Managed_Domain.adoc[]
+include::management-tasks/Starting_and_Stopping_Servers_in_a_Managed_Domain.adoc[]
 
 include::management-tasks/JVM_settings.adoc[]
 

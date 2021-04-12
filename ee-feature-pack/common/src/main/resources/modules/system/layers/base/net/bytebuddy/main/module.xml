@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="net.bytebuddy">
+<module xmlns="urn:jboss:module:1.9" name="net.bytebuddy">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,6 +33,8 @@
     </resources>
 
     <dependencies>
+        <module name="java.instrument"/>
         <module name="sun.jdk"/>
+        <module name="jdk.unsupported"/>
     </dependencies>
 </module>

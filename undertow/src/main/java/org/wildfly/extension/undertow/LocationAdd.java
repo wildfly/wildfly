@@ -24,19 +24,20 @@ package org.wildfly.extension.undertow;
 
 import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-class LocationAdd extends AbstractAddStepHandler {
+final class LocationAdd extends AbstractAddStepHandler {
     static LocationAdd INSTANCE = new LocationAdd();
 
     private LocationAdd() {
@@ -50,17 +51,13 @@ class LocationAdd extends AbstractAddStepHandler {
         final String name = context.getCurrentAddressValue();
         final String handler = LocationDefinition.HANDLER.resolveModelAttribute(context, model).asString();
 
-        final LocationService service = new LocationService(name);
         final String serverName = serverAddress.getLastElement().getValue();
         final String hostName = hostAddress.getLastElement().getValue();
-        final ServiceName serviceName = UndertowService.locationServiceName(serverName, hostName, name);
-        final ServiceBuilder builder = context.getCapabilityServiceTarget().addCapability(LocationDefinition.LOCATION_CAPABILITY)
-                .setInstance(service)
-                .addCapabilityRequirement(Capabilities.CAPABILITY_HANDLER, HttpHandler.class, service.getHttpHandler(),handler)
-                .addCapabilityRequirement(Capabilities.CAPABILITY_HOST, Host.class, service.getHost(), serverName, hostName);
-
-        builder.setInitialMode(ServiceController.Mode.ACTIVE)
-                .addAliases(serviceName)
-                .install();
+        final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(LocationDefinition.LOCATION_CAPABILITY);
+        final Consumer<LocationService> sConsumer = sb.provides(LocationDefinition.LOCATION_CAPABILITY, UndertowService.locationServiceName(serverName, hostName, name));
+        final Supplier<HttpHandler> hhSupplier = sb.requiresCapability(Capabilities.CAPABILITY_HANDLER, HttpHandler.class, handler);
+        final Supplier<Host> hSupplier = sb.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverName, hostName);
+        sb.setInstance(new LocationService(sConsumer, hhSupplier, hSupplier, name));
+        sb.install();
     }
 }

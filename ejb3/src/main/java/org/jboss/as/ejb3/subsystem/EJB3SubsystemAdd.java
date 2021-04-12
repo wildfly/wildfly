@@ -170,6 +170,8 @@ import org.wildfly.transaction.client.LocalTransactionContext;
 /**
  * Add operation handler for the EJB3 subsystem.
  *
+ * NOTE: References in this file to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ *
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */

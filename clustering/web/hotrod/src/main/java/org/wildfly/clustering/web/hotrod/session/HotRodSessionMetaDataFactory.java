@@ -22,6 +22,9 @@
 
 package org.wildfly.clustering.web.hotrod.session;
 
+import java.time.Duration;
+import java.util.function.Function;
+
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -55,7 +58,12 @@ public class HotRodSessionMetaDataFactory<L> implements SessionMetaDataFactory<C
 
     public HotRodSessionMetaDataFactory(HotRodSessionMetaDataFactoryConfiguration configuration) {
         this.creationMetaDataCache = configuration.getCache();
-        this.creationMetaDataMutatorFactory = new RemoteCacheMutatorFactory<>(this.creationMetaDataCache);
+        this.creationMetaDataMutatorFactory = new RemoteCacheMutatorFactory<>(this.creationMetaDataCache, new Function<SessionCreationMetaDataEntry<L>, Duration>() {
+            @Override
+            public Duration apply(SessionCreationMetaDataEntry<L> entry) {
+                return entry.getMetaData().getMaxInactiveInterval();
+            }
+        });
         this.accessMetaDataCache = configuration.getCache();
         this.accessMetaDataMutatorFactory = new RemoteCacheMutatorFactory<>(this.accessMetaDataCache);
         this.properties = configuration.getCacheProperties();
@@ -69,7 +77,7 @@ public class HotRodSessionMetaDataFactory<L> implements SessionMetaDataFactory<C
         }
         SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();
         this.accessMetaDataCache.put(new SessionAccessMetaDataKey(id), accessMetaData);
-        return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry.getMetaData(), accessMetaData, creationMetaDataEntry.getLocalContext());
+        return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry, accessMetaData);
     }
 
     @Override
@@ -80,7 +88,7 @@ public class HotRodSessionMetaDataFactory<L> implements SessionMetaDataFactory<C
         if (creationMetaDataEntry != null) {
             SessionAccessMetaData accessMetaData = this.accessMetaDataCache.get(new SessionAccessMetaDataKey(id));
             if (accessMetaData != null) {
-                return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry.getMetaData(), accessMetaData, creationMetaDataEntry.getLocalContext());
+                return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry, accessMetaData);
             }
             this.creationMetaDataCache.removeWithVersion(key, value.getVersion());
         }
@@ -89,13 +97,14 @@ public class HotRodSessionMetaDataFactory<L> implements SessionMetaDataFactory<C
 
     @Override
     public InvalidatableSessionMetaData createSessionMetaData(String id, CompositeSessionMetaDataEntry<L> entry) {
+        boolean newSession = entry.getCreationMetaData().isNew();
+
         SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
-        boolean created = entry.getAccessMetaData().getLastAccessedDuration().isZero();
-        Mutator creationMutator = this.properties.isTransactional() && created ? Mutator.PASSIVE : this.creationMetaDataMutatorFactory.createMutator(creationMetaDataKey, new SessionCreationMetaDataEntry<>(entry.getCreationMetaData(), entry.getLocalContext()));
+        Mutator creationMutator = this.properties.isTransactional() && newSession ? Mutator.PASSIVE : this.creationMetaDataMutatorFactory.createMutator(creationMetaDataKey, new SessionCreationMetaDataEntry<>(entry.getCreationMetaData(), entry.getLocalContext()));
         SessionCreationMetaData creationMetaData = new MutableSessionCreationMetaData(entry.getCreationMetaData(), creationMutator);
 
         SessionAccessMetaDataKey accessMetaDataKey = new SessionAccessMetaDataKey(id);
-        Mutator accessMutator = this.properties.isTransactional() && created ? Mutator.PASSIVE : this.accessMetaDataMutatorFactory.createMutator(accessMetaDataKey, entry.getAccessMetaData());
+        Mutator accessMutator = this.properties.isTransactional() && newSession ? Mutator.PASSIVE : this.accessMetaDataMutatorFactory.createMutator(accessMetaDataKey, entry.getAccessMetaData());
         SessionAccessMetaData accessMetaData = new MutableSessionAccessMetaData(entry.getAccessMetaData(), accessMutator);
 
         return new CompositeSessionMetaData(creationMetaData, accessMetaData);

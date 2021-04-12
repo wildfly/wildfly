@@ -52,7 +52,7 @@ import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common;
 
 /**
- * Operation Handler to add a JMS external pooled Connection Factory.
+ * Operation Handler to add a Jakarta Messaging external pooled Connection Factory.
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */
 public class ExternalPooledConnectionFactoryAdd extends AbstractAddStepHandler {

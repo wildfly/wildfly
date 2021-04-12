@@ -5,7 +5,7 @@
 
         <feature spec="subsystem.infinispan.cache-container">
             <param name="cache-container" value="ejb"/>
-            <param name="module" value="org.wildfly.clustering.ejb.infinispan"/>
+            <param name="modules" value="[org.wildfly.clustering.ejb.infinispan]"/>
             <param name="default-cache" value="dist"/>
             <param name="aliases" value="[sfsb]"/>
             <feature spec="subsystem.infinispan.cache-container.transport.jgroups">

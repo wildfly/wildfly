@@ -318,7 +318,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     /**
      * Eliminate duplicate PU definitions from clustering the deployment (first definition will win)
      * <p/>
-     * JPA 8.2  A persistence unit must have a name. Only one persistence unit of any given name must be defined
+     * Jakarta Persistence 8.2  A persistence unit must have a name. Only one persistence unit of any given name must be defined
      * within a single EJB-JAR file, within a single WAR file, within a single application client jar, or within
      * an EAR. See Section 8.2.2, “Persistence Unit Scope”.
      *

@@ -57,6 +57,7 @@ import org.jboss.as.ee.component.deployers.ResourceReferenceProcessor;
 import org.jboss.as.ee.component.deployers.ResourceReferenceRegistrySetupProcessor;
 import org.jboss.as.ee.concurrent.deployers.EEConcurrentContextProcessor;
 import org.jboss.as.ee.concurrent.deployers.EEConcurrentDefaultBindingProcessor;
+import org.jboss.as.ee.concurrent.service.ManagedExecutorHungTasksPeriodicTerminationService;
 import org.jboss.as.ee.managedbean.processors.JavaEEDependencyProcessor;
 import org.jboss.as.ee.managedbean.processors.ManagedBeanAnnotationProcessor;
 import org.jboss.as.ee.managedbean.processors.ManagedBeanSubDeploymentMarkingProcessor;
@@ -227,5 +228,8 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }, OperationContext.Stage.RUNTIME);
 
         context.getServiceTarget().addService(ReflectiveClassIntrospector.SERVICE_NAME, new ReflectiveClassIntrospector()).install();
+
+        // installs the service which manages managed executor's hung task periodic termination
+        new ManagedExecutorHungTasksPeriodicTerminationService().install(context);
     }
 }

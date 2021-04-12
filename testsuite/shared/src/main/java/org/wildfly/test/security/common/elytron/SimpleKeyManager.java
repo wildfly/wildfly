@@ -38,19 +38,26 @@ public class SimpleKeyManager extends AbstractConfigurableElement implements Key
 
     private final String keyStore;
     private final CredentialReference credentialReference;
+    private final String generateSelfSignedCertificateHost;
 
     private SimpleKeyManager(Builder builder) {
         super(builder);
         this.keyStore = Objects.requireNonNull(builder.keyStore, "Key-store name has to be provided");
         this.credentialReference = defaultIfNull(builder.credentialReference, CredentialReference.EMPTY);
+        this.generateSelfSignedCertificateHost = builder.generateSelfSignedCertificateHost;
     }
 
     @Override
     public void create(CLIWrapper cli) throws Exception {
         // /subsystem=elytron/key-manager=httpsKM:add(key-store=httpsKS,algorithm="SunX509",credential-reference={clear-text=secret})
 
-        cli.sendLine(String.format("/subsystem=elytron/key-manager=%s:add(key-store=\"%s\",algorithm=\"%s\", %s)", name,
-                keyStore, KeyManagerFactory.getDefaultAlgorithm(), credentialReference.asString()));
+        if (generateSelfSignedCertificateHost != null) {
+            cli.sendLine(String.format("/subsystem=elytron/key-manager=%s:add(key-store=\"%s\",algorithm=\"%s\", %s,generate-self-signed-certificate-host=\"%s\")", name,
+                    keyStore, KeyManagerFactory.getDefaultAlgorithm(), credentialReference.asString(), generateSelfSignedCertificateHost));
+        } else {
+            cli.sendLine(String.format("/subsystem=elytron/key-manager=%s:add(key-store=\"%s\",algorithm=\"%s\", %s)", name,
+                    keyStore, KeyManagerFactory.getDefaultAlgorithm(), credentialReference.asString()));
+        }
     }
 
     @Override
@@ -73,6 +80,7 @@ public class SimpleKeyManager extends AbstractConfigurableElement implements Key
     public static final class Builder extends AbstractConfigurableElement.Builder<Builder> {
         private String keyStore;
         private CredentialReference credentialReference;
+        private String generateSelfSignedCertificateHost;
 
         private Builder() {
         }
@@ -84,6 +92,11 @@ public class SimpleKeyManager extends AbstractConfigurableElement implements Key
 
         public Builder withCredentialReference(CredentialReference credentialReference) {
             this.credentialReference = credentialReference;
+            return this;
+        }
+
+        public Builder withGenerateSelfSignedCertificateHost(String generateSelfSignedCertificateHost) {
+            this.generateSelfSignedCertificateHost = generateSelfSignedCertificateHost;
             return this;
         }
 

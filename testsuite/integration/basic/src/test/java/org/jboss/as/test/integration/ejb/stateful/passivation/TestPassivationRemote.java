@@ -55,7 +55,7 @@ public interface TestPassivationRemote extends AutoCloseable {
     Employee getSuperEmployee();
 
     /**
-     * returns a value of a property of a CDI bean
+     * returns a value of a property of a Jakarta Contexts and Dependency Injection bean
      */
     String getManagedBeanMessage();
 

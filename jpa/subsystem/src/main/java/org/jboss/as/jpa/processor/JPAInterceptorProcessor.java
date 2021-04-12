@@ -51,7 +51,7 @@ public class JPAInterceptorProcessor implements DeploymentUnitProcessor {
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
             if (component instanceof SessionBeanComponentDescription) {
-                ROOT_LOGGER.tracef("registering session bean interceptors for component '%s' in '%s'", component.getComponentName(), deploymentUnit.getName());
+                ROOT_LOGGER.tracef("registering session bean Jakarta Interceptors for component '%s' in '%s'", component.getComponentName(), deploymentUnit.getName());
                 registerSessionBeanInterceptors((SessionBeanComponentDescription) component, deploymentUnit);
             }
         }
@@ -59,10 +59,10 @@ public class JPAInterceptorProcessor implements DeploymentUnitProcessor {
 
     // Register our listeners on SFSB that will be created
     private void registerSessionBeanInterceptors(SessionBeanComponentDescription componentDescription, final DeploymentUnit deploymentUnit) {
-        // if it's a SFSB then setup appropriate interceptors
+        // if it's a SFSB then setup appropriate Jakarta Interceptors
         if (componentDescription.isStateful()) {
 
-            // first setup the post construct and pre destroy component interceptors
+            // first setup the post construct and pre destroy component Jakarta Interceptors
             componentDescription.getConfigurators().addFirst(new ComponentConfigurator() {
                 @Override
                 public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws

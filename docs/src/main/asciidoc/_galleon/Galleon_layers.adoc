@@ -52,7 +52,7 @@ link:#gal.datasources[datasources] (optional) +
 link:#gal.web-server[web-server] +
 
 |[[gal.jaxrs-server]]jaxrs-server
-|An extension of _datasources-web-server_ with support for JAX-RS, CDI and JPA.
+|An extension of _datasources-web-server_ with support for Jakarta RESTful Web Services, CDI and JPA.
 |
 link:#gal.bean-validation[bean-validation] (optional) +
 link:#gal.cdi[cdi] (optional) +
@@ -236,6 +236,7 @@ link:#gal.base-server[base-server] +
 |Support for JAXRS.
 |
 link:#gal.web-server[web-server] +
+link:#gal.microprofile-rest-client[microprofile-rest-client] (optional) +
 
 |[[gal.jdr]]jdr
 |Support for the JBoss Diagnostic Reporting (JDR) subsystem.
@@ -281,12 +282,12 @@ link:#gal.cdi[cdi] (optional) +
 link:#gal.web-server[web-server] +
 
 |[[gal.jsonb]]jsonb
-|Support for JSON Binding (JSON-B) provisioning the JSON-B API and Implementation modules.
+|Support for JSON Binding (Jakarta JSON Binding) provisioning the Jakarta JSON Binding API and Implementation modules.
 |
 link:#gal.base-server[base-server] +
 
 |[[gal.jsonp]]jsonp
-|Support for JSON Processing (JSON-P) provisioning the JSON-P API and Implementation modules.
+|Support for JSON Processing (Jakarta JSON Processing) provisioning the Jakarta JSON Processing API and Implementation modules.
 |
 link:#gal.base-server[base-server] +
 
@@ -329,7 +330,7 @@ link:#gal.elytron[elytron] +
 link:#gal.base-server[base-server] +
 
 |[[gal.messaging-activemq]]messaging-activemq
-|Support for connections to a remote JMS broker.
+|Support for connections to a remote Jakarta Messaging broker.
 |
 link:#gal.resource-adapters[resource-adapters] +
 
@@ -370,6 +371,12 @@ link:#gal.microprofile-config[microprofile-config] +
 link:#gal.jaxrs[jaxrs] +
 link:#gal.microprofile-config[microprofile-config] +
 
+|[[gal.microprofile-opentracing]]microprofile-opentracing
+|Support for MicroProfile OpenTracing.
+|
+link:#gal.cdi[cdi] +
+link:#gal.microprofile-config[microprofile-config] +
+
 |[[gal.microprofile-platform]]microprofile-platform
 |Support for available MicroProfile platform specifications.
 |
@@ -379,7 +386,30 @@ link:#gal.microprofile-health[microprofile-health] (optional) +
 link:#gal.microprofile-jwt[microprofile-jwt] (optional) +
 link:#gal.microprofile-metrics[microprofile-metrics] (optional) +
 link:#gal.microprofile-openapi[microprofile-openapi] (optional) +
-link:#gal.open-tracing[open-tracing] (optional) +
+link:#gal.open-tracing[microprofile-opentracing] (optional) +
+link:#gal.microprofile-rest-client[microprofile-rest-client] (optional) +
+
+|[[gal.microprofile-rest-client]]microprofile-rest-client
+|Support for MicroProfile REST client.
+|
+link:#gal.microprofile-config[microprofile-config] +
+
+|[[gal.microprofile-reactive-messaging]]microprofile-reactive-messaging
+|Support for MicroProfile Reactive Messaging
+|
+link:#gal.cdi[cdi] +
+link:#gal.microprofile-reactive-streams-operators[reactive-streams-operators] +
+
+|[[gal.microprofile-reactive-messaging-kafka]]microprofile-reactive-messaging-kafka
+|Support for MicroProfile Reactive Messaging Kafka connector
+|
+link:#gal.microprofile-reactive-messaging[reactive-messaging] +
+
+|[[gal.microprofile-reactive-streams-operators]]microprofile-reactive-streams-operators
+|Support for MicroProfile Reactive Streams Operators
+|
+link:#gal.cdi[cdi] +
+
 
 |[[gal.naming]]naming
 |Support for JNDI.
@@ -395,7 +425,7 @@ link:#gal.microprofile-metrics[microprofile-metrics] (optional) +
 link:#gal.open-tracing[open-tracing] (optional) +
 
 |[[gal.open-tracing]]open-tracing
-|Support for MicroProfile OpenTracing.
+|*Deprecated* Use link:#gal.microprofile-opentracing[microprofile-opentracing]
 |
 link:#gal.cdi[cdi] +
 link:#gal.microprofile-config[microprofile-config] +
@@ -406,7 +436,7 @@ link:#gal.microprofile-config[microprofile-config] +
 link:#gal.base-server[base-server] +
 
 |[[gal.remote-activemq]]remote-activemq
-|Support for connections to a remote Apache Activemq Artemis JMS broker.
+|Support for connections to a remote Apache Activemq Artemis Jakarta Messaging broker.
 |
 link:#gal.resource-adapters[resource-adapters] +
 
@@ -422,7 +452,7 @@ link:#gal.io[io] +
 link:#gal.base-server[base-server] +
 
 |[[gal.resource-adapters]]resource-adapters
-|Support for deployment of JCA adapters.
+|Support for deployment of Jakarta Connectors resource adapters.
 |
 link:#gal.transactions[transactions] +
 
@@ -470,7 +500,7 @@ link:#gal.vault[vault] +
 link:#gal.base-server[base-server] +
 
 |[[gal.web-clustering]]web-clustering
-|Infinispan-based web session clustering.
+|Support for distributable web applications. Configures a non-local Infinispan-based container web cache for data session handling suitable to clustering environments.
 |
 link:#gal.transactions[transactions] +
 link:#gal.web-server[web-server] +
@@ -481,6 +511,12 @@ management interface. Not required to use a HAL console obtained independently
 and configured to connect to the server.
 |
 link:#gal.management[management] +
+
+|[[gal.web-passivation]]web-passivation
+|Support for distributable web applications. Configures a local Infinispan-based container web cache for data session handling suitable to single node environments.
+|
+link:#gal.transactions[transactions] +
+link:#gal.web-server[web-server] +
 
 |[[gal.web-server]]web-server
 |A servlet container.
@@ -498,3 +534,6 @@ link:#gal.messaging-activemq[messaging-activemq] (optional) +
 link:#gal.web-server[web-server] +
 
 |===
+
+NOTE: References in this document to Java Persistence API(JPA) refer to the Jakarta Persistence unless otherwise noted.
+      References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

@@ -35,13 +35,13 @@ import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 /**
  * This class was added to:
  *
- * 1. workaround an issue discussed in https://java.net/jira/browse/JTA_SPEC-4 whereby the JCA Synchronization(s) need to be
- * called after the JPA Synchronization(s). Currently the implementation orders JCA relative to all interposed Synchronizations,
- * if this is not desirable it would be possible to modify this class to store just the JPA and JCA syncs and the other syncs
+ * 1. workaround an issue discussed in https://java.net/jira/browse/JTA_SPEC-4 whereby the Jakarta Connectors Synchronization(s) need to be
+ * called after the Jakarta Persistence Synchronization(s). Currently the implementation orders Jakarta Connectors relative to all interposed Synchronizations,
+ * if this is not desirable it would be possible to modify this class to store just the Jakarta Persistence and Jakarta Connectors syncs and the other syncs
  * can simply be passed to a delegate (would need the reference to this in the constructor).
  *
- * 2. During afterCompletion the JCA synchronizations should be called last as that allows JCA to detect connection leaks from
- * frameworks that have not closed the JCA managed resources. This is described in (for example)
+ * 2. During afterCompletion the Jakarta Connectors synchronizations should be called last as that allows Jakarta Connectors to detect connection leaks from
+ * frameworks that have not closed the Jakarta Connectors managed resources. This is described in (for example)
  * http://docs.oracle.com/javaee/5/api/javax/transaction/TransactionSynchronizationRegistry
  * .html#registerInterposedSynchronization(javax.transaction.Synchronization) where it says that during afterCompletion
  * "Resources can be closed but no transactional work can be performed with them"
@@ -131,7 +131,7 @@ public class JCAOrderedLastSynchronizationList implements Synchronization {
 
     @Override
     public void afterCompletion(int status) {
-        // The list should be iterated in reverse order - has issues with EJB3 if not
+        // The list should be iterated in reverse order - has issues with Enterprise Beans 3 if not
         // https://github.com/jbosstm/narayana/blob/master/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/coordinator/TwoPhaseCoordinator.java#L509
         for (int i = preJcaSyncs.size() - 1; i>= 0; --i) {
             Synchronization preJcaSync = preJcaSyncs.get(i);

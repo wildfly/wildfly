@@ -24,8 +24,10 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
+import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
+import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.STATIC_CONNECTORS;
@@ -173,6 +175,17 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    /**
+     * @see {@link org.apache.activemq.artemis.api.core.client.ActiveMQClient#DEFAULT_CALL_TIMEOUT}
+     */
+    public static final SimpleAttributeDefinition CALL_TIMEOUT = create("call-timeout", LONG)
+            .setDefaultValue(new ModelNode(30000L))
+            .setMeasurementUnit(MILLISECONDS)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     public static final AttributeDefinition[] ATTRIBUTES = {
             QUEUE_NAME, FORWARDING_ADDRESS, CommonAttributes.HA,
             CommonAttributes.FILTER, CommonAttributes.TRANSFORMER_CLASS_NAME,
@@ -185,7 +198,8 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             PRODUCER_WINDOW_SIZE,
             CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
             USER, PASSWORD, CREDENTIAL_REFERENCE,
-            CONNECTOR_REFS, DISCOVERY_GROUP_NAME
+            CONNECTOR_REFS, DISCOVERY_GROUP_NAME,
+            CALL_TIMEOUT
     };
 
     private final boolean registerRuntimeOnly;

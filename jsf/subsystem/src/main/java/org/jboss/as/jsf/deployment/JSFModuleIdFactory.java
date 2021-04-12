@@ -33,7 +33,7 @@ import org.jboss.as.jsf.subsystem.JSFResourceDefinition;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
- * This class finds all the installed JSF implementations and provides their ModuleId's.
+ * This class finds all the installed Jakarta Server Faces implementations and provides their ModuleId's.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */

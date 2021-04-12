@@ -23,8 +23,11 @@ package org.wildfly.clustering.ejb.infinispan.bean;
 
 import java.time.Duration;
 
+import javax.ejb.ConcurrentAccessTimeoutException;
+
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.infinispan.util.concurrent.TimeoutException;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
@@ -89,7 +92,12 @@ public class InfinispanBeanFactory<I, T, C> implements BeanFactory<I, T> {
 
     @Override
     public BeanEntry<I> findValue(I id) {
-        return this.findCache.get(this.createKey(id));
+        // TODO WFLY-14167 Cache lookup timeout should reflect @AccessTimeout of associated bean/invocation
+        try {
+            return this.findCache.get(this.createKey(id));
+        } catch (TimeoutException e) {
+            throw new ConcurrentAccessTimeoutException(e.getLocalizedMessage());
+        }
     }
 
     @Override

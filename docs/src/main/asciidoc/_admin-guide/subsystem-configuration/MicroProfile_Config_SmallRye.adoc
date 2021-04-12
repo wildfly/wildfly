@@ -1,7 +1,7 @@
 [[MicroProfile_Config_SmallRye]]
 = MicroProfile Config Subsystem Configuration
 
-Support for https://microprofile.io/project/eclipse/microprofile-config[Eclipse MicroProfile Config] is provided by
+Support for https://microprofile.io/project/eclipse/microprofile-config[MicroProfile Config] is provided by
  the _microprofile-config-smallrye_ subsystem.
 
 [[required-extension-microprofile-config-smallrye]]
@@ -147,17 +147,17 @@ All properties from the `ConfigSource`s provided by this `ConfigSourceProvider` 
 
 == Deployment
 
-Applications that are deployed in WildFly must have CDI enabled (e.g. with a `META-INF/beans.xml`
-or by having CDI Bean annotation) to be able to use MicroProfile Config in their code.
+Applications that are deployed in WildFly must have Jakarta Contexts and Dependency Injection enabled (e.g. with a `META-INF/beans.xml`
+or by having Jakarta Contexts and Dependency Injection Bean annotation) to be able to use MicroProfile Config in their code.
 
 
 == Component Reference
 
-The Eclipse MicroProfile Config is implemented by the SmallRye Config project.
+The MicroProfile Config implementation is provided by the SmallRye Config project.
 
 ****
 
-* https://microprofile.io/project/eclipse/microprofile-config[Eclipse MicroProfile Config]
+* https://microprofile.io/project/eclipse/microprofile-config[MicroProfile Config]
 * http://github.com/smallrye/smallrye-config/[SmallRye Config]
 
 ****

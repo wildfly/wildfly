@@ -81,7 +81,7 @@ link:#wildfly_layers[WildFly Layers] that are used to compose the server.
 
 The set of Galleon layers to include is driven by the needs of the application you are developing.
 The list of link:#wildfly_layers[WildFly Layers] provides details on 
-the server features that each layer brings. Make sure that the API and server features you are using (eg: JAX-RS, Eclipse MicroProfile Config, datasources)
+the server features that each layer brings. Make sure that the API and server features you are using (eg: Jakarta RESTful Web Services, MicroProfile Config, datasources)
 are provided by the layers you are choosing.
 
 If you decide not to specify Galleon layers, a server containing all MicroProfile subsystems is
@@ -119,7 +119,14 @@ Maven Plugin configuration extract example:
  ```org.jboss.universe:community-universe``` Galleon universe. In case you would like to provision a specific version of the server,
 you would need to specify the server version, for example ```wildfly@maven(org.jboss.universe:community-universe)#21.0.0.Final```
 
-(2) The link:#gal.jaxrs-server[jaxrs-server layer] and all its dependencies are provisioned. 
+(2) The link:#gal.jaxrs-server[jaxrs-server layer] and all its dependencies are provisioned.
+
+[NOTE]
+====
+
+If your project is using link:WildFly_and_WildFly_Preview{outfilesuffix}[WildFly Preview], the ``feature-pack-location`` to use
+is ``wildfly-preview@maven(org.jboss.universe:community-universe)``.
+====
 
 include::_galleon/Galleon_layers.adoc[]
 
@@ -170,6 +177,9 @@ The following arguments can be used when starting the bootable JAR:
 
 |--help
 |Display help then exit
+
+|--cli-script=<path to CLI script file>
+|Path to a CLI script to execute when starting the Bootable JAR
 
 |--deployment=<path to WAR/JAR/EAR file or exploded deployment directory>
 |Application to install in the hollow JAR. Adding a deployment to an bootable JAR already containing a deployment is invalid.

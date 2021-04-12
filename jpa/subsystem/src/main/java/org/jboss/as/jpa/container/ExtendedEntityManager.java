@@ -43,7 +43,7 @@ import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  * Represents the Extended persistence context injected into a stateful bean.  At bean invocation time,
- * will join the active JTA transaction if one is present.  If no active JTA transaction is present,
+ * will join the active Jakarta Transactions transaction if one is present.  If no active Jakarta Transactions transaction is present,
  * created/deleted/updated/loaded entities will remain associated with the entity manager until it is joined with a
  * transaction (commit will save the changes, rollback will lose them).
  * <p/>
@@ -113,8 +113,8 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
     }
 
     /**
-     * The JPA SFSB interceptor will track the stack of SFSB invocations.  The underlying EM will be obtained from
-     * the current SFSB being invoked (via our JPA SFSB interceptor).
+     * The Jakarta Persistence SFSB interceptor will track the stack of SFSB invocations.  The underlying EM will be obtained from
+     * the current SFSB being invoked (via our Jakarta Persistence SFSB interceptor).
      *
      * Every entity manager call (to AbstractEntityManager) will call this method to get the underlying entity manager
      * (e.g. the Hibernate persistence provider).
@@ -131,9 +131,9 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
     }
 
     /**
-     * Associate the extended persistence context with the current JTA transaction (if one is found)
+     * Associate the extended persistence context with the current Jakarta Transactions transaction (if one is found)
      *
-     * this method is private to the JPA subsystem
+     * this method is private to the Jakarta Persistence subsystem
      */
     public void internalAssociateWithJtaTx() {
         isInTx = TransactionUtil.isInTx(transactionManager);
@@ -150,7 +150,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
             } else if (existing == null) {
 
                 if (SynchronizationType.SYNCHRONIZED.equals(synchronizationType)) {
-                    // JPA 7.9.1 join the transaction if not already done for SynchronizationType.SYNCHRONIZED.
+                    // Jakarta Persistence 7.9.1 join the transaction if not already done for SynchronizationType.SYNCHRONIZED.
                     underlyingEntityManager.joinTransaction();
                 }
                 // associate the entity manager with the current transaction
@@ -174,7 +174,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
      */
     @Override
     public void close() {
-        // An extended entity manager will be closed when the EJB SFSB @remove method is invoked.
+        // An extended entity manager will be closed when the Jakarta Enterprise Beans SFSB @remove method is invoked.
         throw JpaLogger.ROOT_LOGGER.cannotCloseContainerManagedEntityManager();
 
     }

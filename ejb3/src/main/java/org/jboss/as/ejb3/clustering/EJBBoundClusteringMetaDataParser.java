@@ -30,7 +30,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 /**
- * Parses the urn:clustering namespace elements for clustering related metadata on EJBs.
+ * Parses the urn:clustering namespace elements for clustering related metadata on Jakarta Enterprise Beans.
  *
  * @author Jaikiran Pai
  * @author Flavia Rainone

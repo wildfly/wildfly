@@ -4,9 +4,10 @@
 WildFly ships with a number of quickstarts that show you how to get
 started with a variety of technologies in WildFly. You'll find out how
 to write a web application using the latest Jakarta EE technologies like
-CDI and JAX-RS. How to write client libraries to talk to WildFly using
-web services, JMS or EJB. How to set up a distributed transaction, and
-how to recover from a transaction failure. And much, much more.
+Jakarta Contexts and Dependency Injection and Jakarta RESTful Web Services.
+How to write client libraries to talk to WildFly using web services, Jakarta Messaging or Jakarta Enterprise Beans. 
+How to set up a distributed transaction, and how to recover from a 
+transaction failure. And much, much more.
 
 [[getting-started]]
 == Getting Started

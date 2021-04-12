@@ -55,7 +55,7 @@ public class RemoteViewInvokingBean implements RemoteViewInvoker {
         // get hold of the EJBClientContext
         this.ejbClientContext = EJBClientContext.requireCurrent();
 
-        // create some data that the client side interceptor will pass along during the EJB invocation
+        // create some data that the client side interceptor will pass along during the Jakarta Enterprise Beans invocation
         this.interceptorData = new HashMap<String, Object>();
         final String keyOne = "abc";
         final Object valueOne = "def";

@@ -59,6 +59,9 @@ import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
  * {@link ViewConfigurator} responsible for setting up necessary security interceptors on an EJB view.
+ *
+ * NOTE: References in this file to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ *
  * <p/>
  * User: Jaikiran Pai
  */

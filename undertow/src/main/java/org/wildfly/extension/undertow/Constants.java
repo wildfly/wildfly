@@ -28,6 +28,7 @@ package org.wildfly.extension.undertow;
 
 public interface Constants {
     String ACCESS_LOG = "access-log";
+    String CONSOLE_ACCESS_LOG = "console-access-log";
     String AJP_LISTENER = "ajp-listener";
     String BUFFER_CACHE = "buffer-cache";
     String BUFFER_CACHES = "buffer-caches";
@@ -46,6 +47,7 @@ public interface Constants {
     String HTTP_INVOKER = "http-invoker";
     String LISTENER = "listener";
     String INSTANCE_ID = "instance-id";
+    String OBFUSCATE_SESSION_ROUTE = "obfuscate-session-route";
     String NAME = "name";
     String WORKER = "worker";
     String SERVLET_CONTAINER = "servlet-container";
@@ -73,7 +75,7 @@ public interface Constants {
     String SCHEME = "scheme";
     String MAX_POST_SIZE = "max-post-size";
     String DEFAULT_RESPONSE_CODE = "default-response-code";
-    /*JSP config */
+    /*Jakarta Server Pages config */
     String CHECK_INTERVAL = "check-interval";
     String CONTAINER = "container";
     String DEVELOPMENT = "development";

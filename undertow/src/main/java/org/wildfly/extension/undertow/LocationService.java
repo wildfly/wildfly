@@ -26,54 +26,56 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class LocationService implements Service<LocationService>, FilterLocation {
+public final class LocationService implements Service<LocationService>, FilterLocation {
 
+    private final Consumer<LocationService> serviceConsumer;
+    private final Supplier<HttpHandler> httpHandler;
+    private final Supplier<Host> host;
     private final String locationPath;
-    private final InjectedValue<HttpHandler> httpHandler = new InjectedValue<>();
-    private final InjectedValue<Host> host = new InjectedValue<>();
     private final CopyOnWriteArrayList<UndertowFilter> filters = new CopyOnWriteArrayList<>();
     private final LocationHandler locationHandler = new LocationHandler();
     private volatile HttpHandler configuredHandler;
 
-    public LocationService(String locationPath) {
+    LocationService(final Consumer<LocationService> serviceConsumer,
+            final Supplier<HttpHandler> httpHandler,
+            final Supplier<Host> host,
+            String locationPath) {
+        this.serviceConsumer = serviceConsumer;
+        this.httpHandler = httpHandler;
+        this.host = host;
         this.locationPath = locationPath;
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
-        UndertowLogger.ROOT_LOGGER.tracef("registering handler %s under path '%s'", httpHandler.getValue(), locationPath);
-        host.getValue().registerLocation(this);
+    public void start(final StartContext context) {
+        UndertowLogger.ROOT_LOGGER.tracef("registering handler %s under path '%s'", httpHandler.get(), locationPath);
+        host.get().registerLocation(this);
+        serviceConsumer.accept(this);
     }
 
     @Override
-    public void stop(StopContext context) {
-        host.getValue().unregisterLocation(this);
+    public void stop(final StopContext context) {
+        serviceConsumer.accept(null);
+        host.get().unregisterLocation(this);
     }
 
     @Override
     public LocationService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
-    }
-
-    InjectedValue<Host> getHost() {
-        return host;
-    }
-
-    InjectedValue<HttpHandler> getHttpHandler() {
-        return httpHandler;
     }
 
     String getLocationPath() {
@@ -86,7 +88,7 @@ public class LocationService implements Service<LocationService>, FilterLocation
 
     private HttpHandler configureHandler() {
         ArrayList<UndertowFilter> filters = new ArrayList<>(this.filters);
-        return configureHandlerChain(getHttpHandler().getValue(), filters);
+        return configureHandlerChain(httpHandler.get(), filters);
     }
 
     protected static HttpHandler configureHandlerChain(HttpHandler rootHandler, List<UndertowFilter> filters) {

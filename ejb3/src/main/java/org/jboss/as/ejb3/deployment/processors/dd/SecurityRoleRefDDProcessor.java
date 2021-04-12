@@ -34,7 +34,7 @@ import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
 
 /**
- * Sets up the {@link EJBComponentDescription} with the &lt;security-role-ref&gt;s declared for an EJB
+ * Sets up the {@link EJBComponentDescription} with the &lt;security-role-ref&gt;s declared for an Jakarta Enterprise Beans
  *
  * User: Jaikiran Pai
  */

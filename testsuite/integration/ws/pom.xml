@@ -19,7 +19,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>24.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -238,9 +238,6 @@
                             <!-- Disable default-test execution. -->
                             <execution>
                                 <id>default-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
                                 <phase>none</phase>
                             </execution>
 
@@ -487,6 +484,7 @@
                                         <exclude>org/jboss/as/test/integration/ws/serviceref/ServiceRefSevletTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ws/serviceref/ServiceRefTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ws/wsse/trust/WSBearerElytronSecurityPropagationTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/wsse/usernametoken/UsernameTokenElytronTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -532,6 +530,7 @@
                                         <include>org/jboss/as/test/integration/ws/serviceref/ServiceRefSevletTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ws/serviceref/ServiceRefTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ws/wsse/trust/WSBearerElytronSecurityPropagationTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ws/wsse/usernametoken/UsernameTokenElytronTestCase.java</include>
                                     </includes>
                                 </configuration>
                             </execution>

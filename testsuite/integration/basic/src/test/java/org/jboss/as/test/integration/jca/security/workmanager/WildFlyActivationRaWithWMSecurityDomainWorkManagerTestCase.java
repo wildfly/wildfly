@@ -73,7 +73,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 /**
- * Test security inflow with JCA work manager using legacy security domain
+ * Test security inflow with Jakarta Connectors work manager using legacy security domain
  */
 @RunWith(Arquillian.class)
 @ServerSetup({

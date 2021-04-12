@@ -35,7 +35,7 @@ import java.util.Hashtable;
 
 /**
  * A bean which uses remote outbound connection configured
- * for calling the second instance of the app server via EJB remoting.
+ * for calling the second instance of the app server via Jakarta Enterprise Beans remoting.
  */
 @Stateless
 public class ClientBean implements ClientBeanRemote {
@@ -46,14 +46,33 @@ public class ClientBean implements ClientBeanRemote {
         TransactionalRemote bean = getRemote(remoteDeploymentName);
         bean.enlistOnePersistentXAResource();
         try {
-            // Enlisting resource for having the 2PC started (the second resource is the EJB remote call)
+            // Enlisting resource for having the 2PC started (the second resource is the Jakarta Enterprise Beans remote call)
             // the resource crashes the VM at start of the XAResource.prepare method
             // We depend on the transaction manager strict ordering - the order of resource enlistment
             // matches the order during 2PC processing
             tm.getTransaction().enlistResource(new TestXAResource(TestXAResource.TestAction.PREPARE_CRASH_VM));
         } catch (SystemException | RollbackException e) {
-            throw new RuntimeException("Cannot enlist TestXAResource to the current transaction", e);
+            throw new RuntimeException("Cannot enlist " + TestXAResource.class.getSimpleName() + " to the current transaction", e);
         }
+    }
+
+    public void twoPhaseIntermittentCommitFailureOnServer(String remoteDeploymentName) {
+        TransactionalRemote bean = getRemote(remoteDeploymentName);
+        bean.intermittentCommitFailure();
+        try {
+            // Enlisting second resource to force 2PC being processed
+            tm.getTransaction().enlistResource(new TestXAResource());
+        } catch (SystemException | RollbackException e) {
+            throw new RuntimeException("Cannot enlist " + TestXAResource.class.getSimpleName() + " to the current transaction", e);
+        }
+    }
+
+
+    public void onePhaseIntermittentCommitFailureOnServer(String remoteDeploymentName) {
+        TransactionalRemote bean = getRemote(remoteDeploymentName);
+        // Enlisting only remote Jakarta Enterprise Beans bean by the remote call and no other resource to process with 1PC
+        // but the remote Jakarta Enterprise Beans works with two resources and on 1PC commit it triggers the 2PC
+        bean.intermittentCommitFailureTwoPhase();
     }
 
     private TransactionalRemote getRemote(String remoteDeployment) {

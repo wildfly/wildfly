@@ -1,0 +1,38 @@
+<subsystem xmlns="urn:jboss:domain:jaxrs:2.0">
+    <jaxrs-2-0-request-matching>${test.request.matching:true}</jaxrs-2-0-request-matching>
+    <resteasy-add-charset>${test.add.charset:false}</resteasy-add-charset>
+    <resteasy-buffer-exception-entity>${test.buffer:false}</resteasy-buffer-exception-entity>
+    <resteasy-disable-html-sanitizer>${test.sanitize:true}</resteasy-disable-html-sanitizer>
+    <resteasy-disable-providers>
+        <class>${test.class.a:a}</class>
+        <class>${test.class.a:b}</class>
+    </resteasy-disable-providers>
+    <resteasy-document-expand-entity-references>${test.expand.ref:true}</resteasy-document-expand-entity-references>
+    <resteasy-document-secure-disableDTDs>${test.disable.dtd:false}</resteasy-document-secure-disableDTDs>
+    <resteasy-document-secure-processing-feature>${test.pf:true}</resteasy-document-secure-processing-feature>
+    <resteasy-gzip-max-input>${test.gzip.max.input:777}</resteasy-gzip-max-input>
+    <resteasy-jndi-resources>
+       <jndi>${test.jndi.a:java\:a/b}</jndi>
+       <jndi>${test.jndi.b:java\:k.l/mm/nnn}</jndi>
+    </resteasy-jndi-resources>
+    <resteasy-language-mappings>
+        <entry key="o">${test.lang.mapping.o:4444}</entry>
+        <entry key="pp">${test.lang.mapping.pp:5555}</entry>
+        <entry key="q">${test.lang.mapping.q:6666}</entry>
+    </resteasy-language-mappings>
+    <resteasy-media-type-mappings>
+        <entry key="r">${test.mt.mapping.r:77777}</entry>
+    </resteasy-media-type-mappings>
+    <resteasy-media-type-param-mapping>${test.media.type.param.mapping:tu}</resteasy-media-type-param-mapping>
+    <resteasy-prefer-jackson-over-jsonb>${test.prefer.jackson:true}</resteasy-prefer-jackson-over-jsonb>
+    <resteasy-providers>
+      <class> ${test.class.s:s} </class>
+      <class> ${test.class.t:t.t} </class>
+    </resteasy-providers>
+    <resteasy-rfc7232preconditions>${test.rfc7232:true}</resteasy-rfc7232preconditions>
+    <resteasy-role-based-security>${test.rbs:true}</resteasy-role-based-security>
+    <resteasy-secure-random-max-use>${test.secure.random:2222}</resteasy-secure-random-max-use>
+    <resteasy-use-builtin-providers>${test.use.builtin.providers:false}</resteasy-use-builtin-providers>
+    <resteasy-use-container-form-params>${test.use.container.form.params:true}</resteasy-use-container-form-params>
+    <resteasy-wider-request-matching>${test.wider.request.matching:true}</resteasy-wider-request-matching>
+</subsystem>

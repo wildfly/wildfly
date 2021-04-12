@@ -24,7 +24,7 @@ package org.jboss.as.jaxrs;
 import org.jboss.jandex.DotName;
 
 /**
- * Class that stores the {@link DotName}s of Jax-RS annotations
+ * Class that stores the {@link DotName}s of Jakarta RESTful Web Services annotations
  *
  * @author Stuart Douglas
  *

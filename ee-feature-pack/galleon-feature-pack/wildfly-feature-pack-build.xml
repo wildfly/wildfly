@@ -22,22 +22,6 @@
 
 <build xmlns="urn:wildfly:feature-pack-build:3.1" producer="wildfly-ee@maven(org.jboss.universe:community-universe):current">
 
-    <transitive>
-        <dependency group-id="org.wildfly.core" artifact-id="wildfly-core-galleon-pack">
-            <name>org.wildfly.core:wildfly-core-galleon-pack</name>
-        </dependency>
-    </transitive>
-    <dependencies>
-        <dependency group-id="org.wildfly" artifact-id="wildfly-servlet-galleon-pack">
-            <name>org.wildfly:wildfly-servlet-galleon-pack</name>
-            <packages inherit="false">
-                <exclude name="product.conf"/>
-            </packages>
-            <default-configs inherit="false">
-                <include name="standalone-load-balancer.xml" model="standalone"/>
-            </default-configs>
-        </dependency>
-    </dependencies>
     <default-packages>
         <package name="modules.all"/>
         <package name="docs"/>
@@ -49,6 +33,7 @@
     <package-schemas>
         <group name="org.jboss.metadata"/>
         <group name="org.wildfly"/>
+        <group name="org.wildfly.core"/>
     </package-schemas>
 
     <config name="standalone.xml" model="standalone"/>
@@ -65,22 +50,33 @@
         <plugin artifact="org.wildfly.galleon-plugins:wildfly-galleon-plugins"/>
     </plugins>
 
+    <resources>
+        <copy artifact="org.wildfly.galleon-plugins:wildfly-config-gen" to="wildfly/wildfly-config-gen.jar"/>
+    </resources>
+
     <generate-feature-specs>
         <extensions>
             <standalone>
                 <extension>org.jboss.as.clustering.infinispan</extension>
                 <extension>org.jboss.as.clustering.jgroups</extension>
                 <extension>org.jboss.as.connector</extension>
+                <extension>org.jboss.as.deployment-scanner</extension>
+                <extension>org.jboss.as.ee</extension>
                 <extension>org.jboss.as.ejb3</extension>
                 <extension>org.jboss.as.jaxrs</extension>
                 <extension>org.jboss.as.jdr</extension>
+                <extension>org.jboss.as.jmx</extension>
                 <extension>org.jboss.as.jpa</extension>
                 <extension>org.jboss.as.jsf</extension>
                 <extension>org.jboss.as.jsr77</extension>
+                <extension>org.jboss.as.logging</extension>
                 <extension>org.jboss.as.mail</extension>
                 <extension>org.jboss.as.modcluster</extension>
+                <extension>org.jboss.as.naming</extension>
                 <extension>org.jboss.as.pojo</extension>
+                <extension>org.jboss.as.remoting</extension>
                 <extension>org.jboss.as.sar</extension>
+                <extension>org.jboss.as.security</extension>
                 <extension>org.jboss.as.transactions</extension>
                 <extension>org.jboss.as.webservices</extension>
                 <extension>org.jboss.as.weld</extension>
@@ -89,30 +85,41 @@
                 <extension>org.wildfly.extension.bean-validation</extension>
                 <extension>org.wildfly.extension.clustering.singleton</extension>
                 <extension>org.wildfly.extension.clustering.web</extension>
+                <extension>org.wildfly.extension.core-management</extension>
+                <extension>org.wildfly.extension.discovery</extension>
                 <extension>org.wildfly.extension.ee-security</extension>
+                <extension>org.wildfly.extension.elytron</extension>
+                <extension>org.wildfly.extension.health</extension>
+                <extension>org.wildfly.extension.io</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>
-                <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
-                <extension>org.wildfly.extension.microprofile.health-smallrye</extension>
-                <extension>org.wildfly.extension.microprofile.metrics-smallrye</extension>
-                <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
+                <extension>org.wildfly.extension.metrics</extension>
                 <extension>org.wildfly.extension.picketlink</extension>
+                <extension>org.wildfly.extension.request-controller</extension>
                 <extension>org.wildfly.extension.rts</extension>
+                <extension>org.wildfly.extension.security.manager</extension>
+                <extension>org.wildfly.extension.undertow</extension>
                 <extension>org.wildfly.iiop-openjdk</extension>
             </standalone>
             <domain>
                 <extension>org.jboss.as.clustering.infinispan</extension>
                 <extension>org.jboss.as.clustering.jgroups</extension>
                 <extension>org.jboss.as.connector</extension>
+                <extension>org.jboss.as.ee</extension>
                 <extension>org.jboss.as.ejb3</extension>
                 <extension>org.jboss.as.jaxrs</extension>
                 <extension>org.jboss.as.jdr</extension>
+                <extension>org.jboss.as.jmx</extension>
                 <extension>org.jboss.as.jpa</extension>
                 <extension>org.jboss.as.jsf</extension>
                 <extension>org.jboss.as.jsr77</extension>
+                <extension>org.jboss.as.logging</extension>
                 <extension>org.jboss.as.mail</extension>
                 <extension>org.jboss.as.modcluster</extension>
+                <extension>org.jboss.as.naming</extension>
                 <extension>org.jboss.as.pojo</extension>
+                <extension>org.jboss.as.remoting</extension>
                 <extension>org.jboss.as.sar</extension>
+                <extension>org.jboss.as.security</extension>
                 <extension>org.jboss.as.transactions</extension>
                 <extension>org.jboss.as.webservices</extension>
                 <extension>org.jboss.as.weld</extension>
@@ -121,16 +128,25 @@
                 <extension>org.wildfly.extension.bean-validation</extension>
                 <extension>org.wildfly.extension.clustering.singleton</extension>
                 <extension>org.wildfly.extension.clustering.web</extension>
+                <extension>org.wildfly.extension.core-management</extension>
+                <extension>org.wildfly.extension.discovery</extension>
                 <extension>org.wildfly.extension.ee-security</extension>
+                <extension>org.wildfly.extension.elytron</extension>
+                <extension>org.wildfly.extension.io</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>
-                <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
-                <extension>org.wildfly.extension.microprofile.health-smallrye</extension>
-                <extension>org.wildfly.extension.microprofile.metrics-smallrye</extension>
-                <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
                 <extension>org.wildfly.extension.picketlink</extension>
+                <extension>org.wildfly.extension.request-controller</extension>
                 <extension>org.wildfly.extension.rts</extension>
+                <extension>org.wildfly.extension.security.manager</extension>
+                <extension>org.wildfly.extension.undertow</extension>
                 <extension>org.wildfly.iiop-openjdk</extension>
             </domain>
+            <host>
+                <extension>org.jboss.as.jmx</extension>
+                <extension>org.wildfly.extension.core-management</extension>
+                <extension>org.wildfly.extension.discovery</extension>
+                <extension>org.wildfly.extension.elytron</extension>
+            </host>
         </extensions>
     </generate-feature-specs>
 </build>

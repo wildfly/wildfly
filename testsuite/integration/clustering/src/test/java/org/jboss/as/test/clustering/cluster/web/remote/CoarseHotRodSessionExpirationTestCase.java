@@ -32,7 +32,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  * @author Paul Ferraro
  */
 @ServerSetup({ InfinispanServerSetupTask.class, LocalRoutingServerSetup.class })
-public class CoarseHotRodSessionExpirationTestCase extends AbstractSessionExpirationTestCase {
+public class CoarseHotRodSessionExpirationTestCase extends AbstractHotRodSessionExpirationTestCase {
 
     private static final String MODULE_NAME = CoarseHotRodSessionExpirationTestCase.class.getSimpleName();
 

@@ -26,7 +26,7 @@ import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * For JPA service names
+ * For Jakarta Persistence service names
  *
  * @author Scott Marlow
  */
@@ -35,7 +35,7 @@ public class JPAServiceNames {
     // identifies the (instance per) persistence unit service name
     private static final ServiceName PERSISTENCE_UNIT_SERVICE_NAME = ServiceName.JBOSS.append("persistenceunit");
 
-    // identifies the (singleton) JPA service
+    // identifies the (singleton) Jakarta Persistence service
     public static final ServiceName JPA_SERVICE_NAME = ServiceName.JBOSS.append("jpa");
 
     public static ServiceName getPUServiceName(String scopedPersistenceUnitName) {

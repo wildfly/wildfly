@@ -34,91 +34,109 @@ server configuration profiles.
 |Jakarta EE Platform Technology |Jakarta EE Full Platform |Jakarta EE Web
 Profile |WildFly {wildflyVersion} Full Platform |WildFly {wildflyVersion} Web Profile
 
-|JSR-356: Java API for Web Socket |X |X |X |X
+|Jakarta WebSocket |X |X |X |X
 
-|JSR-374: Java API for JSON Processing 1.1 |X |X |X |X
+|Jakarta JSON Processing 1.1 |X |X |X |X
 
-|JSR-367: Java API for JSON Binding 1.0 |X |X |X |X
+|Jakarta JSON Binding Specification 1.0 |X |X |X |X
 
-|JSR-369: Java Servlet 4.0 |X |X |X |X
+|Jakarta Servlet 4.0 |X |X |X |X
 
-|JSR-372: JavaServer Faces 2.3 |X |X |X |X
+|Jakarta Server Faces 2.3 |X |X |X |X
 
-|JSR-341: Expression Language 3.0 |X |X |X |X
+|Jakarta Expression Language 3.0 |X |X |X |X
 
-|JSR-245: JavaServer Pages 2.3 |X |X |X |X
+|Jakarta Server Pages 2.3 |X |X |X |X
 
-|JSR-52: Standard Tag Library for JavaServer Pages (JSTL) 1.2 |X |X |X
+|Jakarta Standard Tag Library 1.2 |X |X |X
 |X
 
-|JSR-352: Batch Applications for the Java Platform 1.0 |X |-- |X |--
+|Jakarta Batch 1.0 |X |-- |X |--
 
-|JSR-236: Concurrency Utilities for Jakarta EE |X |X |X |X
+|Jakarta Concurrency |X |X |X |X
 
-|JSR-365: Contexts and Dependency Injection for Java 2.0 |X |X |X |X
+|Jakarta Contexts and Dependency Injection 2.0 |X |X |X |X
 
-|JSR-330: Dependency Injection for Java 1.0 |X |X |X |X
+|Jakarta Dependency Injection |X |X |X |X
 
-|JSR-380: Bean Validation 2.0 |X |X |X |X
+|Jakarta Bean Validation 2.0 |X |X |X |X
 
-|JSR-345: Enterprise JavaBeans 3.2 |XCMP 2.0Optional |X(Lite) |XCMP
+|Jakarta Enterprise Beans 3.2 |XCMP 2.0Optional |X(Lite) |XCMP
 2.0Not Available |X(Lite)
 
-|JSR-318: Interceptors 1.2 |X |X |X |X
+|Jakarta Interceptors 1.2 |X |X |X |X
 
-|JSR-322: Jakarta EE Connector Architecture 1.7 |X |-- |X |X
+|Jakarta Connectors 1.7 |X |-- |X |X
 
-|JSR-338: Java Persistence 2.2 |X |X |X |X
+|Jakarta Persistence 2.2 |X |X |X |X
 
-|JSR-250: Common Annotations for the Java Platform 1.3 |X |X |X |X
+|Jakarta Annotations 1.3 |X |X |X |X
 
-|JSR-343: Java Message Service API 2.0 |X |-- |X |--
+|Jakarta Messaging 2.0 |X |-- |X |--
 
-|JSR-907: Java Transaction API 1.2 |X |X |X |X
+|Jakarta Transactions 1.3 |X |X |X |X
 
-|JSR-919: JavaMail 1.6 |X |-- |X |X
+|Jakarta Mail 1.6 |X |-- |X |X
 
-|JSR-370: Java API for RESTFul Web Services 2.1 |X |X |X |X
+|Jakarta RESTful Web Services 2.1 |X |X |X |X
 
-|JSR-109: Implementing Enterprise Web Services 1.3 |X |-- |X |--
+|Jakarta Enterprise Web Services 1.3 |X |-- |X |--
 
-|JSR-224: Java API for XML-Based Web Services 2.3 |X |X |X |X
+|Jakarta XML Web Services Specification 2.3 |X |X |X |X
 
-|JSR-181: Web Services Metadata for the Java Platform |X |-- |X |--
+|Jakarta Web Services Metadata |X |-- |X |--
 
-|JSR-101: Java API for XML-Based RPC 1.1 |Optional |-- |-- |--
+|Jakarta XML RPC 1.1 |Optional |-- |-- |--
 
-|JSR-67: Java APIs for XML Messaging 1.3 |X |-- |X |--
+|Jakarta SOAP with Attachments 1.3 |X |-- |X |--
 
-|JSR-93: Java API for XML Registries |Optional |-- |-- |--
+|Jakarta XML Registries |Optional |-- |-- |--
 
-|JSR-222: Java Architecture for XML Binding (JAXB) 2.3 |X |X |X |X
+|Jakarta XML Binding Specification 2.3 |X |X |X |X
 
-|JSR-196: Java Authentication Service Provider Interface for Containers
-1.1 |X |-- |X |--
+|Jakarta Authentication 1.1 |X |-- |X |--
 
-|JSR-115: Java Authorization Contract for Containers 1.5 |X |-- |X |--
+|Jakarta Authorization 1.5 |X |-- |X |--
 
-|JSR-88: Jakarta EE Application Deployment 1.2 |Optional |-- |-- |--
+|Jakarta EE Application Deployment 1.2 |Optional |-- |-- |--
 
-|JSR-77: J2EE Management 1.1 |X |  |X | 
+|Jakarta Management 1.1 |X |  |X | 
 
-|JSR-45: Debugging Support for Other Languages 1.0 |X |X |X |X
+|Jakarta Debugging Support for Other Languages 1.0 |X |X |X |X
 
-|JSR-375: Jakarta EE Security API 1.0 |X |X |X |X
+|Jakarta Security 1.0 |X |X |X |X
 |=======================================================================
 
-Missing ActiveMQ Artemis and JMS?
+Missing ActiveMQ Artemis and Jakarta Messaging?
 
 [WARNING]
 
-The WildFly Web Profile doesn't include JMS (provided by ActiveMQ Artemis) by
-default. If you want to use messaging, make sure you start the server
-// using the "Full Platform" configuration.
+WildFly's default configuration provides Jakarta EE Web Profile support and thus
+doesn't include Jakarta Messaging (provided by ActiveMQ Artemis). As noted in the 
+link:#wildfly-configurations[WildFly Configurations] section, other configuration
+profiles do provide all features required by the Jakarta EE Full Platform. If you 
+want to use messaging, make sure you 
+link:#starting-wildfly-with-an-alternate-configuration[start the server using an alternate configuration]
+that provides the Jakarta EE Full Platform.
 
 This document provides a quick overview on how to download and get
 started using WildFly {wildflyVersion} for your application development. For in-depth
-content on administrative features, refer to the WildFly {wildflyVersion} Admin Guide.
+content on administrative features, refer to the WildFly {wildflyVersion} link:Admin_Guide{outfilesuffix}[Admin Guide].
+
+[[requirements]]
+== Requirements
+
+* Java SE 8 or later. We recommend that you use the latest available update
+of the current long-term support Java release.
+
+
+[[installation-options]]
+== Installation Options
+
+There are a number of ways you can install WildFly, including unzipping our traditional download zip, provisioning a
+custom installation using Galleon, or building a bootable jar. The link:Installation_Guide{outfilesuffix}[Installation Guide]
+helps you identify the kind of WildFly installation that best fits your application's deployment needs. In this guide
+we'll focus on the common approach of installing the download zip.
 
 [[download]]
 === Download
@@ -133,12 +151,6 @@ formats.
 * *wildfly-{wildflyVersion}.0.0.Final.zip*
 * *wildfly-{wildflyVersion}.0.0.Final.tar.gz*
 
-[[requirements]]
-=== Requirements
-
-* Java SE 8 or later. We recommend that you use the latest available update
-of the current long-term support Java release.
-
 [[installation]]
 === Installation
 
@@ -148,7 +160,7 @@ tar formats. Refer to the Release Notes for additional information
 related to the release.
 
 [[wildfly---a-quick-tour]]
-=== WildFly - A Quick Tour
+== WildFly - A Quick Tour
 
 Now that you've downloaded WildFly {wildflyVersion}, the next thing to discuss is the
 layout of the distribution and explore the server directory structure,
@@ -157,7 +169,7 @@ worth familiarizing yourself with the layout so that you'll be able to
 find your way around when it comes to deploying your own applications.
 
 [[wildfly-directory-structure]]
-==== WildFly Directory Structure
+=== WildFly Directory Structure
 
 [cols=",",options="header"]
 |=======================================================================
@@ -190,7 +202,7 @@ used by the single standalone server run from this installation.
 |=======================================================================
 
 [[standalone-directory-structure]]
-===== Standalone Directory Structure
+==== Standalone Directory Structure
 
 In " *_standalone_* " mode each WildFly {wildflyVersion} server instance is an
 independent process (similar to previous JBoss AS versions; e.g., 3, 4,
@@ -230,7 +242,7 @@ process.
 |=======================================================================
 
 [[domain-directory-structure]]
-===== Domain Directory Structure
+==== Domain Directory Structure
 
 A key feature of WildFly {wildflyVersion} is the managing multiple servers from a
 single control point. A collection of multiple servers are referred to
@@ -281,11 +293,11 @@ local clients so they can confirm that they are local to the running AS
 process.
 |=======================================================================
 
-[[wildfly-10-configurations]]
-==== WildFly {wildflyVersion} Configurations
+[[wildfly-configurations]]
+=== WildFly {wildflyVersion} Configurations
 
 [[standalone-server-configurations]]
-===== Standalone Server Configurations
+==== Standalone Server Configurations
 
 * standalone.xml (_default_)
 ** Jakarta web profile certified configuration with
@@ -305,8 +317,8 @@ high availability
 
 * standalone-microprofile.xml
 ** A configuration oriented toward microservices, providing our
-MicroProfile platform implementations combined with JAX-RS and
-technologies JAX-RS application's commonly use to integrate with
+MicroProfile platform implementations combined with Jakarta RESTful Web Services and
+technologies Jakarta RESTful Web Services applications commonly use to integrate with
 external services.
 
 * standalone-microprofile-ha.xml
@@ -315,7 +327,7 @@ _standalone-microprofile.xml_ but with support for high availability
 web sessions and distributed Hibernate second level caching.
 
 [[domain-server-configurations]]
-===== Domain Server Configurations
+==== Domain Server Configurations
 
 * domain.xml
 ** Jakarta full and web profiles available with or
@@ -326,7 +338,7 @@ determine how the servers are managed not what capabilities they
 provide.
 
 [[starting-wildfly-10]]
-==== Starting WildFly {wildflyVersion}
+== Starting WildFly {wildflyVersion}
 
 To start WildFly {wildflyVersion} using the default web profile configuration in "
 _standalone_" mode, change directory to $JBOSS_HOME/bin.
@@ -345,7 +357,7 @@ capabilities,
 ----
 
 [[starting-wildfly-with-an-alternate-configuration]]
-==== Starting WildFly with an Alternate Configuration
+=== Starting WildFly with an Alternate Configuration
 
 If you choose to start your server with one of the other provided
 configurations, they can be accessed by passing the --server-config
@@ -370,7 +382,7 @@ Alternatively, you can create your own selecting the additional
 subsystems you want to add, remove, or modify.
 
 [[test-your-installation]]
-===== Test Your Installation
+=== Test Your Installation
 
 After executing one of the above commands, you should see output similar
 to what's shown below.
@@ -411,20 +423,23 @@ landing page is recommended for convenient access to information about
 WildFly {wildflyVersion} but can easily be replaced with your own if desired.
 
 [[managing-your-wildfly-10]]
-==== Managing your WildFly {wildflyVersion}
+== Managing your WildFly {wildflyVersion}
 
 WildFly {wildflyVersion} offers two administrative mechanisms for managing your
 running instance:
 
-* web-based Administration Console
-* command-line interface
+* a web-based Administration Console
+* a command-line interface
 
-===== Authentication
+The link:Admin_Guide{outfilesuffix}[Admin Guide] covers the details on managing your WildFly
+installation. Here we'll just touch on some of the basics.
 
-By default WildFly {wildflyVersion} is now distributed with security enabled for the
-management interfaces, this means that before you connect using the
+=== Authentication
+
+By default WildFly {wildflyVersion} is distributed with security enabled for the
+management interfaces. This means that before you connect using the
 administration console or remotely using the CLI you will need to add a
-new user, this can be achieved simply by using the _add-user.sh_ script
+new user. This can be achieved simply by using the _add-user.sh_ script
 in the bin folder.
 
 After starting the script you will be guided through the process to add
@@ -455,9 +470,20 @@ Re-enter Password :
 ----
 
 It is important to leave the name of the realm as 'ManagementRealm' as
-this needs to match the name used in the server's configuration, for the
+this needs to match the name used in the server's configuration. For the
 remaining fields enter the new username, password and password
 confirmation.
+
+Users can be associated with arbitrary groups of your choosing, so you will be prompted if you would like 
+to do this.
+
+[source,options="nowrap"]
+----
+What groups do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)[  ]:
+----
+
+Groups can be useful for simplified administration of things like access permissions, but for simply getting
+started, leaving this blank is fine.
 
 Provided there are no errors in the values entered you will then be
 asked to confirm that you want to add the user, the user will be written
@@ -465,11 +491,23 @@ to the properties files used for authentication and a confirmation
 message will be displayed.
 
 The modified time of the properties files are inspected at the time of
-authentication and the files reloaded if they have changed, for this
+authentication and the files reloaded if they have changed. For this
 reason you do not need to re-start the server after adding a new user.
 
+Finally, you will be asked whether the account you've added is going to be to used
+to identify one WildFly process to another, typically in a WildFly managed domain:
+
+[source,options="nowrap"]
+----
+Is this new user going to be used for one AS process to connect to another AS process? 
+e.g. for a slave host controller connecting to the master or for a Remoting connection for server to server Jakarta Enterprise Beans calls.
+yes/no?
+----
+
+The answer for this should be `no`; the account you are adding here is for use by a human administrator.
+
 [[administration-console]]
-===== Administration Console
+=== Administration Console
 
 To access the web-based Administration Console, simply follow the link
 from the Welcome Screen. To directly access the Management Console,
@@ -502,7 +540,7 @@ added you can click on the 'Try Again' link at the bottom of the error
 page to try connecting to the administration console again.
 
 [[command-line-interface]]
-===== Command-Line Interface
+=== Command-Line Interface
 
 If you prefer to manage your server from the command line (or batching),
 the _jboss-cli.sh_ script provides the same capabilities available via
@@ -529,8 +567,25 @@ Once connected you can add, modify, remove resources and deploy or
 undeploy applications. For a complete list of commands and command
 syntax, type *_help_* once connected.
 
+[[deploying-an-application]]
+=== Deploying an Application
+
+WildFly provides a number of ways you can deploy your application into the server.
+These are covered in detail in the link:Admin_Guide{outfilesuffix}#application-deployment[Admin Guide].
+
+If you are running a standalone WildFly server, the simplest way to deploy
+your application is to copy the application archive (war/ear/jar) into the `$JBOSS_HOME/standalone/deployments`
+directory in the server installation. The server's `deployment-scanner` subsystem will detect
+the new file and deploy it.
+
+[NOTE]
+
+If you are running a WildFly managed domain, the `deployment-scanner` subsystem is not
+available so you will need to use the CLI or web console to deploy your application. For more, 
+see the link:Admin_Guide{outfilesuffix}#application-deployment[Admin Guide].
+
 [[modifying-the-example-datasource]]
-==== Modifying the Example DataSource
+=== Modifying the Example DataSource
 
 As with previous JBoss application server releases, a default data
 source, *_ExampleDS_* , is configured using the embedded H2 database for
@@ -594,19 +649,22 @@ the project documentation.
 http://docs.jboss.org/ironjacamar/userguide/1.0/en-US/html/deployment.html#deployingds_descriptor
 
 [[configure-logging-in-wildfly]]
-===== Configure Logging in WildFly
+=== Configure Logging in WildFly
 
 WildFly logging can be configured with the web console or the command
 line interface. You can get more detail on the link:Admin_Guide{outfilesuffix}#Logging[Logging
 Configuration] page.
 
-Turn on debugging for a specific category with CLI:
+Turn on debugging for a specific category with the CLI:
 
 [source,options="nowrap"]
 ----
 /subsystem=logging/logger=org.jboss.as:add(level=DEBUG)
 ----
 
-By default the `server.log` is configured to include all levels in it's
+In the example above the `org.jboss.as` log category was configured. Use a different value
+for the `logger` key to configure a different log category.
+
+By default the `server.log` is configured to include all levels in its
 log output. In the above example we changed the console to also display
 debug messages.

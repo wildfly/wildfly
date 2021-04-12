@@ -19,7 +19,7 @@
         <servlet-class>org.jboss.as.test.integration.web.formauth.LogoutServlet</servlet-class>
     </servlet>
 
-    <!-- The servlet and jsp page mappings -->
+    <!-- The servlet and Jakarta Server Pages page mappings -->
     <servlet-mapping>
         <servlet-name>SecureServlet</servlet-name>
         <url-pattern>/restricted/SecuredServlet</url-pattern>

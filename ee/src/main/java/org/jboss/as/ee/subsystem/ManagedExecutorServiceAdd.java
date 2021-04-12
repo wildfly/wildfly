@@ -29,6 +29,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.concurrent.ContextServiceImpl;
 import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
+import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
+import org.jboss.as.ee.concurrent.service.ManagedExecutorHungTasksPeriodicTerminationService;
 import org.jboss.as.ee.concurrent.service.ManagedExecutorServiceService;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.subsystem.ManagedExecutorServiceResourceDefinition.ExecutorQueueValidationStepHandler;
@@ -37,6 +39,7 @@ import org.wildfly.common.cpu.ProcessorInfo;
 import org.wildfly.extension.requestcontroller.RequestController;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * @author Eduardo Martins
@@ -64,6 +67,7 @@ public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
         final String name = context.getCurrentAddressValue();
 
         final String jndiName = ManagedExecutorServiceResourceDefinition.JNDI_NAME_AD.resolveModelAttribute(context, model).asString();
+        final long hungTaskTerminationPeriod = ManagedExecutorServiceResourceDefinition.HUNG_TASK_TERMINATION_PERIOD_AD.resolveModelAttribute(context, model).asLong();
         final long hungTaskThreshold = ManagedExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD_AD.resolveModelAttribute(context, model).asLong();
         final boolean longRunningTasks = ManagedExecutorServiceResourceDefinition.LONG_RUNNING_TASKS_AD.resolveModelAttribute(context, model).asBoolean();
 
@@ -111,8 +115,10 @@ public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
             threadPriority = null;
         }
 
-        final ManagedExecutorServiceService service = new ManagedExecutorServiceService(name, jndiName, hungTaskThreshold, longRunningTasks, coreThreads, maxThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueLength, rejectPolicy, threadPriority);
-        final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ManagedExecutorServiceResourceDefinition.CAPABILITY, service);
+        final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ManagedExecutorServiceResourceDefinition.CAPABILITY);
+        final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService = serviceBuilder.requires(ConcurrentServiceNames.HUNG_TASK_PERIODIC_TERMINATION_SERVICE_NAME);
+        final ManagedExecutorServiceService service = new ManagedExecutorServiceService(name, jndiName, hungTaskThreshold, hungTaskTerminationPeriod, longRunningTasks, coreThreads, maxThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueLength, rejectPolicy, threadPriority, hungTasksPeriodicTerminationService);
+        serviceBuilder.setInstance(service);
         String contextService = null;
         if(model.hasDefined(ManagedExecutorServiceResourceDefinition.CONTEXT_SERVICE)) {
             contextService = ManagedExecutorServiceResourceDefinition.CONTEXT_SERVICE_AD.resolveModelAttribute(context, model).asString();

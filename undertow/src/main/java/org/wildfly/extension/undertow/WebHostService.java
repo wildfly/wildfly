@@ -22,6 +22,8 @@
 package org.wildfly.extension.undertow;
 
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import javax.servlet.Servlet;
 
 import io.undertow.server.HttpHandler;
@@ -37,9 +39,7 @@ import org.jboss.as.web.host.WebDeploymentController;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RequestController;
 import org.wildfly.extension.undertow.deployment.GlobalRequestControllerHandler;
@@ -48,24 +48,25 @@ import org.wildfly.extension.undertow.deployment.GlobalRequestControllerHandler;
  * Implementation of WebHost from common web, service starts with few more dependencies than default Host
  *
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-class WebHostService implements Service<WebHost>, WebHost {
-    private final InjectedValue<Server> server = new InjectedValue<>();
-    private final InjectedValue<Host> host = new InjectedValue<>();
-    private final InjectedValue<RequestController> requestControllerInjectedValue = new InjectedValue<>();
+final class WebHostService implements Service<WebHost>, WebHost {
+    private final Consumer<WebHost> webHostConsumer;
+    private final Supplier<Server> server;
+    private final Supplier<Host> host;
+    private final Supplier<RequestController> requestController;
     private volatile ControlPoint controlPoint;
 
-    protected InjectedValue<Server> getServer() {
-        return server;
-    }
-
-    protected InjectedValue<Host> getHost() {
-        return host;
+    WebHostService(final Consumer<WebHost> webHostConsumer, final Supplier<Server> server,
+                   final Supplier<Host> host, final Supplier<RequestController> requestController) {
+        this.webHostConsumer = webHostConsumer;
+        this.server = server;
+        this.host = host;
+        this.requestController = requestController;
     }
 
     @Override
-    public WebDeploymentController addWebDeployment(final WebDeploymentBuilder webDeploymentBuilder) throws Exception {
-
+    public WebDeploymentController addWebDeployment(final WebDeploymentBuilder webDeploymentBuilder) {
         DeploymentInfo d = new DeploymentInfo();
         d.setDeploymentName(webDeploymentBuilder.getContextRoot());
         d.setContextPath(webDeploymentBuilder.getContextRoot());
@@ -107,7 +108,7 @@ class WebHostService implements Service<WebHost>, WebHost {
 
         @Override
         public void create() throws Exception {
-            ServletContainer container = server.getValue().getServletContainer().getValue().getServletContainer();
+            ServletContainer container = server.get().getServletContainer().getValue().getServletContainer();
             manager = container.addDeployment(deploymentInfo);
             manager.deploy();
         }
@@ -115,44 +116,42 @@ class WebHostService implements Service<WebHost>, WebHost {
         @Override
         public void start() throws Exception {
             HttpHandler handler = manager.start();
-            host.getValue().registerDeployment(manager.getDeployment(), handler);
+            host.get().registerDeployment(manager.getDeployment(), handler);
         }
 
         @Override
         public void stop() throws Exception {
-            host.getValue().unregisterDeployment(manager.getDeployment());
+            host.get().unregisterDeployment(manager.getDeployment());
             manager.stop();
         }
 
         @Override
         public void destroy() throws Exception {
             manager.undeploy();
-            ServletContainer container = server.getValue().getServletContainer().getValue().getServletContainer();
+            ServletContainer container = server.get().getServletContainer().getValue().getServletContainer();
             container.removeDeployment(deploymentInfo);
         }
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
-        RequestController rq = requestControllerInjectedValue.getOptionalValue();
-        if(rq != null) {
-            controlPoint = rq.getControlPoint("", "org.wildfly.undertow.webhost." + server.getValue().getName() + "." + host.getValue().getName());
+    public void start(final StartContext context) {
+        RequestController rq = requestController != null ? requestController.get() : null;
+        if (rq != null) {
+            controlPoint = rq.getControlPoint("", "org.wildfly.undertow.webhost." + server.get().getName() + "." + host.get().getName());
         }
+        webHostConsumer.accept(this);
     }
 
     @Override
-    public void stop(StopContext context) {
-        if(controlPoint != null) {
-            requestControllerInjectedValue.getValue().removeControlPoint(controlPoint);
+    public void stop(final StopContext context) {
+        webHostConsumer.accept(null);
+        if (controlPoint != null) {
+            requestController.get().removeControlPoint(controlPoint);
         }
     }
 
     @Override
     public WebHost getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
-    }
-
-    public InjectedValue<RequestController> getRequestControllerInjectedValue() {
-        return requestControllerInjectedValue;
     }
 }

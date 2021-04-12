@@ -1,0 +1,108 @@
+[[Jakarta_Enterprise_Beans_on_Kubernetes]]
+= Jakarta Enterprise Beans on Kubernetes
+
+If the WildFly server is deployed on Kubernetes then there are several
+points that you need to bear in mind when you use EJBs.
+
+NOTE: When deploying on Kubernetes you should consider the use of the link:https://github.com/wildfly/wildfly-operator[WildFly Operator].
+      It manages the Kubernetes objects in WildFly friendly way.
+      For example, it uses StatefulSet for the correct handling of EJB remoting and transaction recovery processing.
+
+The rest of this chapter assumes the link:https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/[`StatefulSet`] is used
+as the Kubernetes API object for managing the WildFly server.
+
+The StatefulSet provides a guarantee of persistent storage and network hostname stability
+over the restarts of the pod.
+
+These two guarantees are particularly important for the transaction manager which is a stateful component.
+The persistent storage over restarts is needed as the transaction log is usually stored at the file system.
+If the transaction manager creates a transaction log record it's created only at the transaction log particular to the WildFly instance.
+The hostname stability is needed as the WildFly may be contacted via EJB remote call with transaction propagation.
+The WildFly has to be reachable under the same hostname even after pod restarts.
+As the transaction log is bound to the particular WildFly instance it may be finished only there.
+
+
+[[ejb-calls-on-kubernetes]]
+== EJB calls on Kubernetes
+
+The EJB caller has two options on how to configure the remote call.
+It can be defined either as a remote outbound connection (see details at link:Admin_guide{outfilesuffix}#outbound-connections[Admin Guide, section Outbound Connections])
+or you may use a direct `InitialContext` lookup in your code.
+
+If you use either case then for the Kubernetes you need to adjust the configuration of the target node.
+For the target hostname, you need to use the DNS name of the very first pod managed by `StatefulSet`.
+
+The `StatefulSet` guarantees depend on the ordering of the pods. The pods are named in the prescribed order.
+If you scale your application up to 3 replicas you may expect
+your pods will have names such as `wildfly-server-0`, `wildfly-server-1`, `wildfly-server-2`.
+
+It's expected a link:https://kubernetes.io/docs/concepts/services-networking/service/#headless-services[headless services]
+to be used along with the `StatefulSet`. With the headless service, there is ensured the DNS hostname for the pod.
+If the application uses the WildFly Operator, a headless service will be created with a name such as `wildfly-server-headless`.
+Then the DNS name of the very first pod will be `wildfly-server-0.wildfly-server-headless`.
+
+The use of the hosname `wildfly-server-0.wildfly-server-headless`
+guarantees that the EJB call may reach any WildFly instance connected to the cluster.
+It's a bootstrap connection which is used to initialize the EJB client
+which gathers the structure of the WildFly cluster as the next step.
+
+
+[[ejb-kubernetes-configuration]]
+== EJB configuration for Kubernetes
+
+These are steps you need to process in order to run EJB remote calls.
+Some steps are related to the server configuration, the other ones
+on your application.
+
+* The clustering has to be set correctly, see the link:High_Availability_Guide{outfilesuffix}#discovery-for-kubernetes[High Availability Guide, section of Kubernetes discovery].
+* All the `socket-binding` must define the client mapping for the DNS value mapped by `StatefulSet` headless service.
+  For example if the application is named `wildfly-server` and the `StatefulSet` headless service is named `wildfly-server-headless`
+  then the `http` socket binding has to be defined in the following way:
+
+[source,xml,options="nowrap"]
+----
+<socket-binding name="http" port="${jboss.http.port:8080}">
+   <client-mapping destination-address="${jboss.node.name}.wildfly-server-headless"/>
+</socket-binding>
+----
+
+* A small workaround is needed for the remote EJB transaction recovery on Kubernetes
+  (the issue could be tracked at link:https://issues.redhat.com/browse/WFCORE-4668[WFCORE-4668]).
+  The WildFly application server has to be configured with property `wildfly.config.url`.
+  The `wildfly.config.url` points to a XML configuration file. If we consider one being placed at `$JBOSS_HOME/standalone/configuration/wildfly-config.xml`
+  then the property is setup as `JAVA_OPTS="$JAVA_OPTS -Dwildfly.config.url=$JBOSS_HOME/standalone/configuration/wildfly-config.xml"`.
+  The `wildfly-config.xml` defines the EJB recovery authentication to be used during transaction recovery for remote EJB calls.
+  The target server has to configure a user that is permitted to receive the EJB remote calls.
+  Such a user is then configured by standard means of link:Admin_Guide{outfilesuffix}#application-realm[security configuration].
+  Let’s say there is configured a user on the target server.
+  The user is created with script `$JBOSS_HOME/bin/add-user.sh` under the `ApplicationRealm`.
+  Then the caller WildFly uses the configuration in `wildfly-config.xml` this way
+  (you may copy the content below, but replace the `>>PASTE_..._HERE<<` with user and password you configured):
+
+[source,xml,options="nowrap"]
+----
+<configuration>
+  <authentication-client xmlns="urn:elytron:1.0">
+  <authentication-rules>
+          <rule use-configuration="jta">
+              <match-abstract-type name="jta" authority="jboss"/>
+      </rule>
+      </authentication-rules>
+      <authentication-configurations>
+       <configuration name="jta">
+               <sasl-mechanism-selector selector="DIGEST-MD5"/>
+               <providers>
+                   <use-service-loader />
+           </providers>
+       <set-user-name name=">>PASTE_USER_NAME_HERE<<"/>
+           <credentials>
+                    <clear-password password=">>PASTE_PASSWORD_HERE<<"/>
+           </credentials>
+               <set-mechanism-realm name="ApplicationRealm" />
+           </configuration>
+      </authentication-configurations>
+  </authentication-client>
+</configuration>
+----
+
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

@@ -48,8 +48,9 @@ public enum InfinispanSchema implements Schema<InfinispanSchema> {
     VERSION_9_1(9, 1), // EAP 7.3.4
     VERSION_10_0(10, 0), // WildFly 20
     VERSION_11_0(11, 0), // WildFly 21
+    VERSION_12_0(12, 0), // WildFly 23
     ;
-    static final InfinispanSchema CURRENT = VERSION_11_0;
+    static final InfinispanSchema CURRENT = VERSION_12_0;
 
     private final int major;
     private final int minor;

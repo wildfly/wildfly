@@ -18,10 +18,10 @@ The list of {ProductName} new functionality is extensive, being the most relevan
 
 * Jakarta EE - {ProductName} is a certified implementation of Jakarta EE, meeting both the Web and the Full Platform, and already includes support for the latest iterations of CDI (1.2) and Web Sockets (1.1).
 * Undertow - A new cutting-edge web server in {ProductName}, designed for maximum throughput and scalability, including environments with over a million connections. And the latest web technologies, such as the new HTTP/2 standard, are already onboard.
-* Apache ActiveMQ Artemis - {ProductName}'s new JMS broker. Based on an code donation from HornetQ, this Apache subproject provides outstanding performance based on a proven non-blocking architecture.
-* IronJacamar 1.2 - The latest IronJacamar provides a stable and feature rich JCA & Datasources support.
+* Apache ActiveMQ Artemis - {ProductName}'s new Jakarta Messaging broker. Based on an code donation from HornetQ, this Apache subproject provides outstanding performance based on a proven non-blocking architecture.
+* IronJacamar 1.2 - The latest IronJacamar provides a stable and feature rich Jakarta Connectors & Datasources support.
 * JBossWS 5 - The fifth generation of JBossWS, a major leap forward, brings new features and performances improvements to {ProductName} Web Services
-* RESTEasy 3 - {ProductName} includes the latest generation of RESTEasy, which goes beyond the standard Jakarta EE REST APIs (JAX-RS 2.0), by also providing a number of useful extensions, such as JSON Web Encryption, Jackson, Yaml, JSON-P, and Jettison.
+* RESTEasy 3 - {ProductName} which goes beyond the standard Jakarta EE REST APIs (Jakarta RESTful Web Services 2.1), by also providing a number of useful extensions, such as JSON Web Encryption, Jackson, Yaml, Jakarta JSON Processing, and reactive facilities.
 * OpenJDK ORB - {ProductName} switched the IIOP implementation from JacORB, to a downstream branch of the OpenJDK Orb, leading to better interoperability with the JVM ORB and the Jakarta EE RI.
 * Feature Rich Clustering - Clustering support was heavily refactored in {ProductName}, and includes several APIs for applications
 * Port Reduction - By utilizing HTTP upgrade, {ProductName} has moved nearly all of its protocols to be multiplexed over just two HTTP ports: a management port (9990), and an application port (8080).
@@ -29,8 +29,8 @@ The list of {ProductName} new functionality is extensive, being the most relevan
 
 The support for some technologies was removed, due to the high maintenance cost, low community interest, and much better alternative solutions:
 
-* CMP EJB - JPA offers a much more performant and flexible API
-* JAX-RPC - JAX-WS offers a much more accurate and complete solution
+* CMP EJB - Jakarta Persistence offers a much more performant and flexible API
+* Jakarta XML RPC - Jakarta XML Web Services offer a much more accurate and complete solution
 * JSR-88 - With very little adoption, the more complete deployment APIs provided by vendors are preferred
 
 [[server-migration]]
@@ -554,10 +554,10 @@ With respect to the server XML configuration, the user must now specify the modu
 </subsystem>
 ----
 
-[[jms-destinations]]
-===== JMS Destinations
+[[Jakarta-Messaging-destinations]]
+===== Jakarta Messaging Destinations
 
-In previous releases, JMS destination queues were configured in the `<jms-destinations>` element under the hornetq-server section of the `messaging` subsystem.
+In previous releases, Jakarta Messaging destination queues were configured in the `<jms-destinations>` element under the hornetq-server section of the `messaging` subsystem.
 
 [source,xml,options="nowrap"]
 ----
@@ -569,7 +569,7 @@ In previous releases, JMS destination queues were configured in the `<jms-destin
 </jms-destinations>
 ----
 
-In {ProductName}, the JMS destination queue is configured in the default server of the `messaging-activemq` subsystem.
+In {ProductName}, the Jakarta Messaging destination queue is configured in the default server of the `messaging-activemq` subsystem.
 
 [source,xml,options="nowrap"]
 ----
@@ -636,7 +636,7 @@ CMP entity beans are defined in the `ejb-jar.xml` descriptor, in concrete an ent
 </ejb-jar> 
 ----
 
-CMP entity beans should be replaced by JPA entities.
+CMP entity beans should be replaced by Jakarta Persistence entities.
 
 [[ejb-client]]
 ==== EJB Client
@@ -683,28 +683,28 @@ remote.connection.default.protocol=remote
 
 External applications using JNDI, to remotely lookup up EJBs in a {ProductName} {ProductVersion} server, may also need to be migrated, see  <<remote-jndi-clients,#Remote JNDI Clients>> section for further information.
 
-[[jms]]
-=== JMS
+[[Jakarta-Messaging]]
+=== Jakarta Messaging
 
-[[proprietary-jms-resource-definitions]]
-==== Proprietary JMS Resource Definitions
+[[proprietary-Jakarta-Messaging-resource-definitions]]
+==== Proprietary Jakarta Messaging Resource Definitions
 
-The proprietary XML descriptors, previously used to setup JMS resources, are deprecated in {ProductName}. Jakarta EE (section EE.5.18) standardized such functionality.
+The proprietary XML descriptors, previously used to setup Jakarta Messaging resources, are deprecated in {ProductName}. Jakarta EE (section EE.5.18) standardized such functionality.
 
 The deprecated descriptors are files bundled in the application package, which name ends with `-jms.xml`. Their namespace has been changed to `urn:jboss:messaging-activemq-deployment:1.0`.
 
-[[external-jms-clients]]
-==== External JMS Clients
+[[external-Jakarta-Messaging-clients]]
+==== External Jakarta Messaging Clients
 
-JMS Resources are remotely looked up using JNDI, and looking up resources in a {ProductName} {ProductVersion} server may require changes in the application code, see  <<remote-jndi-clients,#Remote JNDI Clients>> section for further information.
+Jakarta Messaging Resources are remotely looked up using JNDI, and looking up resources in a {ProductName} {ProductVersion} server may require changes in the application code, see  <<remote-jndi-clients,#Remote JNDI Clients>> section for further information.
 
-[[jpa-and-hibernate]]
-=== JPA (and Hibernate)
+[[Jakarta-Persistence-and-hibernate]]
+=== Jakarta Persistence (and Hibernate)
 
 [[applications-that-plan-to-use-hibernate-orm-5.0]]
 ==== Applications That Plan to Use Hibernate ORM 5.0
 
-{ProductName} ships with Hibernate ORM 5.0 and those libraries are implicitly added to the application classpath when a `persistence.xml` is detected during deployment. If your application uses JPA, it will default to using the Hibernate ORM 5.0 libraries.
+{ProductName} ships with Hibernate ORM 5.0 and those libraries are implicitly added to the application classpath when a `persistence.xml` is detected during deployment. If your application uses Jakarta Persistence, it will default to using the Hibernate ORM 5.0 libraries.
 
 Hibernate ORM 5.0 introduces:
 
@@ -769,14 +769,14 @@ can be replaced by
 
 The setup of web service's endpoints and clients, through a Spring XML descriptor, driving a CXF bus creation, is no longer supported in {ProductName}.
 
-Any application containing a `jbossws-cxf.xml` must migrate all functionality specified in such XML descriptor, mostly already supported by the JAX-WS specification, included in Jakarta EE. It is still possible to rely on direct Apache CXF API usage, loosing the Jakarta EE portability of the application, for instance when specific Apache CXF functionalities are needed. See the Apache CXF Integration document for further information.
+Any application containing a `jbossws-cxf.xml` must migrate all functionality specified in such XML descriptor, mostly already supported by the Jakarta XML Web Services specification, included in Jakarta EE. It is still possible to rely on direct Apache CXF API usage, loosing the Jakarta EE portability of the application, for instance when specific Apache CXF functionalities are needed. See the Apache CXF Integration document for further information.
 
-[[jax-rpc]]
-==== JAX-RPC
+[[Jakarta-XML-RPC]]
+==== Jakarta XML RPC 
 
-JAX-RPC is an API for building Web services and clients that used remote procedure calls (RPC) and XML, which was deprecated in Jakarta EE, and is no longer supported by {ProductName}.
+Jakarta XML RPC is an API for building Web services and clients that used remote procedure calls (RPC) and XML, which was deprecated in Jakarta EE, and is no longer supported by {ProductName}.
 
-JAX-RPC Web Services may be identified by the presence of the XML descriptor named `webservices.xml`, containing a `<webservice-description/>` element that includes a child element named `<jaxrpc-mapping-file/>`. An example:
+Jakarta XML RPC Web Services may be identified by the presence of the XML descriptor named `webservices.xml`, containing a `<webservice-description/>` element that includes a child element named `<jaxrpc-mapping-file/>`. An example:
 
 [source,xml,options="nowrap"]
 ----
@@ -799,12 +799,12 @@ JAX-RPC Web Services may be identified by the presence of the XML descriptor nam
 </webservices>
 ----
 
-Applications using JAX-RPC should be migrated to use JAX-WS, the current Jakarta EE standard web service framework.
+Applications using Jakarta XML RPC should be migrated to use Jakarta XML Web Services, the current Jakarta EE standard web service framework.
 
-[[jax-rs-2.0]]
-==== JAX-RS 2.0
+[[Jakarta-RESTful-Web-Services-2.1]]
+==== Jakarta RESTful Web Services 2.1
 
-JSR 339: JAX-RS 2.0: The Java API for RESTful Web Services specification is located at https://jcp.org/en/jsr/detail?id=339
+Jakarta RESTful Web Services 2.1: The Java API for RESTful Web Services specification is located at https://jakarta.ee/specifications/restful-ws/2.1/
 
 Some changes to the `MessageBodyWriter` interface may represent a backward incompatible change with respect to JAX-RS 1.X.
 
@@ -819,7 +819,7 @@ org.jboss.resteasy.core.NoMessageBodyWriterFoundFailure: Could not find MessageB
 ==== REST Client API
 
 Some REST Client API classes and methods are deprecated, for example: `org.jboss.resteasy.client.ClientRequest` and `org.jboss.resteasy.client.ClientResponse`. Instead, use
-https://docs.jboss.org/resteasy/docs/3.0-rc-1/javadocs/index.html?org/jboss/resteasy/client/jaxrs/ResteasyClient.html[﻿`org.jboss.resteasy.client.jaxrs.ResteasyClient`] and `javax.ws.rs.core.Response`. See the `resteasy-jaxrs-client` quickstart for an example of an external JAX-RS RestEasy client that interacts with a JAX-RS Web service.
+https://docs.jboss.org/resteasy/docs/3.15.0.Final/javadocs/index.html?org/jboss/resteasy/client/jaxrs/ResteasyClient.html[﻿`org.jboss.resteasy.client.jaxrs.ResteasyClient`] and `javax.ws.rs.core.Response`. See the `resteasy-jaxrs-client` quickstart for an example of an external Jakarta RESTful Web Services RestEasy client that interacts with a Jakarta RESTful Web Services.
 
 [[application-clustering]]
 === Application Clustering
@@ -943,7 +943,7 @@ Previously, the value defined by this attribute defined a policy for triggering 
 [[remote-jndi-clients]]
 ==== Remote JNDI Clients
 
-{ProductName} {ProductVersion}'s default JNDI Provider URL has changed, which means that external applications, using JNDI to lookup remote resources, for instance an EJB or a JMS Queue, may need to change the value for the JNDI `InitialContext` environment's property named
+{ProductName} {ProductVersion}'s default JNDI Provider URL has changed, which means that external applications, using JNDI to lookup remote resources, for instance an EJB or a Jakarta Messaging Queue, may need to change the value for the JNDI `InitialContext` environment's property named
 `java.naming.provider.url`. The default URL scheme is now
 `http-remoting`, and the default URL port is now `8080`.
 
@@ -975,3 +975,5 @@ A JSR-88 deployment plan is identified by a XML descriptor named `deployment-pla
 ==== Module Dependencies
 
 Applications defining dependencies to {ProductName} modules, through the application's package `MANIFEST.MF` or `jboss-deployment-structure.xml`, may be referencing missing modules. When migrating an application, relying on such functionality, the presence of the referenced modules should be validated in advance.
+
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

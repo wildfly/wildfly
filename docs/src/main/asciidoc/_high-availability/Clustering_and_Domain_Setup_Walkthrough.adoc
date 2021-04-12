@@ -823,3 +823,5 @@ https://community.jboss.org/people/jfclere[Jean-Frederic Clere] provided
 the mod_cluster 1.2.0 usages. +
 Misty Stanley-Jones has given a lot of suggestions and helps to make
 this document readable.
+
+NOTE: References in this document to JavaServer Pages(JSP) refer to the Jakarta Server Pages unless otherwise noted

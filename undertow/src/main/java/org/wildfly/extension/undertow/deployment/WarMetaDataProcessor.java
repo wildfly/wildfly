@@ -345,7 +345,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
             description.setModuleName(mergedMetaData.getModuleName());
         }
 
-        //WFLY-3102 EJB in WAR should inherit WAR's security domain
+        //WFLY-3102 Jakarta Enterprise Beans in WAR should inherit WAR's security domain
         if(mergedMetaData.getSecurityDomain() != null) {
             final EEModuleDescription description = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
             description.setDefaultSecurityDomain(mergedMetaData.getSecurityDomain());

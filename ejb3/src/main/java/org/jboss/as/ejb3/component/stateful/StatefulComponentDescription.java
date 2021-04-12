@@ -91,7 +91,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     private final Map<MethodIdentifier, StatefulRemoveMethod> removeMethods = new HashMap<MethodIdentifier, StatefulRemoveMethod>();
     private StatefulTimeoutInfo statefulTimeout;
     private CacheInfo cache;
-    // by default stateful beans are passivation capable, but beans can override it via annotation or deployment descriptor, starting EJB 3.2
+    // by default stateful beans are passivation capable, but beans can override it via annotation or deployment descriptor, starting Jakarta Enterprise Beans 3.2
     private boolean passivationApplicable = true;
     private final ServiceName deploymentUnitServiceName;
 

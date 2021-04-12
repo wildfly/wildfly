@@ -23,23 +23,26 @@
 package org.wildfly.clustering.infinispan.spi.metadata;
 
 import java.io.IOException;
-import java.util.OptionalInt;
 
 import org.infinispan.container.versioning.NumericVersion;
 import org.infinispan.container.versioning.SimpleClusteredVersion;
 import org.infinispan.metadata.EmbeddedMetadata;
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.impl.WireFormat;
-import org.wildfly.clustering.marshalling.protostream.Predictable;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
  * Marshaller for EmbeddedMetaData types.
  * @author Paul Ferraro
  */
 public class EmbeddedMetadataMarshaller<MD extends EmbeddedMetadata> implements ProtoStreamMarshaller<EmbeddedMetadata> {
+
+    private static final int VERSION_INDEX = 1;
+    private static final int TOPOLOGY_INDEX = 2;
+    private static final int LIFESPAN_INDEX = 3;
+    private static final int MAX_IDLE_INDEX = 4;
+
     private Class<MD> targetClass;
 
     EmbeddedMetadataMarshaller(Class<MD> targetClass) {
@@ -47,35 +50,34 @@ public class EmbeddedMetadataMarshaller<MD extends EmbeddedMetadata> implements 
     }
 
     @Override
-    public EmbeddedMetadata readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
+    public EmbeddedMetadata readFrom(ProtoStreamReader reader) throws IOException {
         EmbeddedMetadata.Builder builder = new EmbeddedMetadata.Builder();
-        int tag = reader.readTag();
         Long version = null;
         Integer topologyId = null;
-        while (tag != 0) {
-            int field = WireFormat.getTagFieldNumber(tag);
-            switch (field) {
-                case 1: {
+        boolean reading = true;
+        while (reading) {
+            int tag = reader.readTag();
+            switch (WireFormat.getTagFieldNumber(tag)) {
+                case VERSION_INDEX: {
                     version = reader.readSInt64();
                     break;
                 }
-                case 2: {
+                case TOPOLOGY_INDEX: {
                     topologyId = reader.readSInt32();
                     break;
                 }
-                case 3: {
+                case LIFESPAN_INDEX: {
                     builder.lifespan(reader.readUInt64());
                     break;
                 }
-                case 4: {
+                case MAX_IDLE_INDEX: {
                     builder.maxIdle(reader.readUInt64());
                     break;
                 }
                 default: {
-                    reader.skipField(tag);
+                    reading = reader.ignoreField(tag);
                 }
             }
-            tag = reader.readTag();
         }
         if (version != null) {
             builder.version((topologyId != null) ? new SimpleClusteredVersion(topologyId, version) : new NumericVersion(version));
@@ -84,37 +86,19 @@ public class EmbeddedMetadataMarshaller<MD extends EmbeddedMetadata> implements 
     }
 
     @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, EmbeddedMetadata metadata) throws IOException {
+    public void writeTo(ProtoStreamWriter writer, EmbeddedMetadata metadata) throws IOException {
         if (metadata.getClusteredVersion() != null) {
-            writer.writeSInt64(1, metadata.getClusteredVersion().getVersion());
-            writer.writeSInt32(2, metadata.getClusteredVersion().getTopologyId());
+            writer.writeSInt64(VERSION_INDEX, metadata.getClusteredVersion().getVersion());
+            writer.writeSInt32(TOPOLOGY_INDEX, metadata.getClusteredVersion().getTopologyId());
         } else if (metadata.getNumericVersion() != null) {
-            writer.writeSInt64(1, metadata.getNumericVersion().getVersion());
+            writer.writeSInt64(VERSION_INDEX, metadata.getNumericVersion().getVersion());
         }
         if (metadata.lifespan() != -1) {
-            writer.writeUInt64(3, metadata.lifespan());
+            writer.writeUInt64(LIFESPAN_INDEX, metadata.lifespan());
         }
         if (metadata.maxIdle() != -1) {
-            writer.writeUInt64(4, metadata.maxIdle());
+            writer.writeUInt64(MAX_IDLE_INDEX, metadata.maxIdle());
         }
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, EmbeddedMetadata metadata) {
-        int size = 0;
-        if (metadata.getClusteredVersion() != null) {
-            size += Predictable.signedLongSize(metadata.getClusteredVersion().getVersion()) + 1;
-            size += Predictable.signedIntSize(metadata.getClusteredVersion().getTopologyId()) + 1;
-        } else if (metadata.getNumericVersion() != null) {
-            size += Predictable.signedLongSize(metadata.getNumericVersion().getVersion()) + 1;
-        }
-        if (metadata.lifespan() != -1) {
-            size += Predictable.signedLongSize(metadata.lifespan()) + 1;
-        }
-        if (metadata.maxIdle() != -1) {
-            size += Predictable.signedLongSize(metadata.maxIdle()) + 1;
-        }
-        return OptionalInt.of(size);
     }
 
     @Override

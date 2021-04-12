@@ -154,7 +154,7 @@ public interface AppClientLogger extends BasicLogger {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = Message.NONE, value = "The appclient script starts an application client which can be used to test and access the deployed EJBs.")
+    @Message(id = Message.NONE, value = "The appclient script starts an application client which can be used to test and access the deployed Jakarta Enterprise Beans.")
     String usageDescription();
 
     /**

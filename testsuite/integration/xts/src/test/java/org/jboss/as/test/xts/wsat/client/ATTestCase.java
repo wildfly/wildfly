@@ -30,6 +30,7 @@ import com.arjuna.mw.wst11.UserTransaction;
 import com.arjuna.mw.wst11.UserTransactionFactory;
 import com.arjuna.wst.TransactionRolledBackException;
 
+import org.apache.commons.lang.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 
@@ -44,6 +45,13 @@ import org.jboss.as.test.xts.wsat.service.ATService2;
 import org.jboss.as.test.xts.wsat.service.ATService3;
 
 import static org.jboss.as.test.xts.util.ServiceCommand.*;
+
+import java.io.File;
+import java.io.FilePermission;
+import java.lang.reflect.ReflectPermission;
+import java.util.PropertyPermission;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.jboss.as.test.xts.util.EventLogEvent.*;
 
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -78,6 +86,29 @@ public class ATTestCase extends BaseFunctionalTest {
                 // needed to setup the server-side handler chain
                 .addAsResource("context-handlers.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.xts,org.jboss.jts\n"), "MANIFEST.MF");
+        if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
+                archive.addAsManifestResource(
+                        createPermissionsXmlAsset(
+                                //This is not catastrophic if absent
+                                ///.../testsuite/integration/xts/xcatalog
+                                //$JAVA_HOME/jre/conf/jaxm.properties
+                                //$JAVA_HOME/jre/lib/jaxws.properties
+                                //$JAVA_HOME/jre/conf/jaxws.properties
+                                new FilePermission(System.getProperties().getProperty("jbossas.ts.integ.dir") + File.separator + "xts" + File.separator
+                                        + "xcatalog", "read"),
+                                new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
+                                        + "conf" + File.separator + "jaxm.properties", "read"),
+                                new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
+                                        + "conf" + File.separator + "jaxws.properties", "read"),
+                                new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
+                                        + "lib" + File.separator + "jaxws.properties", "read"),
+                                new ReflectPermission("suppressAccessChecks"),
+                                new RuntimePermission("accessDeclaredMembers"),
+                                new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp"),
+                                new PropertyPermission("arquillian.debug", "read"),
+                                new PropertyPermission("node0", "read")),
+                        "permissions.xml");
+        }
         return archive;
     }
 

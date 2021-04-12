@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>24.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite-compat</artifactId>
@@ -316,6 +316,10 @@
                     <exists>${ts.elytron.cli}</exists>
                 </file>
             </activation>
+            <properties>
+                <!-- Re-enable the default surefire execution -->
+                <surefire.default-test.phase>test</surefire.default-test.phase>
+            </properties>
             <build>
                 <plugins>
                     <plugin>

@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.apache.cxf.impl">
+<module xmlns="urn:jboss:module:1.9" name="org.apache.cxf.impl">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -64,32 +64,40 @@
     </resources>
 
     <dependencies>
-        <module name="asm.asm" />
-        <module name="javax.api" />
-        <module name="javax.annotation.api" />
-        <module name="javax.jms.api" />
-        <module name="javax.jws.api" />
-        <module name="javax.mail.api" />
-        <module name="javax.resource.api" />
-        <module name="javax.servlet.api" />
-        <module name="javax.wsdl4j.api" />
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.sql"/>
+        <module name="java.management"/>
+        <module name="java.management.rmi"/>
+        <module name="java.naming"/>
+        <module name="java.rmi"/>
+        <module name="java.security.jgss"/>
+        <module name="asm.asm"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
+        <module name="javax.annotation.api"/>
+        <module name="javax.jms.api"/>
+        <module name="javax.jws.api"/>
+        <module name="javax.mail.api"/>
+        <module name="javax.resource.api"/>
+        <module name="javax.servlet.api"/>
+        <module name="javax.wsdl4j.api"/>
         <module name="javax.xml.bind.api" services="import"/>
         <module name="com.sun.xml.bind" services="import"/>
-        <module name="javax.xml.soap.api" />
-        <module name="javax.xml.stream.api" />
-        <module name="javax.xml.ws.api" />
-        <module name="org.apache.commons.lang3" />
+        <module name="javax.xml.soap.api"/>
+        <module name="javax.xml.stream.api"/>
+        <module name="javax.xml.ws.api"/>
+        <module name="org.apache.commons.lang3"/>
         <module name="org.apache.commons.logging"/>
         <module name="org.apache.httpcomponents"/>
-        <module name="org.apache.neethi" />
-        <module name="org.apache.velocity" />
-        <module name="org.apache.xml-resolver" />
-        <module name="org.apache.ws.xmlschema" />
-        <module name="org.apache.ws.security" />
-        <module name="org.apache.santuario.xmlsec" />
-        <module name="org.codehaus.woodstox" />
-        <module name="org.joda.time" />
-        <module name="org.opensaml" />
+        <module name="org.apache.neethi"/>
+        <module name="org.apache.velocity"/>
+        <module name="org.apache.xml-resolver"/>
+        <module name="org.apache.ws.xmlschema"/>
+        <module name="org.apache.ws.security"/>
+        <module name="org.apache.santuario.xmlsec"/>
+        <module name="org.codehaus.woodstox"/>
+        <module name="org.joda.time"/>
+        <module name="org.opensaml"/>
         <module name="org.apache.cxf" export="true">
           <imports>
             <include path="META-INF/cxf"/>
@@ -125,5 +133,6 @@
                 <include path="META-INF"/>
             </imports>
         </module>
+        <module name="java.xml"/>
     </dependencies>
 </module>

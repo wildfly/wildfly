@@ -22,14 +22,10 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="jakarta.enterprise.concurrent.api">
-    
-    <dependencies>
-    </dependencies>
-    
+<module xmlns="urn:jboss:module:1.9" name="jakarta.enterprise.concurrent.api">
+
     <resources>
         <!--<artifact name="${org.jboss.spec.javax.enterprise.concurrent:jboss-concurrency-api_1.0_spec}"/>-->
         <artifact name="${jakarta.enterprise.concurrent:jakarta.enterprise.concurrent-api}"/>
     </resources>
-    
 </module>

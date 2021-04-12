@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * [JBWS-3441] Support CDI interceptors for POJO JAX-WS services
+ * [JBWS-3441] Support CDI interceptors for POJO Jakarta XML Web Services
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */

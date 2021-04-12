@@ -43,7 +43,7 @@ public class UndertowServerTestCase {
     private final Connector connector = mock(Connector.class);
     private final String route = "route";
     private final org.wildfly.extension.undertow.Server undertowServer = new TestServer("default-server", "default-host");
-    private final UndertowService service = new TestUndertowService("default-container", "default-server", "default-virtual-host", this.route, this.undertowServer);
+    private final UndertowService service = new TestUndertowService(null, "default-container", "default-server", "default-virtual-host", this.route, false, this.undertowServer);
     private final UndertowEventHandlerAdapterConfiguration configuration = mock(UndertowEventHandlerAdapterConfiguration.class);
     private final Server server = new UndertowServer(undertowServer.getName(), this.service, this.connector);
 

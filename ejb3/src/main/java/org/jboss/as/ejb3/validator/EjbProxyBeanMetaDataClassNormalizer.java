@@ -38,7 +38,7 @@ import java.util.Set;
 
 /**
  *
- * This class is used to provide bean validation with a interface instead of EJB proxy. This is necessary as EJB proxy
+ * This class is used to provide bean validation with a interface instead of Jakarta Enterprise Beans proxy. This is necessary as Jakarta Enterprise Beans proxy
  * does not contain generics data.
  * @see <a href="https://issues.redhat.com/browse/WFLY-11566">WFLY-11566</a>
  *

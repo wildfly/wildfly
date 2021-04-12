@@ -1,0 +1,109 @@
+name: Dependency Tree Input Builder
+# To deal with https://securitylab.github.com/research/github-actions-preventing-pwn-requests
+# we need to split this across two jobs. The part that writes to the pull request lives in
+# ./dep-diff-workflow_run.yml
+on:
+  pull_request:
+    branches:
+    - master
+env:
+  # The modules to check for dependencies. If there is more than one they are comma separated
+  MODULES_TO_CHECK: ee-feature-pack/common,microprofile/galleon-common,servlet-feature-pack/common
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      ARTIFACTS: .pr_artifacts
+    steps:
+      - name: Prepare
+        id: prepare
+        run: |
+          # Make ARTIFACTS absolute
+          ARTIFACTS="${GITHUB_WORKSPACE}/${ARTIFACTS}"
+          echo "ARTIFACTS=${ARTIFACTS}" >> $GITHUB_ENV
+
+          mkdir ${ARTIFACTS}
+          echo ${{ github.event.number }} > "${ARTIFACTS}/pr"
+
+          echo "::set-output name=base::${GITHUB_BASE_REF}"
+          echo "::set-output name=artifacts::${ARTIFACTS}"
+
+      - name: Clone base version
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.prepare.outputs.base }}
+          path: base
+
+      - name: Setup Java
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 11
+
+      # Run the caching against the base version only
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Clone PR version
+        uses: actions/checkout@v2
+        with:
+          path: pr
+
+      - name: Build base
+        working-directory: base
+        run: |
+          mvn -B install -DskipTests -pl $MODULES_TO_CHECK -am
+
+      - name: Grab base dependencies
+        id: base-versions
+        working-directory: base
+        run: |
+          i=0
+          baseVersionFiles=""
+          for module in $(echo "${MODULES_TO_CHECK}" | sed "s/,/ /g")
+          do
+            baseVersionFile="_base-versions-$i.txt"
+            mvn -B dependency:tree -pl "${module}" -DoutputFile="${ARTIFACTS}/${baseVersionFile}" || exit 1
+
+            if [ $i -gt 0 ]; then
+              baseVersionFiles="${baseVersionFiles},${baseVersionFile}"
+            else
+              baseVersionFiles="${baseVersionFile}"
+            fi
+            i=$((i + 1))
+          done
+          echo "${baseVersionFiles}" > ${ARTIFACTS}/baseVersions
+
+      - name: Build PR
+        working-directory: pr
+        run: |
+          mvn -B install -DskipTests -pl $MODULES_TO_CHECK -am
+
+      - name: Grab PR Dependencies
+        working-directory: pr
+        id: new-versions
+        run: |
+          i=0
+          newVersionFiles=""
+          for module in $(echo "${MODULES_TO_CHECK}" | sed "s/,/ /g")
+          do
+            newVersionFile="_new-versions-$i.txt"
+            mvn -B dependency:tree -pl "${module}" -DoutputFile="${ARTIFACTS}/${newVersionFile}" || exit 1
+
+            if [ $i -gt 0 ]; then
+              newVersionFiles="${newVersionFiles},${newVersionFile}"
+            else
+              newVersionFiles="${newVersionFile}"
+            fi
+            i=$((i + 1))
+          done
+          echo "${newVersionFiles}" > ${ARTIFACTS}/newVersions
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: input-artifacts
+          path: ${{ steps.prepare.outputs.artifacts }}

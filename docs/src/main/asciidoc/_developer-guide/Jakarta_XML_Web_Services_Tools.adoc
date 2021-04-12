@@ -1,0 +1,425 @@
+[[Jakarta_XML_Web_Services_Tools]]
+= Jakarta XML Web Services Tools
+
+The Jakarta XML Web Services tools provided by JBossWS can be used in a variety of ways.
+First we will look at server-side development strategies, and then
+proceed to the client.
+
+[[server-side]]
+== Server side
+
+When developing a Web Service Endpoint (the server-side) you have the
+option of starting from Java ( _bottom-up development_), or from the
+abstact contract (WSDL) that defines your service ( _top-down
+development_). If this is a new service (no existing contract), the
+bottom-up approach is the fastest route; you only need to add a few
+annotations to your classes to get a service up and running. However, if
+you are developing a service with an already defined contract, it is far
+simpler to use the top-down approach, since the provided tool will
+generate the annotated code for you.
+
+Bottom-up use cases:
+
+* Exposing an already existing Jakarta Enterprise Beans 3 bean as a Web Service
+* Providing a new service, and you want the contract to be generated for
+you
+
+Top-down use cases:
+
+* Replacing the implementation of an existing Web Service, and you can't
+break compatibility with older clients
+* Exposing a service that conforms to a contract specified by a third
+party (e.g. a vender that calls you back using an already defined
+protocol).
+* Creating a service that adheres to the XML Schema and WSDL you
+developed by hand up front
+
+The following Jakarta XML Web Services command line tools are included in JBossWS:
+
+[cols=",",options="header"]
+|=======================================================================
+|Command |Description
+
+|wsprovide |Generates Jakarta XML Web Services portable artifacts, and provides the
+abstract contract. Used for bottom-up development.
+
+|wsconsume |Consumes the abstract contract (WSDL and Schema files), and
+produces artifacts for both a server and client. Used for top-down and
+client development
+|=======================================================================
+
+[[bottom-up-using-wsprovide]]
+=== Bottom-Up (Using wsprovide)
+
+The bottom-up strategy involves developing the Java code for your
+service, and then annotating it using Jakarta XML Web Services annotations. These
+annotations can be used to customize the contract that is generated for
+your service. For example, you can change the operation name to map to
+anything you like. However, all of the annotations have sensible
+defaults, so only the @WebService annotation is required.
+
+This can be as simple as creating a single class:
+
+[source,java,options="nowrap"]
+----
+package echo;
+ 
+@javax.jws.WebService
+public class Echo
+{
+   public String echo(String input)
+   {
+      return input;
+   }
+}
+----
+
+A JSE or Jakarta Enterprise Beans 3 deployment can be built using this class, and it is the
+only Java code needed to deploy on JBossWS. The WSDL, and all other Java
+artifacts called "wrapper classes" will be generated for you at deploy
+time. This actually goes beyond the Jakarta XML Web Services specification, which requires
+that wrapper classes be generated using an offline tool. The reason for
+this requirement is purely a vender implementation problem, and since we
+do not believe in burdening a developer with a bunch of additional
+steps, we generate these as well. However, if you want your deployment
+to be portable to other application servers, you will unfortunately need
+to use a tool and add the generated classes to your deployment.
+
+This is the primary purpose of the _wsprovide_ tool, to generate
+portable Jakarta XML Web Services artifacts. Additionally, it can be used to "provide" the
+abstract contract (WSDL file) for your service. This can be obtained by
+invoking _wsprovide_ using the "-w" option:
+
+....
+$ javac -d . -classpath jboss-jaxws.jar Echo.java
+$ wsprovide -w echo.Echo
+Generating WSDL:
+EchoService.wsdl
+Writing Classes:
+echo/jaxws/Echo.class
+echo/jaxws/EchoResponse.class
+....
+
+Inspecting the WSDL reveals a service called _EchoService_:
+
+[source,xml,options="nowrap"]
+----
+<service name='EchoService'>
+ <port binding='tns:EchoBinding' name='EchoPort'>
+  <soap:address location='REPLACE_WITH_ACTUAL_URL'/>
+ </port>
+</service>
+----
+
+As expected, this service defines one operation, " _echo_":
+
+[source,xml,options="nowrap"]
+----
+<portType name='Echo'>
+ <operation name='echo' parameterOrder='echo'>
+  <input message='tns:Echo_echo'/>
+  <output message='tns:Echo_echoResponse'/>
+ </operation>
+</portType>
+----
+
+[NOTE]
+
+Remember that when deploying on JBossWS you do not need to run this
+tool. You only need it for generating portable artifacts and/or the
+abstract contract for your service.
+
+Let's create a POJO endpoint for deployment on WildFly. A simple
+_web.xml_ needs to be created:
+
+[source,xml,options="nowrap"]
+----
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+  version="2.4">
+ 
+  <servlet>
+    <servlet-name>Echo</servlet-name>
+    <servlet-class>echo.Echo</servlet-class>
+  </servlet>
+ 
+  <servlet-mapping>
+    <servlet-name>Echo</servlet-name>
+    <url-pattern>/Echo</url-pattern>
+  </servlet-mapping>
+</web-app>
+----
+
+The _web.xml_ and the single class can now be used to create a war:
+
+....
+$ mkdir -p WEB-INF/classes
+$ cp -rp echo WEB-INF/classes/
+$ cp web.xml WEB-INF
+$ jar cvf echo.war WEB-INF
+added manifest
+adding: WEB-INF/(in = 0) (out= 0)(stored 0%)
+adding: WEB-INF/classes/(in = 0) (out= 0)(stored 0%)
+adding: WEB-INF/classes/echo/(in = 0) (out= 0)(stored 0%)
+adding: WEB-INF/classes/echo/Echo.class(in = 340) (out= 247)(deflated 27%)
+adding: WEB-INF/web.xml(in = 576) (out= 271)(deflated 52%)
+....
+
+The war can then be deployed to the JBoss Application Server.The war can
+then be deployed to the JBoss Application Server; this will internally
+invoke wsprovide, which will generate the WSDL. If deployment was
+successful, and you are using the default settings, it should be
+available in the server management console.
+
+For a portable Jakarta XML Web Services deployment, the wrapper classes generated earlier
+could be added to the deployment.
+
+[[top-down-using-wsconsume]]
+=== Top-Down (Using wsconsume)
+
+The top-down development strategy begins with the abstract contract for
+the service, which includes the WSDL file and zero or more schema files.
+The _wsconsume_ tool is then used to consume this contract, and produce
+annotated Java classes (and optionally sources) that define it.
+
+[NOTE]
+
+wsconsume may have problems with symlinks on Unix systems
+
+Using the WSDL file from the bottom-up example, a new Java
+implementation that adheres to this service can be generated. The "-k"
+option is passed to _wsconsume_ to preserve the Java source files that
+are generated, instead of providing just classes:
+
+....
+$ wsconsume -k EchoService.wsdl
+echo/Echo.java
+echo/EchoResponse.java
+echo/EchoService.java
+echo/Echo_Type.java
+echo/ObjectFactory.java
+echo/package-info.java
+echo/Echo.java
+echo/EchoResponse.java
+echo/EchoService.java
+echo/Echo_Type.java
+echo/ObjectFactory.java
+echo/package-info.java
+....
+
+The following table shows the purpose of each generated file:
+
+[cols=",",options="header"]
+|======================================================
+|File |Purpose
+|Echo.java |Service Endpoint Interface
+|Echo_Type.java |Wrapper bean for request message
+|EchoResponse.java |Wrapper bean for response message
+|ObjectFactory.java |Jakarta XML Binding XML Registry
+|package-info.java |Holder for Jakarta XML Binding package annotations
+|EchoService.java |Used only by Jakarta XML Web Services clients
+|======================================================
+
+Examining the Service Endpoint Interface reveals annotations that are
+more explicit than in the class written by hand in the bottom-up
+example, however, these evaluate to the same contract:
+
+[source,java,options="nowrap"]
+----
+@WebService(name = "Echo", targetNamespace = "http://echo/")
+public interface Echo {
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "echo", targetNamespace = "http://echo/", className = "echo.Echo_Type")
+    @ResponseWrapper(localName = "echoResponse", targetNamespace = "http://echo/", className = "echo.EchoResponse")
+    public String echo(
+        @WebParam(name = "arg0", targetNamespace = "")
+        String arg0);
+ 
+}
+----
+
+The only missing piece (besides for packaging) is the implementation
+class, which can now be written, using the above interface.
+
+[source,java,options="nowrap"]
+----
+package echo;
+ 
+@javax.jws.WebService(endpointInterface="echo.Echo")
+public class EchoImpl implements Echo
+{
+   public String echo(String arg0)
+   {
+      return arg0;
+   }
+}
+----
+
+[[client-side]]
+== Client Side
+
+Before going to detail on the client-side it is important to understand
+the decoupling concept that is central to Web Services. Web Services are
+not the best fit for internal RPC, even though they can be used in this
+way. There are much better technologies for this (CORBA, and RMI for
+example). Web Services were designed specifically for interoperable
+coarse-grained correspondence. There is no expectation or guarantee that
+any party participating in a Web Service interaction will be at any
+particular location, running on any particular OS, or written in any
+particular programming language. So because of this, it is important to
+clearly separate client and server implementations. The only thing they
+should have in common is the abstract contract definition. If, for
+whatever reason, your software does not adhere to this principal, then
+you should not be using Web Services. For the above reasons, the
+*_recommended methodology for developing a client is_* to follow *_the
+top-down approach_* , even if the client is running on the same server.
+
+Let's repeat the process of the top-down section, although using the
+deployed WSDL, instead of the one generated offline by _wsprovide_. The
+reason why we do this is just to get the right value for soap:address.
+This value must be computed at deploy time, since it is based on
+container configuration specifics. You could of course edit the WSDL
+file yourself, although you need to ensure that the path is correct.
+
+Offline version:
+
+[source,xml,options="nowrap"]
+----
+<service name='EchoService'>
+  <port binding='tns:EchoBinding' name='EchoPort'>
+   <soap:address location='REPLACE_WITH_ACTUAL_URL'/>
+  </port>
+</service>
+----
+
+Online version:
+
+[source,xml,options="nowrap"]
+----
+<service name="EchoService">
+  <port binding="tns:EchoBinding" name="EchoPort">
+    <soap:address location="http://localhost.localdomain:8080/echo/Echo"/>
+  </port>
+</service>
+----
+
+Using the online deployed version with _wsconsume_:
+
+....
+$ wsconsume -k http://localhost:8080/echo/Echo?wsdl
+echo/Echo.java
+echo/EchoResponse.java
+echo/EchoService.java
+echo/Echo_Type.java
+echo/ObjectFactory.java
+echo/package-info.java
+echo/Echo.java
+echo/EchoResponse.java
+echo/EchoService.java
+echo/Echo_Type.java
+echo/ObjectFactory.java
+echo/package-info.java
+....
+
+The one class that was not examined in the top-down section, was
+`EchoService.java`. Notice how it stores the location the WSDL was
+obtained from.
+
+[source,java,options="nowrap"]
+----
+@WebServiceClient(name = "EchoService", targetNamespace = "http://echo/", wsdlLocation = "http://localhost:8080/echo/Echo?wsdl")
+public class EchoService extends Service
+{
+    private final static URL ECHOSERVICE_WSDL_LOCATION;
+ 
+    static {
+        URL url = null;
+        try
+        {
+           url = new URL("http://localhost:8080/echo/Echo?wsdl");
+        }
+        catch (MalformedURLException e)
+        {
+           e.printStackTrace();
+        }
+        ECHOSERVICE_WSDL_LOCATION = url;
+    }
+ 
+    public EchoService(URL wsdlLocation, QName serviceName)
+    {
+         super(wsdlLocation, serviceName);
+    }
+ 
+    public EchoService()
+    {
+         super(ECHOSERVICE_WSDL_LOCATION, new QName("http://echo/", "EchoService"));
+    }
+ 
+    @WebEndpoint(name = "EchoPort")
+    public Echo getEchoPort()
+    {
+         return (Echo)super.getPort(new QName("http://echo/", "EchoPort"), Echo.class);
+    }
+}
+----
+
+As you can see, this generated class extends the main client entry point
+in Jakarta XML Web Services, `javax.xml.ws.Service`. While you can use `Service` directly,
+this is far simpler since it provides the configuration info for you.
+The only method we really care about is the `getEchoPort()` method,
+which returns an instance of our Service Endpoint Interface. Any WS
+operation can then be called by just invoking a method on the returned
+interface.
+
+[NOTE]
+
+It's not recommended to refer to a remote WSDL URL in a production
+application. This causes network I/O every time you instantiate the
+Service Object. Instead, use the tool on a saved local copy, or use the
+URL version of the constructor to provide a new WSDL location.
+
+All that is left to do, is write and compile the client:
+
+[source,java,options="nowrap"]
+----
+import echo.*;
+ 
+public class EchoClient
+{
+   public static void main(String args[])
+   {
+      if (args.length != 1)
+      {
+          System.err.println("usage: EchoClient <message>");
+          System.exit(1);
+      }
+ 
+      EchoService service = new EchoService();
+      Echo echo = service.getEchoPort();
+      System.out.println("Server said: " + echo.echo(args0));
+   }
+}
+----
+
+It is easy to change the endpoint address of your operation at runtime,
+setting the _ENDPOINT_ADDRESS_PROPERTY_ as shown below:
+
+[source,java,options="nowrap"]
+----
+EchoService service = new EchoService();
+      Echo echo = service.getEchoPort();
+ 
+      /* Set NEW Endpoint Location */
+      String endpointURL = "http://NEW_ENDPOINT_URL";
+      BindingProvider bp = (BindingProvider)echo;
+      bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endpointURL);
+ 
+      System.out.println("Server said: " + echo.echo(args0));
+----
+
+
+include::wsconsume.adoc[]
+
+include::wsprovide.adoc[]

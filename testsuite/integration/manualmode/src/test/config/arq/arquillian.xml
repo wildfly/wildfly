@@ -9,7 +9,7 @@
             <configuration>
                 <property name="jbossHome">${basedir}/target/wildfly</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=default-jbossas</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="serverConfig">${jboss.config.file.name:standalone-ha.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
@@ -26,6 +26,23 @@
             <configuration>
                 <property name="jbossHome">${basedir}/target/wildfly</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=default-jbossas</property>
+                <property name="serverConfig">standalone-full.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
+
+        <container qualifier="default-full-jbossas-byteman" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/wildfly</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=default-jbossas -Dorg.jboss.byteman.verbose -Djboss.modules.system.pkgs=org.jboss.byteman -Dorg.jboss.byteman.transform.all -javaagent:${basedir}/target/lib/byteman.jar=listener:true,port:${byteman.port},address:${byteman.host},policy:true</property>
                 <property name="serverConfig">standalone-full.xml</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
@@ -59,7 +76,7 @@
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-with-remote-outbound-connection</property>
                 <property name="javaVmArguments">${server.jvm2.args} -Djboss.inst=${basedir}/target/jbossas-with-remote-outbound-connection -Djboss.node.name=jbossas-with-remote-outbound-connection</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="serverConfig">${jboss.config.file.name:standalone-ha.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node1}</property>
@@ -107,7 +124,7 @@
             <configuration>
                 <property name="jbossHome">${basedir}/target/seccontext-server1</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/seccontext-server1 -Djboss.node.name=seccontext-server1</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="serverConfig">${jboss.config.file.name:standalone-ha.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
@@ -123,7 +140,7 @@
             <configuration>
                 <property name="jbossHome">${basedir}/target/seccontext-server1-backup</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.socket.binding.port-offset=2000 -Djboss.inst=${basedir}/target/seccontext-server1-backup -Djboss.node.name=seccontext-server1-backup</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="serverConfig">${jboss.config.file.name:standalone-ha.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
@@ -186,7 +203,7 @@
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-layered</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-layered -Djboss.node.name=jbossas-layered</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="serverConfig">${jboss.config.file.name:standalone-ha.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
@@ -235,7 +252,7 @@
             <configuration>
                 <property name="jbossHome">${basedir}/target/wildfly</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas -Djboss.node.name=default-jbossas</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="serverConfig">${jboss.config.file.name:standalone-ha.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
@@ -253,7 +270,7 @@
                 <property name="jbossHome">${basedir}/target/jbossas-dwm-manual-0</property>
                 <!-- AS7-2493 different jboss.node.name must be specified -->
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-dwm-manual-0 -Djboss.node.name=node-0</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="serverConfig">${jboss.config.file.name:standalone-ha.xml}</property>
                 <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
@@ -269,7 +286,7 @@
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-dwm-manual-1</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-dwm-manual-1 -Djboss.node.name=node-1 -Djboss.socket.binding.port-offset=100</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="serverConfig">${jboss.config.file.name:standalone-ha.xml}</property>
                 <property name="jbossArguments">-b=${node1} -bmanagement=${node1} -bprivate=${node1} -bunsecure=${node1} ${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node1:127.0.0.1}</property>
@@ -278,6 +295,185 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port.node1:8887} ${as.managementPort.node1:10090}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+
+        <container qualifier="non-graceful-server" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/wildfly</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=non-graceful-server</property>
+                <property name="serverConfig">${jboss.config.file.name:standalone.xml}</property>
+                <property name="jbossArguments">${jboss.args} --graceful-startup=false</property>
+                <property name="allowConnectingToRunningServer">false</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
+
+        <container qualifier="jbossas-custom" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-custom</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=jbossas-custom</property>
+                <property name="serverConfig">standalone.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+                <property name="adminOnly">true</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
+
+        <container qualifier="jbossas-custom-ha" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-custom</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=jbossas-custom</property>
+                <property name="serverConfig">standalone-ha.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+                <property name="adminOnly">true</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
+
+        <container qualifier="jbossas-custom-full" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-custom</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=jbossas-custom</property>
+                <property name="serverConfig">standalone-full.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+                <property name="adminOnly">true</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
+
+        <container qualifier="jbossas-custom-full-ha" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-custom</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=jbossas-custom</property>
+                <property name="serverConfig">standalone-full-ha.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+                <property name="adminOnly">true</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
+
+        <container qualifier="jbossas-custom-activemq-colocated" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-custom</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=jbossas-custom</property>
+                <property name="readOnlyServerConfig">../../docs/examples/configs/standalone-activemq-colocated.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+                <property name="adminOnly">true</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
+
+        <container qualifier="jbossas-custom-genericjms" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-custom</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=jbossas-custom</property>
+                <property name="readOnlyServerConfig">../../docs/examples/configs/standalone-genericjms.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+                <property name="adminOnly">true</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
+
+        <container qualifier="jbossas-custom-picketlink" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-custom</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=jbossas-custom</property>
+                <property name="readOnlyServerConfig">../../docs/examples/configs/standalone-picketlink.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+                <property name="adminOnly">true</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
+
+        <container qualifier="jbossas-custom-rts" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-custom</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=jbossas-custom</property>
+                <property name="readOnlyServerConfig">../../docs/examples/configs/standalone-rts.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+                <property name="adminOnly">true</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
+
+        <container qualifier="jbossas-custom-xts" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/jbossas-custom</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=jbossas-custom</property>
+                <property name="readOnlyServerConfig">../../docs/examples/configs/standalone-xts.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+                <property name="adminOnly">true</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
             </configuration>
         </container>
     </group>

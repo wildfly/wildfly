@@ -233,9 +233,9 @@ The available statistics include the number of created / destroyed connections a
 [[agroal-datasource-attributes]]
 === DataSource specific attributes
 
-In addition to all the common attributes, a _datasource_ definition may disable the JTA integration.
+In addition to all the common attributes, a _datasource_ definition may disable the Jakarta Transactions integration.
 
-Deferred enlistment is not supported, meaning that if JTA is enabled a connection must always be obtained within the scope of a transaction. The connection will always be enlisted with that transaction (lazy enlistment is not supported).
+Deferred enlistment is not supported, meaning that if Jakarta Transactions is enabled a connection must always be obtained within the scope of a transaction. The connection will always be enlisted with that transaction (lazy enlistment is not supported).
 
 [TIP]
 The _connectable_ attribute allows a non-XA datasource to take part in an XA transaction ('Last Resource Commit Optimization (LRCO)' / 'Commit Markable Resource')

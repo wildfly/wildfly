@@ -22,21 +22,25 @@
 
 package org.wildfly.extension.undertow;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import org.jboss.as.network.SocketBinding;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
-import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -45,23 +49,31 @@ import io.undertow.server.handlers.NameVirtualHostHandler;
 import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.server.handlers.error.SimpleErrorPageHandler;
 import io.undertow.util.Headers;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class Server implements Service<Server> {
+    private final Consumer<Server> serverConsumer;
+    private final Supplier<ServletContainerService> servletContainer;
+    private final Supplier<UndertowService> undertowService;
     private final String defaultHost;
     private final String name;
     private final NameVirtualHostHandler virtualHostHandler = new NameVirtualHostHandler();
-    private final InjectedValue<ServletContainerService> servletContainer = new InjectedValue<>();
-    private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
-    private volatile HttpHandler root;
     private final List<ListenerService> listeners = new CopyOnWriteArrayList<>();
     private final Set<Host> hosts = new CopyOnWriteArraySet<>();
-
     private final HashMap<Integer,Integer> securePortMappings = new HashMap<>();
+    private volatile HttpHandler root;
 
-    protected Server(String name, String defaultHost) {
+    protected Server(final Consumer<Server> serverConsumer,
+                     final Supplier<ServletContainerService> servletContainer,
+                     final Supplier<UndertowService> undertowService,
+                     final String name, final String defaultHost) {
+        this.serverConsumer = serverConsumer;
+        this.servletContainer = servletContainer;
+        this.undertowService = undertowService;
         this.name = name;
         this.defaultHost = defaultHost;
     }
@@ -74,14 +86,26 @@ public class Server implements Service<Server> {
         root = new DefaultHostHandler(root);
 
         UndertowLogger.ROOT_LOGGER.startedServer(name);
-        undertowService.getValue().registerServer(this);
+        undertowService.get().registerServer(this);
+        serverConsumer.accept(this);
+    }
+
+    @Override
+    public void stop(final StopContext stopContext) {
+        serverConsumer.accept(null);
+        undertowService.get().unregisterServer(this);
+    }
+
+    @Override
+    public Server getValue() {
+        return this;
     }
 
     protected void registerListener(ListenerService listener) {
            listeners.add(listener);
            if (!listener.isSecure()) {
-               SocketBinding binding = listener.getBinding().getValue();
-               SocketBinding redirectBinding = listener.getRedirectSocket().getOptionalValue();
+               SocketBinding binding = listener.getBinding().get();
+               SocketBinding redirectBinding = listener.getRedirectSocket() != null ? listener.getRedirectSocket().get() : null;
                if (redirectBinding!=null) {
                    securePortMappings.put(binding.getAbsolutePort(), redirectBinding.getAbsolutePort());
                }else{
@@ -93,7 +117,7 @@ public class Server implements Service<Server> {
        protected void unregisterListener(ListenerService listener) {
            listeners.remove(listener);
            if (!listener.isSecure()) {
-               SocketBinding binding = listener.getBinding().getValue();
+               SocketBinding binding = listener.getBinding().get();
                securePortMappings.remove(binding.getAbsolutePort());
            }
        }
@@ -122,34 +146,16 @@ public class Server implements Service<Server> {
         return securePortMappings.get(unsecurePort);
     }
 
-    @Override
-    public void stop(StopContext stopContext) {
-        undertowService.getValue().unregisterServer(this);
-    }
-
-    @Override
-    public Server getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
-
-    Injector<ServletContainerService> getServletContainerInjector() {
-        return servletContainer;
-    }
-
     public ServletContainerService getServletContainer() {
-        return servletContainer.getValue();
+        return servletContainer.get();
     }
 
     protected HttpHandler getRoot() {
         return root;
     }
 
-    protected Injector<UndertowService> getUndertowServiceInjector() {
-        return undertowService;
-    }
-
     UndertowService getUndertowService() {
-        return undertowService.getValue();
+        return undertowService.get();
     }
 
     public String getName() {
@@ -169,8 +175,23 @@ public class Server implements Service<Server> {
     }
 
     public String getRoute() {
-        UndertowService service = this.undertowService.getValue();
-        String defaultServerRoute = service.getInstanceId();
+        final UndertowService service = this.undertowService.get();
+        final String defaultServerRoute = service.getInstanceId();
+        if (service.isObfuscateSessionRoute()) {
+            try {
+                final MessageDigest md = MessageDigest.getInstance("MD5");
+                // salt
+                md.update(this.name.getBytes(UTF_8));
+                // encode
+                final byte[] digestedBytes = md.digest(defaultServerRoute.getBytes(UTF_8));
+                final Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding(); // = is not allowed in V0 Cookie
+                final String encodedRoute = new String(encoder.encode(digestedBytes), UTF_8);
+                UndertowLogger.ROOT_LOGGER.obfuscatedSessionRoute(encodedRoute, defaultServerRoute);
+                return encodedRoute;
+            } catch (NoSuchAlgorithmException e) {
+                UndertowLogger.ROOT_LOGGER.unableToObfuscateSessionRoute(defaultServerRoute, e);
+            }
+        }
         return this.name.equals(service.getDefaultServer()) ? defaultServerRoute : String.join("-", defaultServerRoute, this.name);
     }
 

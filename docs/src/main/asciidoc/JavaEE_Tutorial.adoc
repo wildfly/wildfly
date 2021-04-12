@@ -28,32 +28,32 @@ Coming Soon
 This guide is still under development, check back soon!
 ====
 
-include::_javaee-guide/Java_API_for_RESTful_Web_Services_(JAX-RS).adoc[]
+include::_javaee-guide/Jakarta_RESTful_Web_Services.adoc[]
 
-include::_javaee-guide/Java_Servlet_Technology.adoc[]
+include::_javaee-guide/Jakarta_Servlet_Technology.adoc[]
 
-include::_javaee-guide/Java_Server_Faces_Technology_(JSF).adoc[]
+include::_javaee-guide/Jakarta_Server_Faces_Technology.adoc[]
 
-include::_javaee-guide/Java_Persistence_API_(JPA).adoc[]
+include::_javaee-guide/Jakarta_Persistence_API.adoc[]
 
-include::_javaee-guide/Java_Transaction_API_(JTA).adoc[]
+include::_javaee-guide/Jakarta_Transactions.adoc[]
 
 include::_javaee-guide/Managed_Beans.adoc[]
 
-include::_javaee-guide/Contexts_and_Dependency_Injection_(CDI).adoc[]
+include::_javaee-guide/Jakarta_Contexts_and_Dependency_Injection.adoc[]
 
-include::_javaee-guide/Bean_Validation.adoc[]
+include::_javaee-guide/Jakarta_Bean_Validation.adoc[]
 
-include::_javaee-guide/Java_Message_Service_API_(JMS).adoc[]
+include::_javaee-guide/Jakarta_Messaging_API.adoc[]
 
-include::_javaee-guide/JavaEE_Connector_Architecture_(JCA).adoc[]
+include::_javaee-guide/Jakarta_Connectors_Architecture.adoc[]
 
-include::_javaee-guide/JavaMail_API.adoc[]
+include::_javaee-guide/Jakarta_Mail.adoc[]
 
-include::_javaee-guide/Java_Authorization_Contract_for_Containers_(JACC).adoc[]
+include::_javaee-guide/Jakarta_Authorization.adoc[]
 
-include::_javaee-guide/Java_Authentication_Service_Provider_Interface_for_Containers_(JASPIC).adoc[]
+include::_javaee-guide/Jakarta_Authentication.adoc[]
 
-include::_javaee-guide/Enterprise_JavaBeans_Technology_(EJB).adoc[]
+include::_javaee-guide/Jakarta_Enterprise_Beans.adoc[]
 
-include::_javaee-guide/Java_API_for_XML_Web_Services_(JAX-WS).adoc[]
+include::_javaee-guide/Jakarta_XML_Web_Services.adoc[]

@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.wildfly.clustering.web.spi">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.web.spi">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -37,7 +38,6 @@
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.metadata.web"/>
-        <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.marshalling.api"/>

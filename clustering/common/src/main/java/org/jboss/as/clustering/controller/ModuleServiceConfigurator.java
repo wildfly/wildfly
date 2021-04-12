@@ -22,62 +22,24 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.Collections;
+import java.util.List;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.server.Services;
-import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleLoadException;
-import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.FunctionalService;
-import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.service.SimpleServiceNameProvider;
 
 /**
  * Configures a service providing a {@link Module}.
  * @author Paul Ferraro
  */
-public class ModuleServiceConfigurator extends SimpleServiceNameProvider implements ResourceServiceConfigurator, Supplier<Module> {
-
-    private final Attribute attribute;
-
-    private volatile String identifier;
-    private volatile Supplier<ModuleLoader> loader;
+public class ModuleServiceConfigurator extends AbstractModulesServiceConfigurator<Module> {
 
     public ModuleServiceConfigurator(ServiceName name, Attribute attribute) {
-        super(name);
-        this.attribute = attribute;
+        super(name, attribute, Collections::singletonList);
     }
 
     @Override
-    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.identifier = this.attribute.resolveModelAttribute(context, model).asString();
-        return this;
-    }
-
-    @Override
-    public ServiceBuilder<?> build(ServiceTarget target) {
-        ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<Module> module = builder.provides(this.getServiceName());
-        this.loader = builder.requires(Services.JBOSS_SERVICE_MODULE_LOADER);
-        Service service = new FunctionalService<>(module, Function.identity(), this);
-        return builder.setInstance(service);
-    }
-
-    @Override
-    public Module get() {
-        try {
-            return this.loader.get().loadModule(this.identifier);
-        } catch (ModuleLoadException e) {
-            throw new IllegalArgumentException(e);
-        }
+    public Module apply(List<Module> modules) {
+        return !modules.isEmpty() ? modules.get(0) : null;
     }
 }

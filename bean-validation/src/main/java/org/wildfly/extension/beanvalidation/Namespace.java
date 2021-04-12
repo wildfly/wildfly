@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Enum representing the namespaces defined for the bean validation subsystem.
+ * Enum representing the namespaces defined for the Jakarta Bean Validation subsystem.
  *
  * @author Eduardo Martins
  */

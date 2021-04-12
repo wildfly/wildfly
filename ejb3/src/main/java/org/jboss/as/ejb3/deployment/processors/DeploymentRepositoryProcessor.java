@@ -73,12 +73,12 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
             return;
         }
         if(DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
-            //don't create this for EAR's, as they cannot hold EJB's
+            //don't create this for EAR's, as they cannot hold Jakarta Enterprise Beans's
             return;
         }
         // Note, we do not use the EEModuleDescription.getApplicationName() because that API returns the
         // module name if the top level unit isn't a .ear, which is not what we want. We really want a
-        // .ear name as application name (that's the semantic in EJB spec). So use EEModuleDescription.getEarApplicationName
+        // .ear name as application name (that's the semantic in Jakarta Enterprise Beans spec). So use EEModuleDescription.getEarApplicationName
         String applicationName = eeModuleDescription.getEarApplicationName();
         // if it's not a .ear deployment then set app name to empty string
         applicationName = applicationName == null ? "" : applicationName;

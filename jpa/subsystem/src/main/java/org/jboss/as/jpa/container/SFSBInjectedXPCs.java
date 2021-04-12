@@ -30,13 +30,13 @@ import java.util.Map;
  * Supports two different inheritance models, in an efficient manner.
  *
  * The reason why both strategies are handled by one class, is to make it easier to use both
- * (DEEP + SHALLOW) in the same application as recommended to the JPA EG
+ * (DEEP + SHALLOW) in the same application as recommended to the Jakarta Persistence EG
  * see http://java.net/projects/jpa-spec/lists/jsr338-experts/archive/2012-06/message/13 and the rest of the thread.
  *
  * Deep (JBoss legacy) mode will inherit across sibling beans and travel several levels up the beans in the
- * current EJB container instance.
+ * current Jakarta Enterprise Beans container instance.
  *
- * Shallow (EE standard) mode will inherit only from the immediate parent bean (in the current EJB container instance).
+ * Shallow (EE standard) mode will inherit only from the immediate parent bean (in the current Jakarta Enterprise Beans container instance).
  *
  * @author Scott Marlow
  */

@@ -26,8 +26,6 @@ import java.util.function.Function;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.infinispan.SessionKeyExternalizer;
 import org.wildfly.clustering.web.infinispan.SessionKeyFormat;
 
 /**
@@ -40,13 +38,6 @@ public enum CoarseSessionsKeyResolver implements Function<String, CoarseSessions
     @Override
     public CoarseSessionsKey apply(String id) {
         return new CoarseSessionsKey(id);
-    }
-
-    @MetaInfServices(Externalizer.class)
-    public static class CoarseSessionsKeyExternalizer extends SessionKeyExternalizer<CoarseSessionsKey> {
-        public CoarseSessionsKeyExternalizer() {
-            super(CoarseSessionsKey.class, INSTANCE);
-        }
     }
 
     @MetaInfServices(KeyFormat.class)

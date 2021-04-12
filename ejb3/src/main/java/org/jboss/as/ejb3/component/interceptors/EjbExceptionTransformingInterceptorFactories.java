@@ -43,7 +43,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 
 /**
- * An interceptor that transforms EJB 3.0 business interface exceptions to EJB 2.x exceptions when required.
+ * An interceptor that transforms Enterprise Beans 3.0 business interface exceptions to Enterprise Beans 2.x exceptions when required.
  * <p/>
  * This allows us to keep the actual
  *

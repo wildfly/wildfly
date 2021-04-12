@@ -82,7 +82,7 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
         try {
             final WeldCapability weldCapability = support.getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
             if (!weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
-                // SmallRye JAX-RS requires CDI. Without CDI, there's no integration needed
+                // SmallRye Jakarta RESTful Web Services require Jakarta Contexts and Dependency Injection. Without Jakarta Contexts and Dependency Injection, there's no integration needed
                 ROOT_LOGGER.noCdiDeployment();
                 return;
             }
@@ -201,10 +201,11 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
             boolean isRegistered = (Boolean) globalTracerClass.getMethod("isRegistered").invoke(null);
             if (isRegistered) {
                 TracingLogger.ROOT_LOGGER.alreadyRegistered();
-                return;
+                tracer = (Tracer) globalTracerClass.getMethod("get").invoke(null);
+            } else {
+                Class tracerResolverClass = moduleCL.loadClass("io.opentracing.contrib.tracerresolver.TracerResolver");
+                tracer = (Tracer) tracerResolverClass.getMethod("resolveTracer").invoke(null);
             }
-            Class tracerResolverClass = moduleCL.loadClass("io.opentracing.contrib.tracerresolver.TracerResolver");
-            tracer = (Tracer) tracerResolverClass.getMethod("resolveTracer").invoke(null);
         } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             ROOT_LOGGER.errorResolvingTracer(ex);
         } finally {

@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Runtime information about an EJB in a module
+ * Runtime information about an Jakarta Enterprise Beans in a module
  *
  * @author Stuart Douglas
  */
@@ -122,7 +122,7 @@ public class EjbDeploymentInformation {
     }
 
     /**
-     * Returns true if the passed <code>viewClassName</code> represents a remote view of the EJB component.
+     * Returns true if the passed <code>viewClassName</code> represents a remote view of the Jakarta Enterprise Beans component.
      * Else returns false.
      *
      * @param viewClassName The fully qualified classname of the view

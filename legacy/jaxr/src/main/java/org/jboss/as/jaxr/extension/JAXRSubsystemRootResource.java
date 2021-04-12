@@ -29,7 +29,7 @@ import org.jboss.dmr.ModelType;
 
 
 /**
- * The JAXR subsystem root resource
+ * The Jakarta XML Registries subsystem root resource
  *
  * @author Thomas.Diesler@jboss.com
  * @since 10-Nov-2011
@@ -50,12 +50,13 @@ class JAXRSubsystemRootResource extends ModelOnlyResourceDefinition {
         super(JAXRExtension.SUBSYSTEM_PATH,
                 JAXRExtension.getResolver(),
                 CONNECTION_FACTORY_ATTRIBUTE, CONNECTION_FACTORY_IMPL_ATTRIBUTE);
+        this.setDeprecated(JAXRExtension.DEPRECATED_SINCE);
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration subsystemRoot) {
         super.registerChildren(subsystemRoot);
-        // JAXR Properties
+        // Jakarta XML Registries Properties
         subsystemRoot.registerSubModel(new JAXRPropertyDefinition());
     }
 }

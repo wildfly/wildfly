@@ -27,9 +27,6 @@
         <property name="jboss.api" value="private"/>
     </properties>
 
-    <dependencies>
-        <module name="javax.json.api" />
-    </dependencies>
     <resources>
         <artifact name="${org.glassfish:jakarta.json}">
             <filter>
@@ -43,4 +40,8 @@
             </filter>
         </artifact>
     </resources>
+
+    <dependencies>
+        <module name="javax.json.api" />
+    </dependencies>
 </module>

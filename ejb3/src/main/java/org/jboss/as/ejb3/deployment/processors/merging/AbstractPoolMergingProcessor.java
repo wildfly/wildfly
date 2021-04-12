@@ -39,8 +39,8 @@ import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
 /**
- * Sets up the EJB component description with the pool name configured via the {@link org.jboss.ejb3.annotation.Pool}
- * annotation and/or the deployment descriptor, for an EJB
+ * Sets up the Jakarta Enterprise Beans component description with the pool name configured via the {@link org.jboss.ejb3.annotation.Pool}
+ * annotation and/or the deployment descriptor, for an Jakarta Enterprise Beans
  *
  * @author Jaikiran Pai
  */
@@ -87,7 +87,7 @@ public abstract class AbstractPoolMergingProcessor<T extends EJBComponentDescrip
         String poolName = null;
         if (pools != null) {
             for (final EJBBoundPoolMetaData poolMetaData : pools) {
-                // if this applies for all EJBs and if there isn't a pool name already explicitly specified
+                // if this applies for all Jakarta Enterprise Beans and if there isn't a pool name already explicitly specified
                 // for the specific bean (i.e. via an ejb-name match)
                 if ("*".equals(poolMetaData.getEjbName()) && poolName == null) {
                     poolName = poolMetaData.getPoolName();

@@ -25,6 +25,8 @@ package org.wildfly.extension.undertow;
 import static org.wildfly.extension.undertow.ServerDefinition.SERVER_CAPABILITY;
 
 import java.util.ServiceLoader;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
@@ -44,7 +46,7 @@ import org.wildfly.extension.undertow.session.DistributableServerRuntimeHandler;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-class ServerAdd extends AbstractAddStepHandler {
+final class ServerAdd extends AbstractAddStepHandler {
 
     ServerAdd() {
         super(new Parameters()
@@ -63,32 +65,26 @@ class ServerAdd extends AbstractAddStepHandler {
         final String servletContainer = ServerDefinition.SERVLET_CONTAINER.resolveModelAttribute(context, resource.getModel()).asString();
         final String defaultServerName = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context, parentModel).asString();
 
-        final Server service = new Server(name, defaultHost);
-        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(SERVER_CAPABILITY)
-                .setInstance(service)
-                .addCapabilityRequirement(Capabilities.CAPABILITY_SERVLET_CONTAINER, ServletContainerService.class, service.getServletContainerInjector(), servletContainer)
-                .addCapabilityRequirement(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class, service.getUndertowServiceInjector());
-
-        builder.setInitialMode(ServiceController.Mode.ACTIVE);
         boolean isDefaultServer = name.equals(defaultServerName);
+        final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(SERVER_CAPABILITY);
+        final Consumer<Server> sConsumer = isDefaultServer ? sb.provides(SERVER_CAPABILITY, UndertowService.DEFAULT_SERVER) : sb.provides(SERVER_CAPABILITY);
+        final Supplier<ServletContainerService> scsSupplier = sb.requiresCapability(Capabilities.CAPABILITY_SERVLET_CONTAINER, ServletContainerService.class, servletContainer);
+        final Supplier<UndertowService> usSupplier = sb.requiresCapability(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class);
+        sb.setInstance(new Server(sConsumer, scsSupplier, usSupplier, name, defaultHost));
+        sb.install();
 
         if (isDefaultServer) { //only install for default server
-            builder.addAliases(UndertowService.DEFAULT_SERVER);//register default server service name
+            final CapabilityServiceBuilder<?> csb = context.getCapabilityServiceTarget().addCapability(CommonWebServer.CAPABILITY);
+            final Consumer<WebServerService> wssConsumer = csb.provides(CommonWebServer.CAPABILITY, CommonWebServer.SERVICE_NAME);
+            final Supplier<Server> sSupplier = csb.requiresCapability(Capabilities.CAPABILITY_SERVER, Server.class, name);
+            csb.setInstance(new WebServerService(wssConsumer, sSupplier));
+            csb.setInitialMode(ServiceController.Mode.PASSIVE);
 
-            WebServerService commonWebServer = new WebServerService();
-            final ServiceBuilder<?> commonServerBuilder = context.getCapabilityServiceTarget().addCapability(CommonWebServer.CAPABILITY)
-                    .setInstance(commonWebServer)
-                    .addCapabilityRequirement(Capabilities.CAPABILITY_SERVER, Server.class, commonWebServer.getServerInjectedValue(), name)
-                    .setInitialMode(ServiceController.Mode.PASSIVE);
-
-            addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.HTTP_LISTENER_PATH);
-            addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.AJP_LISTENER_PATH);
-            addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.HTTPS_LISTENER_PATH);
-            //backward compatibility
-            commonServerBuilder.addAliases(CommonWebServer.SERVICE_NAME);
-            commonServerBuilder.install();
+            addCommonHostListenerDeps(context, csb, UndertowExtension.HTTP_LISTENER_PATH);
+            addCommonHostListenerDeps(context, csb, UndertowExtension.AJP_LISTENER_PATH);
+            addCommonHostListenerDeps(context, csb, UndertowExtension.HTTPS_LISTENER_PATH);
+            csb.install();
         }
-        builder.install();
 
         for (DistributableServerRuntimeHandler handler : ServiceLoader.load(DistributableServerRuntimeHandler.class, DistributableServerRuntimeHandler.class.getClassLoader())) {
             handler.execute(context, name);

@@ -41,7 +41,7 @@ import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.modules.Module;
 
 /**
- * Superclass for the EJB metadata merging processors
+ * Superclass for the Jakarta Enterprise Beans metadata merging processors
  *
  * @author Stuart Douglas
  */

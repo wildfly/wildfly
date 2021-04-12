@@ -28,7 +28,7 @@ import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 
 /**
- * JMS Topic resource definition
+ * Jakarta Messaging Topic resource definition
  *
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */

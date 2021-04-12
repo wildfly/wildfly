@@ -126,7 +126,7 @@ check whether persistent data are really persisted.
 Contains all tests relating to clustering aspects of the application server, such as:
 
 * web session clustering,
-* ejb session clustering,
+* Jakarta Enterprise Beans session clustering,
 * command dispatcher,
 * web session affinity handling,
 * and other areas.

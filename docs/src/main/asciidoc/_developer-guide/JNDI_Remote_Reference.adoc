@@ -101,3 +101,5 @@ session.
 For more details on how the server connections are configured, including
 the *required* jboss ejb client setup, please see
 <<EJB_invocations_from_a_remote_client_using_JNDI,EJB invocations from a remote client using JNDI>>.
+
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

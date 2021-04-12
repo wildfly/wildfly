@@ -23,24 +23,8 @@ server can use it for its JDBC store with the operation:
 Artemis JDBC store uses SQL commands to create the tables used to
 persist its information. +
 These SQL commands may differ depending on the type of database. The SQL
-commands used by the JDBC store are located in the file at:
+commands used by the JDBC store are located in `modules/system/layers/base/org/apache/activemq/artemis/main/artemis-jdbc-store-${ARTEMIS_VERSION}.jar/journal-sql.properties`.
 
-....
-$JBOSS_HOME/modules/system/layers/base/org/wildfly/extension/messaging-activemq/main/database/journal-sql.properties
-....
-
-By default, "vanilla" SQL commands are used to communicate with the
-database. However some databases requires specific commands to create
-table, update content, etc.
-
-The journal-sql.properties can also specify these provider-specific
-commands. You can customize them by adding a suffix to the vanilla SQL
-properties.
-
-The suffix is determined based on information from the JDBC driver and
-the connection metadata. If the type of database is not supported by the
-code, you can specify it explicitly with the journal-database property
-on the server resource.
 
 Artemis uses different JDBC tables to store its bindings information,
 the persistent messages and the large messages (paging is not supported
@@ -50,6 +34,20 @@ The name of these tables can be configured with the
 `journal-bindings-table`, `journal-messages-table`,
 `journal-page-store-table, and journal-large-messages-table`.
 
+Please note that the configuration of the underlying pool is something that you need to take care of.
+You  need at least four connections:
+
+ * one for the binding
+ * one for the messages journal
+ * one for the lease lock (if you use HA)
+ * one for the node manager shared state (if you use HA)
+
+So you should define a link:wildscribe/subsystem/datasources/xa-data-source/index.html#attr-min-pool-size[`min-pool-size`] of 4 for the pool. +
+But one fact that you need to take into account is that paging and large messages can use an unbounded number of threads.
+The size, a.k.a. link:wildscribe/subsystem/datasources/xa-data-source/index.html#attr-max-pool-size[`max-pool-size`], of the pool should be defined according to the amount of concurrent threads that perform page/large message streaming operations. There is no defined rule for this as there is no 1-1 relation between the number of threads and the number of connections. The number of connections depend on the number of threads processing paging and large messages operations as well as the time you are willing to wait to get a connection (cf. https://docs.wildfly.org/22/wildscribe/subsystem/datasources/xa-data-source/index.html#attr-blocking-timeout-wait-millis[`blocking-timeout-wait-millis`]). When new large messages or paging operations occur they will be in a dedicated thread and will try to get a connection, being enqueued until one is ready or the time to obtain one runs out which will create a failure. +
+You really need to tailor your configuration according to your needs and test it in your environment following the <<DataSource>> subsystem documentation and perform tests and peroformance runs before going to production.
+
+
 [[reference]]
 == Reference
 
@@ -57,5 +55,8 @@ The name of these tables can be configured with the
 
 * Artemis JDBC Persistence -
 https://activemq.apache.org/components/artemis/documentation/latest/persistence.html#configuring-jdbc-persistence
-
+* WildFly DataSource subsystem documentation -
+<<DataSource>>
+* WildFly datasource configuration model
+link:wildscribe/subsystem/datasources/xa-data-source/index.html
 ****

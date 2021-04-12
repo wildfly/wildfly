@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.wildfly.iiop-openjdk">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.iiop-openjdk">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,7 +33,10 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <module name="java.naming"/>
+        <module name="java.rmi"/>
+        <module name="java.security.jgss"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.transaction.api"/>
         <module name="javax.orb.api"/>
         <module name="org.jboss.as.controller"/>

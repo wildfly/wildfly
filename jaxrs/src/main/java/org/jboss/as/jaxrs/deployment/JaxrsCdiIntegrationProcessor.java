@@ -69,9 +69,9 @@ public class JaxrsCdiIntegrationProcessor implements DeploymentUnitProcessor {
             if (support.hasCapability(WELD_CAPABILITY_NAME)) {
                 final WeldCapability api = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get();
                 if (api.isWeldDeployment(deploymentUnit)) {
-                    // don't set this param if CDI is not in classpath
+                    // don't set this param if Jakarta Contexts and Dependency Injection is not in classpath
                     module.getClassLoader().loadClass(CDI_INJECTOR_FACTORY_CLASS);
-                    JAXRS_LOGGER.debug("Found CDI, adding injector factory class");
+                    JAXRS_LOGGER.debug("Found Jakarta Contexts and Dependency Injection, adding injector factory class");
                     setContextParameter(webdata, "resteasy.injector.factory", CDI_INJECTOR_FACTORY_CLASS);
                 }
             }

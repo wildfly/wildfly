@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="org.infinispan.protostream">
+<module xmlns="urn:jboss:module:1.9" name="org.infinispan.protostream">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,8 +33,12 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.sql.api"/>
+        <module name="java.compiler"/>
+        <module name="java.logging"/>
+        <module name="java.sql"/>
         <module name="org.jboss.logging"/>
+        <module name="jdk.unsupported"/>
     </dependencies>
 </module>

@@ -111,6 +111,9 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         ModelNode transport = property.getValue();
         writeAttributes(writer, transport, TransportResourceDefinition.Attribute.class);
         writeAttributes(writer, transport, TransportResourceDefinition.ThreadingAttribute.class);
+        if (containsName(TransportRegistration.SocketTransport.class, property.getName())) {
+            writeAttributes(writer, property.getValue(), SocketTransportResourceDefinition.Attribute.class);
+        }
         writeElement(writer, transport, AbstractProtocolResourceDefinition.Attribute.PROPERTIES);
         writeThreadPoolElements(XMLElement.DEFAULT_THREAD_POOL, ThreadPoolResourceDefinition.DEFAULT, writer, transport);
         writer.writeEndElement();

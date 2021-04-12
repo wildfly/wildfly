@@ -29,9 +29,9 @@ multiple naming stores in every WildFly instance, serving different JNDI
 namespaces:
 
 * java:comp - the standard EE namespace for entries scoped to a specific
-component, such as an EJB
+component, such as an Jakarta Enterprise Beans
 * java:module - the standard EE namespace for entries scoped to specific
-module, such as an EJB jar, and shared by all components in it
+module, such as an Jakarta Enterprise Beans jar, and shared by all components in it
 * java:app - the standard EE namespace for entries scoped to a specific
 application, i.e. EAR, and shared by all modules in it
 * java:global - the standard EE namespace for entries shared by all

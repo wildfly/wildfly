@@ -1,7 +1,7 @@
 [[MicroProfile_JWT_SmallRye]]
 = MicroProfile JWT Subsystem Configuration
 
-Support for https://microprofile.io/project/eclipse/microprofile-jwt-auth[Eclipse MicroProfile JWT RBAC] is provided by the _microprofile-jwt-smallrye_ subsystem.
+Support for https://microprofile.io/project/eclipse/microprofile-jwt-auth[MicroProfile JWT RBAC] is provided by the _microprofile-jwt-smallrye_ subsystem.
 
 The MicroProfile JWT specification describes how authentication can be performed using cryptographically signed JWT tokens and the contents of the token to be used to establish a resuting identity without relying on access to external repositories of identities such as databases or directory servers.
 

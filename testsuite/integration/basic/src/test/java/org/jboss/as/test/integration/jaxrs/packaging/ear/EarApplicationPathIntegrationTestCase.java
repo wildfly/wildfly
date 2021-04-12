@@ -45,7 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
- * Tests a JAX-RS deployment with an application bundled, that has no @ApplicationPath annotation.
+ * Tests a Jakarta RESTful Web Services deployment with an application bundled, that has no @ApplicationPath annotation.
  * <p/>
  * The container should register a servlet with the name that matches the application name
  * <p/>

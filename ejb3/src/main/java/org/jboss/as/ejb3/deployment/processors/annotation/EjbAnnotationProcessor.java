@@ -39,7 +39,7 @@ import org.jboss.as.ee.metadata.AbstractEEAnnotationProcessor;
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 
 /**
- * Processes EJB annotations and attaches them to the {@link org.jboss.as.ee.component.EEModuleClassDescription}
+ * Processes Jakarta Enterprise Beans annotations and attaches them to the {@link org.jboss.as.ee.component.EEModuleClassDescription}
  *
  * @author Stuart Douglas
  */

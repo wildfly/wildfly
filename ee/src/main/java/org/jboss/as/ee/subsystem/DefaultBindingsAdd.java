@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ee.subsystem;
 
+import static org.jboss.as.server.deployment.Phase.STRUCTURE_EE_DEFAULT_BINDINGS_CONFIG;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -73,7 +75,7 @@ public class DefaultBindingsAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EE_DEFAULT_BINDINGS_CONFIG, defaultBindingsConfigurationProcessor);
+                processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, STRUCTURE_EE_DEFAULT_BINDINGS_CONFIG, defaultBindingsConfigurationProcessor);
             }
         }, OperationContext.Stage.RUNTIME);
     }

@@ -11,7 +11,7 @@ suspended it will immediately stop accepting new requests, but wait for
 existing requests to complete. A suspended server can be resumed at any
 point, and will begin processing requests immediately. Suspending and
 resuming has no effect on deployment state (e.g. if a server is
-suspended singleton EJB's will not be destroyed). As of WildFly 11 it is
+suspended singleton Jakarta Enterprise Beans's will not be destroyed). As of WildFly 11 it is
 also possible to start a server in suspended mode which means it will
 not accept requests until it has been resumed. Servers will also be
 suspended during the boot process, so no requests will be accepted until
@@ -92,16 +92,17 @@ request controller subsystem.
 
 The following subsystems support graceful shutdown. Note that only
 subsystems that provide an external entry point to the server need
-graceful shutdown support. For example the JAX-RS subsystem does not
-require suspend/resume support as all access to JAX-RS is through the
+graceful shutdown support. For example the Jakarta RESTful Web Services subsystem does not
+require suspend/resume support as all access to Jakarta RESTful Web Services is through the
 web connector.
 
 * *Undertow* - Undertow will wait for all requests to finish.
 * *mod_cluster* - The mod_cluster subsystem will notify the load
 balancer that the server is suspending in the PRE_SUSPEND phase.
-* *EJB* - EJB will wait for all remote EJB requests and MDB message
+* *Jakarta Enterprise Beans* - Jakarta Enterprise Beans will wait
+for all remote Jakarta Enterprise Beans requests and MDB message
 deliveries to finish. Delivery to MDB's is stopped in the PRE_SUSPEND
-phase. EJB timers are suspended, and missed timers will be activated
+phase. Jakarta Enterprise Beans timers are suspended, and missed timers will be activated
 when the server is resumed.
 * *Batch* - Batch jobs will be stopped at a checkpoint while the server
 is suspending. They will be restarted from that checkpoint when the
@@ -115,9 +116,9 @@ transaction will be serviced - e.g. the server will accept any
 incoming remote call which carries the context of a transaction already
 started at the suspending server.
 
-[[transactions-and-ejbs]]
-=== Transactions and EJBs
-When you work with EJBs you have to enable the graceful shutdown
+[[transactions-and-Jakarta-Enterprise-Beans]]
+=== Transactions and Jakarta Enterprise Beans
+When you work with Jakarta Enterprise Beans you have to enable the graceful shutdown
 functionality by setting the attribute `enable-graceful-txn-shutdown` to
 `true`. For example, in the ejb3 subsystem section of `standalone.xml`:
 
@@ -134,7 +135,7 @@ finished. During that brief window of time, the client of a cluster may
 send a new request to a node that is shutting down and it will refuse the
 request because it is not related to an existing transaction.
 If this attribute `enable-graceful-txn-shutdown` is set to `false`, we
-disable the graceful behavior and EJB clients will not attempt to invoke
+disable the graceful behavior and Jakarta Enterprise Beans clients will not attempt to invoke
 the node when it suspends, regardless of active transactions.
 
 [[standalone-mode]]
@@ -232,3 +233,42 @@ the proper way to control the lifecycle of a domain mode server process is via t
 management API and its managing Host Controller, not via direct signals to the server
 process.
 
+[[non-graceful-startup]]
+== Non-graceful Startup
+
+By default, WildFly starts up gracefully, meaning that incoming requests are queued or cleanly rejected
+until the server is ready to process them. In some instances, though, it may be desirable to allow the
+server to begin to process requests at the earliest possible moment. One such example might be
+when two deployed applications need to interact with one another during the deployment or
+application startup. In one such scenario, Application A needs to make a REST request to
+Application B to get information vital to its own startup. Under a graceful startup, the request
+to Application B will block until the server is fully started. However, the server can't fully
+start, as Application A is waiting for data from Application B before its deploy/startup can
+complete. In this situation, a deadlock occurs, and the server startup times out.
+
+A non-graceful startup is intended to address this situation in that it will allow WildFly to
+begin attempting to answer requests as soon as possible. In the scenario above, assuming
+Application B has successfully deployed/started, Application A can also start immediately, as its
+request will be fulfilled. Note, however, that a race condition can occur: if Application B is
+not yet deployed (e.g., the deploy order is incorrect, or B has not finished starting), then
+Application A may still fail to start since Application B is not available. WildFly users making
+use of non-graceful startups must be aware of this and take steps to remedy those scenarios. With
+a non-graceful startup, however, WildFly will no longer be the cause of a deployment failure in
+such a configuration.
+
+Some discussion here of how this relates to reloading and restarting, as well as to suspended starts, is
+important. When reloading, the `ApplicationServerService` is stopped, and a new one started. It is equivalent
+to if it was being started the first time: all the same stuff happens, but it happens faster because a lot of
+classloading and static initialization doesn't have to happen again. This includes honoring the value of
+`graceful-startup`, so if the server was initially started non-gracefully, it will be reloaded in the same manner.
+
+Restarting the server is similar. A restart means a new JVM, so all the initialization happens again, exactly
+as it did on the first start. When restarting in domain mode, the Host Controller simply rereads the config
+file and does the same thing it did the first time. In standalone, the restart is driven by `standalone.[sh|ps1|bat]`.
+The running JVM exits with a specific exit code, which the script recognizes and starts a new server, using the
+same parameters as the first start, so if you start a server non-gracefully, you will restart a server
+non-gracefully.
+
+Finally, there's `start-mode=suspend`. In the event that an administrator specifies a suspended start as well as a
+non-graceful start, the suspended start will "win". That is to say, the server will start in a suspended mode,
+the `graceful-start=false` will be disregarded, and the server will log a message indicating that this is happening.

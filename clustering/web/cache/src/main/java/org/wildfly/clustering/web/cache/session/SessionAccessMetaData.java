@@ -29,9 +29,11 @@ import java.time.Duration;
  * @author Paul Ferraro
  */
 public interface SessionAccessMetaData extends ImmutableSessionAccessMetaData {
+
     /**
-     * Sets the duration time that this session was last accessed since the time the session was created.
-     * @param a duration
+     * Sets the last accessed duration (since this session was created) and last request duration.
+     * @param sinceCreation the duration of time this session was created
+     * @param lastAccessDuration the duration of time this session was last accessed
      */
-    void setLastAccessedDuration(Duration duration);
+    void setLastAccessDuration(Duration sinceCreation, Duration lastAccess);
 }

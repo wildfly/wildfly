@@ -31,6 +31,6 @@ import org.wildfly.clustering.marshalling.AbstractAtomicTestCase;
 public class ProtoStreamAtomicTestCase extends AbstractAtomicTestCase {
 
     public ProtoStreamAtomicTestCase() {
-        super(new ProtoStreamTesterFactory());
+        super(ProtoStreamTesterFactory.INSTANCE);
     }
 }

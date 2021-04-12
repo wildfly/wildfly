@@ -1,0 +1,676 @@
+[[EJB_invocations_from_a_remote_client_using_JNDI]]
+= EJB invocations from a remote client using JNDI
+
+This chapter explains how to invoke EJBs from a remote client by using
+the JNDI API to first lookup the bean proxy and then invoke on that
+proxy.
+
+[IMPORTANT]
+
+After you have read this article, do remember to take a look at
+https://docs.jboss.org/author/display/WFLY8/Remote+EJB+invocations+via+JNDI+-+EJB+client+API+or+remote-naming+project[Remote
+EJB invocations via JNDI - EJB client API or remote-naming project]
+
+Before getting into the details, we would like the users to know that we
+have introduced a new EJB client API, which is a WildFly-specific API
+and allows invocation on remote EJBs. This client API isn't based on
+JNDI. So remote clients need not rely on JNDI API to invoke on EJBs. A
+separate document covering the EJB remote client API will be made
+available. For now, you can refer to the javadocs of the EJB client
+project at http://docs.jboss.org/ejbclient/. In this document, we'll
+just concentrate on the traditional JNDI based invocation on EJBs. So
+let's get started:
+
+[[deploying-your-ejbs-on-the-server-side]]
+== Deploying your EJBs on the server side:
+
+[NOTE]
+
+Users who already have EJBs deployed on the server side can just skip to
+the next section.
+
+As a first step, you'll have to deploy your application containing the
+EJBs on the WildFly server. If you want those EJBs to be remotely
+invocable, then you'll have to expose at least one remote view for that
+bean. In this example, let's consider a simple Calculator stateless bean
+which exposes a RemoteCalculator remote business interface. We'll also
+have a simple stateful CounterBean which exposes a RemoteCounter remote
+business interface. Here's the code:
+
+[source,java,options="nowrap"]
+----
+package org.jboss.as.quickstarts.ejb.remote.stateless;
+ 
+/**
+ * @author Jaikiran Pai
+ */
+public interface RemoteCalculator {
+ 
+    int add(int a, int b);
+ 
+    int subtract(int a, int b);
+}
+----
+
+[source,java,options="nowrap"]
+----
+package org.jboss.as.quickstarts.ejb.remote.stateless;
+ 
+import javax.ejb.Remote;
+import javax.ejb.Stateless;
+ 
+/**
+ * @author Jaikiran Pai
+ */
+@Stateless
+@Remote(RemoteCalculator.class)
+public class CalculatorBean implements RemoteCalculator {
+ 
+    @Override
+    public int add(int a, int b) {
+        return a + b;
+    }
+ 
+    @Override
+    public int subtract(int a, int b) {
+        return a - b;
+    }
+}
+----
+
+[source,java,options="nowrap"]
+----
+package org.jboss.as.quickstarts.ejb.remote.stateful;
+ 
+/**
+ * @author Jaikiran Pai
+ */
+public interface RemoteCounter {
+ 
+    void increment();
+ 
+    void decrement();
+ 
+    int getCount();
+}
+----
+
+[source,java,options="nowrap"]
+----
+package org.jboss.as.quickstarts.ejb.remote.stateful;
+ 
+import javax.ejb.Remote;
+import javax.ejb.Stateful;
+ 
+/**
+ * @author Jaikiran Pai
+ */
+@Stateful
+@Remote(RemoteCounter.class)
+public class CounterBean implements RemoteCounter {
+ 
+    private int count = 0;
+ 
+    @Override
+    public void increment() {
+        this.count++;
+    }
+ 
+    @Override
+    public void decrement() {
+        this.count--;
+    }
+ 
+    @Override
+    public int getCount() {
+        return this.count;
+    }
+}
+----
+
+Let's package this in a jar (how you package it in a jar is out of scope
+of this chapter) named "jboss-as-ejb-remote-app.jar" and deploy it to
+the server. Make sure that your deployment has been processed
+successfully and there aren't any errors.
+
+[[writing-a-remote-client-application-for-accessing-and-invoking-the-ejbs-deployed-on-the-server]]
+== Writing a remote client application for accessing and invoking the
+EJBs deployed on the server
+
+The next step is to write an application which will invoke the EJBs that
+you deployed on the server. In WildFly, you can either choose to use the
+WildFly specific EJB client API to do the invocation or use JNDI to
+lookup a proxy for your bean and invoke on that returned proxy. In this
+chapter we will concentrate on the JNDI lookup and invocation and will
+leave the EJB client API for a separate chapter.
+
+So let's take a look at what the client code looks like for looking up
+the JNDI proxy and invoking on it. Here's the entire client code which
+invokes on a stateless bean:
+
+[source,java,options="nowrap"]
+----
+package org.jboss.as.quickstarts.ejb.remote.client;
+ 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.security.Security;
+import java.util.Hashtable;
+ 
+import org.jboss.as.quickstarts.ejb.remote.stateful.CounterBean;
+import org.jboss.as.quickstarts.ejb.remote.stateful.RemoteCounter;
+import org.jboss.as.quickstarts.ejb.remote.stateless.CalculatorBean;
+import org.jboss.as.quickstarts.ejb.remote.stateless.RemoteCalculator;
+import org.jboss.sasl.JBossSaslProvider;
+ 
+/**
+ * A sample program which acts a remote client for a EJB deployed on WildFly 10 server.
+ * This program shows how to lookup stateful and stateless beans via JNDI and then invoke on them
+ *
+ * @author Jaikiran Pai
+ */
+public class RemoteEJBClient {
+ 
+    public static void main(String[] args) throws Exception {
+        // Invoke a stateless bean
+        invokeStatelessBean();
+ 
+        // Invoke a stateful bean
+        invokeStatefulBean();
+    }
+ 
+    /**
+     * Looks up a stateless bean and invokes on it
+     *
+     * @throws NamingException
+     */
+    private static void invokeStatelessBean() throws NamingException {
+        // Let's lookup the remote stateless calculator
+        final RemoteCalculator statelessRemoteCalculator = lookupRemoteStatelessCalculator();
+        System.out.println("Obtained a remote stateless calculator for invocation");
+        // invoke on the remote calculator
+        int a = 204;
+        int b = 340;
+        System.out.println("Adding " + a + " and " + b + " via the remote stateless calculator deployed on the server");
+        int sum = statelessRemoteCalculator.add(a, b);
+        System.out.println("Remote calculator returned sum = " + sum);
+        if (sum != a + b) {
+            throw new RuntimeException("Remote stateless calculator returned an incorrect sum " + sum + " ,expected sum was " + (a + b));
+        }
+        // try one more invocation, this time for subtraction
+        int num1 = 3434;
+        int num2 = 2332;
+        System.out.println("Subtracting " + num2 + " from " + num1 + " via the remote stateless calculator deployed on the server");
+        int difference = statelessRemoteCalculator.subtract(num1, num2);
+        System.out.println("Remote calculator returned difference = " + difference);
+        if (difference != num1 - num2) {
+            throw new RuntimeException("Remote stateless calculator returned an incorrect difference " + difference + " ,expected difference was " + (num1 - num2));
+        }
+    }
+ 
+    /**
+     * Looks up a stateful bean and invokes on it
+     *
+     * @throws NamingException
+     */
+    private static void invokeStatefulBean() throws NamingException {
+        // Let's lookup the remote stateful counter
+        final RemoteCounter statefulRemoteCounter = lookupRemoteStatefulCounter();
+        System.out.println("Obtained a remote stateful counter for invocation");
+        // invoke on the remote counter bean
+        final int NUM_TIMES = 20;
+        System.out.println("Counter will now be incremented " + NUM_TIMES + " times");
+        for (int i = 0; i < NUM_TIMES; i++) {
+            System.out.println("Incrementing counter");
+            statefulRemoteCounter.increment();
+            System.out.println("Count after increment is " + statefulRemoteCounter.getCount());
+        }
+        // now decrementing
+        System.out.println("Counter will now be decremented " + NUM_TIMES + " times");
+        for (int i = NUM_TIMES; i > 0; i--) {
+            System.out.println("Decrementing counter");
+            statefulRemoteCounter.decrement();
+            System.out.println("Count after decrement is " + statefulRemoteCounter.getCount());
+        }
+    }
+ 
+    /**
+     * Looks up and returns the proxy to remote stateless calculator bean
+     *
+     * @return
+     * @throws NamingException
+     */
+    private static RemoteCalculator lookupRemoteStatelessCalculator() throws NamingException {
+        final Hashtable jndiProperties = new Hashtable();
+        jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+        final Context context = new InitialContext(jndiProperties);
+        // The app name is the application name of the deployed EJBs. This is typically the ear name
+        // without the .ear suffix. However, the application name could be overridden in the application.xml of the
+        // EJB deployment on the server.
+        // Since we haven't deployed the application as a .ear, the app name for us will be an empty string
+        final String appName = "";
+        // This is the module name of the deployed EJBs on the server. This is typically the jar name of the
+        // EJB deployment, without the .jar suffix, but can be overridden via the ejb-jar.xml
+        // In this example, we have deployed the EJBs in a jboss-as-ejb-remote-app.jar, so the module name is
+        // jboss-as-ejb-remote-app
+        final String moduleName = "jboss-as-ejb-remote-app";
+        // AS7 allows each deployment to have an (optional) distinct name. We haven't specified a distinct name for
+        // our EJB deployment, so this is an empty string
+        final String distinctName = "";
+        // The EJB name which by default is the simple class name of the bean implementation class
+        final String beanName = CalculatorBean.class.getSimpleName();
+        // the remote view fully qualified class name
+        final String viewClassName = RemoteCalculator.class.getName();
+        // let's do the lookup
+        return (RemoteCalculator) context.lookup("ejb:" + appName + "/" + moduleName + "/" + distinctName + "/" + beanName + "!" + viewClassName);
+    }
+ 
+    /**
+     * Looks up and returns the proxy to remote stateful counter bean
+     *
+     * @return
+     * @throws NamingException
+     */
+    private static RemoteCounter lookupRemoteStatefulCounter() throws NamingException {
+        final Hashtable jndiProperties = new Hashtable();
+        jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+        final Context context = new InitialContext(jndiProperties);
+        // The app name is the application name of the deployed EJBs. This is typically the ear name
+        // without the .ear suffix. However, the application name could be overridden in the application.xml of the
+        // EJB deployment on the server.
+        // Since we haven't deployed the application as a .ear, the app name for us will be an empty string
+        final String appName = "";
+        // This is the module name of the deployed EJBs on the server. This is typically the jar name of the
+        // EJB deployment, without the .jar suffix, but can be overridden via the ejb-jar.xml
+        // In this example, we have deployed the EJBs in a jboss-as-ejb-remote-app.jar, so the module name is
+        // jboss-as-ejb-remote-app
+        final String moduleName = "jboss-as-ejb-remote-app";
+        // AS7 allows each deployment to have an (optional) distinct name. We haven't specified a distinct name for
+        // our EJB deployment, so this is an empty string
+        final String distinctName = "";
+        // The EJB name which by default is the simple class name of the bean implementation class
+        final String beanName = CounterBean.class.getSimpleName();
+        // the remote view fully qualified class name
+        final String viewClassName = RemoteCounter.class.getName();
+        // let's do the lookup (notice the ?stateful string as the last part of the jndi name for stateful bean lookup)
+        return (RemoteCounter) context.lookup("ejb:" + appName + "/" + moduleName + "/" + distinctName + "/" + beanName + "!" + viewClassName + "?stateful");
+    }
+}
+----
+
+[NOTE]
+
+The entire server side and client side code is hosted at the github repo
+here
+https://github.com/wildfly/quickstart/tree/master/ejb-remote[ejb-remote]
+
+The code has some comments which will help you understand each of those
+lines. But we'll explain here in more detail what the code does. As a
+first step in the client code, we'll do a lookup of the EJB using a JNDI
+name. In AS7, for remote access to EJBs, you use the ejb: namespace with
+the following syntax:
+
+*For stateless beans:*
+
+[source,java,options="nowrap"]
+----
+ejb:<app-name>/<module-name>/<distinct-name>/<bean-name>!<fully-qualified-classname-of-the-remote-interface>
+----
+
+*For stateful beans:*
+
+[source,java,options="nowrap"]
+----
+ejb:<app-name>/<module-name>/<distinct-name>/<bean-name>!<fully-qualified-classname-of-the-remote-interface>?stateful
+----
+
+The ejb: namespace identifies it as a EJB lookup and is a constant (i.e.
+doesn't change) for doing EJB lookups. The rest of the parts in the jndi
+name are as follows:
+
+*app-name* : This is the name of the .ear (without the .ear suffix) that
+you have deployed on the server and contains your EJBs.
+
+* Jakarta EE allows you to override the application name, to a name of
+your choice by setting it in the application.xml. If the deployment uses
+uses such an override then the app-name used in the JNDI name should
+match that name.
+* EJBs can also be deployed in a .war or a plain .jar (like we did in
+step 1). In such cases where the deployment isn't an .ear file, then the
+app-name must be an empty string, while doing the lookup.
+
+*module-name* : This is the name of the .jar (without the .jar suffix)
+that you have deployed on the server and the contains your EJBs. If the
+EJBs are deployed in a .war then the module name is the .war name
+(without the .war suffix).
+
+* Jakarta EE allows you to override the module name, by setting it in the
+ejb-jar.xml/web.xml of your deployment. If the deployment uses such an
+override then the module-name used in the JNDI name should match that
+name.
+* Module name part cannot be an empty string in the JNDI name
+
+*distinct-name* : This is a WildFly-specific name which can be
+optionally assigned to the deployments that are deployed on the server.
+More about the purpose and usage of this will be explained in a separate
+chapter. If a deployment doesn't use distinct-name then, use an empty
+string in the JNDI name, for distinct-name
+
+*bean-name* : This is the name of the bean for which you are doing the
+lookup. The bean name is typically the unqualified classname of the bean
+implementation class, but can be overriden through either ejb-jar.xml or
+via annotations. The bean name part cannot be an empty string in the
+JNDI name.
+
+*fully-qualified-classname-of-the-remote-interface* : This is the fully
+qualified class name of the interface for which you are doing the
+lookup. The interface should be one of the remote interfaces exposed by
+the bean on the server. The fully qualified class name part cannot be an
+empty string in the JNDI name.
+
+For stateful beans, the JNDI name expects an additional "?stateful" to
+be appended after the fully qualified interface name part. This is
+because for stateful beans, a new session gets created on JNDI lookup
+and the EJB client API implementation doesn't contact the server during
+the JNDI lookup to know what kind of a bean the JNDI name represents
+(we'll come to this in a while). So the JNDI name itself is expected to
+indicate that the client is looking up a stateful bean, so that an
+appropriate session can be created.
+
+Now that we know the syntax, let's see our code and check what JNDI name
+it uses. Since our stateless EJB named CalculatorBean is deployed in a
+jboss-as-ejb-remote-app.jar (without any ear) and since we are looking
+up the org.jboss.as.quickstarts.ejb.remote.stateless.RemoteCalculator
+remote interface, our JNDI name will be:
+
+....
+ejb:/jboss-as-ejb-remote-app//CalculatorBean!org.jboss.as.quickstarts.ejb.remote.stateless.RemoteCalculator
+....
+
+That's what the lookupRemoteStatelessCalculator() method in the above
+client code uses.
+
+For the stateful EJB named CounterBean which is deployed in hte same
+jboss-as-ejb-remote-app.jar and which exposes the
+org.jboss.as.quickstarts.ejb.remote.stateful.RemoteCounter, the JNDI
+name will be:
+
+....
+ejb:/jboss-as-ejb-remote-app//CounterBean!org.jboss.as.quickstarts.ejb.remote.stateful.RemoteCounter?stateful
+....
+
+That's what the lookupRemoteStatefulCounter() method in the above client
+code uses.
+
+Now that we know of the JNDI name, let's take a look at the following
+piece of code in the lookupRemoteStatelessCalculator():
+
+[source,java,options="nowrap"]
+----
+final Hashtable jndiProperties = new Hashtable();
+jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+final Context context = new InitialContext(jndiProperties);
+----
+
+Here we are creating a JNDI InitialContext object by passing it some
+JNDI properties. The Context.URL_PKG_PREFIXES is set to
+org.jboss.ejb.client.naming. This is necessary because we should let the
+JNDI API know what handles the ejb: namespace that we use in our JNDI
+names for lookup. The "org.jboss.ejb.client.naming" has a
+URLContextFactory implementation which will be used by the JNDI APIs to
+parse and return an object for ejb: namespace lookups. You can either
+pass these properties to the constructor of the InitialContext class or
+have a jndi.properites file in the classpath of the client application,
+which (atleast) contains the following property:
+
+[source,java,options="nowrap"]
+----
+java.naming.factory.url.pkgs=org.jboss.ejb.client.naming
+----
+
+So at this point, we have setup the InitialContext and also have the
+JNDI name ready to do the lookup. You can now do the lookup and the
+appropriate proxy which will be castable to the remote interface that
+you used as the fully qualified class name in the JNDI name, will be
+returned. Some of you might be wondering, how the JNDI implementation
+knew which server address to look, for your deployed EJBs. The answer is
+in AS7, the proxies returned via JNDI name lookup for ejb: namespace do
+not connect to the server unless an invocation on those proxies is done.
+
+Now let's get to the point where we invoke on this returned proxy:
+
+[source,java,options="nowrap"]
+----
+// Let's lookup the remote stateless calculator
+        final RemoteCalculator statelessRemoteCalculator = lookupRemoteStatelessCalculator();
+        System.out.println("Obtained a remote stateless calculator for invocation");
+        // invoke on the remote calculator
+        int a = 204;
+        int b = 340;
+        System.out.println("Adding " + a + " and " + b + " via the remote stateless calculator deployed on the server");
+        int sum = statelessRemoteCalculator.add(a, b);
+----
+
+We can see here that the proxy returned after the lookup is used to
+invoke the add(...) method of the bean. It's at this point that the JNDI
+implementation (which is backed by the EJB client API) needs to know the
+server details. So let's now get to the important part of setting up the
+EJB client context properties.
+
+[[setting-up-ejb-client-context-properties]]
+== Setting up EJB client context properties
+
+A EJB client context is a context which contains contextual information
+for carrying out remote invocations on EJBs. This is a WildFly-specific
+API. The EJB client context can be associated with multiple EJB
+receivers. Each EJB receiver is capable of handling invocations on
+different EJBs. For example, an EJB receiver "Foo" might be able to
+handle invocation on a bean identified by
+app-A/module-A/distinctinctName-A/Bar!RemoteBar, whereas a EJB receiver
+named "Blah" might be able to handle invocation on a bean identified by
+app-B/module-B/distinctName-B/BeanB!RemoteBean. Each such EJB receiver
+knows about what set of EJBs it can handle and each of the EJB receiver
+knows which server target to use for handling the invocations on the
+bean. For example, if you have a AS7 server at 10.20.30.40 IP address
+which has its remoting port opened at 4447 and if that's the server on
+which you deployed that CalculatorBean, then you can setup a EJB
+receiver which knows its target address is 10.20.30.40:4447. Such an EJB
+receiver will be capable enough to communicate to the server via the
+JBoss specific EJB remote client protocol (details of which will be
+explained in-depth in a separate chapter).
+
+Now that we know what a EJB client context is and what a EJB receiver
+is, let's see how we can setup a client context with 1 EJB receiver
+which can connect to 10.20.30.40 IP address at port 4447. That EJB
+client context will then be used (internally) by the JNDI implementation
+to handle invocations on the bean proxy.
+
+The client will have to place a jboss-ejb-client.properties file in the
+classpath of the application. The jboss-ejb-client.properties can
+contain the following properties:
+
+....
+endpoint.name=client-endpoint
+remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED=false
+ 
+remote.connections=default
+ 
+remote.connection.default.host=10.20.30.40
+remote.connection.default.port = 8080
+remote.connection.default.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS=false
+ 
+remote.connection.default.username=appuser
+remote.connection.default.password=apppassword
+....
+
+[NOTE]
+
+This file includes a reference to a default password. Be sure to change
+this as soon as possible.
+
+The above properties file is just an example. The actual file that was
+used for this sample program is available here for reference
+https://github.com/wildfly/quickstart/blob/master/ejb-remote/client/src/main/resources/jboss-ejb-client.properties[jboss-ejb-client.properties]
+
+[NOTE]
+
+We'll see what each of it means.
+
+First the endpoint.name property. We mentioned earlier that the EJB
+receivers will communicate with the server for EJB invocations.
+Internally, they use JBoss Remoting project to carry out the
+communication. The endpoint.name property represents the name that will
+be used to create the client side of the enpdoint. The endpoint.name
+property is optional and if not specified in the
+jboss-ejb-client.properties file, it will default to
+"config-based-ejb-client-endpoint" name.
+
+Next is the remote.connectionprovider.create.options.<....> properties:
+
+....
+remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED=false
+....
+
+The "remote.connectionprovider.create.options." property prefix can be
+used to pass the options that will be used while create the connection
+provider which will handle the "remote:" protocol. In this example we
+use the "remote.connectionprovider.create.options." property prefix to
+pass the "org.xnio.Options.SSL_ENABLED" property value as false. That
+property will then be used during the connection provider creation.
+Similarly other properties can be passed too, just append it to the
+"remote.connectionprovider.create.options." prefix
+
+Next we'll see:
+
+....
+remote.connections=default
+....
+
+This is where you define the connections that you want to setup for
+communication with the remote server. The "remote.connections" property
+uses a comma separated value of connection "names". The connection names
+are just logical and are used grouping together the connection
+configuration properties later on in the properties file. The example
+above sets up a single remote connection named "default". There can be
+more than one connections that are configured. For example:
+
+....
+remote.connections=one, two
+....
+
+Here we are listing 2 connections named "one" and "two". Ultimately,
+each of the connections will map to a EJB receiver. So if you have 2
+connections, that will setup 2 EJB receivers that will be added to the
+EJB client context. Each of these connections will be configured with
+the connection specific properties as follows:
+
+....
+remote.connection.default.host=10.20.30.40
+remote.connection.default.port = 8080
+remote.connection.default.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS=false
+....
+
+As you can see we are using the "remote.connection.<connection-name>."
+prefix for specifying the connection specific property. The connection
+name here is "default" and we are setting the "host" property of that
+connection to point to 10.20.30.40. Similarly we set the "port" for that
+connection to 4447.
+
+By default WildFly uses 8080 as the remoting port. The EJB client API
+uses the http port, with the http-upgrade functionality, for
+communicating with the server for remote invocations, so that's the port
+we use in our client programs (unless the server is configured for some
+other http port)
+
+....
+remote.connection.default.username=appuser
+remote.connection.default.password=apppassword
+....
+
+The given user/password must be set by using the command bin/add-user.sh
+﻿(or.bat). +
+The user and password must be set because the security-realm is enabled
+for the subsystem remoting (see standalone*.xml or domain.xml) by
+default. +
+If you do not need the security for remoting you might remove the
+attribute security-realm in the configuration.
+
+security-realm is enabled by default.
+
+[NOTE]
+
+We then use the "remote.connection.<connection-name>.connect.options."
+property prefix to setup options that will be used during the connection
+creation.
+
+Here's an example of setting up multiple connections with different
+properties for each of those:
+
+....
+remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED=false
+ 
+remote.connections=one, two
+ 
+remote.connection.one.host=localhost
+remote.connection.one.port=6999
+remote.connection.one.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS=false
+ 
+remote.connection.two.host=localhost
+remote.connection.two.port=7999
+remote.connection.two.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS=false
+....
+
+As you can see we setup 2 connections "one" and "two" which both point
+to "localhost" as the "host" but different ports. Each of these
+connections will internally be used to create the EJB receivers in the
+EJB client context.
+
+So that's how the jboss-ejb-client.properties file can be setup and
+placed in the classpath.
+
+[[section]]
+=====
+
+The EJB client code will by default look for jboss-ejb-client.properties
+in the classpath. However, you can specify a different file of your
+choice by setting the "jboss.ejb.client.properties.file.path" system
+property which points to a properties file on your filesystem,
+containing the client context configurations. An example for that would
+be
+"-Djboss.ejb.client.properties.file.path=/home/me/my-client/custom-jboss-ejb-client.properties"
+
+[[section-1]]
+=====
+
+A jboss-client jar is shipped in the distribution. It's available at
+WILDFLY_HOME/bin/client/jboss-client.jar. Place this jar in the
+classpath of your client application.
+
+If you are using Maven to build the client application, then please
+follow the instructions in the WILDFLY_HOME/bin/client/README.txt to add
+this jar as a Maven dependency.
+
+[NOTE]
+
+[[summary]]
+== Summary
+
+In the above examples, we saw what it takes to invoke a EJB from a
+remote client. To summarize:
+
+* On the server side you need to deploy EJBs which expose the remote
+views.
+* On the client side you need a client program which:
+** Has a jboss-ejb-client.properties in its classpath to setup the
+server connection information
+** Either has a jndi.properties to specify the
+java.naming.factory.url.pkgs property or passes that as a property to
+the InitialContext constructor
+** Setup the client classpath to include the jboss-client jar that's
+required for remote invocation of the EJBs. The location of the jar is
+mentioned above. You'll also need to have your application's bean
+interface jars and other jars that are required by your application, in
+the client classpath
+
+NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

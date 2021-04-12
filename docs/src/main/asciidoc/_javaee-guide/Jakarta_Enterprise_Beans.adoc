@@ -1,0 +1,42 @@
+[[Jakarta_Enterprise_Beans]]
+= Jakarta Enterprise Beans
+
+In this section we'll look at the two main types of beans (Session Beans
+and Message Driven Beans), the methods to access and the packaging
+possibilities of beans.
+
+Coming Soon
+
+[IMPORTANT]
+
+This guide is still under development, check back soon!
+
+[[session-beans]]
+== Session Beans
+
+[[stateful-session-beans]]
+=== Stateful Session Beans
+
+[[stateless-session-beans]]
+=== Stateless Session Beans
+
+[[singleton-session-beans]]
+=== Singleton Session Beans
+
+[[message-driven-beans]]
+== Message Driven Beans
+
+[[how-can-enterprise-javabeans-can-be-accessed]]
+== How can Enterprise JavaBeans can be accessed?
+
+[[remote-call-invocation]]
+=== Remote call invocation
+
+[[local-call-invocation]]
+=== Local call invocation
+
+[[web-services]]
+=== Web Services
+
+[[packaging]]
+== Packaging

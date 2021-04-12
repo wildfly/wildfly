@@ -58,14 +58,25 @@ public abstract class AbstractNetTestCase {
     public void testInetAddress() throws IOException {
         MarshallingTester<InetAddress> tester = this.factory.createTester();
         tester.test(InetAddress.getLoopbackAddress());
+        tester.test(InetAddress.getLocalHost());
         tester.test(InetAddress.getByName("127.0.0.1"));
         tester.test(InetAddress.getByName("::1"));
+        tester.test(InetAddress.getByName("0.0.0.0"));
+        tester.test(InetAddress.getByName("::"));
     }
 
     @Test
     public void testInetSocketAddress() throws IOException {
         MarshallingTester<InetSocketAddress> tester = this.factory.createTester();
-        tester.test(InetSocketAddress.createUnresolved("hostname", 0));
+        tester.test(InetSocketAddress.createUnresolved("foo.bar", 0));
+        tester.test(InetSocketAddress.createUnresolved("foo.bar", Short.MAX_VALUE));
+        tester.test(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
         tester.test(new InetSocketAddress(InetAddress.getLoopbackAddress(), Short.MAX_VALUE));
+        tester.test(new InetSocketAddress(InetAddress.getLocalHost(), 0));
+        tester.test(new InetSocketAddress(InetAddress.getLocalHost(), Short.MAX_VALUE));
+        tester.test(new InetSocketAddress(InetAddress.getByName("0.0.0.0"), 0));
+        tester.test(new InetSocketAddress(InetAddress.getByName("0.0.0.0"), Short.MAX_VALUE));
+        tester.test(new InetSocketAddress(InetAddress.getByName("::"), 0));
+        tester.test(new InetSocketAddress(InetAddress.getByName("::"), Short.MAX_VALUE));
     }
 }

@@ -24,6 +24,7 @@ package org.jboss.as.jaxrs;
 import java.io.IOException;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.junit.Test;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -50,5 +51,10 @@ public class JaxrsSubsystem20TestCase extends AbstractSubsystemBaseTest {
     @Override
     public void testSubsystem() throws Exception {
         standardSubsystemTest(null);
+    }
+
+    @Test
+    public void testExpressions() throws Exception {
+        standardSubsystemTest("jaxrs-2.0-expressions.xml");
     }
 }

@@ -22,13 +22,15 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.apache.cxf.ws-security">
+<module xmlns="urn:jboss:module:1.9" name="org.apache.cxf.ws-security">
 
     <resources>
         <artifact name="${org.apache.cxf:cxf-rt-ws-security}"/>
     </resources>
 
     <dependencies>
+        <module name="java.logging" />
+        <module name="java.security.jgss" />
         <module name="asm.asm" />
         <module name="javax.api" />
         <module name="javax.annotation.api" />
@@ -60,6 +62,7 @@
             <include path="META-INF"/>
           </imports>
         </module>
+        <module name="java.xml" />
     </dependencies>
 
 </module>

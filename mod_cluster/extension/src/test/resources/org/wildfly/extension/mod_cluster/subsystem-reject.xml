@@ -48,8 +48,7 @@
            worker-timeout="${modcluster.worker-timeout:2}">
         <dynamic-load-provider decay="${modcluster.dynamic-load-provider.decay:2}"
                                history="${modcluster.dynamic-load-provider.history:10}"
-                               initial-load="50"
-        >
+                               initial-load="${modcluster.dynamic-load-provider.initial-load:50}">
             <load-metric capacity="${modcluster.load-metric.capacity:1000.1}"
                          type="sessions"
                          weight="${modcluster.load-metric.weight:2}"/>

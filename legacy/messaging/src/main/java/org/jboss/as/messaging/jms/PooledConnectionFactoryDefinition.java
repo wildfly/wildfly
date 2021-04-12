@@ -82,7 +82,7 @@ import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import org.jboss.dmr.ModelNode;
 
 /**
- * JMS pooled Connection Factory resource definition.
+ * Jakarta Messaging pooled Connection Factory resource definition.
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */

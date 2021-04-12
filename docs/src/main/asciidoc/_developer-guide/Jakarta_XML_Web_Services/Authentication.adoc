@@ -1,0 +1,215 @@
+[[Jakarta-XML-Web-Services-Authentication]]
+= Authentication
+
+[[Jakarta-XML-Web-Services-authentication]]
+== Authentication
+
+Here the simplest way to authenticate a web service user with JBossWS is
+explained.
+
+First we secure the access to the SLSB as we would do for normal (non
+web service) invocations: this can be easily done through the
+@RolesAllowed, @PermitAll, @DenyAll annotation. The allowed user roles
+can be set with these annotations both on the bean class and on any of
+its business methods.
+
+[source,java,options="nowrap"]
+----
+@Stateless
+@RolesAllowed("friend")
+public class EndpointEJB implements EndpointInterface
+{
+  ...
+}
+----
+
+Similarly POJO endpoints are secured the same way as we do for normal
+web applications in web.xml:
+
+[source,xml,options="nowrap"]
+----
+<security-constraint>
+  <web-resource-collection>
+    <web-resource-name>All resources</web-resource-name>
+    <url-pattern>/*</url-pattern>
+  </web-resource-collection>
+  <auth-constraint>
+    <role-name>friend</role-name>
+  </auth-constraint>
+</security-constraint>
+ 
+<security-role>
+  <role-name>friend</role-name>
+</security-role>
+----
+
+[[specify-the-security-domain]]
+=== Specify the security domain
+
+Next, specify the security domain for this deployment. This is performed
+using the `@SecurityDomain` annotation for EJB3 endpoints
+
+[source,java,options="nowrap"]
+----
+@Stateless
+@SecurityDomain("JBossWS")
+@RolesAllowed("friend")
+public class EndpointEJB implements EndpointInterface
+{
+  ...
+}
+----
+
+or modifying the jboss-web.xml for POJO endpoints
+
+[source,xml,options="nowrap"]
+----
+<jboss-web>
+<security-domain>JBossWS</security-domain>
+</jboss-web>
+----
+
+The security domain as well as its the authentication and authorization
+mechanisms are defined differently depending on the application server
+version in use.
+
+[[use-bindingprovider-to-set-principalcredential]]
+=== Use BindingProvider to set principal/credential
+
+A web service client may use the `javax.xml.ws.BindingProvider`
+interface to set the username/password combination
+
+[source,java,options="nowrap"]
+----
+URL wsdlURL = new File("resources/jaxws/samples/context/WEB-INF/wsdl/TestEndpoint.wsdl").toURL();
+QName qname = new QName("http://org.jboss.ws/jaxws/context", "TestEndpointService");
+Service service = Service.create(wsdlURL, qname);
+port = (TestEndpoint)service.getPort(TestEndpoint.class);
+ 
+BindingProvider bp = (BindingProvider)port;
+bp.getRequestContext().put(BindingProvider.USERNAME_PROPERTY, "kermit");
+bp.getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, "thefrog");
+----
+
+[[using-http-basic-auth-for-security]]
+=== Using HTTP Basic Auth for security
+
+To enable HTTP Basic authentication you use the `@WebContext` annotation
+on the bean class
+
+[source,java,options="nowrap"]
+----
+@Stateless
+@SecurityDomain("JBossWS")
+@RolesAllowed("friend")
+@WebContext(contextRoot="/my-cxt", urlPattern="/*", authMethod="BASIC", transportGuarantee="NONE", secureWSDLAccess=false)
+public class EndpointEJB implements EndpointInterface
+{
+  ...
+}
+----
+
+For POJO endpoints, we modify the _web.xml_ adding the auth-method
+element:
+
+[source,xml,options="nowrap"]
+----
+<login-config>
+  <auth-method>BASIC</auth-method>
+  <realm-name>Test Realm</realm-name>
+</login-config>
+----
+
+[[jaspi-authentication]]
+== JASPI Authentication
+
+A Java Authentication SPI (JASPI) provider can be configured in WildFly
+security subsystem to authenticate SOAP messages:
+
+[source,xml,options="nowrap"]
+----
+<security-domain name="jaspi">
+<authentication-jaspi>
+<login-module-stack name="jaas-lm-stack">
+<login-module code="UsersRoles" flag="required">
+<module-option name="usersProperties" value="jbossws-users.properties"/>
+<module-option name="rolesProperties" value="jbossws-roles.properties"/>
+</login-module>
+</login-module-stack>
+<auth-module code="org.jboss.wsf.stack.cxf.jaspi.module.UsernameTokenServerAuthModule" login-module-stack-ref="jaas-lm-stack"/>
+</authentication-jaspi>
+</security-domain>
+----
+
+[IMPORTANT]
+
+For further information on configuring security domains in WildFly,
+please refer to
+https://docs.jboss.org/author/display/WFLY9/Security+subsystem+configuration[here].
+
+Here
+`org.jboss.wsf.stack.cxf.jaspi.module.UsernameTokenServerAuthModule` is
+the class implementing
+`javax.security.auth.message.module.ServerAuthModule`, which delegates
+to the proper login module to perform authentication using the
+credentials from WS-Security UsernameToken in the incoming SOAP message.
+Alternative implementations of `ServerAuthModule` can be implemented and
+configured.
+
+To enable JASPI authentication, the endpoint deployment needs to specify
+the security domain to use; that can be done in two different ways:
+
+* Setting the `jaspi.security.domain` property in the
+`jboss-webservices.xml` descriptor
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.1" encoding="UTF-8"?>
+<webservices
+xmlns="http://www.jboss.com/xml/ns/javaee"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+version="1.2"
+xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee">
+ 
+<property>
+<name>jaspi.security.domain</name>
+<value>jaspi</value>
+</property>
+ 
+</webservices>
+----
+
+* Referencing (through `@EndpointConfig` annotation) an endpoint config
+that sets the `jaspi.security.domain` property
+
+[source,java,options="nowrap"]
+----
+@EndpointConfig(configFile = "WEB-INF/jaxws-endpoint-config.xml", configName = "jaspiSecurityDomain")
+public class ServiceEndpointImpl implements ServiceIface {
+----
+
+The `jaspi.security.domain` property is specified as follows in the
+referenced descriptor:
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxws-config xmlns="urn:jboss:jbossws-jaxws-config:4.0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:javaee="http://java.sun.com/xml/ns/javaee"
+xsi:schemaLocation="urn:jboss:jbossws-jaxws-config:4.0 schema/jbossws-jaxws-config_4_0.xsd">
+<endpoint-config>
+<config-name>jaspiSecurityDomain</config-name>
+<property>
+<property-name>jaspi.security.domain</property-name>
+<property-value>jaspi</property-value>
+</property>
+</endpoint-config>
+</jaxws-config>
+----
+
+[NOTE]
+
+If the JASPI security domain is specified in both
+`jboss-webservices.xml` and config file referenced by `@EndpointConfig`
+annotation, the JASPI security domain specified in
+`jboss-webservices.xml` will take precedence.

@@ -78,6 +78,19 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private static DomainLifecycleUtil masterUtils;
     private static DomainClient masterClient;
     private static WildFlyManagedConfiguration masterConfig;
+    private boolean isEeGalleonPack = "ee-".equals(System.getProperty("testsuite.default.build.project.prefix"));
+
+
+    // List of extensions added by the wildfly-galleon-pack.
+    private List<String> xpExtensions = Arrays.asList(
+            "org.wildfly.extension.microprofile.config-smallrye",
+            "org.wildfly.extension.microprofile.health-smallrye",
+            "org.wildfly.extension.microprofile.metrics-smallrye",
+            "org.wildfly.extension.microprofile.opentracing-smallrye",
+            "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
+            "org.wildfly.extension.microprofile.jwt-smallrye",
+            "org.wildfly.extension.microprofile.openapi-smallrye"
+    );
 
     /**
      * Maintains the list of expected extensions for each host-exclude name for previous releases.
@@ -161,7 +174,17 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         )),
         WILDFLY_17_0("WildFly17.0", WILDFLY_16_0),
         WILDFLY_18_0("WildFly18.0", WILDFLY_17_0),
-
+        WILDFLY_19_0("WildFly19.0", WILDFLY_18_0, Arrays.asList(
+                "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
+                "org.wildfly.extension.microprofile.jwt-smallrye",
+                "org.wildfly.extension.microprofile.openapi-smallrye"
+        )),
+        WILDFLY_20_0("WildFly20.0", WILDFLY_19_0),
+        WILDFLY_21_0("WildFly21.0", WILDFLY_20_0),
+        WILDFLY_22_0("WildFly22.0", WILDFLY_21_0, Arrays.asList(
+                "org.wildfly.extension.health",
+                "org.wildfly.extension.metrics"
+        )),
         EAP62("EAP62", Arrays.asList(
                 "org.jboss.as.appclient",
                 "org.jboss.as.clustering.infinispan",
@@ -354,20 +377,26 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                     "This host-exclude name is not defined in this test: %s", name),
                     confPrevRelease);
 
-            //check that available extensions - excluded extensions = extensions in a previous release.
+            //check that available extensions - excluded extensions = expected extensions in a previous release.
             Set<String> expectedExtensions = ExtensionConf.forName(name).getExtensions();
 
             Set<String> extensionsUnderTest = new HashSet<>(availableExtensions);
             extensionsUnderTest.removeAll(excludedExtensions);
 
+            // If we are testing a server built from wildfly-ee-galleon-pack, we need to remove from the expected
+            // list of extensions all the extensions that are added by the wildfly-galleon-pack
+            if (isEeGalleonPack) {
+                expectedExtensions.removeAll(xpExtensions);
+            }
+
             if (expectedExtensions.size() > extensionsUnderTest.size()) {
                 expectedExtensions.removeAll(extensionsUnderTest);
-                fail(String.format("These exclusions are not required for %s host-exclude: %s", name, expectedExtensions));
+                fail(String.format("These extensions are expected to be available after applying the %s host-exclude configuration to the extensions supplied by this server release: %s", name, expectedExtensions));
             }
 
             if ( extensionsUnderTest.size() != expectedExtensions.size() ){
                 extensionsUnderTest.removeAll(expectedExtensions);
-                fail(String.format("Found missing extensions for %s host-exclude: %s", name, extensionsUnderTest));
+                fail(String.format("These extensions are missing on the %s host-exclude: %s", name, extensionsUnderTest));
             }
         }
     }

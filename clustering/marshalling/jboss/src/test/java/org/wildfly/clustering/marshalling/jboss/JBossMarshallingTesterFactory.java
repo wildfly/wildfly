@@ -22,8 +22,6 @@
 
 package org.wildfly.clustering.marshalling.jboss;
 
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.junit.Assert;
 import org.wildfly.clustering.marshalling.MarshallingTester;
 import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferTestMarshaller;
@@ -31,34 +29,11 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferTestMarshaller;
 /**
  * @author Paul Ferraro
  */
-public class JBossMarshallingTesterFactory implements MarshallingTesterFactory, MarshallingConfigurationRepository {
-
-    private final MarshallingConfiguration configuration = new MarshallingConfiguration();
-    private final ClassLoader loader;
-
-    public JBossMarshallingTesterFactory() {
-        this(Thread.currentThread().getContextClassLoader());
-    }
-
-    public JBossMarshallingTesterFactory(ClassLoader loader) {
-        this.loader = loader;
-        this.configuration.setClassTable(new DynamicClassTable(loader));
-        this.configuration.setObjectTable(new ExternalizerObjectTable(loader));
-    }
+public enum JBossMarshallingTesterFactory implements MarshallingTesterFactory {
+    INSTANCE;
 
     @Override
     public <T> MarshallingTester<T> createTester() {
-        return new MarshallingTester<>(new ByteBufferTestMarshaller<>(new JBossByteBufferMarshaller(this, this.loader)));
-    }
-
-    @Override
-    public int getCurrentMarshallingVersion() {
-        return 0;
-    }
-
-    @Override
-    public MarshallingConfiguration getMarshallingConfiguration(int version) {
-        Assert.assertEquals(this.getCurrentMarshallingVersion(), version);
-        return this.configuration;
+        return new MarshallingTester<>(new ByteBufferTestMarshaller<>(TestJBossByteBufferMarshaller.INSTANCE));
     }
 }

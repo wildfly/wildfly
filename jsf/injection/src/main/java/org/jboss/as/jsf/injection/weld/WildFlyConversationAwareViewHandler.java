@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2021 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @author tags. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -29,7 +29,7 @@ import org.jboss.as.jsf.deployment.JSFDependencyProcessor;
 import org.jboss.weld.module.jsf.ConversationAwareViewHandler;
 
 /**
- * If this is a CDI-enabled app, then delegate to a wrapped Weld ViewHandler.
+ * If this is a Jakarta Contexts and Dependency Injection enabled app, then delegate to a wrapped Weld ViewHandler.
  * Otherwise, delegate to the parent ViewHandler in the chain.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2013 Red Hat Inc.
@@ -39,9 +39,9 @@ public class WildFlyConversationAwareViewHandler extends ViewHandlerWrapper {
     private ViewHandler wrapped;
 
     /**
-     * This method will never be called by the JSF implementation.  The JSF impl recognizes the single-arg
+     * This method will never be called by the Jakarta Server Faces implementation.  The Jakarta Server Faces impl recognizes the single-arg
      * constructor.  The only reason the no-arg constructor is here is because the TCK creates the ViewHandler outside of
-     * the JSF impl.  So we need it to pass the test.
+     * the Jakarta Server Faces impl.  So we need it to pass the test.
      */
     public WildFlyConversationAwareViewHandler() {
         super();

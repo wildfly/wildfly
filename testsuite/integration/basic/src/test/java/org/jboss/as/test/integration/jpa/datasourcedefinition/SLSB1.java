@@ -70,7 +70,7 @@ public class SLSB1 {
 
     /**
      * Makes two DAO calls, the transaction fails during the first DAO call. The
-     * JTA transaction is rolled back and no database changes should occur.
+     * Jakarta Transactions transaction is rolled back and no database changes should occur.
      */
     public String failInFirstCall() throws Exception {
         int[] initialList = getEmployeeIDsNoEM();
@@ -97,7 +97,7 @@ public class SLSB1 {
 
     /**
      * Makes two DAO calls, the transaction fails during the second DAO call.
-     * The JTA transaction is rolled back and no database changes should occur.
+     * The Jakarta Transactions transaction is rolled back and no database changes should occur.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public String failInSecondCall() throws Exception {
@@ -126,7 +126,7 @@ public class SLSB1 {
     }
 
     /**
-     * Makes two DAO calls, the transaction fails after the DAO calls. The JTA
+     * Makes two DAO calls, the transaction fails after the DAO calls. The Jakarta Transactions
      * transaction is rolled back and no database changes should occur.
      */
     public String failAfterCalls() throws Exception {

@@ -56,7 +56,7 @@ public abstract class AbstractHotRodPersistenceWebFailoverTestCase extends Abstr
     }
 
     public AbstractHotRodPersistenceWebFailoverTestCase(String deploymentName) {
-        super(deploymentName, CacheMode.INVALIDATION_SYNC, TransactionMode.TRANSACTIONAL);
+        super(deploymentName, CacheMode.INVALIDATION_SYNC, TransactionMode.NON_TRANSACTIONAL);
     }
 
     public static class ServerSetupTask extends CLIServerSetupTask {
@@ -64,8 +64,6 @@ public abstract class AbstractHotRodPersistenceWebFailoverTestCase extends Abstr
             this.builder.node(THREE_NODES)
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence:add")
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/store=hotrod:add(remote-cache-container=web, cache-configuration=default, fetch-state=false, purge=false, passivation=false, shared=true)")
-                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/component=transaction:add(mode=BATCH)")
-                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence/component=locking:add(isolation=REPEATABLE_READ)")
                     .teardown("/subsystem=infinispan/cache-container=web/invalidation-cache=hotrod-persistence:remove")
                     ;
         }

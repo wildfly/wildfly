@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.jsf-injection" slot="1.2">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.jsf-injection:1.2">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -33,7 +33,7 @@
     </resources>
 
     <dependencies>
-        <module name="com.sun.jsf-impl" slot="1.2"/>
+        <module name="com.sun.jsf-impl:1.2"/>
         <module name="javax.api"/>
         <module name="org.jboss.as.web"/>
         <module name="javax.servlet.api"/>

@@ -29,7 +29,7 @@ import java.io.Serializable;
 /**
  * Entity to verify the transaction participant
  * is handled correctly when transaction is bridged
- * from JTA to WS-AT.
+ * from Jakarta Transactions to WS-AT.
  */
 @Entity
 public class FirstCounterEntity implements Serializable {

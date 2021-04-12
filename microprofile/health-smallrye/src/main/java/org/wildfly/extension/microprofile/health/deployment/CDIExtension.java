@@ -39,52 +39,41 @@ import javax.enterprise.util.AnnotationLiteral;
 import io.smallrye.health.SmallRyeHealthReporter;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.Liveness;
 import org.eclipse.microprofile.health.Readiness;
 import org.jboss.modules.Module;
-import org.wildfly.extension.microprofile.health.HealthReporter;
+import org.wildfly.extension.microprofile.health.MicroProfileHealthReporter;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
 public class CDIExtension implements Extension {
 
-    private final HealthReporter reporter;
+    private final MicroProfileHealthReporter reporter;
     private final Module module;
 
-    static final class HealthLiteral extends AnnotationLiteral<Health> implements Health {
-
-        static final HealthLiteral INSTANCE = new HealthLiteral();
-
-        private static final long serialVersionUID = 1L;
-
-    }
-
-    // Use a single CDI instance to select and destroy all HealthCheck probes instances
+    // Use a single Jakarta Contexts and Dependency Injection instance to select and destroy all HealthCheck probes instances
     private Instance<Object> instance;
-    private final List<HealthCheck> healthChecks = new ArrayList<>();
     private final List<HealthCheck> livenessChecks = new ArrayList<>();
     private final List<HealthCheck> readinessChecks = new ArrayList<>();
     private HealthCheck defaultReadinessCheck;
 
 
-    public CDIExtension(HealthReporter healthReporter, Module module) {
+    public CDIExtension(MicroProfileHealthReporter healthReporter, Module module) {
         this.reporter = healthReporter;
         this.module = module;
 
     }
 
     /**
-     * Get CDI <em>instances</em> of HealthCheck and
-     * add them to the {@link HealthReporter}.
+     * Get Jakarta Contexts and Dependency Injection <em>instances</em> of HealthCheck and
+     * add them to the {@link MicroProfileHealthReporter}.
      */
     private void afterDeploymentValidation(@Observes final AfterDeploymentValidation avd, BeanManager bm) {
         instance = bm.createInstance();
 
-        addHealthChecks(HealthLiteral.INSTANCE, reporter::addHealthCheck, healthChecks);
         addHealthChecks(Liveness.Literal.INSTANCE, reporter::addLivenessCheck, livenessChecks);
         addHealthChecks(Readiness.Literal.INSTANCE, reporter::addReadinessCheck, readinessChecks);
         if (readinessChecks.isEmpty()) {
@@ -109,10 +98,9 @@ public class CDIExtension implements Extension {
     /**
      * Called when the deployment is undeployed.
      * <p>
-     * Remove all the instances of {@link HealthCheck} from the {@link HealthReporter}.
+     * Remove all the instances of {@link HealthCheck} from the {@link MicroProfileHealthReporter}.
      */
     public void beforeShutdown(@Observes final BeforeShutdown bs) {
-        removeHealthCheck(healthChecks, reporter::removeHealthCheck);
         removeHealthCheck(livenessChecks, reporter::removeLivenessCheck);
         removeHealthCheck(readinessChecks, reporter::removeReadinessCheck);
 

@@ -32,9 +32,7 @@ import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
+import org.jboss.as.test.integration.domain.mixed.eap740.DomainAdjuster740;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -42,14 +40,13 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class DomainAdjuster730 extends DomainAdjuster {
+public class DomainAdjuster730 extends DomainAdjuster740 {
 
     @Override
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) throws Exception {
-        final List<ModelNode> ops = new ArrayList<>();
+        final List<ModelNode> ops = new ArrayList<>(super.adjustForVersion(client, profileAddress, withMasterServers));
 
         removeMicroProfileJWT(ops, profileAddress.append(SUBSYSTEM, "microprofile-jwt-smallrye"));
-        adjustUndertow(ops, profileAddress.append(SUBSYSTEM, "undertow"));
         adjustOpenTracing(ops, profileAddress.append(SUBSYSTEM, "microprofile-opentracing-smallrye"));
 
         return ops;
@@ -58,18 +55,6 @@ public class DomainAdjuster730 extends DomainAdjuster {
     private void removeMicroProfileJWT(final List<ModelNode> ops, final PathAddress subsystem) {
         ops.add(createRemoveOperation(subsystem));
         ops.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.jwt-smallrye")));
-    }
-
-    private void adjustUndertow(final List<ModelNode> ops, final PathAddress subsystem) {
-        // EAP 7.0 and earlier required explicit SSL configuration. Wildfly 10.1 added support
-        // for SSL by default, which automatically generates certs.
-        // This could be removed if all hosts were configured to contain a security domain with SSL enabled.
-        // However, for the mixed domain tests, we are using a reduced host slave configuration file (see slave-config resource dir)
-        // these configurations do not configure a SSL on ApplicationRealm, hence this removal to make it compatible across all domains.
-        final PathAddress httpsListener = subsystem
-                .append("server", "default-server")
-                .append("https-listener", "https");
-        ops.add(Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, httpsListener.toModelNode()));
     }
 
     private void adjustOpenTracing(final List<ModelNode> ops, final PathAddress subsystem) {

@@ -45,12 +45,12 @@ import java.util.Calendar;
  */
 public class Year extends IntegerBasedExpression {
 
-    // The EJB3. timer service spec says that the year
+    // The Enterprise Beans 3. timer service spec says that the year
     // value can be any 4 digit value.
     // Hence the max value 9999
     public static final Integer MAX_YEAR = 9999;
 
-    // TODO: think about this min value. The EJB3.1 timerservice spec
+    // TODO: think about this min value. The Enterprise Beans 3.1 timerservice spec
     // says, that the year value can be any 4 digit value.
     // That's the reason we have set it to 1000 here.
     public static final Integer MIN_YEAR = 1000;

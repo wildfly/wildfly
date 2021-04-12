@@ -57,4 +57,9 @@ public class DistributableWebSubsystemTestCase extends ClusteringSubsystemTest<D
                 .require(InfinispanClientRequirement.REMOTE_CONTAINER, "foo")
                 ;
     }
+
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        // Skip
+    }
 }

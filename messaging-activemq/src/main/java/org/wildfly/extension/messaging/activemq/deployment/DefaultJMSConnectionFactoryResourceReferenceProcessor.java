@@ -24,6 +24,7 @@ package org.wildfly.extension.messaging.activemq.deployment;
 import javax.jms.ConnectionFactory;
 
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessor;
@@ -34,7 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
 /**
- * Processor responsible for adding an EEResourceReferenceProcessor, which defaults @resource ConnectionFactory injection to the default JMS Connection Factory.
+ * Processor responsible for adding an EEResourceReferenceProcessor, which defaults @resource ConnectionFactory injection to the default Jakarta Messaging Connection Factory.
  *
  * @author Eduardo Martins
  */
@@ -47,8 +48,11 @@ public class DefaultJMSConnectionFactoryResourceReferenceProcessor implements De
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if(deploymentUnit.getParent() == null) {
             final EEResourceReferenceProcessorRegistry eeResourceReferenceProcessorRegistry = deploymentUnit.getAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
-            if(eeResourceReferenceProcessorRegistry != null) {
-                eeResourceReferenceProcessorRegistry.registerResourceReferenceProcessor(RESOURCE_REFERENCE_PROCESSOR);
+            if (eeResourceReferenceProcessorRegistry != null) {
+                final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+                if (eeModuleDescription != null && eeModuleDescription.getDefaultResourceJndiNames().getJmsConnectionFactory() != null) {
+                    eeResourceReferenceProcessorRegistry.registerResourceReferenceProcessor(RESOURCE_REFERENCE_PROCESSOR);
+                }
             }
         }
     }

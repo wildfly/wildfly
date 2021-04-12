@@ -76,7 +76,7 @@ public class LayersTestCase {
         // tooling
         "org.jboss.as.domain-add-user",
         // Brought by galleon FP config
-        "org.jboss.as.product",
+        "org.jboss.as.product:wildfly-web",
         // Brought by galleon FP config
         "org.jboss.as.standalone",
         // injected by ee

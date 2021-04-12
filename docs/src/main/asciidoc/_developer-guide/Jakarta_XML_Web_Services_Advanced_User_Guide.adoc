@@ -1,0 +1,375 @@
+[[Jakarta_XML_Web_Services_Advanced_User_Guide]]
+= Jakarta XML Web Services Advanced User Guide
+
+[[logging]]
+== Logging
+
+Logging of inbound and outbound messages is a common need. Different
+approaches are available for achieving that:
+
+[[Jakarta-XML-Web-Services-handler-approach]]
+=== Jakarta XML Web Services Handler approach
+
+A portable way of performing logging is writing a simple Jakarta XML Web Services handler
+dumping the messages that are passed in it; the handler can be added to
+the desired client/endpoints (programmatically / using `@HandlerChain`
+Jakarta XML Web Services annotation).
+
+The <<Predefined_client_and_endpoint_configurations,predefined client and endpoint configuration>>
+mechanism allows user to add the logging handler to any client/endpoint
+or to some of them only (in which case the `@EndpointConfig` annotation
+/ JBossWS API is required though).
+
+[[apache-cxf-approach]]
+=== Apache CXF approach
+
+Apache CXF also comes with logging interceptors that can be easily used
+to log messages to the console or configured client/server log files.
+Those interceptors can be added to client, endpoint and buses in
+multiple ways:
+
+[[system-property]]
+==== System property
+
+Setting the `org.apache.cxf.logging.enabled` system property to true
+causes the logging interceptors to be added to any `Bus` instance being
+created on the JVM.
+
+[IMPORTANT]
+
+On WildFly, the system property is easily set by adding what follows to
+the standalone / domain server configuration just after the extensions
+section:
+
+[source,java,options="nowrap"]
+----
+<system-properties>
+  <property name="org.apache.cxf.logging.enabled" value="true"/>
+</system-properties>
+----
+
+[[manual-interceptor-addition-and-logging-feature]]
+==== Manual interceptor addition and logging feature
+
+Logging interceptors can be selectively added to endpoints using the
+Apache CXF annotations `@org.apache.cxf.interceptor.InInterceptors` and
+`@org.apache.cxf.interceptor.OutInterceptors`. The same is achieved on
+client side by programmatically adding new instances of the logging
+interceptors to the client or the bus.
+
+Alternatively, Apache CXF also comes with a
+`org.apache.cxf.feature.LoggingFeature` that can be used on clients and
+endpoints (either annotating them with
+`@org.apache.cxf.feature.Features` or directly with
+`@org.apache.cxf.annotations.Logging`).
+
+Please refer to the
+http://cxf.apache.org/docs/debugging-and-logging.html#DebuggingandLogging-LoggingMessages[Apache
+CXF documentation] for more details.
+
+[[ws--support]]
+== WS-* support
+
+JBossWS includes most of the WS-* specification functionalities through
+the integration with Apache CXF. In particular, the whole WS-Security
+Policy framework is fully supported, enabling full contract driven
+configuration of complex features like WS-Security.
+
+In details information available further down in this documentation
+book.
+
+[[address-rewrite]]
+== Address rewrite
+
+JBossWS allows users to configure the _soap:address_ attribute in the
+wsdl contract of deployed services.
+
+[[server-configuration-options]]
+=== Server configuration options
+
+The configuration options are part of the
+https://docs.jboss.org/author/display/WFLY8/Web+services+configuration[webservices
+subsystem section] of the application server domain model.
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:jboss:domain:webservices:1.1" xmlns:javaee="http://java.sun.com/xml/ns/javaee"
+  xmlns:jaxwsconfig="urn:jboss:jbossws-jaxws-config:4.0">
+  <wsdl-host>localhost</wsdl-host>
+  <modify-wsdl-address>true</modify-wsdl-address>
+<!--
+  <wsdl-port>8080</wsdl-port>
+  <wsdl-secure-port>8443</wsdl-secure-port>
+-->
+</subsystem>
+----
+
+If the content of _<soap:address>_ in the wsdl is a valid URL, JBossWS
+will not rewrite it unless _modify-wsdl-address_ is true. If the content
+of _<soap:address>_ is not a valid URL instead, JBossWS will always
+rewrite it using the attribute values given below. Please note that the
+variable _$\{jboss.bind.address}_ can be used to set the address which
+the application is bound to at each startup.
+
+The wsdl-secure-port and wsdl-port attributes are used to explicitly
+define the ports to be used for rewriting the SOAP address. If these
+attributes are not set, the ports will be identified by querying the
+list of installed connectors. If multiple connectors are found the port
+of the first connector is used.
+
+[[dynamic-rewrite]]
+=== Dynamic rewrite
+
+When the application server is bound to multiple addresses or
+non-trivial real-world network architectures cause request for different
+external addresses to hit the same endpoint, a static rewrite of the
+soap:address may not be enough. JBossWS allows for both the soap:address
+in the wsdl and the wsdl address in the console to be rewritten with the
+host use in the client request. This way, users always get the right
+wsdl address assuming they're connecting to an instance having the
+endpoint they're looking for. To trigger this behaviour, the
+_jbossws.undefined.host_ value has to be specified for the _wsdl-host_
+element.
+
+....
+<wsdl-host>jbossws.undefined.host</wsdl-host>
+<modify-wsdl-address>true</modify-wsdl-address>
+....
+
+Of course, when a confidential transport address is required, the
+addresses are always rewritten using https protocol and the port
+currently configured for the https/ssl connector.
+
+[[configuration-through-deployment-descriptor]]
+== Configuration through deployment descriptor
+
+The `jboss-webservices.xml` deployment descriptor can be used to provide
+additional configuration for a given deployment. The expected location
+of it is:
+
+* `META-INF/jboss-webservices.xml` for Jakarta Enterprise Beans webservice deployments
+* `WEB-INF/jboss-webservices.xml` for POJO webservice deployments and
+Jakarta Enterprise Beans webservice endpoints bundled in `war` archives
+
+The structure of file is the following (schemas are available
+http://anonsvn.jboss.org/repos/jbossws/spi/trunk/src/main/resources/schema/[here]):
+
+[source,java,options="nowrap"]
+----
+<webservices>
+  <context-root/>?
+  <config-name/>?
+  <config-file/>?
+  <property>*
+    <name/>
+    <value/>
+  </property>
+  <port-component>*
+    <ejb-name/>
+    <port-component-name/>
+    <port-component-uri/>?
+    <auth-method/>?
+    <transport-guarantee/>?
+    <secure-wsdl-access/>?
+  </port-component>
+  <webservice-description>*
+    <webservice-description-name/>
+    <wsdl-publish-location/>?
+  </webservice-description>
+</webservices>
+----
+
+[[context-root-element]]
+=== context-root element
+
+Element `<context-root>` can be used to customize context root of
+webservices deployment.
+
+[source,java,options="nowrap"]
+----
+<webservices>
+  <context-root>foo</context-root>
+</webservices>
+----
+
+[[config-name-and-config-file-elements]]
+=== config-name and config-file elements
+
+Elements `<config-name>` and `<config-file>` can be used to associate
+any endpoint provided in the deployment with a given
+<<Predefined_client_and_endpoint_configurations,endpoint configuration>>. Endpoint configuration are
+either specified in the referenced config file or in the WildFly domain
+model (webservices subsystem). For further details on the endpoint
+configurations and their management in the domain model, please see the
+related
+https://docs.jboss.org/author/display/WFLY8/Web+services+configuration[documentation].
+
+[source,java,options="nowrap"]
+----
+<webservices>
+  <config-name>Standard WSSecurity Endpoint</config-name>
+  <config-file>META-INF/custom.xml</config-file>
+</webservices>
+----
+
+[[property-element]]
+=== property element
+
+`<property>` elements can be used to setup simple property values to
+configure the ws stack behavior. Allowed property names and values are
+mentioned in the guide under related topics.
+
+[source,java,options="nowrap"]
+----
+<property>
+  <name>prop.name</name>
+  <value>prop.value</value>
+</property>
+----
+
+[[port-component-element]]
+=== port-component element
+
+Element `<port-component>` can be used to customize Jakarta Enterprise Beans endpoint target
+URI or to configure security related properties.
+
+[source,java,options="nowrap"]
+----
+<webservices>
+  <port-component>
+    <ejb-name>TestService</ejb-name>
+    <port-component-name>TestServicePort</port-component-name>
+    <port-component-uri>/*</port-component-uri>
+    <auth-method>BASIC</auth-method>
+    <transport-guarantee>NONE</transport-guarantee>
+    <secure-wsdl-access>true</secure-wsdl-access>
+  </port-component>
+</webservices>
+----
+
+[[webservice-description-element]]
+=== webservice-description element
+
+Element `<webservice-description>` can be used to customize (override)
+webservice WSDL publish location.
+
+[source,java,options="nowrap"]
+----
+<webservices>
+  <webservice-description>
+    <webservice-description-name>TestService</webservice-description-name>
+    <wsdl-publish-location>file:///bar/foo.wsdl</wsdl-publish-location>
+  </webservice-description>
+</webservices>
+----
+
+[[schema-validation-of-soap-messages]]
+== Schema validation of SOAP messages
+
+Apache CXF has a feature for validating incoming and outgoing SOAP
+messages on both client and server side. The validation is performed
+against the relevant schema in the endpoint wsdl contract (server side)
+or the wsdl contract used for building up the service proxy (client
+side).
+
+Schema validation can be turned on programmatically on client side
+
+[source,java,options="nowrap"]
+----
+((BindingProvider)proxy).getRequestContext().put("schema-validation-enabled", true);
+----
+
+or using the `@org.apache.cxf.annotations.SchemaValidation` annotation
+on server side
+
+[source,java,options="nowrap"]
+----
+import javax.jws.WebService;
+import org.apache.cxf.annotations.SchemaValidation;
+ 
+@WebService(...)
+@SchemaValidation
+public class ValidatingHelloImpl implements Hello {
+   ...
+}
+----
+
+Alternatively, any endpoint and client running in-container can be
+associated to a JBossWS <<Predefined_client_and_endpoint_configurations,predefined configuration>>
+having the `schema-validation-enabled` property set to `true` in the
+referenced config file.
+
+Finally, JBossWS also allows for server-wide (default) setup of schema
+validation by using the _Standard-Endpoint-Config_ and
+_Standard-Client-Config_ special configurations (which apply to any
+client / endpoint unless a different configuration is specified for
+them)
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:jboss:domain:webservices:1.2">
+    ...
+    <endpoint-config name="Standard-Endpoint-Config">
+        <property name="schema-validation-enabled" value="true"/>
+    </endpoint-config>
+    ...
+    <client-config name="Standard-Client-Config">
+        <property name="schema-validation-enabled" value="true"/>
+    </client-config>
+</subsystem>
+----
+
+[[Jakarta-XML-Binding-introductions]]
+== Jakarta XML Binding Introductions
+
+As Kohsuke Kawaguchi wrote on
+http://weblogs.java.net/blog/kohsuke/archive/2007/07/binding_3rd_par.html[his
+blog], one common complaint from the Jakarta XML Binding users is the lack of support
+for binding 3rd party classes. The scenario is this: you are trying to
+annotate your classes with Jakarta XML Binding annotations to make it XML bindable, but
+some of the classes are coming from libraries and JDK, and thus you
+cannot put necessary Jakarta XML Binding annotations on it.
+
+To solve this Jakarta XML Binding has been designed to provide hooks for programmatic
+introduction of annotations to the runtime.
+
+This is currently leveraged by the JBoss Jakarta XML Binding Introductions project,
+using which users can define annotations in XML and make Jakarta XML Binding see those
+as if those were in the class files (perhaps coming from 3rd party
+libraries).
+
+Take a look at the http://community.jboss.org/docs/DOC-10075[JAXB
+Introductions page] on the wiki and at the examples in the sources.
+
+[[wsdl-system-properties-expansion]]
+== WSDL system properties expansion
+
+See <<Published_WSDL_customization,Published WSDL customization>>
+
+:leveloffset: +1
+
+include::Jakarta_XML_Web_Services/Predefined_client_and_endpoint_configurations.adoc[]
+
+include::Jakarta_XML_Web_Services/Authentication.adoc[]
+
+include::Jakarta_XML_Web_Services/Apache_CXF_integration.adoc[]
+
+include::Jakarta_XML_Web_Services/WS-Addressing.adoc[]
+
+include::Jakarta_XML_Web_Services/WS-Security.adoc[]
+
+include::Jakarta_XML_Web_Services/WS-Trust_and_STS.adoc[]
+
+include::Jakarta_XML_Web_Services/WS-Reliable_Messaging.adoc[]
+
+include::Jakarta_XML_Web_Services/SOAP_over_Jakarta_Messaging.adoc[]
+
+include::Jakarta_XML_Web_Services/HTTP_Proxy.adoc[]
+
+include::Jakarta_XML_Web_Services/WS-Discovery.adoc[]
+
+include::Jakarta_XML_Web_Services/WS-Policy.adoc[]
+
+include::Jakarta_XML_Web_Services/Published_WSDL_customization.adoc[]
+
+:leveloffset: -1

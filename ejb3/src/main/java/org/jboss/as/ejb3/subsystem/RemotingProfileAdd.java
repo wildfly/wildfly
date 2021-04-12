@@ -159,7 +159,7 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
                             : LocalTransportProvider.BY_REFERENCE_SERVICE_NAME;
                     capabilityServiceBuilder.addDependency(localTransportProviderServiceName, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
                 } else {
-                    // setup a dependency on the default local ejb receiver service configured at the subsystem level
+                    // setup a dependency on the default local Jakarta Enterprise Beans receiver service configured at the subsystem level
                     capabilityServiceBuilder.addDependency(LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
                 }
             }

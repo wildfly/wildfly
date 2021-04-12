@@ -41,17 +41,34 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * JPA ResourceDefinition
+ * Jakarta Persistence ResourceDefinition
  *
  */
 public class JPADefinition extends SimpleResourceDefinition {
 
     // This a private capability. Its runtime API or capability service tyoe are subject to change.
     // See WFLY-7521
-    // Currently it exists to indicate a model dependency from the jpa subsystem to the transactions subsystem
+    // Currently it exists to indicate a model dependency from the Jakarta Persistence subsystem to the transactions subsystem
     private static final RuntimeCapability<Void> JPA_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.jpa")
             .addRequirements(JPAServiceNames.LOCAL_TRANSACTION_PROVIDER_CAPABILITY)
             .build();
+
+    protected static final SimpleAttributeDefinition DEFAULT_DATASOURCE =
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.DEFAULT_DATASOURCE, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setXmlName(CommonAttributes.DEFAULT_DATASOURCE)
+                    .setValidator(new StringLengthValidator(0, Integer.MAX_VALUE, true, true))
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .build();
+
+    protected static final SimpleAttributeDefinition DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE =
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setXmlName(CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setValidator(new EnumValidator<ExtendedPersistenceInheritance>(ExtendedPersistenceInheritance.class,true,true))
+                    .setDefaultValue(new ModelNode(ExtendedPersistenceInheritance.DEEP.toString()))
+                    .build();
 
     public static final JPADefinition INSTANCE = new JPADefinition(true);
     public static final JPADefinition DEPLOYMENT_INSTANCE = new JPADefinition(false);
@@ -72,24 +89,6 @@ public class JPADefinition extends SimpleResourceDefinition {
 
         return result;
     }
-
-    protected static final SimpleAttributeDefinition DEFAULT_DATASOURCE =
-            new SimpleAttributeDefinitionBuilder(CommonAttributes.DEFAULT_DATASOURCE, ModelType.STRING, true)
-                    .setAllowExpression(true)
-                    .setXmlName(CommonAttributes.DEFAULT_DATASOURCE)
-                    .setValidator(new StringLengthValidator(0, Integer.MAX_VALUE, true, true))
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(null)
-                    .build();
-
-    protected static final SimpleAttributeDefinition DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE =
-            new SimpleAttributeDefinitionBuilder(CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE, ModelType.STRING, true)
-                    .setAllowExpression(true)
-                    .setXmlName(CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<ExtendedPersistenceInheritance>(ExtendedPersistenceInheritance.class,true,true))
-                    .setDefaultValue(new ModelNode(ExtendedPersistenceInheritance.DEEP.toString()))
-                    .build();
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {

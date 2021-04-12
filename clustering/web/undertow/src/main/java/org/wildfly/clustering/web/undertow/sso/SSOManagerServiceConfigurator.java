@@ -27,12 +27,15 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.server.Services;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.marshalling.protostream.ModuleClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
@@ -40,6 +43,7 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.web.IdentifierFactory;
@@ -59,6 +63,7 @@ public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceName
 
     private final SupplierDependency<SSOManagerFactory<A, D, S, Batch>> factory;
     private final SupplierDependency<SessionIdGenerator> generator;
+    private final SupplierDependency<ModuleLoader> loader = new ServiceSupplierDependency<>(Services.JBOSS_SERVICE_MODULE_LOADER);
     private final LocalContextFactory<L> localContextFactory;
 
     private volatile ByteBufferMarshaller marshaller;
@@ -73,7 +78,7 @@ public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceName
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<SSOManager<A, D, S, L, Batch>> manager = new CompositeDependency(this.factory, this.generator).register(builder).provides(this.getServiceName());
+        Consumer<SSOManager<A, D, S, L, Batch>> manager = new CompositeDependency(this.factory, this.generator, this.loader).register(builder).provides(this.getServiceName());
         Service service = new FunctionalService<>(manager, Function.identity(), this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
@@ -81,7 +86,7 @@ public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceName
     @Override
     public SSOManager<A, D, S, L, Batch> get() {
         SSOManagerFactory<A, D, S, Batch> factory = this.factory.get();
-        this.marshaller = new ProtoStreamByteBufferMarshaller(new SerializationContextBuilder().register(WildFlySecurityManager.getClassLoaderPrivileged(this.getClass())).build());
+        this.marshaller = new ProtoStreamByteBufferMarshaller(new SerializationContextBuilder(new ModuleClassLoaderMarshaller(this.loader.get())).load(WildFlySecurityManager.getClassLoaderPrivileged(this.getClass())).build());
         SSOManager<A, D, S, L, Batch> manager = factory.createSSOManager(this);
         manager.start();
         return manager;

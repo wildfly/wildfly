@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2012, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2021, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -64,23 +64,29 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit tl = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+        //Set default when no default version has been set on the war file
+        String jsfVersion = JsfVersionMarker.getVersion(tl).equals(JsfVersionMarker.NONE)? JSFModuleIdFactory.getInstance().getDefaultSlot() : JsfVersionMarker.getVersion(tl);
+        String defaultJsfVersion = JSFModuleIdFactory.getInstance().getDefaultSlot();
+
         if(JsfVersionMarker.isJsfDisabled(deploymentUnit)) {
+            if (jsfVersion.equals(defaultJsfVersion) && !moduleIdFactory.isValidJSFSlot(jsfVersion)) {
+                throw JSFLogger.ROOT_LOGGER.invalidDefaultJSFImpl(defaultJsfVersion);
+            }
             addJSFAPI(JsfVersionMarker.JSF_2_0, moduleSpecification, moduleLoader);
             return;
         }
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit) && !DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-        //Set default when no default version has been set on the war file
-        String jsfVersion = JsfVersionMarker.getVersion(tl).equals(JsfVersionMarker.NONE)? JSFModuleIdFactory.getInstance().getDefaultSlot() : JsfVersionMarker.getVersion(tl);
+
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) {
-            //if JSF is provided by the application we leave it alone
+            //if Jakarta Server Faces is provided by the application we leave it alone
             return;
         }
         //TODO: we should do that same check that is done in com.sun.faces.config.FacesInitializer
-        //and only add the dependency if JSF is actually needed
+        //and only add the dependency if Jakarta Server Faces is actually needed
 
-        String defaultJsfVersion = JSFModuleIdFactory.getInstance().getDefaultSlot();
+
         if (!moduleIdFactory.isValidJSFSlot(jsfVersion)) {
             JSFLogger.ROOT_LOGGER.unknownJSFVersion(jsfVersion, defaultJsfVersion);
             jsfVersion = defaultJsfVersion;
@@ -115,15 +121,6 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(jsfAPI);
     }
 
-    // Is JSF spec greater than 1.1?  If we add JSF 1.1 support we'll need this to keep from calling addJSFInjection()
-  /*  private boolean isJSFSpecOver1_1(ModuleIdentifier jsfModule, ModuleDependency jsfAPI) throws DeploymentUnitProcessingException {
-        try {
-            return (jsfAPI.getModuleLoader().loadModule(jsfModule).getClassLoader().getResource("/javax/faces/component/ActionSource2.class") != null);
-        } catch (ModuleLoadException e) {
-            throw new DeploymentUnitProcessingException(e);
-        }
-    } */
-
     private void addJSFImpl(String jsfVersion,
             ModuleSpecification moduleSpecification,
             ModuleLoader moduleLoader) {
@@ -150,7 +147,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
             } else {
                 JSFLogger.ROOT_LOGGER.loadingJsf2x();
                 jsfInjectionDependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
-                // Exclude JSF 1.2 faces-config.xml to make extra sure it won't interfere with JSF 2.0 deployments
+                // Exclude Faces 1.2 faces-config.xml to make extra sure it won't interfere with JSF 2.0 deployments
                 jsfInjectionDependency.addImportFilter(PathFilters.is("META-INF/1.2/faces-config.xml"), false);
             }
         } catch (ModuleLoadException e) {
@@ -168,7 +165,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     }
 
     // Add a flag to the sevlet context so that we know if we need to instantiate
-    // a CDI ViewHandler.
+    // a Jakarta Contexts and Dependency Injection ViewHandler.
     private void addCDIFlag(WarMetaData warMetaData, DeploymentUnit deploymentUnit) {
         JBossWebMetaData webMetaData = warMetaData.getMergedJBossWebMetaData();
         if (webMetaData == null) {

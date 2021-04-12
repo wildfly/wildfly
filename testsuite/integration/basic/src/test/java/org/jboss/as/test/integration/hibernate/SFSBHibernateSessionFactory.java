@@ -36,7 +36,7 @@ import org.hibernate.internal.util.config.ConfigurationHelper;
 
 /**
  * Test that a Hibernate sessionfactory can be inititated from hibernate.cfg.xml and properties added to Hibernate Configuration
- * in AS7 container without any JPA assistance
+ * in AS7 container without any Jakarta Persistence assistance
  *
  * @author Madhumita Sadhukhan
  */
@@ -92,7 +92,7 @@ public class SFSBHibernateSessionFactory {
         student.setLastName(lastName);
 
         try {
-            // We are not explicitly initializing a Transaction as Hibernate is expected to invoke the JTA TransactionManager
+            // We are not explicitly initializing a Transaction as Hibernate is expected to invoke the Jakarta Transactions TransactionManager
             // implicitly
             Session session = sessionFactory.openSession();
             session.save(student);

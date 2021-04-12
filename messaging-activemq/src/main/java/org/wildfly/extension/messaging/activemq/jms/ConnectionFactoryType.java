@@ -34,7 +34,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 
 /**
- * Connection factory type enumeration and their respective value in ActiveMQ Artemis JMS API
+ * Connection factory type enumeration and their respective value in ActiveMQ Artemis Jakarta Messaging API
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */

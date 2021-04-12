@@ -3,6 +3,8 @@
 DIRNAME=`dirname "$0"`
 GREP="grep"
 
+. "$DIRNAME/common.sh"
+
 # Use the maximum available, or set MAX_FD != -1 to use that
 MAX_FD="maximum"
 
@@ -70,6 +72,12 @@ fi
 if $cygwin; then
     JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
+fi
+
+if [ ! -f "$JBOSS_HOME/bin/client/jboss-cli-client.jar" ]; then
+    echo "WARNING Jar not found: \"$JBOSS_HOME/bin/client/jboss-cli-client.jar\""
+    echo "WARNING If this jar is missing, jconsole will fail to connect to the server."
+    exit 2
 fi
 
 cd "$JBOSS_HOME"

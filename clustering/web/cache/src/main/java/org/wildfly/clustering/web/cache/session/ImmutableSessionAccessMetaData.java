@@ -30,8 +30,14 @@ import java.time.Duration;
  */
 public interface ImmutableSessionAccessMetaData {
     /**
-     * Returns the duration time that this session was last accessed since the time the session was created.
-     * @return a duration
+     * Returns the duration of time between session creation and the start of the last access.
+     * @return the duration of time between session creation and the start of the last access.
      */
-    Duration getLastAccessedDuration();
+    Duration getSinceCreationDuration();
+
+    /**
+     * Returns the duration of time between the start and of the last access.
+     * @return the duration of time between the start and of the last access.
+     */
+    Duration getLastAccessDuration();
 }

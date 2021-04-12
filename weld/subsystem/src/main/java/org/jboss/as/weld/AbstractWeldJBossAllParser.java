@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 abstract class AbstractWeldJBossAllParser {
@@ -34,5 +36,10 @@ abstract class AbstractWeldJBossAllParser {
             }
         }
         return null;
+    }
+
+    protected void parseWeldElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != javax.xml.stream.XMLStreamConstants.END_ELEMENT) {
+        }
     }
 }

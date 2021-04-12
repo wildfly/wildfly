@@ -22,12 +22,12 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.wildfly.extension.undertow.UndertowRootDefinition.HTTP_INVOKER_RUNTIME_CAPABILITY;
-
 import java.util.EnumSet;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.Resource;
@@ -38,7 +38,7 @@ import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringPr
 import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
 import org.jboss.as.web.session.SharedSessionManagerConfig;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
+
 import org.wildfly.extension.undertow.deployment.DefaultDeploymentMappingProvider;
 import org.wildfly.extension.undertow.deployment.DefaultSecurityDomainProcessor;
 import org.wildfly.extension.undertow.deployment.DeploymentRootExplodedMountProcessor;
@@ -65,12 +65,15 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.session.SharedSessionConfigParser;
 import org.wildfly.extension.undertow.session.SharedSessionConfigSchema;
 
+import static org.wildfly.extension.undertow.UndertowRootDefinition.HTTP_INVOKER_RUNTIME_CAPABILITY;
+
 
 /**
  * Handler responsible for adding the subsystem resource to the model
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author Flavia Rainone
  */
 class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
@@ -104,14 +107,14 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ModelNode instanceIdModel = UndertowRootDefinition.INSTANCE_ID.resolveModelAttribute(context, model);
         final String instanceId = instanceIdModel.isDefined() ? instanceIdModel.asString() : null;
 
+        final boolean obfuscateSessionRoute = UndertowRootDefinition.OBFUSCATE_SESSION_ROUTE.resolveModelAttribute(context, model).asBoolean();
 
         DefaultDeploymentMappingProvider.instance().clear();//we clear provider on system boot, as on reload it could cause issues.
 
-        context.getCapabilityServiceTarget().addCapability(UndertowRootDefinition.UNDERTOW_CAPABILITY)
-                .setInstance(new UndertowService(defaultContainer, defaultServer, defaultVirtualHost, instanceId, stats))
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .addAliases(UndertowService.UNDERTOW)
-                .install();
+        final CapabilityServiceBuilder<?> csb = context.getCapabilityServiceTarget().addCapability(UndertowRootDefinition.UNDERTOW_CAPABILITY);
+        final Consumer<UndertowService> usConsumer = csb.provides(UndertowRootDefinition.UNDERTOW_CAPABILITY, UndertowService.UNDERTOW);
+        csb.setInstance(new UndertowService(usConsumer, defaultContainer, defaultServer, defaultVirtualHost, instanceId, obfuscateSessionRoute, stats));
+        csb.install();
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override

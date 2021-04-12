@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Utility servlet that delegates to an EJB to perform topology stabilization.
+ * Utility servlet that delegates to an Jakarta Enterprise Beans to perform topology stabilization.
  * @author Paul Ferraro
  */
 @WebServlet(urlPatterns = { TopologyChangeListenerServlet.SERVLET_PATH })

@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>24.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-microprofile-metrics-smallrye</artifactId>
@@ -72,6 +72,10 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-metrics</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-core</artifactId>
         </dependency>
@@ -96,7 +100,7 @@
             <artifactId>jboss-msc</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-config-smallrye</artifactId>
             <exclusions>
                 <exclusion>
@@ -110,7 +114,7 @@
             <artifactId>smallrye-metrics</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-undertow</artifactId>
             <exclusions>
                 <exclusion>

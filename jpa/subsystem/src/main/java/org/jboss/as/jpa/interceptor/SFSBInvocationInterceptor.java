@@ -35,7 +35,7 @@ import org.jboss.invocation.InterceptorFactory;
 
 /**
  * Stateful session bean Invocation interceptor that is responsible for the SFSBCallStack being set for each
- * SFSB invocation that JPA is interested in.
+ * SFSB invocation that Jakarta Persistence is interested in.
  *
  * @author Scott Marlow
  */

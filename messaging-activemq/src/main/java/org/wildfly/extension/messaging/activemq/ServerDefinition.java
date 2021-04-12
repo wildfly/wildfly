@@ -442,6 +442,15 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setValidator(new EnumValidator<>(JournalType.class, true, true))
             .setRestartAllServices()
             .build();
+    public static final SimpleAttributeDefinition JOURNAL_MAX_ATTIC_FILES = create("journal-max-attic-files", ModelType.INT)
+            .setAttributeGroup("journal")
+            .setXmlName("max-attic-files")
+            .setDefaultValue(new ModelNode(10))
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     /**
      * @see ActiveMQDefaultConfiguration#isDefaultJournalLogWriteRate
      */
@@ -832,7 +841,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .build();
 
     /**
-     * @see ANetworkHealthCheck#IPV4_DEFAULT_COMMAND
+     * @see NetworkHealthCheck#IPV4_DEFAULT_COMMAND
      */
     public static final SimpleAttributeDefinition NETWORK_CHECK_PING_COMMAND = create("network-check-ping-command", STRING)
             .setAttributeGroup("network-isolation")
@@ -848,6 +857,48 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition NETWORK_CHECK_PING6_COMMAND = create("network-check-ping6-command", STRING)
             .setAttributeGroup("network-isolation")
             .setDefaultValue(new ModelNode("ping6 -c 1 %2$s"))
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    public static final SimpleAttributeDefinition CRITICAL_ANALYZER_ENABLED = create("critical-analyzer-enabled", BOOLEAN)
+            .setAttributeGroup("critical-analyzer")
+            .setXmlName("enabled")
+            .setDefaultValue(ModelNode.TRUE)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    public static final SimpleAttributeDefinition CRITICAL_ANALYZER_CHECK_PERIOD = create("critical-analyzer-check-period", LONG)
+            .setAttributeGroup("critical-analyzer")
+            .setXmlName("check-period")
+            .setDefaultValue(new ModelNode(0L))
+            .setMeasurementUnit(MILLISECONDS)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    /**
+     * @see ActiveMQDefaultConfiguration#getCriticalAnalyzerTimeout
+     */
+    public static final SimpleAttributeDefinition CRITICAL_ANALYZER_TIMEOUT = create("critical-analyzer-timeout", LONG)
+            .setAttributeGroup("critical-analyzer")
+            .setXmlName("timeout")
+            .setDefaultValue(new ModelNode(120000L))
+            .setMeasurementUnit(MILLISECONDS)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    public static final SimpleAttributeDefinition CRITICAL_ANALYZER_POLICY = create("critical-analyzer-policy", STRING)
+            .setAttributeGroup("critical-analyzer")
+            .setXmlName("policy")
+            .setDefaultValue(new ModelNode("LOG"))
+            .setAllowedValues("HALT", "SHUTDOWN", "LOG")
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -869,11 +920,13 @@ public class ServerDefinition extends PersistentResourceDefinition {
             JOURNAL_MESSAGES_TABLE, JOURNAL_BINDINGS_TABLE, JOURNAL_JMS_BINDINGS_TABLE, JOURNAL_LARGE_MESSAGES_TABLE, JOURNAL_PAGE_STORE_TABLE,
             JOURNAL_NODE_MANAGER_STORE_TABLE,
             JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
-            JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_POOL_FILES, JOURNAL_FILE_OPEN_TIMEOUT, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
+            JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_POOL_FILES, JOURNAL_FILE_OPEN_TIMEOUT, JOURNAL_COMPACT_PERCENTAGE,
+            JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO, JOURNAL_MAX_ATTIC_FILES,
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,
             GLOBAL_MAX_DISK_USAGE, DISK_SCAN_PERIOD, GLOBAL_MAX_MEMORY_SIZE,
             NETWORK_CHECK_NIC, NETWORK_CHECK_PERIOD, NETWORK_CHECK_TIMEOUT,
-            NETWORK_CHECK_LIST, NETWORK_CHECK_URL_LIST, NETWORK_CHECK_PING_COMMAND, NETWORK_CHECK_PING6_COMMAND
+            NETWORK_CHECK_LIST, NETWORK_CHECK_URL_LIST, NETWORK_CHECK_PING_COMMAND, NETWORK_CHECK_PING6_COMMAND,
+            CRITICAL_ANALYZER_ENABLED, CRITICAL_ANALYZER_CHECK_PERIOD, CRITICAL_ANALYZER_TIMEOUT, CRITICAL_ANALYZER_POLICY
     };
 
     private final boolean registerRuntimeOnly;
@@ -893,6 +946,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
         if (registerRuntimeOnly) {
             ExportJournalOperation.registerOperation(resourceRegistration, getResourceDescriptionResolver());
             ImportJournalOperation.registerOperation(resourceRegistration, getResourceDescriptionResolver());
+            PrintDataOperation.INSTANCE.registerOperation(resourceRegistration, getResourceDescriptionResolver());
 
             ActiveMQServerControlHandler.INSTANCE.registerOperations(resourceRegistration, getResourceDescriptionResolver());
             JMSServerControlHandler.INSTANCE.registerOperations(resourceRegistration, getResourceDescriptionResolver());
@@ -938,7 +992,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
                 ConnectorServiceDefinition.INSTANCE,
                 GroupingHandlerDefinition.INSTANCE,
 
-                // JMS resources
+                // Jakarta Messaging resources
                 LegacyConnectionFactoryDefinition.INSTANCE,
                 PooledConnectionFactoryDefinition.INSTANCE));
 

@@ -67,6 +67,8 @@ import org.jboss.dmr.ModelType;
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the EJB3 subsystem's root management resource.
  *
+ * NOTE: References in this file to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinition {

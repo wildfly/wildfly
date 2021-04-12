@@ -65,7 +65,7 @@ public enum UndertowSpecificationProvider implements SpecificationProvider<HttpS
 
             @Override
             public long getLastAccessedTime() {
-                return session.getMetaData().getLastAccessedTime().toEpochMilli();
+                return session.getMetaData().getLastAccessStartTime().toEpochMilli();
             }
 
             @Override
@@ -141,6 +141,23 @@ public enum UndertowSpecificationProvider implements SpecificationProvider<HttpS
                         return null;
                     }
                 };
+            }
+
+            @Override
+            public int hashCode() {
+                return this.getId().hashCode();
+            }
+
+            @Override
+            public boolean equals(Object object) {
+                if (!(object instanceof HttpSession)) return false;
+                // To be consistent with io.undertow.servlet.spec.HttpSessionImpl, we will assume these sessions share the same servlet context
+                return this.getId().equals(((HttpSession) object).getId());
+            }
+
+            @Override
+            public String toString() {
+                return this.getId();
             }
         };
     }

@@ -29,22 +29,26 @@ import org.jboss.as.controller.client.helpers.Operations;
 
 import static org.jboss.as.controller.client.helpers.Operations.isSuccessfulOutcome;
 
-import java.io.BufferedReader;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.shared.TestLogHandlerSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.util.LoggingUtil;
 import org.jboss.dmr.ModelNode;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,6 +65,25 @@ public class NetworkHealthTestCase {
 
     @ArquillianResource
     protected static ContainerController container;
+    private LoggerSetup loggerSetup;
+    private ManagementClient managementClient;
+
+    @Before
+    public void setup() throws Exception {
+        if (!container.isStarted(DEFAULT_FULL_JBOSSAS)) {
+            container.start(DEFAULT_FULL_JBOSSAS);
+        }
+        loggerSetup = new LoggerSetup();
+        managementClient = createManagementClient();
+        loggerSetup.setup(managementClient, DEFAULT_FULL_JBOSSAS);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        loggerSetup.tearDown(managementClient, DEFAULT_FULL_JBOSSAS);
+        managementClient.close();
+        container.stop(DEFAULT_FULL_JBOSSAS);
+    }
 
     /**
      * Defines a test IP to ping so that it fails and ensure that the logs contains the error message.
@@ -69,10 +92,6 @@ public class NetworkHealthTestCase {
      */
     @Test
     public void testNetworkUnHealthyNetwork() throws Exception {
-        if (!container.isStarted(DEFAULT_FULL_JBOSSAS)) {
-            container.start(DEFAULT_FULL_JBOSSAS);
-        }
-        ManagementClient managementClient = createManagementClient();
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
         ModelNode op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-list", IP_ADDRESS);
         executeOperationForSuccess(managementClient, op);
@@ -80,47 +99,37 @@ public class NetworkHealthTestCase {
         executeOperationForSuccess(managementClient, op);
         op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-timeout", 200);
         executeOperationForSuccess(managementClient, op);
-        Path logFile = getLogFile(managementClient);
+        Path logFile = LoggingUtil.getLogPath(managementClient, "file-handler", "artemis-log");
         managementClient.close();
         container.stop(DEFAULT_FULL_JBOSSAS);
         container.start(DEFAULT_FULL_JBOSSAS);
         managementClient = createManagementClient();
         Thread.sleep(TimeoutUtil.adjust(2000));
-        boolean found = false;
-        try (BufferedReader reader = Files.newBufferedReader(logFile, StandardCharsets.UTF_8)) {
-            String line = null;
-            while (!found && (line = reader.readLine()) != null) {
-                found = line.contains("AMQ202002") && line.contains(IP_ADDRESS);
-            }
-            Assert.assertTrue(String.format("Log contains ActiveMQ ping error log message: %n%s", line), found);
-        }
-        Assert.assertFalse("Beroker should be stopped", isBrokerActive(jmsOperations, managementClient));
+
+        Assert.assertTrue("Log should contains ActiveMQ ping error log message: [AMQ202002]", LoggingUtil.hasLogMessage(managementClient, "artemis-log", "AMQ202002", (line) -> line.contains(IP_ADDRESS)));
+        Assert.assertFalse("Broker should be stopped", isBrokerActive(jmsOperations, managementClient));
+
         op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-list", TestSuiteEnvironment.getServerAddress());
         executeOperationForSuccess(managementClient, op);
         managementClient.close();
         container.stop(DEFAULT_FULL_JBOSSAS);
-        int failure = Files.readAllLines(logFile).size();
+
+        long restartLine = LoggingUtil.countLines(logFile);
+
         container.start(DEFAULT_FULL_JBOSSAS);
         managementClient = createManagementClient();
         Thread.sleep(TimeoutUtil.adjust(2000));
-        try (BufferedReader reader = Files.newBufferedReader(logFile, StandardCharsets.UTF_8)) {
-            String line;
-            int lineNumber = 0 ;
-            while ((line = reader.readLine()) != null) {
-                lineNumber++;
-                if(lineNumber > failure) {
-                    Assert.assertFalse(String.format("Log contains ActiveMQ ping error log message: %n%s", line), line.contains("AMQ202002") || line.contains("AMQ201001"));
-                }
-            }
-        }
+
+        Assert.assertFalse("Log contains ActiveMQ ping error log message: [AMQ202002]",
+                LoggingUtil.hasLogMessage(managementClient, "artemis-log", "AMQ202002", restartLine, (line) -> line.contains(IP_ADDRESS)));
         Assert.assertTrue("Broker should be running", isBrokerActive(jmsOperations, managementClient));
+
         op = Operations.createUndefineAttributeOperation(jmsOperations.getServerAddress(), "network-check-list");
         executeOperationForSuccess(managementClient, op);
         op = Operations.createUndefineAttributeOperation(jmsOperations.getServerAddress(), "network-check-period");
         executeOperationForSuccess(managementClient, op);
         op = Operations.createUndefineAttributeOperation(jmsOperations.getServerAddress(), "network-check-timeout");
         executeOperationForSuccess(managementClient, op);
-        container.stop(DEFAULT_FULL_JBOSSAS);
     }
 
     /**
@@ -129,10 +138,6 @@ public class NetworkHealthTestCase {
      */
     @Test
     public void testPingCommandError() throws Exception {
-        if (!container.isStarted(DEFAULT_FULL_JBOSSAS)) {
-            container.start(DEFAULT_FULL_JBOSSAS);
-        }
-        ManagementClient managementClient = createManagementClient();
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
         ModelNode op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-ping-command", "not_existing_command");
         executeOperationForSuccess(managementClient, op);
@@ -144,20 +149,15 @@ public class NetworkHealthTestCase {
         executeOperationForSuccess(managementClient, op);
         op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-timeout", 200);
         executeOperationForSuccess(managementClient, op);
-        Path logFile = getLogFile(managementClient);
         managementClient.close();
         container.stop(DEFAULT_FULL_JBOSSAS);
         container.start(DEFAULT_FULL_JBOSSAS);
         managementClient = createManagementClient();
         Thread.sleep(TimeoutUtil.adjust(2000));
-        boolean found = false;
-        try (BufferedReader reader = Files.newBufferedReader(logFile, StandardCharsets.UTF_8)) {
-            String line = null;
-            while (!found && (line = reader.readLine()) != null) {
-                found = (line.contains(" AMQ202007") && line.contains(IP_ADDRESS) && line.contains("java.io.IOException")) || line.contains("AMQ201001");
-            }
-            Assert.assertTrue(String.format("Log contains ActiveMQ ping error log message: %n%s", line), found);
-        }
+        Assert.assertTrue("Log should contains ActiveMQ ping error log message: [AMQ202007]",
+                LoggingUtil.hasLogMessage(managementClient, "artemis-log", "",
+                        (line) -> (line.contains(" AMQ202007") && line.contains(IP_ADDRESS) && line.contains("java.io.IOException")) || line.contains("AMQ201001")));
+
         Assert.assertFalse("Broker should be stopped", isBrokerActive(jmsOperations, managementClient));
         op = Operations.createUndefineAttributeOperation(jmsOperations.getServerAddress(), "network-check-list");
         executeOperationForSuccess(managementClient, op);
@@ -169,8 +169,6 @@ public class NetworkHealthTestCase {
         executeOperationForSuccess(managementClient, op);
         op = Operations.createUndefineAttributeOperation(jmsOperations.getServerAddress(), "network-check-ping6-command");
         executeOperationForSuccess(managementClient, op);
-        managementClient.close();
-        container.stop(DEFAULT_FULL_JBOSSAS);
     }
 
     private static ManagementClient createManagementClient() throws UnknownHostException {
@@ -201,5 +199,28 @@ public class NetworkHealthTestCase {
         ModelNode response = managementClient.getControllerClient().execute(operation);
         Assert.assertTrue(Util.getFailureDescription(response), isSuccessfulOutcome(response));
         return response.get("result").asBoolean();
+    }
+
+    class LoggerSetup extends TestLogHandlerSetupTask {
+
+        @Override
+        public Collection<String> getCategories() {
+            return Arrays.asList("org.apache.activemq.artemis.logs");
+        }
+
+        @Override
+        public String getLevel() {
+            return "WARN";
+        }
+
+        @Override
+        public String getHandlerName() {
+            return "artemis-log";
+        }
+
+        @Override
+        public String getLogFileName() {
+            return "artemis.log";
+        }
     }
 }

@@ -144,6 +144,9 @@ public class WSTrustTestCaseElytronSecuritySetupTask implements ServerSetupTask 
     }
 
     private void removeElytronSecurityDomain(List<ModelNode> operations) throws Exception {
+        final ModelNode removeElytronHttpAuthOp = ModelUtil.createOpNode(
+                "subsystem=elytron/http-authentication-factory=application-http-authentication", REMOVE);
+        operations.add(removeElytronHttpAuthOp);
         final ModelNode removeUndertowDomainOp = ModelUtil.createOpNode(
                 "subsystem=undertow/application-security-domain=" + SECURITY_DOMAIN_NAME, REMOVE);
         operations.add(removeUndertowDomainOp);

@@ -100,7 +100,7 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
 
 
         if (!jts) {
-            // No IIOP, stick with JTA mode.
+            // No IIOP, stick with Jakarta Transactions mode.
             final com.arjuna.ats.jbossatx.jta.TransactionManagerService service = new com.arjuna.ats.jbossatx.jta.TransactionManagerService();
             final LocalUserTransaction userTransaction = LocalUserTransaction.getInstance();
             jtaEnvironmentBean.getValue().setUserTransaction(userTransaction);

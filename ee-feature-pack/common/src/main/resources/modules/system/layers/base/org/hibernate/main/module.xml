@@ -23,15 +23,21 @@
   -->
 
 <!-- Represents Hibernate 5.1.x, will later become 5.3.x for WF 14  -->
-<module xmlns="urn:jboss:module:1.7" name="org.hibernate">
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate">
+
     <resources>
         <artifact name="${org.hibernate:hibernate-core}"/>
         <artifact name="${org.hibernate:hibernate-envers}"/> 
     </resources>
 
     <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.instrument"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="java.sql"/>
         <module name="com.fasterxml.classmate"/>
-        <module name="javax.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.annotation.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.persistence.api"/>
@@ -49,5 +55,7 @@
         <module name="org.hibernate.jipijapa-hibernate5-3" services="import"/>
         <module name="org.infinispan.hibernate-cache" services="import" optional="true"/>
         <module name="net.bytebuddy"/>
+        <module name="java.xml"/>
+	<module name="com.h2database.h2" optional="true"/>
     </dependencies>
 </module>

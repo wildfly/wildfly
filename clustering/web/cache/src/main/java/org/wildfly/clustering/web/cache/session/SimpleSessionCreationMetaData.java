@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.cache.session;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoField;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -33,14 +34,23 @@ public class SimpleSessionCreationMetaData implements SessionCreationMetaData {
 
     private final Instant creationTime;
     private volatile Duration maxInactiveInterval = Duration.ZERO;
+    private volatile boolean newSession;
     private final AtomicBoolean valid = new AtomicBoolean(true);
 
     public SimpleSessionCreationMetaData() {
-        this(Instant.now());
+        this.creationTime = Instant.now();
+        this.newSession = true;
     }
 
     public SimpleSessionCreationMetaData(Instant creationTime) {
-        this.creationTime = creationTime;
+        // Only retain millisecond precision
+        this.creationTime = (creationTime.getNano() % 1_000_000 > 0) ? creationTime.with(ChronoField.MILLI_OF_SECOND, creationTime.get(ChronoField.MILLI_OF_SECOND)) : creationTime;
+        this.newSession = false;
+    }
+
+    @Override
+    public boolean isNew() {
+        return this.newSession;
     }
 
     @Override
@@ -66,6 +76,11 @@ public class SimpleSessionCreationMetaData implements SessionCreationMetaData {
     @Override
     public boolean invalidate() {
         return this.valid.compareAndSet(true, false);
+    }
+
+    @Override
+    public void close() {
+        this.newSession = false;
     }
 
     @Override

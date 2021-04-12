@@ -23,20 +23,19 @@
 package org.wildfly.clustering.server.group;
 
 import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
+import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
+import org.wildfly.clustering.marshalling.protostream.Scalar;
 
 /**
+ * {@link org.infinispan.protostream.SerializationContextInitializer} for this package.
  * @author Paul Ferraro
  */
-@MetaInfServices(SerializationContextInitializer.class)
 public class GroupSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new ExternalizerMarshaller<>(new AddressableNodeSerializer.AddressableNodeExternalizer()));
-        context.registerMarshaller(new ExternalizerMarshaller<>(new LocalNodeResolver.LocalNodeExternalizer()));
+        context.registerMarshaller(new AddressableNodeMarshaller());
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(LocalNode.class, Scalar.STRING.cast(String.class), LocalNode::getName, LocalNode::new));
     }
 }

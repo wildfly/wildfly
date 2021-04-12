@@ -1,0 +1,45 @@
+[[Jakarta_Enterprise_Beans_IIOP_Guide]]
+= Jakarta Enterprise Beans IIOP Guide
+
+[[enabling-iiop]]
+== Enabling IIOP
+
+To enable IIOP you must have the JacORB subsystem installed, and the
+`<iiop/>` element present in the ejb3 subsystem configuration. The
+`standalone-full.xml` configuration that comes with the distribution has
+both of these enabled.
+
+The `<iiop/>` element takes two attributes that control the default
+behaviour of the server, for full details see link:Admin_Guide{outfilesuffix}#EJB3[EJB3
+subsystem configuration guide].
+
+[[enabling-jts]]
+== Enabling JTS
+
+To enable JTS simply add a `<jts/>` element to the transactions
+subsystem configuration.
+
+It is also necessary to enable the JacORB transactions interceptor as
+shown below.
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:jboss:domain:jacorb:1.1">
+  <orb>
+    <initializers transactions="on"/>
+  </orb>
+</subsystem>
+----
+
+[[dynamic-stubs]]
+== Dynamic Stub's
+
+Downloading stubs directly from the server is no longer supported. If
+you do not wish to pre-generate your stub classes JDK Dynamic stubs can
+be used instead. The enable JDK dynamic stubs simply set the
+`com.sun.CORBA.ORBUseDynamicStub` system property to `true`.
+
+[[configuring-Jakarta-Enterprise-Beans-iiop-settings-via-jboss-ejb3.xml]]
+== Configuring Jakarta Enterprise Beans IIOP settings via jboss-ejb3.xml
+
+TODO

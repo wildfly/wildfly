@@ -25,10 +25,8 @@ import java.time.Duration;
 
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 
 /**
@@ -40,7 +38,6 @@ public interface HotRodSessionManagerConfiguration<C> {
     C getServletContext();
     SessionExpirationListener getExpirationListener();
     Registrar<SessionExpirationListener> getExpirationRegistrar();
-    Scheduler<String, ImmutableSessionMetaData> getExpirationScheduler();
     IdentifierFactory<String> getIdentifierFactory();
     Batcher<TransactionBatch> getBatcher();
     Duration getStopTimeout();

@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.wildfly.clustering.ejb.spi">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.ejb.spi">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -34,7 +35,6 @@
     <dependencies>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.ejb-client"/>
-        <module name="org.jboss.modules"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <!-- Enable dynamic loading of distributable bean manager provider -->
         <module name="org.wildfly.clustering.ejb.infinispan" services="import" optional="true"/>

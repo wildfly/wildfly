@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -44,12 +44,13 @@ enum Namespace {
     TRANSACTIONS_3_0("urn:jboss:domain:transactions:3.0"),
     TRANSACTIONS_4_0("urn:jboss:domain:transactions:4.0"),
     TRANSACTIONS_5_0("urn:jboss:domain:transactions:5.0"),
+    TRANSACTIONS_6_0("urn:jboss:domain:transactions:6.0"),
     ;
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = TRANSACTIONS_5_0;
+    public static final Namespace CURRENT = TRANSACTIONS_6_0;
 
     private final String name;
 

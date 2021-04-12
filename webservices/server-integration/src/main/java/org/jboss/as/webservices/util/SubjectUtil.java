@@ -130,7 +130,16 @@ public final class SubjectUtil {
 
     public static SecurityIdentity convertToSecurityIdentity(Subject subject, Principal principal, SecurityDomain domain,
             String roleCategory) {
-        SecurityIdentity identity = domain.createAdHocIdentity(principal);
+        SecurityIdentity identity = null;
+        for (Object obj : subject.getPrivateCredentials()) {
+            if (obj instanceof SecurityIdentity) {
+                identity = (SecurityIdentity)obj;
+                break;
+            }
+        }
+        if (identity == null) {
+            identity = domain.createAdHocIdentity(principal);
+        }
         // convert subject Group
         Set<String> roles = new HashSet<>();
         for (Principal prin : subject.getPrincipals()) {
@@ -157,8 +166,9 @@ public final class SubjectUtil {
                 publicCredentials = publicCredentials.withCredential((Credential) credential);
             }
         }
-        identity = identity.withPublicCredentials(publicCredentials);
-
+        if (!publicCredentials.equals(IdentityCredentials.NONE)) {
+            identity = identity.withPublicCredentials(publicCredentials);
+        }
         // convert private credentials
         IdentityCredentials privateCredentials = IdentityCredentials.NONE;
         for (Object credential : subject.getPrivateCredentials()) {
@@ -175,7 +185,9 @@ public final class SubjectUtil {
                 privateCredentials = privateCredentials.withCredential((Credential) credential);
             }
         }
-        identity = identity.withPrivateCredentials(privateCredentials);
+        if (!privateCredentials.equals(IdentityCredentials.NONE)) {
+            identity = identity.withPrivateCredentials(privateCredentials);
+        }
 
         return identity;
     }

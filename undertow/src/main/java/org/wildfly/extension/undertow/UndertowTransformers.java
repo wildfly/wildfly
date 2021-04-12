@@ -27,6 +27,7 @@ import static org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition
 import static org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.INTEGRATED_JASPI;
 import static org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.SECURITY_DOMAIN;
 import static org.wildfly.extension.undertow.Constants.ENABLE_HTTP2;
+import static org.wildfly.extension.undertow.Constants.OBFUSCATE_SESSION_ROUTE;
 import static org.wildfly.extension.undertow.HostDefinition.QUEUE_REQUESTS_ON_START;
 import static org.wildfly.extension.undertow.HttpListenerResourceDefinition.CERTIFICATE_FORWARDING;
 import static org.wildfly.extension.undertow.HttpListenerResourceDefinition.HTTP2_HEADER_TABLE_SIZE;
@@ -76,6 +77,7 @@ import org.wildfly.extension.undertow.filters.SingleAffinityResourceDefinition;
 
 /**
  * @author Tomaz Cerar (c) 2016 Red Hat Inc.
+ * @author Flavia Rainone
  */
 public class UndertowTransformers implements ExtensionTransformerRegistration {
     private static ModelVersion MODEL_VERSION_EAP7_0_0 = ModelVersion.create(3, 1, 0);
@@ -83,6 +85,7 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
     private static ModelVersion MODEL_VERSION_EAP7_2_0 = ModelVersion.create(7, 0, 0);
     private static final ModelVersion MODEL_VERSION_WILDFLY_16 = ModelVersion.create(8, 0, 0);
     private static final ModelVersion MODEL_VERSION_WILDFLY_18 = ModelVersion.create(10, 0, 0);
+    private static final ModelVersion MODEL_VERSION_WILDFLY_22 = ModelVersion.create(11, 0, 0);
 
     @Override
     public String getSubsystemName() {
@@ -94,13 +97,20 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
 
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystemRegistration.getCurrentSubsystemVersion());
 
-        registerTransformersWildFly18(chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), MODEL_VERSION_WILDFLY_18));
+        registerTransformersWildFly22(chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), MODEL_VERSION_WILDFLY_22));
+        registerTransformersWildFly18(chainedBuilder.createBuilder(MODEL_VERSION_WILDFLY_22, MODEL_VERSION_WILDFLY_18));
         registerTransformersWildFly16(chainedBuilder.createBuilder(MODEL_VERSION_WILDFLY_18, MODEL_VERSION_WILDFLY_16));
         registerTransformers_EAP_7_2_0(chainedBuilder.createBuilder(MODEL_VERSION_WILDFLY_16, MODEL_VERSION_EAP7_2_0));
         registerTransformers_EAP_7_1_0(chainedBuilder.createBuilder(MODEL_VERSION_EAP7_2_0, MODEL_VERSION_EAP7_1_0));
         registerTransformers_EAP_7_0_0(chainedBuilder.createBuilder(MODEL_VERSION_EAP7_1_0, MODEL_VERSION_EAP7_0_0));
 
-        chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[]{MODEL_VERSION_WILDFLY_18, MODEL_VERSION_WILDFLY_16, MODEL_VERSION_EAP7_2_0, MODEL_VERSION_EAP7_1_0, MODEL_VERSION_EAP7_0_0});
+        chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[]{MODEL_VERSION_WILDFLY_22, MODEL_VERSION_WILDFLY_18, MODEL_VERSION_WILDFLY_16, MODEL_VERSION_EAP7_2_0, MODEL_VERSION_EAP7_1_0, MODEL_VERSION_EAP7_0_0});
+    }
+
+    private static void registerTransformersWildFly22(ResourceTransformationDescriptionBuilder subsystemBuilder) {
+        subsystemBuilder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, OBFUSCATE_SESSION_ROUTE)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, OBFUSCATE_SESSION_ROUTE)
+                .end();
     }
 
     private static void registerTransformersWildFly18(ResourceTransformationDescriptionBuilder subsystemBuilder) {

@@ -50,7 +50,7 @@ public final class CancellationFlag {
     /**
      * Attempt to cancel the corresponding invocation.
      *
-     * @param setFlag {@code true} to set the EJB context cancellation flag (or equivalent), {@code false} otherwise
+     * @param setFlag {@code true} to set the Jakarta Enterprise Beans context cancellation flag (or equivalent), {@code false} otherwise
      * @return {@code true} if the invocation was definitely cancelled, or {@code false} if it was not cancelled or it could not be determined if it was cancelled
      */
     public boolean cancel(boolean setFlag) {

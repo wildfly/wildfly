@@ -152,10 +152,10 @@ Where an `application-security-domain` mapping is in use it can be useful to dou
 
 In this output the `referencing-deployments` attribute shows that the deployment `simple-webapp.war` has been deployed using this mapping.
 
-[[ejb-subsystem]]
-== EJB Subsystem
+[[Jakarta-Enterprise-Beans-subsystem]]
+== Jakarta Enterprise Beans Subsystem
 
-Configuration can be added to the EJB subsystem to map a security domain
+Configuration can be added to the Jakarta Enterprise Beans subsystem to map a security domain
 name referenced in a deployment to an Elytron security domain:
 
 [source,options="nowrap"]
@@ -186,6 +186,13 @@ An `application-security-domain` has two main attributes:
 * security-domain - a reference to the Elytron security domain that
 should be used
 
+There is another attribute called `legacy-compliant-principal-propagation`.
+If it is set to true and there is no incoming run-as identity,
+then the principal of the local unsecured bean is the current authenticated identity. This was the case
+for legacy PicketBox security. If this attribute is set to false, the behaviour will comply with the Elytron's previous
+behaviour and if there is no incoming run-as identity then the principal of the local unsecured bean is anonymous.
+This attribute is optional and the default value is true.
+
 When an application security domain mapping is configured for a bean in
 a deployment, this indicates that security should be handled by Elytron.
 
@@ -199,8 +206,8 @@ descriptor or annotation to secure webservice endpoint.
 
 When Elytron security is enabled, JAAS subject or principal can be pushed
 to jbossws-cxf endpoint’s SecurityContext to propagate authenticated
-identity to EJB container. Here is a CXF interceptor example to
-propagate authenticated information to EJB container :
+identity to Jakarta Enterprise Beans container. Here is a CXF interceptor example to
+propagate authenticated information to Jakarta Enterprise Beans container :
 [source,java,options="nowrap"]
 ----
 public class PropagateSecurityInterceptor extends WSS4JInInterceptor {

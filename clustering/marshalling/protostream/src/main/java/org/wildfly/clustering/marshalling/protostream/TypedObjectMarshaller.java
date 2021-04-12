@@ -23,64 +23,51 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.OptionalInt;
 
-import org.infinispan.protostream.BaseMarshaller;
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.ProtobufUtil;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
-import org.wildfly.clustering.marshalling.spi.ByteBufferOutputStream;
+import org.infinispan.protostream.impl.WireFormat;
 
 /**
+ * Marshaller for a typed object.
  * @author Paul Ferraro
  */
-public class TypedObjectMarshaller implements ProtoStreamMarshaller<Object> {
+public class TypedObjectMarshaller implements FieldMarshaller<Object> {
 
-    private final ProtoStreamMarshaller<Class<?>> typeMarshaller;
+    private final ScalarMarshaller<Class<?>> type;
 
-    public TypedObjectMarshaller(ProtoStreamMarshaller<Class<?>> typeMarshaller) {
-        this.typeMarshaller = typeMarshaller;
+    public TypedObjectMarshaller(ScalarMarshaller<Class<?>> typeValue) {
+        this.type = typeValue;
     }
 
     @Override
-    public Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        ByteBuffer buffer = reader.readByteBuffer();
-        Class<?> targetClass = this.typeMarshaller.readFrom(context, reader);
-        return ProtobufUtil.fromByteBuffer(context, buffer, targetClass);
-    }
-
-    @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object value) throws IOException {
-        try (ByteBufferOutputStream output = new ByteBufferOutputStream(objectSize(context, value))) {
-            ProtobufUtil.writeTo(context, output, value);
-            ByteBuffer buffer = output.getBuffer();
-            int offset = buffer.arrayOffset();
-            int size = buffer.limit() - offset;
-            writer.writeUInt32NoTag(size);
-            writer.writeRawBytes(buffer.array(), offset, size);
+    public Object readFrom(ProtoStreamReader reader) throws IOException {
+        Class<?> targetClass = this.type.readFrom(reader);
+        Object result = null;
+        boolean reading = true;
+        while (reading) {
+            int tag = reader.readTag();
+            int index = WireFormat.getTagFieldNumber(tag);
+            if (index == AnyField.ANY.getIndex()) {
+                result = reader.readObject(targetClass);
+            } else {
+                reading = reader.ignoreField(tag);
+            }
         }
-
-        this.typeMarshaller.writeTo(context, writer, value.getClass());
-    }
-
-    @SuppressWarnings("unchecked")
-    private static OptionalInt objectSize(ImmutableSerializationContext context, Object value) {
-        BaseMarshaller<?> marshaller = context.getMarshaller(value.getClass());
-        OptionalInt size = (marshaller instanceof Predictable) ? ((Predictable<Object>) marshaller).size(context, value) : OptionalInt.empty();
-        return size.isPresent() ? OptionalInt.of(Predictable.byteArraySize(size.getAsInt())) : size;
+        return result;
     }
 
     @Override
-    public OptionalInt size(ImmutableSerializationContext context, Object value) {
-        OptionalInt objectSize = objectSize(context, value);
-        OptionalInt typeSize = this.typeMarshaller.size(context, value.getClass());
-        return objectSize.isPresent() && typeSize.isPresent() ? OptionalInt.of(objectSize.getAsInt() + typeSize.getAsInt()) : OptionalInt.empty();
+    public void writeTo(ProtoStreamWriter writer, Object value) throws IOException {
+        this.type.writeTo(writer, value.getClass());
+        writer.writeObject(AnyField.ANY.getIndex(), value);
     }
 
     @Override
     public Class<? extends Object> getJavaClass() {
-        return null;
+        return Object.class;
+    }
+
+    @Override
+    public int getWireType() {
+        return this.type.getWireType();
     }
 }

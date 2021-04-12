@@ -28,7 +28,7 @@ import org.jboss.ejb.client.EJBClientInterceptor;
 import org.jboss.ejb.client.EJBClientInvocationContext;
 
 /**
- * An EJB client side interceptor
+ * An Jakarta Enterprise Beans client side interceptor
  *
  * @author Jaikiran Pai
  */
@@ -42,7 +42,7 @@ public class SimpleEJBClientInterceptor implements EJBClientInterceptor {
 
     @Override
     public void handleInvocation(EJBClientInvocationContext context) throws Exception {
-        // add all the data to the EJB client invocation context so that it becomes available to the server side
+        // add all the data to the Jakarta Enterprise Beans client invocation context so that it becomes available to the server side
         context.getContextData().putAll(data);
         // proceed "down" the invocation chain
         context.sendRequest();

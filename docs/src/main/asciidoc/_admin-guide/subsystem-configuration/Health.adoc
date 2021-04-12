@@ -1,0 +1,87 @@
+[[Health]]
+= Health Subsystem Configuration
+
+[NOTE]
+====
+This subsystem exposes only healthiness checks for the WildFly runtime.
+Support for https://microprofile.io/project/eclipse/microprofile-health[MicroProfile Health] is provided by
+the _microprofile-health-smallrye_ subsystem.
+====
+
+[[required-extension-metrics]]
+== Extension
+
+This `org.wildfly.extension.health` extension is included in all the standalone configurations included in the
+WildFly distribution as well as the `health` layer.
+
+You can also add the extension to a configuration without it either by adding
+an `<extension module="org.wildfly.extension.health"/>`
+element to the xml or by using the following CLI operation:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.health:add
+----
+
+== Management Model
+
+The `/subsystem=health` resource defines one attribute:
+
+* `security-enabled` - a boolean to indicate whether authentication is required to access the HTTP health endpoint (described below). By default, it is `true`. The
+standalone configurations explicitly sets it to `false` to accept unauthenticated access to the HTTP endpoints.
+
+[[health-http-endpoint]]
+== HTTP Endpoint
+
+The Health HTTP endpoint is accessible on the WildFly HTTP management interface http://localhost:9990/health[http://localhost:9990/health].
+
+The `health` subsystem registers three HTTP endpoints:
+
+* `/health` to test both the liveness and readiness of the application server.
+* `/health/live` to test the liveness of the application server
+* `/health/ready` to test the readiness of the application server.
+
+The Health HTTP endpoints are accessible on the WildFly HTTP management interface (e.g. http://localhost:9990/health[http://localhost:9990/health]).
+
+If the application server is healthy, it will return a `200 OK` response:
+
+[source,shell]
+----
+$ curl -v http://localhost:9990/health
+< HTTP/1.1 200 OK
+----
+
+If the application server  is not healthy, it returns `503 Service Unavailable`
+
+[source,shell]
+----
+$ curl -v http://localhost:9990/health
+< HTTP/1.1 503 Service Unavailable
+----
+
+=== Secured Access to the HTTP endpoints
+
+Secured access to the HTTP endpoint is controlled by the `security-enabled` attribute.
+If it is set to `true`, the HTTP client must be authenticated.
+
+If security has been enabled, the HTTP client must pass the credentials corresponding to a management user
+created by the `add-user` script. For example:
+
+[source,shell]
+----
+$ curl -v --digest -u myadminuser:myadminpassword http://localhost:9990/health
+< HTTP/1.1 200 OK
+----
+
+If the authentication fails, the  server will reply with a `401 NOT AUTHORIZED` response.
+
+NOTE: The HTTP response contains additional information with individual outcomes for each probe that determined the healthiness.
+This is informational only and the HTTP response code is the only relevant data to determine the healthiness of the application server.
+
+=== Default Server Procedures
+
+WildFly provides some readiness procedures that are checked to determine if the application server is ready to serve requests:
+
+* `boot-errors` checks that there were no errors during the server boot sequence
+* `deployments-status` checks that all deployments were deployed without errors
+* `server-state` checks that the server state is `running`

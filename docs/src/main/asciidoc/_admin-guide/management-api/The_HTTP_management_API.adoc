@@ -277,8 +277,8 @@ curl --digest -u admin:admin -L --header "Content-Type: application/json" -d '{"
 {"outcome" : "success"}
 ----
 
-[[using-some-jax-rs-code]]
-== Using some JAX-RS code
+[[using-some-Jakarta-RESTful-Web-Services-code]]
+== Using some Jakarta RESTful Web Services code
 
 [source,java,options="nowrap"]
 ----

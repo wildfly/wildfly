@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.as.jsf-injection" slot="myfaces">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.jsf-injection:myfaces">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -33,13 +33,13 @@
     </resources>
 
     <dependencies>
-        <module name="com.sun.jsf-impl" slot="myfaces"/>
+        <module name="com.sun.jsf-impl:myfaces"/>
         <module name="javax.api"/>
         <module name="org.jboss.as.web"/>
         <module name="javax.servlet.api"/>
         <module name="org.jboss.logging"/>
 
         <!-- added this for MyFacesAnnotationProvider -->
-        <module name="javax.faces.api" slot="myfaces"/>
+        <module name="javax.faces.api:myfaces"/>
     </dependencies>
 </module>

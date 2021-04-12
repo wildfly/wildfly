@@ -36,7 +36,6 @@ import javax.ejb.NoSuchEJBException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
@@ -198,27 +197,28 @@ public class EJBClientAPIUsageTestCase {
         Assert.assertEquals("Unexpected final count", NUM_TIMES, finalCount);
     }
 
-
     /**
-     * Tests that invocation on a stateful session bean fails, if a session hasn't been created
-     *
-     * @throws Exception
+     * Tests that invocations on a stateful session bean with a stateless locator work
      */
     @Test
-    public void testSFSBAccessFailureWithoutSession() throws Exception {
-        // create a locator without a session
-        final StatelessEJBLocator<Counter> locator = new StatelessEJBLocator<Counter>(Counter.class, APP_NAME, MODULE_NAME, CounterBean.class.getSimpleName(), "", Affinity.NONE);
+    public void testSFSBInvocationWithSLSBLocator() {
+        final StatelessEJBLocator<Counter> locator = new StatelessEJBLocator<>(Counter.class, APP_NAME, MODULE_NAME, CounterBean.class.getSimpleName());
         final Counter counter = EJBClient.createProxy(locator);
         Assert.assertNotNull("Received a null proxy", counter);
-        // invoke the bean without creating a session
-        try {
-            final int initialCount = counter.getCount();
-            Assert.fail("Expected an EJBException for calling a stateful session bean without creating a session");
-        } catch (EJBException ejbe) {
-            // expected
-            logger.trace("Received the expected exception", ejbe);
-
+        // invoke the bean
+        final int initialCount = counter.getCount();
+        logger.trace("Got initial count " + initialCount);
+        Assert.assertEquals("Unexpected initial count from stateful bean", 0, initialCount);
+        Assert.assertTrue("Unexpected stateless locator", EJBClient.getLocatorFor(counter).isStateful());
+        final int NUM_TIMES = 50;
+        for (int i = 1; i <= NUM_TIMES; i++) {
+            final int count = counter.incrementAndGetCount();
+            logger.trace("Got next count " + count);
+            Assert.assertEquals("Unexpected count after increment", i, count);
         }
+        final int finalCount = counter.getCount();
+        logger.trace("Got final count " + finalCount);
+        Assert.assertEquals("Unexpected final count", NUM_TIMES, finalCount);
     }
 
     /**
@@ -355,7 +355,7 @@ public class EJBClientAPIUsageTestCase {
     /**
      * AS7-3129
      * <p/>
-     * Make sure that the CDI request scope is activated for remote EJB invocations
+     * Make sure that the Jakarta Contexts and Dependency Injection request scope is activated for remote EJB invocations
      */
     @Test
     public void testCdiRequestScopeActive() {

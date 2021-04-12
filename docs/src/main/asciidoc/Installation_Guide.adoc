@@ -24,6 +24,12 @@ link:#Zipped_Installation[Zipped distribution],
 link:#Galleon_Provisioning[Galleon provisioning] or link:#Bootable_JAR[bootable JAR], this guide helps you identify the 
 installation strategy that best fits your application requirements.
 
+= WildFly or WildFly Preview
+
+The WildFly project now produces two appserver variants, link:WildFly_and_WildFly_Preview{outfilesuffix}[standard WildFly and WildFly Preview],
+so you'll want to decide which is right for you. For most users the standard WildFly variant is the right choice,
+but if you'd like a technical preview look at what's coming in the future, try out WildFly Preview.
+
 [[Zipped_Installation]]
 = Installing WildFly from a zipped distribution
 
@@ -34,7 +40,7 @@ contains a large number of default configurations allowing you to select the ser
 A WildFly distribution based installation is well suited when:
 
 * You want to rely on a traditional Jakarta EE application deployment.
-* You want a Jakarta EE or Eclipse MicroProfile platform compliant server that offers all Jakarta EE or MicroProfile features.
+* You want a Jakarta EE or MicroProfile platform compliant server that offers all Jakarta EE or MicroProfile features.
 * You are not (yet) concerned by server installation size and memory footprint.
 * You are not yet sure of the kind of operating mode and application you are targeting.
 * Your server instances will contain one or more application deployments.
@@ -58,7 +64,7 @@ A WildFly server provisioned with Galleon is well suited when:
 
 * You want to rely on a traditional Jakarta EE application deployment.
 * You want to easily update an installation to the latest WildFly version.
-* Your application requires only a subset of the Jakarta EE or Eclipse MicroProfile platform APIs
+* Your application requires only a subset of the Jakarta EE or MicroProfile platform APIs
 (although Galleon can provision a server that supports the full set of Jakarta EE and MicroProfile platform APIs).
 * You are concerned by server installation size and memory footprint.
 * You are only using standalone operating mode (with support for High Availability or not).

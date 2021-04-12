@@ -1,13 +1,13 @@
 [[MicroProfile_Health_SmallRye]]
 = MicroProfile Health Subsystem Configuration
 
-Support for https://microprofile.io/project/eclipse/microprofile-health[Eclipse MicroProfile Health] is provided by
+Support for https://microprofile.io/project/eclipse/microprofile-health[MicroProfile Health] is provided by
  the _microprofile-health-smallrye_ subsystem.
 
 [[required-extension-microprofile-health-smallrye]]
 == Required Extension
 
-This extension is included in the standalone configurations included in the
+This extension is included in the standalone-microprofile configurations included in the
 WildFly distribution.
 
 You can also add the extension to a configuration without it either by adding
@@ -18,6 +18,8 @@ element to the xml or by using the following CLI operation:
 ----
 [standalone@localhost:9990 /]/extension=org.wildfly.extension.microprofile.health-smallrye:add
 ----
+
+It depends on the base health extension `org.wildfly.extension.health` that must be installed.
 
 == Management Operations
 
@@ -68,15 +70,16 @@ The healthiness of the application server can be queried by calling 3 different 
 
 The MicroProfile Health Check specifications defines three HTTP endpoints:
 
-* `/health` to test both the liveness and readiness of the runtime.
-* `/health/live` to test the liveness of the runtime.
-* `/health/ready` to test the readiness of the runtime.
+* `/health` to test both the liveness and readiness of the application server.
+* `/health/live` to test the liveness of the application server
+* `/health/ready` to test the readiness of the application server.
 
 The Health HTTP endpoints are accessible on WildFly HTTP management interface (e.g. http://localhost:9990/health[http://localhost:9990/health]).
 
 === Secured Access to the HTTP endpoints
 
 Secured access to the HTTP endpoint is controlled by the `security-enabled` attribute of the `/subsystem=microprofile-health-smallrye` resource.
+The value of this attribute will override the `security-enabled` attribute of the `/subsystem=health` resource (documented in <<health-http-endpoint,Health subsystem configuration guide>>).
 If it is set to `true`, the HTTP client must be authenticated.
 
 If the application server is healthy, it will return a `200 OK` response:
@@ -89,7 +92,7 @@ $ curl -v http://localhost:9990/health
 {"status":"UP","checks":[{"name":"empty-liveness-checks","status":"UP"},{"name":"server-state","status":"UP","data":{"value":"running"}},{"name":"boot-errors","status":"UP"},{"name":"deployments-status","status":"UP"},{"name":"empty-readiness-checks","status":"UP"}]}
 ----
 
-If the application server (and its deployment) is not healthy, it returns `503 Service Unavailable`
+If the application server  is not healthy, it returns `503 Service Unavailable`
 
 [source,shell]
 ----
@@ -98,6 +101,12 @@ $ curl -v http://localhost:9990/health
 ...
 {"outcome":"DOWN","checks":[{"name":"myFailingProbe","state":"DOWN","data":{"foo":"bar"}}]}
 ----
+
+=== Secured Access to the HTTP endpoints
+
+Secured access to the HTTP endpoint is controlled by the `security-enabled` attribute of the `/subsystem=microprofile-health-smallrye` resource.
+The value of this attribute will override the `security-enabled` attribute of the `/subsystem=health` resource (documented in <<health-http-endpoint,Health subsystem configuration guide>>).
+If it is set to `true`, the HTTP client must be authenticated.
 
 If security has been enabled, the HTTP client must pass the credentials corresponding to a management user
 created by the `add-user` script. For example:
@@ -148,11 +157,11 @@ The MicroProfile Config property `mp.health.disable-default-procedures` is read 
 
 == Component Reference
 
-The Eclipse MicroProfile Health is implemented by the SmallRye Health project.
+The MicroProfile Health implementation is provided by the SmallRye Health project.
 
 ****
 
-* https://microprofile.io/project/eclipse/microprofile-health[Eclipse MicroProfile Health]
+* https://microprofile.io/project/eclipse/microprofile-health[MicroProfile Health]
 * http://github.com/smallrye/smallrye-health/[SmallRye Health]
 
 ****

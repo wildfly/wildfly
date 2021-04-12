@@ -161,19 +161,28 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
                 case ALIASES: {
                     if (this.schema.since(InfinispanSchema.VERSION_1_1)) {
-                        readAttribute(reader, i, operation, CacheContainerResourceDefinition.Attribute.ALIASES);
+                        readAttribute(reader, i, operation, CacheContainerResourceDefinition.ListAttribute.ALIASES);
                         break;
                     }
                 }
                 case MODULE: {
+                    if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
                     if (this.schema.since(InfinispanSchema.VERSION_1_3)) {
-                        readAttribute(reader, i, operation, CacheContainerResourceDefinition.Attribute.MODULE);
+                        readAttribute(reader, i, operation, CacheContainerResourceDefinition.DeprecatedAttribute.MODULE);
                         break;
                     }
                 }
                 case STATISTICS_ENABLED: {
                     if (this.schema.since(InfinispanSchema.VERSION_1_5)) {
                         readAttribute(reader, i, operation, CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED);
+                        break;
+                    }
+                }
+                case MODULES: {
+                    if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
+                        readAttribute(reader, i, operation, CacheResourceDefinition.ListAttribute.MODULES);
                         break;
                     }
                 }
@@ -291,7 +300,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         if (!aliases.isEmpty()) {
             // Adapt aliases parsed from legacy schema into format expected by the current attribute parser
-            setAttribute(reader, String.join(" ", aliases), operation, CacheContainerResourceDefinition.Attribute.ALIASES);
+            setAttribute(reader, String.join(" ", aliases), operation, CacheContainerResourceDefinition.ListAttribute.ALIASES);
         }
     }
 
@@ -559,14 +568,23 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
             }
             case MODULE: {
+                if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
+                    throw ParseUtils.unexpectedAttribute(reader, index);
+                }
                 if (this.schema.since(InfinispanSchema.VERSION_1_3)) {
-                    readAttribute(reader, index, operation, CacheResourceDefinition.Attribute.MODULE);
+                    readAttribute(reader, index, operation, CacheResourceDefinition.DeprecatedAttribute.MODULE);
                     break;
                 }
             }
             case STATISTICS_ENABLED: {
                 if (this.schema.since(InfinispanSchema.VERSION_1_5)) {
                     readAttribute(reader, index, operation, CacheResourceDefinition.Attribute.STATISTICS_ENABLED);
+                    break;
+                }
+            }
+            case MODULES: {
+                if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
+                    readAttribute(reader, index, operation, CacheResourceDefinition.ListAttribute.MODULES);
                     break;
                 }
             }
@@ -1910,7 +1928,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case MODULE: {
-                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.MODULE);
+                    if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.DeprecatedAttribute.MODULE);
                     break;
                 }
                 case PROTOCOL_VERSION: {
@@ -1936,6 +1957,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 case STATISTICS_ENABLED: {
                     if (this.schema.since(InfinispanSchema.VERSION_9_0)) {
                         readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED);
+                        break;
+                    }
+                }
+                case MODULES: {
+                    if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
+                        readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.ListAttribute.MODULES);
                         break;
                     }
                 }
@@ -1975,7 +2002,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     }
                 }
                 case PROPERTY: {
-                    if (schema.since(InfinispanSchema.VERSION_11_0) || (this.schema.since(InfinispanSchema.VERSION_9_1) && !this.schema.since(InfinispanSchema.VERSION_10_0))) {
+                    if (this.schema.since(InfinispanSchema.VERSION_11_0) || (this.schema.since(InfinispanSchema.VERSION_9_1) && !this.schema.since(InfinispanSchema.VERSION_10_0))) {
                         ParseUtils.requireSingleAttribute(reader, XMLAttribute.NAME.getLocalName());
                         readElement(reader, operation, RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES);
                         break;

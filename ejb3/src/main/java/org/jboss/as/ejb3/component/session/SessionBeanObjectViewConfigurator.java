@@ -55,7 +55,7 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 
 /**
- * configurator that sets up interceptors for an EJB's object view
+ * configurator that sets up interceptors for an Jakarta Enterprise Beans's object view
  *
  * @author Stuart Douglas
  */

@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>24.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-microprofile-health-smallrye</artifactId>
@@ -83,6 +83,10 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-health</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
         </dependency>
@@ -101,11 +105,11 @@
             <artifactId>smallrye-health</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-undertow</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-weld-common</artifactId>
             <exclusions>
                 <exclusion>

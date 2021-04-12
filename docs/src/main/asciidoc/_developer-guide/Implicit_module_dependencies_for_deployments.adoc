@@ -12,8 +12,8 @@ when and which modules are added as implicit dependencies.
 [[whats-an-implicit-module-dependency]]
 == What's an implicit module dependency?
 
-Consider an application deployment which contains EJBs. EJBs typically
-need access to classes from the javax.ejb.* package and other Java EE
+Consider an application deployment which contains Jakarta Enterprise Beans. Jakarta Enterprise Beans typically
+need access to classes from the javax.ejb.* package and other Jakarta EE
 API packages. The jars containing these packages are already shipped in
 WildFly and are available as "modules". The module which contains the
 javax.ejb.* classes has a specific name and so does the module which
@@ -34,8 +34,8 @@ dependencies are added is explained in the next section.
 When a deployment is being processed by the server, it goes through a
 chain of "deployment processors". Each of these processors will have a
 way to check if the deployment meets a certain criteria and if it does,
-the deployment processor adds a implicit module dependency to that
-deployment. Let's take an example - Consider (again) an EJB3 deployment
+the deployment processor adds an implicit module dependency to that
+deployment. Let's take an example - Consider (again) an Jakarta Enterprise Beans 3 deployment
 which has the following class:
 
 .MySuperDuperBean.java
@@ -50,16 +50,16 @@ public class MySuperDuperBean {
 }
 ----
 
-As can be seen, we have a simple @Stateless EJB. When the deployment
-containing this class is being processed, the EJB deployment processor
+As can be seen, we have a simple @Stateless Jakarta Enterprise Beans. When the deployment
+containing this class is being processed, the Jakarta Enterprise Beans deployment processor
 will see that the deployment contains a class with the @Stateless
-annotation and thus identifies this as a EJB deployment. *This is just
+annotation and thus identifies this as an Jakarta Enterprise Beans deployment. *This is just
 one of the several ways, various deployment processors can identify a
-deployment of some specific type.* The EJB deployment processor will
+deployment of some specific type.* The Jakarta Enterprise Beans deployment processor will
 then add an implicit dependency on the Jakarta EE API module, so that all
 the Jakarta EE API classes are visible to the deployment.
 
-Some subsystems will always add a API classes, even if the trigger
+Some subsystems will always add API classes, even if the trigger
 condition is not met. These are listed separately below.
 
 In the next section, we'll list down the implicit module dependencies
@@ -77,36 +77,36 @@ being added
 
 |Core Server |javax.api sun.jdk org.jboss.vfs |  | 
 
-|Batch Subsystem |javax.batch.api |  | 
+|Batch Subsystem |javax.batch.api |  | implicit
 
 |EE Subsystem |javaee.api |  | 
 
-|EJB3 subsystem |  |javaee.api |The presence of ejb-jar.xml (in valid
+|Jakarta Enterprise Beans 3 subsystem |  |javaee.api |The presence of ejb-jar.xml (in valid
 locations in the deployment, as specified by spec) or the presence of
-annotation based EJBs (ex: @Stateless, @Stateful, @MessageDriven etc)
+annotation based Jakarta Enterprise Beans (ex: @Stateless, @Stateful, @MessageDriven etc)
 
-|JAX-RS (Resteasy) subsystem |javax.xml.bind.api
+|Jakarta RESTful Web Services (Resteasy) subsystem |javax.xml.bind.api
 |org.jboss.resteasy.resteasy-atom-provider
 org.jboss.resteasy.resteasy-cdi org.jboss.resteasy.resteasy-jaxrs
 org.jboss.resteasy.resteasy-jaxb-provider
 org.jboss.resteasy.resteasy-jackson-provider
 org.jboss.resteasy.resteasy-jsapi
 org.jboss.resteasy.resteasy-multipart-provider
-org.jboss.resteasy.async-http-servlet-30 |The presence of JAX-RS
+org.jboss.resteasy.async-http-servlet-30 |The presence of Jakarta RESTful Web Services
 annotations in the deployment
 
-|JCA subsystem |javax.resource.api |javax.jms.api javax.validation.api
+|Jakarta Connectors subsystem |javax.resource.api |javax.jms.api javax.validation.api
 org.jboss.logging org.jboss.ironjacamar.api org.jboss.ironjacamar.impl
 org.hibernate.validator |If the deployment is a resource adaptor (RAR)
 deployment.
 
-|JPA (Hibernate) subsystem |javax.persistence.api |javaee.api
+|Jakarta Persistence (Hibernate) subsystem |javax.persistence.api |javaee.api
 org.jboss.as.jpa org.hibernate |The presence of an @PersistenceUnit or
 @PersistenceContext annotation, or a <persistence-unit-ref> or
 <persistence-context-ref> in a deployment descriptor..
 
 |Logging Subsystem |org.jboss.logging org.apache.commons.logging
-org.apache.log4j org.slf4j org.jboss.logging.jul-to-slf4j-stub |  | 
+org.apache.log4j org.apache.logging.log4j.api org.slf4j org.jboss.logging.jul-to-slf4j-stub |  | 
 
 |SAR Subsystem |  |org.jboss.logging org.jboss.modules |The deployment
 is a SAR archive
@@ -114,7 +114,7 @@ is a SAR archive
 |Security Subsystem |org.picketbox |  | 
 
 |Web Subsystem |  |javaee.api com.sun.jsf-impl org.hibernate.validator
-org.jboss.as.web org.jboss.logging |The deployment is a WAR archive. JSF
+org.jboss.as.web org.jboss.logging |The deployment is a WAR archive. Jakarta Server Faces
 is only added if used. Multiple version options exist for mojarra.
 
 |Web Services Subsystem |org.jboss.ws.api org.jboss.ws.spi |  | 

@@ -110,7 +110,7 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
 
         .getName());
         final String message = "foo";
-        // all interceptors (container-interceptor and Jakarta EE interceptor) are expected to be invoked.
+        // all interceptors (container-interceptor and Jakarta Interceptors) are expected to be invoked.
         final String expectedResultForFirstInvocation = ContainerInterceptorOne.class.getName() + " "
                 + NonContainerInterceptor.class.getName() + " " + FlowTrackingBean.class.getName() + " " + message;
         final String firstResult = bean.echo(message);
@@ -119,7 +119,7 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
         "Unexpected result after first invocation on bean", expectedResultForFirstInvocation, firstResult);
 
         final String secondMessage = "bar";
-        // all interceptors (container-interceptor and Jakarta EE interceptor) are expected to be invoked.
+        // all interceptors (container-interceptor and Jakarta Interceptors) are expected to be invoked.
         final String expectedResultForSecondInvocation = ContainerInterceptorOne.class.getName() + " "
                 + NonContainerInterceptor.class.getName() + " " + FlowTrackingBean.class.getName() + " " + secondMessage;
         final String secondResult = bean.echo(secondMessage);
@@ -141,7 +141,7 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
         final FlowTracker bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class.getSimpleName() + "!"
                 + FlowTracker.class.getName());
         final String message = "foo";
-        // all interceptors (container-interceptor and Jakarta EE interceptor) are expected to be invoked.
+        // all interceptors (container-interceptor and Jakarta Interceptors) are expected to be invoked.
         final String expectedResultForFirstInvocation = ContainerInterceptorOne.class.getName() + " "
                 + NonContainerInterceptor.class.getName() + " " + FlowTrackingBean.class.getName() + " " + message;
         final String firstResult = bean.echo(message);
@@ -149,7 +149,7 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
                 expectedResultForFirstInvocation, firstResult);
 
         final String secondMessage = "bar";
-        // all interceptors (container-interceptor and Jakarta EE interceptor) are expected to be invoked.
+        // all interceptors (container-interceptor and Jakarta Interceptors) are expected to be invoked.
         final String expectedResultForSecondInvocation = ContainerInterceptorOne.class.getName() + " "
                 + NonContainerInterceptor.class.getName() + " " + FlowTrackingBean.class.getName() + " " + secondMessage;
         final String secondResult = bean.echo(secondMessage);
@@ -214,7 +214,7 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
         final AnotherFlowTrackingBean bean = InitialContext.doLookup("java:module/"
                 + AnotherFlowTrackingBean.class.getSimpleName() + "!" + AnotherFlowTrackingBean.class.getName());
         final String message = "foo";
-        // all interceptors (container-interceptor and Jakarta EE interceptor) are expected to be invoked.
+        // all interceptors (container-interceptor and Jakarta Interceptors) are expected to be invoked.
         final String expectedResultForFirstInvocation = ContainerInterceptorOne.class.getName() + " "
                 + ClassLevelContainerInterceptor.class.getName() + " " + MethodSpecificContainerInterceptor.class.getName()
                 + " " + NonContainerInterceptor.class.getName() + " " + AnotherFlowTrackingBean.class.getName() + " " + message;
@@ -243,7 +243,7 @@ bean = InitialContext.doLookup("java:module/" + FlowTrackingBean.class
         final AnotherFlowTrackingBean bean = InitialContext.doLookup("java:module/"
                 + AnotherFlowTrackingBean.class.getSimpleName() + "!" + AnotherFlowTrackingBean.class.getName());
         final String message = "foo";
-        // all interceptors (container-interceptor and Jakarta EE interceptor) are expected to be invoked in the order specified in the jboss-ejb3.xml
+        // all interceptors (container-interceptor and Jakarta Interceptors) are expected to be invoked in the order specified in the jboss-ejb3.xml
         final String expectedResultForFirstInvocation = ClassLevelContainerInterceptor.class.getName() + " "
                 + MethodSpecificContainerInterceptor.class.getName() + " " + ContainerInterceptorOne.class.getName() + " "
                 + NonContainerInterceptor.class.getName() + " " + AnotherFlowTrackingBean.class.getName() + " " + message;

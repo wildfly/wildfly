@@ -20,13 +20,24 @@ e.g. To create a new cache container that loads marshallers from the "org.bar" m
 /subsystem=infinispan/cache-container=foo:add(module=org.foo)
 ----
 
-A cache container may designate a specific cache as its default cache, i.e. the cache returned via http://docs.jboss.org/infinispan/9.2/apidocs/org/infinispan/manager/CacheContainer.html#getCache--[CacheContainer.getCache()]:
+A cache container may designate a specific cache as its default cache, i.e. the cache returned via https://docs.jboss.org/infinispan/11.0/apidocs/org/infinispan/manager/CacheContainer.html#getCache()[CacheContainer.getCache()]:
 
 e.g. To set "bar" as the default cache of the "foo" container:
 [source,options="nowrap"]
 ----
 /subsystem=infinispan/cache-container=foo:write-attribute(name=default-cache, value=bar)
 ----
+
+A cache container can be injected directly into Jakarta EE applications using the `@Resource` annotation, e.g.
+
+[source,java,options="nowrap"]
+----
+@Resource(lookup = "java:jboss/infinispan/container/foo")
+private org.infinispan.manager.EmbeddedCacheManager container;
+----
+
+Note that the server will not manage the lifecycle of any caches created from the injected cache manager.
+The application is responsible for managing the lifecycle of manually created caches.
 
 [[transport]]
 === Transport
@@ -74,7 +85,7 @@ Infinispan supports a number of cache types for use in both HA and non-HA server
 A local cache stores a given cache entry only on the local node.
 A local cache does not require a transport, as cache reads and writes are always local.
 
-For more information about this cache type, refer to the http://infinispan.org/docs/stable/user_guide/user_guide.html#local_mode[the Infinispan documentation].
+For more information about this cache type, refer to the https://infinispan.org/documentation/[the Infinispan documentation].
 
 To create a local cache:
 
@@ -90,7 +101,7 @@ For a complete list of local-cache attributes, refer to the link:wildscribe[Wild
 A replicated cache stores a given cache entry on every node in the cluster.
 A replicated cache requires a transport, as cache writes are replicated to all nodes in the cluster on which the associated cache is running.
 
-For more information about this cache type, refer to the http://infinispan.org/docs/stable/user_guide/user_guide.html#replicated_mode[the Infinispan documentation].
+For more information about this cache type, refer to the https://infinispan.org/documentation/[the Infinispan documentation].
 
 To create a replicated cache:
 
@@ -106,7 +117,7 @@ For a complete list of replicated-cache attributes, refer to the link:wildscribe
 A distributed cache stores a given cache entry on a configurable number of nodes in the cluster, assigned via an algorithm based on consistent hashing.
 A distributed cache requires a transport, as cache writes need to forward to each owner, and cache reads from a non-owner require a remote request.
 
-For more information about this cache type, refer to the http://infinispan.org/docs/stable/user_guide/user_guide.html#distribution_mode[the Infinispan documentation].
+For more information about this cache type, refer to the https://infinispan.org/documentation/[the Infinispan documentation].
 
 To create a distributed cache where a given entry is stored on 3 nodes:
 
@@ -127,7 +138,7 @@ while the backup copy is the node that last updated the entry.
 This design means that a scattered cache only requires 1 remote invocation to write a given cache entry, regardless of which node initiated the cache operation.
 By comparison, a distributed cache (with 2 owners) uses 1 remote invocation to write a cache entry if and only if the primary owner initiated the cache operation, and otherwise requires 2 remote invocations.
 
-For more information about this cache type, refer to the http://infinispan.org/docs/stable/user_guide/user_guide.html#scattered_mode[the Infinispan documentation].
+For more information about this cache type, refer to the https://infinispan.org/documentation/[the Infinispan documentation].
 
 To create a scattered cache:
 
@@ -143,7 +154,7 @@ For a complete list of scattered-cache attributes, refer to the link:wildscribe[
 An invalidation cache is a special type of clustered cache that does not share state, but instead ensures that remote state is invalidated any time a given entry is updated locally.
 An invalidation cache requires a transport, as cache writes trigger invalidation on remote nodes on which the associated cache is running.
 
-For more information about this cache type, refer to the http://infinispan.org/docs/stable/user_guide/user_guide.html#invalidation_mode[the Infinispan documentation].
+For more information about this cache type, refer to the https://infinispan.org/documentation/[the Infinispan documentation].
 
 To create an invalidation cache:
 
@@ -398,7 +409,7 @@ e.g. To persist cache entries to an H2 database via the ExampleDS data-source:
 ----
 
 [[hotrod_store]]
-=== HotRod store
+===== HotRod store
 
 The HotRod store uses one dedicated remote cache for each cache created by the server.
 For Infinispan Server versions supporting protocol version 2.7 and above (Infinispan Server version 9.2)
@@ -444,6 +455,25 @@ e.g. To configure a non-blocking state transfer:
 ----
 
 For a complete list of state-transfer attributes, refer to the link:wildscribe[WildFly management model documentation^]
+
+
+==== Injecting a cache into Jakarta EE applications
+
+A cache can be injected directly into Jakarta EE applications using the `@Resource` annotation, e.g.
+
+[source,java,options="nowrap"]
+----
+@Resource(lookup = "java:jboss/infinispan/cache/foo/bar") // <1>
+private org.infinispan.Cache<Integer, Object> cache;
+----
+<1> where `foo` is the name of the cache container and `bar` is the name of the cache to inject
+
+or in order to inject the default cache of the cache container use the following resource lookup:
+
+[source,java,options="nowrap"]
+----
+@Resource(lookup = "java:jboss/infinispan/cache/foo/default")
+----
 
 [[remote_cache_container]]
 == Remote Cache Container

@@ -1,0 +1,155 @@
+[[WS-Addressing]]
+= WS-Addressing
+
+JBoss Web Services inherits full WS-Addressing capabilities from the
+underlying Apache CXF implementation. Apache CXF provides support for
+2004-08 and http://www.w3.org/TR/ws-addr-core/[1.0] versions of
+WS-Addressing.
+
+[[enabling-ws-addressing]]
+== Enabling WS-Addressing
+
+WS-Addressing can be turned on in multiple standard ways:
+
+* consuming a WSDL contract that specifies a WS-Addressing assertion /
+policy
+* using the `@javax.xml.ws.soap.Addressing` annotation
+* using the `javax.xml.ws.soap.AddressingFeature` feature
+
+[IMPORTANT]
+
+The supported addressing policy elements are:
+
+....
+[http://www.w3.org/2005/02/addressing/wsdl]UsingAddressing
+[http://schemas.xmlsoap.org/ws/2004/08/addressing/policy]UsingAddressing
+[http://www.w3.org/2006/05/addressing/wsdl]UsingAddressing
+[http://www.w3.org/2007/05/addressing/metadata]Addressing
+....
+
+Alternatively, Apache CXF proprietary ways are also available:
+
+* specifying the ﻿ _[http://cxf.apache.org/ws/addressing]addressing_
+feature for a given client/endpoint
+* using the `org.apache.cxf.ws.addressing.WSAddressingFeature` feature
+through the API
+* manually configuring the Apache CXF addressing interceptors (
+`org.apache.cxf.ws.addressing.MAPAggregator` and
+`org.apache.cxf.ws.addressing.soap.MAPCodec`)
+* setting the _org.apache.cxf.ws.addressing.using_ property in the
+message context
+
+Please refer to the the Apache CXF documentation for further information
+on the proprietary
+http://cxf.apache.org/docs/ws-addressing.html[WS-Addressing setup] and
+http://cxf.apache.org/docs/wsaconfiguration.html[configuration details].
+
+[[ws-addressing-policy]]
+== WS-Addressing Policy
+
+The WS-Addressing support is also perfectly integrated with the Apache
+CXF WS-Policy engine.
+
+This basically means that the WSDL contract generation for code-first
+endpoint deployment is policy-aware: users can annotate endpoints with
+the `@` `javax.xml.ws.soap.` `Addressing` annotation and expect the
+published WSDL contract to contain proper WS-Addressing policy (assuming
+no `wsdlLocation` is specified in the endpoint's `@WebService`
+annotation).
+
+Similarly, on client side users do not need to manually specify the
+`javax.xml.ws.soap.AddressingFeature` feature, as the policy engine is
+able to properly process the WS-Addressing policy in the consumed WSDL
+and turn on addressing as requested.
+
+[[example-ws-addressing]]
+== Example
+
+Here is an example showing how to simply enable WS-Addressing through
+WS-Policy.
+
+[[endpoint-ws-addressing]]
+=== Endpoint
+
+A simple Jakarta XML Web Services endpoint is prepared using a java-first approach;
+WS-Addressing is enforced through `@Addressing` annotation and no
+`wsdlLocation` is provided in `@WebService`:
+
+[source,java,options="nowrap"]
+----
+package org.jboss.test.ws.jaxws.samples.wsa;
+ 
+import javax.jws.WebService;
+import javax.xml.ws.soap.Addressing;
+import org.jboss.logging.Logger;
+ 
+@WebService
+(
+   portName = "AddressingServicePort",
+   serviceName = "AddressingService",
+   targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wsaddressing",
+   endpointInterface = "org.jboss.test.ws.jaxws.samples.wsa.ServiceIface"
+)
+@Addressing(enabled=true, required=true)
+public class ServiceImpl implements ServiceIface
+{
+   private Logger log = Logger.getLogger(this.getClass());
+ 
+   public String sayHello(String name)
+   {
+      return "Hello " + name + "!";
+   }
+}
+----
+
+The WSDL contract that's generated at deploy time and published looks
+like this:
+
+[source,xml,options="nowrap"]
+----
+<wsdl:definitions ....>
+...
+  <wsdl:binding name="AddressingServiceSoapBinding" type="tns:ServiceIface">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsaw:UsingAddressing wsdl:required="true"/>
+    <wsp:PolicyReference URI="#AddressingServiceSoapBinding_WSAM_Addressing_Policy"/>
+ 
+    <wsdl:operation name="sayHello">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="sayHello">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="sayHelloResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+ 
+  </wsdl:binding>
+  <wsdl:service name="AddressingService">
+    <wsdl:port binding="tns:AddressingServiceSoapBinding" name="AddressingServicePort">
+      <soap:address location="http://localhost:8080/jaxws-samples-wsa"/>
+    </wsdl:port>
+  </wsdl:service>
+    <wsp:Policy wsu:Id="AddressingServiceSoapBinding_WSAM_Addressing_Policy"
+       xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+      <wsam:Addressing xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata">
+        <wsp:Policy/>
+      </wsam:Addressing>
+    </wsp:Policy>
+</wsdl:definitions>
+----
+
+[[client-addressing]]
+=== Client
+
+Since the WS-Policy engine is on by default, the client side code is
+basically a pure Jakarta XML Web Services client app:
+
+[source,java,options="nowrap"]
+----
+QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wsaddressing", "AddressingService");
+URL wsdlURL = new URL("http://localhost:8080/jaxws-samples-wsa?wsdl");
+Service service = Service.create(wsdlURL, serviceName);
+ServiceIface proxy = (ServiceIface)service.getPort(ServiceIface.class);
+proxy.sayHello("World");
+----

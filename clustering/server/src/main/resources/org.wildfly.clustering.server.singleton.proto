@@ -18,9 +18,9 @@ message StopCommand {
  * @TypeId(157)
  */
 message SingletonElectionCommand {
-	required	uint32	size	= 1;
-	required	bytes	candidate	= 2;
-	required	uint32	index	= 3;
+	repeated	bytes	candidate	= 1;
+	repeated	bytes	localCandidate	= 2;
+	optional	uint32	elected	= 3;
 }
 
 /**

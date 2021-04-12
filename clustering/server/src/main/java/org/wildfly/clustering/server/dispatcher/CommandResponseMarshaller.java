@@ -25,24 +25,22 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.function.Predicate;
 
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
 /**
  * Marshalling strategy for the command response.
  * @author Paul Ferraro
- *
- * @param <C> command execution context
  */
 public class CommandResponseMarshaller implements org.jgroups.blocks.Marshaller {
     private final ByteBufferMarshaller marshaller;
-    private final ChannelFactory factory;
+    private final Predicate<ByteBuffer> unknownForkPredicate;
 
     CommandResponseMarshaller(ChannelCommandDispatcherFactoryConfiguration config) {
         this.marshaller = config.getMarshaller();
-        this.factory = config.getChannelFactory();
+        this.unknownForkPredicate = config.getUnknownForkPredicate();
     }
 
     @Override
@@ -60,6 +58,6 @@ public class CommandResponseMarshaller implements org.jgroups.blocks.Marshaller 
         byte[] bytes = new byte[size];
         stream.readFully(bytes);
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
-        return this.factory.isUnknownForkResponse(buffer) ? NoSuchService.INSTANCE : this.marshaller.read(buffer);
+        return this.unknownForkPredicate.test(buffer) ? NoSuchService.INSTANCE : this.marshaller.read(buffer);
     }
 }

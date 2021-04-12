@@ -84,7 +84,7 @@ public class SecurityRolesMergingProcessor extends AbstractMergingProcessor<EJBC
                 SecurityRolesMetaDataMerger.merge(roleMappings, roleMappings, earSecurityRolesMetaData);
             }
         }
-        // add it to the EJB component description
+        // add it to the Jakarta Enterprise Beans component description
         ejbComponentDescription.setSecurityRoles(roleMappings);
     }
 }

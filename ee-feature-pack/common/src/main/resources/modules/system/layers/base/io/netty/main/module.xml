@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="io.netty">
+<module xmlns="urn:jboss:module:1.9" name="io.netty">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,8 +32,14 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="java.xml"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="sun.jdk"/>
         <module name="org.javassist" optional="true"/>
+        <module name="jdk.sctp"/>
+        <module name="jdk.unsupported"/>
     </dependencies>
 </module>

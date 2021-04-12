@@ -104,8 +104,8 @@ public abstract class SSOTestBase {
             log.debug("Prepare /war2/index.html get");
             checkAccessAllowed(httpclient, warB2 + "index.html");
 
-            // Access a secured servlet that calls a secured ejb in war2 to test
-            // propagation of the SSO identity to the ejb container.
+            // Access a secured servlet that calls a secured Jakarta Enterprise Beans in war2 to test
+            // propagation of the SSO identity to the Jakarta Enterprise Beans container.
             checkAccessAllowed(httpclient, warB2 + "EJBServlet");
 
             // Now try logging out of war2
@@ -151,8 +151,8 @@ public abstract class SSOTestBase {
             log.debug("Prepare /war2/index.html get");
             checkAccessAllowed(httpclient, warB2 + "index.html");
 
-            // Access a secured servlet that calls a secured ejb in war2 to test
-            // propagation of the SSO identity to the ejb container.
+            // Access a secured servlet that calls a secured Jakarta Enterprise Beans in war2 to test
+            // propagation of the SSO identity to the Jakarta Enterprise Beans container.
             checkAccessAllowed(httpclient, warB2 + "EJBServlet");
 
             // Do the same test on war6 to test SSO auth replication with no auth

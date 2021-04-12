@@ -183,15 +183,19 @@ public abstract class AbstractTimerManagementTestCase {
         return executeForResult(operation, false);
     }
 
-    protected PathAddress getTimerAddress() throws Exception {
-        if (this.timerAddress != null) {
-            return this.timerAddress;
-        }
-        final PathAddress address = PathAddress.pathAddress(
+    protected PathAddress getTimerAddressBase() {
+        return PathAddress.pathAddress(
                 PathElement.pathElement(ModelDescriptionConstants.DEPLOYMENT, APP_NAME + ".jar"),
                 PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "ejb3"),
                 PathElement.pathElement("stateless-session-bean", getBeanClassName()),
                 PathElement.pathElement("service", "timer-service"));
+    }
+
+    protected PathAddress getTimerAddress() throws Exception {
+        if (this.timerAddress != null) {
+            return this.timerAddress;
+        }
+        final PathAddress address = getTimerAddressBase();
         final ModelNode operation = Util.createOperation("read-resource", address);
         operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
         final ModelNode result = managementClient.getControllerClient().execute(operation);
@@ -260,6 +264,10 @@ public abstract class AbstractTimerManagementTestCase {
 
     protected String getCalendarTimerDetail(){
         return this.bean.getComparableTimerDetail();
+    }
+
+    protected ModelNode executeForResult(ModelNode operation) throws OperationFailedException, IOException {
+        return this.managementClient.getControllerClient().execute(operation);
     }
 
     private ModelNode executeForResult(ModelNode operation, boolean useOpForFailureMsg) throws OperationFailedException, IOException {

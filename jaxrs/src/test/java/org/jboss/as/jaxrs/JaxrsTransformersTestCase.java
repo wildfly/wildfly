@@ -24,8 +24,8 @@ package org.jboss.as.jaxrs;
 import java.io.IOException;
 import java.util.List;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -42,8 +42,12 @@ import org.junit.Test;
  * @author <a href="mailto:ema@rehdat.com>Jim Ma</a>
  * @author <a href="mailto:alessio.soldano@jboss.com>Alessio Soldano</a>
  * @author <a href="rsigal@redhat.com>Ron Sigal</a>
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class JaxrsTransformersTestCase extends AbstractSubsystemBaseTest {
+
+    private static final String JAXRS_1_0 = "jaxrs-1.0.xml";
+    private static final String JAXRS_2_0 = "jaxrs-2.0-expressions.xml";
 
     public JaxrsTransformersTestCase() {
         super(JaxrsExtension.SUBSYSTEM_NAME, new JaxrsExtension());
@@ -51,63 +55,91 @@ public class JaxrsTransformersTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("jaxrs-2.0.xml");
+        return readResource(JAXRS_2_0);
+    }
+
+    @Test
+    public void testTransformers700() throws Exception {
+        testTransformers(ModelTestControllerVersion.EAP_7_0_0, JAXRS_1_0);
+    }
+
+    @Test
+    public void testTransformers710() throws Exception {
+        testTransformers(ModelTestControllerVersion.EAP_7_1_0, JAXRS_1_0);
     }
 
     @Test
     public void testTransformers720() throws Exception {
-        testTransformers_2_0_to_1_0(ModelTestControllerVersion.EAP_7_2_0);
+        testTransformers(ModelTestControllerVersion.EAP_7_2_0, JAXRS_1_0);
     }
 
     @Test
-    public void testRejections_1_0_0() throws Exception {
-        testRejections_2_0_0(ModelTestControllerVersion.EAP_7_2_0);
+    public void testTransformers730() throws Exception {
+        testTransformers(ModelTestControllerVersion.EAP_7_3_0, JAXRS_1_0);
     }
 
-    /**
-     * Tests transformation of model from version 2.0 to version 1.0.
-     */
-    private void testTransformers_2_0_to_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    @Test
+    public void testRejections700() throws Exception {
+        testRejections(ModelTestControllerVersion.EAP_7_0_0, JAXRS_2_0, getFailedTransformationConfig());
+    }
+
+    @Test
+    public void testRejections710() throws Exception {
+        testRejections(ModelTestControllerVersion.EAP_7_1_0, JAXRS_2_0, getFailedTransformationConfig());
+    }
+
+    @Test
+    public void testRejections720() throws Exception {
+        testRejections(ModelTestControllerVersion.EAP_7_2_0, JAXRS_2_0, getFailedTransformationConfig());
+    }
+
+    @Test
+    public void testRejections730() throws Exception {
+        testRejections(ModelTestControllerVersion.EAP_7_3_0, "jaxrs-2.0-expressions.xml", getFailedTransformationConfig());
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private void testTransformers(final ModelTestControllerVersion controllerVersion, final String xmlFileName) throws Exception {
+        final ModelVersion version = controllerVersion.getSubsystemModelVersion(getMainSubsystemName());
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXmlResource("jaxrs-1.0.xml");
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXmlResource(xmlFileName);
 
         // create builder for legacy subsystem version
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, JaxrsExtension.MODEL_VERSION_1_0_0)
-        .addMavenResourceURL("org.jboss.eap:wildfly-jaxrs:" + controllerVersion.getMavenGavVersion())
-        .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null);
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+                .addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-jaxrs:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null);
 
         KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(JaxrsExtension.MODEL_VERSION_1_0_0);
+        KernelServices legacyServices = mainServices.getLegacyServices(version);
 
         Assert.assertNotNull(legacyServices);
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        checkSubsystemModelTransformation(mainServices, JaxrsExtension.MODEL_VERSION_1_0_0);
+        checkSubsystemModelTransformation(mainServices, version);
     }
 
-    /**
-     * Tests rejections of attributes introduced in model version 2.0.
-     */
-    private void testRejections_2_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    @SuppressWarnings("SameParameterValue")
+    private void testRejections(final ModelTestControllerVersion controllerVersion, final String xmlFileName, final FailedOperationTransformationConfig config) throws Exception {
+        final ModelVersion version = controllerVersion.getSubsystemModelVersion(getMainSubsystemName());
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // create builder for legacy subsystem version
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, JaxrsExtension.MODEL_VERSION_1_0_0)
-        .addMavenResourceURL("org.jboss.eap:wildfly-jaxrs:" + controllerVersion.getMavenGavVersion())
-        .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null)
-        .dontPersistXml();
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+                .addMavenResourceURL(controllerVersion.getMavenGroupId() + ":wildfly-jaxrs:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null)
+                .dontPersistXml();
 
         KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(JaxrsExtension.MODEL_VERSION_1_0_0);
+        KernelServices legacyServices = mainServices.getLegacyServices(version);
 
         Assert.assertNotNull(legacyServices);
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        List<ModelNode> xmlOps = builder.parseXmlResource("jaxrs-2.0.xml");
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, JaxrsExtension.MODEL_VERSION_1_0_0, xmlOps, getFailedTransformationConfig());
+        List<ModelNode> xmlOps = builder.parseXmlResource(xmlFileName);
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version, xmlOps, config);
     }
 
     private FailedOperationTransformationConfig getFailedTransformationConfig() {
@@ -136,16 +168,7 @@ public class JaxrsTransformersTestCase extends AbstractSubsystemBaseTest {
                                 JaxrsAttribute.RESTEASY_USE_BUILTIN_PROVIDERS,
                                 JaxrsAttribute.RESTEASY_USE_CONTAINER_FORM_PARAMS,
                                 JaxrsAttribute.RESTEASY_WIDER_REQUEST_MATCHING
-                                ));
-    }
-
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization() {
-            @Override
-            protected RunningMode getRunningMode() {
-                return RunningMode.ADMIN_ONLY;
-            }
-        };
+                        ));
     }
 
 }

@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that invocations on a clustered stateful session EJB2 bean from a remote EJB client, failover to
+ * Tests that invocations on a clustered stateful session Enterprise Beans 2 bean from a remote Jakarta Enterprise Beans client, failover to
  * other node(s) in cases like a node going down.
  * This test is taken from test of ejb3 beans.
  *

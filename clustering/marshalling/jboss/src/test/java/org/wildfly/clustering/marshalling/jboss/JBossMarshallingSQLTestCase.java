@@ -30,6 +30,6 @@ import org.wildfly.clustering.marshalling.AbstractSQLTestCase;
 public class JBossMarshallingSQLTestCase extends AbstractSQLTestCase {
 
     public JBossMarshallingSQLTestCase() {
-        super(new JBossMarshallingTesterFactory());
+        super(JBossMarshallingTesterFactory.INSTANCE);
     }
 }

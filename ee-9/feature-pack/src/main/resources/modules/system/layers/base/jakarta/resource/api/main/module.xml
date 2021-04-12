@@ -22,8 +22,17 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="jakarta.resource.api">
+<module xmlns="urn:jboss:module:1.9" name="jakarta.resource.api">
+
+    <resources>
+        <!--<artifact name="${org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec}"/>-->
+        <artifact name="${jakarta.resource:jakarta.resource-api}"/>
+    </resources>
+
     <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.naming"/>
+        <module name="java.sql"/>
         <module name="javax.transaction.api" export="true"/>
         <module name="javax.api" export="false">
             <exports>
@@ -31,9 +40,4 @@
             </exports>
         </module>
     </dependencies>
-
-    <resources>
-        <!--<artifact name="${org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec}"/>-->
-        <artifact name="${jakarta.resource:jakarta.resource-api}"/>
-    </resources>
 </module>

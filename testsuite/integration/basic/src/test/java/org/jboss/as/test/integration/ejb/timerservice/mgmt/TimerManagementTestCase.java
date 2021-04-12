@@ -7,6 +7,10 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -86,6 +90,19 @@ public class TimerManagementTestCase extends AbstractTimerManagementTestCase {
             final ModelNode failureDescription = ofe.getFailureDescription();
             Assert.assertThat("Wrong failure description", failureDescription.toString(), containsString("WFLYCTL0216"));
         }
+    }
+
+    @Test
+    @InSequence(4)
+    public void testWildcard() throws Exception {
+        assertNoTimers();
+        this.bean.createTimer();
+        final PathAddress address = PathAddress.pathAddress(getTimerAddressBase(), PathElement.pathElement("timer", "*"));
+        final ModelNode operation = Util.createOperation("suspend", address);
+        ModelNode response = executeForResult(operation);
+        Assert.assertFalse(Operations.isSuccessfulOutcome(response));
+        Assert.assertThat("Wrong failure description", Operations.getFailureDescription(response).toString(), containsString("WFLYEJB0526"));
+        this.waitOverTimer();
     }
 
     protected String getBeanClassName() {

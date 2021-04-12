@@ -129,8 +129,8 @@ public class ConcurrentSessionManager<L, B extends Batch> implements SessionMana
     }
 
     @Override
-    public ImmutableSession viewSession(String id) {
-        return this.manager.viewSession(id);
+    public ImmutableSession readSession(String id) {
+        return this.manager.readSession(id);
     }
 
     @Override

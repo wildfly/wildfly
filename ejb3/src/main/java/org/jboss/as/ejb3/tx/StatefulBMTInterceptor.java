@@ -37,7 +37,7 @@ import static org.jboss.as.ejb3.tx.util.StatusHelper.statusAsString;
 /**
  * A per instance interceptor that keeps an association with the outcoming transaction.
  * <p/>
- * EJB 3 13.6.1:
+ * Enterprise Beans 3 13.6.1:
  * In the case of a stateful session bean, it is possible that the business method that started a transaction
  * completes without committing or rolling back the transaction. In such a case, the container must retain
  * the association between the transaction and the instance across multiple client calls until the instance

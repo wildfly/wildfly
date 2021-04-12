@@ -23,7 +23,6 @@
 package org.jboss.as.test.clustering.cluster.web.event;
 
 import java.io.IOException;
-import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -121,14 +120,14 @@ public class SessionActivationServlet extends HttpServlet {
 
         public void assertActive() {
             if (!this.active) {
-                throw new IllegalStateException(String.format("%s.sessionDidActivate(...) not invoked", this.getClass().getSimpleName()));
+                throw new AssertionError(String.format("%s.sessionDidActivate(...) not invoked", this.getClass().getSimpleName()));
             }
         }
 
         @Override
         public void sessionWillPassivate(HttpSessionEvent event) {
             if (!this.active) {
-                throw new IllegalStateException(String.format("%s.sessionWillPassivate(...) already invoked", this.getClass().getSimpleName()));
+                throw new AssertionError(String.format("%s.sessionWillPassivate(...) already invoked", this.getClass().getSimpleName()));
             }
             this.active = false;
         }
@@ -136,7 +135,7 @@ public class SessionActivationServlet extends HttpServlet {
         @Override
         public void sessionDidActivate(HttpSessionEvent event) {
             if (this.active) {
-                throw new IllegalStateException(String.format("%s.sessionDidActivate(...) already invoked", this.getClass().getSimpleName()));
+                throw new AssertionError(String.format("%s.sessionDidActivate(...) already invoked", this.getClass().getSimpleName()));
             }
             this.active = true;
         }
@@ -153,7 +152,7 @@ public class SessionActivationServlet extends HttpServlet {
 
         private void writeObject(java.io.ObjectOutputStream out) throws IOException {
             if (this.active) {
-                throw new NotSerializableException(String.format("%s.sessionWillPassivate(...) not invoked", this.getClass().getSimpleName()));
+                throw new AssertionError(String.format("%s.sessionWillPassivate(...) not invoked", this.getClass().getSimpleName()));
             }
             out.defaultWriteObject();
         }

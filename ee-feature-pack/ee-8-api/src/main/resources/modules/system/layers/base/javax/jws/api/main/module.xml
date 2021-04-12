@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="javax.jws.api">
+<module xmlns="urn:jboss:module:1.9" name="javax.jws.api">
+
     <resources>
         <artifact name="${javax.jws:jsr181-api}"/>
     </resources>

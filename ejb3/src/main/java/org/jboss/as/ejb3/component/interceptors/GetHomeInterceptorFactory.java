@@ -29,7 +29,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Interceptor that can return a home interface for an eJB
+ * Interceptor that can return a home interface for an Jakarta Enterprise Beans
  *
  * @author Stuart Douglas
  */

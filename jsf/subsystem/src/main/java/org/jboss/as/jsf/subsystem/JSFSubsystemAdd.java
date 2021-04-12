@@ -42,7 +42,7 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 
 /**
- * The JSF subsystem add update handler.
+ * The Jakarta Server Faces subsystem add update handler.
  *
  * @author Stuart Douglas
  */

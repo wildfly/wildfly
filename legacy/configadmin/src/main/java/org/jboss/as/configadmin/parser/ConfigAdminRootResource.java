@@ -35,6 +35,7 @@ class ConfigAdminRootResource extends SimpleResourceDefinition {
 
     public ConfigAdminRootResource() {
         super(ConfigAdminExtension.SUBSYSTEM_PATH, ConfigAdminExtension.getResourceDescriptionResolver(SUBSYSTEM), ConfigAdminAdd.INSTANCE, new ReloadRequiredRemoveStepHandler());
+        this.setDeprecated(ConfigAdminExtension.DEPRECATED_SINCE);
     }
 
     @Override

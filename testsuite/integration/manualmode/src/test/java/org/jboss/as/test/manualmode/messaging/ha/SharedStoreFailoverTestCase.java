@@ -129,19 +129,4 @@ public class SharedStoreFailoverTestCase extends FailoverTestCase {
             execute(client, undefineRelativeToAttribute);
         }
     }
-
-    private static void deleteRecursive(File file) {
-        File[] files = file.listFiles();
-        if(files != null) {
-            File[] var2 = files;
-            int var3 = files.length;
-
-            for(int var4 = 0; var4 < var3; ++var4) {
-                File f = var2[var4];
-                deleteRecursive(f);
-            }
-        }
-
-        file.delete();
-    }
 }

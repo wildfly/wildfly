@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.Map;
 
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionListener;
@@ -52,7 +53,7 @@ public class UndertowSessionExpirationListenerTestCase {
     public void sessionExpired() {
         Deployment deployment = mock(Deployment.class);
         UndertowSessionManager manager = mock(UndertowSessionManager.class);
-        SessionManager<LocalSessionContext, Batch> delegateManager = mock(SessionManager.class);
+        SessionManager<Map<String, Object>, Batch> delegateManager = mock(SessionManager.class);
         Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         SessionListener listener = mock(SessionListener.class);
@@ -76,7 +77,7 @@ public class UndertowSessionExpirationListenerTestCase {
         when(attributes.getAttributeNames()).thenReturn(Collections.emptySet());
         when(session.getMetaData()).thenReturn(metaData);
         when(metaData.getCreationTime()).thenReturn(Instant.now());
-        when(metaData.getLastAccessedTime()).thenReturn(Instant.now());
+        when(metaData.getLastAccessStartTime()).thenReturn(Instant.now());
         when(metaData.getMaxInactiveInterval()).thenReturn(Duration.ZERO);
 
         expirationListener.sessionExpired(session);

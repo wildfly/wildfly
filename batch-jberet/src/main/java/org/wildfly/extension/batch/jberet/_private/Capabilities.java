@@ -77,4 +77,9 @@ public class Capabilities {
      * The capability name for the kernel SuspendController
      */
     public static final String SUSPEND_CONTROLLER_CAPABILITY = "org.wildfly.server.suspend-controller";
+
+    /**
+     * The capability name for the kernel ProcessStateNotifier.
+     */
+    public static final String PROCESS_STATE_NOTIFIER_CAPABILITY = "org.wildfly.management.process-state-notifier";
 }

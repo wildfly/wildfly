@@ -163,7 +163,7 @@ A policy that defines how host names should be verified when using HTTPS. Allowe
 
 == Quickstarts
 
-* https://github.com/wildfly/quickstart/tree/master/jaxrs-jwt[JAX-RS secured using JSON Web Tokens]
+* https://github.com/wildfly/quickstart/tree/master/jaxrs-jwt[Jakarta RESTful Web Services secured using JSON Web Tokens]
 
 == CLI Examples on How to Create a Token Realm
 

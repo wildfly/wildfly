@@ -63,7 +63,7 @@ import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameter
 import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_RESOURCES;
 
 /**
- * Processor that finds jax-rs classes in the deployment
+ * Processor that finds Jakarta RESTful Web Services classes in the deployment
  *
  * @author Stuart Douglas
  */

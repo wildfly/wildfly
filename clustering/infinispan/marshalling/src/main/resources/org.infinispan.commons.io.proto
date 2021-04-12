@@ -6,5 +6,5 @@ package org.infinispan.commons.io;
  * @TypeId(400)
  */
 message ByteBufferImpl {
-	required	bytes	bytes	= 1;
+	optional	bytes	buffer	= 1;
 }

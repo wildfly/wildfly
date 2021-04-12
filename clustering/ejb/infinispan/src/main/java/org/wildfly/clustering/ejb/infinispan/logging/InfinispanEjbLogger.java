@@ -73,10 +73,10 @@ public interface InfinispanEjbLogger extends BasicLogger {
     void invalidBeanGroup(Object beanId, Object groupId);
 
     @LogMessage(level = WARN)
-    @Message(id = 9, value = "Disabling eviction for cache '%s'. SFSB passivation should be configured via the associated EJB subsystem passivation-store.")
+    @Message(id = 9, value = "Disabling eviction for cache '%s'. SFSB passivation should be configured via the associated Jakarta Enterprise Beans subsystem passivation-store.")
     void evictionDisabled(String cacheName);
 
     @LogMessage(level = WARN)
-    @Message(id = 10, value = "Disabling expiration for '%s'. SFSB expiration should be configured per \u00A74.3.11 of the EJB specification.")
+    @Message(id = 10, value = "Disabling expiration for '%s'. SFSB expiration should be configured per \u00A74.3.11 of the Jakarta Enterprise Beans specification.")
     void expirationDisabled(String cacheName);
 }

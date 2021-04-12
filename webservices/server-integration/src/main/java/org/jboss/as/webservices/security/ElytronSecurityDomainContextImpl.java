@@ -76,6 +76,7 @@ public class ElytronSecurityDomainContextImpl implements SecurityDomainContext {
         if (identity == null) {
             return false;
         }
+        this.currentIdentity.set(identity);
         SubjectUtil.fromSecurityIdentity(identity, subject);
         return true;
     }

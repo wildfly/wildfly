@@ -40,7 +40,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * This class implements a parser for the bean validation subsystem.
+ * This class implements a parser for the Jakarta Bean Validation subsystem.
  *
  * @author Eduardo Martins
  */

@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>24.0.0.Beta1-SNAPSHOT</version>
     </parent>
     <artifactId>wildfly-ts-integ-mp-rest-client</artifactId>
     <name>WildFly Test Suite: Integration - MicroProfile - REST Client TCK</name>
@@ -37,13 +37,22 @@
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+        <!-- These properties control what layers are provisioned if galleon slimmed provisioning occurs -->
+        <ts.microprofile-tck-provisioning.base.layer>jaxrs-server</ts.microprofile-tck-provisioning.base.layer>
+        <ts.microprofile-tck-provisioning.decorator.layer>observability</ts.microprofile-tck-provisioning.decorator.layer>
+        <!-- properties to enable plugins shared by various bootable profiles -->
+        <bootable-jar-generate-properties-file.phase>none</bootable-jar-generate-properties-file.phase>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client-microprofile</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client-microprofile-base</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -103,6 +112,18 @@
         <dependency>
             <groupId>org.jboss.arquillian.testng</groupId>
             <artifactId>arquillian-testng-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Required by the RESTEasy Client -->
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Required by the org.eclipse.microprofile.rest.client:microprofile-rest-client-tck -->
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams-tck</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -249,6 +270,95 @@
                             </feature-packs>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>microprofile-tck-provisioning</id>
+                        <!-- Override the inherited feature-pack setting to add a package needed for this TCK -->
+                        <configuration>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${ts.microprofile-tck-provisioning.fp.groupId}</groupId>
+                                    <artifactId>${ts.microprofile-tck-provisioning.fp.artifactId}</artifactId>
+                                    <version>${ts.microprofile-tck-provisioning.fp.version}</version>
+                                    <inherit-configs>false</inherit-configs>
+                                    <inherit-packages>false</inherit-packages>
+                                    <!-- The wiremock module we add as part of the test fixture needs Apache Commons Lang
+                                             but the layers we want don't result in it being provisioned, so explicitly tell Galleon to
+                                             provision it. -->
+                                    <included-packages>
+                                        <package>org.apache.commons.lang3</package>
+                                    </included-packages>
+                                </feature-pack>
+                            </feature-packs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.internetitem</groupId>
+                <artifactId>write-properties-file-maven-plugin</artifactId>
+                <version>1.0.1</version>
+                <executions>
+                    <execution>
+                        <id>generate-properties-file</id>
+                        <phase>${bootable-jar-generate-properties-file.phase}</phase>
+                        <goals>
+                            <goal>write-properties-file</goal>
+                        </goals>
+                        <configuration>
+                            <filename>wiremock-bootable-cli.properties</filename>
+                            <properties>
+                                <property>
+                                    <name>wiremock.jar.path</name>
+                                    <value>${project.build.directory}/wildfly/wiremock/wiremock.jar</value>
+                                </property>
+                                <property>
+                                    <name>wiremock.junit.jar.path</name>
+                                    <value>${project.build.directory}/wildfly/wiremock/junit.jar</value>
+                                </property>
+                                <property>
+                                    <name>module.xml.path</name>
+                                    <value>${basedir}/module.xml</value>
+                                </property>
+                                <property>
+                                    <name>beans.xml.path</name>
+                                    <value>${basedir}/beans.xml</value>
+                                </property>
+                            </properties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-jar-maven-plugin</artifactId>
+                <executions>
+                    <!-- Override the bootable jar packaging from the parent to add res-client tck specific settings -->
+                    <execution>
+                        <id>bootable-jar-microprofile-tck-packaging</id>
+                        <configuration>
+                            <cli-sessions>
+                                <cli-session>
+                                    <script-files>
+                                        <script>wiremock-bootable.cli</script>
+                                    </script-files>
+                                    <properties-file>${project.build.outputDirectory}/wiremock-bootable-cli.properties</properties-file>
+                                </cli-session>
+                            </cli-sessions>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${ts.microprofile-tck-provisioning.fp.groupId}</groupId>
+                                    <artifactId>${ts.microprofile-tck-provisioning.fp.artifactId}</artifactId>
+                                    <version>${ts.microprofile-tck-provisioning.fp.version}</version>
+                                    <!-- The wiremock module we add as part of the test fixture needs Apache Commons Lang
+                                    but the layers we want don't result in it being provisioned, so explicitly tell Galleon to
+                                    provision it. -->
+                                    <included-packages>
+                                        <package>org.apache.commons.lang3</package>
+                                    </included-packages>
+                                </feature-pack>
+                            </feature-packs>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -272,18 +382,25 @@
                     <excludes>
                         <!-- We are not going to start a Jetty server within WildFly; test coverage ensured by having
                              the tck run in RESTEasy too -->
+                        <exclude>org.eclipse.microprofile.rest.client.tck.ProxyServerTest</exclude>
+                        <exclude>org.eclipse.microprofile.rest.client.tck.cditests.CDIProxyServerTest</exclude>
                         <exclude>org.eclipse.microprofile.rest.client.tck.ssl.SslContextTest</exclude>
                         <!-- https://github.com/eclipse/microprofile-rest-client/issues/265 -->
                         <exclude>org.eclipse.microprofile.rest.client.tck.timeout.TimeoutBuilderIndependentOfMPConfigTest</exclude>
                         <exclude>org.eclipse.microprofile.rest.client.tck.timeout.TimeoutTest</exclude>
                         <exclude>org.eclipse.microprofile.rest.client.tck.timeout.TimeoutViaMPConfigTest</exclude>
                         <exclude>org.eclipse.microprofile.rest.client.tck.timeout.TimeoutViaMPConfigWithConfigKeyTest</exclude>
+                        <!-- Ignored until the fix for https://github.com/eclipse/microprofile-rest-client/issues/305 is released -->
+                        <exclude>org.eclipse.microprofile.rest.client.tck.cditests.CDIManagedProviderTest</exclude>
+                        <exclude>org.eclipse.microprofile.rest.client.tck.cditests.CDIProxyServerTest</exclude>
+                        <exclude>org.eclipse.microprofile.rest.client.tck.cditests.CDIQueryParamStyleTest</exclude>
                     </excludes>
                 </configuration>
             </plugin>
         </plugins>
     </build>
     <profiles>
+
         <!-- Test against slimmed servers provisioned by Galleon -->
         <profile>
             <id>layers.profile</id>
@@ -293,88 +410,21 @@
                 </property>
             </activation>
             <properties>
-                <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
+                <!-- Enable galleon provisioning -->
+                <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
             </properties>
             <build>
                 <plugins>
-                    <!-- Disable the standard copy-based provisioning -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ts.copy-wildfly</id>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <plugin>
                         <groupId>org.jboss.galleon</groupId>
                         <artifactId>galleon-maven-plugin</artifactId>
                         <executions>
                             <execution>
+                                <!-- Disable the default provisioning -->
                                 <id>mp-server-provisioning</id>
                                 <phase>none</phase>
                             </execution>
-                            <execution>
-                                <id>slimmed-mp-server-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>compile</phase>
-                                <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist />
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                        <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                            <!-- The wiremock module we add as part of the test fixture needs Apache Commons Lang
-                                                     but the layers we want don't result in it being provisioned, so explicitly tell Galleon to
-                                                     provision it. -->
-                                            <included-packages>
-                                              <package>org.apache.commons.lang3</package>
-                                            </included-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <!-- Call the file standalone-microprofile.xml as that is what
-                                                 arquillian.xml says to use for testing in the default maven profile-->
-                                            <name>standalone-microprofile.xml</name>
-                                            <layers>
-                                                <layer>jaxrs-server</layer>
-                                                <layer>microprofile-config</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
                         </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <systemPropertyVariables>
-                                <!-- Override the standard module path that points at the shared module set from servlet-dist -->
-                                <module.path>${project.build.directory}/wildfly/modules</module.path>
-                            </systemPropertyVariables>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -387,37 +437,20 @@
                     <name>ts.bootable</name>
                 </property>
             </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.wildfly.arquillian</groupId>
-                    <artifactId>wildfly-arquillian-container-bootable</artifactId>
-                </dependency>
-            </dependencies>
+            <properties>
+                <!-- Enable bootable jar packaging -->
+                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <bootable-jar-generate-properties-file.phase>compile</bootable-jar-generate-properties-file.phase>
+            </properties>
             <build>
                 <plugins>
-                    <!-- Disable the standard copy-based provisioning -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ts.copy-wildfly</id>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <plugin>
                         <groupId>org.jboss.galleon</groupId>
                         <artifactId>galleon-maven-plugin</artifactId>
                         <executions>
                             <execution>
+                                <!-- Disable the default provisioning -->
                                 <id>mp-server-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
                                 <phase>none</phase>
                             </execution>
                         </executions>
@@ -427,122 +460,69 @@
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <executions>
                             <execution>
+                                <!-- Disable the default module addition -->
                                 <id>add-wiremock-module</id>
-                                <goals>
-                                    <goal>execute-commands</goal>
-                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        <profile>
+            <id>bootablejar.ee9.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable.ee9</name>
+                </property>
+            </activation>
+            <properties>
+                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
+                <!-- Enable bootable jar packaging -->
+                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <bootable-jar-generate-properties-file.phase>compile</bootable-jar-generate-properties-file.phase>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <!-- Disable the default provisioning -->
+                                <id>mp-server-provisioning</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>com.internetitem</groupId>
-                        <artifactId>write-properties-file-maven-plugin</artifactId>
-                        <version>1.0.1</version>
-                        <executions>
-                            <execution>
-                                <id>generate-properties-file</id>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>write-properties-file</goal>
-                                </goals>
-                                <configuration>
-                                    <filename>wiremock-bootable-cli.properties</filename>
-                                    <properties>
-                                        <property>
-                                            <name>wiremock.jar.path</name>
-                                            <value>${project.build.directory}/wildfly/wiremock/wiremock.jar</value>
-                                        </property>
-                                        <property>
-                                            <name>wiremock.junit.jar.path</name>
-                                            <value>${project.build.directory}/wildfly/wiremock/junit.jar</value>
-                                        </property>
-                                        <property>
-                                            <name>module.xml.path</name>
-                                            <value>${basedir}/module.xml</value>
-                                        </property>
-                                        <property>
-                                            <name>beans.xml.path</name>
-                                            <value>${basedir}/beans.xml</value>
-                                        </property>
-                                    </properties>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
                         <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.jar.plugin}</version>
+                        <artifactId>wildfly-maven-plugin</artifactId>
                         <executions>
-                            <!-- Package a cloud-server with openapi decorator added -->
                             <execution>
-                                <id>bootable-jar-microprofile-rest-client-packaging</id>
-                                <goals>
-                                    <goal>package</goal>
-                                </goals>
-                                <phase>process-test-resources</phase>
-                                <configuration>
-                                    <output-file-name>test-wildfly-rest-client.jar</output-file-name>
-                                    <hollowJar>true</hollowJar>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>true</offline>
-                                    <cli-sessions>
-                                        <cli-session>
-                                            <script-files>
-                                                <script>wiremock-bootable.cli</script>
-                                            </script-files>
-                                            <properties-file>${project.build.outputDirectory}/wiremock-bootable-cli.properties</properties-file>
-                                        </cli-session>
-                                    </cli-sessions>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <included-packages>
-                                                <package>org.apache.commons.lang3</package>
-                                            </included-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <layers>
-                                        <layer>jaxrs-server</layer>
-                                        <layer>observability</layer>
-                                    </layers>
-                                </configuration>
+                                <!-- Disable the default module addition -->
+                                <id>add-wiremock-module</id>
+                                <phase>none</phase>
                             </execution>
                         </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <!-- Tests against the fault tolerance install  -->
-                        <configuration>
-                            <systemPropertyVariables>
-                                <install.dir>${project.build.directory}/wildfly</install.dir>
-                                <bootable.jar>${project.build.directory}/test-wildfly-rest-client.jar</bootable.jar>
-                                <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
-                            </systemPropertyVariables>
-                            <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
-                            <classpathDependencyExcludes>
-                                <classpathDependencyExclude>
-                                    org.wildfly.arquillian:wildfly-arquillian-container-managed
-                                </classpathDependencyExclude>
-                            </classpathDependencyExcludes>
-                        </configuration>
+                        <executions>
+                            <!--Disable the default surefire execution until WFLY-14136 is sorted. -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
         </profile>
 
         <!-- Test against the ee 9 feature pack -->
-        <!-- TODO convert this to a bootable jar setup once a release
-             of the wildfly jar plugin with transformation support is available -->
         <profile>
             <id>ee9.test.profile</id>
             <activation>
@@ -551,90 +531,33 @@
                 </property>
             </activation>
             <properties>
-                <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
+                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
+                <!-- Enable galleon provisioning -->
+                <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
             </properties>
             <build>
                 <plugins>
-                    <!-- Disable the standard copy-based provisioning -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ts.copy-wildfly</id>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <plugin>
                         <groupId>org.jboss.galleon</groupId>
                         <artifactId>galleon-maven-plugin</artifactId>
                         <executions>
                             <execution>
+                                <!-- Disable the default provisioning -->
                                 <id>mp-server-provisioning</id>
                                 <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <id>slimmed-mp-server-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>compile</phase>
-                                <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist />
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                        <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                            <!-- The wiremock module we add as part of the test fixture needs Apache Commons Lang
-                                                     but the layers we want don't result in it being provisioned, so explicitly tell Galleon to
-                                                     provision it. -->
-                                            <included-packages>
-                                                <package>org.apache.commons.lang3</package>
-                                            </included-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <!-- Call the file standalone-microprofile.xml as that is what
-                                                 arquillian.xml says to use for testing in the default maven profile-->
-                                            <name>standalone-microprofile.xml</name>
-                                            <layers>
-                                                <layer>jaxrs-server</layer>
-                                                <layer>microprofile-config</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <systemPropertyVariables>
-                                <!-- Override the standard module path that points at the shared module set from servlet-dist -->
-                                <module.path>${project.build.directory}/wildfly/modules</module.path>
-                            </systemPropertyVariables>
-                        </configuration>
+                        <executions>
+                            <!--Disable the default surefire execution until WFLY-14136 is sorted. -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
@@ -660,5 +583,6 @@
                 </plugins>
             </build>
         </profile>
+
     </profiles>
 </project>

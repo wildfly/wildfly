@@ -58,7 +58,7 @@ import org.jipijapa.management.spi.Statistics;
 import org.jipijapa.plugin.spi.ManagementAdaptor;
 
 /**
- * represents the global JPA Service
+ * represents the global Jakarta Persistence Service
  *
  * @author Scott Marlow
  */
@@ -141,7 +141,7 @@ public class JPAService implements Service<Void> {
 
             if (false == existingResourceDescriptionResolver.contains(managementAdaptor.getVersion())) {
 
-                // setup statistics (this used to be part of JPA subsystem startup)
+                // setup statistics (this used to be part of Jakarta Persistence subsystem startup)
                 ResourceDescriptionResolver resourceDescriptionResolver = new StandardResourceDescriptionResolver(
                         statistics.getResourceBundleKeyPrefix(), statistics.getResourceBundleName(), statistics.getClass().getClassLoader()){
                     private ResourceDescriptionResolver fallback = JPAExtension.getResourceDescriptionResolver();
@@ -173,7 +173,7 @@ public class JPAService implements Service<Void> {
 
                 existingResourceDescriptionResolver.add(managementAdaptor.getVersion());
             }
-            // create (per deployment) dynamic Resource implementation that can reflect the deployment specific names (e.g. jpa entity classname/Hibernate region name)
+            // create (per deployment) dynamic Resource implementation that can reflect the deployment specific names (e.g. Jakarta Persistence entity classname/Hibernate region name)
             return new DynamicManagementStatisticsResource(statistics, scopedPersistenceUnitName, managementAdaptor.getIdentificationLabel(), entityManagerFactoryLookup);
         }
     }

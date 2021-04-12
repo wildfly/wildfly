@@ -75,7 +75,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Integration test for JCA capacity policies JBJCA-986 using resource adapter
+ * Integration test for Jakarta Connectors capacity policies JBJCA-986 using resource adapter
  * *
  *
  * @author <a href="mailto:msimka@redhat.com">Martin Simka</a>

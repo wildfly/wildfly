@@ -19,6 +19,7 @@ if "%OS%" == "Windows_NT" (
 )
 
 setlocal EnableDelayedExpansion
+call "!DIRNAME!common.bat" :commonConf
 rem check for the security manager system property
 echo(!SERVER_OPTS! | findstr /r /c:"-Djava.security.manager" > nul
 if not errorlevel == 1 (

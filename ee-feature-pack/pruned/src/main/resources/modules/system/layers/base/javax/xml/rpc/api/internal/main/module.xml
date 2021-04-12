@@ -24,9 +24,9 @@
 
 <module xmlns="urn:jboss:module:1.5" name="javax.xml.rpc.api.internal">
     <!--
-      This wrapper around the JAX-RPC API classes is meant only for internal use
-      by WildFly modules that have a compile time dependency on JAX-RPC classes.
-      WildFly does not provide a JAX-RPC implementation and JAX-RPC has been
+      This wrapper around the Jakarta XML RPC API classes is meant only for internal use
+      by WildFly modules that have a compile time dependency on Jakarta XML RPC classes.
+      WildFly does not provide a Jakarta XML RPC implementation and Jakarta XML RPC has been
       removed from EE 9. This module allows WildFly modules to internally
       depend on a module that may be implemented differently in an EE9 variant
       of WildFly, while leaving the javax.xml.rpc.api module that WF has

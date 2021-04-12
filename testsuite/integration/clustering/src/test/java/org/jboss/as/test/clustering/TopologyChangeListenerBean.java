@@ -41,7 +41,7 @@ import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.jboss.logging.Logger;
 
 /**
- * EJB that establishes a stable topology.
+ * Jakarta Enterprise Beans that establishes a stable topology.
  * @author Paul Ferraro
  */
 @Stateless

@@ -89,7 +89,7 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
      * Test Elytron API used to reauthorization.
      *
      * <pre>
-     * When: EJB client calls EntryBean with {@link ReAuthnType#AC_AUTHENTICATION} and provides valid credentials and valid authorization name and
+     * When: Jakarta Enterprise Beans client calls EntryBean with {@link ReAuthnType#AC_AUTHENTICATION} and provides valid credentials and valid authorization name and
      * calls WhoAmIBean with {@link ReAuthnType#AC_AUTHORIZATION} and provides valid credentials and valid authorization name
      * Then: call passes and returned usernames are the expected ones;
      * </pre>
@@ -107,7 +107,7 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
      * Test Elytron API used to reauthorization.
      *
      * <pre>
-     * When: EJB client calls EntryBean with {@link ReAuthnType#AC_AUTHORIZATION} and provides valid credentials and valid authorization name for both servers
+     * When: Jakarta Enterprise Beans client calls EntryBean with {@link ReAuthnType#AC_AUTHORIZATION} and provides valid credentials and valid authorization name for both servers
      * Then: call passes and returned usernames are the expected ones;
      * </pre>
      */
@@ -124,7 +124,7 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
      * Test Elytron API used to reauthorization.
      *
      * <pre>
-     * When: EJB client calls EntryBean with {@link ReAuthnType#AC_AUTHENTICATION} and provides valid credentials and valid authorization name and
+     * When: Jakarta Enterprise Beans client calls EntryBean with {@link ReAuthnType#AC_AUTHENTICATION} and provides valid credentials and valid authorization name and
      * calls WhoAmIBean with {@link ReAuthnType#AC_AUTHENTICATION} and provides valid credentials
      * Then: call passes and returned usernames are the expected ones;
      * </pre>
@@ -139,10 +139,10 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
     }
 
     /**
-     * Test EJB call fails when user has insufficient roles.
+     * Test Jakarta Enterprise Beans call fails when user has insufficient roles.
      *
      * <pre>
-     * When: EJB client calls EntryBean as a user without allowed roles assigned
+     * When: Jakarta Enterprise Beans client calls EntryBean as a user without allowed roles assigned
      * Then: call fails with EJBAccessExcption
      * </pre>
      */
@@ -158,10 +158,10 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
     }
 
     /**
-     * Test EJB call fails when invalid username/password combination is used for reauthorization.
+     * Test Jakarta Enterprise Beans call fails when invalid username/password combination is used for reauthorization.
      *
      * <pre>
-     * When: EJB client calls (with valid credentials and authrozation name) EntryBean and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls (with valid credentials and authrozation name) EntryBean and Elytron AuthenticationContext API is used to
      *       reauthorizate (with invalid username/password) and call the WhoAmIBean
      * Then: WhoAmIBean call fails
      * </pre>
@@ -177,10 +177,10 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
     }
 
     /**
-     * Test EJB call fails when invalid username/password combination is used for reauthorization.
+     * Test Jakarta Enterprise Beans call fails when invalid username/password combination is used for reauthorization.
      *
      * <pre>
-     * When: EJB client calls (with valid credentials and authrozation name) EntryBean and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls (with valid credentials and authrozation name) EntryBean and Elytron AuthenticationContext API is used to
      *       reauthorizate (with invalid username/password) and call the WhoAmIBean
      * Then: WhoAmIBean call fails
      * </pre>
@@ -196,10 +196,10 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
     }
 
     /**
-     * Test EJB call fails when invalidauthorization name is used for reauthorization.
+     * Test Jakarta Enterprise Beans call fails when invalidauthorization name is used for reauthorization.
      *
      * <pre>
-     * When: EJB client calls (with valid credentials and authrozation name) EntryBean and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls (with valid credentials and authrozation name) EntryBean and Elytron AuthenticationContext API is used to
      *       reauthorizate (with invalid authorization name) and call the WhoAmIBean
      * Then: WhoAmIBean call fails
      * </pre>
@@ -218,7 +218,7 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
      * Test Elytron API used to reauthentication.
      *
      * <pre>
-     * When: EJB client calls EntryBean with {@link ReAuthnType#AC_AUTHENTICATION} and provides valid credentials for both servers
+     * When: Jakarta Enterprise Beans client calls EntryBean with {@link ReAuthnType#AC_AUTHENTICATION} and provides valid credentials for both servers
      * Then: call passes and returned usernames are the expected ones;
      * </pre>
      */
@@ -232,10 +232,10 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
     }
 
     /**
-     * Test EJB call fails when user has insufficient roles.
+     * Test Jakarta Enterprise Beans call fails when user has insufficient roles.
      *
      * <pre>
-     * When: EJB client calls EntryBean as a user without allowed roles assigned
+     * When: Jakarta Enterprise Beans client calls EntryBean as a user without allowed roles assigned
      * Then: call fails with EJBAccessExcption
      * </pre>
      */
@@ -251,10 +251,10 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
     }
 
     /**
-     * Test EJB call fails when invalid username/password combination is used for reauthentication.
+     * Test Jakarta Enterprise Beans call fails when invalid username/password combination is used for reauthentication.
      *
      * <pre>
-     * When: EJB client calls (with valid credentials) EntryBean and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls (with valid credentials) EntryBean and Elytron AuthenticationContext API is used to
      *       reauthenticate (with invalid username/password) and call the WhoAmIBean
      * Then: WhoAmIBean call fails
      * </pre>
@@ -270,10 +270,10 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
     }
 
     /**
-     * Test EJB call fails when invalid username/password combination is used for reauthentication.
+     * Test Jakarta Enterprise Beans call fails when invalid username/password combination is used for reauthentication.
      *
      * <pre>
-     * When: EJB client calls (with valid credentials) EntryBean and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls (with valid credentials) EntryBean and Elytron AuthenticationContext API is used to
      *       reauthenticate (with invalid username/password) and call the WhoAmIBean
      * Then: WhoAmIBean call fails
      * </pre>
@@ -293,7 +293,7 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
      * identity forwarding.
      *
      * <pre>
-     * When: EJB client calls EntryBean as "entry" user and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls EntryBean as "entry" user and Elytron AuthenticationContext API is used to
      *       re-authenticate to the security domain as "whoami" user; WhoAmIBean is called
      * Then: WhoAmIBean call fails as the whoami identity is not propagated
      * </pre>
@@ -312,7 +312,7 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
      * Test the security domain reauthentication fails when wrong password is used
      *
      * <pre>
-     * When: EJB client calls EntryBean as "entry" user and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls EntryBean as "entry" user and Elytron AuthenticationContext API is used to
      *       re-authenticate to the security domain as "whoami" user with wrong password provided
      * Then: reauthentication fails
      * </pre>
@@ -331,7 +331,7 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
      * Test the security domain reauthentication followed by authentication forwarding is possible.
      *
      * <pre>
-     * When: EJB client calls EntryBean as "entry" user and Elytron AuthenticationContext API is used to
+     * When: Jakarta Enterprise Beans client calls EntryBean as "entry" user and Elytron AuthenticationContext API is used to
      *       re-authenticate to the security domain as "whoami" user and
      *       the authentication forwarding is configured afterwards; WhoAmIBean is called
      * Then: WhoAmIBean returns "whoami"
@@ -368,7 +368,7 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
                         getEntryServletUrl(WAR_ENTRY_SERVLET_BASIC, "whoami", "whoami", ReAuthnType.AC_AUTHENTICATION),
                         "servlet", "servlet", SC_OK));
 
-        // call with another user who have sufficient roles on EJB
+        // call with another user who have sufficient roles on Jakarta Enterprise Beans
         assertEquals("Unexpected username returned", "admin",
                 Utils.makeCallWithBasicAuthn(
                         getEntryServletUrl(WAR_ENTRY_SERVLET_BASIC, "admin", "admin", ReAuthnType.AC_AUTHENTICATION), "servlet",
@@ -380,12 +380,12 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
                         getEntryServletUrl(WAR_ENTRY_SERVLET_BASIC, "whoami", "whoami", ReAuthnType.AC_AUTHENTICATION), "admin",
                         "admin", SC_OK));
 
-        // call with wrong EJB username
+        // call with wrong Jakarta Enterprise Beans username
         assertThat(Utils.makeCallWithBasicAuthn(
                 getEntryServletUrl(WAR_ENTRY_SERVLET_BASIC, "xadmin", "admin", ReAuthnType.AC_AUTHENTICATION), "admin", "admin",
                 SC_OK), isEjbAuthenticationError());
 
-        // call with wrong EJB password
+        // call with wrong Jakarta Enterprise Beans password
         assertThat(Utils.makeCallWithBasicAuthn(
                 getEntryServletUrl(WAR_ENTRY_SERVLET_BASIC, "admin", "adminx", ReAuthnType.AC_AUTHENTICATION), "admin", "admin",
                 SC_OK), isEjbAuthenticationError());
@@ -397,7 +397,7 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
                         getEntryServletUrl(WAR_ENTRY_SERVLET_BASIC, "server", "server", "whoami", ReAuthnType.AC_AUTHORIZATION),
                         "servlet", "servlet", SC_OK));
 
-        // call with another user who have sufficient roles on EJB
+        // call with another user who have sufficient roles on Jakarta Enterprise Beans
         assertEquals("Unexpected username returned", "authz",
                 Utils.makeCallWithBasicAuthn(
                 getEntryServletUrl(WAR_ENTRY_SERVLET_BASIC, "entry", "entry", "authz", ReAuthnType.AC_AUTHORIZATION),
@@ -410,12 +410,12 @@ public abstract class AbstractIdentitySwitchingTestCase extends AbstractSecurity
                 getEntryServletUrl(WAR_ENTRY_SERVLET_BASIC, "entry", "entry", "authz", ReAuthnType.AC_AUTHORIZATION), "admin",
                         "admin", SC_OK));
 
-        // call with wrong EJB username
+        // call with wrong Jakarta Enterprise Beans username
         assertThat(Utils.makeCallWithBasicAuthn(
                 getEntryServletUrl(WAR_ENTRY_SERVLET_BASIC, "xentry", "entry", "authz", ReAuthnType.AC_AUTHORIZATION), "admin", "admin",
                 SC_OK), isEjbAuthenticationError());
 
-        // call with wrong EJB password
+        // call with wrong Jakarta Enterprise Beans password
         assertThat(Utils.makeCallWithBasicAuthn(
                 getEntryServletUrl(WAR_ENTRY_SERVLET_BASIC, "entry", "entryx", "authz", ReAuthnType.AC_AUTHORIZATION), "admin", "admin",
                 SC_OK), isEjbAuthenticationError());

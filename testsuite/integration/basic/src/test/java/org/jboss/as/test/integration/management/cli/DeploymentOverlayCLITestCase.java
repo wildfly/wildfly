@@ -60,6 +60,9 @@ import org.junit.runner.RunWith;
 
 /**
  * @author Alexey Loubyansky
+ *
+ * NOTE: References in this file to JavaServer Pages(JSP) refer to the Jakarta Server Pages unless otherwise noted
+ *
  */
 @RunWith(Arquillian.class)
 @RunAsClient

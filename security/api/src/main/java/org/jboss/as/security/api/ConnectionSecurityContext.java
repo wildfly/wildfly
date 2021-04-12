@@ -45,7 +45,7 @@ import org.wildfly.security.auth.server.SecurityIdentity;
  *
  * As a connection is established to the application server the remote user is authenticated, this API allows the
  * {@link Collection} of {@link Principal}s for the remote user to be obtained, the API then allows for an alternative identity
- * to be pushed by interceptors for validation in the security interceptors for subsequent EJB invocations.
+ * to be pushed by interceptors for validation in the security interceptors for subsequent Jakarta Enterprise Beans invocations.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
@@ -89,12 +89,12 @@ public class ConnectionSecurityContext {
     /**
      * Push a new {@link Principal} and Credential pair.
      *
-     * This method is to be called before an EJB invocation is passed through it's security interceptor, at that point the
+     * This method is to be called before an Jakarta Enterprise Beans invocation is passed through it's security interceptor, at that point the
      * Principal and Credential pair can be verified.
      *
      * Note: This method should be called from within a {@link PrivilegedAction}.
      *
-     * @param principal - The alternative {@link Principal} to use in verification before the next EJB is called.
+     * @param principal - The alternative {@link Principal} to use in verification before the next Jakarta Enterprise Beans are called.
      * @param credential - The credential to verify with the {@linl Principal}
      * @return A {@link ContextStateCache} that can later be used to pop the identity pushed here and restore internal state to it's previous values.
      * @throws Exception If there is a problem associating the new {@link Principal} and Credential pair.

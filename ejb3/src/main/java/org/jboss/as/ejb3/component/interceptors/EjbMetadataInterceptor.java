@@ -34,7 +34,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Interceptor that handles the EJB metadata for non-IIOP invocations.
+ * Interceptor that handles the Jakarta Enterprise Beans metadata for non-IIOP invocations.
  *
  * @author Stuart Douglas
  */

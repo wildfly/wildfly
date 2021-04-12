@@ -34,7 +34,7 @@ import java.lang.reflect.Method;
 
 /**
  * An {@link InterceptorFactory} responsible for creating {@link Interceptor} instance corresponding to a <code>container-interceptor</code>
- * applicable for an EJB
+ * applicable for an Jakarta Enterprise Beans
  *
  * @author Jaikiran Pai
  */

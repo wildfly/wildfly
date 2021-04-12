@@ -45,7 +45,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test for JAX-RS taking the global Bean Validation configuration into account (META-INF/validation.xml).
+ * Test for Jakarta RESTful Web Services taking the global Jakarta Bean Validation configuration into account (META-INF/validation.xml).
  *
  * @author Gunnar Morling
  */

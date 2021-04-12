@@ -5,45 +5,38 @@
 == Example Applications Migrated from Previous Releases
 
 The applications in this section were written for a previous version of
-the server but have been modified to run on WildFly {wildflyVersion}. Changes were made
+the server but have been modified to run on WildFly or JBoss AS 7,
+which was based on the same core architecture WildFly uses. Changes were made
 to resolve issues that arose during deployment and runtime or to fix
 problems with application behaviour. Each example below documents the
-changes that were made to get the application to run successfully on
-WildFly.
+changes that were made to get the application to run successfully.
 
 [[seam-2-dvd-store-example]]
 === Seam 2 DVD Store example
 
 For details on how to migrate this demo application, see
 https://community.jboss.org/blogs/marek-novotny/2011/12/16/dvdstore-migration-for-jboss-as-710beta[Seam
-2 DVD Store example on WildFly {wildflyVersion}] on Marek Novotny's Blog.
+2 DVD Store example on JBoss AS 7] on Marek Novotny's Blog.
 
 [[seam-2-booking-example]]
 === Seam 2 Booking example
 
 For details on how to migrate this demo application, see
 http://community.jboss.org/blogs/marek-novotny/2011/07/29/seam-2-booking-example-on-jboss-as-7[Seam
-2 Booking example on WildFly {wildflyVersion}] on Marek Novotny's Blog.
-
-[[seam-2-booking---step-by-step-migration-of-binaries]]
-=== Seam 2 Booking - step-by-step migration of binaries
-
-This document takes a somewhat different "brute force" approach. The
-idea is to deploy the binaries to WildFly, then see what issues you hit
-and learn how debug and resolve them. See <<Migrate_Seam_2_Booking_EAR_Binaries_-_Step_by_Step,Seam 2 Booking EAR Migration of Binaries - Step by Step>>.
+2 Booking example on JBoss AS 7] on Marek Novotny's Blog.
 
 
 [[jbpm-console-application]]
 === jBPM-Console application
 
-Kris Verlaenen migrated this application from AS 5 to WildFly {wildflyVersion}. For
-details about this migration, see http://kverlaen.blogspot.com/2011/07/jbpm5-on-as7-lightning.html[jBPM5 on WildFly] on his Kris's Blog.
+Kris Verlaenen migrated this application from JBoss AS 5 to JBoss AS 7. For
+details about this migration, see http://kverlaen.blogspot.com/2011/07/jbpm5-on-as7-lightning.html[jBPM5 on JBoss AS 7] on his Kris's Blog.
 
 [[order-application-used-for-performance-testing]]
 === Order application used for performance testing
 
-Andy Miller migrated this application from AS 5 to WildFly. For details
-about this migration, see <<Migrate_Order_Application_from_EAP5.1_to_WildFly,Order Application Migration from EAP5.1 to WildFly>>.
+Andy Miller migrated this application from JBoss AS 5 to JBoss AS 7. For details
+about this migration, see <<Migrate_Order_Application_from_EAP5,Order Application Migration from EAP5.1 to JBoss AS 7>>.
 
 [[migrate-example-application]]
 === Migrate example application
@@ -64,6 +57,4 @@ small, specific, working examples that can be used as a reference for
 your own project. For more information about the quickstarts, see
 http://www.jboss.org/jdf/quickstarts/jboss-as-quickstart/guide/Introduction/[Get Started Developing Applications]
 
-include::Migrate_Order_Application_from_EAP5.1_to_WildFly.adoc[]
-
-include::Migrate_Seam_2_Booking_EAR_Binaries_-_Step_by_Step.adoc[]
+include::Migrate_Order_Application_from_EAP5.adoc[]

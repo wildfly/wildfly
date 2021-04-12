@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -113,7 +113,7 @@ public interface WSLogger extends BasicLogger {
     void mBeanServerNotAvailable(Object bean);
 
     @LogMessage(level = WARN)
-    @Message(id = 14, value = "Multiple EJB3 endpoints in the same deployment with different declared security roles; be aware this might be a security risk if you're not controlling allowed roles (@RolesAllowed) on each ws endpoint method.")
+    @Message(id = 14, value = "Multiple Enterprise Beans 3 endpoints in the same deployment with different declared security roles; be aware this might be a security risk if you're not controlling allowed roles (@RolesAllowed) on each ws endpoint method.")
     void multipleEndpointsWithDifferentDeclaredSecurityRoles();
 
     @LogMessage(level = ERROR)
@@ -128,7 +128,7 @@ public interface WSLogger extends BasicLogger {
     @Message(id = 17, value = "Invalid handler chain file: %s")
     void invalidHandlerChainFile(String fileName);
 
-    String WS_SPEC_REF_5_3_2_4_2 = ". See section 5.3.2.4.2 of \"Web Services for Java EE, Version 1.4\".";
+    String WS_SPEC_REF_5_3_2_4_2 = ". See section 5.3.2.4.2 of \"Jakarta Enterprise Web Services 2.0\".";
 
     @LogMessage(level = ERROR)
     @Message(id = 18, value = "Web service method %s must not be static or final" + WS_SPEC_REF_5_3_2_4_2)
@@ -257,7 +257,7 @@ public interface WSLogger extends BasicLogger {
     @Message(id = 57, value = "Unable to get URL for: %s")
     DeploymentUnitProcessingException cannotGetURLForDescriptor(@Cause Throwable cause, String resourcePath);
 
-    @Message(id = 58, value = "JAX-RPC not supported")
+    @Message(id = 58, value = "Jakarta XML RPC not supported")
     DeploymentUnitProcessingException jaxRpcNotSupported();
 
     @Message(id = 59, value = "%s library (%s) detected in ws endpoint deployment; either provide a proper deployment replacing embedded libraries with container module "

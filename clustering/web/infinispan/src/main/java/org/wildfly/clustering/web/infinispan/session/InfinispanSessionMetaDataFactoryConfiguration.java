@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,18 +22,12 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.infinispan.Cache;
-import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.ee.infinispan.InfinispanCacheProperties;
+import java.util.concurrent.Executor;
 
 /**
  * @author Paul Ferraro
  */
-public interface InfinispanSessionMetaDataFactoryConfiguration {
+public interface InfinispanSessionMetaDataFactoryConfiguration extends InfinispanConfiguration {
 
-    <K, V> Cache<K, V> getCache();
-
-    default CacheProperties getCacheProperties() {
-        return new InfinispanCacheProperties(this.getCache().getCacheConfiguration());
-    }
+    Executor getExecutor();
 }

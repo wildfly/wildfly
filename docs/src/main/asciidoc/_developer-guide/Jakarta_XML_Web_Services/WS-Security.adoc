@@ -1,0 +1,1171 @@
+[[WS-Security]]
+= WS-Security
+ifdef::env-github[:imagesdir: ../../images/]
+
+[[ws-security-overview]]
+== WS-Security overview
+
+WS-Security provides the means to secure your services beyond transport
+level protocols such as _HTTPS_. Through a number of standards such as
+http://www.w3.org/TR/xmlenc-core/[XML-Encryption], and headers defined
+in the
+http://www.oasis-open.org/committees/tc_home.php?wg_abbrev=wss[WS-Security]
+standard, it allows you to:
+
+* Pass authentication tokens between services.
+* Encrypt messages or parts of messages.
+* Sign messages.
+* Timestamp messages.
+
+WS-Security makes heavy use of public and private key cryptography. It
+is helpful to understand these basics to really understand how to
+configure WS-Security. With public key cryptography, a user has a pair
+of public and private keys. These are generated using a large prime
+number and a key function.
+
+image:Public_key_making.png[images/Public_key_making.png]
+
+The keys are related mathematically, but cannot be derived from one
+another. With these keys we can encrypt messages. For example, if Bob
+wants to send a message to Alice, he can encrypt a message using her
+public key. Alice can then decrypt this message using her private key.
+Only Alice can decrypt this message as she is the only one with the
+private key.
+
+image:Public_key_encryption-mod.svg.png[images/Public_key_encryption-mod.svg.png]
+
+Messages can also be signed. This allows you to ensure the authenticity
+of the message. If Alice wants to send a message to Bob, and Bob wants
+to be sure that it is from Alice, Alice can sign the message using her
+private key. Bob can then verify that the message is from Alice by using
+her public key.
+
+image:250px-Public_key_making.svg.png[images/250px-Public_key_making.svg.png]
+
+[[jboss-ws-security-support]]
+== JBoss WS-Security support
+
+JBoss Web Services supports many real world scenarios requiring
+WS-Security functionalities. This includes signature and encryption
+support through X509 certificates, authentication and authorization
+through username tokens as well as all ws-security configurations
+covered by WS-
+http://docs.oasis-open.org/ws-sx/ws-securitypolicy/v1.3/ws-securitypolicy.html[SecurityPolicy]
+specification.
+
+<<Apache_CXF_integration,As well as for other WS-* features>>, the core of
+WS-Security functionalities is provided through the Apache CXF engine.
+On top of that the JBossWS integration adds few configuration
+enhancements to simplify the setup of WS-Security enabled endpoints.
+
+[[apache-cxf-ws-security-implementation]]
+=== Apache CXF WS-Security implementation
+
+Apache CXF features a top class WS-Security module supporting multiple
+configurations and easily extendible.
+
+The system is based on _interceptors_ that delegate to
+http://ws.apache.org/wss4j[Apache WSS4J] for the low level security
+operations. Interceptors can be configured in different ways, either
+through Spring configuration files or directly using Apache CXF client
+API. Please refer to the
+http://cxf.apache.org/docs/ws-security.html[Apache CXF documentation] if
+you're looking for more details.
+
+Recent versions of Apache CXF, however, introduced support for
+WS-Security Policy, which aims at moving most of the security
+configuration into the service contract (through policies), so that
+clients can easily be configured almost completely automatically from
+that. This way users do not need to manually deal with configuring /
+installing the required interceptors; the Apache CXF WS-Policy engine
+internally takes care of that instead.
+
+[[ws-security-policy-support]]
+==== WS-Security Policy support
+
+WS-SecurityPolicy describes the actions that are required to securely
+communicate with a service advertised in a given WSDL contract. The WSDL
+bindings / operations reference WS-Policy fragments with the security
+requirements to interact with the service. The
+http://docs.oasis-open.org/ws-sx/ws-securitypolicy/v1.3/ws-securitypolicy.html[WS-SecurityPolicy
+specification] allows for specifying things like asymmetric/symmetric
+keys, using transports (https) for encryption, which parts/headers to
+encrypt or sign, whether to sign then encrypt or encrypt then sign,
+whether to include timestamps, whether to use derived keys, etc.
+
+However some mandatory configuration elements are not covered by
+WS-SecurityPolicy, basically because they're not meant to be public /
+part of the published endpoint contract; those include things such as
+keystore locations, usernames and passwords, etc. Apache CXF allows
+configuring these elements either through Spring xml descriptors or
+using the client API / annotations. Below is the list of supported
+configuration properties:
+
+[cols=",",options="header"]
+|=======================================================================
+|ws-security.username |The username used for UsernameToken policy
+assertions
+
+|ws-security.password |The password used for UsernameToken policy
+assertions. If not specified, the callback handler will be called.
+
+|ws-security.callback-handler |The WSS4J security CallbackHandler that
+will be used to retrieve passwords for keystores and UsernameTokens.
+
+|ws-security.signature.properties |The properties file/object that
+contains the WSS4J properties for configuring the signature keystore and
+crypto objects
+
+|ws-security.encryption.properties |The properties file/object that
+contains the WSS4J properties for configuring the encryption keystore
+and crypto objects
+
+|ws-security.signature.username |The username or alias for the key in
+the signature keystore that will be used. If not specified, it uses the
+the default alias set in the properties file. If that's also not set,
+and the keystore only contains a single key, that key will be used.
+
+|ws-security.encryption.username |The username or alias for the key in
+the encryption keystore that will be used. If not specified, it uses the
+the default alias set in the properties file. If that's also not set,
+and the keystore only contains a single key, that key will be used. For
+the web service provider, the useReqSigCert keyword can be used to
+accept (encrypt to) any client whose public key is in the service's
+truststore (defined in ws-security.encryption.properties.)
+
+|ws-security.signature.crypto |Instead of specifying the signature
+properties, this can point to the full WSS4J Crypto object. This can
+allow easier "programmatic" configuration of the Crypto information."
+
+|ws-security.encryption.crypto |Instead of specifying the encryption
+properties, this can point to the full WSS4J Crypto object. This can
+allow easier "programmatic" configuration of the Crypto information."
+
+|ws-security.enable.streaming |Enable streaming (StAX based) processing
+of WS-Security messages
+|=======================================================================
+
+Here is an example of configuration using the client API:
+
+[source,xml,options="nowrap"]
+----
+Map<String, Object> ctx = ((BindingProvider)port).getRequestContext();
+ctx.put("ws-security.encryption.properties", properties);
+port.echoString("hello");
+----
+
+Please refer to the
+http://cxf.apache.org/docs/ws-securitypolicy.html[Apache CXF
+documentation] for additional configuration details.
+
+[[jbossws-configuration-additions]]
+=== JBossWS configuration additions
+
+In order for removing the need of Spring on server side for setting up
+WS-Security configuration properties not covered by policies, the
+JBossWS integration allows for getting those pieces of information from
+a defined _endpoint configuration_. <<Predefined_client_and_endpoint_configurations,Endpoint
+configurations>>can include property declarations and endpoint
+implementations can be associated with a given endpoint configuration
+using the `@EndpointConfig` annotation.
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxws-config xmlns="urn:jboss:jbossws-jaxws-config:4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:javaee="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="urn:jboss:jbossws-jaxws-config:4.0 schema/jbossws-jaxws-config_4_0.xsd">
+  <endpoint-config>
+    <config-name>Custom WS-Security Endpoint</config-name>
+    <property>
+      <property-name>ws-security.signature.properties</property-name>
+      <property-value>bob.properties</property-value>
+    </property>
+    <property>
+      <property-name>ws-security.encryption.properties</property-name>
+      <property-value>bob.properties</property-value>
+    </property>
+    <property>
+      <property-name>ws-security.signature.username</property-name>
+      <property-value>bob</property-value>
+    </property>
+    <property>
+      <property-name>ws-security.encryption.username</property-name>
+      <property-value>alice</property-value>
+    </property>
+    <property>
+      <property-name>ws-security.callback-handler</property-name>
+      <property-value>org.jboss.test.ws.jaxws.samples.wsse.policy.basic.KeystorePasswordCallback</property-value>
+    </property>
+  </endpoint-config>
+</jaxws-config>
+----
+
+[source,java,options="nowrap"]
+----
+import javax.jws.WebService;
+import org.jboss.ws.api.annotation.EndpointConfig;
+ 
+@WebService
+(
+   portName = "SecurityServicePort",
+   serviceName = "SecurityService",
+   wsdlLocation = "WEB-INF/wsdl/SecurityService.wsdl",
+   targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy",
+   endpointInterface = "org.jboss.test.ws.jaxws.samples.wsse.policy.basic.ServiceIface"
+)
+@EndpointConfig(configFile = "WEB-INF/jaxws-endpoint-config.xml", configName = "Custom WS-Security Endpoint")
+public class ServiceImpl implements ServiceIface
+{
+   public String sayHello()
+   {
+      return "Secure Hello World!";
+   }
+}
+----
+
+[[apache-cxf-annotations]]
+=== Apache CXF annotations
+
+The JBossWS configuration additions allow for a descriptor approach to
+the WS-Security Policy engine configuration. If you prefer to provide
+the same information through an annotation approach, you can leverage
+the Apache CXF `@org.apache.cxf.annotations.EndpointProperties`
+annotation:
+
+[source,java,options="nowrap"]
+----
+@WebService(
+   ...
+)
+@EndpointProperties(value = {
+      @EndpointProperty(key = "ws-security.signature.properties", value = "bob.properties"),
+      @EndpointProperty(key = "ws-security.encryption.properties", value = "bob.properties"),
+      @EndpointProperty(key = "ws-security.signature.username", value = "bob"),
+      @EndpointProperty(key = "ws-security.encryption.username", value = "alice"),
+      @EndpointProperty(key = "ws-security.callback-handler", value = "org.jboss.test.ws.jaxws.samples.wsse.policy.basic.KeystorePasswordCallback")
+      }
+)
+public class ServiceImpl implements ServiceIface {
+   ...
+}
+----
+
+[[examples-ws-security]]
+== Examples
+
+In this section some sample of WS-Security service endpoints and clients
+are provided. Please note they're only meant as tutorials; you should
+really careful isolate the ws-security policies / assertion that best
+suite your security needs before going to production environment.
+
+[WARNING]
+
+The following sections provide directions and examples on understanding
+some of the configuration options for WS-Security engine. Please note
+the implementor remains responsible for assessing the application
+requirements and choosing the most suitable security policy for them.
+
+[[signature-and-encryption]]
+=== Signature and encryption
+
+[[endpoint-ws-security]]
+==== Endpoint
+
+First of all you need to create the web service endpoint using Jakarta XML Web Services.
+While this can generally be achieved in different ways, it's required to
+use a contract-first approach when using WS-Security, as the policies
+declared in the wsdl are parsed by the Apache CXF engine on both server
+and client sides. So, here is an example of WSDL contract enforcing
+signature and encryption using X 509 certificates (the referenced schema
+is omitted):
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions targetNamespace="http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy" name="SecurityService"
+  xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:wsp="http://www.w3.org/ns/ws-policy"
+        xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+        xmlns:wsaws="http://www.w3.org/2005/08/addressing"
+        xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy" schemaLocation="SecurityService_schema1.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="sayHello">
+    <part name="parameters" element="tns:sayHello"/>
+  </message>
+  <message name="sayHelloResponse">
+    <part name="parameters" element="tns:sayHelloResponse"/>
+  </message>
+  <portType name="ServiceIface">
+    <operation name="sayHello">
+      <input message="tns:sayHello"/>
+      <output message="tns:sayHelloResponse"/>
+    </operation>
+  </portType>
+  <binding name="SecurityServicePortBinding" type="tns:ServiceIface">
+    <wsp:PolicyReference URI="#SecurityServiceSignThenEncryptPolicy"/>
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="sayHello">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="SecurityService">
+    <port name="SecurityServicePort" binding="tns:SecurityServicePortBinding">
+      <soap:address location="http://localhost:8080/jaxws-samples-wssePolicy-sign-encrypt"/>
+    </port>
+  </service>
+ 
+  <wsp:Policy wsu:Id="SecurityServiceSignThenEncryptPolicy" xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+    <wsp:ExactlyOne>
+      <wsp:All>
+        <sp:AsymmetricBinding xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+          <wsp:Policy>
+            <sp:InitiatorToken>
+              <wsp:Policy>
+                <sp:X509Token sp:IncludeToken="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/AlwaysToRecipient">
+                  <wsp:Policy>
+                    <sp:WssX509V1Token11/>
+                  </wsp:Policy>
+                  </sp:X509Token>
+              </wsp:Policy>
+            </sp:InitiatorToken>
+            <sp:RecipientToken>
+              <wsp:Policy>
+                <sp:X509Token sp:IncludeToken="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/Never">
+                  <wsp:Policy>
+                    <sp:WssX509V1Token11/>
+                  </wsp:Policy>
+                </sp:X509Token>
+              </wsp:Policy>
+            </sp:RecipientToken>
+            <sp:AlgorithmSuite>
+              <wsp:Policy>
+                <sp:TripleDesRsa15/>
+              </wsp:Policy>
+            </sp:AlgorithmSuite>
+            <sp:Layout>
+              <wsp:Policy>
+                <sp:Lax/>
+              </wsp:Policy>
+            </sp:Layout>
+            <sp:IncludeTimestamp/>
+            <sp:EncryptSignature/>
+            <sp:OnlySignEntireHeadersAndBody/>
+            <sp:SignBeforeEncrypting/>
+          </wsp:Policy>
+        </sp:AsymmetricBinding>
+        <sp:SignedParts xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+          <sp:Body/>
+        </sp:SignedParts>
+        <sp:EncryptedParts xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+          <sp:Body/>
+        </sp:EncryptedParts>
+        <sp:Wss10 xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+          <wsp:Policy>
+            <sp:MustSupportRefIssuerSerial/>
+          </wsp:Policy>
+        </sp:Wss10>
+      </wsp:All>
+    </wsp:ExactlyOne>
+  </wsp:Policy>
+</definitions>
+----
+
+The service endpoint can be generated using the `wsconsume` tool and
+then enriched with a `@EndpointConfig` annotation:
+
+[source,java,options="nowrap"]
+----
+package org.jboss.test.ws.jaxws.samples.wsse.policy.basic;
+ 
+import javax.jws.WebService;
+import org.jboss.ws.api.annotation.EndpointConfig;
+ 
+@WebService
+(
+   portName = "SecurityServicePort",
+   serviceName = "SecurityService",
+   wsdlLocation = "WEB-INF/wsdl/SecurityService.wsdl",
+   targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy",
+   endpointInterface = "org.jboss.test.ws.jaxws.samples.wsse.policy.basic.ServiceIface"
+)
+@EndpointConfig(configFile = "WEB-INF/jaxws-endpoint-config.xml", configName = "Custom WS-Security Endpoint")
+public class ServiceImpl implements ServiceIface
+{
+   public String sayHello()
+   {
+      return "Secure Hello World!";
+   }
+}
+----
+
+The referenced _jaxws-endpoint-config.xml_ descriptor is used to provide
+a custom endpoint configuration with the required server side
+configuration properties; this tells the engine which certificate / key
+to use for signature / signature verification and for encryption /
+decryption:
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxws-config xmlns="urn:jboss:jbossws-jaxws-config:4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:javaee="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="urn:jboss:jbossws-jaxws-config:4.0 schema/jbossws-jaxws-config_4_0.xsd">
+  <endpoint-config>
+    <config-name>Custom WS-Security Endpoint</config-name>
+    <property>
+      <property-name>ws-security.signature.properties</property-name>
+      <property-value>bob.properties</property-value>
+    </property>
+    <property>
+      <property-name>ws-security.encryption.properties</property-name>
+      <property-value>bob.properties</property-value>
+    </property>
+    <property>
+      <property-name>ws-security.signature.username</property-name>
+      <property-value>bob</property-value>
+    </property>
+    <property>
+      <property-name>ws-security.encryption.username</property-name>
+      <property-value>alice</property-value>
+    </property>
+    <property>
+      <property-name>ws-security.callback-handler</property-name>
+      <property-value>org.jboss.test.ws.jaxws.samples.wsse.policy.basic.KeystorePasswordCallback</property-value>
+    </property>
+  </endpoint-config>
+</jaxws-config>
+----
+
+... the _bob.properties_ configuration file is also referenced above; it
+includes the WSS4J Crypto properties which in turn link to the keystore
+file, type and the alias/password to use for accessing it:
+
+....
+org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
+org.apache.ws.security.crypto.merlin.keystore.type=jks
+org.apache.ws.security.crypto.merlin.keystore.password=password
+org.apache.ws.security.crypto.merlin.keystore.alias=bob
+org.apache.ws.security.crypto.merlin.keystore.file=bob.jks
+....
+
+A callback handler for the letting Apache CXF access the keystore is
+also provided:
+
+[source,java,options="nowrap"]
+----
+package org.jboss.test.ws.jaxws.samples.wsse.policy.basic;
+ 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import org.apache.ws.security.WSPasswordCallback;
+ 
+public class KeystorePasswordCallback implements CallbackHandler {
+   private Map<String, String> passwords = new HashMap<String, String>();
+ 
+   public KeystorePasswordCallback() {
+      passwords.put("alice", "password");
+      passwords.put("bob", "password");
+   }
+ 
+   /**
+    * It attempts to get the password from the private
+    * alias/passwords map.
+    */
+   public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+      for (int i = 0; i < callbacks.length; i++) {
+         WSPasswordCallback pc = (WSPasswordCallback)callbacks[i];
+ 
+         String pass = passwords.get(pc.getIdentifier());
+         if (pass != null) {
+            pc.setPassword(pass);
+            return;
+         }
+      }
+   }
+ 
+   /**
+    * Add an alias/password pair to the callback mechanism.
+    */
+   public void setAliasPassword(String alias, String password) {
+      passwords.put(alias, password);
+   }
+}
+----
+
+Assuming the _bob.jks_ keystore has been properly generated and contains
+Bob's (server) full key (private/certificate + public key) as well as
+Alice's (client) public key, we can proceed to packaging the endpoint.
+Here is the expected content (the endpoint is a _POJO_ one in a _war_
+archive, but _EJB3_ endpoints in _jar_ archives are of course also
+supported):
+
+....
+alessio@inuyasha /dati/jbossws/stack/cxf/trunk $ jar -tvf ./modules/testsuite/cxf-tests/target/test-libs/jaxws-samples-wsse-policy-sign-encrypt.war
+     0 Thu Jun 16 18:50:48 CEST 2011 META-INF/
+   140 Thu Jun 16 18:50:46 CEST 2011 META-INF/MANIFEST.MF
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/
+   586 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/web.xml
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/basic/
+  1687 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/basic/KeystorePasswordCallback.class
+   383 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/basic/ServiceIface.class
+  1070 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/basic/ServiceImpl.class
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/jaxws/
+   705 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/jaxws/SayHello.class
+  1069 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/jaxws/SayHelloResponse.class
+  1225 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/jaxws-endpoint-config.xml
+     0 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/wsdl/
+  4086 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/wsdl/SecurityService.wsdl
+   653 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/wsdl/SecurityService_schema1.xsd
+  1820 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/classes/bob.jks
+   311 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/classes/bob.properties
+....
+
+As you can see, the jaxws classes generated by the tools are of course
+also included, as well as a basic _web.xml_ referencing the endpoint
+bean:
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app
+   version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+   <servlet>
+      <servlet-name>TestService</servlet-name>
+      <servlet-class>org.jboss.test.ws.jaxws.samples.wsse.policy.basic.ServiceImpl</servlet-class>
+   </servlet>
+   <servlet-mapping>
+      <servlet-name>TestService</servlet-name>
+      <url-pattern>/*</url-pattern>
+   </servlet-mapping>
+</web-app>
+----
+
+[IMPORTANT]
+
+If you're deploying the endpoint archive on WildFly, remember to add a
+dependency to _org.apache.ws.security_ module in the MANIFEST.MF file.
+
+....
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.7.1
+Created-By: 17.0-b16 (Sun Microsystems Inc.)
+Dependencies: org.apache.ws.security
+....
+
+[[client-ws-security]]
+==== Client
+
+You start by consuming the published WSDL contract using the _wsconsume_
+tool on client side too. Then you simply invoke the the endpoint as a
+standard Jakarta XML Web Services one:
+
+[source,java,options="nowrap"]
+----
+QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "SecurityService");
+URL wsdlURL = new URL(serviceURL + "?wsdl");
+Service service = Service.create(wsdlURL, serviceName);
+ServiceIface proxy = (ServiceIface)service.getPort(ServiceIface.class);
+ 
+((BindingProvider)proxy).getRequestContext().put(SecurityConstants.CALLBACK_HANDLER, new KeystorePasswordCallback());
+((BindingProvider)proxy).getRequestContext().put(SecurityConstants.SIGNATURE_PROPERTIES,
+     Thread.currentThread().getContextClassLoader().getResource("META-INF/alice.properties"));
+((BindingProvider)proxy).getRequestContext().put(SecurityConstants.ENCRYPT_PROPERTIES,
+     Thread.currentThread().getContextClassLoader().getResource("META-INF/alice.properties"));
+((BindingProvider)proxy).getRequestContext().put(SecurityConstants.SIGNATURE_USERNAME, "alice");
+((BindingProvider)proxy).getRequestContext().put(SecurityConstants.ENCRYPT_USERNAME, "bob");
+ 
+proxy.sayHello();
+----
+
+As you can see, the WS-Security properties are set in the request
+context. Here the `KeystorePasswordCallback` is the same as on server
+side above, you might want/need different implementation in real world
+scenarios, of course. +
+The _alice.properties_ file is the client side equivalent of the server
+side _bob.properties_ and references the _alice.jks_ keystore file,
+which has been populated with Alice's (client) full key
+(private/certificate + public key) as well as Bob's (server) public key.
+
+....
+org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
+org.apache.ws.security.crypto.merlin.keystore.type=jks
+org.apache.ws.security.crypto.merlin.keystore.password=password
+org.apache.ws.security.crypto.merlin.keystore.alias=alice
+org.apache.ws.security.crypto.merlin.keystore.file=META-INF/alice.jks
+....
+
+The Apache CXF WS-Policy engine will digest the security requirements in
+the contract and ensure a valid secure communication is in place for
+interacting with the server endpoint.
+
+[[endpoint-serving-multiple-clients]]
+==== Endpoint serving multiple clients
+
+The server side configuration described above implies the endpoint is
+configured for serving a given client which a service agreement has been
+established for. In some real world scenarios though, the same server
+might be expected to be able to deal with (including decrypting and
+encrypting) messages coming from and being sent to multiple clients.
+Apache CXF supports that through the `useReqSigCert` value for the
+`ws-security.encryption.username` configuration parameter.
+
+Of course the referenced server side keystore then needs to contain the
+public key of all the clients that are expected to be served.
+
+[[authentication-and-authorization]]
+=== Authentication and authorization
+
+The Username Token Profile can be used to provide client's credentials
+to a WS-Security enabled target endpoint.
+
+Apache CXF provides means for setting basic _password callback handlers_
+on both client and server sides to set/check passwords; the
+_ws-security.username_ and _ws-security.callback-handler_ properties can
+be used similarly as shown in the signature and encryption example.
+Things become more interesting when requiring a given user to be
+authenticated (and authorized) against a security domain on the target
+application server.
+
+On server side, you need to install two additional interceptors that act
+as bridges towards the application server authentication layer:
+
+* an interceptor for performing authentication and populating a valid
+SecurityContext; the provided interceptor should extend
+org.apache.cxf.ws.interceptor.security.AbstractUsernameTokenInInterceptor,
+in particular JBossWS integration comes with
+_org.jboss.wsf.stack.cxf.security.authentication.SubjectCreatingInterceptor_
+for this;
+* an interceptor for performing authorization; CXF requires that to
+extend
+org.apache.cxf.interceptor.security.AbstractAuthorizingInInterceptor,
+for instance the _SimpleAuthorizingInterceptor_ can be used for simply
+mapping endpoint operations to allowed roles.
+
+So, here follows an example of WS-SecurityPolicy endpoint using Username
+Token Profile for authenticating through the application server security
+domain system.
+
+[[endpoint-ws-security-1]]
+==== Endpoint
+
+As in the other example, we start with a wsdl contract containing the
+proper WS-Security Policy:
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<definitions targetNamespace="http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy" name="SecurityService"
+  xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+        xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+        xmlns:wsaws="http://www.w3.org/2005/08/addressing">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy" schemaLocation="SecurityService_schema1.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="sayHello">
+    <part name="parameters" element="tns:sayHello"/>
+  </message>
+  <message name="sayHelloResponse">
+    <part name="parameters" element="tns:sayHelloResponse"/>
+  </message>
+  <message name="greetMe">
+    <part name="parameters" element="tns:greetMe"/>
+  </message>
+  <message name="greetMeResponse">
+    <part name="parameters" element="tns:greetMeResponse"/>
+  </message>
+  <portType name="ServiceIface">
+    <operation name="sayHello">
+      <input message="tns:sayHello"/>
+      <output message="tns:sayHelloResponse"/>
+    </operation>
+    <operation name="greetMe">
+      <input message="tns:greetMe"/>
+      <output message="tns:greetMeResponse"/>
+    </operation>
+  </portType>
+  <binding name="SecurityServicePortBinding" type="tns:ServiceIface">
+    <wsp:PolicyReference URI="#SecurityServiceUsernameUnsecureTransportPolicy"/>
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="sayHello">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="greetMe">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="SecurityService">
+    <port name="SecurityServicePort" binding="tns:SecurityServicePortBinding">
+      <soap:address location="http://localhost:8080/jaxws-samples-wsse-username-jaas"/>
+    </port>
+  </service>
+ 
+  <wsp:Policy wsu:Id="SecurityServiceUsernameUnsecureTransportPolicy">
+        <wsp:ExactlyOne>
+            <wsp:All>
+                <sp:SupportingTokens xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+                    <wsp:Policy>
+                        <sp:UsernameToken sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/AlwaysToRecipient">
+                            <wsp:Policy>
+                                <sp:WssUsernameToken10/>
+                            </wsp:Policy>
+                        </sp:UsernameToken>
+                    </wsp:Policy>
+                </sp:SupportingTokens>
+            </wsp:All>
+        </wsp:ExactlyOne>
+    </wsp:Policy>
+ 
+</definitions>
+----
+
+[IMPORTANT]
+
+If you want to send hash / digest passwords, you can use a policy such
+as what follows:
+
+[source,xml,options="nowrap"]
+----
+<wsp:Policy wsu:Id="SecurityServiceUsernameHashPasswordPolicy">
+    <wsp:ExactlyOne>
+        <wsp:All>
+            <sp:SupportingTokens xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+                <wsp:Policy>
+                    <sp:UsernameToken sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/AlwaysToRecipient">
+                        <wsp:Policy>
+                            <sp:HashPassword/>
+                        </wsp:Policy>
+                    </sp:UsernameToken>
+                </wsp:Policy>
+            </sp:SupportingTokens>
+        </wsp:All>
+    </wsp:ExactlyOne>
+</wsp:Policy>
+----
+
+Please note the specified JBoss security domain needs to be properly
+configured for computing digests.
+
+The service endpoint can be generated using the `wsconsume` tool and
+then enriched with a `@EndpointConfig` annotation and `@InInterceptors`
+annotation to add the two interceptors mentioned above for JAAS
+integration:
+
+[source,java,options="nowrap"]
+----
+package org.jboss.test.ws.jaxws.samples.wsse.policy.jaas;
+ 
+import javax.jws.WebService;
+import org.apache.cxf.interceptor.InInterceptors;
+import org.jboss.ws.api.annotation.EndpointConfig;
+ 
+@WebService
+(
+   portName = "SecurityServicePort",
+   serviceName = "SecurityService",
+   wsdlLocation = "WEB-INF/wsdl/SecurityService.wsdl",
+   targetNamespace = "http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy",
+   endpointInterface = "org.jboss.test.ws.jaxws.samples.wsse.policy.jaas.ServiceIface"
+)
+@EndpointConfig(configFile = "WEB-INF/jaxws-endpoint-config.xml", configName = "Custom WS-Security Endpoint")
+@InInterceptors(interceptors = {
+      "org.jboss.wsf.stack.cxf.security.authentication.SubjectCreatingPolicyInterceptor",
+      "org.jboss.test.ws.jaxws.samples.wsse.policy.jaas.POJOEndpointAuthorizationInterceptor"}
+)
+public class ServiceImpl implements ServiceIface
+{
+   public String sayHello()
+   {
+      return "Secure Hello World!";
+   }
+ 
+   public String greetMe()
+   {
+      return "Greetings!";
+   }
+}
+----
+
+The `POJOEndpointAuthorizationInterceptor` is included into the
+deployment and deals with the roles cheks:
+
+[source,java,options="nowrap"]
+----
+package org.jboss.test.ws.jaxws.samples.wsse.policy.jaas;
+ 
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor;
+ 
+public class POJOEndpointAuthorizationInterceptor extends SimpleAuthorizingInterceptor
+{
+ 
+   public POJOEndpointAuthorizationInterceptor()
+   {
+      super();
+      readRoles();
+   }
+ 
+   private void readRoles()
+   {
+      //just an example, this might read from a configuration file or such
+      Map<String, String> roles = new HashMap<String, String>();
+      roles.put("sayHello", "friend");
+      roles.put("greetMe", "snoopies");
+      setMethodRolesMap(roles);
+   }
+}
+----
+
+The _jaxws-endpoint-config.xml_ descriptor is used to provide a custom
+endpoint configuration with the required server side configuration
+properties; in particular for this Username Token case that's just a CXF
+configuration option for leaving the username token validation to the
+configured interceptors:
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxws-config xmlns="urn:jboss:jbossws-jaxws-config:4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:javaee="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="urn:jboss:jbossws-jaxws-config:4.0 schema/jbossws-jaxws-config_4_0.xsd">
+  <endpoint-config>
+    <config-name>Custom WS-Security Endpoint</config-name>
+    <property>
+      <property-name>ws-security.validate.token</property-name>
+      <property-value>false</property-value>
+    </property>
+  </endpoint-config>
+</jaxws-config>
+----
+
+In order for requiring a given JBoss security domain to be used to
+protect access to the endpoint (a POJO one in this case), we declare
+that in a _jboss-web.xml_ descriptor (the _JBossWS_ security domain is
+used):
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jboss-web PUBLIC "-//JBoss//DTD Web Application 2.4//EN" "http://www.jboss.org/j2ee/dtd/jboss-web_4_0.dtd">
+<jboss-web>
+   <security-domain>java:/jaas/JBossWS</security-domain>
+</jboss-web
+----
+
+Finally, the _web.xml_ is as simple as usual:
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app
+   version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+   <servlet>
+      <servlet-name>TestService</servlet-name>
+      <servlet-class>org.jboss.test.ws.jaxws.samples.wsse.policy.jaas.ServiceImpl</servlet-class>
+   </servlet>
+   <servlet-mapping>
+      <servlet-name>TestService</servlet-name>
+      <url-pattern>/*</url-pattern>
+   </servlet-mapping>
+</web-app>
+----
+
+The endpoint is packaged into a war archive, including the JAXWS classes
+generated by wsconsume:
+
+....
+alessio@inuyasha /dati/jbossws/stack/cxf/trunk $ jar -tvf ./modules/testsuite/cxf-tests/target/test-libs/jaxws-samples-wsse-policy-username-jaas.war
+     0 Thu Jun 16 18:50:48 CEST 2011 META-INF/
+   155 Thu Jun 16 18:50:46 CEST 2011 META-INF/MANIFEST.MF
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/
+   585 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/web.xml
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/jaas/
+   982 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/jaas/POJOEndpointAuthorizationInterceptor.class
+   412 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/jaas/ServiceIface.class
+  1398 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/jaas/ServiceImpl.class
+     0 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/jaxws/
+   701 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/jaxws/GreetMe.class
+  1065 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/jaxws/GreetMeResponse.class
+   705 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/jaxws/SayHello.class
+  1069 Thu Jun 16 18:50:48 CEST 2011 WEB-INF/classes/org/jboss/test/ws/jaxws/samples/wsse/policy/jaxws/SayHelloResponse.class
+   556 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/jaxws-endpoint-config.xml
+   241 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/jboss-web.xml
+     0 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/wsdl/
+  3183 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/wsdl/SecurityService.wsdl
+  1012 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/wsdl/SecurityService_schema1.xsd
+....
+
+[IMPORTANT]
+
+If you're deploying the endpoint archive on WildFly, remember to add a
+dependency to _org.apache.ws.security_ and _org.apache.cxf_ module (due
+to the `@InInterceptor` annotation) in the MANIFEST.MF file.
+
+....
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.7.1
+Created-By: 17.0-b16 (Sun Microsystems Inc.)
+Dependencies: org.apache.ws.security,org.apache.cxf
+....
+
+[[client-ws-security-1]]
+==== Client
+
+Here too you start by consuming the published WSDL contract using the
+_wsconsume_ tool. Then you simply invoke the the endpoint as a standard
+Jakarta XML Web Services one:
+
+[source,java,options="nowrap"]
+----
+QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "SecurityService");
+URL wsdlURL = new URL(serviceURL + "?wsdl");
+Service service = Service.create(wsdlURL, serviceName);
+ServiceIface proxy = (ServiceIface)service.getPort(ServiceIface.class);
+ 
+((BindingProvider)proxy).getRequestContext().put(SecurityConstants.USERNAME, "kermit");
+((BindingProvider)proxy).getRequestContext().put(SecurityConstants.CALLBACK_HANDLER,
+      "org.jboss.test.ws.jaxws.samples.wsse.policy.jaas.UsernamePasswordCallback");
+ 
+proxy.sayHello();
+----
+
+The `UsernamePasswordCallback` class is shown below and is responsible
+for setting the passwords on client side just before performing the
+invocations:
+
+[source,java,options="nowrap"]
+----
+package org.jboss.test.ws.jaxws.samples.wsse.policy.jaas;
+ 
+import java.io.IOException;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import org.apache.ws.security.WSPasswordCallback;
+ 
+public class UsernamePasswordCallback implements CallbackHandler
+{
+   public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException
+   {
+      WSPasswordCallback pc = (WSPasswordCallback)callbacks[0];
+      if ("kermit".equals(pc.getIdentifier()))
+         pc.setPassword("thefrog");
+   }
+}
+----
+
+If everything has been done properly, you should expect to calls to
+`sayHello()` fail when done with user "snoopy" and pass with user
+"kermit" (and credential "thefrog"); moreover, you should get an
+authorization error when trying to call `greetMe()` with user "kermit",
+as that does not have the "snoopies" role.
+
+[[secure-transport]]
+=== Secure transport
+
+Another quite common use case is using WS-Security Username Token
+Profile over a secure transport (HTTPS). A scenario like this is
+implemented similarly to what's described in the previous example,
+except for few differences explained below.
+
+First of all, here is an excerpt of a wsdl wth a sample security policy
+for Username Token over HTTPS:
+
+[source,xml,options="nowrap"]
+----
+...
+ 
+<binding name="SecurityServicePortBinding" type="tns:ServiceIface">
+  <wsp:PolicyReference URI="#SecurityServiceBindingPolicy"/>
+  <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+  <operation name="sayHello">
+    <soap:operation soapAction=""/>
+    <input>
+      <soap:body use="literal"/>
+    </input>
+    <output>
+      <soap:body use="literal"/>
+    </output>
+  </operation>
+</binding>
+<service name="SecurityService">
+   <port name="SecurityServicePort" binding="tns:SecurityServicePortBinding">
+      <soap:address location="https://localhost:8443/jaxws-samples-wsse-policy-username"/>
+   </port>
+</service>
+ 
+<wsp:Policy wsu:Id="SecurityServiceBindingPolicy">
+   <wsp:ExactlyOne>
+      <wsp:All>
+         <foo:unknownPolicy xmlns:foo="http://cxf.apache.org/not/a/policy"/>
+      </wsp:All>
+      <wsp:All>
+         <wsaws:UsingAddressing xmlns:wsaws="http://www.w3.org/2006/05/addressing/wsdl"/>
+         <sp:TransportBinding>
+            <wsp:Policy>
+               <sp:TransportToken>
+                  <wsp:Policy>
+                     <sp:HttpsToken RequireClientCertificate="false"/>
+                  </wsp:Policy>
+               </sp:TransportToken>
+               <sp:Layout>
+                  <wsp:Policy>
+                     <sp:Lax/>
+                  </wsp:Policy>
+               </sp:Layout>
+               <sp:IncludeTimestamp/>
+               <sp:AlgorithmSuite>
+                  <wsp:Policy>
+                     <sp:Basic128/>
+                  </wsp:Policy>
+               </sp:AlgorithmSuite>
+            </wsp:Policy>
+         </sp:TransportBinding>
+         <sp:Wss10>
+            <wsp:Policy>
+               <sp:MustSupportRefKeyIdentifier/>
+            </wsp:Policy>
+         </sp:Wss10>
+         <sp:SignedSupportingTokens>
+            <wsp:Policy>
+               <sp:UsernameToken sp:IncludeToken="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/AlwaysToRecipient">
+                  <wsp:Policy>
+                     <sp:WssUsernameToken10/>
+                  </wsp:Policy>
+               </sp:UsernameToken>
+            </wsp:Policy>
+         </sp:SignedSupportingTokens>
+      </wsp:All>
+   </wsp:ExactlyOne>
+</wsp:Policy>
+----
+
+The endpoint then needs of course to be actually available on HTTPS
+only, so we have a _web.xml_ setting the _transport-guarantee_ such as
+below:
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app
+   version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+   <servlet>
+      <servlet-name>TestService</servlet-name>
+      <servlet-class>org.jboss.test.ws.jaxws.samples.wsse.policy.basic.ServiceImpl</servlet-class>
+   </servlet>
+   <servlet-mapping>
+      <servlet-name>TestService</servlet-name>
+      <url-pattern>/*</url-pattern>
+   </servlet-mapping>
+ 
+   <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>TestService</web-resource-name>
+      <url-pattern>/*</url-pattern>
+    </web-resource-collection>
+    <user-data-constraint>
+      <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+    </user-data-constraint>
+  </security-constraint>
+</web-app>
+----
+
+[[secure-conversation]]
+=== Secure conversation
+
+Apache CXF supports
+http://docs.oasis-open.org/ws-sx/ws-secureconversation/200512/ws-secureconversation-1.3-os.html[WS-SecureConversation]
+specification, which is about improving performance by allowing client
+and server to negotiate initial security keys to be used for later
+communication encryption/signature. This is done by having two policies
+in the wsdl contract, an outer one setting the security requirements to
+actually communicate with the endpoint and a bootstrap one, related to
+the communication for establishing the secure conversation keys. The
+client will be automatically sending an initial message to the server
+for negotiating the keys, then the actual communication to the endpoint
+takes place. As a consequence, Apache CXF needs a way to specify which
+WS-Security configuration properties are intended for the bootstrap
+policy and which are intended for the actual service policy. To
+accomplish this, properties intended for the bootstrap policy are
+appended with `.sct`.
+
+[source,java,options="nowrap"]
+----
+...
+((BindingProvider)proxy).getRequestContext().put("ws-security.signature.username.sct", "alice");
+((BindingProvider)proxy).getRequestContext().put("ws-security.encryption.username.sct", "bob");
+...
+----
+
+[source,java,options="nowrap"]
+----
+@WebService(
+   ...
+)
+@EndpointProperties(value = {
+      @EndpointProperty(key = "ws-security.encryption.properties.sct", value = "bob.properties"),
+      @EndpointProperty(key = "ws-security.signature.properties.sct", value = "bob.properties"),
+      ...
+      }
+)
+public class ServiceImpl implements ServiceIface {
+   ...
+}
+----

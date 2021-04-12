@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -59,7 +59,7 @@ public class TransactionExtension implements Extension {
 
     private static final String RESOURCE_NAME = TransactionExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(5, 2, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(6, 0, 0);
 
 
     private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
@@ -134,5 +134,6 @@ public class TransactionExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_3_0.getUriString(), TransactionSubsystem30Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_4_0.getUriString(), TransactionSubsystem40Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_5_0.getUriString(), TransactionSubsystem50Parser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_6_0.getUriString(), TransactionSubsystem60Parser::new);
     }
 }

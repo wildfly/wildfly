@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2021, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -44,10 +44,10 @@ public class InterceptorOrder {
         public static final int JPA_SFSB_INTERCEPTOR = 0x560;
         public static final int JPA_SESSION_BEAN_INTERCEPTOR = 0x600;
         public static final int CMP_RELATIONSHIP_INTERCEPTOR = 0x800;
-        // WS handlers, user and CDI interceptors plus the bean method are considered user execution time
+        // WS handlers, user and Jakarta Contexts and Dependency Injection Interceptors plus the bean method are considered user execution time
         public static final int EJB_EXECUTION_TIME_INTERCEPTOR = 0x850;
         // JSR 109 - Version 1.3 - 6.2.2.4 Security
-        // For EJB based service implementations, Handlers run after method level authorization has occurred.
+        // For Jakarta Enterprise Beans based service implementations, Handlers run after method level authorization has occurred.
         // JSR 109 - Version 1.3 - 6.2.2.5 Transaction
         // Handlers run under the transaction context of the component they are associated with.
         public static final int WS_HANDLERS_INTERCEPTOR = 0x900;
@@ -62,7 +62,7 @@ public class InterceptorOrder {
          * @Around* methods defined on the component class or its superclasses
          */
         public static final int CDI_INTERCEPTORS = 0xB00;
-        public static final int COMPONENT_USER_INTERCEPTORS = 0xC00; //interceptors defined on the component class, these have to run after CDI interceptors
+        public static final int COMPONENT_USER_INTERCEPTORS = 0xC00; //interceptors defined on the component class, these have to run after Jakarta Contexts and Dependency Injection interceptors
 
         public static final int TERMINAL_INTERCEPTOR = 0xD00;
 

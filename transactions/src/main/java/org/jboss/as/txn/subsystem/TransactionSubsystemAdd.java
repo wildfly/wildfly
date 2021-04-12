@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -44,6 +44,7 @@ import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -147,6 +148,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO.validateAndSet(operation, model);
+
+        TransactionSubsystemRootResourceDefinition.STALE_TRANSACTION_TIME.validateAndSet(operation, model);
     }
 
     private void populateModelWithObjectStoreConfig(ModelNode operation, ModelNode objectStoreModel) throws OperationFailedException {
@@ -428,20 +431,22 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addCapabilityRequirement("org.wildfly.network.socket-binding", SocketBinding.class, recoveryManagerService.getRecoveryBindingInjector(), recoveryBindingName)
                 .addCapabilityRequirement("org.wildfly.network.socket-binding", SocketBinding.class, recoveryManagerService.getStatusBindingInjector(), recoveryStatusBindingName)
                 .addCapabilityRequirement("org.wildfly.management.socket-binding-manager", SocketBindingManager.class, recoveryManagerService.getBindingManager())
-                .addCapabilityRequirement("org.wildfly.server.suspend-controller", SuspendController.class, recoveryManagerService.getSuspendControllerInjector());
+                .addCapabilityRequirement("org.wildfly.server.suspend-controller", SuspendController.class, recoveryManagerService.getSuspendControllerInjector())
+                .addCapabilityRequirement("org.wildfly.management.process-state-notifier", ProcessStateNotifier.class, recoveryManagerService.getProcessStateInjector());
         recoveryManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
         recoveryManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT);
         recoveryManagerServiceServiceBuilder.addAliases(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);
         recoveryManagerServiceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
 
 
-        // add dependency on JTA environment bean
+        // add dependency on Jakarta Transactions environment bean
         for (final ServiceName dep : deps) {
             recoveryManagerServiceServiceBuilder.requires(dep);
         }
 
         // Register WildFly transaction services - TODO: this should eventually be separated from the Narayana subsystem
-        final LocalTransactionContextService localTransactionContextService = new LocalTransactionContextService();
+        final int staleTransactionTime = TransactionSubsystemRootResourceDefinition.STALE_TRANSACTION_TIME.resolveModelAttribute(context, model).asInt();
+        final LocalTransactionContextService localTransactionContextService = new LocalTransactionContextService(staleTransactionTime);
         serviceTarget.addService(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, localTransactionContextService)
                 .addDependency(TxnServices.JBOSS_TXN_EXTENDED_JBOSS_XA_TERMINATOR, ExtendedJBossXATerminator.class, localTransactionContextService.getExtendedJBossXATerminatorInjector())
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, localTransactionContextService.getTransactionManagerInjector())
@@ -469,7 +474,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, model).asString();
-        // install JTA environment bean service
+        // install Jakarta Transactions environment bean service
         final JTAEnvironmentBeanService jtaEnvironmentBeanService = new JTAEnvironmentBeanService(nodeIdentifier);
         serviceTarget.addService(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, jtaEnvironmentBeanService)
                 .setInitialMode(Mode.ACTIVE)
@@ -527,7 +532,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
         final ArjunaTransactionManagerService transactionManagerService = new ArjunaTransactionManagerService(coordinatorEnableStatistics, coordinatorDefaultTimeout, transactionStatusManagerEnable, jts);
         final ServiceBuilder<com.arjuna.ats.jbossatx.jta.TransactionManagerService> transactionManagerServiceServiceBuilder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, transactionManagerService);
-        // add dependency on JTA environment bean service
+        // add dependency on Jakarta Transactions environment bean service
         transactionManagerServiceServiceBuilder.addDependency(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, JTAEnvironmentBean.class, transactionManagerService.getJTAEnvironmentBeanInjector());
 
         //if jts is enabled we need the ORB

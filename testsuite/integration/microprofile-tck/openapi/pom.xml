@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>24.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-openapi</artifactId>
@@ -42,7 +42,9 @@
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
+        <!-- These properties control what layers are provisioned if galleon provision occurs -->
+        <ts.microprofile-tck-provisioning.base.layer>cloud-server</ts.microprofile-tck-provisioning.base.layer>
+        <ts.microprofile-tck-provisioning.decorator.layer>microprofile-openapi</ts.microprofile-tck-provisioning.decorator.layer>
     </properties>
 
     <dependencies>
@@ -139,7 +141,7 @@
                 </plugins>
             </build>
         </profile>
-        <!-- Test against slimmed servers provisioned by Galleon -->
+
         <profile>
             <id>layers.profile</id>
             <activation>
@@ -148,76 +150,11 @@
                 </property>
             </activation>
             <properties>
-                <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
+                <!-- Enable galleon provisioning -->
+                <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
             </properties>
-
-            <build>
-                <finalName>microprofile-openapi-${project.version}</finalName>
-                <plugins>
-                    <!-- Disable the standard copy-based provisioning -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ts.copy-wildfly</id>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>microprofile-openapi-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>compile</phase>
-                                <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                        <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>wildfly-galleon-pack</artifactId>
-                                            <version>${full.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <!-- Call the file standalone-microprofile.xml as that is what
-                                                 arquillian.xml says to use for testing in the default maven profile-->
-                                            <name>standalone-microprofile.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>microprofile-openapi</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
-        <!-- Test against bootable jar -->
         <profile>
             <id>bootablejar.profile</id>
             <activation>
@@ -225,105 +162,26 @@
                     <name>ts.bootable</name>
                 </property>
             </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.wildfly.arquillian</groupId>
-                    <artifactId>wildfly-arquillian-container-bootable</artifactId>
-                </dependency>
-            </dependencies>
-            <build>
-                <plugins>
-                    <!-- Disable the standard copy-based provisioning -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ts.copy-wildfly</id>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
-                            <!-- Disable the Galleon provisioning -->
-                            <execution>
-                                <id>microprofile-openapi-provisioning</id>
-                                <goals>
-                                    <goal>provisioning</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.jar.plugin}</version>
-                        <executions>
-                            <!-- Package a cloud-server with openapi decorator added -->
-                            <execution>
-                                <id>bootable-jar-microprofile-openapi-packaging</id>
-                                <goals>
-                                    <goal>package</goal>
-                                </goals>
-                                <phase>process-test-resources</phase>
-                                <configuration>
-                                    <output-file-name>test-wildfly-openapi.jar</output-file-name>
-                                    <hollowJar>true</hollowJar>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>true</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <layers>
-                                        <layer>cloud-server</layer>
-                                        <layer>microprofile-openapi</layer>
-                                    </layers>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <!-- Tests against the fault tolerance install  -->
-                        <configuration>
-                            <systemPropertyVariables>
-                                <install.dir>${project.build.directory}/wildfly</install.dir>
-                                <bootable.jar>${project.build.directory}/test-wildfly-openapi.jar</bootable.jar>
-                                <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
-                            </systemPropertyVariables>
-                            <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
-                            <classpathDependencyExcludes>
-                                <classpathDependencyExclude>
-                                    org.wildfly.arquillian:wildfly-arquillian-container-managed
-                                </classpathDependencyExclude>
-                            </classpathDependencyExcludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
+            <properties>
+                <!-- Enable bootable jar packaging -->
+                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+            </properties>
+        </profile>
+        
+        <profile>
+            <id>bootablejar.ee9.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable.ee9</name>
+                </property>
+            </activation>
+            <properties>
+                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
+                <!-- Enable bootable jar packaging -->
+                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+            </properties>
         </profile>
 
-        <!-- Test against the ee 9 feature pack -->
-        <!-- TODO convert this to a bootable jar setup once a release
-             of the wildfly jar plugin with transformation support is available -->
         <profile>
             <id>ee9.test.profile</id>
             <activation>
@@ -332,87 +190,12 @@
                 </property>
             </activation>
             <properties>
-                <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
+                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
+                <!-- Enable galleon provisioning -->
+                <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
             </properties>
-
-            <build>
-                <finalName>microprofile-openapi-${project.version}</finalName>
-                <plugins>
-                    <!-- Disable the standard copy-based provisioning -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ts.copy-wildfly</id>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>microprofile-openapi-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>compile</phase>
-                                <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
-                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                        <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>wildfly-preview-feature-pack</artifactId>
-                                            <version>${full.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <!-- Call the file standalone-microprofile.xml as that is what
-                                                 arquillian.xml says to use for testing in the default maven profile-->
-                                            <name>standalone-microprofile.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>microprofile-openapi</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>default-test</id>
-                                <phase>test</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
+
     </profiles>
 
 </project>

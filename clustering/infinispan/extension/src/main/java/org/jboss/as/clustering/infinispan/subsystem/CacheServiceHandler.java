@@ -23,16 +23,17 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.CLUSTERING_CAPABILITIES;
-import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Attribute.MODULE;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.CACHE;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.CONFIGURATION;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.ListAttribute.MODULES;
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.TransactionRequirement.XA_RESOURCE_RECOVERY_REGISTRY;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.controller.ModuleServiceConfigurator;
+import org.jboss.as.clustering.controller.ModulesServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability;
@@ -75,11 +76,11 @@ public class CacheServiceHandler implements ResourceServiceHandler {
 
         ServiceTarget target = context.getServiceTarget();
 
-        ServiceName moduleServiceName = CacheComponent.MODULE.getServiceName(cacheAddress);
-        if (model.hasDefined(MODULE.getName())) {
-            new ModuleServiceConfigurator(moduleServiceName, MODULE).configure(context, model).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        ServiceName moduleServiceName = CacheComponent.MODULES.getServiceName(cacheAddress);
+        if (model.hasDefined(MODULES.getName())) {
+            new ModulesServiceConfigurator(moduleServiceName, MODULES, Collections.emptyList()).configure(context, model).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         } else {
-            new IdentityServiceConfigurator<>(moduleServiceName, CacheContainerComponent.MODULE.getServiceName(containerAddress)).build(target).install();
+            new IdentityServiceConfigurator<>(moduleServiceName, CacheContainerComponent.MODULES.getServiceName(containerAddress)).build(target).install();
         }
 
         this.configuratorFactory.createServiceConfigurator(cacheAddress).configure(context, model).build(target).install();
@@ -121,7 +122,7 @@ public class CacheServiceHandler implements ResourceServiceHandler {
         context.removeService(InfinispanBindingFactory.createCacheConfigurationBinding(containerName, cacheName).getBinderServiceName());
 
         context.removeService(new XAResourceRecoveryServiceConfigurator(cacheAddress).getServiceName());
-        context.removeService(CacheComponent.MODULE.getServiceName(cacheAddress));
+        context.removeService(CacheComponent.MODULES.getServiceName(cacheAddress));
 
         for (Capability capability : EnumSet.allOf(Capability.class)) {
             context.removeService(capability.getServiceName(cacheAddress));

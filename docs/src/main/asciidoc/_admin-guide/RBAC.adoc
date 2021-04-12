@@ -82,7 +82,7 @@ configuration.
 * Deployer – like a Maintainer, but with permission to modify persistent
 configuration constrained to resources that are considered to be
 "application resources". A deployment is an application resource. The
-messaging server is not. Items like datasources and JMS destinations are
+messaging server is not. Items like datasources and Jakarta Messaging destinations are
 not considered to be application resources by default, but this is
 link:#application-constraint[configurable].
 

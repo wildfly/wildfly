@@ -22,9 +22,17 @@
 
 package org.jboss.as.test.txbridge.fromjta;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.io.File;
+import java.io.FilePermission;
+import java.lang.reflect.ReflectPermission;
+import java.util.PropertyPermission;
+
 import javax.naming.InitialContext;
 import javax.transaction.UserTransaction;
 
+import org.apache.commons.lang.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.txbridge.fromjta.service.FirstServiceAT;
@@ -41,7 +49,7 @@ import org.junit.runner.RunWith;
 
 /**
  * <p>
- * Simple set of starting JTA transaction and getting it bridged to the XTS-AT.
+ * Simple set of starting Jakarta Transactions transaction and getting it bridged to the XTS-AT.
  * <p>
  * Test ported from https://github.com/jbosstm/quickstart repository.
  */
@@ -71,6 +79,25 @@ public class BridgeFromJTATestCase {
             .addPackages(true, BridgeFromJTATestCase.class.getPackage())
             .addAsManifestResource(new StringAsset(ManifestMF), "MANIFEST.MF")
             .addAsWebInfResource(new StringAsset(persistentXml), "classes/META-INF/persistence.xml" );
+            if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
+                archive.addAsManifestResource(
+                    createPermissionsXmlAsset(
+                            //This is not catastrophic if absent
+                            //$JAVA_HOME/jre/conf/jaxm.properties
+                            //$JAVA_HOME/jre/lib/jaxws.properties
+                            //$JAVA_HOME/jre/conf/jaxws.properties
+                            new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
+                                    + "conf" + File.separator + "jaxm.properties", "read"),
+                            new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
+                                    + "conf" + File.separator + "jaxws.properties", "read"),
+                            new FilePermission(System.getenv().get("JAVA_HOME") + File.separator + "jre" + File.separator
+                                    + "lib" + File.separator + "jaxws.properties", "read"),
+                            new PropertyPermission("arquillian.debug", "read"),
+                            new ReflectPermission("suppressAccessChecks"),
+                            new RuntimePermission("accessDeclaredMembers"),
+                            new RuntimePermission("accessClassInPackage.com.sun.org.apache.xerces.internal.jaxp")),
+                    "permissions.xml");
+            }
         return archive;
     }
 
@@ -93,9 +120,9 @@ public class BridgeFromJTATestCase {
     }
 
     /**
-     * Test starts the JTA transaction while calling the 'incrementCounter' on the stub.
-     * Expecting the interceptor bridges from JTA to WS-AT.
-     * The commit of the JTA transaction should cause the commit of the WS-AT transaction as well.
+     * Test starts the Jakarta Transactions transaction while calling the 'incrementCounter' on the stub.
+     * Expecting the interceptor bridges from Jakarta Transactions to WS-AT.
+     * The commit of the Jakarta Transactions transaction should cause the commit of the WS-AT transaction as well.
      */
     @Test
     public void testCommit() throws Exception {
@@ -103,19 +130,19 @@ public class BridgeFromJTATestCase {
         firstClient.incrementCounter(1);
         ut.commit();
 
-        // second JTA checks if the counter was really incremented
+        // second Jakarta Transactions checks if the counter was really incremented
         ut.begin();
         int counter = firstClient.getCounter();
         ut.commit();
 
-        Assert.assertEquals("Bridged JTA transaction should commit the WS-AT and the counter is expected to be incremented",
+        Assert.assertEquals("Bridged Jakarta Transactions transaction should commit the WS-AT and the counter is expected to be incremented",
                 1, counter);
     }
 
     /**
-     * Test starts the JTA transaction while calling the 'incrementCounter' on the stub.
-     * Expecting the interceptor bridges from JTA to WS-AT.
-     * The rollback of the JTA transaction should cause the rollback of the WS-AT transaction as well.
+     * Test starts the Jakarta Transactions transaction while calling the 'incrementCounter' on the stub.
+     * Expecting the interceptor bridges from Jakarta Transactions to WS-AT.
+     * The rollback of the Jakarta Transactions transaction should cause the rollback of the WS-AT transaction as well.
      */
     @Test
     public void testRollback() throws Exception {
@@ -123,7 +150,7 @@ public class BridgeFromJTATestCase {
         firstClient.incrementCounter(1);
         ut.rollback();
 
-        // second JTA checks if the counter was not incremented
+        // second Jakarta Transactions checks if the counter was not incremented
         ut.begin();
         int counter = firstClient.getCounter();
         ut.commit();

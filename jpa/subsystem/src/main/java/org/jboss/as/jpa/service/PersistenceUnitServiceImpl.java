@@ -141,7 +141,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                     WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
                                     Object wrapperBeanManagerLifeCycle=null;
 
-                                    // as per JPA specification contract, always pass ValidatorFactory in via standard property before
+                                    // as per Jakarta Persistence specification contract, always pass ValidatorFactory in via standard property before
                                     // creating container EntityManagerFactory
                                     if (validatorFactory != null) {
                                         properties.put(VALIDATOR_FACTORY, validatorFactory);
@@ -154,7 +154,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                         phaseOnePersistenceUnitService.setSecondPhaseStarted(true);
                                         if (beanManagerInjector.getOptionalValue() != null) {
                                             wrapperBeanManagerLifeCycle = phaseOnePersistenceUnitService.getBeanManagerLifeCycle();
-                                            // update the bean manager proxy to the actual CDI bean manager
+                                            // update the bean manager proxy to the actual Jakarta Contexts and Dependency Injection bean manager
                                             proxyBeanManager = phaseOnePersistenceUnitService.getBeanManager();
                                             proxyBeanManager.setDelegate(beanManagerInjector.getOptionalValue());
                                         }

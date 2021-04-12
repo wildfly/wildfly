@@ -23,7 +23,7 @@
   -->
 
 <!-- Represents the Hibernate 4.1.x (works with Hibernate 4.2.x jars also) module  -->
-<module xmlns="urn:jboss:module:1.5" name="org.hibernate" slot="4.1">
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate:4.1">
     <resources>
         <artifact name="${org.wildfly:jipijapa-hibernate4-1}"/>
     </resources>

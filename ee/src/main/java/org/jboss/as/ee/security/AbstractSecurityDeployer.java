@@ -34,7 +34,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 public abstract class AbstractSecurityDeployer<T> {
 
     public JaccService<T> deploy(DeploymentUnit deploymentUnit) {
-        // build the jacc context id.
+        // build the Jakarta Authorization context id.
         String contextId = deploymentUnit.getName();
         if (deploymentUnit.getParent() != null) {
             contextId = deploymentUnit.getParent().getName() + "!" + contextId;

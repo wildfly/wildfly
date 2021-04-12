@@ -41,7 +41,7 @@ import javax.persistence.TemporalType;
  * StoredProcedureQueryNonTxInvocationDetacher
  *
  * for JPA 2.1 (Query Execution) section 3.10.7
- * used by TransactionScopedEntityManager to clear persistence context after StoredProcedureQuery (non-JTA) calls.
+ * used by TransactionScopedEntityManager to clear persistence context after StoredProcedureQuery (non-Jakarta Transactions) calls.
  *
  * @author Scott Marlow
  */

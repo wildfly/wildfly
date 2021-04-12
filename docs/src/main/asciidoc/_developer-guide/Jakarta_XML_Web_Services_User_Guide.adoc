@@ -1,0 +1,852 @@
+[[Jakarta_XML_Web_Services_User_Guide]]
+= Jakarta XML Web Services User Guide
+
+The http://www.jcp.org/en/jsr/detail?id=224[Java API for XML-Based Web
+Services (JAX-WS / JSR-224)] defines the mapping between WSDL and Java
+as well as the classes to be used for accessing webservices and
+publishing them. JBossWS implements the latest JAX-WS specification,
+hence users can reference it for any vendor agnostic webservice usage
+need. Below is a brief overview of the most basic functionalities.
+
+[[web-service-endpoints]]
+== Web Service Endpoints
+
+Jakarta XML Web Services simplifies the development model for a web service endpoint a
+great deal. In short, an endpoint implementation bean is annotated with
+Jakarta XML Web Services annotations and deployed to the server. The server automatically
+generates and publishes the abstract contract (i.e. wsdl+schema) for
+client consumption. All marshalling/unmarshalling is delegated to
+http://www.jcp.org/en/jsr/summary?id=jaxb[JAXB].
+
+[[plain-old-java-object-pojo]]
+=== Plain old Java Object (POJO)
+
+Let's take a look at simple POJO endpoint implementation. All endpoint
+associated metadata is provided via
+http://www.jcp.org/en/jsr/summary?id=181[JSR-181] annotations
+
+....
+@WebService
+@SOAPBinding(style = SOAPBinding.Style.RPC)
+public class JSEBean01
+{
+   @WebMethod
+   public String echo(String input)
+   {
+      ...
+   }
+}
+....
+
+[[the-endpoint-as-a-web-application]]
+==== The endpoint as a web application
+
+A Jakarta XML Web Services java service endpoint (JSE) is deployed as a web application.
+Here is a sample _web.xml_ descriptor:
+
+....
+<web-app ...>
+  <servlet>
+    <servlet-name>TestService</servlet-name>
+    <servlet-class>org.jboss.test.ws.jaxws.samples.jsr181pojo.JSEBean01</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>TestService</servlet-name>
+    <url-pattern>/*</url-pattern>
+  </servlet-mapping>
+</web-app>
+....
+
+[[packaging-the-endpoint]]
+==== Packaging the endpoint
+
+A JSR-181 java service endpoint (JSE) is packaged as a web application
+in a _war_ file.
+
+....
+<war warfile="${build.dir}/libs/jbossws-samples-jsr181pojo.war" webxml="${build.resources.dir}/samples/jsr181pojo/WEB-INF/web.xml">
+  <classes dir="${build.dir}/classes">
+    <include name="org/jboss/test/ws/samples/jsr181pojo/JSEBean01.class"/>
+  </classes>
+</war>
+....
+
+Note, only the endpoint implementation bean and web.xml are required.
+
+[[accessing-the-generated-wsdl]]
+==== Accessing the generated WSDL
+
+A successfully deployed service endpoint will show up in the WildFly
+managent console. You can get the deployed endpoint wsdl address there
+too.
+
+[IMPORTANT]
+
+Note, it is also possible to generate the abstract contract off line
+using JBossWS tools. For details of that please see Bottom-Up (Java to
+WSDL).
+
+[[Jakarta-Enterprise-Beans-3-stateless-session-bean-slsb]]
+=== Jakarta Enterprise Beans 3 Stateless Session Bean (SLSB)
+
+The Jakarta XML Web Services programming model supports the same set of annotations on
+Jakarta Enterprise Beans 3 stateless session beans as on POJO endpoints.
+
+....
+@Stateless
+@Remote(EJB3RemoteInterface.class)
+@RemoteBinding(jndiBinding = "/ejb3/EJB3EndpointInterface")
+
+@WebService
+@SOAPBinding(style = SOAPBinding.Style.RPC)
+public class EJB3Bean01 implements EJB3RemoteInterface
+{
+   @WebMethod
+   public String echo(String input)
+   {
+      ...
+   }
+}
+....
+
+Above you see an Enterprise Beans-3.0 stateless session bean that exposes one method
+both on the remote interface and as an endpoint operation.
+
+[[packaging-the-endpoint-1]]
+==== Packaging the endpoint
+
+A JSR-181 Jakarta Enterprise Beans service endpoint is packaged as an ordinary ejb
+deployment.
+
+....
+<jar jarfile="${build.dir}/libs/jbossws-samples-jsr181ejb.jar">
+  <fileset dir="${build.dir}/classes">
+    <include name="org/jboss/test/ws/samples/jsr181ejb/EJB3Bean01.class"/>
+    <include name="org/jboss/test/ws/samples/jsr181ejb/EJB3RemoteInterface.class"/>
+  </fileset>
+</jar>
+....
+
+[[accessing-the-generated-wsdl-1]]
+==== Accessing the generated WSDL
+
+A successfully deployed service endpoint will show up in the WildFly
+managent console. You can get the deployed endpoint wsdl address there
+too.
+
+[IMPORTANT]
+
+Note, it is also possible to generate the abstract contract off line
+using JBossWS tools. For details of that please see Bottom-Up (Java to
+WSDL).
+
+[[endpoint-provider]]
+=== Endpoint Provider
+
+Jakarta XML Web Services services typically implement a native Java service endpoint
+interface (SEI), perhaps mapped from a WSDL port type, either directly
+or via the use of annotations.
+
+Java SEIs provide a high level Java-centric abstraction that hides the
+details of converting between Java objects and their XML representations
+for use in XML-based messages. However, in some cases it is desirable
+for services to be able to operate at the XML message level. The
+Provider interface offers an alternative to SEIs and may be implemented
+by services wishing to work at the XML message level.
+
+A Provider based service instances invoke method is called for each
+message received for the service.
+
+....
+@WebServiceProvider(wsdlLocation = "WEB-INF/wsdl/Provider.wsdl")
+@ServiceMode(value = Service.Mode.PAYLOAD)
+public class ProviderBeanPayload implements Provider<Source>
+{
+   public Source invoke(Source req)
+   {
+      // Access the entire request PAYLOAD and return the response PAYLOAD
+   }
+}
+....
+
+Note, `Service.Mode.PAYLOAD` is the default and does not have to be
+declared explicitly. You can also use `Service.Mode.MESSAGE` to access
+the entire SOAP message (i.e. with `MESSAGE` the Provider can also see
+SOAP Headers)
+
+The abstract contract for a provider endpoint cannot be
+derived/generated automatically. Therefore it is necessary to specify
+the _wsdlLocation_ with the `@` `WebServiceProvider` annotation.
+
+[[web-service-clients]]
+== Web Service Clients
+
+[[service]]
+=== Service
+
+`Service` is an abstraction that represents a WSDL service. A WSDL
+service is a collection of related ports, each of which consists of a
+port type bound to a particular protocol and available at a particular
+endpoint address.
+
+For most clients, you will start with a set of stubs generated from the
+WSDL. One of these will be the service, and you will create objects of
+that class in order to work with the service (see "static case" below).
+
+[[service-usage]]
+==== Service Usage
+
+[[static-case]]
+===== Static case
+
+Most clients will start with a WSDL file, and generate some stubs using
+JBossWS tools like _wsconsume_. This usually gives a mass of files, one
+of which is the top of the tree. This is the service implementation
+class.
+
+The generated implementation class can be recognised as it will have two
+public constructors, one with no arguments and one with two arguments,
+representing the wsdl location (a `java.net.URL`) and the service name
+(a `javax.xml.namespace.QName`) respectively.
+
+Usually you will use the no-argument constructor. In this case the WSDL
+location and service name are those found in the WSDL. These are set
+implicitly from the `@WebServiceClient` annotation that decorates the
+generated class.
+
+The following code snippet shows the generated constructors from the
+generated class:
+
+....
+// Generated Service Class
+
+@WebServiceClient(name="StockQuoteService", targetNamespace="http://example.com/stocks", wsdlLocation="http://example.com/stocks.wsdl")
+public class StockQuoteService extends javax.xml.ws.Service
+{
+   public StockQuoteService()
+   {
+      super(new URL("http://example.com/stocks.wsdl"), new QName("http://example.com/stocks", "StockQuoteService"));
+   }
+
+   public StockQuoteService(String wsdlLocation, QName serviceName)
+   {
+      super(wsdlLocation, serviceName);
+   }
+
+   ...
+}
+....
+
+Section Dynamic Proxy explains how to obtain a port from the service and
+how to invoke an operation on the port. If you need to work with the XML
+payload directly or with the XML representation of the entire SOAP
+message, have a look at `Dispatch`.
+
+[[dynamic-case]]
+===== Dynamic case
+
+In the dynamic case, when nothing is generated, a web service client
+uses `Service.create` to create Service instances, the following code
+illustrates this process.
+
+....
+URL wsdlLocation = new URL("http://example.org/my.wsdl");
+QName serviceName = new QName("http://example.org/sample", "MyService");
+Service service = Service.create(wsdlLocation, serviceName);
+....
+
+[[handler-resolver]]
+==== Handler Resolver
+
+Jakarta XML Web Services provides a flexible plug-in framework for message processing
+modules, known as handlers, that may be used to extend the capabilities
+of a Jakarta XML Web Services runtime system. Handler Framework describes the handler
+framework in detail. A Service instance provides access to a
+`HandlerResolver` via a pair of `getHandlerResolver` /
+`setHandlerResolver` methods that may be used to configure a set of
+handlers on a per-service, per-port or per-protocol binding basis.
+
+When a Service instance is used to create a proxy or a Dispatch instance
+then the handler resolver currently registered with the service is used
+to create the required handler chain. Subsequent changes to the handler
+resolver configured for a Service instance do not affect the handlers on
+previously created proxies, or Dispatch instances.
+
+[[executor]]
+==== Executor
+
+Service instances can be configured with a
+`java.util.concurrent.Executor`. The executor will then be used to
+invoke any asynchronous callbacks requested by the application. The
+`setExecutor` and `getExecutor` methods of `Service` can be used to
+modify and retrieve the executor configured for a service.
+
+[[dynamic-proxy]]
+=== Dynamic Proxy
+
+You can create an instance of a client proxy using one of `getPort`
+methods on the `Service`.
+
+....
+/**
+ * The getPort method returns a proxy. A service client
+ * uses this proxy to invoke operations on the target
+ * service endpoint. The <code>serviceEndpointInterface</code>
+ * specifies the service endpoint interface that is supported by
+ * the created dynamic proxy instance.
+ **/
+public <T> T getPort(QName portName, Class<T> serviceEndpointInterface)
+{
+   ...
+}
+
+/**
+ * The getPort method returns a proxy. The parameter
+ * <code>serviceEndpointInterface</code> specifies the service
+ * endpoint interface that is supported by the returned proxy.
+ * In the implementation of this method, the Jakarta XML Web Services
+ * runtime system takes the responsibility of selecting a protocol
+ * binding (and a port) and configuring the proxy accordingly.
+ * The returned proxy should not be reconfigured by the client.
+ *
+ **/
+public <T> T getPort(Class<T> serviceEndpointInterface)
+{
+   ...
+}
+....
+
+The service endpoint interface (SEI) is usually generated using tools.
+For details see Top Down (WSDL to Java)
+
+A generated static Service usually also offers typed methods to get
+ports. These methods also return dynamic proxies that implement the SEI.
+
+....
+@WebServiceClient(name = "TestEndpointService", targetNamespace = "http://org.jboss.ws/wsref",
+   wsdlLocation = "http://localhost.localdomain:8080/jaxws-samples-webserviceref?wsdl")
+
+public class TestEndpointService extends Service
+{
+    ...
+
+    public TestEndpointService(URL wsdlLocation, QName serviceName) {
+        super(wsdlLocation, serviceName);
+    }
+
+    @WebEndpoint(name = "TestEndpointPort")
+    public TestEndpoint getTestEndpointPort()
+    {
+        return (TestEndpoint)super.getPort(TESTENDPOINTPORT, TestEndpoint.class);
+    }
+}
+....
+
+[[webserviceref]]
+=== WebServiceRef
+
+The `@WebServiceRef` annotation is used to declare a reference to a Web
+service. It follows the resource pattern exemplified by the
+`javax.annotation.Resource` annotation in
+http://www.jcp.org/en/jsr/summary?id=250[JSR-250].
+
+There are two uses to the WebServiceRef annotation:
+
+1.  To define a reference whose type is a generated service class. In
+this case, the type and value element will both refer to the generated
+service class type. Moreover, if the reference type can be inferred by
+the field/method declaration the annotation is applied to, the type and
+value elements MAY have the default value (Object.class, that is). If
+the type cannot be inferred, then at least the type element MUST be
+present with a non-default value.
+2.  To define a reference whose type is a SEI. In this case, the type
+element MAY be present with its default value if the type of the
+reference can be inferred from the annotated field/method declaration,
+but the value element MUST always be present and refer to a generated
+service class type (a subtype of javax.xml.ws.Service). The wsdlLocation
+element, if present, overrides theWSDL location information specified in
+the WebService annotation of the referenced generated service class.
++
+....
+public class EJB3Client implements EJB3Remote
+{
+   @WebServiceRef
+   public TestEndpointService service4;
+
+   @WebServiceRef
+   public TestEndpoint port3;
+....
+
+[[dispatch]]
+=== Dispatch
+
+XMLWeb Services use XML messages for communication between services and
+service clients. The higher level Jakarta XML Web Services APIs are designed to hide the
+details of converting between Java method invocations and the
+corresponding XML messages, but in some cases operating at the XML
+message level is desirable. The Dispatch interface provides support for
+this mode of interaction.
+
+`Dispatch` supports two usage modes, identified by the constants
+`javax.xml.ws.Service.Mode.MESSAGE` and
+`javax.xml.ws.Service.Mode.PAYLOAD` respectively:
+
+*_Message_* In this mode, client applications work directly with
+protocol-specific message structures. E.g., when used with a SOAP
+protocol binding, a client application would work directly with a SOAP
+message.
+
+*_Message Payload_* In this mode, client applications work with the
+payload of messages rather than the messages themselves. E.g., when used
+with a SOAP protocol binding, a client application would work with the
+contents of the SOAP Body rather than the SOAP message as a whole.
+
+Dispatch is a low level API that requires clients to construct messages
+or message payloads as XML and requires an intimate knowledge of the
+desired message or payload structure. Dispatch is a generic class that
+supports input and output of messages or message payloads of any type.
+
+....
+Service service = Service.create(wsdlURL, serviceName);
+Dispatch dispatch = service.createDispatch(portName, StreamSource.class, Mode.PAYLOAD);
+
+String payload = "<ns1:ping xmlns:ns1='http://oneway.samples.jaxws.ws.test.jboss.org/'/>";
+dispatch.invokeOneWay(new StreamSource(new StringReader(payload)));
+
+payload = "<ns1:feedback xmlns:ns1='http://oneway.samples.jaxws.ws.test.jboss.org/'/>";
+Source retObj = (Source)dispatch.invoke(new StreamSource(new StringReader(payload)));
+....
+
+[[asynchronous-invocations]]
+=== Asynchronous Invocations
+
+The `BindingProvider` interface represents a component that provides a
+protocol binding for use by clients, it is implemented by proxies and is
+extended by the `Dispatch` interface.
+
+`BindingProvider` instances may provide asynchronous operation
+capabilities. When used, asynchronous operation invocations are
+decoupled from the `BindingProvider` instance at invocation time such
+that the response context is not updated when the operation completes.
+Instead a separate response context is made available using the
+`Response` interface.
+
+....
+public void testInvokeAsync() throws Exception
+{
+   URL wsdlURL = new URL("http://" + getServerHost() + ":8080/jaxws-samples-asynchronous?wsdl");
+   QName serviceName = new QName(targetNS, "TestEndpointService");
+   Service service = Service.create(wsdlURL, serviceName);
+   TestEndpoint port = service.getPort(TestEndpoint.class);
+   Response response = port.echoAsync("Async");
+   // access future
+   String retStr = (String) response.get();
+   assertEquals("Async", retStr);
+}
+....
+
+[[oneway-invocations]]
+=== Oneway Invocations
+
+`@Oneway` indicates that the given web method has only an input message
+and no output. Typically, a oneway method returns the thread of control
+to the calling application prior to executing the actual business
+method.
+
+....
+@WebService (name="PingEndpoint")
+@SOAPBinding(style = SOAPBinding.Style.RPC)
+public class PingEndpointImpl
+{
+   private static String feedback;
+  
+   @WebMethod
+   @Oneway
+   publicvoid ping()
+   {
+      log.info("ping");
+      feedback = "ok";
+   }
+  
+   @WebMethod
+   public String feedback()
+   {
+      log.info("feedback");
+      return feedback;
+   }
+}
+....
+
+[[timeout-configuration]]
+=== Timeout Configuration
+
+There are two properties to configure the http connection timeout and
+client receive time out:
+
+....
+public void testConfigureTimeout() throws Exception
+{
+   //Set timeout until a connection is established
+   ((BindingProvider)port).getRequestContext().put("javax.xml.ws.client.connectionTimeout", "6000");
+
+   //Set timeout until the response is received
+   ((BindingProvider) port).getRequestContext().put("javax.xml.ws.client.receiveTimeout", "1000");
+
+   port.echo("testTimeout");
+}
+....
+
+[[common-api]]
+== Common API
+
+This sections describes concepts that apply equally to Web Service
+Endpoints and Web Service Clients.
+
+[[handler-framework]]
+=== Handler Framework
+
+The handler framework is implemented by a Jakarta XML Web Services protocol binding in
+both client and server side runtimes. Proxies, and Dispatch instances,
+known collectively as binding providers, each use protocol bindings to
+bind their abstract functionality to specific protocols.
+
+Client and server-side handlers are organized into an ordered list known
+as a handler chain. The handlers within a handler chain are invoked each
+time a message is sent or received. Inbound messages are processed by
+handlers prior to binding provider processing. Outbound messages are
+processed by handlers after any binding provider processing.
+
+Handlers are invoked with a message context that provides methods to
+access and modify inbound and outbound messages and to manage a set of
+properties. Message context properties may be used to facilitate
+communication between individual handlers and between handlers and
+client and service implementations. Different types of handlers are
+invoked with different types of message context.
+
+[[logical-handler]]
+==== Logical Handler
+
+Handlers that only operate on message context properties and message
+payloads. Logical handlers are protocol agnostic and are unable to
+affect protocol specific parts of a message. Logical handlers are
+handlers that implement `javax.xml.ws.handler.LogicalHandler`.
+
+[[protocol-handler]]
+==== Protocol Handler
+
+Handlers that operate on message context properties and protocol
+specific messages. Protocol handlers are specific to a particular
+protocol and may access and change protocol specific aspects of a
+message. Protocol handlers are handlers that implement any interface
+derived from `javax.xml.ws.handler.Handler` except
+`javax.xml.ws.handler.LogicalHandler`.
+
+[[service-endpoint-handlers]]
+==== Service endpoint handlers
+
+On the service endpoint, handlers are defined using the `@HandlerChain`
+annotation.
+
+....
+@WebService
+@HandlerChain(file = "jaxws-server-source-handlers.xml")
+public class SOAPEndpointSourceImpl
+{
+   ...
+}
+....
+
+The location of the handler chain file supports 2 formats
+
+\1. An absolute java.net.URL in externalForm. (ex:
+http://myhandlers.foo.com/handlerfile1.xml)
+
+\2. A relative path from the source file or class file. (ex:
+bar/handlerfile1.xml)
+
+[[service-client-handlers]]
+==== Service client handlers
+
+On the client side, handler can be configured using the `@HandlerChain`
+annotation on the SEI or dynamically using the API.
+
+....
+Service service = Service.create(wsdlURL, serviceName);
+Endpoint port = (Endpoint)service.getPort(Endpoint.class);
+     
+BindingProvider bindingProvider = (BindingProvider)port;
+List<Handler> handlerChain = new ArrayList<Handler>();
+handlerChain.add(new LogHandler());
+handlerChain.add(new AuthorizationHandler());
+handlerChain.add(new RoutingHandler());
+bindingProvider.getBinding().setHandlerChain(handlerChain); // important!
+....
+
+[[message-context]]
+=== Message Context
+
+`MessageContext` is the super interface for all Jakarta XML Web Services message contexts.
+It extends `Map<String,Object>` with additional methods and constants to
+manage a set of properties that enable handlers in a handler chain to
+share processing related state. For example, a handler may use the put
+method to insert a property in the message context that one or more
+other handlers in the handler chain may subsequently obtain via the get
+method.
+
+Properties are scoped as either APPLICATION or HANDLER. All properties
+are available to all handlers for an instance of an MEP on a particular
+endpoint. E.g., if a logical handler puts a property in the message
+context, that property will also be available to any protocol handlers
+in the chain during the execution of an MEP instance. APPLICATION scoped
+properties are also made available to client applications (see section
+4.2.1) and service endpoint implementations. The defaultscope for a
+property is HANDLER.
+
+[[logical-message-context]]
+==== Logical Message Context
+
+Logical Handlers are passed a message context of type
+`LogicalMessageContext` when invoked. `LogicalMessageContext` extends
+`MessageContext` with methods to obtain and modify the message payload,
+it does not provide access to the protocol specific aspects of amessage.
+A protocol binding defines what component of a message are available via
+a logical message context. The SOAP binding defines that a logical
+handler deployed in a SOAP binding can access the contents of the SOAP
+body but not the SOAP headers whereas the XML/HTTP binding defines that
+a logical handler can access the entire XML payload of a message.
+
+[[soap-message-context]]
+==== SOAP Message Context
+
+SOAP handlers are passed a `SOAPMessageContext` when invoked.
+`SOAPMessageContext` extends `MessageContext` with methods to obtain and
+modify the SOAP message payload.
+
+[[fault-handling]]
+=== Fault Handling
+
+An implementation may thow a `SOAPFaultException`
+
+....
+public void throwSoapFaultException()
+{
+   SOAPFactory factory = SOAPFactory.newInstance();
+   SOAPFault fault = factory.createFault("this is a fault string!", new QName("http://foo", "FooCode"));
+   fault.setFaultActor("mr.actor");
+   fault.addDetail().addChildElement("test");
+   thrownew SOAPFaultException(fault);
+}
+....
+
+or an application specific user exception
+
+....
+public void throwApplicationException() throws UserException
+{
+   thrownew UserException("validation", 123, "Some validation error");
+}
+....
+
+[IMPORTANT]
+
+In case of the latter, JBossWS generates the required fault wrapper
+beans at runtime if they are not part of the deployment
+
+[[Jakarta-XML-Web-Services-annotations]]
+== Jakarta XML Web Services Annotations
+
+For details, see http://www.jcp.org/en/jsr/detail?id=224[JSR-224 - Java
+API for XML-Based Web Services (JAX-WS) 2.2]
+
+[[javax.xml.ws.servicemode]]
+=== javax.xml.ws.ServiceMode
+
+The `ServiceMode` annotation is used to specify the mode for a provider
+class, i.e. whether a provider wants to have access to protocol message
+payloads (e.g. a SOAP body) or the entire protocol messages (e.g. a SOAP
+envelope).
+
+[[javax.xml.ws.webfault]]
+=== javax.xml.ws.WebFault
+
+The `WebFault` annotation is used when mapping WSDL faults to Java
+exceptions, see section 2.5. It is used to capture the name of the fault
+element used when marshalling the Jakarta XML Binding type generated from the global
+element referenced by the WSDL fault message. It can also be used to
+customize the mapping of service specific exceptions to WSDL faults.
+
+[[javax.xml.ws.requestwrapper]]
+=== javax.xml.ws.RequestWrapper
+
+The `RequestWrapper` annotation is applied to the methods of an SEI. It
+is used to capture the Jakarta XML Binding generated request wrapper bean and the
+element name and namespace for marshalling / unmarshalling the bean. The
+default value of localName element is the operationName as defined in
+`WebMethod` annotation and the default value for the targetNamespace
+element is the target namespace of the SEI.When starting from Java, this
+annotation is used to resolve overloading conflicts in document literal
+mode. Only the className element is required in this case.
+
+[[javax.xml.ws.responsewrapper]]
+=== javax.xml.ws.ResponseWrapper
+
+The `ResponseWrapper` annotation is applied to the methods of an SEI. It
+is used to capture the Jakarta XML Binding generated response wrapper bean and the
+element name and namespace for marshalling / unmarshalling the bean. The
+default value of the localName element is the operationName as defined
+in the `WebMethod` appended with "Response" and the default value of the
+targetNamespace element is the target namespace of the SEI. When
+starting from Java, this annotation is used to resolve overloading
+conflicts in document literal mode. Only the className element is
+required in this case.
+
+[[javax.xml.ws.webserviceclient]]
+=== javax.xml.ws.WebServiceClient
+
+The `WebServiceClient` annotation is specified on a generated service
+class (see 2.7). It is used to associate a class with a specific Web
+service, identify by a URL to a WSDL document and the qualified name of
+a wsdl:service element.
+
+[[javax.xml.ws.webendpoint]]
+=== javax.xml.ws.WebEndpoint
+
+The `WebEndpoint` annotation is specified on the getPortName() methods
+of a generated service class (see 2.7). It is used to associate a get
+method with a specific wsdl:port, identified by its local name (a
+NCName).
+
+[[javax.xml.ws.webserviceprovider]]
+=== javax.xml.ws.WebServiceProvider
+
+The `WebServiceProvider` annotation is specified on classes that
+implement a strongly typed `javax.xml.ws.Provider`. It is used to
+declare that a class that satisfies the requirements for a provider (see
+5.1) does indeed define a Web service endpoint, much like the
+`WebService` annotation does for SEI-based endpoints.
+
+The `WebServiceProvider` and `WebService` annotations are mutually
+exclusive.
+
+[[javax.xml.ws.bindingtype]]
+=== javax.xml.ws.BindingType
+
+The `BindingType` annotation is applied to an endpoint implementation
+class. It specifies the binding to use when publishing an endpoint of
+this type.
+
+The default binding for an endpoint is the SOAP 1.1/HTTP one.
+
+[[javax.xml.ws.webserviceref]]
+=== javax.xml.ws.WebServiceRef
+
+The `WebServiceRef` annotation is used to declare a reference to a Web
+service. It follows the resource pattern exemplified by the
+`javax.annotation.Resource` annotation in JSR-250 [JBWS:32]. The
+`WebServiceRef` annotation is required to be honored when running on the
+Jakarta EE platform, where it is subject to the common resource injection
+rules described by the platform specification [JBWS:33].
+
+[[javax.xml.ws.webservicerefs]]
+=== javax.xml.ws.WebServiceRefs
+
+The `WebServiceRefs` annotation is used to declare multiple references
+to Web services on a single class. It is necessary to work around the
+limition against specifying repeated annotations of the same type on any
+given class, which prevents listing multiple `javax.ws.WebServiceRef`
+annotations one after the other. This annotation follows the resource
+pattern exemplified by the `javax.annotation.Resources` annotation in
+JSR-250.
+
+Since no name and type can be inferred in this case, each
+`WebServiceRef` annotation inside a WebServiceRefs MUST contain name and
+type elements with non-default values. The `WebServiceRef` annotation is
+required to be honored when running on the Jakarta EE platform, where it
+is subject to the common resource injection rules described by the
+platform specification.
+
+[[javax.xml.ws.action]]
+=== javax.xml.ws.Action
+
+The `Action` annotation is applied to the methods of a SEI. It used to
+generate the wsa:Action on wsdl:input and wsdl:output of each
+wsdl:operation mapped from the annotated methods.
+
+[[javax.xml.ws.faultaction]]
+=== javax.xml.ws.FaultAction
+
+The `FaultAction` annotation is used within the `Action` annotation to
+generate the wsa:Action element on the wsdl:fault element of each
+wsdl:operation mapped from the annotated methods.
+
+[[jsr-181-annotations]]
+== JSR-181 Annotations
+
+JSR-181 defines the syntax and semantics of Java Web Service (JWS)
+metadata and default values.
+
+For details, see http://www.jcp.org/en/jsr/detail?id=181[JSR 181 - Web
+Services Metadata for the Java Platform].
+
+[[javax.jws.webservice]]
+=== javax.jws.WebService
+
+Marks a Java class as implementing a Web Service, or a Java interface as
+defining a Web Service interface.
+
+[[javax.jws.webmethod]]
+=== javax.jws.WebMethod
+
+Customizes a method that is exposed as a Web Service operation.
+
+[[javax.jws.oneway]]
+=== javax.jws.OneWay
+
+Indicates that the given web method has only an input message and no
+output. Typically, a oneway method returns the thread of control to the
+calling application prior to executing the actual business method. A
+JSR-181 processor is REQUIRED to report an error if an operation marked
+`@Oneway` has a return value, declares any checked exceptions or has any
+INOUT or OUT parameters.
+
+[[javax.jws.webparam]]
+=== javax.jws.WebParam
+
+Customizes the mapping of an individual parameter to a Web Service
+message part and XML element.
+
+[[javax.jws.webresult]]
+=== javax.jws.WebResult
+
+Customizes the mapping of the return value to a WSDL part and XML
+element.
+
+[[javax.jws.soapbinding]]
+=== javax.jws.SOAPBinding
+
+Specifies the mapping of the Web Service onto the SOAP message protocol.
+
+The `SOAPBinding` annotation has a target of `TYPE` and `METHOD`. The
+annotation may be placed on a method if and only if the
+`SOAPBinding.style` is `DOCUMENT`. Implementations MUST report an error
+if the `SOAPBinding` annotation is placed on a method with a
+`SOAPBinding.style` of `RPC`. Methods that do not have a `SOAPBinding`
+annotation accept the `SOAPBinding` behavior defined on the type.
+
+[[javax.jws.handlerchain]]
+=== javax.jws.HandlerChain
+
+The `@HandlerChain` annotation associates the Web Service with an
+externally defined handler chain.
+
+It is an error to combine this annotation with the
+`@SOAPMessageHandlers` annotation.
+
+The `@HandlerChain` annotation MAY be present on the endpoint interface
+and service implementation bean. The service implementation bean's
+`@HandlerChain` is used if `@HandlerChain` is present on both.
+
+The `@HandlerChain` annotation MAY be specified on the type only. The
+annotation target includes `METHOD` and `FIELD` for use by Jakarta XML Web Services Specification-2.x.
+
+NOTE: References in this document to Java API for XML-Based Web Services(JAX-WS) refer to the Jakarta XML Web Services unless otherwise noted

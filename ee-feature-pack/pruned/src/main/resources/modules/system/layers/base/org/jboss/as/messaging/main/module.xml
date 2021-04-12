@@ -33,7 +33,7 @@
 
     <dependencies>
         <module name="org.jboss.staxmapper"/>
-        <!-- required to provide high-level JMS CLI commands loaded by the extension -->
+        <!-- required to provide high-level Jakarta Messaging CLI commands loaded by the extension -->
         <module name="org.jboss.as.cli" />
         <!-- controller module exports dmr and controller-client, which we also use -->
         <module name="org.jboss.as.controller"/>

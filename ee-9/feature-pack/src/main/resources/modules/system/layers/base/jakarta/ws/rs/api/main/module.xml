@@ -22,15 +22,18 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="jakarta.ws.rs.api">
+<module xmlns="urn:jboss:module:1.9" name="jakarta.ws.rs.api">
+
     <resources>
-        <artifact name="${org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec}"/>
+        <artifact name="${org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_3.0_spec}"/>
         <!--<artifact name="${jakarta.ws.rs:jakarta.ws.rs-api}"/>-->
     </resources>
 
     <dependencies>
+        <module name="java.logging"/>
+        <module name="java.xml"/>
         <module name="org.jboss.resteasy.resteasy-jaxrs" services="export"/>
-        <module name="javax.xml.bind.api" />
-        <module name="javax.api" />
+        <module name="javax.xml.bind.api"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
     </dependencies>
 </module>

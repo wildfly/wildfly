@@ -5,7 +5,7 @@ import javax.enterprise.inject.spi.BeanManager;
 import org.jboss.weld.util.ForwardingBeanManager;
 
 /**
- * Proxy for CDI BeanManager
+ * Proxy for Jakarta Contexts and Dependency Injection BeanManager
  *
  * @author Scott Marlow
  */

@@ -104,7 +104,7 @@ public class TransactionTestCase {
     }
 
     // Test that the queried Employee is detached as required by JPA 2.0 section 3.8.6
-    // For a transaction scoped persistence context non jta-tx invocation, entities returned from Query
+    // For a transaction scoped persistence context non Jakarta Transactions tx invocation, entities returned from Query
     // must be detached.
     @Test
     @InSequence(3)
@@ -146,11 +146,11 @@ public class TransactionTestCase {
 
 
     /**
-     * Tests JTA involving an EJB 3 SLSB which makes two DAO calls in transaction.
+     * Tests Jakarta Transactions involving an EJB 3 SLSB which makes two DAO calls in transaction.
      * Scenarios:
-     * 1) The transaction fails during the first DAO call and the JTA transaction is rolled back and no database changes should occur.
-     * 2) The transaction fails during the second DAO call and the JTA transaction is rolled back and no database changes should occur.
-     * 3) The transaction fails after the DAO calls and the JTA transaction is rolled back and no database changes should occur.
+     * 1) The transaction fails during the first DAO call and the Jakarta Transactions transaction is rolled back and no database changes should occur.
+     * 2) The transaction fails during the second DAO call and the Jakarta Transactions transaction is rolled back and no database changes should occur.
+     * 3) The transaction fails after the DAO calls and the Jakarta Transactions transaction is rolled back and no database changes should occur.
      */
     @Test
     @InSequence(5)
@@ -225,7 +225,7 @@ public class TransactionTestCase {
 
         unsynchronizedSFSB.createAndJoin("New England Revolution", "Gillette Stadium", 50);
         employee = sfsb1.getEmployeeNoTX(50);   // so that other persistence context can also see new entity
-        assertNotNull("SynchronizationType.UNSYNCHRONIZED should be visible to separate persistence context after joining persistence context to jta transaction",
+        assertNotNull("SynchronizationType.UNSYNCHRONIZED should be visible to separate persistence context after joining persistence context to Jakarta Transactions transaction",
                 employee);
 
         // check that propagation of UNSYNCHRONIZED persistence context happens during call to inner bean and that
@@ -273,7 +273,7 @@ public class TransactionTestCase {
         try {
             Employee employee = unsynchronizedSFSB.createAndPropagatedFindMixExceptionExcepted("Catherine Stark", "Winterfell", 203);
             fail("If there is a persistence context of type SynchronizationType.UNSYNCHRONIZED\n" +
-                    "associated with the JTA transaction and the target component specifies a persistence context of\n" +
+                    "associated with the Jakarta Transactions transaction and the target component specifies a persistence context of\n" +
                     "type SynchronizationType.SYNCHRONIZED, the IllegalStateException is\n" +
                     "thrown by the container.");
         } catch (/*EJBTransactionRolledbackException*/ Exception expected) {

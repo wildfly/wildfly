@@ -23,6 +23,7 @@
   -->
 
 <module xmlns="urn:jboss:module:1.9" name="org.jboss.as.clustering.infinispan">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -36,7 +37,10 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
+        <module name="java.management"/>
+        <module name="java.sql"/>
+        <module name="java.xml"/>
+        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.transaction.api"/>
         <!-- The io.netty module is only require to initialize Netty's InternalLoggingFactory -->
         <module name="io.netty"/>
@@ -71,6 +75,7 @@
         <module name="org.wildfly.clustering.jgroups.spi"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
+        <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.spi"/>

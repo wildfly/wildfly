@@ -60,7 +60,7 @@ import javax.jms.Queue;
 )
 
 /**
- * Auxiliary class for JMS smoke tests - sends messages to a queue from within a transaction with different value in JMSConnectionFactoryDefinition annotation's transactional attribute
+ * Auxiliary class for Jakarta Messaging smoke tests - sends messages to a queue from within a transaction with different value in JMSConnectionFactoryDefinition annotation's transactional attribute
  * Test of fix for WFLY-9762
  *
  * @author <a href="jondruse@redhat.com">Jiri Ondrusek</a>

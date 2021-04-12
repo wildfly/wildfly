@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2020, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -124,7 +124,7 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
          * Default implementation of the Weld 1.2 API
          *
          * This provides forward binary compatibility with Weld 1.2 (OSGi integration).
-         * It is OK to ignore the id parameter as TCCL is still used to identify the singleton in Java EE.
+         * It is OK to ignore the id parameter as TCCL is still used to identify the singleton in Jakarta EE.
          */
         public T get(String id) {
             T val = contextIdStore.get(id);

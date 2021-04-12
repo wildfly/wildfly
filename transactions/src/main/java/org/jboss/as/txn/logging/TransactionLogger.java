@@ -212,11 +212,11 @@ public interface TransactionLogger extends BasicLogger {
     void transactionNotFound(Transaction tx);
 
     @LogMessage(level = WARN)
-    @Message(id = 27, value = "The pre-jca synchronization %s associated with tx %s failed during after completion")
+    @Message(id = 27, value = "The pre-Jakarta Connectors synchronization %s associated with tx %s failed during after completion")
     void preJcaSyncAfterCompletionFailed(Synchronization preJcaSync, Transaction tx, @Cause Exception e);
 
     @LogMessage(level = WARN)
-    @Message(id = 28, value = "The jca synchronization %s associated with tx %s failed during after completion")
+    @Message(id = 28, value = "The Jakarta Connectors synchronization %s associated with tx %s failed during after completion")
     void jcaSyncAfterCompletionFailed(Synchronization jcaSync, Transaction tx, @Cause Exception e);
 
     @Message(id = 29, value = "Syncs are not allowed to be registered when the tx is in state %s")
@@ -241,7 +241,7 @@ public interface TransactionLogger extends BasicLogger {
     @Message(id = 35, value = "Cannot find or import inflow transaction for xid %s and work %s")
     WorkCompletedException cannotFindOrImportInflowTransaction(Xid xid, Work work, @Cause Exception e);
 
-    @Message(id = 36, value = "Imported jca inflow transaction with xid %s of work %s is inactive")
+    @Message(id = 36, value = "Imported Jakarta Connectors inflow transaction with xid %s of work %s is inactive")
     WorkCompletedException importedInflowTransactionIsInactive(Xid xid, Work work, @Cause Exception e);
 
     @Message(id = 37, value = "Unexpected error on resuming transaction %s for work %s")

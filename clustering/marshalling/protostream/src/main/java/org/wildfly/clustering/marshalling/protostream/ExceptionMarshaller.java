@@ -25,38 +25,28 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.OptionalInt;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
+import org.infinispan.protostream.impl.WireFormat;
 
 /**
  * Generic marshaller for a Throwable.
  * @author Paul Ferraro
+ * @param <E> the target type of this marshaller
  */
 public class ExceptionMarshaller<E extends Throwable> implements ProtoStreamMarshaller<E> {
 
+    private static final int CLASS_INDEX = 1;
+    private static final int MESSAGE_INDEX = 2;
+    private static final int CAUSE_INDEX = 3;
+    private static final int STACK_TRACE_ELEMENT_INDEX = 4;
+    private static final int SUPPRESSED_INDEX = 5;
+
     private final Class<E> exceptionClass;
-    private final Constructor<E> emptyConstructor;
-    private final Constructor<E> messageConstructor;
-    private final Constructor<E> causeConstructor;
-    private final Constructor<E> messageCauseConstructor;
 
     public ExceptionMarshaller(Class<E> exceptionClass) {
         this.exceptionClass = exceptionClass;
-        this.emptyConstructor = this.getConstructor();
-        this.messageConstructor = this.getConstructor(String.class);
-        this.causeConstructor = this.getConstructor(Throwable.class);
-        this.messageCauseConstructor = this.getConstructor(String.class, Throwable.class);
-    }
-
-    private Constructor<E> getConstructor(Class<?>... parameterTypes) {
-        try {
-            return this.exceptionClass.getConstructor(parameterTypes);
-        } catch (NoSuchMethodException e) {
-            return null;
-        }
     }
 
     @Override
@@ -65,102 +55,87 @@ public class ExceptionMarshaller<E extends Throwable> implements ProtoStreamMars
     }
 
     @Override
-    public E readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        String message = AnyField.STRING.cast(String.class).readFrom(context, reader);
-
-        Throwable cause = (Throwable) ObjectMarshaller.INSTANCE.readFrom(context, reader);
-
-        E exception = this.createException(message, cause);
-
-        int stackTraceSize = reader.readUInt32();
-        if (stackTraceSize > 0) {
-            StackTraceElement[] stackTrace = new StackTraceElement[stackTraceSize];
-            for (int i = 0; i < stackTraceSize; ++i) {
-                String className = (String) ObjectMarshaller.INSTANCE.readFrom(context, reader);
-                String methodName = (String) ObjectMarshaller.INSTANCE.readFrom(context, reader);
-                String fileName = (String) ObjectMarshaller.INSTANCE.readFrom(context, reader);
-                int lineNumber = reader.readUInt32();
-                stackTrace[i] = new StackTraceElement(className, methodName, fileName, lineNumber);
+    public E readFrom(ProtoStreamReader reader) throws IOException {
+        Class<E> exceptionClass = this.exceptionClass;
+        String message = null;
+        Throwable cause = null;
+        List<StackTraceElement> stackTrace = new LinkedList<>();
+        List<Throwable> suppressed = new LinkedList<>();
+        boolean reading = true;
+        while (reading) {
+            int tag = reader.readTag();
+            switch (WireFormat.getTagFieldNumber(tag)) {
+                case CLASS_INDEX:
+                    exceptionClass = reader.readObject(Class.class);
+                    break;
+                case MESSAGE_INDEX:
+                    message = reader.readString();
+                    break;
+                case CAUSE_INDEX:
+                    cause = (Throwable) reader.readObject(Any.class).get();
+                    break;
+                case STACK_TRACE_ELEMENT_INDEX:
+                    stackTrace.add(reader.readObject(StackTraceElement.class));
+                    break;
+                case SUPPRESSED_INDEX:
+                    suppressed.add((Throwable) reader.readObject(Any.class).get());
+                    break;
+                default:
+                    reading = reader.ignoreField(tag);
             }
-            exception.setStackTrace(stackTrace);
         }
-
-        int suppressed = reader.readUInt32();
-        for (int i = 0; i < suppressed; ++i) {
-            exception.addSuppressed((Throwable) ObjectMarshaller.INSTANCE.readFrom(context, reader));
+        E exception = this.createException(exceptionClass, message, cause);
+        if (!stackTrace.isEmpty()) {
+            exception.setStackTrace(stackTrace.toArray(new StackTraceElement[0]));
         }
-
+        for (Throwable e : suppressed) {
+            exception.addSuppressed(e);
+        }
         return exception;
     }
 
     @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, E exception) throws IOException {
+    public void writeTo(ProtoStreamWriter writer, E exception) throws IOException {
+        if (this.exceptionClass == Throwable.class) {
+            writer.writeObject(CLASS_INDEX, exception.getClass());
+        }
         String message = exception.getMessage();
         Throwable cause = exception.getCause();
         // Avoid serializing redundant message
-        AnyField.STRING.writeTo(context, writer, (cause == null) || !cause.toString().equals(message) ? message : null);
-
-        ObjectMarshaller.INSTANCE.writeTo(context, writer, exception.getCause());
-
-        StackTraceElement[] stackTrace = exception.getStackTrace();
-        writer.writeUInt32NoTag(stackTrace.length);
-        for (StackTraceElement element : stackTrace) {
-            for (String elementField : new String[] { element.getClassName(), element.getMethodName(), element.getFileName() }) {
-                // Marshal as objects not strings, to leverage reference sharing.
-                ObjectMarshaller.INSTANCE.writeTo(context, writer, elementField);
-            }
-            writer.writeUInt32NoTag(element.getLineNumber());
+        if ((message != null) && ((cause == null) || !cause.toString().equals(message))) {
+            writer.writeString(MESSAGE_INDEX, message);
         }
-
-        Throwable[] suppressed = exception.getSuppressed();
-        writer.writeUInt32NoTag(suppressed.length);
-        for (Throwable suppression : suppressed) {
-            ObjectMarshaller.INSTANCE.writeTo(context, writer, suppression);
+        if (cause != null) {
+            writer.writeObject(CAUSE_INDEX, new Any(cause));
+        }
+        for (StackTraceElement element : exception.getStackTrace()) {
+            writer.writeObject(STACK_TRACE_ELEMENT_INDEX, element);
+        }
+        for (Throwable suppressed : exception.getSuppressed()) {
+            writer.writeObject(SUPPRESSED_INDEX, new Any(suppressed));
         }
     }
 
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, E exception) {
-        String message = exception.getMessage();
-        Throwable cause = exception.getCause();
-        OptionalInt size = ObjectMarshaller.INSTANCE.size(context, cause);
-        if (size.isPresent()) {
-            OptionalInt messageSize = AnyField.STRING.size(context, (cause == null) || !cause.toString().equals(message) ? message : null);
-            StackTraceElement[] stackTrace = exception.getStackTrace();
-            int stackTraceSize = Predictable.unsignedIntSize(stackTrace.length);
-            for (StackTraceElement element : stackTrace) {
-                stackTraceSize += ObjectMarshaller.INSTANCE.size(context, element.getClassName()).getAsInt();
-                stackTraceSize += ObjectMarshaller.INSTANCE.size(context, element.getMethodName()).getAsInt();
-                stackTraceSize += ObjectMarshaller.INSTANCE.size(context, element.getFileName()).getAsInt();
-                stackTraceSize += Predictable.unsignedIntSize(element.getLineNumber());
-            }
-            size = OptionalInt.of(size.getAsInt() + messageSize.getAsInt() + stackTraceSize);
-            Throwable[] suppressed = exception.getSuppressed();
-            size = OptionalInt.of(size.getAsInt() + Predictable.unsignedIntSize(suppressed.length));
-            for (Throwable suppression : suppressed) {
-                OptionalInt suppressionSize = ObjectMarshaller.INSTANCE.size(context, suppression);
-                size = size.isPresent() && suppressionSize.isPresent() ? OptionalInt.of(size.getAsInt() + suppressionSize.getAsInt()) : OptionalInt.empty();
-            }
-        }
-        return size;
-    }
-
-    private E createException(String message, Throwable cause) throws IOException {
+    private E createException(Class<E> exceptionClass, String message, Throwable cause) throws IOException {
+        Constructor<E> emptyConstructor = this.getConstructor(exceptionClass);
+        Constructor<E> messageConstructor = this.getConstructor(exceptionClass, String.class);
+        Constructor<E> causeConstructor = this.getConstructor(exceptionClass, Throwable.class);
+        Constructor<E> messageCauseConstructor = this.getConstructor(exceptionClass, String.class, Throwable.class);
         try {
             if (cause != null) {
                 if (message != null) {
-                    if (this.messageCauseConstructor != null) {
-                        return this.messageCauseConstructor.newInstance(message, cause);
+                    if (messageCauseConstructor != null) {
+                        return messageCauseConstructor.newInstance(message, cause);
                     }
                 } else {
-                    if (this.causeConstructor != null) {
-                        return this.causeConstructor.newInstance(cause);
+                    if (causeConstructor != null) {
+                        return causeConstructor.newInstance(cause);
                     }
                 }
             }
-            E exception = (message != null) ? ((this.messageConstructor != null) ? this.messageConstructor.newInstance(message) : null) : ((this.emptyConstructor != null) ? this.emptyConstructor.newInstance() : null);
+            E exception = (message != null) ? ((messageConstructor != null) ? messageConstructor.newInstance(message) : null) : ((emptyConstructor != null) ? emptyConstructor.newInstance() : null);
             if (exception == null) {
-                throw new NoSuchMethodException(String.format("%s(%s)", this.exceptionClass.getName(), (message != null) ? String.class.getName() : ""));
+                throw new NoSuchMethodException(String.format("%s(%s)", exceptionClass.getName(), (message != null) ? String.class.getName() : ""));
             }
             if (cause != null) {
                 exception.initCause(cause);
@@ -168,6 +143,14 @@ public class ExceptionMarshaller<E extends Throwable> implements ProtoStreamMars
             return exception;
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw new IOException(e);
+        }
+    }
+
+    private Constructor<E> getConstructor(Class<E> exceptionClass, Class<?>... parameterTypes) {
+        try {
+            return exceptionClass.getConstructor(parameterTypes);
+        } catch (NoSuchMethodException e) {
+            return null;
         }
     }
 }

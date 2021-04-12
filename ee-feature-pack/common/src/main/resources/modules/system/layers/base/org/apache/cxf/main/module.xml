@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.apache.cxf">
+<module xmlns="urn:jboss:module:1.9" name="org.apache.cxf">
 
     <resources>
         <artifact name="${org.apache.cxf:cxf-core}"/>
@@ -30,6 +30,13 @@
     </resources>
 
     <dependencies>
+        <module name="java.compiler"/>
+        <module name="java.datatransfer"/>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="java.sql"/>
         <module name="org.apache.cxf.impl" services="import">
             <imports>
                 <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
@@ -61,5 +68,6 @@
                 <include path="META-INF"/>
             </imports>
         </module>
+        <module name="java.xml"/>
     </dependencies>
 </module>

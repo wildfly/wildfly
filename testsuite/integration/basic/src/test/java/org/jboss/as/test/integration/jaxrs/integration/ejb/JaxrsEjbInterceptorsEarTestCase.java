@@ -41,7 +41,7 @@ import org.junit.runner.RunWith;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests injections of CDI beans into JAX-RS resources with an EAR based deployment structure
+ * Tests injections of Jakarta Contexts and Dependency Injection beans into Jakarta RESTful Web Services resources with an EAR based deployment structure
  *
  * @author Stuart Douglas
  */

@@ -29,14 +29,12 @@ import javax.transaction.SystemException;
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
 import org.infinispan.context.Flag;
-import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntriesEvicted;
-import org.infinispan.notifications.cachelistener.event.CacheEntriesEvictedEvent;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
+import org.wildfly.clustering.infinispan.spi.PredicateKeyFilter;
+import org.wildfly.clustering.infinispan.spi.listener.PrePassivateListener;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaData;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
 import org.wildfly.clustering.web.cache.session.InvalidatableSessionMetaData;
@@ -53,7 +51,6 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 /**
  * @author Paul Ferraro
  */
-@Listener(sync = false)
 public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> {
 
     private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache;
@@ -62,6 +59,7 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
     private final Cache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache;
     private final MutatorFactory<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataMutatorFactory;
     private final CacheProperties properties;
+    private final Object evictListener;
 
     public InfinispanSessionMetaDataFactory(InfinispanSessionMetaDataFactoryConfiguration configuration) {
         this.properties = configuration.getCacheProperties();
@@ -70,6 +68,13 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
         this.findCreationMetaDataCache = this.properties.isLockOnRead() ? this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.creationMetaDataCache;
         this.accessMetaDataCache = configuration.getCache();
         this.accessMetaDataMutatorFactory = new InfinispanMutatorFactory<>(this.accessMetaDataCache, this.properties);
+        this.evictListener = new PrePassivateListener<>(this::cascadeEvict, configuration.getExecutor());
+        this.creationMetaDataCache.addListener(this.evictListener, new PredicateKeyFilter<>(SessionCreationMetaDataKeyFilter.INSTANCE), null);
+    }
+
+    @Override
+    public void close() {
+        this.creationMetaDataCache.removeListener(this.evictListener);
     }
 
     @Override
@@ -80,7 +85,7 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
         }
         SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();
         this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(new SessionAccessMetaDataKey(id), accessMetaData);
-        return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry.getMetaData(), accessMetaData, creationMetaDataEntry.getLocalContext());
+        return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry, accessMetaData);
     }
 
     @Override
@@ -99,7 +104,7 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
         if (creationMetaDataEntry != null) {
             SessionAccessMetaData accessMetaData = this.accessMetaDataCache.get(new SessionAccessMetaDataKey(id));
             if (accessMetaData != null) {
-                return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry.getMetaData(), accessMetaData, creationMetaDataEntry.getLocalContext());
+                return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry, accessMetaData);
             }
             if (flags.length == 0) {
                 // Purge orphaned entry, making sure not to trigger cache listener
@@ -111,13 +116,14 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
 
     @Override
     public InvalidatableSessionMetaData createSessionMetaData(String id, CompositeSessionMetaDataEntry<L> entry) {
-        boolean created = entry.getAccessMetaData().getLastAccessedDuration().isZero();
+        boolean newSession = entry.getCreationMetaData().isNew();
+
         SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
-        Mutator creationMutator = this.properties.isTransactional() && created ? Mutator.PASSIVE : this.creationMetaDataMutatorFactory.createMutator(creationMetaDataKey, new SessionCreationMetaDataEntry<>(entry.getCreationMetaData(), entry.getLocalContext()));
+        Mutator creationMutator = this.properties.isTransactional() && newSession ? Mutator.PASSIVE : this.creationMetaDataMutatorFactory.createMutator(creationMetaDataKey, new SessionCreationMetaDataEntry<>(entry.getCreationMetaData(), entry.getLocalContext()));
         SessionCreationMetaData creationMetaData = new MutableSessionCreationMetaData(entry.getCreationMetaData(), creationMutator);
 
         SessionAccessMetaDataKey accessMetaDataKey = new SessionAccessMetaDataKey(id);
-        Mutator accessMutator = this.properties.isTransactional() && created ? Mutator.PASSIVE : this.accessMetaDataMutatorFactory.createMutator(accessMetaDataKey, entry.getAccessMetaData());
+        Mutator accessMutator = this.properties.isTransactional() && newSession ? Mutator.PASSIVE : this.accessMetaDataMutatorFactory.createMutator(accessMetaDataKey, entry.getAccessMetaData());
         SessionAccessMetaData accessMetaData = new MutableSessionAccessMetaData(entry.getAccessMetaData(), accessMutator);
 
         return new CompositeSessionMetaData(creationMetaData, accessMetaData);
@@ -152,16 +158,7 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
         return true;
     }
 
-    @CacheEntriesEvicted
-    public void evicted(CacheEntriesEvictedEvent<GroupedKey<String>, ?> event) {
-        if (!event.isPre()) {
-            Cache<SessionAccessMetaDataKey, SessionAccessMetaData> cache = this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.SKIP_LISTENER_NOTIFICATION);
-            for (GroupedKey<String> key : event.getEntries().keySet()) {
-                // Workaround for ISPN-8324
-                if (key instanceof SessionCreationMetaDataKey) {
-                    cache.evict(new SessionAccessMetaDataKey(key.getId()));
-                }
-            }
-        }
+    private void cascadeEvict(SessionCreationMetaDataKey key, SessionCreationMetaDataEntry<L> value) {
+        this.accessMetaDataCache.getAdvancedCache().withFlags(Flag.SKIP_LISTENER_NOTIFICATION).evict(new SessionAccessMetaDataKey(key.getId()));
     }
 }

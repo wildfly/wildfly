@@ -49,6 +49,7 @@ public class ConfigAdminExtension extends AbstractLegacyExtension {
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
     private static final ModelVersion MANAGEMENT_API_VERSION = ModelVersion.create(1, 1, 0);
+    static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(1, 1, 0);
 
     private static final String RESOURCE_NAME = ConfigAdminExtension.class.getPackage().getName() + ".LocalDescriptions";
     public static final String EXTENSION_NAME = "org.jboss.as.configadmin";
@@ -69,7 +70,7 @@ public class ConfigAdminExtension extends AbstractLegacyExtension {
     @Override
     public Set<ManagementResourceRegistration> initializeLegacyModel(ExtensionContext context) {
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_VERSION, true);
         ManagementResourceRegistration subsystemRoot = subsystem.registerSubsystemModel(new ConfigAdminRootResource());
 
         //no need to register transformers as whole extension was deprecated in EAP 6.1 and hasn't changed since, so 1.1.0 in 6.2+ is same as current

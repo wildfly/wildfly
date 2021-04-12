@@ -113,7 +113,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
     int minPoolSize() default -1;
     */
 
-    // not used: ActiveMQ CF implements all JMS CF interfaces
+    // not used: ActiveMQ CF implements all Jakarta Messaging CF interfaces
     private String interfaceName;
     // not used
     private String className;
@@ -179,7 +179,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
                 throw new DeploymentUnitProcessingException(e);
             }
         } else {
-            // delegate to the resource-adapter subsystem to create a generic JCA connection factory.
+            // delegate to the resource-adapter subsystem to create a generic Jakarta Connectors connection factory.
             ConnectionFactoryDefinitionInjectionSource cfdis = new ConnectionFactoryDefinitionInjectionSource(jndiName, interfaceName, resourceAdapter);
             cfdis.setMaxPoolSize(maxPoolSize);
             cfdis.setMinPoolSize(minPoolSize);
@@ -375,7 +375,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
 
 
     /**
-     * Return whether the definition targets an existing pooled connection factory or use a JCA-based ConnectionFactory.
+     * Return whether the definition targets an existing pooled connection factory or use a Jakarta Connectors-based ConnectionFactory.
      *
      * Checks the service registry for a PooledConnectionFactoryService with the ServiceName
      * created by the {@code server} property (or {@code "default") and the {@code resourceAdapter} property.
@@ -441,7 +441,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
     }
 
     /**
-     * The JMS connection factory can specify another server to deploy its destinations
+     * The Jakarta Messaging connection factory can specify another server to deploy its destinations
      * by passing a property server=&lt;name of the server>. Otherwise, "default" is used by default.
      */
     static String getActiveMQServerName(Map<String, String> properties) {

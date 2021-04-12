@@ -78,9 +78,9 @@ import org.wildfly.extension.messaging.activemq.jms.JMSTopicService;
 import org.wildfly.extension.messaging.activemq.jms.WildFlyBindingRegistry;
 
 /**
- * A binding description for JMS Destination definitions.
+ * A binding description for Jakarta Messaging Destination definitions.
  *
- * The referenced JMS definition must be directly visible to the
+ * The referenced Jakarta Messaging definition must be directly visible to the
  * component declaring the annotation.
 
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
@@ -140,7 +140,7 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         if (external || targetsPooledConnectionFactory(getActiveMQServerName(properties), resourceAdapter, phaseContext.getServiceRegistry())) {
             startActiveMQDestination(context, serviceBuilder, phaseContext, injector, external);
         } else {
-            // delegate to the resource-adapter subsystem to create a generic JCA admin object.
+            // delegate to the resource-adapter subsystem to create a generic Jakarta Connectors admin object.
             AdministeredObjectDefinitionInjectionSource aodis = new AdministeredObjectDefinitionInjectionSource(jndiName, className, resourceAdapter);
             aodis.setInterface(interfaceName);
             aodis.setDescription(description);
@@ -174,8 +174,8 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
 
     /**
      * To workaround ActiveMQ's BindingRegistry limitation in {@link WildFlyBindingRegistry}
-     * that does not allow to build a BindingInfo with the ResolutionContext info, the JMS queue is created *without* any
-     * JNDI bindings and handle the JNDI bindings directly by getting the service's JMS queue.
+     * that does not allow to build a BindingInfo with the ResolutionContext info, the Jakarta Messaging queue is created *without* any
+     * JNDI bindings and handle the JNDI bindings directly by getting the service's Jakarta Messaging queue.
     */
     private void startQueue(final String queueName,
                             final ServiceTarget serviceTarget,

@@ -28,5 +28,5 @@ public interface SessionManagerConfiguration<SC> {
     SC getServletContext();
     IdentifierFactory<String> getIdentifierFactory();
     SessionExpirationListener getExpirationListener();
-    Recordable<ImmutableSession> getInactiveSessionRecorder();
+    Recordable<ImmutableSessionMetaData> getInactiveSessionRecorder();
 }

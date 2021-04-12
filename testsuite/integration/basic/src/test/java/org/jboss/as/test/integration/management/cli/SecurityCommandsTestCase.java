@@ -51,6 +51,13 @@ import org.junit.runner.RunWith;
 public class SecurityCommandsTestCase {
 
     private static final String DEFAULT_SERVER = "default-server";
+    private static final String DEFAULT_KEY_STORE = "applicationKS";
+    private static final String DEFAULT_KEY_MANAGER = "applicationKM";
+    private static final String DEFAULT_SSL_CONTEXT = "applicationSSC";
+    private static final int DEFAULT_NUM_KEY_STORES = 1;
+    private static final int DEFAULT_NUM_KEY_MANAGERS = 1;
+    private static final int DEFAULT_NUM_TRUST_MANAGERS = 0;
+    private static final int DEFAULT_NUM_SSL_CONTEXTS = 1;
     private static final ByteArrayOutputStream consoleOutput = new ByteArrayOutputStream();
 
     private static CommandContext ctx;
@@ -564,17 +571,17 @@ public class SecurityCommandsTestCase {
 
         // A new key-store
         List<String> ks = getNames(ctx.getModelControllerClient(), Util.KEY_STORE);
-        Assert.assertEquals(1, ks.size());
+        Assert.assertEquals(DEFAULT_NUM_KEY_STORES + 1, ks.size());
         // A new keyManager
         List<String> km = getNames(ctx.getModelControllerClient(), Util.KEY_MANAGER);
-        Assert.assertEquals(1, km.size());
+        Assert.assertEquals(DEFAULT_NUM_KEY_MANAGERS + 1, km.size());
         // A new SSLContext
         List<String> sslCtx = getNames(ctx.getModelControllerClient(), Util.SERVER_SSL_CONTEXT);
-        Assert.assertEquals(1, sslCtx.size());
+        Assert.assertEquals(DEFAULT_NUM_SSL_CONTEXTS + 1, sslCtx.size());
         // Http-interface is secured.
         String usedSslCtx = getSSLContextName(ctx, serverName);
         Assert.assertNotNull(usedSslCtx);
-        Assert.assertEquals(sslCtx.get(0), usedSslCtx);
+        Assert.assertTrue(sslCtx.contains(usedSslCtx));
 
         // Disable ssl, resources shouldn't be deleted
         ctx.handle("security disable-ssl-http-server --no-reload"
@@ -618,7 +625,7 @@ public class SecurityCommandsTestCase {
         ctx.handle("security disable-ssl-http-server --no-reload" + (serverName == null ? "" : " --server-name=" + serverName));
 
         // Enable SSL with key-store-name, no new resources created.
-        ctx.handle("security enable-ssl-http-server --key-store-name=" + ks.get(0)
+        ctx.handle("security enable-ssl-http-server --key-store-name=" + ks.get(1)
                 + " --no-reload" + (serverName == null ? "" : " --server-name=" + serverName));
         String usedSslCtx4 = getSSLContextName(ctx, serverName);
         Assert.assertNotNull(usedSslCtx4);
@@ -642,13 +649,13 @@ public class SecurityCommandsTestCase {
         String usedSslCtx5 = getSSLContextName(ctx, serverName);
         Assert.assertEquals(SSL_CONTEXT_NAME, usedSslCtx5);
         List<String> ks5 = getNames(ctx.getModelControllerClient(), Util.KEY_STORE);
-        Assert.assertEquals(2, ks5.size());
+        Assert.assertEquals(DEFAULT_NUM_KEY_STORES + 2, ks5.size());
         Assert.assertTrue(ks5.contains(KEY_STORE_NAME));
         List<String> km5 = getNames(ctx.getModelControllerClient(), Util.KEY_MANAGER);
-        Assert.assertEquals(2, km5.size());
+        Assert.assertEquals(DEFAULT_NUM_KEY_MANAGERS + 2, km5.size());
         Assert.assertTrue(km5.contains(KEY_MANAGER_NAME));
         List<String> sslCtx5 = getNames(ctx.getModelControllerClient(), Util.SERVER_SSL_CONTEXT);
-        Assert.assertEquals(2, sslCtx5.size());
+        Assert.assertEquals(DEFAULT_NUM_SSL_CONTEXTS + 2, sslCtx5.size());
         Assert.assertTrue(sslCtx5.contains(SSL_CONTEXT_NAME));
 
         checkModel(serverName, SERVER_KEY_STORE_FILE, Util.JBOSS_SERVER_CONFIG_DIR,
@@ -763,8 +770,8 @@ public class SecurityCommandsTestCase {
             ModelNode trustManager = getResource(Util.TRUST_MANAGER, tmList.get(0), null);
             checkModel(mgmtInterface, GENERATED_KEY_STORE_FILE_NAME, Util.JBOSS_SERVER_CONFIG_DIR,
                     GENERATED_KEY_STORE_PASSWORD, GENERATED_TRUST_STORE_FILE_NAME,
-                    GENERATED_KEY_STORE_PASSWORD, ksList.get(0), kmList.get(0),
-                    trustManager.get(Util.KEY_STORE).asString(), tmList.get(0), sslContextList.get(0));
+                    GENERATED_KEY_STORE_PASSWORD, ksList.get(1), kmList.get(1),
+                    trustManager.get(Util.KEY_STORE).asString(), tmList.get(0), sslContextList.get(1));
 
             ctx.handle("security disable-ssl-http-server --no-reload"
                     + (mgmtInterface == null ? "" : " --server-name=" + mgmtInterface));
@@ -868,11 +875,15 @@ public class SecurityCommandsTestCase {
     private static void removeTLS() throws CommandLineException {
         List<String> sslContextList = getNames(ctx.getModelControllerClient(), Util.SERVER_SSL_CONTEXT);
         for (String ssl : sslContextList) {
-            ctx.handle("/subsystem=elytron/server-ssl-context=" + ssl + ":remove");
+            if (! ssl.equals(DEFAULT_SSL_CONTEXT)) {
+                ctx.handle("/subsystem=elytron/server-ssl-context=" + ssl + ":remove");
+            }
         }
         List<String> kmList = getNames(ctx.getModelControllerClient(), Util.KEY_MANAGER);
         for (String km : kmList) {
-            ctx.handle("/subsystem=elytron/key-manager=" + km + ":remove");
+            if (! km.equals(DEFAULT_KEY_MANAGER)) {
+                ctx.handle("/subsystem=elytron/key-manager=" + km + ":remove");
+            }
         }
         List<String> tmList = getNames(ctx.getModelControllerClient(), Util.TRUST_MANAGER);
         for (String tm : tmList) {
@@ -880,7 +891,9 @@ public class SecurityCommandsTestCase {
         }
         List<String> ksList = getNames(ctx.getModelControllerClient(), Util.KEY_STORE);
         for (String ks : ksList) {
-            ctx.handle("/subsystem=elytron/key-store=" + ks + ":remove");
+            if (! ks.equals(DEFAULT_KEY_STORE)) {
+                ctx.handle("/subsystem=elytron/key-store=" + ks + ":remove");
+            }
         }
         List<String> credentialStoreList = getNames(ctx.getModelControllerClient(), "credential-store");
         for (String cs : credentialStoreList) {
@@ -896,13 +909,13 @@ public class SecurityCommandsTestCase {
 
     private static void assertTLSNumResources(int numKS, int numKeyManager, int numTrustManager, int numSSLContext) throws Exception {
         List<String> ks = getNames(ctx.getModelControllerClient(), Util.KEY_STORE);
-        Assert.assertEquals(numKS, ks.size());
+        Assert.assertEquals(DEFAULT_NUM_KEY_STORES + numKS, ks.size());
         List<String> km = getNames(ctx.getModelControllerClient(), Util.KEY_MANAGER);
-        Assert.assertEquals(numKeyManager, km.size());
+        Assert.assertEquals(DEFAULT_NUM_KEY_MANAGERS + numKeyManager, km.size());
         List<String> tm = getNames(ctx.getModelControllerClient(), Util.TRUST_MANAGER);
-        Assert.assertEquals(numTrustManager, tm.size());
+        Assert.assertEquals(DEFAULT_NUM_TRUST_MANAGERS + numTrustManager, tm.size());
         List<String> sslCtx = getNames(ctx.getModelControllerClient(), Util.SERVER_SSL_CONTEXT);
-        Assert.assertEquals(numSSLContext, sslCtx.size());
+        Assert.assertEquals(DEFAULT_NUM_SSL_CONTEXTS + numSSLContext, sslCtx.size());
     }
 
     private static void assertTLSEmpty() throws Exception {

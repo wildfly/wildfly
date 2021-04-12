@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2021 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @author tags. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -36,15 +36,15 @@ import javax.servlet.ServletContext;
 
 /**
  * This class retrieves the annotation map from application scope.  This map was placed there by the JSFAnnotationProcessor
- * in the jsf subsystem.
+ * in the Jakarta Server Faces subsystem.
  *
- * The class also reloads the map if needed.  The reason why the map must be reloaded is because the JSF Annotation classes used as the map keys are always
- * loaded by the JSF subsystem and thus always correspond to the default JSF implementation.  If a different JSF
- * implementation is used then the JSF impl will be looking for the wrong version of the map keys.  So, we replace
- * the default implementations of the JSF Annotation classes with whatever version the WAR is actually using.
+ * The class also reloads the map if needed.  The reason why the map must be reloaded is because the Jakarta Server Faces Annotation classes used as the map keys are always
+ * loaded by the Jakarta Server Faces subsystem and thus always correspond to the default Jakarta Server Faces implementation.  If a different Jakarta Server Faces
+ * implementation is used then the Jakarta Server Faces impl will be looking for the wrong version of the map keys.  So, we replace
+ * the default implementations of the Jakarta Server Faces Annotation classes with whatever version the WAR is actually using.
  *
- * The reason this works is because we have a "slot" for jsf-injection for each JSF implementation.  And jsf-injection
- * points to its corresponding JSF impl/api slots.
+ * The reason this works is because we have a "slot" for jsf-injection for each Jakarta Server Faces implementation.  And jsf-injection
+ * points to its corresponding Jakarta Server Faces impl/api slots.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
@@ -58,9 +58,9 @@ public class AnnotationMap {
     private static final Map<String, Class<? extends Annotation>> stringToAnnoMap = new HashMap<String, Class<? extends Annotation>>();
 
     static {
-        // These classes need to be loaded in order!  Some can't be loaded if the JSF version is too old.
+        // These classes need to be loaded in order!  Some can't be loaded if the Jakarta Server Faces version is too old.
 
-        try { // all of the following classes are available from JSF 2.0 and JSF 2.1
+        try { // all of the following classes are available from Faces 2.0 and Faces 2.1
             stringToAnnoMap.put(FacesComponent.class.getName(), FacesComponent.class);
             stringToAnnoMap.put(FacesConverter.class.getName(), FacesConverter.class);
             stringToAnnoMap.put(FacesValidator.class.getName(), FacesValidator.class);
@@ -70,7 +70,10 @@ public class AnnotationMap {
             stringToAnnoMap.put(FacesBehavior.class.getName(), FacesBehavior.class);
             stringToAnnoMap.put(FacesBehaviorRenderer.class.getName(), FacesBehaviorRenderer.class);
 
-            // Put JSF 2.2 annotations below this line if any new ones are to be scanned.  So far none.
+            // Put Jakarta Server Faces 2.2+ annotations below this line if any new ones are to be scanned.
+            // Load the class to avoid a NoClassDefFoundError if it is not present in the impl
+            ClassLoader loader = AnnotationMap.class.getClassLoader();
+            addAnnotationIfPresent(loader, "javax.faces.view.facelets.FaceletsResourceResolver");
         } catch (Exception e) {
             // Ignore.  Whatever classes are available have been loaded into the map.
         }
@@ -78,6 +81,17 @@ public class AnnotationMap {
 
     // don't allow instance
     private AnnotationMap() {}
+
+    private static void addAnnotationIfPresent(ClassLoader loader, String name) {
+        try {
+            Class clazz = loader.loadClass(name);
+            if (Annotation.class.isAssignableFrom(clazz)) {
+                stringToAnnoMap.put(name, clazz);
+            }
+        } catch(ClassNotFoundException e) {
+            // ignore, annotation not found in the used Jakarta Server Faces version
+        }
+    }
 
     public static Map<Class<? extends Annotation>, Set<Class<?>>> get(final ExternalContext extContext) {
         Map<String, Object> appMap = extContext.getApplicationMap();

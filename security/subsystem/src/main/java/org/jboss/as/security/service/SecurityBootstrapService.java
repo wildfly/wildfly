@@ -29,6 +29,7 @@ import java.util.Set;
 
 import javax.security.jacc.PolicyConfigurationFactory;
 import javax.security.jacc.PolicyContext;
+import javax.security.jacc.PolicyContextException;
 
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -105,17 +106,19 @@ public class SecurityBootstrapService implements Service<Void> {
 
     private void initializeJacc() throws StartException {
         if (!initializeJacc) {
-            SecurityLogger.ROOT_LOGGER.debugf("Legacy subsystem configured to not initialize JACC. If you want JACC support, make sure you have it properly configured in Elytron subsystem.");
+            SecurityLogger.ROOT_LOGGER.debugf("Legacy subsystem configured to not initialize Jakarta Authorization. If you want Jakarta Authorization support, make sure you have it properly configured in Elytron subsystem.");
             return;
         }
-        SecurityLogger.ROOT_LOGGER.debugf("Initializing JACC from legacy subsystem.");
+        SecurityLogger.ROOT_LOGGER.debugf("Initializing Jakarta Authorization from legacy subsystem.");
         try {
+            final String jaccModule = WildFlySecurityManager.getPropertyPrivileged(JACC_MODULE, null);
+
             // Get the current Policy impl
             oldPolicy = Policy.getPolicy();
             if(jaccPolicy == null) {
-                String module = WildFlySecurityManager.getPropertyPrivileged(JACC_MODULE, null);
+
                 String provider = WildFlySecurityManager.getPropertyPrivileged(JACC_POLICY_PROVIDER, "org.jboss.security.jacc.DelegatingPolicy");
-                Class<?> providerClass = loadClass(module, provider);
+                Class<?> providerClass = loadClass(jaccModule, provider);
                 try {
                     // Look for a ctor(Policy) signature
                     Class<?>[] ctorSig = {Policy.class};
@@ -134,7 +137,7 @@ public class SecurityBootstrapService implements Service<Void> {
                 }
             }
 
-            // Install the JACC policy provider
+            // Install the Jakarta Authorization policy provider
             Policy.setPolicy(jaccPolicy);
 
             // Have the policy load/update itself
@@ -144,15 +147,15 @@ public class SecurityBootstrapService implements Service<Void> {
             SubjectPolicyContextHandler handler = new SubjectPolicyContextHandler();
             PolicyContext.registerHandler(SecurityConstants.SUBJECT_CONTEXT_KEY, handler, true);
 
-            // Register the JAAS CallbackHandler JACC PolicyContextHandlers
+            // Register the JAAS CallbackHandler Jakarta Authorization PolicyContextHandlers
             CallbackHandlerPolicyContextHandler chandler = new CallbackHandlerPolicyContextHandler();
             PolicyContext.registerHandler(SecurityConstants.CALLBACK_HANDLER_KEY, chandler, true);
 
             //Register a module classloader locator
             ClassLoaderLocatorFactory.set(new ModuleClassLoaderLocator(moduleLoaderValue.getValue()));
 
-            // Ensure the JACC PolicyConfigurationFactory is initialised during Bootstrap.
-            PolicyConfigurationFactory.getPolicyConfigurationFactory();
+            // Ensure the Jakarta Authorization PolicyConfigurationFactory is initialised during Bootstrap.
+            establishPolicyConfigurationFactory(jaccModule);
         } catch (Exception e) {
             throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityBootstrapService", e);
         }
@@ -174,6 +177,20 @@ public class SecurityBootstrapService implements Service<Void> {
         }
 
         return SecurityActions.loadClass(className);
+    }
+
+    private void establishPolicyConfigurationFactory(String jaccModule) throws ModuleLoadException, ClassNotFoundException, PolicyContextException {
+        final ClassLoader originalClassLoader = jaccModule == null
+                ? null
+                : SecurityActions.setThreadContextClassLoader(SecurityActions.getModuleClassLoader(jaccModule));
+
+        try {
+            PolicyConfigurationFactory.getPolicyConfigurationFactory();
+        } finally {
+            if (jaccModule != null) {
+                SecurityActions.setThreadContextClassLoader(originalClassLoader);
+            }
+        }
     }
 
     /** {@inheritDoc} */

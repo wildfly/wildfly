@@ -29,7 +29,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
@@ -191,14 +190,15 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
 
     }
 
-    private static VirtualFile getDescriptor(final VirtualFile deploymentRoot, final String descriptorName) {
+    private static VirtualFile getDescriptor(final DeploymentUnit deploymentUnit, final VirtualFile deploymentRoot, final String descriptorName) {
+        final String deploymentUnitName = deploymentUnit.getName().toLowerCase(Locale.ENGLISH);
         // Locate the descriptor
         final VirtualFile descriptor;
         // EJB 3.1 FR 20.4 Enterprise Beans Packaged in a .war
-        if (isWar(deploymentRoot)) {
+        if (deploymentUnitName.endsWith(WAR_FILE_EXTENSION)) {
             // it's a .war file, so look for the ejb-jar.xml in WEB-INF
             descriptor = deploymentRoot.getChild(WEB_INF + "/" + descriptorName);
-        } else if (deploymentRoot.getName().toLowerCase(Locale.ENGLISH).endsWith(JAR_FILE_EXTENSION)) {
+        } else if (deploymentUnitName.endsWith(JAR_FILE_EXTENSION)) {
             descriptor = deploymentRoot.getChild(META_INF + "/" + descriptorName);
         } else {
             // neither a .jar nor a .war. Return
@@ -232,11 +232,6 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         }
     }
 
-    private static boolean isWar(final VirtualFile deploymentRoot) {
-        // TODO: Is there a better way to do this?
-        return deploymentRoot.getName().toLowerCase(Locale.ENGLISH).endsWith(WAR_FILE_EXTENSION);
-    }
-
     private static InputStream open(final VirtualFile file) throws DeploymentUnitProcessingException {
         try {
             return file.openStream();
@@ -256,7 +251,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         if (alternateDescriptor != null) {
             descriptor = alternateDescriptor;
         } else {
-            descriptor = getDescriptor(deploymentRoot.getRoot(), EJB_JAR_XML);
+            descriptor = getDescriptor(deploymentUnit, deploymentRoot.getRoot(), EJB_JAR_XML);
         }
 
         if (descriptor == null) {
@@ -286,7 +281,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
         // Locate the descriptor
-        final VirtualFile descriptor = getDescriptor(deploymentRoot, JBOSS_EJB3_XML);
+        final VirtualFile descriptor = getDescriptor(deploymentUnit, deploymentRoot, JBOSS_EJB3_XML);
         if (descriptor == null) {
             // no descriptor found
             //but there may have been an ejb-jar element in jboss-all.xml

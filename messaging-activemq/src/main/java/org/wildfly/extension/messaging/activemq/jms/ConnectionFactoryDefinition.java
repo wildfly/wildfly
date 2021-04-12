@@ -40,7 +40,7 @@ import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Regular;
 
 /**
- * JMS Connection Factory resource definition
+ * Jakarta Messaging Connection Factory resource definition
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */

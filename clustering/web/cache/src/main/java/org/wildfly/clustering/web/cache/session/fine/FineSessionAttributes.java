@@ -30,15 +30,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.ee.cache.function.ConcurrentMapPutFunction;
-import org.wildfly.clustering.ee.cache.function.ConcurrentMapRemoveFunction;
-import org.wildfly.clustering.ee.cache.function.CopyOnWriteMapPutFunction;
-import org.wildfly.clustering.ee.cache.function.CopyOnWriteMapRemoveFunction;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributes;
@@ -58,12 +55,11 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
     private final Immutability immutability;
     private final CacheProperties properties;
     private final SessionAttributeActivationNotifier notifier;
+    private final AtomicReference<Map<String, UUID>> names;
 
-    private volatile Map<String, UUID> names;
-
-    public FineSessionAttributes(NK key, Map<String, UUID> names, Map<NK, Map<String, UUID>> namesCache, Function<UUID, K> keyFactory, Map<K, V> attributeCache, Marshaller<Object, V> marshaller, MutatorFactory<K, V> mutatorFactory, Immutability immutability, CacheProperties properties, SessionAttributeActivationNotifier notifier) {
+    public FineSessionAttributes(NK key, AtomicReference<Map<String, UUID>> names, Map<NK, Map<String, UUID>> namesCache, Function<UUID, K> keyFactory, Map<K, V> attributeCache, Marshaller<Object, V> marshaller, MutatorFactory<K, V> mutatorFactory, Immutability immutability, CacheProperties properties, SessionAttributeActivationNotifier notifier) {
         this.key = key;
-        this.setNames(names);
+        this.names = names;
         this.namesCache = namesCache;
         this.keyFactory = keyFactory;
         this.attributeCache = attributeCache;
@@ -76,11 +72,11 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
 
     @Override
     public Object removeAttribute(String name) {
-        UUID attributeId = this.names.get(name);
+        UUID attributeId = this.names.get().get(name);
         if (attributeId == null) return null;
 
         synchronized (this.mutations) {
-            this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteMapRemoveFunction<>(name) : new ConcurrentMapRemoveFunction<>(name)));
+            this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteSessionAttributeMapRemoveFunction(name) : new ConcurrentSessionAttributeMapRemoveFunction(name)));
 
             K key = this.keyFactory.apply(attributeId);
 
@@ -105,13 +101,13 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
             throw new IllegalArgumentException(new NotSerializableException(attribute.getClass().getName()));
         }
 
-        UUID attributeId = this.names.get(name);
+        UUID attributeId = this.names.get().get(name);
 
         synchronized (this.mutations) {
             if (attributeId == null) {
                 UUID newAttributeId = createUUID();
-                this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteMapPutFunction<>(name, newAttributeId) : new ConcurrentMapPutFunction<>(name, newAttributeId)));
-                attributeId = this.names.get(name);
+                this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteSessionAttributeMapPutFunction(name, newAttributeId) : new ConcurrentSessionAttributeMapPutFunction(name, newAttributeId)));
+                attributeId = this.names.get().get(name);
             }
 
             K key = this.keyFactory.apply(attributeId);
@@ -149,7 +145,7 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
 
     @Override
     public Object getAttribute(String name) {
-        UUID attributeId = this.names.get(name);
+        UUID attributeId = this.names.get().get(name);
         if (attributeId == null) return null;
 
         synchronized (this.mutations) {
@@ -178,13 +174,13 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
 
     @Override
     public Set<String> getAttributeNames() {
-        return this.names.keySet();
+        return this.names.get().keySet();
     }
 
     @Override
     public void close() {
-        this.notifier.close();
         synchronized (this.mutations) {
+            this.notifier.close();
             for (Map.Entry<K, Optional<Object>> entry : this.mutations.entrySet()) {
                 Optional<Object> optional = entry.getValue();
                 if (optional.isPresent()) {
@@ -198,7 +194,7 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
     }
 
     private void setNames(Map<String, UUID> names) {
-        this.names = (names != null) ? Collections.unmodifiableMap(names) : Collections.emptyMap();
+        this.names.set((names != null) ? Collections.unmodifiableMap(names) : Collections.emptyMap());
     }
 
     private V write(Object value) {

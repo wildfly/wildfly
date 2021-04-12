@@ -30,7 +30,7 @@ import javax.resource.spi.work.Work;
 import org.jboss.logging.Logger;
 
 /**
- * JCA work executing onMessage method with text message payload.
+ * Jakarta Connectors work executing onMessage method with text message payload.
  *
  * @author Ondrej Chaloupka <ochaloup@redhat.com>
  */

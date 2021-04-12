@@ -1,4 +1,0 @@
-[[Contexts_and_Dependency_Injection_(CDI)]]
-= Contexts and Dependency Injection (CDI)
-
-

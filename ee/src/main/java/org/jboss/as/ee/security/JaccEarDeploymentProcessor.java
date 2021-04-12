@@ -38,7 +38,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- * A {@code DeploymentUnitProcessor} for JACC policies.
+ * A {@code DeploymentUnitProcessor} for Jakarta Authorization policies.
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */

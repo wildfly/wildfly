@@ -24,41 +24,55 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 import java.util.OptionalInt;
+import java.util.function.Supplier;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
+import org.wildfly.common.function.Functions;
 
 /**
  * ProtoStream marshaller for fixed values.
  * @author Paul Ferraro
+ * @param <T> the type of this marshaller
  */
 public class ValueMarshaller<T> implements ProtoStreamMarshaller<T> {
 
-    private final T value;
+    private static final OptionalInt SIZE = OptionalInt.of(0);
+
+    private final Class<T> targetClass;
+    private final Supplier<T> factory;
 
     public ValueMarshaller(T value) {
-        this.value = value;
-    }
-
-    @Override
-    public T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        return this.value;
-    }
-
-    @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T value) {
-        // Nothing to write
+        this(Functions.constantSupplier(value));
     }
 
     @SuppressWarnings("unchecked")
+    public ValueMarshaller(Supplier<T> factory) {
+        this.targetClass = (Class<T>) factory.get().getClass();
+        this.factory = factory;
+    }
+
+    @Override
+    public T readFrom(ProtoStreamReader reader) throws IOException {
+        boolean reading = true;
+        while (reading) {
+            int tag = reader.readTag();
+            reading = reader.ignoreField(tag);
+        }
+        return this.factory.get();
+    }
+
+    @Override
+    public void writeTo(ProtoStreamWriter writer, T value) {
+        // Nothing to write
+    }
+
     @Override
     public Class<? extends T> getJavaClass() {
-        return (Class<T>) this.value.getClass();
+        return this.targetClass;
     }
 
     @Override
     public OptionalInt size(ImmutableSerializationContext context, T value) {
-        return OptionalInt.of(0);
+        return SIZE;
     }
 }

@@ -46,13 +46,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public class JaxrsExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jaxrs";
-    public static final String NAMESPACE_1_0 = "urn:jboss:domain:jaxrs:1.0";
-    public static final String NAMESPACE_2_0 = "urn:jboss:domain:jaxrs:2.0";
 
-    public static final ModelVersion MODEL_VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    public static final ModelVersion MODEL_VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
-
-    private static final ModelVersion CURRENT_MODEL_VERSION = MODEL_VERSION_2_0_0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);
 
     private static final String RESOURCE_NAME = JaxrsExtension.class.getPackage().getName() + ".LocalDescriptions";
     static PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
@@ -70,7 +65,7 @@ public class JaxrsExtension implements Extension {
      */
     @Override
     public void initialize(final ExtensionContext context) {
-        JAXRS_LOGGER.debug("Activating JAX-RS Extension");
+        JAXRS_LOGGER.debug("Activating Jakarta RESTful Web Services Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JaxrsSubsystemDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);

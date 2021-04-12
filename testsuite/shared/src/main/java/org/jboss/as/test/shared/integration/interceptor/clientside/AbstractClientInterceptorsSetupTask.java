@@ -44,7 +44,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
  * An abstract setup task for setting up and removing client-side interceptors.
- * Packs them into $JBOSS_HOME/modules folder, modifies EJB3 subsystem 'client-interceptors' attribute.
+ * Packs them into $JBOSS_HOME/modules folder, modifies Enterprise Beans 3 subsystem 'client-interceptors' attribute.
  *
  * @author <a href="mailto:szhantem@redhat.com">Sultan Zhantemirov</a> (c) 2019 Red Hat, inc.
  */

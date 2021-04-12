@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -93,7 +93,7 @@ public class JSFFailoverTestCase extends AbstractClusteringTestCase {
     }
 
     /**
-     * Parses the response page and headers for a cookie, JSF view state and the numberguess game status.
+     * Parses the response page and headers for a cookie, Jakarta Server Faces view state and the numberguess game status.
      */
     private static NumberGuessState parseState(HttpResponse response, String sessionId) throws IllegalStateException, IOException {
         Pattern smallestPattern = Pattern.compile("<span id=\"numberGuess:smallest\">([^<]+)</span>");
@@ -190,7 +190,7 @@ public class JSFFailoverTestCase extends AbstractClusteringTestCase {
             HttpResponse response;
             NumberGuessState state;
 
-            // First non-JSF request to the home page
+            // First non-Jakarta Server Faces request to the home page
             response = client.execute(buildGetRequest(url1, null));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -207,7 +207,7 @@ public class JSFFailoverTestCase extends AbstractClusteringTestCase {
             Assert.assertEquals("100", state.biggest);
             Assert.assertEquals("10", state.remainingGuesses);
 
-            // We do a JSF POST request, guessing "1"
+            // We do a Jakarta Server Faces POST request, guessing "1"
             response = client.execute(buildPostRequest(url1, state.sessionId, state.jsfViewState, "1"));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -223,7 +223,7 @@ public class JSFFailoverTestCase extends AbstractClusteringTestCase {
             // Gracefully shutdown the 1st container.
             stop(NODE_1);
 
-            // Now we do a JSF POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
+            // Now we do a Jakarta Server Faces POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
             response = client.execute(buildPostRequest(url2, state.sessionId, state.jsfViewState, "100"));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -240,7 +240,7 @@ public class JSFFailoverTestCase extends AbstractClusteringTestCase {
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("99", state.biggest);
 
-            // Now we do a JSF POST request on the second node again, guessing "99"
+            // Now we do a Jakarta Server Faces POST request on the second node again, guessing "99"
             response = client.execute(buildPostRequest(url2, sessionId, state.jsfViewState, "99"));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -310,7 +310,7 @@ public class JSFFailoverTestCase extends AbstractClusteringTestCase {
             HttpResponse response;
             NumberGuessState state;
 
-            // First non-JSF request to the home page
+            // First non-Jakarta Server Faces request to the home page
             response = client.execute(buildGetRequest(url1, null));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -327,7 +327,7 @@ public class JSFFailoverTestCase extends AbstractClusteringTestCase {
             Assert.assertEquals("100", state.biggest);
             Assert.assertEquals("10", state.remainingGuesses);
 
-            // We do a JSF POST request, guessing "1"
+            // We do a Jakarta Server Faces POST request, guessing "1"
             response = client.execute(buildPostRequest(url1, state.sessionId, state.jsfViewState, "1"));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -343,7 +343,7 @@ public class JSFFailoverTestCase extends AbstractClusteringTestCase {
             // Gracefully undeploy from the 1st container.
             undeploy(DEPLOYMENT_1);
 
-            // Now we do a JSF POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
+            // Now we do a Jakarta Server Faces POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
             response = client.execute(buildPostRequest(url2, state.sessionId, state.jsfViewState, "100"));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -360,7 +360,7 @@ public class JSFFailoverTestCase extends AbstractClusteringTestCase {
             Assert.assertEquals("2", state.smallest);
             Assert.assertEquals("99", state.biggest);
 
-            // Now we do a JSF POST request on the second node again, guessing "99"
+            // Now we do a Jakarta Server Faces POST request on the second node again, guessing "99"
             response = client.execute(buildPostRequest(url2, sessionId, state.jsfViewState, "99"));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());

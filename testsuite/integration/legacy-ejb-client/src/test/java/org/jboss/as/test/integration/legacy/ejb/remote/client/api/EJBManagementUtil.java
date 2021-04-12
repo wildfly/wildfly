@@ -91,7 +91,7 @@ public class EJBManagementUtil {
     private static final Logger logger = Logger.getLogger(EJBManagementUtil.class);
 
     /**
-     * Returns the EJB remoting connector port that can be used for EJB remote invocations
+     * Returns the Jakarta Enterprise Beans remoting connector port that can be used for Jakarta Enterprise Beans remote invocations
      *
      * @param managementServerHostName The hostname of the server
      * @param managementPort           The management port
@@ -100,7 +100,7 @@ public class EJBManagementUtil {
     public static int getEJBRemoteConnectorPort(final String managementServerHostName, final int managementPort, final CallbackHandler handler) {
         final ModelControllerClient modelControllerClient = getModelControllerClient(managementServerHostName, managementPort, handler);
         try {
-            // first get the remote-connector from the EJB3 subsystem to find the remote connector ref
+            // first get the remote-connector from the Enterprise Beans 3 subsystem to find the remote connector ref
             // /subsystem=ejb3/service=remote:read-attribute(name=connector-ref)
             final ModelNode readConnectorRefAttribute = new ModelNode();
             readConnectorRefAttribute.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
@@ -333,7 +333,7 @@ public class EJBManagementUtil {
     }
 
     /**
-     * Creates a strict max pool in the EJB3 subsystem, with the passed <code>poolName</code> and pool attributes
+     * Creates a strict max pool in the Enterprise Beans 3 subsystem, with the passed <code>poolName</code> and pool attributes
      *
      * @param poolName    Pool name
      * @param maxPoolSize Max pool size
@@ -345,7 +345,7 @@ public class EJBManagementUtil {
                                            final long timeout, final TimeUnit unit) {
 
         try {
-            // first get the remote-connector from the EJB3 subsystem to find the remote connector ref
+            // first get the remote-connector from the Enterprise Beans 3 subsystem to find the remote connector ref
             // /subsystem=ejb3/strict-max-bean-instance-pool=<name>:add(....)
             final ModelNode addStrictMaxPool = new ModelNode();
             addStrictMaxPool.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
@@ -366,7 +366,7 @@ public class EJBManagementUtil {
     }
 
     /**
-     * Removes an already created strict max pool from the EJB3 subsystem
+     * Removes an already created strict max pool from the Enterprise Beans 3 subsystem
      *
      * @param poolName The name of the pool to be removed
      */

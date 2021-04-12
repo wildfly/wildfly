@@ -152,10 +152,10 @@ public class JaccInterceptor implements Interceptor {
 
     /**
      * Returns an array of {@link Principal} representing the roles associated with the identity
-     * invoking the EJB. This method will check performs checks against run as identities in order to
+     * invoking the Jakarta Enterprise Beans. This method will check performs checks against run as identities in order to
      * resolve the correct set of roles to be granted.
      *
-     * @param securityIdentity the identity invoking the EJB
+     * @param securityIdentity the identity invoking the Jakarta Enterprise Beans
      * @return an array of {@link Principal} representing the roles associated with the identity
      */
     public static Principal[] getGrantedRoles(SecurityIdentity securityIdentity) {

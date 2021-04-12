@@ -25,10 +25,10 @@
         <tags>
             <property name="test" value="simple"/>
         </tags>
-        <codec-configuration propagation="${JAEGER_AGENT_PROPAGATION}"/>
-        <sampler-configuration sampler-type="${JAEGER_SAMPLER_TYPE}" sampler-param="${JAEGER_SAMPLER_PARAM}"/>
-        <sender-configuration sender-endpoint="http://${JAEGER_AGENT_HOST}:14268/api/traces"
-                              sender-auth-password="${JAEGER_AGENT_PASSWORD}"
-                              sender-auth-user="${JAEGER_AGENT_USER}"/>
+        <codec-configuration propagation="${JAEGER_AGENT_PROPAGATION:JAEGER}"/>
+        <sampler-configuration sampler-type="${JAEGER_SAMPLER_TYPE:const}" sampler-param="${JAEGER_SAMPLER_PARAM:1.0}"/>
+        <sender-configuration sender-endpoint="${JAEGER_AGENT_ENDPOINT:http://localhost:14268/api/traces}"
+                              sender-auth-password="${JAEGER_AGENT_PASSWORD:password}"
+                              sender-auth-user="${JAEGER_AGENT_USER:user}"/>
     </jaeger-tracer>
 </subsystem>

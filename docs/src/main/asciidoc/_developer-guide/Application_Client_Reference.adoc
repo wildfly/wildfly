@@ -3,7 +3,7 @@
 
 As a Jakarta EE compliant server, WildFly {wildflyVersion} contains an application
 client. An application client is essentially a cut down server instance,
-that allow you to use EE features such as injection in a client side
+that allows you to use EE features such as injection in a client side
 program.
 
 [NOTE]
@@ -17,9 +17,9 @@ one].
 
 [IMPORTANT]
 
-Note that the application client is different to the EJB client
-libraries, it is perfectly possible to write client application that do
-not use the application client, but instead use the jboss-ejb-client
+Note that the application client is different from the Jakarta Enterprise Beans client
+libraries, it is perfectly possible to write a client application that does
+not use the application client, but instead uses the jboss-ejb-client
 library directly.
 
 [[getting-started]]
@@ -57,7 +57,7 @@ jboss-ejb-client.properties file rather than a host:
 [[example-application-client-reference]]
 == Example
 
-A simple example how to package an application client and use it with
+A simple example of how to package an application client and use it with
 WildFly can be within the quickstart
 https://github.com/wildfly/quickstart/tree/master/app-client[appclient]
 which is located on Github .

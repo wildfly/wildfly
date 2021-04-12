@@ -27,12 +27,11 @@ limitations under the License.
     6) JBoss-Product-Release-Name key in manifest.mf above has value equal to the value of the 
        'ee.dist.product.release.name' property
     7) modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/module.xml exists
-    8) The 'slot' attribute in the module.xml above has a value equal to the value of the 'ee.dist.product.slot' property
-    9) JBoss-Product-Release-Version key in manifest.mf has value starting with the value of the
+    8) JBoss-Product-Release-Version key in manifest.mf has value starting with the value of the
        'verifier.product.release.version' property
-    10) Schemas coming from a module distributed directly by the ee-galleon-pack are copied to docs/schema
-    11) Schemas coming from a module distributed by the transitive servlet-galleon-pack are copied to docs/schema
-    12) Schemas coming from a module distributed by the transitive core-galleon-pack are copied to docs/schema
+    9) Schemas coming from a module distributed directly by the ee-galleon-pack are copied to docs/schema
+    10) Schemas coming from a module distributed by the transitive servlet-galleon-pack are copied to docs/schema
+    11) Schemas coming from a module distributed by the transitive core-galleon-pack are copied to docs/schema
 -->
   <files>
     <file>
@@ -58,10 +57,6 @@ limitations under the License.
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/module.xml</location>
       <exists>true</exists>
-    </file>
-    <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/module.xml</location>
-      <contains>slot="${ee.dist.product.slot}"</contains>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/jboss-modules.jar</location>

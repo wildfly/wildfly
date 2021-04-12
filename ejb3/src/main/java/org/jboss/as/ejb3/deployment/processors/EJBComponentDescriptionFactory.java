@@ -40,7 +40,7 @@ import org.jboss.metadata.ejb.spec.EnterpriseBeansMetaData;
 public abstract class EJBComponentDescriptionFactory {
 
     /**
-     * If this is an appclient we want to make the components as not installable, so we can still look up which EJB's are in
+     * If this is an appclient we want to make the components as not installable, so we can still look up which Jakarta Enterprise Beans's are in
      * the deployment, but do not actually install them
      */
     protected final boolean appclient;

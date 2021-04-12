@@ -71,7 +71,7 @@ public final class Attachments {
     public static final AttachmentKey<Boolean> JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT = AttachmentKey.create(Boolean.class);
 
     /**
-     * If this is set to true property replacement will be enabled for EJB annotations
+     * If this is set to true property replacement will be enabled for Jakarta Enterprise Beans annotations
      */
     public static final AttachmentKey<Boolean> ANNOTATION_PROPERTY_REPLACEMENT = AttachmentKey.create(Boolean.class);
 

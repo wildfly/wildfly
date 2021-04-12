@@ -48,7 +48,7 @@ import org.junit.runner.RunWith;
 public abstract class AbstractDatabasePersistenceWebFailoverTestCase extends AbstractWebFailoverTestCase {
 
     public AbstractDatabasePersistenceWebFailoverTestCase(String deploymentName) {
-        super(deploymentName, CacheMode.INVALIDATION_SYNC, TransactionMode.TRANSACTIONAL);
+        super(deploymentName, CacheMode.INVALIDATION_SYNC, TransactionMode.NON_TRANSACTIONAL);
     }
 
     static Archive<?> getDeployment(String deploymentName) {
@@ -76,8 +76,6 @@ public abstract class AbstractDatabasePersistenceWebFailoverTestCase extends Abs
                     .setup("/subsystem=datasources/data-source=web-sessions-ds:add(jndi-name=\"java:jboss/datasources/web-sessions-ds\", enabled=true, use-java-context=true, connection-url=\"jdbc:h2:tcp://localhost:%s/./web-sessions\", driver-name=h2", DB_PORT)
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence:add")
                     .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/store=jdbc:add(data-source=web-sessions-ds, fetch-state=false, purge=false, passivation=false, shared=true)")
-                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/component=transaction:add(mode=BATCH)")
-                    .setup("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence/component=locking:add(isolation=REPEATABLE_READ)")
                     .teardown("/subsystem=infinispan/cache-container=web/invalidation-cache=database-persistence:remove")
                     .teardown("/subsystem=datasources/data-source=web-sessions-ds:remove");
         }

@@ -70,11 +70,11 @@ public interface SecurityLogger extends BasicLogger {
    void activatingSecuritySubsystem();
 
    /**
-    * Logs a message indicating that there was an exception while trying to delete the JACC Policy
+    * Logs a message indicating that there was an exception while trying to delete the Jakarta Authorization Policy
     * @param t the underlying exception
     */
    // @LogMessage(level = Level.WARN)
-   // @Message(id = 3, value = "Error deleting JACC Policy")
+   // @Message(id = 3, value = "Error deleting Jakarta Authorization Policy")
    // void errorDeletingJACCPolicy(@Cause Throwable t);
 
     /**
@@ -556,4 +556,7 @@ public interface SecurityLogger extends BasicLogger {
     @LogMessage(level = Level.WARN)
     @Message(id = 104, value = "Default %s cache capability missing.  Assuming %s as default-cache.")
     void defaultCacheRequirementMissing(String containerName, String legacyCacheName);
+
+    @Message(id=105, value = "Unable to initialize legacy JACC support while elytron JACC support is enabled.")
+    IllegalStateException unableToEnableJaccSupport();
 }

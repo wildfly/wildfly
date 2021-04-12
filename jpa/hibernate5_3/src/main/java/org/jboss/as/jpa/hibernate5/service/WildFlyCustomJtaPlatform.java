@@ -25,18 +25,18 @@ import org.hibernate.engine.transaction.jta.platform.internal.JtaSynchronization
 import org.wildfly.common.Assert;
 
 /**
- * WildFlyCustomJtaPlatform can obtain the JTA TransactionSynchronizationRegistry to be used by
- * Hibernate ORM JPA + native applications.
- * For JPA applications, we could of passed the TransactionSynchronizationRegistry into the
+ * WildFlyCustomJtaPlatform can obtain the Jakarta Transactions TransactionSynchronizationRegistry to be used by
+ * Hibernate ORM Jakarta Persistence + native applications.
+ * For Jakarta Persistence applications, we could of passed the TransactionSynchronizationRegistry into the
  * constructor but Hibernate native apps wouldn't be able to do that, so this covers all app types.
  *
  * @author Scott Marlow
  */
 public class WildFlyCustomJtaPlatform extends JBossAppServerJtaPlatform implements JtaSynchronizationStrategy {
 
-    // The 'transactionSynchronizationRegistry' used by JPA container managed applications,
+    // The 'transactionSynchronizationRegistry' used by Jakarta Persistence container managed applications,
     // is reset every time the Transaction Manager service is restarted,
-    // as (application deployment) JPA persistence unit service depends on the TM service.
+    // as (application deployment) Jakarta Persistence persistence unit service depends on the TM service.
     // For this reason, the static 'transactionSynchronizationRegistry' can be updated.
     // Note that Hibernate native applications currently have to be (manually) restarted when the TM
     // service restarts, as native applications do not have WildFly service dependencies set for them.
@@ -78,7 +78,7 @@ public class WildFlyCustomJtaPlatform extends JBossAppServerJtaPlatform implemen
 
     /**
      * Hibernate native applications cannot know when the TransactionManaTransactionManagerSerger + TransactionSynchronizationRegistry
-     * services are stopped but JPA container managed applications can and will call setTransactionSynchronizationRegistry
+     * services are stopped but Jakarta Persistence container managed applications can and will call setTransactionSynchronizationRegistry
      * with the new (global) TransactionSynchronizationRegistry to use.
      *
      * @param tsr

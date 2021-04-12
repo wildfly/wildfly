@@ -55,7 +55,7 @@ public class CmpExtension extends AbstractLegacyExtension {
     @Override
     protected Set<ManagementResourceRegistration> initializeLegacyModel(final ExtensionContext context) {
 
-        final SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
+        final SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION, true);
 
         subsystemRegistration.registerXMLElementWriter(new CmpSubsystem11Parser());
 

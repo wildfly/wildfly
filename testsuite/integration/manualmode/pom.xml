@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>24.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -25,6 +25,9 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <!-- Byteman -->
+        <byteman.host>127.0.0.1</byteman.host>
+        <byteman.port>17091</byteman.port>
     </properties>
 
     <dependencies>
@@ -131,10 +134,53 @@
             <artifactId>jboss-jaxws-api_2.3_spec</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-submit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-install</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-bmunit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions combine.children="append">
+                    <!-- Copy example configs. -->
+                    <execution>
+                        <id>ts.config-as.copy-docs-configs</id>
+                        <phase>generate-test-resources</phase>
+                        <goals><goal>copy-resources</goal></goals>
+                        <inherited>true</inherited>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/wildfly/docs/examples/configs</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>${jboss.dist}/docs/examples/configs/</directory>
+                                    <includes><include>standalone*.xml</include></includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Update server profile with shared configuration changes -->
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
@@ -221,10 +267,14 @@
                     <!-- Parameters to test cases. -->
                     <systemPropertyVariables combine.children="append">
                         <!--<management.address>${node0}</management.address>-->
+                        <byteman.server.ipaddress>${node0}</byteman.server.ipaddress>
+                        <byteman.server.port>${byteman.port}</byteman.server.port>
+                        <byteman.host>${node0}</byteman.host>
+                        <byteman.port>${byteman.port}</byteman.port>
                         <jvm.args>${jvm.args.ip.server} ${modular.jdk.args} -Dmaven.repo.local=${settings.localRepository}</jvm.args>
                         <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1} -Dnode0=${node0} -Dnode1=${node1} ${modular.jdk.args}</server.jvm2.args>
                         <arquillian.launch>manual-mode</arquillian.launch>
-                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                        <jboss.config.file.name>standalone-ha.xml</jboss.config.file.name>
                         <!-- needed for SSLEJBRemoteClientTestCase only, however setting them from within the test itself isn't possible -->
                         <javax.net.ssl.trustStore>${basedir}/target/test-classes/ejb3/ssl/jbossClient.truststore</javax.net.ssl.trustStore>
                         <javax.net.ssl.keyStore>${basedir}/target/test-classes/ejb3/ssl/jbossClient.keystore</javax.net.ssl.keyStore>
@@ -239,6 +289,24 @@
                         <mcast>${mcast}</mcast>
                     </systemPropertyVariables>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <stripVersion>true</stripVersion>
+                            <includeGroupIds>org.jboss.byteman</includeGroupIds>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -311,6 +379,36 @@
 		                <exclude>org/wildfly/test/manual/management/MPScriptTestCase.java</exclude>
 		            </excludes> 
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- profile to configure WildFly to use Elytron instead of legacy security: -Delytron -->
+        <profile>
+            <id>elytron.profile</id>
+            <activation>
+                <property>
+                    <name>elytron</name>
+                </property>
+                <file>
+                    <exists>${ts.elytron.cli}</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default</id>
+                                <!-- run in test-compile instead of process-test-resources
+                                     as we want this to run after build-manual-mode-servers
+                                     has created all the servers other than target/wildfly -->
+                                <phase>test-compile</phase>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

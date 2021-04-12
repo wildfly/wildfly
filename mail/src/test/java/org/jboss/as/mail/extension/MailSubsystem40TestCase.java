@@ -26,7 +26,9 @@ package org.jboss.as.mail.extension;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Map;
 import java.util.Properties;
+
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 
@@ -67,6 +69,11 @@ public class MailSubsystem40TestCase extends MailSubsystemTestBase {
         super.testSchemaOfSubsystemTemplates();
     }
 
+    /**
+     * Tests that runtime information is the expected one based on the subsystem_4_0.xml subsystem configuration.
+     *
+     * @throws Exception
+     */
     @Test
     public void testRuntime() throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(new DefaultInitializer())
@@ -108,7 +115,47 @@ public class MailSubsystem40TestCase extends MailSubsystemTestBase {
         Assert.assertEquals(credentials.getUsername(), "username");
         Assert.assertEquals(credentials.getPassword(), "password");
 
+    }
 
+    /**
+     * Tests that runtime information coming from attribute expressions is the expected one based on the subsystem_4_0.xml subsystem configuration.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testExpressionsRuntime() throws Exception {
+        KernelServicesBuilder builder = createKernelServicesBuilder(new DefaultInitializer())
+                .setSubsystemXml(getSubsystemXml());
+        KernelServices mainServices = builder.build();
+        if (!mainServices.isSuccessfulBoot()) {
+            Assert.fail(mainServices.getBootError().toString());
+        }
+
+        ServiceController<?> defaultMailSession3 = mainServices.getContainer().getService(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("default3"));
+        defaultMailSession3.setMode(ServiceController.Mode.ACTIVE);
+
+        MailSessionService mailService = (MailSessionService) defaultMailSession3.getService();
+        MailSessionConfig config = mailService.getConfig();
+        Assert.assertEquals("Unexpected value for mail-session=default3 from attribute", "from@from.org", config.getFrom());
+        Assert.assertEquals("Unexpected value for mail-session=default3 jndi-name attribute", "java:jboss/mail/Default3", config.getJndiName());
+        Assert.assertEquals("Unexpected value for mail-session=default3 debug attribute", Boolean.TRUE, config.isDebug());
+
+        ServerConfig smtpServerConfig = config.getSmtpServer();
+        Assert.assertEquals("Unexpected value for mail-session=default3 smtp-server/outbound-socket-binding-ref attribute", "mail-smtp", smtpServerConfig.getOutgoingSocketBinding());
+        Assert.assertEquals("Unexpected value for mail-session=default3 smtp-server/tls attribute", Boolean.TRUE, smtpServerConfig.isTlsEnabled());
+        Assert.assertEquals("Unexpected value for mail-session=default3 smtp-server/ssl attribute", Boolean.FALSE, smtpServerConfig.isSslEnabled());
+
+        Credentials credentials = smtpServerConfig.getCredentials();
+        Assert.assertEquals("Unexpected value for mail-session=default3 smtp-server/username attribute", "nobody", credentials.getUsername());
+        Assert.assertEquals("Unexpected value for mail-session=default3 smtp-server/password attribute", "empty", credentials.getPassword());
+
+        ServiceController<?> customMailService3 = mainServices.getContainer().getService(MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName("custom3"));
+        customMailService3.setMode(ServiceController.Mode.ACTIVE);
+        mailService = (MailSessionService) customMailService3.getService();
+        config = mailService.getConfig();
+        CustomServerConfig customServerConfig = config.getCustomServers()[0];
+        Map<String, String> properties = customServerConfig.getProperties();
+        Assert.assertEquals("Unexpected value for mail-session=custom3 custom-server/property value attribute", "mail.example.com", properties.get("host"));
     }
 
 }

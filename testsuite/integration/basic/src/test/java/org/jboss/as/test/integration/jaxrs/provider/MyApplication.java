@@ -25,7 +25,7 @@ import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 /**
- * A JAX-RS application.
+ * A Jakarta RESTful Web Services application.
  *
  * @author Josef Cacek
  */

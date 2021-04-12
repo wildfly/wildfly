@@ -30,12 +30,13 @@ import java.util.Properties;
 
 import javax.net.ssl.SSLContext;
 
+import com.sun.corba.se.impl.orbutil.ORBConstants;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.InitialContext;
@@ -74,9 +75,6 @@ import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.iiop.openjdk.service.IORSecConfigMetaDataService;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import com.sun.corba.se.impl.orbutil.ORBConstants;
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 
 /**
  * <p>
@@ -276,29 +274,10 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
      * @throws OperationFailedException if an error occurs while resolving the properties.
      */
     protected Properties getConfigurationProperties(OperationContext context, ModelNode model) throws OperationFailedException {
-        Properties props = new Properties();
+        Properties properties = new Properties();
 
-        getResourceProperties(props, IIOPRootDefinition.INSTANCE, context, model);
-
-
-        // check if the node contains a list of generic properties.
-        ModelNode configNode = model.get(Constants.CONFIGURATION);
-        if (configNode.hasDefined(Constants.PROPERTIES)) {
-            for (Property property : configNode.get(Constants.PROPERTIES).get(Constants.PROPERTY)
-                    .asPropertyList()) {
-                String name = property.getName();
-                String value = property.getValue().get(Constants.PROPERTY_VALUE).asString();
-                props.setProperty(name, value);
-            }
-        }
-        return props;
-    }
-
-    private void getResourceProperties(final Properties properties, PersistentResourceDefinition resource,
-            OperationContext context, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition attrDefinition : resource.getAttributes()) {
+        for (AttributeDefinition attrDefinition : IIOPRootDefinition.INSTANCE.getAttributes()) {
             if(attrDefinition instanceof PropertiesAttributeDefinition){
-                PropertiesAttributeDefinition pad=(PropertiesAttributeDefinition)attrDefinition;
                 ModelNode resolvedModelAttribute = attrDefinition.resolveModelAttribute(context, model);
                 if(resolvedModelAttribute.isDefined()) {
                     for (final Property prop : resolvedModelAttribute.asPropertyList()) {
@@ -320,6 +299,8 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 properties.setProperty(name, value);
             }
         }
+
+        return properties;
     }
 
     /**

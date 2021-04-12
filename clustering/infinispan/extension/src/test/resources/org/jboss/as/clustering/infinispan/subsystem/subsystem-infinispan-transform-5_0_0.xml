@@ -19,7 +19,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<subsystem xmlns="urn:jboss:domain:infinispan:11.0">
+<subsystem xmlns="urn:jboss:domain:infinispan:12.0">
     <cache-container name="minimal" default-cache="local">
         <listener-thread-pool queue-length="1000"/>
         <persistence-thread-pool min-threads="4" queue-length="5000"/>
@@ -27,7 +27,7 @@
         <local-cache name="local"/>
         <local-cache name="local"/>
     </cache-container>
-    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" module="org.infinispan" statistics-enabled="true">
+    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" modules="org.infinispan" statistics-enabled="true">
         <transport channel="maximal-channel" lock-timeout="120000"/>
         <async-operations-thread-pool min-threads="31"
                                       queue-length="32"
@@ -53,7 +53,7 @@
                                 keepalive-time="14"/>
         <persistence-thread-pool min-threads="33"
                                  keepalive-time="34"/>
-        <local-cache name="local" module="org.infinispan" statistics-enabled="true">
+        <local-cache name="local" modules="org.infinispan" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
             <transaction mode="BATCH" stop-timeout="60000" locking="OPTIMISTIC"/>
             <heap-memory size="20000"/>

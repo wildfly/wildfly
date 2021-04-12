@@ -27,7 +27,7 @@ import java.lang.reflect.Method;
 /**
  * This helper class contains helper methods that are used
  * to resolve method-params in deployment descriptors and method level annotations
- * in EJB implementation classes.
+ * in Jakarta Enterprise Beans implementation classes.
  *
  * @author robert.panzer@me.com
  *

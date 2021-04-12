@@ -59,13 +59,13 @@ import org.jboss.metadata.web.spec.TldMetaData;
  * The different types are:
  * <ul>
  * <li>Managed Bean - If the servlet is annotated with the <code>ManagedBean</code> annotation</li>
- * <li>CDI Bean - If the servlet is deployed in a bean archive</li>
+ * <li>Jakarta Contexts and Dependency Injection Bean - If the servlet is deployed in a bean archive</li>
  * <li>EE Component - If this is an EE deployment and the servlet is not one of the above</li>
  * <li>Normal Servlet - If the EE subsystem is disabled</li>
  * </ul>
  * <p/>
  * For ManagedBean Servlets no action is necessary at this stage, as the servlet is already registered as a component.
- * For CDI and EE components a component definition is added to the deployment.
+ * For Jakarta Contexts and Dependency Injection and EE components a component definition is added to the deployment.
  * <p/>
  * For now we are just using managed bean components as servlets. We may need a custom component type in future.
  */
@@ -110,7 +110,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
             ComponentDescription description = componentByClass.get(clazz);
             if (description != null) {
                 //for now just make sure it has a single view
-                //this will generally be a managed bean, but it could also be an EJB
+                //this will generally be a managed bean, but it could also be an Jakarta Enterprise Beans
                 //TODO: make sure the component is a managed bean
                 if (!(description.getViews().size() == 1)) {
                     throw UndertowLogger.ROOT_LOGGER.wrongComponentType(clazz);

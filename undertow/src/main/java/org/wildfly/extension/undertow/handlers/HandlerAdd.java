@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow.handlers;
 
+import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
@@ -32,11 +33,14 @@ import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.requestcontroller.RequestController;
 import org.wildfly.extension.undertow.Capabilities;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-class HandlerAdd extends AbstractAddStepHandler {
+final class HandlerAdd extends AbstractAddStepHandler {
     private Handler handler;
 
     HandlerAdd(Handler handler) {
@@ -47,17 +51,14 @@ class HandlerAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = context.getCurrentAddressValue();
-
-        final HandlerService service = new HandlerService(handler.createHandler(context, model), name);
-
-        CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(Handler.CAPABILITY)
-                .setInstance(service)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
         final RuntimeCapability newCapability = Handler.CAPABILITY.fromBaseCapability(context.getCurrentAddress());
-        if (context.hasOptionalCapability(Capabilities.REF_REQUEST_CONTROLLER, newCapability.getName(), null)) {
-            builder.addCapabilityRequirement(Capabilities.REF_REQUEST_CONTROLLER, RequestController.class, service.getRequestControllerInjectedValue());
-        }
+        final boolean capabilityAvailable = context.hasOptionalCapability(Capabilities.REF_REQUEST_CONTROLLER, newCapability.getName(), null);
 
-        builder.install();
+        final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(Handler.CAPABILITY);
+        final Consumer<HttpHandler> hhConsumer = sb.provides(Handler.CAPABILITY);
+        final Supplier<RequestController> rcSupplier = capabilityAvailable ? sb.requiresCapability(Capabilities.REF_REQUEST_CONTROLLER, RequestController.class) : null;
+        sb.setInstance(new HandlerService(hhConsumer, rcSupplier, handler.createHandler(context, model), name));
+        sb.setInitialMode(ServiceController.Mode.ON_DEMAND);
+        sb.install();
     }
 }

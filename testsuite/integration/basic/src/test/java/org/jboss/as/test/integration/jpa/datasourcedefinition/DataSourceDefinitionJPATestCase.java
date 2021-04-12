@@ -136,11 +136,11 @@ public class DataSourceDefinitionJPATestCase {
 
 
     /**
-     * Tests JTA involving an EJB 3 SLSB which makes two DAO calls in transaction.
+     * Tests Jakarta Transactions involving an EJB 3 SLSB which makes two DAO calls in transaction.
      * Scenarios:
-     * 1) The transaction fails during the first DAO call and the JTA transaction is rolled back and no database changes should occur.
-     * 2) The transaction fails during the second DAO call and the JTA transaction is rolled back and no database changes should occur.
-     * 3) The transaction fails after the DAO calls and the JTA transaction is rolled back and no database changes should occur.
+     * 1) The transaction fails during the first DAO call and the Jakarta Transactions transaction is rolled back and no database changes should occur.
+     * 2) The transaction fails during the second DAO call and the Jakarta Transactions transaction is rolled back and no database changes should occur.
+     * 3) The transaction fails after the DAO calls and the Jakarta Transactions transaction is rolled back and no database changes should occur.
      */
     @Test
     @InSequence(5)

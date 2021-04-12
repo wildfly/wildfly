@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>24.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-ejb</artifactId>
@@ -41,7 +41,7 @@
 
     <name>WildFly: SFSB clustering</name>
     <description>
-        Parent module for modules related to distributable @Stateful EJBs.
+        Parent module for modules related to distributable @Stateful Jakarta Enterprise Beans.
     </description>
 
     <modules>

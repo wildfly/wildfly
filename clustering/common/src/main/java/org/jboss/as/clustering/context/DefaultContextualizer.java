@@ -34,15 +34,11 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class DefaultContextualizer extends CompositeContextualizer {
 
-    public DefaultContextualizer() {
-        this(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
-    }
-
     public DefaultContextualizer(Class<?> targetClass) {
         this(WildFlySecurityManager.getClassLoaderPrivileged(targetClass));
     }
 
-    private DefaultContextualizer(ClassLoader loader) {
+    public DefaultContextualizer(ClassLoader loader) {
         super(new ContextReferenceExecutor<>(loader, ContextClassLoaderReference.INSTANCE), new NamespaceContextExecutor());
     }
 }

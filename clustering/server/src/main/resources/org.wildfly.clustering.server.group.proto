@@ -1,16 +1,21 @@
 package org.wildfly.clustering.server.group;
 
+import "org.jgroups.stack.proto";
+import "org.jgroups.util.proto";
+
 // IDs: 131 - 132
 
 /**
  * @TypeId(131)
  */
 message AddressableNode {
-	required	bytes	jgroups	= 1;
-	required	string	name	= 2;
-	required	uint32	size	= 3;
-	required	bytes	address	= 4;
-	required	uint32	port	= 5;
+	oneof address {
+		org.jgroups.util.UUID	uuidAddress	= 1;
+		org.jgroups.stack.IpAddress	ipAddress	= 2;
+		org.jgroups.stack.IpAddressUUID	uuidIpAddress	= 3;
+	}
+	required	string	name	= 4;
+	optional	bytes	socketAddress	= 5;
 }
 
 /**

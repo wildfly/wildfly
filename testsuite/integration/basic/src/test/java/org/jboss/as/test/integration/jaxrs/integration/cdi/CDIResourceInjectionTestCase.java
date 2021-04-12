@@ -40,7 +40,7 @@ import org.junit.runner.RunWith;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests injections of CDI beans into JAX-RS resources
+ * Tests injections of CDI beans into Jakarta RESTful Web Services resources
  *
  * @author Stuart Douglas
  */

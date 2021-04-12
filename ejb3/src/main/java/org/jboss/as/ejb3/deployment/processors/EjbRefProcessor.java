@@ -46,7 +46,7 @@ import org.jboss.metadata.javaee.spec.Environment;
 import org.jboss.metadata.javaee.spec.RemoteEnvironment;
 
 /**
- * Deployment processor responsible for processing ejb references from deployment descriptors
+ * Deployment processor responsible for processing Jakarta Enterprise Beans references from deployment descriptors
  *
  * @author Stuart Douglas
  */

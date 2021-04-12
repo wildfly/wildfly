@@ -51,7 +51,7 @@ import org.wildfly.test.security.common.elytron.ElytronDomainSetup;
 
 /**
  * @author <a href="mailto:szhantem@redhat.com">Sultan Zhantemirov</a> (c) 2018 Red Hat, Inc.
- * Test case on a deployment containing a secured EJB with non-default security domain and an unsecured one.
+ * Test case on a deployment containing a secured Jakarta Enterprise Beans with non-default security domain and an unsecured one.
  * Test passes if deployment is successful and functional.
  */
 @RunWith(Arquillian.class)

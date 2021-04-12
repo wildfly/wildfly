@@ -48,6 +48,12 @@ galleon.sh install wildfly:current#21.0.0.Final --dir=my-wildfly-server
 ----
 ====
 
+[NOTE]
+====
+
+If your project is using link:WildFly_and_WildFly_Preview{outfilesuffix}[WildFly Preview], the ``feature-pack-location`` to use
+is ``wildfly-preview@maven(org.jboss.universe:community-universe)``.
+====
 == Selecting the configurations to install
 
 Galleon allows you to specify only a subset of the default configurations to be installed.
@@ -79,14 +85,14 @@ The _configuration name_ is the XML configuration file name (e.g.: _standalone.x
 WildFly Galleon feature-packs expose some link:++https://docs.wildfly.org/galleon/#_layers++[Galleon layers]. 
 A layer identifies one or more server capabilities that can be installed on its own or
 in combination with other layers. For example, if your application (e.g. a microservice)
-is only making use of _JAX-RS_, Eclipse MicroProfile Config and _CDI_ server capabilities, you can choose to only install
+is only making use of _Jakarta-RESTful-Web-Services_, MicroProfile Config and _CDI_ server capabilities, you can choose to only install
 the _jaxrs_, _microprofile-config_ and _cdi_ layers. The _standalone.xml_ configuration would then only contain the 
 required subsystems and their dependencies.
 
 The benefit to installing WildFly using Galleon layers, in addition to configuration 
 trim down, is that Galleon only installs the needed content (JBoss Modules modules, scripts, etc.)
 
-To install a server only configured with the _JAX-RS_ and _CDI_ capabilities call:
+To install a server only configured with the _Jakarta-RESTful-Web-Services_ and _CDI_ capabilities call:
 
 [source,options="nowrap"]
 ----
@@ -94,12 +100,12 @@ galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cdi,jaxrs
 ----
 
 Once installed, the directory _my-wildfly-server_ contains all that is expected to deploy an application
-that depends on _JAX-RS_ and _CDI_.
+that depends on _Jakarta-RESTful-Web-Services_ and _CDI_.
 
 Some layers _optionally_ depend on other layers; i.e. the features provided by layer can and by default do make use
 of those from another layer, but if those are not present things will still work fine. In such a case if you do not
 want the optional capabilities you can exclude the optional layer by prefixing its name with a '-'. For example
-to exclude the optional _CDI_ dependency on _Bean Validation_:
+to exclude the optional _CDI_ dependency on _Jakarta Bean Validation_:
 
 [source,options="nowrap"]
 ----
@@ -140,7 +146,7 @@ galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cloud-server
 galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cloud-server,undertow-legacy-https
 ----
 
-==== Installation of a cloud-server and ejb with ejb-dist-cache as an alternative to ejb-local-cache
+==== Installation of a cloud-server and Jakarta Enterprise Beans with ejb-dist-cache as an alternative to ejb-local-cache
 
 This is done by excluding the _ejb_ layer's optional _ejb-local-cache_ dependency and specifying its _ejb-dist-cache_
 alternative:
@@ -184,3 +190,5 @@ galleon.sh install wildfly:current --dir=my-wildfly-server --layers=web-server,u
 ----
 galleon.sh install wildfly:current --dir=my-wildfly-server --layers=core-server
 ----
+
+NOTE: References in this document to Java Persistence API(JPA) refer to the Jakarta Persistence unless otherwise noted.

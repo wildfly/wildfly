@@ -31,6 +31,6 @@ import org.wildfly.clustering.marshalling.AbstractTimeTestCase;
 public class ProtoStreamTimeTestCase extends AbstractTimeTestCase {
 
     public ProtoStreamTimeTestCase() {
-        super(new ProtoStreamTesterFactory());
+        super(ProtoStreamTesterFactory.INSTANCE);
     }
 }

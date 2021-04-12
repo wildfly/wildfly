@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,77 +23,43 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.Collection;
-import java.util.Map;
-import java.util.OptionalInt;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
-import org.wildfly.clustering.marshalling.protostream.ObjectMarshaller;
-import org.wildfly.clustering.marshalling.protostream.Predictable;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.infinispan.protostream.impl.WireFormat;
+import org.wildfly.clustering.marshalling.protostream.Any;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 
 /**
- * ProtoStream optimized collection marshaller.
+ * Marshaller for a basic collection.
  * @author Paul Ferraro
+ * @param <T> the collection type of this marshaller
  */
-public class CollectionMarshaller<T extends Collection<Object>, C, CC> implements ProtoStreamMarshaller<T> {
+public class CollectionMarshaller<T extends Collection<Object>> extends AbstractCollectionMarshaller<T> {
 
-    private final Class<T> targetClass;
-    private final Function<CC, T> factory;
-    private final Function<Map.Entry<C, Integer>, CC> constructorContext;
-    private final Function<T, C> context;
-    private final ProtoStreamMarshaller<C> contextMarshaller;
+    private final Supplier<T> factory;
 
-    public CollectionMarshaller(Class<T> targetClass, Function<CC, T> factory, Function<Map.Entry<C, Integer>, CC> constructorContext, Function<T, C> context, ProtoStreamMarshaller<C> contextMarshaller) {
-        this.targetClass = targetClass;
+    @SuppressWarnings("unchecked")
+   public CollectionMarshaller(Supplier<T> factory) {
+        super((Class<T>) factory.get().getClass());
         this.factory = factory;
-        this.constructorContext = constructorContext;
-        this.context = context;
-        this.contextMarshaller = contextMarshaller;
     }
 
     @Override
-    public T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        C collectionContext = this.contextMarshaller.readFrom(context, reader);
-        int size = reader.readUInt32();
-        CC constructorContext = this.constructorContext.apply(new AbstractMap.SimpleImmutableEntry<>(collectionContext, size));
-        T collection = this.factory.apply(constructorContext);
-        for (int i = 0; i < size; ++i) {
-            collection.add(ObjectMarshaller.INSTANCE.readFrom(context, reader));
-        }
-        return collection;
-    }
-
-    @Override
-    public void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T collection) throws IOException {
-        C collectionContext = this.context.apply(collection);
-        this.contextMarshaller.writeTo(context, writer, collectionContext);
-        writer.writeUInt32NoTag(collection.size());
-        for (Object element : collection) {
-            ObjectMarshaller.INSTANCE.writeTo(context, writer, element);
-        }
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, T collection) {
-        C collectionContext = this.context.apply(collection);
-        OptionalInt size = this.contextMarshaller.size(context, collectionContext);
-        if (size.isPresent()) {
-            size = OptionalInt.of(size.getAsInt() + Predictable.unsignedIntSize(collection.size()));
-            for (Object element : collection) {
-                OptionalInt elementSize = ObjectMarshaller.INSTANCE.size(context, element);
-                size = size.isPresent() && elementSize.isPresent() ? OptionalInt.of(size.getAsInt() + elementSize.getAsInt()) : OptionalInt.empty();
+    public T readFrom(ProtoStreamReader reader) throws IOException {
+        T collection = this.factory.get();
+        boolean reading = true;
+        while (reading) {
+            int tag = reader.readTag();
+            int index = WireFormat.getTagFieldNumber(tag);
+            switch (index) {
+                case ELEMENT_INDEX:
+                    collection.add(reader.readObject(Any.class).get());
+                    break;
+                default:
+                    reading = reader.ignoreField(tag);
             }
         }
-        return size;
-    }
-
-    @Override
-    public Class<? extends T> getJavaClass() {
-        return this.targetClass;
+        return collection;
     }
 }

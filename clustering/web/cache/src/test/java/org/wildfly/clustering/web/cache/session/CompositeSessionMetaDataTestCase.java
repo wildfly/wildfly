@@ -26,6 +26,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,11 +44,11 @@ public class CompositeSessionMetaDataTestCase {
 
     @Test
     public void isNew() {
-        when(this.accessMetaData.getLastAccessedDuration()).thenReturn(Duration.ZERO);
+        when(this.creationMetaData.isNew()).thenReturn(true);
 
         assertTrue(this.metaData.isNew());
 
-        when(this.accessMetaData.getLastAccessedDuration()).thenReturn(Duration.ofMillis(1L));
+        when(this.creationMetaData.isNew()).thenReturn(false);
 
         assertFalse(this.metaData.isNew());
     }
@@ -56,12 +57,12 @@ public class CompositeSessionMetaDataTestCase {
     public void isExpired() {
         when(this.creationMetaData.getCreationTime()).thenReturn(Instant.now().minus(Duration.ofMinutes(10L)));
         when(this.creationMetaData.getMaxInactiveInterval()).thenReturn(Duration.ofMinutes(10L));
-        when(this.accessMetaData.getLastAccessedDuration()).thenReturn(Duration.ofMinutes(5L));
+        when(this.accessMetaData.getSinceCreationDuration()).thenReturn(Duration.ofMinutes(5L));
+        when(this.accessMetaData.getLastAccessDuration()).thenReturn(Duration.ofSeconds(1));
 
         assertFalse(this.metaData.isExpired());
 
-        when(this.creationMetaData.getMaxInactiveInterval()).thenReturn(Duration.ofMinutes(5L));
-        when(this.accessMetaData.getLastAccessedDuration()).thenReturn(Duration.ofMinutes(0L));
+        when(this.creationMetaData.getMaxInactiveInterval()).thenReturn(Duration.ofMinutes(5L).minus(Duration.ofSeconds(1, 1)));
 
         assertTrue(this.metaData.isExpired());
 
@@ -83,14 +84,29 @@ public class CompositeSessionMetaDataTestCase {
     }
 
     @Test
-    public void getLastAccessedTime() {
+    public void getLastAccessStartTime() {
         Instant now = Instant.now();
-        Duration lastAccessed = Duration.ofSeconds(10L);
+        Duration sinceCreation = Duration.ofSeconds(10L);
 
-        when(this.creationMetaData.getCreationTime()).thenReturn(now.minus(lastAccessed));
-        when(this.accessMetaData.getLastAccessedDuration()).thenReturn(lastAccessed);
+        when(this.creationMetaData.getCreationTime()).thenReturn(now.minus(sinceCreation));
+        when(this.accessMetaData.getSinceCreationDuration()).thenReturn(sinceCreation);
 
-        Instant result = this.metaData.getLastAccessedTime();
+        Instant result = this.metaData.getLastAccessStartTime();
+
+        assertEquals(now, result);
+    }
+
+    @Test
+    public void getLastAccessEndTime() {
+        Instant now = Instant.now();
+        Duration sinceCreation = Duration.ofSeconds(10L);
+        Duration lastAccess = Duration.ofSeconds(1L);
+
+        when(this.creationMetaData.getCreationTime()).thenReturn(now.minus(sinceCreation).minus(lastAccess));
+        when(this.accessMetaData.getSinceCreationDuration()).thenReturn(sinceCreation);
+        when(this.accessMetaData.getLastAccessDuration()).thenReturn(lastAccess);
+
+        Instant result = this.metaData.getLastAccessEndTime();
 
         assertEquals(now, result);
     }
@@ -108,14 +124,27 @@ public class CompositeSessionMetaDataTestCase {
 
     @Test
     public void setLastAccessedTime() {
-        Instant now = Instant.now();
+        // New session
+        Instant endTime = Instant.now();
+        Duration lastAccess = Duration.ofSeconds(1L);
+        Instant startTime = endTime.minus(lastAccess);
+
+        when(this.creationMetaData.getCreationTime()).thenReturn(startTime);
+
+        this.metaData.setLastAccess(startTime, endTime);
+
+        verify(this.accessMetaData).setLastAccessDuration(Duration.ZERO, lastAccess);
+
+        reset(this.creationMetaData, this.accessMetaData);
+
+        // Existing session
         Duration sinceCreated = Duration.ofSeconds(10L);
 
-        when(this.creationMetaData.getCreationTime()).thenReturn(now.minus(sinceCreated));
+        when(this.creationMetaData.getCreationTime()).thenReturn(startTime.minus(sinceCreated));
 
-        this.metaData.setLastAccessedTime(now);
+        this.metaData.setLastAccess(startTime, endTime);
 
-        verify(this.accessMetaData).setLastAccessedDuration(sinceCreated);
+        verify(this.accessMetaData).setLastAccessDuration(sinceCreated, lastAccess);
     }
 
     @Test

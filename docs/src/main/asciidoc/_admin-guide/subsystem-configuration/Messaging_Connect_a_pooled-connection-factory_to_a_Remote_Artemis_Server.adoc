@@ -42,9 +42,9 @@ If you need to use destinations without those prefixes, you can configure your c
 ----
 
 [[configuration-of-a-mdb-using-a-pooled-connection-factory]]
-== JMS Queues and Topics on a remote Artemis Server
+== Jakarta Messaging Queues and Topics on a remote Artemis Server
 
-You can also add queues and topics defined on a remote Artemis server to be used as if they were local to the server. This mean,s that you can make those remote destinations available viza JNDI just like local destinations. Those destinations are defined out-of the server element:
+You can also add queues and topics defined on a remote Artemis server to be used as if they were local to the server. This means that you can make those remote destinations available viza JNDI just like local destinations. Those destinations are defined out-of the server element:
 
 [source,xml]
 ----
@@ -56,7 +56,7 @@ You can also add queues and topics defined on a remote Artemis server to be used
 </subsystem>
 ----
 
-JMS endpoints can easily be created through the CLI:
+Jakarta Messaging endpoints can easily be created through the CLI:
 [source,ruby]
 ----
 [standalone@localhost:9990 /] /subsystem=messaging-activemq/external-jms-queue=myQueue:read-resource
@@ -119,11 +119,11 @@ bindings delegating to external bindings.
 
 However there is a simpler solution to configure the destination when
 using the Artemis Resource Adapter. +
-Instead of using JDNI to lookup the JMS Destination resource, you can
+Instead of using JDNI to lookup the Jakarta Messaging Destination resource, you can
 just specify the *name* of the destination (as configured in the remote
 Artemis server) using the `destination` activation config property and
 set the `useJNDI` activation config property to false to let the Artemis
-Resource Adapter create automatically the JMS destination without
+Resource Adapter create automatically the Jakarta Messaging destination without
 requiring any JNDI lookup.
 
 [source,java,options="nowrap"]
@@ -140,16 +140,16 @@ public class MyMDB implements MessageListener {
 }
 ----
 
-These properties configure the MDB to consume messages from the JMS
+These properties configure the MDB to consume messages from the Jakarta Messaging
 Queue named `myQueue` hosted on the remote Artemis server. +
 In most cases, such a MDB does not need to lookup other destinations to
 process the consumed messages and it can use the JMSReplyTo destination
 if it is defined on the message. +
-If the MDB needs any other JMS destinations defined on the remote
+If the MDB needs any other Jakarta Messaging destinations defined on the remote
 server, it must use client-side JNDI by following the
 http://http://activemq.apache.org/artemis/docs/2.6.0/using-jms.html#jndi-configuration[Artemis
 documentation] or configure external configuration context in the naming
-subsystem (which allows to inject the JMS resources using the
+subsystem (which allows to inject the Jakarta Messaging resources using the
 `@Resource` annotation).
 
 [[configuration of a remote destination using annotations]]

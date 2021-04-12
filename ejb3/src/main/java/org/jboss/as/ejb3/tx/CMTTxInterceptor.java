@@ -52,6 +52,8 @@ import org.wildfly.transaction.client.AbstractTransaction;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
+ * NOTE: References in this file to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ *
  * Ensure the correct exceptions are thrown based on both caller
  * transactional context and supported Transaction Attribute Type
  * <p/>

@@ -23,12 +23,12 @@
 package org.jboss.as.connector.services.resourceadapters.deployment.registry;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER;
+import static org.wildfly.common.Assert.checkNotNullParam;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 
 
@@ -52,8 +52,7 @@ public final class ResourceAdapterDeploymentRegistryImpl implements ResourceAdap
      * @param deployment The deployment
      */
     public void registerResourceAdapterDeployment(ResourceAdapterDeployment deployment) {
-        if (deployment == null)
-            throw new IllegalArgumentException(ConnectorLogger.ROOT_LOGGER.nullVar("Deployment"));
+        checkNotNullParam("deployment", deployment);
 
         DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.tracef("Adding deployment: %s", deployment);
 
@@ -65,8 +64,7 @@ public final class ResourceAdapterDeploymentRegistryImpl implements ResourceAdap
      * @param deployment The deployment
      */
     public void unregisterResourceAdapterDeployment(ResourceAdapterDeployment deployment) {
-        if (deployment == null)
-            throw new IllegalArgumentException(ConnectorLogger.ROOT_LOGGER.nullVar("Deployment"));
+        checkNotNullParam("deployment", deployment);
 
         DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.tracef("Removing deployment: %s", deployment);
 

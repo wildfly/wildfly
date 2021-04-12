@@ -159,7 +159,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                 }
             }
             String resources = buf.toString();
-            JAXRS_LOGGER.debugf("Adding JAX-RS resource classes: %s", resources);
+            JAXRS_LOGGER.debugf("Adding Jakarta RESTful Web Services resource classes: %s", resources);
             setContextParameter(webdata, ResteasyContextParameters.RESTEASY_SCANNED_RESOURCES, resources);
         }
         if (!resteasy.getScannedProviderClasses().isEmpty()) {
@@ -173,7 +173,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                 }
             }
             String providers = buf.toString();
-            JAXRS_LOGGER.debugf("Adding JAX-RS provider classes: %s", providers);
+            JAXRS_LOGGER.debugf("Adding Jakarta RESTful Web Services provider classes: %s", providers);
             setContextParameter(webdata, ResteasyContextParameters.RESTEASY_SCANNED_PROVIDERS, providers);
         }
 
@@ -188,7 +188,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                 }
             }
             String providers = buf.toString();
-            JAXRS_LOGGER.debugf("Adding JAX-RS jndi component resource classes: %s", providers);
+            JAXRS_LOGGER.debugf("Adding Jakarta RESTful Web Services jndi component resource classes: %s", providers);
             setContextParameter(webdata, ResteasyContextParameters.RESTEASY_SCANNED_JNDI_RESOURCES, providers);
         }
 
@@ -298,7 +298,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         Set<String> classes = resteasy.getScannedResourceClasses();
         for (String jndiComp : resteasy.getScannedJndiComponentResources()) {
             String[] jndiCompArray = jndiComp.split(";");
-            classes.add(jndiCompArray[1]); // REST as EJB is added into jndiComponents
+            classes.add(jndiCompArray[1]); // REST as Jakarta Enterprise Beans are added into jndiComponents
         }
         List<String> rootRestClasses = new ArrayList<>(classes);
         Collections.sort(rootRestClasses);

@@ -29,22 +29,33 @@ import java.time.Duration;
  */
 public class SimpleSessionAccessMetaData implements SessionAccessMetaData {
 
-    private volatile Duration lastAccessedDuration = Duration.ZERO;
+    private volatile Duration sinceCreation = Duration.ZERO;
+    private volatile Duration lastAccess = Duration.ZERO;
 
     @Override
-    public Duration getLastAccessedDuration() {
-        return this.lastAccessedDuration;
+    public Duration getSinceCreationDuration() {
+        return this.sinceCreation;
     }
 
     @Override
-    public void setLastAccessedDuration(Duration duration) {
-        this.lastAccessedDuration = duration;
+    public Duration getLastAccessDuration() {
+        return this.lastAccess;
+    }
+
+    @Override
+    public void setLastAccessDuration(Duration sinceCreation, Duration lastAccess) {
+        int nano = sinceCreation.getNano();
+        // Only retain millisecond precision
+        this.sinceCreation = (nano % 1_000_000) > 0 ? sinceCreation.withNanos((nano / 1_000_000) + 1) : sinceCreation;
+        // Only retain second precision
+        this.lastAccess = (lastAccess.getNano() > 0) ? Duration.ofSeconds(lastAccess.getSeconds() + 1) : lastAccess;
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder(this.getClass().getSimpleName()).append('{');
-        builder.append("last-accessed=").append(this.lastAccessedDuration);
+        builder.append("since-creation=").append(this.sinceCreation);
+        builder.append("last-access=").append(this.lastAccess);
         return builder.append('}').toString();
     }
 }

@@ -37,31 +37,31 @@ include::_developer-guide/Application_Client_Reference.adoc[]
 
 include::_developer-guide/Embedded_API.adoc[]
 
-include::_developer-guide/CDI_Reference.adoc[]
+include::_developer-guide/Jakarta_Contexts_and_Dependency_Injection_Reference.adoc[]
 
 include::_developer-guide/EE_Concurrency_Utilities.adoc[]
 
-include::_developer-guide/EJB3_Reference_Guide.adoc[]
+include::_developer-guide/Jakarta_Enterprise_Beans_3_Reference_Guide.adoc[]
 
-include::_developer-guide/JPA_Reference_Guide.adoc[]
+include::_developer-guide/Jakarta_Persistence_Reference_Guide.adoc[]
 
-include::_developer-guide/JTA_Reference.adoc[]
+include::_developer-guide/Jakarta_Transactions_Reference.adoc[]
 
 include::_developer-guide/JNDI_Reference.adoc[]
 
-include::_developer-guide/JAX-RS_Reference_Guide.adoc[]
+include::_developer-guide/Jakarta_RESTful_Web_Services_Reference_Guide.adoc[]
 
 include::_developer-guide/Web_(Undertow)_Reference_Guide.adoc[]
 
-include::_developer-guide/JAX-WS_Reference_guide.adoc[]
+include::_developer-guide/Jakarta_XML_Web_Services_Reference_Guide.adoc[]
 
-include::_developer-guide/Scoped_EJB_client_contexts.adoc[]
+include::_developer-guide/Scoped_Jakarta_Enterprise_Beans_client_contexts.adoc[]
 
-include::_developer-guide/EJB_invocations_from_a_remote_client_using_JNDI.adoc[]
+include::_developer-guide/Jakarta_Enterprise_Beans_invocations_from_a_remote_client_using_JNDI.adoc[]
 
-include::_developer-guide/EJB_invocations_from_a_remote_server_instance.adoc[]
+include::_developer-guide/Jakarta_Enterprise_Beans_invocations_from_a_remote_server_instance.adoc[]
 
-include::_developer-guide/Remote_EJB_invocations_via_JNDI_-_EJB_client_API_or_remote-naming_project.adoc[]
+include::_developer-guide/Remote_Jakarta_Enterprise_Beans_invocations_via_JNDI_-_Jakarta_Enterprise_Beans_client_API_or_remote-naming_project.adoc[]
 
 include::_developer-guide/Migrated_to_WildFly_Example_Applications.adoc[]
 

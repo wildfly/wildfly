@@ -37,7 +37,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 import java.io.ByteArrayOutputStream;
@@ -47,20 +46,28 @@ import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Persistent session manager
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public abstract class AbstractPersistentSessionManager implements SessionPersistenceManager, Service<SessionPersistenceManager> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("undertow", "persistent-session-manager");
 
+    private final Consumer<SessionPersistenceManager> serviceConsumer;
+    private final Supplier<ModuleLoader> moduleLoader;
     private MarshallerFactory factory;
     private MarshallingConfiguration configuration;
 
-    private final InjectedValue<ModuleLoader> moduleLoaderInjectedValue = new InjectedValue<>();
+    AbstractPersistentSessionManager(final Consumer<SessionPersistenceManager> serviceConsumer, final Supplier<ModuleLoader> moduleLoader) {
+        this.serviceConsumer = serviceConsumer;
+        this.moduleLoader = moduleLoader;
+    }
 
     @Override
     public void persistSessions(String deploymentName, Map<String, PersistentSession> sessionData) {
@@ -141,25 +148,23 @@ public abstract class AbstractPersistentSessionManager implements SessionPersist
     }
 
     @Override
-    public synchronized void start(StartContext startContext) throws StartException {
+    public void start(final StartContext startContext) throws StartException {
         final RiverMarshallerFactory factory = new RiverMarshallerFactory();
         final MarshallingConfiguration configuration = new MarshallingConfiguration();
-        configuration.setClassResolver(ModularClassResolver.getInstance(moduleLoaderInjectedValue.getValue()));
+        configuration.setClassResolver(ModularClassResolver.getInstance(moduleLoader.get()));
         this.configuration = configuration;
         this.factory = factory;
+        this.serviceConsumer.accept(this);
     }
 
     @Override
-    public synchronized void stop(StopContext stopContext) {
+    public void stop(final StopContext stopContext) {
+        this.serviceConsumer.accept(null);
     }
 
     @Override
-    public synchronized SessionPersistenceManager getValue() throws IllegalStateException, IllegalArgumentException {
+    public SessionPersistenceManager getValue() {
         return this;
-    }
-
-    public InjectedValue<ModuleLoader> getModuleLoaderInjectedValue() {
-        return moduleLoaderInjectedValue;
     }
 
     protected static final class SessionEntry implements Serializable {

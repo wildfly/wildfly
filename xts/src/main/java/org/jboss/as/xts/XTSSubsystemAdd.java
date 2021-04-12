@@ -102,14 +102,6 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final String WSAT_ASYNC_REGISTRATION_PARAM_NAME = "wsat.async.registration";
 
-    private static final String[] WAR_DEPLOYMENT_NAMES = {
-            "ws-c11.war",
-            "ws-t11-coordinator.war",
-            "ws-t11-participant.war",
-            "ws-t11-client.war",
-    };
-
-
     /**
      * class used to record the url pattern and service endpoint implementation class name of
      * an XTS JaxWS endpoint associated with one of the XTS context paths. this is equivalent
@@ -228,8 +220,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             XtsAsLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s%n", coordinatorURL);
         }
 
-        final boolean isDefaultContextPropagation = model.hasDefined(CommonAttributes.DEFAULT_CONTEXT_PROPAGATION)
-                ? model.get(CommonAttributes.DEFAULT_CONTEXT_PROPAGATION).asBoolean() : false;
+        final boolean isDefaultContextPropagation = DEFAULT_CONTEXT_PROPAGATION.resolveModelAttribute(context, model).asBoolean(false); // TODO WFLY-14350 make the 'false' the default value of DEFAULT_CONTEXT_PROPAGATION
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -300,7 +291,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .setInitialMode(Mode.ACTIVE)
                 .install();
 
-        // WS-AT / JTA Transaction bridge services:
+        // WS-AT / Jakarta Transactions Transaction bridge services:
 
         final TxBridgeInboundRecoveryService txBridgeInboundRecoveryService = new TxBridgeInboundRecoveryService();
         ServiceBuilder<?> txBridgeInboundRecoveryServiceBuilder =

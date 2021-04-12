@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
 import org.wildfly.common.context.ContextPermission;
 
 /**
- * Tests that JBoss EJB API specific client side EJB interceptors work as expected
+ * Tests that JBoss Jakarta Enterprise Beans API specific client side Jakarta Enterprise Beans interceptors work as expected
  *
  * @author Jaikiran Pai
  */
@@ -77,7 +77,7 @@ public class EJBClientInterceptorTestCase {
         // get hold of the EJBClientContext
         final EJBClientContext ejbClientContext = EJBClientContext.requireCurrent();
 
-        // create some data that the client side interceptor will pass along during the EJB invocation
+        // create some data that the client side interceptor will pass along during the Jakarta Enterprise Beans invocation
         final Map<String, Object> interceptorData = new HashMap<String, Object>();
         final String keyOne = "foo";
         final Object valueOne = "bar";
@@ -112,7 +112,7 @@ public class EJBClientInterceptorTestCase {
     }
 
     /**
-     * Tests that when the client to a remote view of a bean resides on the same server as the EJBs and invokes on it, then the
+     * Tests that when the client to a remote view of a bean resides on the same server as the Jakarta Enterprise Beans and invokes on it, then the
      * context data populated by the client interceptors gets passed on to the server side interceptors and the bean.
      *
      * @throws Exception

@@ -4,7 +4,7 @@
   Set these VM properties in your IDE debugger
 
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager
-  -Djboss.home=${workspace_loc:wildfly-build}/target/wildfly-22.0.0.Beta1-SNAPSHOT
+  -Djboss.home=${workspace_loc:wildfly-build}/target/wildfly-24.0.0.Beta1-SNAPSHOT
   -DallowConnectingToRunningServer=true
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -19,7 +19,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>24.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -34,7 +34,9 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <jboss.dist>${basedir}/target/wildfly</jboss.dist>
-
+        <!-- properties to enable plugins shared by various bootable jar executions -->
+        <bootable-jar-cloud-profile-packaging.phase>none</bootable-jar-cloud-profile-packaging.phase>
+        <bootable-jar-legacy-security-packaging.phase>none</bootable-jar-legacy-security-packaging.phase>
     </properties>
 
     <dependencies>
@@ -80,6 +82,16 @@
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+           <groupId>com.google.guava</groupId>
+           <artifactId>guava</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+           <groupId>com.google.guava</groupId>
+           <artifactId>failureaccess</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- The following are required at for JAXB on Java 11 -->
@@ -282,34 +294,79 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-jar-maven-plugin</artifactId>
+                <version>${version.org.wildfly.jar.plugin}</version>
+                <executions>
+                    <!-- Package a cloud-profile server -->
+                    <execution>
+                        <id>bootable-jar-cloud-profile-packaging</id>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>${bootable-jar-cloud-profile-packaging.phase}</phase>
+                        <configuration>
+                            <output-file-name>test-wildfly-cloud-profile.jar</output-file-name>
+                            <hollowJar>true</hollowJar>
+                            <record-state>false</record-state>
+                            <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
+                            <plugin-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                            </plugin-options>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                    <version>${testsuite.ee.galleon.pack.version}</version>
+                                </feature-pack>
+                            </feature-packs>
+                            <layers>
+                                <layer>cloud-server</layer>
+                                <layer>h2-default-datasource</layer>
+                            </layers>
+                        </configuration>
+                    </execution>
+
+                    <!-- Package a cloud-profile server with legacy security as well -->
+                    <execution>
+                        <id>bootable-jar-legacy-security-packaging</id>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>${bootable-jar-legacy-security-packaging.phase}</phase>
+                        <configuration>
+                            <output-file-name>test-wildfly-legacy-security.jar</output-file-name>
+                            <hollowJar>true</hollowJar>
+                            <record-state>false</record-state>
+                            <log-time>${galleon.log.time}</log-time>
+                            <offline>true</offline>
+                            <plugin-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                            </plugin-options>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                    <version>${testsuite.ee.galleon.pack.version}</version>
+                                </feature-pack>
+                            </feature-packs>
+                            <layers>
+                                <layer>cloud-server</layer>
+                                <layer>h2-default-datasource</layer>
+                                <layer>legacy-security</layer>
+                            </layers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
     <profiles>
-
-        <profile>
-            <id>not.standalone.microprofile.profile</id>
-            <activation>
-                <property>
-                    <name>!ts.standalone.microprofile</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <!--Re-enable the default surefire execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <phase>test</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
 
         <profile>
             <id>standalone.microprofile.profile</id>
@@ -534,9 +591,6 @@
                             <execution>
                                 <id>default-test</id>
                                 <phase>none</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
                             </execution>
                             <!-- Tests against the install without legacy security -->
                             <!-- Reuse the microprofile.surefire execution as the valid tests are the same.
@@ -629,6 +683,10 @@
                     <artifactId>wildfly-arquillian-container-bootable</artifactId>
                 </dependency>
             </dependencies>
+            <properties>
+                <bootable-jar-cloud-profile-packaging.phase>process-test-resources</bootable-jar-cloud-profile-packaging.phase>
+                <bootable-jar-legacy-security-packaging.phase>process-test-resources</bootable-jar-legacy-security-packaging.phase>
+            </properties>
             <build>
                 <plugins>
                     <!-- Disable the standard copy-based provisioning -->
@@ -659,76 +717,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.jar.plugin}</version>
-                        <executions>
-                            <!-- Package a cloud-profile server -->
-                            <execution>
-                                <id>bootable-jar-cloud-profile-packaging</id>
-                                <goals>
-                                    <goal>package</goal>
-                                </goals>
-                                <phase>process-test-resources</phase>
-                                <configuration>
-                                    <output-file-name>test-wildfly-cloud-profile.jar</output-file-name>
-                                    <hollowJar>true</hollowJar>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>true</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <layers>
-                                        <layer>cloud-server</layer>
-                                        <layer>h2-default-datasource</layer>
-                                    </layers>
-                                </configuration>
-                            </execution>
-
-                            <!-- Package a cloud-profile server with legacy security as well -->
-                            <execution>
-                                <id>bootable-jar-legacy-security-packaging</id>
-                                <goals>
-                                    <goal>package</goal>
-                                </goals>
-                                <phase>process-test-resources</phase>
-                                <configuration>
-                                    <output-file-name>test-wildfly-legacy-security.jar</output-file-name>
-                                    <hollowJar>true</hollowJar>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>true</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <layers>
-                                        <layer>cloud-server</layer>
-                                        <layer>h2-default-datasource</layer>
-                                        <layer>legacy-security</layer>
-                                    </layers>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
@@ -788,6 +776,115 @@
                                 </configuration>
                             </execution>
 
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        <!-- Test against bootable jar -->
+        <profile>
+            <id>bootablejar.ee9.profile</id>
+            <activation>
+                <property>
+                    <name>ts.bootable.ee9</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.wildfly.arquillian</groupId>
+                    <artifactId>wildfly-arquillian-container-bootable</artifactId>
+                </dependency>
+            </dependencies>
+            <properties>
+                <bootable-jar-cloud-profile-packaging.phase>process-test-resources</bootable-jar-cloud-profile-packaging.phase>
+                <extra.server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</extra.server.jvm.args>
+            </properties>
+            <build>
+                <plugins>
+                    <!-- Disable the standard copy-based provisioning -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ts.copy-wildfly</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Disable the default provisioning -->
+                            <execution>
+                                <id>server-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-jar-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.jar.plugin}</version>
+                        <executions>
+                            <!-- Package a cloud-profile server -->
+                            <execution>
+                                <id>bootable-jar-cloud-profile-packaging</id>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                                <phase>process-test-resources</phase>
+                                <configuration>
+                                    <plugin-options combine-children="append">
+                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
+                                        <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
+                                    </plugin-options>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- Disable the standard test executions. -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+
+                            <!-- Tests against the cloud-server install without legacy security -->
+                            <execution>
+                                <!-- We reuse the microprofile.surefire execution used for testing standalone-microprofile.xml
+                                     as the set of tests we want is the same -->
+                                <id>microprofile.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <install.dir>${project.build.directory}/wildfly</install.dir>
+                                        <bootable.jar>${project.build.directory}/test-wildfly-cloud-profile.jar</bootable.jar>
+                                        <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
+                                    </systemPropertyVariables>
+                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
+                                    <classpathDependencyExcludes>
+                                        <classpathDependencyExclude>
+                                            org.wildfly.arquillian:wildfly-arquillian-container-managed
+                                        </classpathDependencyExclude>
+                                    </classpathDependencyExcludes>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>

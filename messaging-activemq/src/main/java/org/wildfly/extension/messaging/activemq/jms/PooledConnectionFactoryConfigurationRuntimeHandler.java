@@ -27,7 +27,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Read handler for deployed JMS pooled connection factories
+ * Read handler for deployed Jakarta Messaging pooled connection factories
  *
  * @author Stuart Douglas
  */

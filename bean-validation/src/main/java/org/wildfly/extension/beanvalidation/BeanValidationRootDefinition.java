@@ -36,7 +36,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
 
 /**
- * Defines the bean validation subsystem root resource.
+ * Defines the Jakarta Bean Validation subsystem root resource.
  *
  * @author Eduardo Martins
  */

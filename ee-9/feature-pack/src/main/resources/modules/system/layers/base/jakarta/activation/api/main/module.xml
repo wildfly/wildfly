@@ -22,8 +22,14 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="jakarta.activation.api">
+<module xmlns="urn:jboss:module:1.9" name="jakarta.activation.api">
+
+    <resources>
+        <artifact name="${com.sun.activation:jakarta.activation}"/>
+    </resources>
+
     <dependencies>
+        <module name="java.logging" />
         <module name="javax.api" />
         <module name="javax.mail.api" optional="true">
             <imports><include path="META-INF"/></imports>
@@ -32,8 +38,4 @@
         <module name="org.jboss.ws.native.jbossws-native-core" optional="true"/>
         <module name="org.apache.cxf" optional="true"/>
     </dependencies>
-
-    <resources>
-        <artifact name="${com.sun.activation:jakarta.activation}"/>
-    </resources>
 </module>

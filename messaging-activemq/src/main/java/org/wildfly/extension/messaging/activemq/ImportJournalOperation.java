@@ -39,7 +39,6 @@ import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.apache.activemq.artemis.cli.commands.tools.xml.XmlDataImporter;
 import org.apache.activemq.artemis.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -54,7 +53,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
-import static org.wildfly.extension.messaging.activemq.ExportJournalOperation.checkAllowedOnJournal;
 
 /**
  * Import a dump of Artemis journal in a running Artemis server.
@@ -64,7 +62,7 @@ import static org.wildfly.extension.messaging.activemq.ExportJournalOperation.ch
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
-public class ImportJournalOperation extends AbstractRuntimeOnlyHandler {
+public class ImportJournalOperation extends AbstractArtemisActionHandler {
 
     private static AttributeDefinition FILE = SimpleAttributeDefinitionBuilder.create("file", PathResourceDefinition.PATH)
             .setAllowExpression(false)
@@ -139,7 +137,7 @@ public class ImportJournalOperation extends AbstractRuntimeOnlyHandler {
         ModelNode model = connectorResource.getModel();
 
         Map<String, Object> params = new HashMap<>(CommonAttributes.PARAMS.unwrap(context, model));
-        params.put(InVMTransportDefinition.SERVER_ID.getName(), InVMTransportDefinition.SERVER_ID.resolveModelAttribute(context, model).asInt());
+        params.put(org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, InVMTransportDefinition.SERVER_ID.resolveModelAttribute(context, model).asInt());
         TransportConfiguration transportConfiguration = new TransportConfiguration(InVMConnectorFactory.class.getName(), params);
         return transportConfiguration;
     }

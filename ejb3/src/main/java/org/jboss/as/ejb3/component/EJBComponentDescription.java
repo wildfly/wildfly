@@ -121,6 +121,9 @@ import org.wildfly.security.authz.Roles;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ *
+ * NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ *
  */
 public abstract class EJBComponentDescription extends ComponentDescription {
 
@@ -291,6 +294,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * Should JACC be enabled when using an Elytron security domain.
      */
     private boolean requiresJacc;
+
+    private boolean legacyCompliantPrincipalPropagation;
 
     /**
      * Construct a new instance.
@@ -812,6 +817,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void setRequiresJacc(final boolean requiresJacc) {
         this.requiresJacc = requiresJacc;
+    }
+
+    public void setLegacyCompliantPrincipalPropagation(final boolean legacyCompliantPrincipalPropagation) {
+        this.legacyCompliantPrincipalPropagation = legacyCompliantPrincipalPropagation;
+    }
+
+    public boolean requiresLegacyCompliantPrincipalPropagation() {
+        return legacyCompliantPrincipalPropagation;
     }
 
     public void linkSecurityRoles(final String fromRole, final String toRole) {

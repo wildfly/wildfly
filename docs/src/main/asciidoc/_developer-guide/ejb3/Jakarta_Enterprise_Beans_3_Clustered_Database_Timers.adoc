@@ -1,0 +1,199 @@
+[[Jakarta_Enterprise_Beans_Clustered_Database_Timers]]
+= Jakarta Enterprise Beans 3 Clustered Database Timers
+
+[abstract]
+
+WildFly now supports clustered database backed timers. The clustering
+support is provided through the database, and as a result it is not
+intended to be a super high performance solution that supports thousands
+of timers going off a second, however properly tuned it should provide
+sufficient performance for most use cases.
+
+Note that database timers can also be used in non-clustered mode.
+
+[WARNING]
+
+Note that for this to work correctly the underlying database must
+support the READ_COMMITTED or SERIALIZABLE isolation mode and the
+datasource must be configured accordingly
+
+[[setup]]
+== Setup
+
+In order to use clustered timers it is necessary to add a database
+backed timer store. This can be done from the CLI with the following
+command:
+
+[source,options="nowrap"]
+----
+/subsystem=ejb3/service=timer-service/database-data-store=my-clustered-store:add(allow-execution=true, datasource-jndi-name='java:/MyDatasource', refresh-interval=60000, database='postgresql', partition='mypartition')
+----
+
+An explanation of the parameters is below:
+
+* *allow-execution* - If this node is allowed to execute timers. If this
+is false then timers added on this node will be added to the database
+for another node to execute. This allows you to limit timer execution to
+a few nodes in a cluster, which can greatly reduce database load for
+large clusters.
+* *datasource-jndi-name* - The datasource to use
+* *refresh-interval* - The refresh interval in milliseconds. This is the
+period of time that must elapse before this node will check the database
+for new timers added by other nodes. A smaller value means that timers
+will be picked up more quickly, however it will result in more load on
+the database. This is most important to tune if you are adding timers
+that will expire quickly. If the node that added the timer cannot
+execute it (e.g. because it has failed or because allow-execution is
+false), this timer may not be executed until a node has refreshed.
+* *database* - Define the type of database that is in use. Some SQL
+statements are customised by database, and this tells the data store
+which version of the SQL to use. +
+Without this attribute the server try to detected the type
+automatically, current supported types are _postgresql, mysql, oracle,
+db2, hsql_ and _h2_. +
+Note that this SQL resides in the file
+_modules/system/layers/base/org/jboss/as/ejb3/main/timers/timer-sql.properties_ +
+And as such is it possible to modify the SQL that is executed or add
+support for new databases by adding new DB specific SQL to this file (if
+you do add support for a new database it would be greatly appreciated if
+you could contribute the SQL back to the project).
+
+* *partition* - A node will only see timers from other nodes that have
+the same partition name. This allows you to break a large cluster up
+into several smaller clusters, which should improve performance. e.g.
+instead of having a cluster of 100 nodes, where all hundred are trying
+to execute and refresh the same timers, you can create 20 clusters of 5
+nodes by giving ever group of 5 a different partition name.
+
+[[non-clustered-timers]]
+=== Non clustered timers
+
+Note that you can still use the database data store for non-clustered
+timers, in which case set the refresh interval to zero and make sure
+that every node has a unique partition name (or uses a different
+database).
+
+[[using-clustered-timers-in-a-deployment]]
+== Using clustered timers in a deployment
+
+It is possible to use the data store as default for all applications by
+changing the default-data-store within the ejb3 subsystem:
+
+[source,xml,options="nowrap"]
+----
+    <timer-service thread-pool-name="timer" default-data-store="clustered-store">
+        <data-stores>
+            <database-data-store name="clustered-store" datasource-jndi-name="java:jboss/datasources/ExampleDS" partition="timer"/>
+        </data-stores>
+    </timer-service>
+----
+
+Another option is to use a separate data store for specific
+applications, all that is required is to set the timer data store name
+in jboss-ejb3.xml:
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.1" encoding="UTF-8"?>
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+               xmlns="http://java.sun.com/xml/ns/javaee"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:timer="urn:timer-service:1.0"
+               xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd
+                     http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+               version="3.1"
+               impl-version="2.0">
+    <assembly-descriptor>
+            <timer:timer>
+                <ejb-name>*</ejb-name>
+                <timer:persistence-store-name>my-clustered-store</timer:persistence-store-name>
+            </timer:timer>
+        </assembly-descriptor>
+</jboss:ejb-jar>
+----
+
+[[programmatically-refresh-timer]]
+== Programmatically Refresh Timer
+
+In a clustered deployment, multiple nodes updating timer datastore may cause the in-memory timer state to be temporarily
+out of sync. Some application may find the `refresh-interval` configuration not sufficient in some cases, and
+need to programmatically refresh timers. This can be done with Jakarta Interceptors configured for those business methods
+that need this capability, as illustrated in the following steps:
+
+* Implement an Jakarta Interceptors that enables `wildfly.ejb.timer.refresh.enabled` to true. For example,
+
+[source,java,options="nowrap"]
+----
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
+
+/**
+ * An interceptor to enable programmatic timer refresh across multiple nodes.
+ */
+@Interceptor
+public class RefreshInterceptor {
+    @AroundInvoke
+    public Object intercept(InvocationContext context) throws Exception {
+        context.getContextData().put("wildfly.ejb.timer.refresh.enabled", Boolean.TRUE);
+        return context.proceed();
+    }
+}
+----
+
+* Configure the Jakarta Interceptors to the target stateless or singleton bean business methods.
+When `wildfly.ejb.timer.refresh.enabled` is set to true, calling `TimerService.getAllTimers()`
+will first refresh from timer datastore before returning timers. For example,
+
+[source,java,options="nowrap"]
+----
+@Singleton
+public class RefreshBean1 ... {
+
+    @Interceptors(RefreshInterceptor.class)
+    public void businessMethod1() {
+        ...
+        // since wildfly.ejb.timer.refresh.enabled is set to true in interceptor for this business method,
+        // calling timerService.getAllTimers() will first refresh from timer datastore before returning timers.
+        final Collection<Timer> allTimers = timerService.getAllTimers();
+        ...
+    }
+}
+----
+
+* Applications may configure such an interceptor to certain business methods that require this capability.
+Alternatively, applications may implement a dedicated business method to programmatically refresh timers, to
+be invoked by other parts of the application when needed. For example,
+
+[source,java,options="nowrap"]
+----
+    @Interceptors(RefreshInterceptor.class)
+    public List<Timer> getAllTimerInfoWithRefresh() {
+        return timerService.getAllTimers();
+    }
+
+    public void businessMethod1() {
+        final LocalBusinessInterface businessObject = sessionContext.getBusinessObject(LocalBusinessInterface.class);
+        businessObject.getAllTimerInfoWithRefresh();
+
+        // timer has been programmatically refreshed from datastore.
+        // continue with other business logic...
+    }
+----
+
+[[technical-details]]
+== Technical details
+
+Internally every node that is allowed to execute timers schedules a
+timeout for every timer is knows about. When this timeout expires then
+this node attempts to 'lock' the timer, by updating its state to
+running. The query this executes looks like:
+
+[source,options="nowrap"]
+----
+UPDATE JBOSS_EJB_TIMER SET TIMER_STATE=? WHERE ID=? AND TIMER_STATE<>? AND NEXT_DATE=?;
+----
+
+Due to the use of a transaction and READ_COMMITTED or SERIALIZABLE
+isolation mode only one node will succeed in updating the row, and this
+is the node that the timer will run on.

@@ -35,7 +35,7 @@ import org.jboss.jandex.Indexer;
 import org.junit.Test;
 
 /**
- * Unit test for Mdb validation logic - see EJB 3.2 specification section 5.6.2 and 5.6.4 for more information
+ * Unit test for Mdb validation logic - see Jakarta Enterprise Beans 3.2 specification section 5.6.2 and 5.6.4 for more information
  *
  * @author <a href="mailto:romain@redhat.com">Romain Pelisse</a>
  */

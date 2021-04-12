@@ -38,7 +38,7 @@ import org.wildfly.discovery.ServiceURL;
 import org.xnio.OptionMap;
 
 /**
- * Service which contains the static configuration data found in an EJB Remoting profile, either in the subsystem or in a
+ * Service which contains the static configuration data found in an Jakarta Enterprise Beans Remoting profile, either in the subsystem or in a
  * deployment descriptor.
  *
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>

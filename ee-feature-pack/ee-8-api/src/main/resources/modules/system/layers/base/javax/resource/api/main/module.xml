@@ -22,8 +22,16 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="javax.resource.api">
+<module xmlns="urn:jboss:module:1.9" name="javax.resource.api">
+
+    <resources>
+        <artifact name="${org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec}"/>
+    </resources>
+
     <dependencies>
+        <module name="java.desktop"/>
+        <!-- Revisit when checking already deprecated javax.api removal  <module name="java.naming"/> -->
+        <module name="java.sql"/>
         <module name="javax.transaction.api" export="true"/>
         <module name="javax.api" export="false">
             <exports>
@@ -31,8 +39,4 @@
             </exports>
         </module>
     </dependencies>
-
-    <resources>
-        <artifact name="${org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec}"/>
-    </resources>
 </module>

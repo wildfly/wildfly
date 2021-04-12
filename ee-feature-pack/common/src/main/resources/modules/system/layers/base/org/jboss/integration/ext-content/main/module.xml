@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.jboss.integration.ext-content">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.integration.ext-content">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -30,7 +31,4 @@
     <resources>
         <resource-root path="bundled"/>
     </resources>
-
-    <dependencies>
-    </dependencies>
 </module>

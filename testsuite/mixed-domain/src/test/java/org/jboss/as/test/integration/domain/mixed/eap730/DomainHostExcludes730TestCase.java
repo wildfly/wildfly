@@ -22,10 +22,11 @@
 
 package org.jboss.as.test.integration.domain.mixed.eap730;
 
+import static org.jboss.as.test.integration.domain.mixed.Version.AsVersion.EAP_7_3_0;
+
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.test.integration.domain.mixed.DomainHostExcludesTest;
 import org.jboss.as.test.integration.domain.mixed.Version;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -36,12 +37,12 @@ import org.junit.BeforeClass;
  *
  * @author Brian Stansberry
  */
-@Version(Version.AsVersion.EAP_7_3_0)
+@Version(EAP_7_3_0)
 public class DomainHostExcludes730TestCase extends DomainHostExcludesTest {
 
     @BeforeClass
     public static void beforeClass() throws InterruptedException, TimeoutException, MgmtOperationException, IOException {
         LegacyConfig730TestSuite.initializeDomain();
-        setup(DomainHostExcludes730TestCase.class, "EAP7.3", ModelVersion.create(10, 0));
+        setup(DomainHostExcludes730TestCase.class, EAP_7_3_0.getHostExclude(), EAP_7_3_0.getModelVersion());
     }
 }

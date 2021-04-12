@@ -37,13 +37,13 @@ public interface MicroProfileJWTLogger extends BasicLogger {
     /**
      * The root logger with a category of the package name.
      */
-    MicroProfileJWTLogger ROOT_LOGGER = Logger.getMessageLogger(MicroProfileJWTLogger.class, MicroProfileJWTLogger.class.getPackage().getName());
+    MicroProfileJWTLogger ROOT_LOGGER = Logger.getMessageLogger(MicroProfileJWTLogger.class, "org.wildfly.extension.microprofile.jwt.smallrye");
 
     /**
      * Logs an informational message indicating the naming subsystem is being activated.
      */
     @LogMessage(level = INFO)
-    @Message(id = 1, value = "Activating WildFly MicroProfile JWT Subsystem")
+    @Message(id = 1, value = "Activating MicroProfile JWT Subsystem")
     void activatingSubsystem();
 
     @LogMessage(level = WARN)

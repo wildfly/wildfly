@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>24.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-ejb-spi</artifactId>
@@ -41,8 +41,8 @@
 
     <name>WildFly: SFSB clustering - SPI</name>
     <description>
-        A set of SPIs for managing distributable @Stateful bean instances for use by the the distributed EJB cache implementation found in the wildfly-ejb3 module.
-        This module decouples the mechanism for managing @Stateful bean instances from the EJB subsystem.
+        A set of SPIs for managing distributable @Stateful bean instances for use by the the distributed Jakarta Enterprise Beans cache implementation found in the wildfly-ejb3 module.
+        This module decouples the mechanism for managing @Stateful bean instances from the Jakarta Enterprise Beans subsystem.
     </description>
 
     <dependencies>
@@ -57,10 +57,6 @@
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.modules</groupId>
-            <artifactId>jboss-modules</artifactId>
         </dependency>
     </dependencies>
 </project>

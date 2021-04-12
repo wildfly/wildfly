@@ -27,7 +27,7 @@ import java.util.Map;
 
 
 /**
- * Constants used by the JAXR subsystem.
+ * Constants used by the Jakarta XML Registries subsystem.
  *
  * @author Thomas.Diesler@jboss.com
  * @author Kurt Stam

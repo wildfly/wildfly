@@ -63,6 +63,8 @@ import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 /**
  * Deployment processor that sets up the timer service for singletons and stateless session beans
  *
+ * NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ *
  * @author Stuart Douglas
  */
 public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor {

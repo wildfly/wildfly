@@ -36,7 +36,7 @@ import org.jboss.msc.service.ServiceName;
 public interface ComponentIntegrator {
 
     /**
-     * Probably just for EJBs.
+     * Probably just for Jakarta Enterprise Beans.
      *
      * @return <code>true</code> if the given description requires a bean name, <code>false</code> otherwise
      */

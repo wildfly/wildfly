@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>22.0.0.Beta1-SNAPSHOT</version>
+        <version>24.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
@@ -44,6 +44,12 @@
         Adapts implementations of wildfly-clustering-marshalling-api to ProtoStream.
         Also contains wildfly-clustering-marshalling-spi implementations using ProtoStream.
     </description>
+
+    <properties>
+        <jdk.max.version>9</jdk.max.version>
+        <!-- This property otherwise causes the java8-test execution to crash -->
+        <modular.jdk.args></modular.jdk.args>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -61,6 +67,10 @@
         <dependency>
             <groupId>org.jboss.modules</groupId>
             <artifactId>jboss-modules</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.common</groupId>
+            <artifactId>wildfly-common</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

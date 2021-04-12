@@ -1,0 +1,275 @@
+[[Jakarta_Enterprise_Beans_3_Reference_Guide]]
+= Jakarta Enterprise Beans 3 Reference Guide
+
+This chapter details the extensions that are available when developing
+Enterprise Java Beans ^tm^ on WildFly {wildflyVersion}.
+
+Currently there is no support for configuring the extensions using an
+implementation specific descriptor file.
+
+[[resource-adapter-for-message-driven-beans]]
+== Resource Adapter for Message Driven Beans
+
+Each Message Driven Bean must be connected to a resource adapter.
+
+[[specification-of-resource-adapter-using-metadata-annotations]]
+=== Specification of Resource Adapter using Metadata Annotations
+
+The `ResourceAdapter` annotation is used to specify the resource adapter
+with which the MDB should connect.
+
+The `value` of the annotation is the name of the deployment unit
+containing the resource adapter. For example `jms-ra.rar`.
+
+For example:
+
+[source,java,options="nowrap"]
+----
+@MessageDriven(messageListenerInterface = PostmanPat.class)
+@ResourceAdapter("ejb3-rar.rar")
+----
+
+[[run-as-principal]]
+== Run-as Principal
+
+Whenever a run-as role is specified for a given method invocation the
+default anonymous principal is used as the caller principal. This
+principal can be overridden by specifying a run-as principal.
+
+[[specification-of-run-as-principal-using-metadata-annotations]]
+=== Specification of Run-as Principal using Metadata Annotations
+
+The `RunAsPrincipal` annotation is used to specify the run-as principal
+to use for a given method invocation.
+
+The `value` of the annotation specifies the name of the principal to
+use. The actual type of the principal is undefined and should not be
+relied upon.
+
+Using this annotation without specifying a run-as role is considered an
+error.
+
+For example:
+
+[source,java,options="nowrap"]
+----
+@RunAs("admin")
+@RunAsPrincipal("MyBean")
+----
+
+[[security-domain-Jakarta-Enterprise-Beans-3-ref]]
+== Security Domain
+
+Each Enterprise Java Bean ^tm^ can be associated with a security domain.
+Only when an Jakarta Enterprise Beans are associated with a security domain will
+authentication and authorization be enforced.
+
+[[specification-of-security-domain-using-metadata-annotations]]
+=== Specification of Security Domain using Metadata Annotations
+
+The `SecurityDomain` annotation is used to specify the security domain
+to associate with the Jakarta Enterprise Beans.
+
+The `value` of the annotation is the name of the security domain to be
+used.
+
+For example:
+
+[source,java,options="nowrap"]
+----
+@SecurityDomain("other")
+----
+
+[[transaction-timeout]]
+== Transaction Timeout
+
+For any newly started transaction a transaction timeout can be specified
+in seconds.
+
+When a transaction timeout of `0` is used, then the actual transaction
+timeout will default to the domain configured default. +
+_TODO: add link to tx subsystem_
+
+Although this is only applicable when using transaction attribute
+`REQUIRED` or `REQUIRES_NEW` the application server will not detect
+invalid setups.
+
+New Transactions
+
+[IMPORTANT]
+
+Take care that even when transaction attribute `REQUIRED` is specified,
+the timeout will only be applicable if a *new* transaction is started.
+
+[[specification-of-transaction-timeout-with-metadata-annotations]]
+=== Specification of Transaction Timeout with Metadata Annotations
+
+The `TransactionTimeout` annotation is used to specify the transaction
+timeout for a given method.
+
+The `value` of the annotation is the timeout used in the given `unit`
+granularity. It must be a positive integer or 0. Whenever 0 is specified
+the default domain configured timeout is used.
+
+The `unit` specifies the granularity of the `value`. The actual value
+used is converted to seconds. Specifying a granularity lower than
+`SECONDS` is considered an error, even when the computed value will
+result in an even amount of seconds.
+
+For example:@TransactionTimeout(value = 10, unit = TimeUnit.SECONDS)
+
+[[specification-of-transaction-timeout-in-the-deployment-descriptor]]
+=== Specification of Transaction Timeout in the Deployment Descriptor
+
+The `trans-timeout` element is used to define the transaction timeout
+for business, home, component, and message-listener interface methods;
+no-interface view methods; web service endpoint methods; and timeout
+callback methods.
+
+The `trans-timeout` element resides in the `urn:trans-timeout` namespace
+and is part of the standard `container-transaction` element as defined
+in the jboss namespace.
+
+For the rules when a `container-transaction` is applicable please refer
+to EJB 3.1 FR 13.3.7.2.1.
+
+[[example-of-trans-timeout]]
+==== Example of trans-timeout
+
+jboss-ejb3.xml
+
+[source,xml,options="nowrap"]
+----
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+               xmlns="http://java.sun.com/xml/ns/javaee"
+               xmlns:tx="urn:trans-timeout"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd
+http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd
+urn:trans-timeout http://www.jboss.org/j2ee/schema/trans-timeout-1_0.xsd"
+               version="3.1"
+               impl-version="2.0">
+    <assembly-descriptor>
+        <container-transaction>
+            <method>
+                <ejb-name>BeanWithTimeoutValue</ejb-name>
+                <method-name>*</method-name>
+                <method-intf>Local</method-intf>
+            </method>
+            <tx:trans-timeout>
+                <tx:timeout>10</tx:timeout>
+                <tx:unit>Seconds</tx:unit>
+            </tx:trans-timeout>
+        </container-transaction>
+    </assembly-descriptor>
+</jboss:ejb-jar>
+----
+
+[[timer-service]]
+== Timer service
+
+The service is responsible to call the registered timeout methods of the
+different session beans.
+
+[NOTE]
+
+A persistent timer will be identified by the name of the EAR, the name
+of the sub-deployment JAR and the Bean's name. +
+If one of those names are changed (e.g. EAR name contain a version) the
+timer entry became orphaned and the timer event will not longer be
+fired.
+
+[[single-event-timer]]
+=== Single event timer
+
+The timer is will be started once at the specified time.
+
+In case of a server restart the timeout method of a persistent timer
+will only be called directly if the specified time is elapsed. +
+If the timer is not persistent, it will no longer be available 
+if JBoss is restarted or the application is redeployed.
+
+[[recurring-timer]]
+=== Recurring timer
+
+The timer will be started at the specified first occurrence and after
+that point at each time if the interval is elapsed. +
+If the timer will be started during the last execution is not finished
+the execution will be suppressed with a warning to avoid concurrent
+execution.
+
+In case of server downtime for a persistent timer, the timeout method
+will be called only once if one, or more than one, interval is
+elapsed. +
+If the timer is not persistent, it will no longer be active 
+after the server is restarted or the application is redeployed.
+
+[[calendar-timer]]
+=== Calendar timer
+
+The timer will be started if the schedule expression match. It will be
+automatically deactivated and removed if there will be no next
+expiration possible, i.e. If you set a specific year.
+
+For example:
+
+[source,java,options="nowrap"]
+----
+@Schedule( ... dayOfMonth="1", month="1", year="2012") +
+// start once at 01-01-2012 00:00:00
+----
+
+[[programmatic-calendar-timer]]
+==== Programmatic calendar timer
+
+If the timer is persistent it will be fetched at server start and the
+missed timeouts are called concurrent. +
+If a persistent timer contains an end date it will be executed once
+nevertheless how many times the execution was missed. Also a retry will
+be suppressed if the timeout method throw an Exception. +
+In case of such expired timer access to the given Timer object might
+throw a NoMoreTimeoutExcption or NoSuchObjectException.
+
+If the timer is non persistent it will not longer be active after the
+server is restarted or the application is redeployed.
+
+*TODO*: clarify whether this should happen concurrently/blocked or even
+fired only once like a recurring timer!
+
+[[annotated-calendar-timer]]
+==== Annotated calendar timer
+
+If the timer is non persistent it will not activated for missed events
+during the server is down. In case of server start the timer is
+scheduled based on the @Schedule annotation.
+
+If the timer is persistent (default if not deactivated by annotation)
+all missed events are fetched at server start and the annotated timeout
+method is called concurrent.
+
+*TODO*: clarify whether this should happen concurrently/blocked or even
+fired only once like a recurring timer!
+
+:leveloffset: +1
+
+include::ejb3/Container_interceptors.adoc[]
+
+include::ejb3/Jakarta_Enterprise_Beans_3_Clustered_Database_Timers.adoc[]
+
+include::ejb3/Jakarta_Enterprise_Beans_IIOP_Guide.adoc[]
+
+include::ejb3/Jakarta_Enterprise_Beans_over_HTTP.adoc[]
+
+include::ejb3/jboss-ejb3.xml_Reference.adoc[]
+
+include::ejb3/Message_Driven_Beans_Controlled_Delivery.adoc[]
+
+include::ejb3/Securing_Jakarta_Enterprise_Beans.adoc[]
+
+include::ejb3/Jakarta_Enterprise_Beans_Client_Interceptors.adoc[]
+
+include::ejb3/Jakarta_Enterprise_Beans_on_Kubernetes.adoc[]
+
+include::ejb3/Jakarta_Enterprise_Beans_Deployment_Runtime_Resources.adoc[]
+
+:leveloffset: -1

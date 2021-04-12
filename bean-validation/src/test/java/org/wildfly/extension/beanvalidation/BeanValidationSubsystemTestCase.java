@@ -28,7 +28,7 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.junit.Test;
 
 /**
- * Bean Validation subsystem tests.
+ * Jakarta Bean Validation subsystem tests.
  *
  * @author Eduardo Martins
  */

@@ -40,12 +40,12 @@ import java.util.List;
 /**
  * Processes a {@link SessionBeanComponentDescription}'s bean class and checks whether it exposes:
  * <ul>
- * <li>An implicit no-interface, as specified by EJB3.1 spec, section 4.9.8.</li>
- * <li>A default local business interface view, as specified by EJB3.1 spec, section 4.9.7.</li>
+ * <li>An implicit no-interface, as specified by Enterprise Beans 3.1 spec, section 4.9.8.</li>
+ * <li>A default local business interface view, as specified by Enterprise Beans 3.1 spec, section 4.9.7.</li>
  * </ul>
  * The {@link SessionBeanComponentDescription} is updated with this info accordingly.
  * <p/>
- * This processor MUST run <b>before</b> the {@link EjbJndiBindingsDeploymentUnitProcessor EJB jndi binding} processor is run.
+ * This processor MUST run <b>before</b> the {@link EjbJndiBindingsDeploymentUnitProcessor Jakarta Enterprise Beans jndi binding} processor is run.
  *
  * @author Jaikiran Pai
  */
@@ -100,7 +100,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
     /**
      * Returns true if the passed <code>beanClass</code> is eligible for implicit no-interface view. Else returns false.
      * <p/>
-     * EJB3.1 spec, section 4.9.8 states the rules for an implicit no-interface view on a bean class.
+     * Enterprise Beans 3.1 spec, section 4.9.8 states the rules for an implicit no-interface view on a bean class.
      * If the "implements" clause of the bean class is empty then the bean is considered to be exposing a no-interface view.
      * During this implements clause check, the {@link java.io.Serializable} or {@link java.io.Externalizable} or
      * any class from javax.ejb.* packages are excluded.
@@ -114,7 +114,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
             return true;
         }
 
-        // As per section 4.9.8 (bullet 1.3) of EJB3.1 spec
+        // As per section 4.9.8 (bullet 1.3) of Enterprise Beans 3.1 spec
         // java.io.Serializable; java.io.Externalizable; any of the interfaces defined by the javax.ejb
         // are excluded from interface check
 
@@ -127,7 +127,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
 
     /**
      * Returns the default local view class of the {@link Class beanClass}, if one is present.
-     * EJB3.1 spec, section 4.9.7 specifies the rules for a default local view of a bean. If the bean implements
+     * Enterprise Beans 3.1 spec, section 4.9.7 specifies the rules for a default local view of a bean. If the bean implements
      * just one interface, then that interface is returned as the default local view by this method.
      * If no such, interface is found, then this method returns null.
      *

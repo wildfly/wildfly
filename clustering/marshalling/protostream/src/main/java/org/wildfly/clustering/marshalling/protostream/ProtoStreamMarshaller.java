@@ -22,17 +22,34 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import java.io.IOException;
+
+import org.infinispan.protostream.ImmutableSerializationContext;
+import org.infinispan.protostream.RawProtoStreamReader;
+import org.infinispan.protostream.RawProtoStreamWriter;
 import org.infinispan.protostream.RawProtobufMarshaller;
 
 /**
+ * A {@link RawProtobufMarshaller} that include a facility for computing buffer sizes.
  * @author Paul Ferraro
+ * @param <T> the type of this marshaller.
  */
-public interface ProtoStreamMarshaller<T> extends RawProtobufMarshaller<T>, Predictable<T> {
+public interface ProtoStreamMarshaller<T> extends RawProtobufMarshaller<T>, Marshallable<T> {
 
     @Override
     default String getTypeName() {
         Class<?> targetClass = this.getJavaClass();
         Package targetPackage = targetClass.getPackage();
         return (targetPackage != null) ? (targetPackage.getName() + '.' + targetClass.getSimpleName()) : targetClass.getSimpleName();
+    }
+
+    @Override
+    default T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
+        return this.readFrom(new DefaultProtoStreamReader(context, reader));
+    }
+
+    @Override
+    default void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T value) throws IOException {
+        this.writeTo(new DefaultProtoStreamWriter(context, writer), value);
     }
 }

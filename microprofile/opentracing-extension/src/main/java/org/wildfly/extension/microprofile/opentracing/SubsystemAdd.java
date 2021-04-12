@@ -62,7 +62,8 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         WildFlyTracerFactory.registerTracer(ENV_TRACER).accept(new JaegerEnvTracerConfiguration());
-        TracingExtensionLogger.ROOT_LOGGER.activatingSubsystem();String defaultTracer = DEFAULT_TRACER.resolveModelAttribute(context, operation).asStringOrNull();
+        TracingExtensionLogger.ROOT_LOGGER.activatingSubsystem();
+        String defaultTracer = DEFAULT_TRACER.resolveModelAttribute(context, operation).asStringOrNull();
         if (defaultTracer != null && !defaultTracer.isEmpty()) {
             CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(DEFAULT_TRACER_CAPABILITY);
             final Supplier<TracerConfiguration> config = builder.requiresCapability(TRACER_CAPABILITY_NAME, TracerConfiguration.class, defaultTracer);

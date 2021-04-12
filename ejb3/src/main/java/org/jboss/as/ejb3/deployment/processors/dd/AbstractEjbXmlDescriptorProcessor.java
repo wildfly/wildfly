@@ -45,12 +45,12 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
         // get the deployment unit
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        // find the EJB jar metadata and start processing it
+        // find the Jakarta Enterprise Beans jar metadata and start processing it
         EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbJarMetaData == null) {
             return;
         }
-        // process EJBs
+        // process Jakarta Enterprise Beans
         EnterpriseBeansMetaData ejbs = ejbJarMetaData.getEnterpriseBeans();
         if (ejbs != null && !ejbs.isEmpty()) {
             for (EnterpriseBeanMetaData ejb : ejbs) {

@@ -81,6 +81,7 @@ public abstract class ElectionPolicyResourceDefinition extends ChildResourceDefi
 
         Attribute(String name, String alternative, CapabilityReferenceRecorder reference) {
             this.definition = createBuilder(name, alternative)
+                    .setAllowExpression(false)
                     .setCapabilityReference(reference)
                     .build();
         }

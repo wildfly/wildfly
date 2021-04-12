@@ -108,6 +108,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
     private final boolean jaccRequired;
+    private final boolean legacyCompliantPrincipalPropagation;
     private final boolean securityRequired;
 
     private final EJBComponentDescription componentDescription;
@@ -214,6 +215,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         this.shutDownInterceptorFactory = ejbComponentDescription.getShutDownInterceptorFactory();
         this.securityRequired = ejbComponentDescription.isSecurityRequired();
         this.jaccRequired = ejbComponentDescription.requiresJacc();
+        this.legacyCompliantPrincipalPropagation = ejbComponentDescription.requiresLegacyCompliantPrincipalPropagation();
         this.componentDescription = ejbComponentDescription;
     }
 
@@ -391,6 +393,10 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public boolean isEnableJacc() {
         return jaccRequired;
+    }
+
+    public boolean isLegacyCompliantPrincipalPropagation() {
+        return legacyCompliantPrincipalPropagation;
     }
 
     Injector<Function> getIdentityOutflowFunctionInjector() {

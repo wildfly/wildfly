@@ -40,8 +40,7 @@ public class CompositeSessionMetaData implements InvalidatableSessionMetaData {
 
     @Override
     public boolean isNew() {
-        // We can implement this more efficiently than the default implementation
-        return this.accessMetaData.getLastAccessedDuration().isZero();
+        return this.creationMetaData.isNew();
     }
 
     @Override
@@ -60,8 +59,13 @@ public class CompositeSessionMetaData implements InvalidatableSessionMetaData {
     }
 
     @Override
-    public Instant getLastAccessedTime() {
-        return this.getCreationTime().plus(this.accessMetaData.getLastAccessedDuration());
+    public Instant getLastAccessStartTime() {
+        return this.getCreationTime().plus(this.accessMetaData.getSinceCreationDuration());
+    }
+
+    @Override
+    public Instant getLastAccessEndTime() {
+        return this.getLastAccessStartTime().plus(this.accessMetaData.getLastAccessDuration());
     }
 
     @Override
@@ -70,12 +74,18 @@ public class CompositeSessionMetaData implements InvalidatableSessionMetaData {
     }
 
     @Override
-    public void setLastAccessedTime(Instant instant) {
-        this.accessMetaData.setLastAccessedDuration(Duration.between(this.creationMetaData.getCreationTime(), instant));
+    public void setLastAccess(Instant startTime, Instant endTime) {
+        Instant creationTime = this.creationMetaData.getCreationTime();
+        this.accessMetaData.setLastAccessDuration(!startTime.equals(creationTime) ? Duration.between(creationTime, startTime) : Duration.ZERO, Duration.between(startTime, endTime));
     }
 
     @Override
     public void setMaxInactiveInterval(Duration duration) {
         this.creationMetaData.setMaxInactiveInterval(duration.isNegative() ? Duration.ZERO : duration);
+    }
+
+    @Override
+    public void close() {
+        this.creationMetaData.close();
     }
 }

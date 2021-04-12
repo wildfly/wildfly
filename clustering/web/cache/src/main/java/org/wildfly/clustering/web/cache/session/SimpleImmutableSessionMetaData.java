@@ -32,14 +32,23 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  */
 public class SimpleImmutableSessionMetaData implements ImmutableSessionMetaData {
 
+    private final boolean newSession;
     private final Instant creationTime;
-    private final Instant lastAccessedTime;
+    private final Instant lastAccessStartTime;
+    private final Instant lastAccessEndTime;
     private final Duration maxInactiveInterval;
 
     public SimpleImmutableSessionMetaData(ImmutableSessionMetaData metaData) {
+        this.newSession = metaData.isNew();
         this.creationTime = metaData.getCreationTime();
-        this.lastAccessedTime = metaData.getLastAccessedTime();
+        this.lastAccessStartTime = metaData.getLastAccessStartTime();
+        this.lastAccessEndTime = metaData.getLastAccessEndTime();
         this.maxInactiveInterval = metaData.getMaxInactiveInterval();
+    }
+
+    @Override
+    public boolean isNew() {
+        return this.newSession;
     }
 
     @Override
@@ -48,8 +57,13 @@ public class SimpleImmutableSessionMetaData implements ImmutableSessionMetaData 
     }
 
     @Override
-    public Instant getLastAccessedTime() {
-        return this.lastAccessedTime;
+    public Instant getLastAccessStartTime() {
+        return this.lastAccessStartTime;
+    }
+
+    @Override
+    public Instant getLastAccessEndTime() {
+        return this.lastAccessEndTime;
     }
 
     @Override

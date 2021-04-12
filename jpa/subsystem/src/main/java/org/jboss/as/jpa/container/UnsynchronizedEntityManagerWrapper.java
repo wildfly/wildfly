@@ -46,7 +46,7 @@ import javax.persistence.metamodel.Metamodel;
  * for error checking.
  *
  * If an SynchronizationType.SYNCHRONIZED transaction scoped persistence context is accessed
- * while there is already an SynchronizationType.UNSYNCHRONIZED (with the same pu name + in active JTA TX),
+ * while there is already an SynchronizationType.UNSYNCHRONIZED (with the same pu name + in active Jakarta Transactions TX),
  * an IllegalStateException needs to be thrown as per the JPA 2.1 spec (see 7.6.4.1 Requirements for Persistence Context Propagation).
  *
  * @author Scott Marlow

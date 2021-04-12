@@ -587,7 +587,7 @@ public class MigrateOperation implements OperationStepHandler {
     private void migratePooledConnectionFactory(ModelNode addOperation) {
         migrateConnectorAttribute(addOperation);
         migrateDiscoveryGroupNameAttribute(addOperation);
-        // WFLY-8928 - allow local transacted JMS session
+        // WFLY-8928 - allow local transacted Jakarta Messaging session
         addOperation.get("allow-local-transactions").set(ModelNode.TRUE);
     }
 

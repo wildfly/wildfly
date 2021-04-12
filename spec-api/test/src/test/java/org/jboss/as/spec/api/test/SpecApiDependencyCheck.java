@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2020, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -141,7 +141,7 @@ import javax.xml.ws.wsaddressing.*;
 
 /**
  * This class checks the dependencies as exported by the
- * "spec-api" module to ensure that compilation of all Java EE
+ * "spec-api" module to ensure that compilation of all Jakarta EE
  * 7 Specification Platform APIs are reachable.  As such, no runtime
  * assertions are required here, only references.  If this class compiles, 
  * all noted references are reachable within the spec-api dependency chain. 

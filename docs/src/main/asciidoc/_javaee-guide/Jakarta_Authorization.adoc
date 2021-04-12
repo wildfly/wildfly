@@ -1,0 +1,52 @@
+[[Java_Authorization_Contract_for_Containers_JACC]]
+= Java Authorization Contract for Containers (JACC)
+
+In order to register your own JACC Module, you'll need to create a
+server module containing the required classes, and then set three system
+properties for WildFly to take it. Such a module would depend on the
+"javax.api" and "javaee.api" modules.
+
+An example module.xml for such a module could be:
+
+[source,java,options="nowrap"]
+----
+<module xmlns="urn:jboss:module:1.1" name="com.example.customjacc">
+  <resources>
+    <resource-root path="customjacc.jar"/>
+  </resources>
+  <dependencies>
+    <module name="javax.api"/>
+    <module name="javaee.api"/>
+  </dependencies>
+</module>
+----
+
+The specified JAR needs to contain at least two classes, as mandated by
+the JACC spec:
+
+* A `PolicyProvider` implementation: in our example, it'll be
+`com.example.customjacc.CustomPolicy.`
+* A `PolicyConfigurationFactory` implementation:
+`com.example.customjacc.CustomPolicyConfigurationFactory` in our case.
+
+The spec requires two system properties to be set for the server to
+register the JACC Module.
+
+For a server running in standalone mode, put the following commands in
+the JBoss CLI:
+
+[source,java,options="nowrap"]
+----
+[standalone@localhost:9990 /] /system-property=javax.security.jacc.policy.provider:add(value=com.example.customjacc.CustomPolicy)
+[standalone@localhost:9990 /] /system-property=javax.security.jacc.PolicyConfigurationFactory.provider:add(value=com.example.customjacc.CustomPolicyConfigurationFactory)
+----
+
+Another property is needed to make WildFly know where to load the
+classes from:
+
+[source,java,options="nowrap"]
+----
+[standalone@localhost:9990 /] /system-property=org.jboss.as.security.jacc-module:add(value=com.example.customjacc)
+----
+
+NOTE: References in this document to Java Authorization Contract for Containers (JACC) refer to the Jakarta Authorization unless otherwise noted

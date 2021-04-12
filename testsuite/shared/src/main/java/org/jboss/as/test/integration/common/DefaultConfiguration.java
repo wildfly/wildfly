@@ -78,7 +78,7 @@ public class DefaultConfiguration {
     }
 
     /*
-    * Returns the env Properties updated with security configurations for ejb connections
+    * Returns the env Properties updated with security configurations for Jakarta Enterprise Beans connections
     * @param env the properties to be updated
     * @return the Properties updated
     */

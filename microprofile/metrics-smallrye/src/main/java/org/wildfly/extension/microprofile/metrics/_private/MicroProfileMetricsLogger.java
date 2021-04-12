@@ -26,7 +26,6 @@ import static org.jboss.logging.Logger.Level.INFO;
 
 import java.io.IOException;
 
-import org.jboss.as.controller.PathAddress;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -39,7 +38,7 @@ import org.jboss.logging.annotations.MessageLogger;
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
  */
-@MessageLogger(projectCode = "WFLYMETRICS", length = 4)
+@MessageLogger(projectCode = "WFLYMPMETRICS", length = 4)
 public interface MicroProfileMetricsLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.wildfly.extension.batch}.
@@ -50,19 +49,25 @@ public interface MicroProfileMetricsLogger extends BasicLogger {
      * Logs an informational message indicating the subsystem is being activated.
      */
     @LogMessage(level = INFO)
-    @Message(id = 1, value = "Activating Eclipse MicroProfile Metrics Subsystem")
+    @Message(id = 1, value = "Activating MicroProfile Metrics Subsystem")
     void activatingSubsystem();
 
 
     @Message(id = 2, value = "Failed to initialize metrics from JMX MBeans")
     IllegalArgumentException failedInitializeJMXRegistrar(@Cause IOException e);
 
-    @Message(id = 3, value = "Unable to read attribute %s on %s: %s.")
-    IllegalStateException unableToReadAttribute(String attributeName, PathAddress address, String error);
+    // no longer used
+    // @Message(id = 3, value = "Unable to read attribute %s on %s: %s.")
+    // IllegalStateException unableToReadAttribute(String attributeName, PathAddress address, String error);
 
-    @Message(id = 4, value = "Unable to convert attribute %s on %s to Double value.")
-    IllegalStateException unableToConvertAttribute(String attributeName, PathAddress address, @Cause Exception exception);
+    // no longer used
+    // @Message(id = 4, value = "Unable to convert attribute %s on %s to Double value.")
+    // IllegalStateException unableToConvertAttribute(String attributeName, PathAddress address, @Cause Exception exception);
 
-    @Message(id = 5, value = "Metric attribute %s on %s is undefined and will not be exposed.")
-    IllegalStateException undefinedMetric(String attributeName, PathAddress address);
+    // no longer used
+    // @Message(id = 5, value = "Metric attribute %s on %s is undefined and will not be exposed.")
+    // IllegalStateException undefinedMetric(String attributeName, PathAddress address);
+
+    @Message(id = 6, value = "The metric was unavailable")
+    IllegalStateException metricUnavailable();
 }

@@ -28,7 +28,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Handler for removing the EJB3 subsystem.
+ * Handler for removing the Enterprise Beans 3 subsystem.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

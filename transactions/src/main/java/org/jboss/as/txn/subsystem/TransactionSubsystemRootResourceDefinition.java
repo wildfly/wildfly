@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -83,7 +83,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .build();
     /**
      * Provides access to the special TransactionSynchronizationRegistry impl that ensures proper ordering between
-     * JCA and other synchronizations.
+     * Jakarta Connectors and other synchronizations.
      */
     public static final RuntimeCapability<Void> TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY =
             RuntimeCapability.Builder.of("org.wildfly.transactions.transaction-synchronization-registry", TransactionSynchronizationRegistry.class)
@@ -281,6 +281,13 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true)
             .setRequires(CommonAttributes.USE_JDBC_STORE).build();
 
+    public static final SimpleAttributeDefinition STALE_TRANSACTION_TIME = new SimpleAttributeDefinitionBuilder(CommonAttributes.STALE_TRANSACTION_TIME, ModelType.INT, true)
+            .setValidator(new IntRangeValidator(0))
+            .setMeasurementUnit(MeasurementUnit.SECONDS)
+            .setDefaultValue(new ModelNode().set(600))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true).build();
+
 
     private final boolean registerRuntimeOnly;
 
@@ -305,7 +312,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USE_HORNETQ_STORE_PARAM, USE_JOURNAL_STORE_PARAM, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
             JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX,
-            JOURNAL_STORE_ENABLE_ASYNC_IO, ENABLE_STATISTICS, HORNETQ_STORE_ENABLE_ASYNC_IO
+            JOURNAL_STORE_ENABLE_ASYNC_IO, ENABLE_STATISTICS, HORNETQ_STORE_ENABLE_ASYNC_IO, STALE_TRANSACTION_TIME
     };
 
     static final AttributeDefinition[] attributes_1_2 = new AttributeDefinition[] {USE_JDBC_STORE, JDBC_STORE_DATASOURCE,

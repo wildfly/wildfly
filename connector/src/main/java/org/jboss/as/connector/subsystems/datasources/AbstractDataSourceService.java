@@ -158,8 +158,12 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             final ServiceContainer container = startContext.getController().getServiceContainer();
 
             deploymentMD = getDeployer().deploy(container);
-            if (deploymentMD.getCfs().length != 1) {
-                throw ConnectorLogger.ROOT_LOGGER.cannotStartDs();
+            final Object[] cfs = deploymentMD.getCfs();
+            if (cfs.length == 0) {
+                throw ConnectorLogger.ROOT_LOGGER.cannotStartDSNoConnectionFactory(jndiName.getAbsoluteJndiName());
+            } else if (cfs.length >= 2) {
+                throw ConnectorLogger.ROOT_LOGGER.cannotStartDSTooManyConnectionFactories(jndiName.getAbsoluteJndiName(),
+                        cfs.length);
             }
             sqlDataSource = new WildFlyDataSource((javax.sql.DataSource) deploymentMD.getCfs()[0], jndiName.getAbsoluteJndiName());
             DS_DEPLOYER_LOGGER.debugf("Adding datasource: %s", deploymentMD.getCfJndiNames()[0]);

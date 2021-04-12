@@ -40,7 +40,7 @@ import org.jboss.wsf.spi.metadata.j2ee.EJBMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.EJBSecurityMetaData;
 
 /**
- * Creates web app security meta data for EJB deployment.
+ * Creates web app security meta data for Jakarta Enterprise Beans deployment.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  * @author <a href="mailto:tdiesler@redhat.com">Thomas Diesler</a>
@@ -51,7 +51,7 @@ abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAc
      * @see org.jboss.webservices.integration.tomcat.AbstractSecurityMetaDataAccessorEJB#getSecurityDomain(Deployment)
      *
      * @param dep webservice deployment
-     * @return security domain associated with EJB 3 deployment
+     * @return security domain associated with Enterprise Beans 3 deployment
      */
     public String getSecurityDomain(final Deployment dep) {
         String securityDomain = null;
@@ -102,7 +102,7 @@ abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAc
     /**
      * @see org.jboss.webservices.integration.tomcat.SecurityMetaDataAccessorEJB#getAuthMethod(Endpoint)
      *
-     * @param endpoint EJB webservice endpoint
+     * @param endpoint Jakarta Enterprise Beans webservice endpoint
      * @return authentication method or null if not specified
      */
     public String getAuthMethod(final Endpoint endpoint) {
@@ -115,7 +115,7 @@ abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAc
     /**
      * @see org.jboss.webservices.integration.tomcat.SecurityMetaDataAccessorEJB#isSecureWsdlAccess(Endpoint)
      *
-     * @param endpoint EJB webservice endpoint
+     * @param endpoint Jakarta Enterprise Beans webservice endpoint
      * @return whether WSDL access have to be secured
      */
     public boolean isSecureWsdlAccess(final Endpoint endpoint) {
@@ -128,7 +128,7 @@ abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAc
     /**
      * @see org.jboss.webservices.integration.tomcat.SecurityMetaDataAccessorEJB#getTransportGuarantee(Endpoint)
      *
-     * @param endpoint EJB webservice endpoint
+     * @param endpoint Jakarta Enterprise Beans webservice endpoint
      * @return transport guarantee or null if not specified
      */
     public String getTransportGuarantee(final Endpoint endpoint) {
@@ -145,7 +145,7 @@ abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAc
     }
 
     /**
-     * Gets EJB security meta data if associated with EJB endpoint.
+     * Gets Jakarta Enterprise Beans security meta data if associated with Jakarta Enterprise Beans endpoint.
      *
      * @param endpoint EJB webservice endpoint
      * @return EJB security meta data or null
@@ -160,7 +160,7 @@ abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAc
     }
 
     /**
-     * Returns security domain value. This method checks domain is the same for every EJB 3 endpoint.
+     * Returns security domain value. This method checks domain is the same for every Enterprise Beans 3 endpoint.
      *
      * @param oldSecurityDomain our security domain
      * @param nextSecurityDomain next security domain

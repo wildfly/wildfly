@@ -22,50 +22,51 @@
 
 package org.wildfly.extension.undertow.filters;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import io.undertow.predicate.Predicate;
 import io.undertow.server.HttpHandler;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.FilterLocation;
 import org.wildfly.extension.undertow.UndertowFilter;
 
 /**
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class FilterRef implements Service<FilterRef>, UndertowFilter {
+    private final Consumer<FilterRef> serviceConsumer;
+    private final Supplier<FilterService> filter;
+    private final Supplier<FilterLocation> location;
     private final Predicate predicate;
     private final int priority;
-    private final InjectedValue<FilterService> filter = new InjectedValue<>();
-    private final InjectedValue<FilterLocation> location = new InjectedValue<>();
 
-    public FilterRef(Predicate predicate, int priority) {
+    FilterRef(final Consumer<FilterRef> serviceConsumer, final Supplier<FilterService> filter, final Supplier<FilterLocation> location, final Predicate predicate, final int priority) {
+        this.serviceConsumer = serviceConsumer;
+        this.filter = filter;
+        this.location = location;
         this.predicate = predicate;
         this.priority = priority;
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
-        location.getValue().addFilter(this);
+    public void start(final StartContext context) throws StartException {
+        location.get().addFilter(this);
+        serviceConsumer.accept(this);
     }
 
     @Override
-    public void stop(StopContext context) {
-        location.getValue().removeFilter(this);
-    }
-
-    InjectedValue<FilterService> getFilter() {
-        return filter;
-    }
-
-    InjectedValue<FilterLocation> getLocation() {
-        return location;
+    public void stop(final StopContext context) {
+        serviceConsumer.accept(null);
+        location.get().removeFilter(this);
     }
 
     public HttpHandler createHttpHandler(HttpHandler next) {
-        return filter.getValue().createHttpHandler(predicate, next);
+        return filter.get().createHttpHandler(predicate, next);
     }
 
     public Predicate getPredicate() {
@@ -83,6 +84,6 @@ public class FilterRef implements Service<FilterRef>, UndertowFilter {
 
     @Override
     public HttpHandler wrap(HttpHandler handler) {
-        return filter.getValue().createHttpHandler(predicate, handler);
+        return filter.get().createHttpHandler(predicate, handler);
     }
 }

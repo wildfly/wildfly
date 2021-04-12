@@ -6,6 +6,7 @@
     <feature-group name="basic-profile"/>
     <feature-group name="health"/>
     <feature-group name="metrics" />
+    <feature spec="subsystem.microprofile-config-smallrye"/>
     <feature spec="subsystem.microprofile-jwt-smallrye"/>
 
 </feature-group-spec>

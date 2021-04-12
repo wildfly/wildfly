@@ -1,0 +1,53 @@
+[[MicroProfile_Reactive_Streams_Operators_SmallRye]]
+= MicroProfile Reactive Streams Operators Subsystem Configuration
+
+Support for https://microprofile.io/project/eclipse/microprofile-reactive-streams[MicroProfile Reactive Streams Operators] is
+provided as a Tech Preview feature by the _microprofile-reactive-streams-operators-smallrye_ subsystem.
+
+[[required-extension-microprofile-reactive-streams-operators-smallrye]]
+== Required Extension
+
+This extension is *not* included in the standard configurations included in the WildFly distribution.
+
+You can add the extension to a configuration either by adding
+an `<extension module="org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"/>`
+element to the xml or by using the following CLI operation:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.microprofile.reactive-streams-operators-smallrye:add
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] /subsystem=microprofile-reactive-streams-operators-smallrye:add
+{
+    "outcome" => "success",
+    "response-headers" => {
+        "operation-requires-reload" => true,
+        "process-state" => "reload-required"
+    }
+}
+----
+
+If you provision your own server and include the `microprofile-reactive-streams-operators` layer, you will get the required modules, and the extension and subsystem will be added to your configuration.
+
+== Specification
+
+WildFly's MicroProfile Reactive Streams Operators subsystem implements MicroProfile Reactive Streams Operators 1.0, which adds support for asynchronous streaming of data. It essentially replicates the the interfaces, and their implementations, that were made available in the https://docs.oracle.com/javase/9/docs/api/java/util/concurrent/Flow.html[java.util.concurrent.Flow] class introduced in Java 9. Thus MicroProfile Reactive Streams Operators can be considered a stop-gap until Java 9 and later is ubiquitous.
+
+== Configuration
+The `microprofile-reactive-streams-operators-smallrye` subsystem contains no configurable attributes or resources. Its presence makes the interfaces
+from the MicroProfile Reactive Streams Operators available to a deployment, and provides the implementation. Additionally it makes an instance of the https://github.com/eclipse/microprofile-reactive-streams-operators/blob/master/api/src/main/java/org/eclipse/microprofile/reactive/streams/operators/spi/ReactiveStreamsEngine.java[ReactiveStreamsEngine] class available for injection.
+
+=== Activation
+If the subsystem is present, the MicroProfile Reactive Streams Operators functionality will be available for all deployments on the server.
+
+== Component Reference
+
+The MicroProfile Reactive Streams Operators implementation is provided by the SmallRye Mutiny project.
+
+****
+
+* https://microprofile.io/project/eclipse/microprofile-reactive-streams[MicroProfile Reactive Streams Operators]
+* https://github.com/smallrye/smallrye-mutiny[SmallRye Mutiny]
+
+****

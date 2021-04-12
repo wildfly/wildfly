@@ -83,10 +83,10 @@ public final class ASHelper {
     }
 
     /**
-     * Gets list of JAXWS EJBs meta data.
+     * Gets list of Jakarta XML Web Services Jakarta Enterprise Beans meta data.
      *
      * @param unit deployment unit
-     * @return list of JAXWS EJBs meta data
+     * @return list of Jakarta XML Web Services Jakarta Enterprise Beans meta data
      */
     public static List<EJBEndpoint> getJaxwsEjbs(final DeploymentUnit unit) {
         final JAXWSDeployment jaxwsDeployment = getOptionalAttachment(unit, WSAttachmentKeys.JAXWS_ENDPOINTS_KEY);
@@ -410,7 +410,7 @@ public final class ASHelper {
         // wars define resource roots
         AttachmentList<ResourceRoot> resourceRoots = unit.getAttachment(RESOURCE_ROOTS);
         if (!unit.getName().endsWith(".war") && EjbDeploymentMarker.isEjbDeployment(unit)) {
-            // ejb archives don't define resource roots, using root resource
+            // Jakarta Enterprise Beans archives don't define resource roots, using root resource
             resourceRoots = new AttachmentList<ResourceRoot>(ResourceRoot.class);
             final ResourceRoot root = unit.getAttachment(DEPLOYMENT_ROOT);
             resourceRoots.add(root);

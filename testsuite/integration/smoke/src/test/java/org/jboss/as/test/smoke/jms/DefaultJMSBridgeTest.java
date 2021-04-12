@@ -54,7 +54,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * JMS bridge test.
+ * Jakarta Messaging bridge test.
  *
  * @author Jeff Mesnil (c) 2012 Red Hat Inc.
  */
@@ -91,7 +91,7 @@ public class DefaultJMSBridgeTest {
      * Send a message on the source queue
      * Consumes it on the target queue
      *
-     * The test will pass since a JMS Bridge has been created to bridge the source destination to the target destination.
+     * The test will pass since a Jakarta Messaging Bridge has been created to bridge the source destination to the target destination.
      */
     @Test
     public void sendAndReceiveMessage() throws Exception {
@@ -122,7 +122,7 @@ public class DefaultJMSBridgeTest {
             assertNotNull("did not receive expected message", receivedMessage);
             assertTrue(receivedMessage instanceof TextMessage);
             assertEquals(text, ((TextMessage) receivedMessage).getText());
-            assertTrue("got header set by the JMS bridge", receivedMessage.getStringProperty(ActiveMQJMSConstants.AMQ_MESSAGING_BRIDGE_MESSAGE_ID_LIST) == null);
+            assertTrue("got header set by the Jakarta Messaging bridge", receivedMessage.getStringProperty(ActiveMQJMSConstants.AMQ_MESSAGING_BRIDGE_MESSAGE_ID_LIST) == null);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

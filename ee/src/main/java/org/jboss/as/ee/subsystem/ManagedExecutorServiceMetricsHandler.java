@@ -70,7 +70,7 @@ public class ManagedExecutorServiceMetricsHandler<T> extends AbstractRuntimeOnly
             ServiceName serviceName = capability.getCapabilityServiceName(context.getCurrentAddress());
             ServiceController<?> controller = context.getServiceRegistry(false).getService(serviceName);
             if (controller == null) {
-                throw EeLogger.ROOT_LOGGER.executorServiceNotFoundForMetrics(serviceName);
+                throw EeLogger.ROOT_LOGGER.executorServiceNotFound(serviceName);
             }
             final T service = (T) controller.getService();
             final Metric<T> metric = metrics.get(attributeName);

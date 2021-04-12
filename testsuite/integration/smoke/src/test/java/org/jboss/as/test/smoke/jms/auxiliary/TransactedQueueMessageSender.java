@@ -39,7 +39,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 
 /**
- * Auxiliary class for JMS smoke tests - sends messages to a queue from within a transaction
+ * Auxiliary class for Jakarta Messaging smoke tests - sends messages to a queue from within a transaction
  *
  * @author <a href="jmartisk@redhat.com">Jan Martiska</a>
  */

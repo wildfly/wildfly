@@ -22,7 +22,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="org.wildfly.clustering.web.hotrod">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.web.hotrod">
+
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -37,7 +38,6 @@
 
     <dependencies>
         <module name="javax.transaction.api"/>
-
         <module name="com.github.ben-manes.caffeine"/>
         <module name="org.infinispan.client.hotrod"/>
         <module name="org.infinispan.commons"/>
@@ -60,5 +60,6 @@
         <module name="org.wildfly.clustering.web.cache" services="import"/>
         <module name="org.wildfly.clustering.web.spi"/>
         <module name="org.wildfly.common"/>
+        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

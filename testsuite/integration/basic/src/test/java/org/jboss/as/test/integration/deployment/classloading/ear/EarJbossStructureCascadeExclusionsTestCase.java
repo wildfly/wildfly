@@ -47,7 +47,7 @@ public class EarJbossStructureCascadeExclusionsTestCase {
                         "<ear-exclusions-cascaded-to-subdeployments>true</ear-exclusions-cascaded-to-subdeployments>" +
                         "<deployment>" +
                         "   <exclusions>" +
-                        "      <module name=\"org.jboss.logging\" slot=\"main\" />" +
+                        "      <module name=\"org.jboss.logging\" />" +
                         "   </exclusions>" +
                         "</deployment>" +
                         "<sub-deployment name=\"test.war\">" +

@@ -6,7 +6,7 @@ import org.jboss.invocation.InterceptorContext;
 
 /**
  * Interceptor forcing invocation to wait until passed CountDownLatch value is decreased to 0.
- * Is used to suspend external requests to EJB methods until all startup beans in the deployment are started as per spec.
+ * Is used to suspend external requests to Jakarta Enterprise Beans methods until all startup beans in the deployment are started as per spec.
  * @author Fedor Gavrilov
  */
 public class StartupAwaitInterceptor implements Interceptor {

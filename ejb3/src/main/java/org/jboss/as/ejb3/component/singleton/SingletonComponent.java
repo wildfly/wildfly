@@ -47,7 +47,7 @@ import org.jboss.msc.service.ServiceName;
 import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
- * {@link Component} representing a {@link javax.ejb.Singleton} EJB.
+ * {@link Component} representing a {@link javax.ejb.Singleton} Jakarta Enterprise Beans.
  *
  * @author Jaikiran Pai
  */
@@ -119,7 +119,7 @@ public class SingletonComponent extends SessionBeanComponent {
     public SingletonComponentInstance getComponentInstance() {
         if (this.singletonComponentInstance == null) {
             // Protects from re-entry which can happen if {@link PostConstruct} annotated methods pass a
-            // view (from {@link SessionContext#getBusinessObject(Class)}) of itself to other EJBs
+            // view (from {@link SessionContext#getBusinessObject(Class)}) of itself to other Jakarta Enterprise Beans
             if (Thread.holdsLock(creationLock))
                 throw EjbLogger.ROOT_LOGGER.reentrantSingletonCreation(getComponentName(), getComponentClass().getName());
             synchronized (creationLock) {

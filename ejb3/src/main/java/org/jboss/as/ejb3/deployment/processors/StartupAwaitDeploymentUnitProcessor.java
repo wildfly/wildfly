@@ -21,11 +21,11 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
- * Adds  StartupAwaitInterceptor to exposed methods of EJB, forcing users to wait until all startup beans in the deployment are done with post-construct methods.
+ * Adds  StartupAwaitInterceptor to exposed methods of Jakarta Enterprise Beans, forcing users to wait until all startup beans in the deployment are done with post-construct methods.
  * @author Fedor Gavrilov
  */
 // adding an abstraction for the whole deployment unit to depend on while blocking external client calls is a better solution probably
-// it requires a lot of rewriting in EJB code right now, hence this class to satisfy EJB 3.1 spec, section 4.8.1
+// it requires a lot of rewriting in Jakarta Enterprise Beans code right now, hence this class to satisfy Enterprise Beans 3.1 spec, section 4.8.1
 // feel free to remove this class as well as StartupAwaitInterceptor and StartupCountDownInterceptor when if easier way to satisfy spec will appear
 public class StartupAwaitDeploymentUnitProcessor implements DeploymentUnitProcessor {
   private static final Set<MethodIntf> INTFS = EnumSet.of(MethodIntf.MESSAGE_ENDPOINT, MethodIntf.REMOTE, MethodIntf.SERVICE_ENDPOINT, MethodIntf.LOCAL);

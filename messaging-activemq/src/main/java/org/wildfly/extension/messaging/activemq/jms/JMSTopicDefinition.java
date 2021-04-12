@@ -43,7 +43,7 @@ import org.wildfly.extension.messaging.activemq.MessagingExtension;
 
 
 /**
- * JMS Topic resource definition
+ * Jakarta Messaging Topic resource definition
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
@@ -55,7 +55,7 @@ public class JMSTopicDefinition extends PersistentResourceDefinition {
     };
 
     /**
-     * Attributes for deployed JMS topic are stored in runtime
+     * Attributes for deployed Jakarta Messaging topic are stored in runtime
      */
     private static AttributeDefinition[] DEPLOYMENT_ATTRIBUTES = {
             new StringListAttributeDefinition.Builder(CommonAttributes.DESTINATION_ENTRIES)
@@ -71,7 +71,7 @@ public class JMSTopicDefinition extends PersistentResourceDefinition {
             .build();
 
     static final AttributeDefinition[] READONLY_ATTRIBUTES = { TOPIC_ADDRESS,
-            CommonAttributes.TEMPORARY };
+            CommonAttributes.TEMPORARY, CommonAttributes.PAUSED };
 
     static final AttributeDefinition DURABLE_MESSAGE_COUNT = create(CommonAttributes.DURABLE_MESSAGE_COUNT, INT)
             .setStorageRuntime()

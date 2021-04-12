@@ -36,7 +36,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that the session beans are bound to all the jndi binding names mandated by the EJB3.1 spec, when the EJBs are
+ * Tests that the session beans are bound to all the jndi binding names mandated by the Enterprise Beans 3.1 spec, when the Jakarta Enterprise Beans are
  * deployed within a top level .ear file
  *
  * @author Jaikiran Pai
@@ -88,7 +88,7 @@ public class EarDeploymentEjbJndiBindingTestCase {
     public static EnterpriseArchive createEar() {
         // create the top level ear
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_NAME);
-        // create the jar containing the EJBs
+        // create the jar containing the Jakarta Enterprise Beans
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JAR_NAME);
         // add the entire package
         jar.addPackage(SampleSLSB.class.getPackage());

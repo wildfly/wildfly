@@ -34,7 +34,7 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 
 /**
- * A {@link org.jboss.as.controller.AbstractBoottimeAddStepHandler} to handle the add operation for the EJB
+ * A {@link org.jboss.as.controller.AbstractBoottimeAddStepHandler} to handle the add operation for the Jakarta Enterprise Beans
  * IIOP service
  *
  * @author Stuart Douglas
@@ -52,7 +52,7 @@ public class EJB3IIOPAdd extends AbstractBoottimeAddStepHandler {
         final IIOPSettingsService settingsService = new IIOPSettingsService(enableByDefault, useQualifiedName);
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                ROOT_LOGGER.debug("Adding EJB IIOP support");
+                ROOT_LOGGER.debug("Adding Jakarta Enterprise Beans IIOP support");
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_IIOP, new EjbIIOPDeploymentUnitProcessor(settingsService));
             }
         }, OperationContext.Stage.RUNTIME);

@@ -29,7 +29,7 @@ import org.jboss.as.test.jms.auxiliary.CreateQueueSetupTask;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Abstract Setup task to create/remove a JMS bridge.
+ * Abstract Setup task to create/remove a Jakarta Messaging bridge.
  * @author Emmanuel Hugonnet (c) 2019 Red Hat, Inc.
  */
 public abstract class AbstractCreateJMSBridgeSetupTask extends CreateQueueSetupTask {

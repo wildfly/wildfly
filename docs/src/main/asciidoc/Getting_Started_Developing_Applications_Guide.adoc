@@ -60,7 +60,7 @@ JBoss AS 7, but with Ruby.
 
 :leveloffset: +1
 
-include::_extras/Developing_JSF_Project_Using,_Maven_and_IntelliJ.adoc[]
+include::_extras/Developing_Jakarta_Server_Faces_Project_Using_Maven_and_IntelliJ.adoc[]
 
 include::_extras/Getting_Started_Developing_Applications_Presentation_Demo.adoc[]
 

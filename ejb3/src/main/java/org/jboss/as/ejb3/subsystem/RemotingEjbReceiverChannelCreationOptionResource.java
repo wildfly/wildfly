@@ -32,7 +32,7 @@ import org.jboss.dmr.ModelType;
 
 
 /**
- * {@link SimpleResourceDefinition} for the channel creation option(s) that are configured for the remoting ejb receivers
+ * {@link SimpleResourceDefinition} for the channel creation option(s) that are configured for the remoting Jakarta Enterprise Beans receivers
  *
  * @author Jaikiran Pai
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>

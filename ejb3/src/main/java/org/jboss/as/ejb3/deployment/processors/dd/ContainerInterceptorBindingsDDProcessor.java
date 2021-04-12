@@ -84,37 +84,37 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
         if (containerInterceptorBindings == null || containerInterceptorBindings.isEmpty()) {
             return;
         }
-        // we have now found some container interceptors which are bound to certain EJBs, start the real work!
+        // we have now found some container interceptors which are bound to certain Jakarta Enterprise Beans, start the real work!
 
         final Map<String, List<InterceptorBindingMetaData>> bindingsPerEJB = new HashMap<String, List<InterceptorBindingMetaData>>();
         final List<InterceptorBindingMetaData> bindingsForAllEJBs = new ArrayList<InterceptorBindingMetaData>();
         for (final InterceptorBindingMetaData containerInterceptorBinding : containerInterceptorBindings) {
             if (containerInterceptorBinding.getEjbName().equals("*")) {
-                // container interceptor bindings that are applicable for all EJBs are *not* expected to specify a method
-                // since all EJBs having the same method is not really practical
+                // container interceptor bindings that are applicable for all Jakarta Enterprise Beans are *not* expected to specify a method
+                // since all Jakarta Enterprise Beans having the same method is not really practical
                 if (containerInterceptorBinding.getMethod() != null) {
                     throw EjbLogger.ROOT_LOGGER.defaultInterceptorsNotBindToMethod();
                 }
                 if (containerInterceptorBinding.getInterceptorOrder() != null) {
                     throw EjbLogger.ROOT_LOGGER.defaultInterceptorsNotSpecifyOrder();
                 }
-                // Make a note that this container interceptor binding is applicable for all EJBs
+                // Make a note that this container interceptor binding is applicable for all Jakarta Enterprise Beans
                 bindingsForAllEJBs.add(containerInterceptorBinding);
             } else {
-                // fetch existing container interceptor bindings for the EJB, if any.
+                // fetch existing container interceptor bindings for the Jakarta Enterprise Beans, if any.
                 List<InterceptorBindingMetaData> bindings = bindingsPerEJB.get(containerInterceptorBinding.getEjbName());
                 if (bindings == null) {
                     bindings = new ArrayList<InterceptorBindingMetaData>();
                     bindingsPerEJB.put(containerInterceptorBinding.getEjbName(), bindings);
                 }
-                // Make a note that the container interceptor binding is applicable for this specific EJB
+                // Make a note that the container interceptor binding is applicable for this specific Jakarta Enterprise Beans
                 bindings.add(containerInterceptorBinding);
             }
         }
-        // At this point we now know which container interceptor bindings have been configured for which EJBs.
+        // At this point we now know which container interceptor bindings have been configured for which Jakarta Enterprise Beans.
         // Next, we create InterceptorDescription(s) out of those.
         final List<InterceptorDescription> interceptorDescriptionsForAllEJBs = new ArrayList<InterceptorDescription>();
-        // first process container interceptors applicable for all EJBs
+        // first process container interceptors applicable for all Jakarta Enterprise Beans
         for (InterceptorBindingMetaData binding : bindingsForAllEJBs) {
             if (binding.getInterceptorClasses() != null) {
                 for (final String clazz : binding.getInterceptorClasses()) {
@@ -122,7 +122,7 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
                 }
             }
         }
-        // Now process container interceptors for each EJB
+        // Now process container interceptors for each Jakarta Enterprise Beans
         for (final ComponentDescription componentDescription : eeModuleDescription.getComponentDescriptions()) {
             if (!(componentDescription instanceof EJBComponentDescription)) {
                 continue;
@@ -149,7 +149,7 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
             if (bindingsApplicableForCurrentEJB != null) {
                 for (final InterceptorBindingMetaData binding : bindingsApplicableForCurrentEJB) {
                     if (binding.getMethod() == null) {
-                        // The container interceptor is expected to be fired for all methods of that EJB
+                        // The container interceptor is expected to be fired for all methods of that Jakarta Enterprise Beans
                         classLevelBindings.add(binding);
                         // if even one binding does not say exclude default then we do not exclude
                         if (binding.isExcludeDefaultInterceptors()) {
@@ -249,10 +249,10 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
                     }
                 }
             }
-            // We now know about the class level container interceptors for this EJB
+            // We now know about the class level container interceptors for this Jakarta Enterprise Beans
             ejbComponentDescription.setClassLevelContainerInterceptors(classLevelInterceptors);
 
-            // Now process method level container interceptors for the EJB
+            // Now process method level container interceptors for the Jakarta Enterprise Beans
             for (Map.Entry<Method, List<InterceptorBindingMetaData>> entry : methodInterceptors.entrySet()) {
                 final Method method = entry.getKey();
                 final List<InterceptorBindingMetaData> methodBindings = entry.getValue();

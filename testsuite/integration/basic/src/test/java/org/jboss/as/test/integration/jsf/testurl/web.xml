@@ -37,7 +37,7 @@
    <!-- 
       FacesServlet is main servlet responsible to handle all request. 
       It acts as central controller.
-      This servlet initializes the JSF components before the JSP is displayed.
+      This servlet initializes the Jakarta Server Faces components before the Jakarta Server Pages page is displayed.
    -->
 	
    <servlet>

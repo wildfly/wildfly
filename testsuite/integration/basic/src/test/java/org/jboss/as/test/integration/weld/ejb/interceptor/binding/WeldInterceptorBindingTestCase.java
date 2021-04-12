@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
 
 /**
  *
- * A simple test that CDI interceptors are applied to EJB's,
+ * A simple test that Jakarta Contexts and Dependency Injection interceptors are applied to EJB's,
  * and that they are applied in the correct order.
  *
  * @author Stuart Douglas

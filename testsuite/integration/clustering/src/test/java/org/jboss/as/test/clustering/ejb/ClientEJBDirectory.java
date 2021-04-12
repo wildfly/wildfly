@@ -30,7 +30,7 @@ import org.jboss.ejb.client.StatelessEJBLocator;
 import org.wildfly.transaction.client.RemoteTransactionContext;
 
 /**
- * {@link EJBDirectory} that uses the EJB client API.
+ * {@link EJBDirectory} that uses the Jakarta Enterprise Beans client API.
  * @author Paul Ferraro
  */
 public class ClientEJBDirectory implements EJBDirectory {

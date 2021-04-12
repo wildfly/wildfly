@@ -35,7 +35,7 @@ import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 
 /**
- * Creates new JAXWS EJB3 deployment.
+ * Creates new JAXWS Enterprise Beans 3 deployment.
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
@@ -60,6 +60,7 @@ final class DeploymentModelBuilderJAXWS_EJB extends AbstractDeploymentModelBuild
                 ep.setProperty(COMPONENT_VIEW_NAME, componentViewName);
             }
             ep.setEndpointConfig(ecm.getConfig(ejbEndpointClassName));
+            markWeldDeployment(unit, ep);
         }
     }
 
