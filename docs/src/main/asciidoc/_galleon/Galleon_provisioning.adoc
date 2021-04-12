@@ -48,6 +48,12 @@ galleon.sh install wildfly:current#21.0.0.Final --dir=my-wildfly-server
 ----
 ====
 
+[NOTE]
+====
+
+If your project is using link:WildFly_and_WildFly_Preview{outfilesuffix}[WildFly Preview], the ``feature-pack-location`` to use
+is ``wildfly-preview@maven(org.jboss.universe:community-universe)``.
+====
 == Selecting the configurations to install
 
 Galleon allows you to specify only a subset of the default configurations to be installed.

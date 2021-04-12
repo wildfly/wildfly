@@ -1,0 +1,172 @@
+[[WildFly_and_WildFly_Preview]]
+= WildFly and WildFly Preview
+WildFly team;
+:revnumber: {version}
+:revdate: {localdate}
+:toc: macro
+:toclevels: 3
+:toc-title: WildFly and WildFly Preview
+:doctype: book
+:icons: font
+:source-highlighter: coderay
+ifdef::env-github[:imagesdir: images/]
+
+// ifndef::ebook-format[:leveloffset: 1]
+
+(C) 2021 The original authors.
+
+ifdef::basebackend-html[toc::[]]
+:numbered:
+
+= Different flavors of WildFly
+
+Beginning with the WildFly 22 release, the WildFly project began producing two variants of
+its landmark application server -- the standard "WildFly" variant and the new "WildFly Preview".
+
+The standard "WildFly" variant is the classic server that users have been familiar with for many
+years now. It's a very mature server, with a lot of care taken to ensure new features are fully
+realized and to limit the number of incompatible changes between releases.
+
+WildFly Preview is a tech preview variant of the server. The goal of WildFly Preview is to give
+the WildFly community a look at changes that are likely to appear in future releases of the standard
+WildFly server. The aim is to get feedback on in-progress work, so it is more likely that features
+will not be fully realized, and a greater number of incompatible changes may appear from release
+to release. The amount of testing WildFly Preview undergoes will generally not be as high as the
+standard WildFly variant.
+
+The expectation is on any given release date, both standard WildFly and WildFly Preview will be released.
+
+[WARNING]
+====
+
+A WildFly Preview release will have the same version number and suffix (Beta, Final, etc) as the
+main WildFly release, but regardless of the suffix, a WildFly Preview release should be treated
+as a Technical Preview release.
+====
+
+== Getting WildFly Preview
+
+The zip or tar.gz file for WildFly Preview is available at link:https://wildfly.org/downloads[https://wildfly.org/downloads]
+right next to the main WildFly release files for the same version.
+
+For bootable jar users and Galleon CLI users, we provide a Galleon feature pack for WildFly Preview. The
+Galleon feature pack location for the feature pack is ``wildfly-preview@maven(org.jboss.universe:community-universe)``.
+This feature pack is the WildFly Preview analogue to main WildFly's ``wildfly@maven(org.jboss.universe:community-universe)``.
+
+== WildFly Preview and Jakarta EE 9
+
+The primary thing currently being showcased in WildFly Preview is support for Jakarta EE 9. Jakarta EE 9 is
+link:https://eclipse-ee4j.github.io/jakartaee-platform/jakartaee9/JakartaEE9ReleasePlan[primarily aimed] at
+transitioning the EE APIs from the javax.* package namespace to the jakarta.* namespace. Some techologies were made
+optional in EE 9 and others were pruned from the platform, but for all the technologies retained from EE 8, the APIs
+and expected behaviors are unchanged from EE 8, except for the very significant change in the package names.
+
+This package rename is a big change that is going to take a while to percolate through the EE ecosystem, e.g. for the
+many projects that compile against the EE APIs to provide versions that use jakarta.*. While this happens the WildFly
+project wants to continue to deliver new features and fixes to our community, so the standard WildFly distribution
+continues to provide the EE 8 APIs. But WildFly Preview's remit of providing a look at coming technologies makes it a
+good fit for letting our users experiment with EE 9.
+
+WildFly Preview is a compatible implementation of the Jakarta EE 9.0 Web Profile. Certification of the full platform
+is in progress.
+
+=== EE 9 Via Bytecode Transformation and the 'wildfly-preview' Galleon Feature Pack
+
+The large majority of the libraries included in WildFly Preview that were compiled against EE APIs were based on the
+EE 8 APIs in the javax.* packages. This includes the libraries produced from WildFly's own code base.  But the EE API
+libraries available in the WildFly Preview runtime all use the jakarta.* packages. How can this work?
+
+The solution we've come up with for this is to use the new ``wildfly-preview`` Galleon feature pack to convert any
+code using the EE 8 javax.* APIs to jakarta.* _at the time that it provisions a server installation_. (Recall that any
+WildFly server installation -- including the ones we zip up and make available on link:https://wildfly.org/downloads[https://wildfly.org/downloads] -- is produced by telling Galleon tooling to provision from a feature pack.)
+
+The ``wildfly-preview`` feature pack differs from the standard ``wildfly`` one in a number of ways, with the key ones
+relevant to EE 9 being:
+
+* Where suitable EE 9 spec API jars are available from Eclipse, those are used instead of the EE 8 spec jars used in standard WildFly.
+* Where suitable 'native' EE 9 implementation libraries (i.e. ones compiled against jakarta.*) are available, those are used.
+This includes Weld, Hibernate Validator, Mojarra, Yasson, Jakarta EL and Jakarta JSON.
+* When the feature pack is built any libraries that are using EE 8 APIs are detected and instructions are incorporated
+in the feature pack telling Galleon to do _byte code transformation of that library whenever it provisions a server using the feature pack_.
+
+The last item is the key point. When Galleon provisions a ``wildfly-preview`` server by pulling jars down from maven,
+it knows that some artifacts were compiled against EE 8 javax.* packages. So it bytecode transforms those jars to alter
+references to EE 8 packages in the class file constant tables to change from javax.* to jakarta.*. The transformation
+goes beyond simple package renames; a number of other known differences between EE 8 and EE 9 are handled. We owe a
+great deal of thanks to the community behind the link:https://projects.eclipse.org/projects/technology.transformer[Eclipse Transformer]
+project for their work on the underlying transformation tool.
+
+You can use the Galleon CLI tool to provision a server from the wildfly-preview feature pack yourself:
+
+[source,bash]
+----
+galleon.sh install wildfly-preview:current --dir=my-wildfly-server
+----
+
+Note the use of 'wildfly-preview' instead of 'wildfly'.
+
+As Galleon provisions the server it will log quite a bit of information about the transformation work it is doing.
+
+Please note that the transformation adds a fair bit to the amount of time it takes to provision the server.
+
+Of course, you're not required to provision the server yourself; you can also download the WildFly Preview release
+zip or tarball and unpack it.
+
+=== WildFly Preview Support for EE 8 Deployments
+
+The APIs that WildFly Preview exposes to deployments are the EE 9 APIs, so all the classes and interfaces are in the
+jakarta.* packages. But what if you want to run an existing EE 8 application on WildFly Preview? We expect that to be a
+very important use case in the long run. Eventually the jakarta.* APIs will be what's provided by the standard WildFly
+distribution, but many WildFly users will have existing applications that they'll want to continue to run unchanged.
+So we wanted to make sure from the very beginning that that works.
+
+What we've done is we've added to the server's handling of _managed_ deployments the same basic transformation that's
+applied to the server artifacts when provisioning. A managed deployment is one where a management client (the CLI,
+HAL console or the deployment scanner) presents deployment content to the server and the server makes a copy of it in
+its internal deployment content repository. The content that gets installed into the runtime is that internal copy.
+
+A WildFly Preview server, when it reads in deployment content to store in the content repository, will transform any
+EE 8 content into EE 9.
+
+In the long run it's better for users if they either convert their application source to EE 9 APIs, or use build-time
+tooling that we expect the Jakarta ecosystem to provide over time to do transformation at build time.  But some
+applications just can't be changed, so the server-side solution WildFly Preview provides can handle those cases.
+
+== Other Differences in WildFly Preview
+
+Besides exposing EE 9 APIs, WildFly Preview is intended to help get community exposure for other changes we plan to
+make in the server. Here are the key ones:
+
+* WildFly Preview is not a Jakarta EE 8 compatible implementation. It also is not a MicroProfile platform compatible
+implementation. Most EE 8 and MicroProfile applications are expected to run well on WildFly Preview, but it is not
+certified compatible.
+* The legacy security subsytem is not supported. The standard configurations are all based on Elytron security.
+Our goal is to remove the underlying Picketbox libraries altogether. When this is done, security vault support will be
+removed as well. Elytron credential stores should be used.
+* The security vault tool (used to manipulate vault contents) is not provided.
+* The standard configuration files do not configure an embedded messaging broker. Instead they configure the
+'messaging-activemq' subsystem to provide connections to a remote ActiveMQ Artemis broker. (It's a task for the user to
+run such a broker or to update the config to integrate with a different broker.) We want WildFly out-of-the-box to be
+more of a cloud native appserver and having an embedded messaging broker in the default configuration is not cloud native.
+A WildFly container in the cloud running an embedded broker is not scalable, as multiple broker instances need separate
+configuration to act as a primary or backup. An embedded messaging broker also has more advanced persistent storage
+requirements than a server primarily dedicated to handling HTTP requests would have. Note however that running an
+embedded broker is still supported. We've added to the $WILDFLY_HOME/docs/examples/configs folder an example
+``standalone-activemq-embedded.xml`` configuration showing its use.
+* The Picketlink extension is removed.
+* The JSR-77 extension is removed.
+* The extensions providing the legacy subsystems 'cmp', 'config-admin', 'jacorb', 'jaxr', 'messaging' (HornetQ based),
+and 'web' (not 'undertow') are removed. These were only used for domain mode to allow a Domain Controller to control
+hosts running much earlier WildFly versions where servers using these subsystems were supported.
+
+== WildFly Preview Known Issues
+
+WildFly Preview has a number of known issues:
+
+* JBoss Modules modules installed by the user are not transformed. If such a module uses EE 8 APIs it will not work.
+* Deployment overlays are not transformed. So any overlay artifact that uses EE 8 APIs will not work.
+* Unmanaged deployments that use EE 8 APIs will not work. We transform managed deployments when we copy the deployment
+content into the internal content repo. For unmanaged deployments we use the original content file(s) the user provides,
+and WildFly Preview won't modify those files as we don't regard them as being 'owned' by the server.
+* Managed exploded deployments likely won't work.
+* Alternate JPA and JSF providers that you can install with standard WildFly are not supported.
