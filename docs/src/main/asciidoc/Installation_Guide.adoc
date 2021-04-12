@@ -24,6 +24,12 @@ link:#Zipped_Installation[Zipped distribution],
 link:#Galleon_Provisioning[Galleon provisioning] or link:#Bootable_JAR[bootable JAR], this guide helps you identify the 
 installation strategy that best fits your application requirements.
 
+= WildFly or WildFly Preview
+
+The WildFly project now produces two appserver variants, link:WildFly_and_WildFly_Preview{outfilesuffix}[standard WildFly and WildFly Preview],
+so you'll want to decide which is right for you. For most users the standard WildFly variant is the right choice,
+but if you'd like a technical preview look at what's coming in the future, try out WildFly Preview.
+
 [[Zipped_Installation]]
 = Installing WildFly from a zipped distribution
 
