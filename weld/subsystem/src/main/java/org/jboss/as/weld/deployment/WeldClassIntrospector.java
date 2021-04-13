@@ -119,11 +119,22 @@ public class WeldClassIntrospector implements EEClassIntrospector, Service {
 
     @Override
     public ManagedReference createInstance(final Object instance) {
+        return this.getReference(instance, true);
+    }
+
+    @Override
+    public ManagedReference getInstance(Object instance) {
+        return this.getReference(instance, false);
+    }
+
+    private ManagedReference getReference(Object instance, boolean newInstance) {
         final BeanManager beanManager = beanManagerSupplier.get();
         final InjectionTarget injectionTarget = getInjectionTarget(instance.getClass());
         final CreationalContext context = beanManager.createCreationalContext(null);
-        injectionTarget.inject(instance, context);
-        injectionTarget.postConstruct(instance);
+        if (newInstance) {
+            injectionTarget.inject(instance, context);
+            injectionTarget.postConstruct(instance);
+        }
         return new WeldManagedReference(injectionTarget, context, instance);
     }
 
