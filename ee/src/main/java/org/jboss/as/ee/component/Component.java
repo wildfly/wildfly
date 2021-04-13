@@ -64,6 +64,13 @@ public interface Component {
 
     ComponentInstance createInstance(Object instance);
 
+    /**
+     * Returns a component instance for a pre-existing instance.
+     * @param instance the actual object instance
+     * @return a component instance
+     */
+    ComponentInstance getInstance(Object instance);
+
     NamespaceContextSelector getNamespaceContextSelector();
 
     /**
