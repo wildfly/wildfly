@@ -71,11 +71,7 @@ public class MyFacesLifecycleProvider implements LifecycleProvider2 {
 
     public void postConstruct(Object obj) throws IllegalAccessException, InvocationTargetException {
         // WFLY-3387 MyFaces injects managed properties before calling this method
-        try {
-            injectionContainer.newInstance(obj);
-        } catch (NamingException e) {
-            throw new FacesException(e);
-        }
+        injectionContainer.newInstance(obj);
     }
 
     public void destroyInstance(Object obj) throws IllegalAccessException, InvocationTargetException {
