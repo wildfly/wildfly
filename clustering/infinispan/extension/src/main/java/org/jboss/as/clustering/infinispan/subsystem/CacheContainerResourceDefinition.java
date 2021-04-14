@@ -47,6 +47,7 @@ import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.transform.SingletonListAttributeConverter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
@@ -62,11 +63,14 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.ListOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
+import org.wildfly.clustering.infinispan.spi.marshalling.InfinispanMarshallerFactory;
 import org.wildfly.clustering.service.UnaryRequirement;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
@@ -145,6 +149,22 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                 return builder.setDefaultValue(ModelNode.FALSE);
             }
         },
+        MARSHALLER("marshaller", ModelType.STRING) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(InfinispanMarshallerFactory.LEGACY.name()))
+                        .setValidator(new EnumValidator<InfinispanMarshallerFactory>(InfinispanMarshallerFactory.class) {
+                            @Override
+                            public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+                                super.validateParameter(parameterName, value);
+                                if (!value.isDefined() || value.equals(MARSHALLER.getDefinition().getDefaultValue())) {
+                                    InfinispanLogger.ROOT_LOGGER.enumValueDeprecated(parameterName, InfinispanMarshallerFactory.LEGACY, EnumSet.complementOf(EnumSet.of(InfinispanMarshallerFactory.LEGACY)));
+                                }
+                            }
+                        })
+                        ;
+            }
+        }
         ;
         private final AttributeDefinition definition;
 
@@ -269,6 +289,12 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
             pool.buildTransformation(builder, version);
         }
 
+        if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.MARSHALLER.getDefinition())
+                    .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.MARSHALLER.getDefinition().getDefaultValue()), Attribute.MARSHALLER.getDefinition())
+                    .end();
+        }
         if (InfinispanModel.VERSION_14_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setValueConverter(new SingletonListAttributeConverter(ListAttribute.MODULES), DeprecatedAttribute.MODULE.getDefinition())

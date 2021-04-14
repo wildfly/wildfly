@@ -89,6 +89,7 @@ public enum XMLAttribute {
     LOCK_TIMEOUT(JGroupsTransportResourceDefinition.Attribute.LOCK_TIMEOUT),
     LOCKING(TransactionResourceDefinition.Attribute.LOCKING),
     MACHINE("machine"),
+    MARSHALLER(CacheContainerResourceDefinition.Attribute.MARSHALLER),
     MAX("max"),
     MAX_BATCH_SIZE(StoreResourceDefinition.Attribute.MAX_BATCH_SIZE),
     MAX_ENTRIES(HeapMemoryResourceDefinition.DeprecatedAttribute.MAX_ENTRIES),

@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -46,11 +47,12 @@ public class DomainAdjuster740 extends DomainAdjuster {
         final List<ModelNode> ops = new ArrayList<>();
 
         adjustUndertow(ops, profileAddress.append(SUBSYSTEM, "undertow"));
+        adjustInfinispan(ops, profileAddress.append(SUBSYSTEM, "infinispan"));
 
         return ops;
     }
 
-    private void adjustUndertow(final List<ModelNode> ops, final PathAddress subsystem) {
+    private static void adjustUndertow(final List<ModelNode> ops, final PathAddress subsystem) {
         // EAP 7.0 and earlier required explicit SSL configuration. Wildfly 10.1 added support
         // for SSL by default, which automatically generates certs.
         // This could be removed if all hosts were configured to contain a security domain with SSL enabled.
@@ -60,5 +62,14 @@ public class DomainAdjuster740 extends DomainAdjuster {
                 .append("server", "default-server")
                 .append("https-listener", "https");
         ops.add(Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, httpsListener.toModelNode()));
+    }
+
+    private static void adjustInfinispan(List<ModelNode> ops, PathAddress address) {
+        // Default configs now use specific marshaller attributes
+        // For compatibility with older versions, we need to use the LEGACY marshaller
+        ops.add(Util.getUndefineAttributeOperation(address.append(PathElement.pathElement("cache-container", "server")), "marshaller"));
+        ops.add(Util.getUndefineAttributeOperation(address.append(PathElement.pathElement("cache-container", "web")), "marshaller"));
+        ops.add(Util.getUndefineAttributeOperation(address.append(PathElement.pathElement("cache-container", "ejb")), "marshaller"));
+        ops.add(Util.getUndefineAttributeOperation(address.append(PathElement.pathElement("cache-container", "hibernate")), "marshaller"));
     }
 }

@@ -23,19 +23,19 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.MARSHALLER;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONFIGURATION;
 
 import java.io.UncheckedIOException;
-import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.management.MBeanServer;
 
@@ -59,16 +59,13 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
-import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.marshalling.jboss.JBossMarshaller;
-import org.wildfly.clustering.infinispan.spi.marshalling.InfinispanProtoStreamMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ModuleClassLoaderMarshaller;
+import org.wildfly.clustering.infinispan.spi.marshalling.InfinispanMarshallerFactory;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -91,6 +88,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
     private volatile SupplierDependency<MBeanServer> server;
     private volatile String defaultCache;
     private volatile boolean statisticsEnabled;
+    private volatile InfinispanMarshallerFactory marshallerFactory;
 
     GlobalConfigurationServiceConfigurator(PathAddress address) {
         super(CONFIGURATION, address);
@@ -111,6 +109,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), null, null) ? new ServiceSupplierDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context)) : null;
         this.defaultCache = DEFAULT_CACHE.resolveModelAttribute(context, model).asStringOrNull();
         this.statisticsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
+        this.marshallerFactory = InfinispanMarshallerFactory.valueOf(MARSHALLER.resolveModelAttribute(context, model).asString());
         return this;
     }
 
@@ -125,14 +124,10 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         builder.transport().read(this.transport.get());
 
         List<Module> modules = this.modules.get();
-        List<ClassLoader> loaders = new ArrayList<>(modules.size());
-        for (Module module : modules) {
-            loaders.add(module.getClassLoader());
-        }
-        ClassLoader loader = loaders.size() > 1 ? new AggregatedClassLoader(loaders) : loaders.get(0);
-        Marshaller marshaller = this.createMarshaller(loader);
+        Marshaller marshaller = this.marshallerFactory.apply(this.loader.get(), modules);
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache-container will use %s", this.name, marshaller.getClass().getName());
         // Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
+        // Otherwise marshaller auto-detection will not work
         builder.serialization().marshaller(marshaller).addContextInitializer(new SerializationContextInitializer() {
             @Deprecated
             @Override
@@ -155,7 +150,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
             }
         });
 
-        builder.classLoader(loader);
+        builder.classLoader(modules.size() > 1 ? new AggregatedClassLoader(modules.stream().map(Module::getClassLoader).collect(Collectors.toList())) : modules.get(0).getClassLoader());
 
         builder.blockingThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.BLOCKING).get());
         builder.listenerThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.LISTENER).get());
@@ -196,14 +191,5 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         }
         Service service = new FunctionalService<>(global, Function.identity(), this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
-    }
-
-    private Marshaller createMarshaller(ClassLoader loader) {
-        ModuleLoader moduleLoader = this.loader.get();
-        try {
-            return new InfinispanProtoStreamMarshaller(new ModuleClassLoaderMarshaller(moduleLoader), loader);
-        } catch (NoSuchElementException e) {
-            return new JBossMarshaller(ModularClassResolver.getInstance(moduleLoader), loader);
-        }
     }
 }

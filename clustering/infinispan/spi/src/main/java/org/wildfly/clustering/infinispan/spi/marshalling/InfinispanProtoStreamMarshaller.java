@@ -22,6 +22,8 @@
 
 package org.wildfly.clustering.infinispan.spi.marshalling;
 
+import java.util.function.UnaryOperator;
+
 import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.infinispan.spi.metadata.MetadataSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
@@ -32,7 +34,12 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilde
  */
 public class InfinispanProtoStreamMarshaller extends ProtoStreamMarshaller {
 
-    public InfinispanProtoStreamMarshaller(ClassLoaderMarshaller loaderMarshaller, ClassLoader loader) {
-        super(new SerializationContextBuilder(loaderMarshaller).register(new MetadataSerializationContextInitializer()).require(loader));
+    public InfinispanProtoStreamMarshaller(ClassLoaderMarshaller loaderMarshaller, UnaryOperator<SerializationContextBuilder> operator) {
+        super(loaderMarshaller, new UnaryOperator<SerializationContextBuilder>() {
+            @Override
+            public SerializationContextBuilder apply(SerializationContextBuilder builder) {
+                return operator.apply(builder.register(new MetadataSerializationContextInitializer()));
+            }
+        });
     }
 }

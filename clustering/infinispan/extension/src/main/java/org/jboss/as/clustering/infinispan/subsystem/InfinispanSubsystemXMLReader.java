@@ -182,7 +182,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
                 case MODULES: {
                     if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
-                        readAttribute(reader, i, operation, CacheResourceDefinition.ListAttribute.MODULES);
+                        readAttribute(reader, i, operation, CacheContainerResourceDefinition.ListAttribute.MODULES);
+                        break;
+                    }
+                }
+                case MARSHALLER: {
+                    if (this.schema.since(InfinispanSchema.VERSION_13_0)) {
+                        readAttribute(reader, i, operation, CacheContainerResourceDefinition.Attribute.MARSHALLER);
                         break;
                     }
                 }
@@ -1963,6 +1969,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 case MODULES: {
                     if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
                         readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.ListAttribute.MODULES);
+                        break;
+                    }
+                }
+                case MARSHALLER: {
+                    if (this.schema.since(InfinispanSchema.VERSION_13_0)) {
+                        readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.MARSHALLER);
                         break;
                     }
                 }

@@ -25,6 +25,8 @@ package org.jboss.as.clustering.infinispan;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.util.Set;
+
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
@@ -141,4 +143,8 @@ public interface InfinispanLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 32, value = "Getting remote cache named '%s'. If it does not exist a new cache will be created from configuration template named '%s'; null value uses default cache configuration on the Infinispan Server.")
     void remoteCacheCreated(String remoteCacheName, String cacheConfiguration);
+
+    @LogMessage(level = WARN)
+    @Message(id = 33, value = "Attribute '%s' configured to use deprecated value: %s; use one of the following values instead: %s")
+    void enumValueDeprecated(String attributeName, Object attributeValue, Set<?> supportedValues);
 }

@@ -22,13 +22,11 @@
 
 package org.wildfly.clustering.infinispan.marshalling.protostream;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.wildfly.clustering.infinispan.marshalling.AbstractMarshaller;
+import org.wildfly.clustering.infinispan.marshalling.AbstractUserMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
@@ -36,44 +34,18 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilde
 /**
  * @author Paul Ferraro
  */
-public class ProtoStreamMarshaller extends AbstractMarshaller {
+public class ProtoStreamMarshaller extends AbstractUserMarshaller {
 
-    private final ProtoStreamByteBufferMarshaller marshaller;
-
-    public ProtoStreamMarshaller(ClassLoaderMarshaller loaderMarshaller, ClassLoader loader) {
-        this(new SerializationContextBuilder(loaderMarshaller).require(loader));
-    }
-
-    protected ProtoStreamMarshaller(SerializationContextBuilder builder) {
-        this(builder.register(new IOSerializationContextInitializer()).build());
+    public ProtoStreamMarshaller(ClassLoaderMarshaller loaderMarshaller, UnaryOperator<SerializationContextBuilder> builder) {
+        this(builder.apply(new SerializationContextBuilder(loaderMarshaller).register(new IOSerializationContextInitializer())).build());
     }
 
     public ProtoStreamMarshaller(ImmutableSerializationContext context) {
-        this.marshaller = new ProtoStreamByteBufferMarshaller(context);
-    }
-
-    @Override
-    public int sizeEstimate(Object object) {
-        return this.marshaller.size(object).orElse(512);
-    }
-
-    @Override
-    public boolean isMarshallable(Object object) {
-        return this.marshaller.isMarshallable(object);
+        super(new ProtoStreamByteBufferMarshaller(context));
     }
 
     @Override
     public MediaType mediaType() {
         return MediaType.APPLICATION_PROTOSTREAM;
-    }
-
-    @Override
-    public void writeObject(Object object, OutputStream output) throws IOException {
-        this.marshaller.writeTo(output, object);
-    }
-
-    @Override
-    public Object readObject(InputStream input) throws IOException {
-        return this.marshaller.readFrom(input);
     }
 }

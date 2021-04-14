@@ -22,51 +22,30 @@
 
 package org.wildfly.clustering.infinispan.marshalling.jboss;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.AbstractMap;
 
 import org.infinispan.commons.dataconversion.MediaType;
 import org.jboss.marshalling.ClassResolver;
-import org.wildfly.clustering.infinispan.marshalling.AbstractMarshaller;
+import org.wildfly.clustering.infinispan.marshalling.AbstractUserMarshaller;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
 /**
  * @author Paul Ferraro
  */
-public class JBossMarshaller extends AbstractMarshaller {
-
-    private final ByteBufferMarshaller marshaller;
+public class JBossMarshaller extends AbstractUserMarshaller {
 
     public JBossMarshaller(ClassResolver resolver, ClassLoader loader) {
         this(new SimpleMarshallingConfigurationRepository(JBossMarshallingVersion.class, JBossMarshallingVersion.CURRENT, new AbstractMap.SimpleImmutableEntry<>(resolver, loader)), loader);
     }
 
     public JBossMarshaller(MarshallingConfigurationRepository repository, ClassLoader loader) {
-        this.marshaller = new JBossByteBufferMarshaller(repository, loader);
+        super(new JBossByteBufferMarshaller(repository, loader));
     }
 
     @Override
     public MediaType mediaType() {
         return MediaType.APPLICATION_JBOSS_MARSHALLING;
-    }
-
-    @Override
-    public boolean isMarshallable(Object object) {
-        return this.marshaller.isMarshallable(object);
-    }
-
-    @Override
-    public void writeObject(Object object, OutputStream output) throws IOException {
-        this.marshaller.writeTo(output, object);
-    }
-
-    @Override
-    public Object readObject(InputStream input) throws ClassNotFoundException, IOException {
-        return this.marshaller.readFrom(input);
     }
 }

@@ -143,6 +143,11 @@
                 <xs:documentation>Indicates the default cache for this cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="marshaller" type="tns:marshaller">
+            <xs:annotation>
+                <xs:documentation>Defines the marshalling implementation used to marshal cache entries.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="modules" type="tns:list" default="org.jboss.as.clustering.infinispan">
             <xs:annotation>
                 <xs:documentation>Defines the set of modules associated with this cache container.</xs:documentation>
@@ -1172,6 +1177,26 @@
         </xs:restriction>
     </xs:simpleType>
 
+    <xs:simpleType name="marshaller">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="LEGACY">
+                <xs:annotation>
+                    <xs:documentation>Deprecated. Selects the marshaller dynamically based on the associated modules.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="JBOSS">
+                <xs:annotation>
+                    <xs:documentation>Marshals cache entries using JBoss Marshalling.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="PROTOSTREAM">
+                <xs:annotation>
+                    <xs:documentation>Marshals cache entries using ProtoStream.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
     <xs:complexType name="thread-pool">
         <xs:attribute name="min-threads" type="xs:int" use="optional">
             <xs:annotation>
@@ -1289,6 +1314,11 @@
                     Sets the maximum number of retries for each request. A valid value should be greater or equals than 0.
                     Value of 0 means no retry will made in case of a network failure.
                 </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="marshaller" type="tns:marshaller">
+            <xs:annotation>
+                <xs:documentation>Defines the marshalling implementation used to marshal cache entries.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="modules" type="tns:list" default="org.jboss.as.clustering.infinispan">
