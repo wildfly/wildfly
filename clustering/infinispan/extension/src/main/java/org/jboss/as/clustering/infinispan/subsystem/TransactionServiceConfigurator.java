@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.controller.CommonRequirement.LOCAL_TRANSAC
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.Attribute.LOCKING;
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.Attribute.MODE;
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.Attribute.STOP_TIMEOUT;
+import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.Attribute.COMPLETE_TIMEOUT;
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDefinition.TransactionRequirement.TRANSACTION_SYNCHRONIZATION_REGISTRY;
 
 import java.util.EnumSet;
@@ -59,7 +60,8 @@ import org.wildfly.transaction.client.ContextTransactionManager;
 public class TransactionServiceConfigurator extends ComponentServiceConfigurator<TransactionConfiguration> {
 
     private volatile LockingMode locking;
-    private volatile long timeout;
+    private volatile long stopTimeout;
+    private volatile long transactionTimeout;
     private volatile TransactionMode mode;
     private volatile Dependency transactionDependency;
     private volatile SupplierDependency<TransactionSynchronizationRegistry> tsrDependency;
@@ -78,7 +80,8 @@ public class TransactionServiceConfigurator extends ComponentServiceConfigurator
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.mode = ModelNodes.asEnum(MODE.resolveModelAttribute(context, model), TransactionMode.class);
         this.locking = ModelNodes.asEnum(LOCKING.resolveModelAttribute(context, model), LockingMode.class);
-        this.timeout = STOP_TIMEOUT.resolveModelAttribute(context, model).asLong();
+        this.stopTimeout = STOP_TIMEOUT.resolveModelAttribute(context, model).asLong();
+        this.transactionTimeout = COMPLETE_TIMEOUT.resolveModelAttribute(context, model).asLong();
         this.transactionDependency = !EnumSet.of(TransactionMode.NONE, TransactionMode.BATCH).contains(this.mode) ? new ServiceDependency(context.getCapabilityServiceName(LOCAL_TRANSACTION_PROVIDER.getName(), null)) : null;
         this.tsrDependency = this.mode == TransactionMode.NON_XA ? new ServiceSupplierDependency<>(context.getCapabilityServiceName(TRANSACTION_SYNCHRONIZATION_REGISTRY.getName(), null)) : null;
         return this;
@@ -88,7 +91,8 @@ public class TransactionServiceConfigurator extends ComponentServiceConfigurator
     public TransactionConfiguration get() {
         TransactionConfigurationBuilder builder = new ConfigurationBuilder().transaction()
                 .lockingMode(this.locking)
-                .cacheStopTimeout(this.timeout)
+                .cacheStopTimeout(this.stopTimeout)
+                .completedTxTimeout(transactionTimeout)
                 .transactionMode((this.mode == TransactionMode.NONE) ? org.infinispan.transaction.TransactionMode.NON_TRANSACTIONAL : org.infinispan.transaction.TransactionMode.TRANSACTIONAL)
                 .useSynchronization(this.mode == TransactionMode.NON_XA)
                 .recovery().enabled(this.mode == TransactionMode.FULL_XA).transaction()

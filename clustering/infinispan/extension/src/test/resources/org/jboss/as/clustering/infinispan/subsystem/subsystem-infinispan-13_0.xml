@@ -41,7 +41,7 @@
                                 keepalive-time="42"/>
         <local-cache name="local" modules="org.infinispan org.infinispan.commons" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
-            <transaction mode="BATCH" stop-timeout="60000" locking="OPTIMISTIC"/>
+            <transaction mode="BATCH" stop-timeout="60000" locking="OPTIMISTIC" complete-timeout="60000"/>
             <heap-memory size="20000"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="false">

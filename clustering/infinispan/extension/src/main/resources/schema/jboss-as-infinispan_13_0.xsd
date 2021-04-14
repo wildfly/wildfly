@@ -330,6 +330,13 @@
                 <xs:documentation>The locking mode for this cache, one of OPTIMISTIC or PESSIMISTIC.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="complete-timeout" type="xs:long" default="60000">
+            <xs:annotation>
+                <xs:documentation>
+                    The default duration (in ms) after which idle transactions are rolled back.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="memory">
