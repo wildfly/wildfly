@@ -287,7 +287,7 @@
         <version.com.squareup.okio>1.13.0</version.com.squareup.okio>
         <version.com.sun.activation.jakarta.activation>1.2.2</version.com.sun.activation.jakarta.activation>
         <version.com.sun.faces>2.3.14.SP04</version.com.sun.faces>
-        <version.com.sun.istack>3.0.10</version.com.sun.istack>
+        <version.com.sun.istack>3.0.12</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
         <version.commons-beanutils>1.9.4</version.commons-beanutils>
         <version.commons-cli>1.4</version.commons-cli>
@@ -475,7 +475,7 @@
         <version.org.wildfly.transaction.client>1.1.13.Final</version.org.wildfly.transaction.client>
         <version.org.yaml.snakeyaml>1.26</version.org.yaml.snakeyaml>
         <version.rhino.js>1.7R2</version.rhino.js>
-        <version.sun.jaxb>2.3.3-b02</version.sun.jaxb>
+        <version.sun.jaxb>2.3.4</version.sun.jaxb>
         <version.sun.saaj-impl>1.4.1.SP1</version.sun.saaj-impl>
         <version.wsdl4j>1.6.3</version.wsdl4j>
         <version.xml-resolver>1.2</version.xml-resolver>
@@ -5841,6 +5841,10 @@
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.codehaus.woodstox</groupId>
                         <artifactId>woodstox-core-asl</artifactId>
                     </exclusion>
@@ -6354,6 +6358,10 @@
                 <artifactId>jaxb-runtime</artifactId>
                 <version>${version.sun.jaxb}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>javax.activation</groupId>
                         <artifactId>javax.activation-api</artifactId>
