@@ -5842,6 +5842,10 @@
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.codehaus.woodstox</groupId>
                         <artifactId>woodstox-core-asl</artifactId>
                     </exclusion>
@@ -6355,6 +6359,10 @@
                 <artifactId>jaxb-runtime</artifactId>
                 <version>${version.sun.jaxb}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>javax.activation</groupId>
                         <artifactId>javax.activation-api</artifactId>
