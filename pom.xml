@@ -414,7 +414,7 @@
         <version.org.jboss.metadata>13.0.0.Final</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.4.3.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>5.11.0.Final</version.org.jboss.narayana>
-        <version.org.jboss.openjdk-orb>8.1.4.Final</version.org.jboss.openjdk-orb>
+        <version.org.jboss.openjdk-orb>8.1.5.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.resteasy>3.15.1.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>3.0.6.Final</version.org.jboss.security.jboss-negotiation>
