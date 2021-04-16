@@ -29,6 +29,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jaxb.FakeJAXBContextFactory;
 import org.jboss.as.test.integration.jaxb.JAXBContextServlet;
@@ -54,11 +55,18 @@ public abstract class JAXBContextTestBase {
 
     protected static final String JAXB_FACTORY_PROP_NAME = JAXBContextFactory.class.getName();
     protected static final String JAKARTA_FACTORY_PROP_NAME = JAXBContextFactory.class.getName().replaceFirst("javax.", "jakarta.");
-    protected static final String DEFAULT_JAXB_FACTORY_CLASS = "com.sun.xml.bind.v2.JAXBContextFactory";
+    protected static final String DEFAULT_JAXB_FACTORY_CLASS;
+    protected static final String DEFAULT_JAXB_CONTEXT_CLASS;
     protected static final String CUSTOM_JAXB_FACTORY_CLASS = FakeJAXBContextFactory.class.getName();
     protected static final String JAXB_PROPERTIES_FILE = "WEB-INF/classes/org/jboss/as/test/integration/jaxb/bindings/jaxb.properties";
     protected static final String SERVICES_FILE = "META-INF/services/" + JAXB_FACTORY_PROP_NAME;
     protected static final String PERMISSIONS_FILE = "META-INF/permissions.xml";
+
+    static {
+        boolean ee8 = System.getProperty("ts.ee9") == null;
+        DEFAULT_JAXB_FACTORY_CLASS = ee8 ? "com.sun.xml.bind.v2.JAXBContextFactory" :"org.glassfish.jaxb.runtime.v2.JAXBContextFactory";
+        DEFAULT_JAXB_CONTEXT_CLASS = ee8 ? "com.sun.xml.bind.v2.runtime.JAXBContextImpl" : "org.glassfish.jaxb.runtime.v2.runtime.JAXBContextImpl";
+    }
 
     @ArquillianResource
     protected URL url;
@@ -79,7 +87,7 @@ public abstract class JAXBContextTestBase {
         return war;
     }
 
-    protected void testDeafultImplementation(URL url) throws IOException {
+    protected void testDefaultImplementation(URL url) throws IOException {
         // test the internal implementation is returned
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
             final String requestURL = url.toExternalForm() + JAXBContextServlet.URL_PATTERN;
@@ -90,7 +98,8 @@ public abstract class JAXBContextTestBase {
             final HttpEntity entity = response.getEntity();
             Assert.assertNotNull("Response message from servlet was null", entity);
             final String responseMessage = EntityUtils.toString(entity);
-            Assert.assertThat(responseMessage, CoreMatchers.containsString("/com/sun/xml/bind/v2/runtime/JAXBContextImpl"));
+            MatcherAssert.assertThat(responseMessage, responseMessage,
+                    CoreMatchers.containsString(DEFAULT_JAXB_CONTEXT_CLASS.replace('.', '/')));
         }
         // test it works
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {

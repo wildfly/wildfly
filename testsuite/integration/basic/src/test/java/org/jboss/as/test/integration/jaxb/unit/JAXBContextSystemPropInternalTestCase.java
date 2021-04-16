@@ -60,6 +60,6 @@ public class JAXBContextSystemPropInternalTestCase extends JAXBContextTestBase {
     @OperateOnDeployment("app-internal")
     @Test
     public void testInternal() throws Exception {
-        testDeafultImplementation(url);
+        testDefaultImplementation(url);
     }
 }
