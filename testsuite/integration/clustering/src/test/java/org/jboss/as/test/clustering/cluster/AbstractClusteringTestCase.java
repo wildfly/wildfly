@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.clustering.cluster;
 
+import static org.wildfly.common.Assert.checkNotNullArrayParam;
+
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Map;
@@ -257,10 +259,7 @@ public abstract class AbstractClusteringTestCase {
         String[] getContainers(String... nodes) {
             String[] containers = new String[nodes.length];
             for (int i = 0; i < nodes.length; ++i) {
-                String node = nodes[i];
-                if (node == null) {
-                    throw new IllegalArgumentException();
-                }
+                String node = checkNotNullArrayParam("nodes", i, nodes[i]);
                 containers[i] = node;
             }
             return containers;

@@ -24,6 +24,8 @@
 
 package org.wildfly.clustering.ee.cache.scheduler;
 
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
+
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
@@ -1257,7 +1259,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
     @Override
     @SuppressWarnings("unchecked")
     public <T> T[] toArray(T[] a) {
-        if (a == null) throw new NullPointerException();
+        checkNotNullParamWithNullPointerException("a", a);
         return (T[]) toArrayInternal(a);
     }
 
