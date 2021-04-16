@@ -3,6 +3,7 @@ package org.jboss.as.jsf.deployment;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.jsf.logging.JSFLogger;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -20,6 +21,7 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
 
     public static final String JAVAX_FACES_WEBAPP_FACES_SERVLET = "javax.faces.webapp.FacesServlet";
     private static final String DISALLOW_DOCTYPE_DECL = "com.sun.faces.disallowDoctypeDecl";
+    private static final String LAZY_BEAN_VALIDATION_PARAM = "com.sun.faces.enableLazyBeanValidation";
 
     private final Boolean disallowDoctypeDecl;
 
@@ -53,13 +55,21 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
             // Add the disallowDoctypeDecl context param if it's not already present
             setContextParameterIfAbsent(metaData.getMergedJBossWebMetaData(), DISALLOW_DOCTYPE_DECL, disallowDoctypeDecl.toString());
         }
+        // Auto-disable lazy bean validation for distributable web application.
+        // This can otherwise cause missing @PreDestroy events.
+        if (metaData.getMergedJBossWebMetaData().getDistributable() != null) {
+            String disabled = Boolean.toString(false);
+            if (!setContextParameterIfAbsent(metaData.getMergedJBossWebMetaData(), LAZY_BEAN_VALIDATION_PARAM, disabled).equals(disabled)) {
+                JSFLogger.ROOT_LOGGER.lazyBeanValidationEnabled();
+            }
+        }
     }
 
     @Override
     public void undeploy(DeploymentUnit context) {
     }
 
-    private void setContextParameterIfAbsent(final JBossWebMetaData webMetaData, final String name, final String value) {
+    private static String setContextParameterIfAbsent(final JBossWebMetaData webMetaData, final String name, final String value) {
         List<ParamValueMetaData> contextParams = webMetaData.getContextParams();
         if (contextParams == null) {
             contextParams = new ArrayList<>();
@@ -68,12 +78,13 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
         for (ParamValueMetaData param : contextParams) {
             if (name.equals(param.getParamName()) && param.getParamValue() != null) {
                 // already set
-                return;
+                return param.getParamValue();
             }
         }
         ParamValueMetaData param = new ParamValueMetaData();
         param.setParamName(name);
         param.setParamValue(value);
         contextParams.add(param);
+        return value;
     }
 }
