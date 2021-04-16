@@ -463,7 +463,7 @@
         <version.org.picketbox>5.0.3.Final-redhat-00007</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.5.SP12-redhat-00009</version.org.picketlink>
-        <version.org.picketlink.bindings>2.5.5.SP12-redhat-00012</version.org.picketlink.bindings>
+        <version.org.picketlink.bindings>2.5.5.SP12-redhat-00013</version.org.picketlink.bindings>
         <version.org.reactivestreams>1.0.3</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.springframework.kafka>2.6.4</version.org.springframework.kafka>
