@@ -52,9 +52,9 @@ public class WildFlyMetricMetadata implements MetricMetadata {
     public WildFlyMetricMetadata(String attributeName, PathAddress address, String prefix, String description, MeasurementUnit unit, Type type) {
         this.attributeName = checkNotNullParamWithNullPointerException("attributeName", attributeName);
         this.address = checkNotNullParamWithNullPointerException("address", address);
-        this.globalPrefix =checkNotNullParamWithNullPointerException("prefix", prefix);
         this.description = checkNotNullParamWithNullPointerException("description", description);
         this.type = checkNotNullParamWithNullPointerException("type", type);
+        this.globalPrefix = prefix;
 
         this.unit = unit != null ? unit : MeasurementUnit.NONE;
 

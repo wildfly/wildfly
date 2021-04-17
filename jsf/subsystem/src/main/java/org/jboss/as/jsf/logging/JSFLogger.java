@@ -121,4 +121,8 @@ public interface JSFLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 19, value = "Jakarta Server Faces artifact %s with class %s has no default constructor so it will not be considered for injection")
     void jsfArtifactNoDefaultConstructor(String type, String className);
+
+    @LogMessage(level = WARN)
+    @Message(id = 20, value = "Lazy bean validation was enabled. This can result in missing @PreDestroy events when distributed web sessions expire.")
+    void lazyBeanValidationEnabled();
 }
