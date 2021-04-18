@@ -95,7 +95,7 @@
                 <!-- Turn on normal plugin execution by changing the phase props from 'none'.
                      Note that we leave 'provisioning.phase.preview.excluded' as 'none' -->
                 <provisioning.phase>compile</provisioning.phase>
-                <surefire.phase>test</surefire.phase>
+                <surefire.default-test.phase>test</surefire.default-test.phase>
                 <!-- Reset the feature pack GAV props to use wildfly-preview -->
                 <servlet.feature.pack.artifactId>wildfly-preview-feature-pack</servlet.feature.pack.artifactId>
                 <ee.feature.pack.groupId>${project.groupId}</ee.feature.pack.groupId>

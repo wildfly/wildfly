@@ -374,6 +374,7 @@
             </activation>
             <modules>
                 <module>basic</module>
+                <module>ws</module>
                 <module>clustering</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
