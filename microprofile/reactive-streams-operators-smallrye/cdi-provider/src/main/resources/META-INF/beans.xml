@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2020, Red Hat, Inc., and individual contributors
@@ -26,7 +25,6 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="
       http://xmlns.jcp.org/xml/ns/javaee
-      http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd"
-  bean-discovery-mode="annotated">
+      http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd">
 
 </beans>
