@@ -57,18 +57,29 @@ public final class Utils {
     }
 
     public static byte[] toBytes(VirtualFile r) throws IOException {
-        byte [] buffer = new byte[1024];
-        InputStream is = r.openStream();
-
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        int bytesRead = is.read(buffer);
-        while( bytesRead > -1 ) {
-            os.write(buffer, 0, bytesRead);
-            bytesRead = is.read(buffer);
+        try(InputStream is = r.openStream()) {
+            return toByteArray(is);
         }
+    }
 
-        Utils.safelyClose(is);
-        return os.toByteArray();
+    /**
+     * Reads the content of an {@code InputStream} as {@code byte[]}.
+     * This does not close the InputStream
+     *
+     * @param is the input stream
+     * @return the byte array read from the input stream
+     * @throws IOException if an I/O error occurs
+     */
+    static byte[] toByteArray(InputStream is) throws IOException {
+        byte [] buffer = new byte[1024];
+        try(ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            int bytesRead = is.read(buffer);
+            while( bytesRead > -1 ) {
+                os.write(buffer, 0, bytesRead);
+                bytesRead = is.read(buffer);
+            }
+            return os.toByteArray();
+        }
     }
 
     /**
