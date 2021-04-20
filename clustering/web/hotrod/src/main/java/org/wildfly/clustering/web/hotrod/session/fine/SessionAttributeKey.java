@@ -31,7 +31,7 @@ import org.wildfly.clustering.ee.hotrod.RemoteCacheKey;
  * Cache key for session attributes.
  * @author Paul Ferraro
  */
-public class SessionAttributeKey extends RemoteCacheKey<String> {
+public class SessionAttributeKey extends RemoteCacheKey<String> implements org.wildfly.clustering.web.cache.session.fine.SessionAttributeKey {
 
     private final UUID attributeId;
 
@@ -44,6 +44,7 @@ public class SessionAttributeKey extends RemoteCacheKey<String> {
         this.attributeId = attributeId;
     }
 
+    @Override
     public UUID getAttributeId() {
         return this.attributeId;
     }
