@@ -145,14 +145,14 @@ public enum XMLAttribute {
     REMOTE_CACHE_CONTAINER(RemoteCacheContainerResourceDefinition.WILDCARD_PATH),
     CONNECTION_TIMEOUT(RemoteCacheContainerResourceDefinition.Attribute.CONNECTION_TIMEOUT),
     DEFAULT_REMOTE_CLUSTER(RemoteCacheContainerResourceDefinition.Attribute.DEFAULT_REMOTE_CLUSTER),
-    KEY_SIZE_ESTIMATE(RemoteCacheContainerResourceDefinition.Attribute.KEY_SIZE_ESTIMATE),
+    KEY_SIZE_ESTIMATE(RemoteCacheContainerResourceDefinition.DeprecatedAttribute.KEY_SIZE_ESTIMATE),
     MAX_RETRIES(RemoteCacheContainerResourceDefinition.Attribute.MAX_RETRIES),
     PROTOCOL_VERSION(RemoteCacheContainerResourceDefinition.Attribute.PROTOCOL_VERSION),
     SOCKET_TIMEOUT(RemoteCacheContainerResourceDefinition.Attribute.SOCKET_TIMEOUT),
     TCP_NO_DELAY(RemoteCacheContainerResourceDefinition.Attribute.TCP_NO_DELAY),
     TCP_KEEP_ALIVE(RemoteCacheContainerResourceDefinition.Attribute.TCP_KEEP_ALIVE),
     TRANSACTION_TIMEOUT(RemoteCacheContainerResourceDefinition.Attribute.TRANSACTION_TIMEOUT),
-    VALUE_SIZE_ESTIMATE(RemoteCacheContainerResourceDefinition.Attribute.VALUE_SIZE_ESTIMATE),
+    VALUE_SIZE_ESTIMATE(RemoteCacheContainerResourceDefinition.DeprecatedAttribute.VALUE_SIZE_ESTIMATE),
 
     // remote-cache-container -> connection-pool
     EXHAUSTED_ACTION(ConnectionPoolResourceDefinition.Attribute.EXHAUSTED_ACTION),

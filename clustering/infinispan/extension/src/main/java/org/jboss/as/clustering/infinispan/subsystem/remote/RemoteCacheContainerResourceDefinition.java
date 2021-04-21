@@ -110,7 +110,6 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 return builder.setAllowExpression(false).setCapabilityReference(new CapabilityReference(Capability.CONFIGURATION, RemoteClusterResourceDefinition.Requirement.REMOTE_CLUSTER, WILDCARD_PATH));
             }
         },
-        KEY_SIZE_ESTIMATE("key-size-estimate", ModelType.INT, new ModelNode(64)),
         MARSHALLER("marshaller", ModelType.STRING, new ModelNode(HotRodMarshallerFactory.LEGACY.name())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -143,7 +142,6 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
             }
         },
-        VALUE_SIZE_ESTIMATE("value-size-estimate", ModelType.INT, new ModelNode(512)),
         ;
 
         private final AttributeDefinition definition;
@@ -205,12 +203,24 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
     }
 
     public enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        KEY_SIZE_ESTIMATE("key-size-estimate", ModelType.INT, InfinispanModel.VERSION_15_0_0) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(64));
+            }
+        },
         MODULE("module", ModelType.STRING, InfinispanModel.VERSION_14_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setFlags(AttributeAccess.Flag.ALIAS);
             }
         },
+        VALUE_SIZE_ESTIMATE("value-size-estimate", ModelType.INT, InfinispanModel.VERSION_15_0_0) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(512));
+            }
+        }
         ;
         private final AttributeDefinition definition;
 

@@ -1926,7 +1926,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case KEY_SIZE_ESTIMATE: {
-                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.KEY_SIZE_ESTIMATE);
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.DeprecatedAttribute.KEY_SIZE_ESTIMATE);
                     break;
                 }
                 case MAX_RETRIES: {
@@ -1957,7 +1957,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case VALUE_SIZE_ESTIMATE: {
-                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.VALUE_SIZE_ESTIMATE);
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.DeprecatedAttribute.VALUE_SIZE_ESTIMATE);
                     break;
                 }
                 case STATISTICS_ENABLED: {
