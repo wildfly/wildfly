@@ -102,7 +102,7 @@ public class AutomaticSelfSignedCertificateNotGeneratedTestCase {
 
         final URL servletUrl = new URL("https", TestSuiteEnvironment.getServerAddress(), HTTPS_PORT,
                 "/" + NAME + "/" + SimpleServlet.SERVLET_PATH.substring(1));
-        HttpClient client = SSLTruststoreUtil.getHttpClientWithSSL(CLIENT_TRUSTSTORE_FILE, PASSWORD);
+        HttpClient client = SSLTruststoreUtil.getHttpClientWithSSL(CLIENT_TRUSTSTORE_FILE, PASSWORD, "PKCS12");
         try {
             Utils.makeCallWithHttpClient(servletUrl, client, SC_OK);
             try (FileInputStream is = new FileInputStream(SERVER_KEYSTORE_FILE.getAbsolutePath())) {
@@ -133,7 +133,7 @@ public class AutomaticSelfSignedCertificateNotGeneratedTestCase {
 
             final URL servletUrl = new URL("https", TestSuiteEnvironment.getServerAddress(), HTTPS_PORT,
                     "/" + NAME + "/" + SimpleServlet.SERVLET_PATH.substring(1));
-            HttpClient client = SSLTruststoreUtil.getHttpClientWithSSL(CLIENT_TRUSTSTORE_FILE, PASSWORD);
+            HttpClient client = SSLTruststoreUtil.getHttpClientWithSSL(CLIENT_TRUSTSTORE_FILE, PASSWORD, "PKCS12");
             try {
                 Utils.makeCallWithHttpClient(servletUrl, client, SC_OK);
                 try (FileInputStream is = new FileInputStream(SERVER_KEYSTORE_FILE.getAbsolutePath())) {

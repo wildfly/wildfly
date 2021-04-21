@@ -128,7 +128,7 @@ public class AutomaticSelfSignedCertificateGenerationTestCase {
 
             try {
                 // attempt to access the https interface again
-                client = SSLTruststoreUtil.getHttpClientWithSSL(CLIENT_TRUSTSTORE_FILE, PASSWORD);
+                client = SSLTruststoreUtil.getHttpClientWithSSL(CLIENT_TRUSTSTORE_FILE, PASSWORD, "PKCS12");
                 Utils.makeCallWithHttpClient(servletUrl, client, SC_OK);
             } catch (IOException | URISyntaxException ex) {
                 throw new IllegalStateException("Unable to request server root over HTTPS", ex);
