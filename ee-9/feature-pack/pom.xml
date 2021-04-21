@@ -76,7 +76,9 @@
         <version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.0</version.jakarta.xml.bind.jakarta-xml-bind-api>
         <version.org.eclipse.yasson>2.0.1</version.org.eclipse.yasson>
         <version.org.glassfish.jakarta.el>4.0.0</version.org.glassfish.jakarta.el>
-        <version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}</version.org.glassfish.jaxb.jaxb-xjc>
+		<!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
+		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version --> 
+        <version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</version.org.glassfish.jaxb.jaxb-xjc>
         <version.org.apache.activemq.artemis>2.17.0</version.org.apache.activemq.artemis>
         <version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>3.0.0</version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>
         <version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>
