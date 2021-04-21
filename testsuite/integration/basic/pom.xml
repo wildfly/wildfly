@@ -3658,6 +3658,7 @@
                                         <exclude>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithMixedSecurityTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithSecurityDomainTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jca/security/workmanager/WildFlyActivationRaWithWMSecurityDomainWorkManagerTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainDotNameTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/web/security/runas/WebSecurityRunAsTestCase.java</exclude>
                                         <!-- Requires picketlink -->
                                         <exclude>org/jboss/as/test/integration/ws/authentication/policy/AuthenticationPolicyContextTestCase.java</exclude>
@@ -3703,6 +3704,7 @@
                                         <exclude>org/jboss/as/test/integration/jaxr/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jca/bootstrap/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jmx/full/**/*TestCase*.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainDotNameTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/**/*TestCase*.java</exclude>
                                         <include>org/jboss/as/test/integration/microprofile/opentracing/**/*TestCase*.java</include>
                                         <exclude>org/jboss/as/test/integration/management/cli/**/*TestCase.java</exclude>
@@ -3739,6 +3741,7 @@
                                         <exclude>org/jboss/as/test/integration/jca/metrics/RaCfgMetricUnitTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jca/poolattributes/ResourceAdapterPoolAttributesTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jca/statistics/ResourceAdapterStatisticsTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainDotNameTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/aselytron/SecurityDomainAsElytronSecurityRealmTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
