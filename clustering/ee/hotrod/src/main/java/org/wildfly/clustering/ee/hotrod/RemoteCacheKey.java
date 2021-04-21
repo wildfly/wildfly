@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,12 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ee.cache;
+package org.wildfly.clustering.ee.hotrod;
+
+import java.util.Objects;
+
+import org.wildfly.clustering.ee.Key;
 
 /**
- * A cache key for a given identifier
+ * Base type for remote cache keys.
  * @author Paul Ferraro
  */
-public interface Key<I> {
-    I getId();
+public class RemoteCacheKey<I> implements Key<I> {
+
+    private I id;
+
+    public RemoteCacheKey(I id) {
+        this.id = id;
+    }
+
+    @Override
+    public I getId() {
+        return this.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getClass(), this.id);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        return this.getClass().equals(object.getClass()) && this.id.equals(((RemoteCacheKey<?>) object).id);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s(%s)", this.getClass().getSimpleName(), this.id);
+    }
 }

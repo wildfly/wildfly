@@ -25,13 +25,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.wildfly.clustering.infinispan.client.Key;
+import org.wildfly.clustering.ee.hotrod.RemoteCacheKey;
 
 /**
  * Cache key for session attributes.
  * @author Paul Ferraro
  */
-public class SessionAttributeKey extends Key<String> {
+public class SessionAttributeKey extends RemoteCacheKey<String> implements org.wildfly.clustering.web.cache.session.fine.SessionAttributeKey {
 
     private final UUID attributeId;
 
@@ -44,6 +44,7 @@ public class SessionAttributeKey extends Key<String> {
         this.attributeId = attributeId;
     }
 
+    @Override
     public UUID getAttributeId() {
         return this.attributeId;
     }

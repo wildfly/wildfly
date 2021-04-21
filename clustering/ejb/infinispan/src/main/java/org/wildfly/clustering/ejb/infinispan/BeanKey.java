@@ -21,7 +21,7 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.ee.cache.Key;
+import org.wildfly.clustering.ee.Key;
 
 /**
  * The cache key used to store a bean.

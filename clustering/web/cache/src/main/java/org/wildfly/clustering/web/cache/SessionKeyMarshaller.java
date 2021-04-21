@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,38 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.client;
+package org.wildfly.clustering.web.cache;
 
-import java.util.Objects;
+import java.io.IOException;
+
+import org.wildfly.clustering.ee.Key;
+import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
+import org.wildfly.common.function.ExceptionFunction;
 
 /**
- * Base type for cache keys.
+ * Generic marshaller for cache keys containing session identifiers.
  * @author Paul Ferraro
  */
-public class Key<I> {
+public class SessionKeyMarshaller<K extends Key<String>> extends FunctionalScalarMarshaller<K, String> {
 
-    private I id;
-
-    public Key(I id) {
-        this.id = id;
-    }
-
-    public I getId() {
-        return this.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.getClass(), this.id);
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        return this.getClass().equals(object.getClass()) && this.id.equals(((Key<?>) object).id);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%s(%s)", this.getClass().getSimpleName(), this.id);
+    public SessionKeyMarshaller(Class<K> targetClass, ExceptionFunction<String, K, IOException> resolver) {
+        super(targetClass, SessionIdentifierMarshaller.INSTANCE, Key::getId, resolver);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,21 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.hotrod;
+package org.wildfly.clustering.web.cache.session.fine;
 
-import java.io.IOException;
+import java.util.UUID;
 
-import org.wildfly.clustering.infinispan.client.Key;
-import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
-import org.wildfly.clustering.web.cache.SessionIdentifierMarshaller;
-import org.wildfly.common.function.ExceptionFunction;
+import org.wildfly.clustering.ee.Key;
 
 /**
+ * A key for session attribute entries, identified via session identifier and attribute identifier.
  * @author Paul Ferraro
  */
-public class SessionKeyMarshaller<K extends Key<String>> extends FunctionalScalarMarshaller<K, String> {
+public interface SessionAttributeKey extends Key<String>, Comparable<SessionAttributeKey> {
 
-    public SessionKeyMarshaller(Class<K> targetClass, ExceptionFunction<String, K, IOException> resolver) {
-        super(targetClass, SessionIdentifierMarshaller.INSTANCE, Key::getId, resolver);
+    UUID getAttributeId();
+
+    @Override
+    default int compareTo(SessionAttributeKey key) {
+        int result = this.getId().compareTo(key.getId());
+        return (result == 0) ? this.getAttributeId().compareTo(key.getAttributeId()) : result;
     }
 }
