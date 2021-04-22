@@ -31,8 +31,8 @@ public abstract class AbstractSimpleApplicationClientTestCase {
                 APP_NAME, MODULE_NAME, AppClientStateSingleton.class.getSimpleName(), "");
         final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
         remote.reset();
-        final AppClientWrapper wrapper = new AppClientWrapper(getArchive(), "--host=" + managementClient.getRemoteEjbURL(),
-                "client-annotation.jar", "cmdLineParam");
+        final AppClientWrapper wrapper = new AppClientWrapper(getArchive(), getHostArgument(),
+                "client-annotation.jar", "${test.expr.applcient.param:cmdLineParam}");
         try {
             final String result = remote.awaitAppClientCall();
             assertTrue("App client call failed. App client output: " + wrapper.readAllUnformated(1000), result != null);
@@ -52,7 +52,7 @@ public abstract class AbstractSimpleApplicationClientTestCase {
                 APP_NAME, MODULE_NAME, AppClientStateSingleton.class.getSimpleName(), "");
         final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
         remote.reset();
-        final AppClientWrapper wrapper = new AppClientWrapper(getArchive(), "--host=" + managementClient.getRemoteEjbURL(),
+        final AppClientWrapper wrapper = new AppClientWrapper(getArchive(), getHostArgument(),
                 "client-dd.jar", "");
         try {
             final String result = remote.awaitAppClientCall();
@@ -75,7 +75,8 @@ public abstract class AbstractSimpleApplicationClientTestCase {
         remote.reset();
         URL props = getClass().getClassLoader().getResource("jboss-ejb-client.properties");
         final AppClientWrapper wrapper = new AppClientWrapper(getArchive(),
-                " -Dnode0=" + managementClient.getMgmtAddress() + " --ejb-client-properties=" + props, "client-override.jar",
+                " -Dnode0=" + managementClient.getMgmtAddress() + getEjbClientPropertiesArgument(props),
+                "client-override.jar",
                 "");
         try {
             final String result = remote.awaitAppClientCall();
@@ -84,5 +85,15 @@ public abstract class AbstractSimpleApplicationClientTestCase {
         } finally {
             wrapper.quit();
         }
+    }
+
+    private String getHostArgument() {
+        // Use an expression for the host arg value to validate that works
+        return "--host=${test.expr.appclient.host:" + managementClient.getRemoteEjbURL() + "}";
+    }
+
+    private String getEjbClientPropertiesArgument(URL props) {
+        // Use an expression for the  arg value to validate that works
+        return " --ejb-client-properties=${test.expr.appclient.properties:" + props + "}";
     }
 }
