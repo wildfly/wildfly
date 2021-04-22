@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.fail;
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
 
 import java.lang.reflect.ReflectPermission;
 import java.sql.Connection;
@@ -306,15 +307,16 @@ public abstract class AbstractDatasourceCapacityPoliciesTestCase extends JcaMgmt
 
         void addCapacityDecrementerProperty(String name, String value) {
             if (capacityDecrementerClass == null) { throw new IllegalStateException("capacityDecrementerClass isn't set"); }
-            if (name == null) { throw new NullPointerException("name"); }
-            if (value == null) { throw new NullPointerException("value"); }
+            checkNotNullParamWithNullPointerException("name", name);
+            checkNotNullParamWithNullPointerException("value", value);
+
             capacityDecrementerProperties.put(name, value);
         }
 
         void addCapacityIncrementerProperty(String name, String value) {
             if (capacityIncrementerClass == null) { throw new IllegalStateException("capacityIncrementerClass isn't set"); }
-            if (name == null) { throw new NullPointerException("name"); }
-            if (value == null) { throw new NullPointerException("value"); }
+            checkNotNullParamWithNullPointerException("name", name);
+            checkNotNullParamWithNullPointerException("value", value);
             capacityIncrementerProperties.put(name, value);
         }
 

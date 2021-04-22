@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jca.beanvalidation.ra;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -118,7 +120,7 @@ public class ValidManagedConnection implements ManagedConnection {
      * @param listener A new ConnectionEventListener to be registered
      */
     public void addConnectionEventListener(ConnectionEventListener listener) {
-        if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
+        checkNotNullParam("listener", listener);
         listeners.add(listener);
     }
 
@@ -128,7 +130,7 @@ public class ValidManagedConnection implements ManagedConnection {
      * @param listener already registered connection event listener to be removed
      */
     public void removeConnectionEventListener(ConnectionEventListener listener) {
-        if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
+        checkNotNullParam("listener", listener);
         listeners.remove(listener);
     }
 
