@@ -1,10 +1,10 @@
 <subsystem xmlns="urn:jboss:domain:ee:6.0" >
     <global-modules>
         <module name="org.jboss.logging" slot="main"/>
-        <module name="org.apache.log4j" annotations="true" meta-inf="true" services="false"/>
+        <module name="org.apache.log4j" annotations="${test-exp20:true}" meta-inf="${test-exp21:true}" services="${test-exp22:false}"/>
     </global-modules>
     <global-directories>
-        <directory name="my-app-libs" path="me/app-libs" relative-to="jboss.server.base.dir" />
+        <directory name="my-app-libs" path="${test-exp23:me/app-libs}" relative-to="jboss.server.base.dir" />
     </global-directories>
     <ear-subdeployments-isolated>${test-exp:true}</ear-subdeployments-isolated>
     <spec-descriptor-property-replacement>${test-exp1:false}</spec-descriptor-property-replacement>
