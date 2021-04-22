@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
 
 import org.eclipse.microprofile.reactive.streams.operators.spi.ReactiveStreamsEngine;
@@ -35,6 +36,7 @@ import org.eclipse.microprofile.reactive.streams.operators.spi.ReactiveStreamsEn
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
+@Dependent
 public class ReactiveEngineProvider {
 
     /**
@@ -51,5 +53,4 @@ public class ReactiveEngineProvider {
         }
         throw LOGGER.noImplementationFound(ReactiveStreamsEngine.class.getName());
     }
-
 }
