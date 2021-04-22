@@ -159,7 +159,7 @@ public class EJBContextMultipleSDTestCase {
         }
 
         void deployModule() throws Exception {
-            module = new TestModule("loginmodule.custom", "org.picketbox", "javax.api");
+            module = new TestModule("loginmodule.custom", "org.picketbox", "javax.api", "org.wildfly.common");
             JavaArchive jar = module.addResource("loginmodule.custom.jar");
             jar.addClasses(MyPrincipal.class, NonValidatingLoginModule.class);
             module.create(true);

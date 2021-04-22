@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.container.interceptor.security.api;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 /**
  * A helper Credential, which holds current RealmUser name. It's used in the {@link GuestDelegationLoginModule} to check if the
  * delegation is allowed for this user.
@@ -32,10 +34,7 @@ public final class CurrentUserCredential {
     private final String user;
 
     public CurrentUserCredential(final String user) {
-        if (user == null) {
-            throw new IllegalArgumentException("User can not be null.");
-        }
-        this.user = user;
+        this.user = checkNotNullParam("user", user);
     }
 
     // Public methods --------------------------------------------------------
