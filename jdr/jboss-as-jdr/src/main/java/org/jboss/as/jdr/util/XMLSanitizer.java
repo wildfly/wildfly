@@ -37,7 +37,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.commons.io.IOUtils;
 import org.jboss.vfs.VirtualFileFilter;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -69,7 +68,7 @@ public class XMLSanitizer extends AbstractSanitizer {
     }
 
     public InputStream sanitize(InputStream in) throws Exception {
-        byte [] content = IOUtils.toByteArray(in);
+        byte [] content = Utils.toByteArray(in);
         try {
             // storing the entire file in memory in case we need to bail.
             Document doc = builder.parse(new ByteArrayInputStream(content));
