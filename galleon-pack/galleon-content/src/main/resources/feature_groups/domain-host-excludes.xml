@@ -68,4 +68,9 @@
         <param name="host-release" value="WildFly21.0"/>
         <param name="excluded-extensions" value="[&quot;org.wildfly.extension.health&quot;,&quot;org.wildfly.extension.metrics&quot;,&quot;org.wildfly.extension.microprofile.reactive-messaging-smallrye&quot;,&quot;org.wildfly.extension.microprofile.reactive-streams-operators-smallrye&quot;]"/>
     </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly22.0"/>
+        <param name="host-release" value="WildFly22.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.microprofile.reactive-messaging-smallrye&quot;,&quot;org.wildfly.extension.microprofile.reactive-streams-operators-smallrye&quot;]"/>
+    </feature>
 </feature-group-spec>
