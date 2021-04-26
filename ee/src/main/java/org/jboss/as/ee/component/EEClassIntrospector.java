@@ -12,5 +12,17 @@ public interface EEClassIntrospector {
 
     ManagedReferenceFactory createFactory(final Class<?> clazz);
 
+    /**
+     * Returns the managed reference of an new instance.
+     * @param instance an object instance
+     * @return a managed reference
+     */
     ManagedReference createInstance(Object instance);
+
+    /**
+     * Returns the managed reference of an existing instance.
+     * @param instance an object instance
+     * @return a managed reference
+     */
+    ManagedReference getInstance(Object instance);
 }

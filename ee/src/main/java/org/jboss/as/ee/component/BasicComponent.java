@@ -101,6 +101,13 @@ public class BasicComponent implements Component {
         return obj;
     }
 
+    @Override
+    public ComponentInstance getInstance(Object instance) {
+        BasicComponentInstance obj = constructComponentInstance(new ImmediateManagedReference(instance), false);
+        obj.constructionFinished();
+        return obj;
+    }
+
     public void waitForComponentStart() {
         if (!gate) {
             EeLogger.ROOT_LOGGER.tracef("Waiting for component %s (%s)", componentName, componentClass);
