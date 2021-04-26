@@ -132,7 +132,7 @@ public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V,
                     SessionCreationMetaDataEntry<L> creationEntry = (value != null) ? (SessionCreationMetaDataEntry<L>) marshaller.objectFromByteBuffer(value) : new SessionCreationMetaDataEntry<>(new SimpleSessionCreationMetaData(Instant.EPOCH));
                     // Ensure entry is removed from near cache
                     if (nearCacheEnabled) {
-                        creationMetaDataCache.remove(creationKey);
+                        creationMetaDataCache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).remove(creationKey);
                     }
                     SessionAccessMetaData accessMetaData = accessMetaDataCache.withFlags(Flag.FORCE_RETURN_VALUE).remove(new SessionAccessMetaDataKey(id));
                     if (accessMetaData != null) {
