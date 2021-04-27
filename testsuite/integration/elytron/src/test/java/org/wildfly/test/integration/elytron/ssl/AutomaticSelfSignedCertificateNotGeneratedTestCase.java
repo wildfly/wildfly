@@ -37,6 +37,8 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEParameterSpec;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.http.client.HttpClient;
@@ -89,6 +91,14 @@ public class AutomaticSelfSignedCertificateNotGeneratedTestCase {
     private static final String GENERATE_SELF_SIGNED_CERTIFICATE_HOST="customHostName";
     private static final String SERVER_ALIAS = "server";
     private static final String EXISTING_HOST = "existingHost";
+    private static final byte[] IV = {
+            0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,
+            0x19,0x1A,0x1B,0x1C,0x1D,0x1E,0x1F,0x20
+    };
+    private static final byte[] SALT = {
+            0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08
+    };
+    private static final int ITERATION_COUNT = 1024;
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
@@ -206,7 +216,10 @@ public class AutomaticSelfSignedCertificateNotGeneratedTestCase {
                     .build();
             PrivateKey privateKey = selfSignedX509CertificateAndSigningKey.getSigningKey();
             X509Certificate serverCert = selfSignedX509CertificateAndSigningKey.getSelfSignedCertificate();
-            ks.setKeyEntry("server", privateKey, PASSWORD.toCharArray(), new X509Certificate[]{ serverCert });
+            KeyStore.Entry entry = new KeyStore.PrivateKeyEntry(privateKey, new X509Certificate[]{ serverCert });
+            KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(PASSWORD.toCharArray(), "PBEWithHmacSHA256AndAES_128",
+                    new PBEParameterSpec(SALT, ITERATION_COUNT, new IvParameterSpec(IV)));
+            ks.setEntry("server", entry, passwordProtection);
             try (FileOutputStream fos = new FileOutputStream(SERVER_KEYSTORE_FILE)) {
                 ks.store(fos, PASSWORD.toCharArray());
             }
