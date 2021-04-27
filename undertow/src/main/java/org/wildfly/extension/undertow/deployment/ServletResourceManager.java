@@ -73,6 +73,14 @@ public class ServletResourceManager implements ResourceManager {
     public Resource getResource(final String path) throws IOException {
         Resource res = deploymentResourceManager.getResource(path);
         if (res != null) {
+            //EE.8.3.1  The content of all jar files in the WEB-INF/lib directory of the containing war
+            //file, but not any subdirectories.
+            if(res.getPath().startsWith("WEB-INF/lib/") && res.getPath().length() > "WEB-INF/lib/".length() && res.isDirectory()) {
+                //if its a directory, treat it as exploded archive, dont list contents
+                //NOTE: as is this is being run from caching resource manager, so removal of trailing '/'
+                //is not viable
+                return null;
+            }
             return new ServletResource(this, res);
         }
         String p = path;
