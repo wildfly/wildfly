@@ -22,6 +22,8 @@
 
 package org.jboss.as.webservices.injection;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,9 +45,8 @@ public final class WSEndpointHandlersMapping {
      * @param endpointHandlers WS handlers associated with endpoint
      */
     public void registerEndpointHandlers(final String endpointClass, final Set<String> endpointHandlers) {
-        if ((endpointClass == null) || (endpointHandlers == null)) {
-            throw new IllegalArgumentException();
-        }
+        checkNotNullParam("endpointClass", endpointClass);
+        checkNotNullParam("endpointHandlers", endpointHandlers);
         endpointHandlersMap.put(endpointClass, Collections.unmodifiableSet(endpointHandlers));
     }
 
