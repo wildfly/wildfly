@@ -23,13 +23,13 @@
 package org.wildfly.extension.messaging.activemq.deployment.injection;
 
 import static javax.jms.JMSContext.AUTO_ACKNOWLEDGE;
+import static org.wildfly.extension.messaging.activemq.deployment.DefaultJMSConnectionFactoryBinding.COMP_DEFAULT_JMS_CONNECTION_FACTORY;
 
 import javax.jms.JMSConnectionFactory;
 import javax.jms.JMSPasswordCredential;
 import javax.jms.JMSSessionMode;
 
 import org.jboss.metadata.property.PropertyReplacer;
-import org.wildfly.extension.messaging.activemq.deployment.DefaultJMSConnectionFactoryBindingProcessor;
 
 /**
  * Data structure containing the Jakarta Messaging information that can be annotated on an injected JMSContext.
@@ -48,7 +48,7 @@ class JMSInfo {
         if (connectionFactory != null) {
             connectionFactoryLookup = propertyReplacer.replaceProperties(connectionFactory.value());
         } else {
-            connectionFactoryLookup = DefaultJMSConnectionFactoryBindingProcessor.COMP_DEFAULT_JMS_CONNECTION_FACTORY;
+            connectionFactoryLookup = COMP_DEFAULT_JMS_CONNECTION_FACTORY;
         }
         if (credential != null) {
             userName = propertyReplacer.replaceProperties(credential.userName());

@@ -29,12 +29,13 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-messaging-activemq}"/>
+        <artifact name="${org.wildfly:wildfly-messaging-activemq-subsystem}"/>
         <artifact name="${org.jboss.activemq.artemis.integration:artemis-wildfly-integration}"/>
         <resource-root path="META-INF"/>
     </resources>
 
     <dependencies>
+        <module name="org.wildfly.extension.messaging-activemq.injection"/>
         <module name="java.logging"/>
         <module name="java.management"/>
         <module name="java.naming"/>

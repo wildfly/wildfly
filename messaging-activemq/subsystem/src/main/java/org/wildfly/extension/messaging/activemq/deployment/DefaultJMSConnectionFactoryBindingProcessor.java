@@ -21,6 +21,8 @@
  */
 package org.wildfly.extension.messaging.activemq.deployment;
 
+import static org.wildfly.extension.messaging.activemq.deployment.DefaultJMSConnectionFactoryBinding.DEFAULT_JMS_CONNECTION_FACTORY;
+
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.deployers.AbstractPlatformBindingProcessor;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -32,9 +34,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
  * @author Eduardo Martins
  */
 public class DefaultJMSConnectionFactoryBindingProcessor extends AbstractPlatformBindingProcessor {
-
-    public static final String DEFAULT_JMS_CONNECTION_FACTORY = "DefaultJMSConnectionFactory";
-    public static final String COMP_DEFAULT_JMS_CONNECTION_FACTORY = "java:comp/"+DEFAULT_JMS_CONNECTION_FACTORY;
 
     @Override
     protected void addBindings(DeploymentUnit deploymentUnit, EEModuleDescription moduleDescription) {

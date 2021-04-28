@@ -362,7 +362,7 @@
         <!-- This is required for the JmsTestCase which uses CLI -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-messaging-activemq</artifactId>
+            <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
