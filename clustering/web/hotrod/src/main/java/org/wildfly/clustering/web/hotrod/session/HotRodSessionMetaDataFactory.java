@@ -23,7 +23,6 @@
 package org.wildfly.clustering.web.hotrod.session;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -76,12 +75,10 @@ public class HotRodSessionMetaDataFactory<L> implements SessionMetaDataFactory<C
 
     @Override
     public CompositeSessionMetaDataEntry<L> createValue(String id, Void context) {
-        Map<Key<String>, Object> entries = new HashMap<>(3);
         SessionCreationMetaDataEntry<L> creationMetaDataEntry = new SessionCreationMetaDataEntry<>(new SimpleSessionCreationMetaData());
-        entries.put(new SessionCreationMetaDataKey(id), new SessionCreationMetaDataEntry<>(new SimpleSessionCreationMetaData()));
         SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();
-        entries.put(new SessionAccessMetaDataKey(id), new SimpleSessionAccessMetaData());
-        this.cache.putAll(entries);
+        this.creationMetaDataMutatorFactory.createMutator(new SessionCreationMetaDataKey(id), creationMetaDataEntry).mutate();
+        this.accessMetaDataMutatorFactory.createMutator(new SessionAccessMetaDataKey(id), accessMetaData).mutate();
         return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry, accessMetaData);
     }
 
