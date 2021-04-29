@@ -70,7 +70,6 @@
         xmit_table_num_rows="50"
     />
     <pbcast.STABLE
-        stability_delay="500"
         desired_avg_gossip="5000"
         max_bytes="1m"
     />
