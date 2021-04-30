@@ -30,6 +30,7 @@ import java.util.List;
 import org.jboss.as.appclient.deployment.ActiveApplicationClientProcessor;
 import org.jboss.as.appclient.deployment.AppClientJBossAllParser;
 import org.jboss.as.appclient.deployment.ApplicationClientDependencyProcessor;
+import org.jboss.as.appclient.logging.AppClientLogger;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.appclient.deployment.ApplicationClientManifestProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientParsingDeploymentProcessor;
@@ -82,6 +83,10 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
         final String deployment = AppClientSubsystemResourceDefinition.DEPLOYMENT.resolveModelAttribute(context, model).asString();
         final File file = new File(AppClientSubsystemResourceDefinition.FILE.resolveModelAttribute(context, model).asString());
+        if (!file.exists()) {
+            context.setRollbackOnly();
+            throw AppClientLogger.ROOT_LOGGER.cannotFindAppClientFile(file.getAbsoluteFile());
+        }
         final String hostUrl = model.hasDefined(HOST_URL) ? AppClientSubsystemResourceDefinition.HOST_URL.resolveModelAttribute(context, model).asString() : null;
         final String connectionPropertiesUrl = model.hasDefined(CONNECTION_PROPERTIES_URL) ? AppClientSubsystemResourceDefinition.CONNECTION_PROPERTIES_URL.resolveModelAttribute(context, model).asString() : null;
         final List<String> parameters = AppClientSubsystemResourceDefinition.PARAMETERS.unwrap(context,model);
