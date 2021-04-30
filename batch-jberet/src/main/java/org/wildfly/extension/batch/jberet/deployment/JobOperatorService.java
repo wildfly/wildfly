@@ -119,6 +119,7 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
         final BatchEnvironment batchEnvironment = this.batchEnvironment = batchEnvironmentInjector.getValue();
         // Get the class loader from the environment
         classLoader = batchEnvironment.getClassLoader();
+        serverActivity.initialize(processStateInjector.getValue().getCurrentState(), suspendControllerInjector.getValue().getState());
         processStateInjector.getValue().addPropertyChangeListener(serverActivity);
         suspendControllerInjector.getValue().registerActivity(serverActivity);
     }
@@ -428,6 +429,11 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
         private final Collection<Long> stoppedIds = Collections.synchronizedCollection(new ArrayList<>());
         private boolean suspended;
         private boolean running;
+
+        private synchronized void initialize(ControlledProcessState.State processState, SuspendController.State suspendState) {
+            running = processState.isRunning();
+            suspended = suspendState != SuspendController.State.RUNNING;
+        }
 
         @Override
         public void preSuspend(final ServerActivityCallback serverActivityCallback) {
