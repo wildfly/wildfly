@@ -46,7 +46,7 @@
     <properties>
         <mp.galleon.common.resources.directory>${basedir}/../../microprofile/galleon-common/src/main/resources</mp.galleon.common.resources.directory>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
-        <feature-pack.license.directory>${basedir}/../../microprofile/src/license</feature-pack.license.directory>
+        <feature-pack.license.directory>${basedir}/../../microprofile/galleon-common/src/main/resources/license</feature-pack.license.directory>
         <content.resources.directory>${basedir}/../galleon-content/src/main/resources</content.resources.directory>
     </properties>
 
