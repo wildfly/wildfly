@@ -170,9 +170,6 @@
                             <resources>
                                 <resource>
                                     <directory>${servlet.common.resources.directory}</directory>
-                                    <excludes>
-                                        <exclude>**/org/jboss/as/security/main/module.xml</exclude>
-                                    </excludes>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<licenseSummary>
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-security</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+  </dependencies>
+</licenseSummary>

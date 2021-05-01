@@ -1494,6 +1494,13 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-servlet-feature-pack-pruned</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-servlet-galleon-pack</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
