@@ -42,6 +42,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
@@ -66,10 +67,15 @@ import org.junit.Test;
  * This test verifies it is possible to get the list of previous release extensions using the host-excludes definition
  * included in the current domain.xml.
  * <p>
- *
  * The test fails if it finds a missing extension in the excluded-extensions section, there is a host-exclude name
  * in domain.xml undefined in this test or we are excluding more extensions than the necessary.
  * <p>
+ * It also maintains the configuration of the current release, see ExtensionConf.CURRENT. When an extension is added or
+ * removed on the current release, that extension must be tracked down on the ExtensionConf.CURRENT object. Once the
+ * current release moves to the next mayor, if the ExtensionConf.CURRENT has extensions added or removed during the
+ * current development cycle, the test will fail, forcing us to create new ExtensionConf objects for each previous
+ * releases not defined in the test and point out ExtensionConf.CURRENT to the new current release without any
+ * additional / removed extensions.
  *
  * @author Yeray Borges
  */
@@ -78,19 +84,10 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private static DomainLifecycleUtil masterUtils;
     private static DomainClient masterClient;
     private static WildFlyManagedConfiguration masterConfig;
-    private boolean isEeGalleonPack = "ee-".equals(System.getProperty("testsuite.default.build.project.prefix"));
+    private static final  BiFunction<Set<String>, Set<String>, Set<String>> diff = (a, b) -> a.stream().filter(e -> !b.contains(e)).collect(Collectors.toSet());
+    private final boolean isEeGalleonPack = "ee-".equals(System.getProperty("testsuite.default.build.project.prefix"));
 
-
-    // List of extensions added by the wildfly-galleon-pack.
-    private List<String> xpExtensions = Arrays.asList(
-            "org.wildfly.extension.microprofile.config-smallrye",
-            "org.wildfly.extension.microprofile.health-smallrye",
-            "org.wildfly.extension.microprofile.metrics-smallrye",
-            "org.wildfly.extension.microprofile.opentracing-smallrye",
-            "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
-            "org.wildfly.extension.microprofile.jwt-smallrye",
-            "org.wildfly.extension.microprofile.openapi-smallrye"
-    );
+    private static final String MAJOR = "24.";
 
     /**
      * Maintains the list of expected extensions for each host-exclude name for previous releases.
@@ -185,80 +182,31 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.health",
                 "org.wildfly.extension.metrics"
         )),
-        EAP62("EAP62", Arrays.asList(
-                "org.jboss.as.appclient",
-                "org.jboss.as.clustering.infinispan",
-                "org.jboss.as.clustering.jgroups",
-                "org.jboss.as.cmp",
-                "org.jboss.as.configadmin",
-                "org.jboss.as.connector",
-                "org.jboss.as.deployment-scanner",
-                "org.jboss.as.ee",
-                "org.jboss.as.ejb3",
-                "org.jboss.as.jacorb",
-                "org.jboss.as.jaxr",
-                "org.jboss.as.jaxrs",
-                "org.jboss.as.jdr",
-                "org.jboss.as.jmx",
-                "org.jboss.as.jpa",
-                "org.jboss.as.jsf",
-                "org.jboss.as.jsr77",
-                "org.jboss.as.logging",
-                "org.jboss.as.mail",
-                "org.jboss.as.messaging",
-                "org.jboss.as.modcluster",
-                "org.jboss.as.naming",
-                "org.jboss.as.pojo",
-                "org.jboss.as.remoting",
-                "org.jboss.as.sar",
-                "org.jboss.as.security",
-                "org.jboss.as.threads",
-                "org.jboss.as.transactions",
-                "org.jboss.as.web",
-                "org.jboss.as.webservices",
-                "org.jboss.as.weld",
-                "org.jboss.as.xts",
-                // This module was added in EAP70, but we move it to the EAP62 extension list to allow the test passing
-                // without adding it to the host-exclude section. We don't want to expose it in the host-exclude.
-                "org.wildfly.extension.mod_cluster"
+        WILDFLY_23_0("WildFly23.0", WILDFLY_22_0, Arrays.asList(
+                "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
+                "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"
         )),
-        EAP63("EAP63", EAP62, Arrays.asList(
-                "org.wildfly.extension.picketlink"
-        )),
-        EAP64("EAP64", EAP63),
-        EAP64z("EAP64z", EAP64),
-        EAP70("EAP70", EAP64z, Arrays.asList(
-                "org.wildfly.extension.batch.jberet",
-                "org.wildfly.extension.bean-validation",
-                "org.wildfly.extension.clustering.singleton",
-                "org.wildfly.extension.io",
-                "org.wildfly.extension.messaging-activemq",
-                "org.wildfly.extension.request-controller",
-                "org.wildfly.extension.rts",
-                "org.wildfly.extension.security.manager",
-                "org.wildfly.extension.undertow",
-                "org.wildfly.iiop-openjdk"
-        )),
-        EAP71("EAP71", EAP70, Arrays.asList(
-                "org.wildfly.extension.core-management",
-                "org.wildfly.extension.discovery",
-                "org.wildfly.extension.elytron"
-        )),
-        EAP72("EAP72", EAP71, Arrays.asList(
-                "org.wildfly.extension.datasources-agroal",
-                "org.wildfly.extension.microprofile.opentracing-smallrye",
-                "org.wildfly.extension.microprofile.health-smallrye",
-                "org.wildfly.extension.microprofile.config-smallrye",
-                "org.wildfly.extension.ee-security"
-        )),
-        EAP73("EAP73", EAP72, Arrays.asList(
-                "org.wildfly.extension.microprofile.metrics-smallrye",
-                "org.wildfly.extension.clustering.web"
-        ));
+        // If an extension is added to this enum, also check if it is supplied by wildfly-galleon-pack. If so, add it also
+        // to the internal mpExtensions Set defined on this class.
+        CURRENT(MAJOR, WILDFLY_23_0);
 
         private final String name;
         private final Set<String> extensions = new HashSet<>();
         private static final Map<String, ExtensionConf> MAP;
+        private final boolean modified;
+
+        // List of extensions added by the wildfly-galleon-pack.
+        private Set<String> mpExtensions = new HashSet<>(Arrays.asList(
+                "org.wildfly.extension.microprofile.config-smallrye",
+                "org.wildfly.extension.microprofile.health-smallrye",
+                "org.wildfly.extension.microprofile.metrics-smallrye",
+                "org.wildfly.extension.microprofile.opentracing-smallrye",
+                "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
+                "org.wildfly.extension.microprofile.jwt-smallrye",
+                "org.wildfly.extension.microprofile.openapi-smallrye",
+                "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
+                "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"
+        ));
 
         ExtensionConf(String name, List<String> addedExtensions) {
             this(name, null, addedExtensions, null);
@@ -282,6 +230,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
          */
         ExtensionConf(String name, ExtensionConf parent, List<String> addedExtensions, List<String> removedExtensions) {
             this.name = name;
+            this.modified = (addedExtensions != null && !addedExtensions.isEmpty()) || (removedExtensions != null && !removedExtensions.isEmpty());
             if (addedExtensions != null) {
                 this.extensions.addAll(addedExtensions);
             }
@@ -306,12 +255,19 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
             return MAP.get(name);
         }
 
-        public Set<String> getExtensions() {
+        public Set<String> getExtensions(boolean isEeGalleonPack) {
+            if (isEeGalleonPack) {
+                return diff.apply(extensions, mpExtensions);
+            }
             return extensions;
         }
 
-        public static Set<String> getNames() {
-            return MAP.keySet();
+        public boolean isModified() {
+            return modified;
+        }
+
+        public String getName() {
+            return name;
         }
     }
 
@@ -344,11 +300,33 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
             currentExtensions.add(prop.getName());
         }
 
-        //Check we are able to retrieve all current extensions defined for the server
-        if (!availableExtensions.containsAll(currentExtensions)){
+        //Check we are able to retrieve at minimum all the extensions defined for the current server
+        if (!availableExtensions.containsAll(currentExtensions)) {
             currentExtensions.removeAll(availableExtensions);
-            fail(String.format ("The following extensions defined in domain.xml cannot be retrieved by this test %s . " +
+            fail(String.format("The following extensions defined in domain.xml cannot be retrieved by this test %s . " +
                     "It could lead in a false negative test result, check HostExcludesTestCase.retrieveAvailableExtensions method", currentExtensions));
+        }
+
+        // Check that the list of all available extensions is in the ExtensionConf.CURRENT configuration
+        Set<String> current = ExtensionConf.forName(MAJOR).getExtensions(isEeGalleonPack);
+        if (!current.equals(availableExtensions)) {
+            Set<String> extensionsAdded = diff.apply(current, availableExtensions);
+            Set<String> extensionsRemoved = diff.apply(availableExtensions, current);
+            fail(String.format("The following extensions %s have been removed on the current release. Remove them on ExtensionConf.CURRENT object defined in this test. " +
+                    "The following extensions %s have been added on the current release. Add them to ExtensionConf.CURRENT object defined in this test.", extensionsAdded, extensionsRemoved));
+        }
+
+        // If the ExtensionConf.CURRENT has extensions removed / added and the version it represents no longer
+        // points out to the actual, then we need to create new ExtensionConf(s) for each of the previous releases
+        // not included in this test.
+        if (ExtensionConf.CURRENT.isModified()) {
+            op = Util.getReadAttributeOperation(null, "product-version");
+            result = DomainTestUtils.executeForResult(op, masterClient);
+            if (!result.asString().startsWith(ExtensionConf.CURRENT.getName())) {
+                fail(String.format("The ExtensionConf.CURRENT has extensions added or removed but it no longer points to the current release. " +
+                        "Modify this test adding new ExtensionConf enums for each previous releases undefined in this test by using the list of extensions added or removed on ExtensionConf.CURRENT." +
+                        "Then remove all the extensions from ExtensionConf.CURRENT enum and correct the MAJOR number accordingly to point out to the current release."));
+            }
         }
 
         op = Util.getEmptyOperation(READ_CHILDREN_RESOURCES_OPERATION, null);
@@ -356,6 +334,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
 
         result = DomainTestUtils.executeForResult(op, masterClient);
 
+        Set<String> processedExclusionsIds = new HashSet<>();
         for (Property prop : result.asPropertyList()) {
             String name = prop.getName();
 
@@ -378,16 +357,10 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                     confPrevRelease);
 
             //check that available extensions - excluded extensions = expected extensions in a previous release.
-            Set<String> expectedExtensions = ExtensionConf.forName(name).getExtensions();
+            Set<String> expectedExtensions = ExtensionConf.forName(name).getExtensions(isEeGalleonPack);
 
             Set<String> extensionsUnderTest = new HashSet<>(availableExtensions);
             extensionsUnderTest.removeAll(excludedExtensions);
-
-            // If we are testing a server built from wildfly-ee-galleon-pack, we need to remove from the expected
-            // list of extensions all the extensions that are added by the wildfly-galleon-pack
-            if (isEeGalleonPack) {
-                expectedExtensions.removeAll(xpExtensions);
-            }
 
             if (expectedExtensions.size() > extensionsUnderTest.size()) {
                 expectedExtensions.removeAll(extensionsUnderTest);
@@ -397,6 +370,17 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
             if ( extensionsUnderTest.size() != expectedExtensions.size() ){
                 extensionsUnderTest.removeAll(expectedExtensions);
                 fail(String.format("These extensions are missing on the %s host-exclude: %s", name, extensionsUnderTest));
+            }
+
+            processedExclusionsIds.add(name);
+        }
+
+        // Verifies all the exclusions Id added as configurations for this test are defined as host exclusions in the current server release
+        for(ExtensionConf extensionConf : ExtensionConf.values()) {
+            if (extensionConf != ExtensionConf.CURRENT && !processedExclusionsIds.contains(extensionConf.getName())) {
+                if (!extensionConf.getExtensions(isEeGalleonPack).equals(availableExtensions)) {
+                    fail(String.format("The %s exclusion id is not defined as host exclusion for the current release.", extensionConf.getName()));
+                }
             }
         }
     }
@@ -414,7 +398,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         Iterator<String> moduleNames = ml.iterateModules((String) null, true);
         while (moduleNames.hasNext()) {
             String moduleName = moduleNames.next();
-            Module module = null;
+            Module module;
             try {
                 module = ml.loadModule(moduleName);
                 List<Resource> resources = module.getClassLoader().loadResourceLocal("META-INF/services/org.jboss.as.controller.Extension");
