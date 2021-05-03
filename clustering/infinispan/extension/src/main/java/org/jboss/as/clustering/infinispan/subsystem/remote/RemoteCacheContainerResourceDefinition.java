@@ -118,7 +118,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                     public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
                         super.validateParameter(parameterName, value);
                         if (!value.isDefined() || value.equals(MARSHALLER.getDefinition().getDefaultValue())) {
-                            InfinispanLogger.ROOT_LOGGER.enumValueDeprecated(parameterName, HotRodMarshallerFactory.LEGACY, EnumSet.complementOf(EnumSet.of(HotRodMarshallerFactory.LEGACY)));
+                            InfinispanLogger.ROOT_LOGGER.marshallerEnumValueDeprecated(parameterName, HotRodMarshallerFactory.LEGACY, EnumSet.complementOf(EnumSet.of(HotRodMarshallerFactory.LEGACY)));
                         }
                     }
                 });

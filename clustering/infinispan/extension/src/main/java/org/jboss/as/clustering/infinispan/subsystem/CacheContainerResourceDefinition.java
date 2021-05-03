@@ -158,7 +158,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                             public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
                                 super.validateParameter(parameterName, value);
                                 if (!value.isDefined() || value.equals(MARSHALLER.getDefinition().getDefaultValue())) {
-                                    InfinispanLogger.ROOT_LOGGER.enumValueDeprecated(parameterName, InfinispanMarshallerFactory.LEGACY, EnumSet.complementOf(EnumSet.of(InfinispanMarshallerFactory.LEGACY)));
+                                    InfinispanLogger.ROOT_LOGGER.marshallerEnumValueDeprecated(parameterName, InfinispanMarshallerFactory.LEGACY, EnumSet.complementOf(EnumSet.of(InfinispanMarshallerFactory.LEGACY)));
                                 }
                             }
                         })

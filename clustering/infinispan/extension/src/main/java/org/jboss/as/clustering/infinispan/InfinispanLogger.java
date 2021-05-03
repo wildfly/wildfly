@@ -145,6 +145,6 @@ public interface InfinispanLogger extends BasicLogger {
     void remoteCacheCreated(String remoteCacheName, String cacheConfiguration);
 
     @LogMessage(level = WARN)
-    @Message(id = 33, value = "Attribute '%s' configured to use deprecated value: %s; use one of the following values instead: %s")
-    void enumValueDeprecated(String attributeName, Object attributeValue, Set<?> supportedValues);
+    @Message(id = 33, value = "Attribute '%s' is configured to use a deprecated value: %s; use one of the following values instead: %s")
+    void marshallerEnumValueDeprecated(String attributeName, Object attributeValue, Set<?> supportedValues);
 }
