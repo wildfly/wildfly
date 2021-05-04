@@ -42,11 +42,22 @@
         <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
     </properties>
 
-    <modules>
-        <module>build</module>
-        <module>deployment-transformer</module>
-        <module>dist</module>
-        <module>feature-pack</module>
-    </modules>
+    <profiles>
+        <profile>
+            <id>skip.preview</id>
+            <activation>
+                <property>
+                    <name>!skip.preview</name>
+                </property>
+            </activation>
+
+            <modules>
+                <module>build</module>
+                <module>deployment-transformer</module>
+                <module>dist</module>
+                <module>feature-pack</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>
