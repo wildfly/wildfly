@@ -10483,5 +10483,43 @@
                 <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
             </properties>
         </profile>
+
+        <!-- Disable standard compilation execution.
+             Intended use is when a build has been performed with one JDK
+             and then test executions are wanted with another JDK, and that
+             'test' goal shouldn't be allowed to determine that things need
+             recompilation. Just using the 'surefire:test' goal would have
+             the same effect but seems to result in profile settings being
+             ignored. -->
+        <profile>
+            <id>noCompile</id>
+            <activation>
+                <property>
+                    <name>noCompile</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-compile</id>
+                                <configuration>
+                                    <skipMain>true</skipMain>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>default-testCompile</id>
+                                <configuration>
+                                    <skip>true</skip>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
