@@ -41,6 +41,6 @@ public class LangSerializationContextInitializer extends AbstractSerializationCo
     public void registerMarshallers(SerializationContext context) {
         context.registerMarshaller(new ClassMarshaller(this.loaderMarshaller));
         context.registerMarshaller(StackTraceElementMarshaller.INSTANCE);
-        context.registerMarshallerProvider(new MarshallerProvider(Throwable.class::isAssignableFrom, new ExceptionMarshaller<>(Throwable.class)));
+        context.registerMarshaller(new ExceptionMarshaller<>(Throwable.class));
     }
 }

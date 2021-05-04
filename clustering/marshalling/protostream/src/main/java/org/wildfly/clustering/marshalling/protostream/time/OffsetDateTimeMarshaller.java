@@ -28,7 +28,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -53,10 +53,9 @@ public class OffsetDateTimeMarshaller implements ProtoStreamMarshaller<OffsetDat
         LocalDate date = LocalDateMarshaller.INSTANCE.getBuilder();
         LocalTime time = LocalTimeMarshaller.INSTANCE.getBuilder();
         ZoneOffset offset = ZoneOffsetMarshaller.INSTANCE.getBuilder();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if (index >= DATE_INDEX && index < TIME_INDEX) {
                 date = LocalDateMarshaller.INSTANCE.readField(reader, index - DATE_INDEX, date);
             } else if (index >= TIME_INDEX && index < OFFSET_INDEX) {
@@ -64,7 +63,7 @@ public class OffsetDateTimeMarshaller implements ProtoStreamMarshaller<OffsetDat
             } else if (index >= OFFSET_INDEX && index < OFFSET_INDEX + ZoneOffsetMarshaller.INSTANCE.getFields()) {
                 offset = ZoneOffsetMarshaller.INSTANCE.readField(reader, index - OFFSET_INDEX, offset);
             } else {
-                reading = reader.ignoreField(tag);
+                reader.skipField(tag);
             }
         }
         return OffsetDateTime.of(date, time, offset);

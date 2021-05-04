@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -47,16 +47,15 @@ public enum SessionAttributeMapEntryMarshaller implements ProtoStreamMarshaller<
     public Map.Entry<String, UUID> readFrom(ProtoStreamReader reader) throws IOException {
         String attributeName = null;
         UUIDBuilder attributeIdBuilder = UUIDMarshaller.INSTANCE.getBuilder();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if (index == ATTRIBUTE_NAME_INDEX) {
                 attributeName = reader.readString();
             } else if (index >= ATTRIBUTE_ID_INDEX && index < ATTRIBUTE_ID_INDEX + UUIDMarshaller.INSTANCE.getFields()) {
                 attributeIdBuilder = UUIDMarshaller.INSTANCE.readField(reader, index - ATTRIBUTE_ID_INDEX, attributeIdBuilder);
             } else {
-                reading = reader.ignoreField(tag);
+                reader.skipField(tag);
             }
         }
         return new SessionAttributeMapEntry(attributeName, attributeIdBuilder.build());

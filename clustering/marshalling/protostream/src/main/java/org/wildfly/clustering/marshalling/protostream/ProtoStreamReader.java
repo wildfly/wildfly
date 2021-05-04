@@ -24,28 +24,65 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
+import org.infinispan.protostream.TagReader;
 
 /**
- * A {@link RawProtoStreamReader} with the additional ability to read an arbitrary embedded object.
+ * A {@link TagReader} with the additional ability to read an arbitrary embedded object.
  * @author Paul Ferraro
  */
-public interface ProtoStreamReader extends RawProtoStreamReader {
-
-    ImmutableSerializationContext getSerializationContext();
-
-    <T> T readObject(Class<T> targetClass) throws IOException;
-
-    <E extends Enum<E>> E readEnum(Class<E> enumClass) throws IOException;
+public interface ProtoStreamReader extends ProtoStreamOperation, TagReader {
 
     /**
-     * Ignores the field with the specified tag.
-     * @param tag a field tag
-     * @return true, if the caller should continue reading the stream, false otherwise.
-     * @throws IOException if the field could not be skipped.
+     * Reads an object of the specified type from this reader.
+     * @param <T> the type of the associated marshaller
+     * @param targetClass the class of the associated marshaller
+     * @return the unmarshalled object
+     * @throws IOException if no marshaller is associated with the specified class, or if the object could not be read with the associated marshaller.
      */
-    default boolean ignoreField(int tag) throws IOException {
-        return (tag != 0) && this.skipField(tag);
+    <T> T readObject(Class<T> targetClass) throws IOException;
+
+    /**
+     * Reads an num of the specified type from this reader.
+     * @param <T> the type of the associated marshaller
+     * @param targetClass the class of the associated marshaller
+     * @return the unmarshalled enum
+     * @throws IOException if no marshaller is associated with the specified enum class, or if the enum could not be read with the associated marshaller.
+     */
+    default <E extends Enum<E>> E readEnum(Class<E> enumClass) throws IOException {
+        EnumMarshaller<E> marshaller = (EnumMarshaller<E>) this.getSerializationContext().getMarshaller(enumClass);
+        int code = this.readEnum();
+        return marshaller.decode(code);
     }
+
+    /**
+     * Deprecated to discourage use.
+     * @deprecated Use {@link #readUInt32()} or {@link #readSInt32()}
+     */
+    @Deprecated
+    @Override
+    int readInt32() throws IOException;
+
+    /**
+     * Deprecated to discourage use.
+     * @deprecated Use {@link #readSFixed32()} instead.
+     */
+    @Deprecated
+    @Override
+    int readFixed32() throws IOException;
+
+    /**
+     * Deprecated to discourage use.
+     * @deprecated Use {@link #readUInt64()} or {@link #readSInt64()}
+     */
+    @Deprecated
+    @Override
+    long readInt64() throws IOException;
+
+    /**
+     * Deprecated to discourage use.
+     * @deprecated Use {@link #readSFixed64()} instead.
+     */
+    @Deprecated
+    @Override
+    long readFixed64() throws IOException;
 }

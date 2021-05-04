@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.as.network.ClientMapping;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
@@ -53,10 +53,9 @@ public class ClientMappingMarshaller implements ProtoStreamMarshaller<ClientMapp
         int sourceMask = DEFAULT_SOURCE_MASK;
         String destinationAddress = DEFAULT_DESTINATION_ADDRESS;
         int destinationPort = DEFAULT_DESINATION_PORT;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case SOURCE_ADDRESS_INDEX:
                     sourceAddress = reader.readObject(InetAddress.class);
                     break;
@@ -70,7 +69,7 @@ public class ClientMappingMarshaller implements ProtoStreamMarshaller<ClientMapp
                     destinationPort = reader.readUInt32();
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         return new ClientMapping(sourceAddress, sourceMask, destinationAddress, destinationPort);

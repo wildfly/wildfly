@@ -19,9 +19,9 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<subsystem xmlns="urn:jboss:domain:infinispan:12.0">
+<subsystem xmlns="urn:jboss:domain:infinispan:13.0">
     <!-- Don't specify statistics-enabled="false" here so that we test undefined values too -->
-    <cache-container name="minimal" default-cache="local">
+    <cache-container name="minimal" default-cache="local" marshaller="PROTOSTREAM">
         <local-cache name="local"/>
     </cache-container>
     <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" modules="org.infinispan" statistics-enabled="false">
@@ -113,6 +113,7 @@
                             default-remote-cluster="primary-site"
                             key-size-estimate="512"
                             max-retries="2"
+                            marshaller="PROTOSTREAM"
                             modules="org.infinispan org.infinispan.commons"
                             name="my-remote-container"
                             protocol-version="2.5"

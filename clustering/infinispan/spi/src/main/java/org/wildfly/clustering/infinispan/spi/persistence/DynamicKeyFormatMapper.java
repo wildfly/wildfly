@@ -29,10 +29,8 @@ import java.util.ServiceLoader;
 import java.util.UUID;
 import java.util.function.Function;
 
-import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
-
 /**
- * {@link TwoWayKey2StringMapper} implementation that based on a set of dynamically loaded {@link KeyFormat} instances.
+ * {@link org.infinispan.persistence.keymappers.TwoWayKey2StringMapper} implementation that based on a set of dynamically loaded {@link KeyFormat} instances.
  * @author Paul Ferraro
  */
 public class DynamicKeyFormatMapper extends IndexedKeyFormatMapper {

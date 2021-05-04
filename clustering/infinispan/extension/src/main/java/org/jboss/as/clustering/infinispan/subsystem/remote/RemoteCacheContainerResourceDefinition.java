@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.EnumSet;
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.client.hotrod.ProtocolVersion;
@@ -45,15 +46,18 @@ import org.jboss.as.clustering.controller.transform.RejectNonSingletonListAttrib
 import org.jboss.as.clustering.controller.transform.SingletonListAttributeConverter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.description.AttributeConverter;
@@ -65,6 +69,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
+import org.wildfly.clustering.infinispan.client.marshaller.HotRodMarshallerFactory;
 import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
@@ -105,20 +110,38 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 return builder.setAllowExpression(false).setCapabilityReference(new CapabilityReference(Capability.CONFIGURATION, RemoteClusterResourceDefinition.Requirement.REMOTE_CLUSTER, WILDCARD_PATH));
             }
         },
-        KEY_SIZE_ESTIMATE("key-size-estimate", ModelType.INT, new ModelNode(64)),
-        MAX_RETRIES("max-retries", ModelType.INT, new ModelNode(10)),
-        PROPERTIES("properties"),
-        PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_30.toString())) {
+        MARSHALLER("marshaller", ModelType.STRING, new ModelNode(HotRodMarshallerFactory.LEGACY.name())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new EnumValidator<>(ProtocolVersion.class, EnumSet.complementOf(EnumSet.of(ProtocolVersion.PROTOCOL_VERSION_AUTO))));
+                return builder.setValidator(new EnumValidator<HotRodMarshallerFactory>(HotRodMarshallerFactory.class) {
+                    @Override
+                    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+                        super.validateParameter(parameterName, value);
+                        if (!value.isDefined() || value.equals(MARSHALLER.getDefinition().getDefaultValue())) {
+                            InfinispanLogger.ROOT_LOGGER.marshallerEnumValueDeprecated(parameterName, HotRodMarshallerFactory.LEGACY, EnumSet.complementOf(EnumSet.of(HotRodMarshallerFactory.LEGACY)));
+                        }
+                    }
+                });
+            }
+        },
+        MAX_RETRIES("max-retries", ModelType.INT, new ModelNode(10)),
+        PROPERTIES("properties"),
+        PROTOCOL_VERSION("protocol-version", ModelType.STRING, new ModelNode(ProtocolVersion.PROTOCOL_VERSION_31.toString())) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setValidator(new org.jboss.as.controller.operations.validation.EnumValidator<>(ProtocolVersion.class, EnumSet.complementOf(EnumSet.of(ProtocolVersion.PROTOCOL_VERSION_AUTO))));
             }
         },
         SOCKET_TIMEOUT("socket-timeout", ModelType.INT, new ModelNode(60000)),
         STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN, ModelNode.FALSE),
         TCP_NO_DELAY("tcp-no-delay", ModelType.BOOLEAN, ModelNode.TRUE),
         TCP_KEEP_ALIVE("tcp-keep-alive", ModelType.BOOLEAN, ModelNode.FALSE),
-        VALUE_SIZE_ESTIMATE("value-size-estimate", ModelType.INT, new ModelNode(512)),
+        TRANSACTION_TIMEOUT("transaction-timeout", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(1))) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
+            }
+        },
         ;
 
         private final AttributeDefinition definition;
@@ -180,12 +203,24 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
     }
 
     public enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+        KEY_SIZE_ESTIMATE("key-size-estimate", ModelType.INT, InfinispanModel.VERSION_15_0_0) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(64));
+            }
+        },
         MODULE("module", ModelType.STRING, InfinispanModel.VERSION_14_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setFlags(AttributeAccess.Flag.ALIAS);
             }
         },
+        VALUE_SIZE_ESTIMATE("value-size-estimate", ModelType.INT, InfinispanModel.VERSION_15_0_0) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(512));
+            }
+        }
         ;
         private final AttributeDefinition definition;
 
@@ -216,6 +251,14 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         } else {
             ResourceTransformationDescriptionBuilder builder = parent.addChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
 
+            if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
+                builder.getAttributeBuilder()
+                        .setDiscard(DiscardAttributeChecker.ALWAYS, Attribute.TRANSACTION_TIMEOUT.getDefinition())
+                        .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.MARSHALLER.getDefinition())
+                        .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.MARSHALLER.getDefinition().getDefaultValue()), Attribute.MARSHALLER.getDefinition())
+                        .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getName())
+                        .end();
+            }
             if (InfinispanModel.VERSION_14_0_0.requiresTransformation(version)) {
                 builder.getAttributeBuilder()
                         .setValueConverter(new SingletonListAttributeConverter(ListAttribute.MODULES), DeprecatedAttribute.MODULE.getDefinition())
@@ -228,9 +271,6 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                         .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.PROPERTIES.getDefinition())
                         .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.PROPERTIES.getDefinition())
                         .end();
-            }
-            if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getName());
             }
             if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
                 builder.getAttributeBuilder()

@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.infinispan.client.near;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import org.infinispan.client.hotrod.MetadataValue;
@@ -71,5 +72,10 @@ public class CaffeineNearCache<K, V> implements NearCache<K, V> {
     @Override
     public int size() {
         return this.map.size();
+    }
+
+    @Override
+    public Iterator<Map.Entry<K, MetadataValue<V>>> iterator() {
+        return this.map.entrySet().iterator();
     }
 }

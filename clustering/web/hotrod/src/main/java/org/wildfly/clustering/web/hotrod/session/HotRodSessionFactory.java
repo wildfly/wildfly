@@ -98,7 +98,7 @@ public class HotRodSessionFactory<C, V, L> extends CompositeSessionFactory<C, V,
         this.creationMetaDataCache.removeClientListener(this);
         WildFlySecurityManager.doUnchecked(this.executor, DefaultExecutorService.SHUTDOWN_ACTION);
         try {
-            this.executor.awaitTermination(this.creationMetaDataCache.getRemoteCacheManager().getConfiguration().transaction().timeout(), TimeUnit.MILLISECONDS);
+            this.executor.awaitTermination(this.creationMetaDataCache.getRemoteCacheManager().getConfiguration().transactionTimeout(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

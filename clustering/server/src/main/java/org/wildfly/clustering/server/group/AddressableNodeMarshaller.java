@@ -25,7 +25,7 @@ package org.wildfly.clustering.server.group;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.jgroups.Address;
 import org.jgroups.stack.IpAddress;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -46,10 +46,9 @@ public class AddressableNodeMarshaller implements ProtoStreamMarshaller<Addressa
         Address address = null;
         String name = null;
         InetSocketAddress socketAddress = null;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if (index >= ADDRESS_INDEX && index < NAME_INDEX) {
                 address = AddressMarshaller.INSTANCE.readField(reader, index - ADDRESS_INDEX, address);
             } else if (index == NAME_INDEX) {
@@ -58,7 +57,7 @@ public class AddressableNodeMarshaller implements ProtoStreamMarshaller<Addressa
                 IpAddress ipAddress = reader.readObject(IpAddress.class);
                 socketAddress = new InetSocketAddress(ipAddress.getIpAddress(), ipAddress.getPort());
             } else {
-                reading = reader.ignoreField(tag);
+                reader.skipField(tag);
             }
         }
         return (address instanceof IpAddress) ? new AddressableNode((IpAddress) address, name) : new AddressableNode(address, name, socketAddress);

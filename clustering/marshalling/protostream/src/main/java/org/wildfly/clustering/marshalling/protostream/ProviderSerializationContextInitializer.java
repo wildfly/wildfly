@@ -22,12 +22,7 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import static org.wildfly.clustering.marshalling.protostream.MarshallerProvider.ClassPredicate.ABSTRACT;
-
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
 
 import org.infinispan.protostream.SerializationContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -39,45 +34,17 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class ProviderSerializationContextInitializer<E extends Enum<E> & ProtoStreamMarshallerProvider> extends AbstractSerializationContextInitializer {
 
-    private final EnumSet<E> concreteSuperClassProviders;
+    private final Class<E> providerClass;
 
     public ProviderSerializationContextInitializer(String resourceName, Class<E> providerClass) {
-        this(resourceName, EnumSet.noneOf(providerClass), WildFlySecurityManager.getClassLoaderPrivileged(providerClass));
-    }
-
-    public ProviderSerializationContextInitializer(String resourceName, EnumSet<E> concreteSuperClassProviders) {
-        this(resourceName, concreteSuperClassProviders, WildFlySecurityManager.getClassLoaderPrivileged(findEnumClass(concreteSuperClassProviders)));
-    }
-
-    private static <E extends Enum<E>> Class<E> findEnumClass(EnumSet<E> set) {
-        return (set.isEmpty() ? EnumSet.complementOf(set) : set).iterator().next().getDeclaringClass();
-    }
-
-    private ProviderSerializationContextInitializer(String resourceName, EnumSet<E> concreteSuperClassProviders, ClassLoader loader) {
-        super(resourceName, loader);
-        this.concreteSuperClassProviders = concreteSuperClassProviders;
+        super(resourceName, WildFlySecurityManager.getClassLoaderPrivileged(providerClass));
+        this.providerClass = providerClass;
     }
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        Set<E> providers = EnumSet.complementOf(this.concreteSuperClassProviders);
-        List<ProtoStreamMarshaller<?>> abstractMarshallers = new ArrayList<>(providers.size());
-        for (E provider : providers) {
-            ProtoStreamMarshaller<?> marshaller = provider.getMarshaller();
-            // If marshaller type is abstract, register via a MarshallerProvider instead
-            if (ABSTRACT.test(marshaller.getJavaClass())) {
-                abstractMarshallers.add(marshaller);
-            } else {
-                context.registerMarshaller(marshaller);
-            }
-        }
-        if (!abstractMarshallers.isEmpty()) {
-            context.registerMarshallerProvider(new MarshallerProvider(ABSTRACT, abstractMarshallers));
-        }
-        // If marshaller represents a non-abstract superclass, register as a marshaller provider
-        for (E provider : this.concreteSuperClassProviders) {
-            ProtoStreamMarshaller<?> marshaller = provider.getMarshaller();
-            context.registerMarshallerProvider(new MarshallerProvider(marshaller.getJavaClass()::isAssignableFrom, marshaller));
+        for (E provider : EnumSet.allOf(this.providerClass)) {
+            context.registerMarshaller(provider.getMarshaller());
         }
     }
 }

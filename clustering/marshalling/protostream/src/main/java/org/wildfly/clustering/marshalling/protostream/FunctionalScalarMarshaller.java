@@ -24,17 +24,13 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.OptionalInt;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.common.function.ExceptionFunction;
 import org.wildfly.common.function.ExceptionPredicate;
 import org.wildfly.common.function.Functions;
-
-import protostream.com.google.protobuf.CodedOutputStream;
 
 /**
  * Marshaller that reads/writes a single field by applying functions to a {@link ScalarMarshaller}.
@@ -153,15 +149,14 @@ public class FunctionalScalarMarshaller<T, V> implements ProtoStreamMarshaller<T
     @Override
     public T readFrom(ProtoStreamReader reader) throws IOException {
         T value = this.defaultFactory.get();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case VALUE_INDEX:
                     value = this.factory.apply(this.marshaller.readFrom(reader));
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         return value;
@@ -172,24 +167,6 @@ public class FunctionalScalarMarshaller<T, V> implements ProtoStreamMarshaller<T
         if (!this.skipWrite.test(value)) {
             writer.writeTag(VALUE_INDEX, this.marshaller.getWireType());
             this.marshaller.writeTo(writer, this.function.apply(value));
-        }
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, T value) {
-        try {
-            int size = 0;
-            if (!this.skipWrite.test(value)) {
-                OptionalInt valueSize = this.marshaller.size(context, this.function.apply(value));
-                if (valueSize.isPresent()) {
-                    size += CodedOutputStream.computeTagSize(VALUE_INDEX) + valueSize.getAsInt();
-                } else {
-                    return valueSize;
-                }
-            }
-            return OptionalInt.of(size);
-        } catch (IOException e) {
-            return OptionalInt.empty();
         }
     }
 

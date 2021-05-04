@@ -25,7 +25,7 @@ package org.wildfly.clustering.marshalling.protostream.time;
 import java.io.IOException;
 import java.time.Period;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -49,10 +49,9 @@ public class PeriodMarshaller implements ProtoStreamMarshaller<Period> {
     @Override
     public Period readFrom(ProtoStreamReader reader) throws IOException {
         Period period = Period.ZERO;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case YEARS_INDEX:
                     period = period.withYears(reader.readSInt32());
                     break;
@@ -63,7 +62,7 @@ public class PeriodMarshaller implements ProtoStreamMarshaller<Period> {
                     period = period.withDays(reader.readSInt32());
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         return period;

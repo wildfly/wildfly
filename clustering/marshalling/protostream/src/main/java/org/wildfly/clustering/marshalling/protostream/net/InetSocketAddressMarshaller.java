@@ -25,7 +25,7 @@ package org.wildfly.clustering.marshalling.protostream.net;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -45,10 +45,9 @@ public class InetSocketAddressMarshaller implements ProtoStreamMarshaller<InetSo
     @Override
     public InetSocketAddress readFrom(ProtoStreamReader reader) throws IOException {
         InetSocketAddress result = DEFAULT;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if (index >= RESOLVED_ADDRESS_INDEX && index < UNRESOLVED_HOST_INDEX) {
                 result = new InetSocketAddress(InetAddressMarshaller.INSTANCE.readField(reader, index - RESOLVED_ADDRESS_INDEX, result.getAddress()), result.getPort());
             } else if (index >= UNRESOLVED_HOST_INDEX && index < PORT_INDEX) {
@@ -57,7 +56,7 @@ public class InetSocketAddressMarshaller implements ProtoStreamMarshaller<InetSo
                 int port = reader.readUInt32();
                 result = result.isUnresolved() ? InetSocketAddress.createUnresolved(result.getHostName(), port) : new InetSocketAddress(result.getAddress(), port);
             } else {
-                reading = reader.ignoreField(tag);
+                reader.skipField(tag);
             }
         }
         return result;

@@ -31,7 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -48,7 +48,7 @@ public enum AnyField implements Field<Object> {
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Integer value) throws IOException {
-            writer.writeUInt32NoTag(value.intValue());
+            writer.writeVarint32(value.intValue());
         }
 
         @Override
@@ -57,8 +57,8 @@ public enum AnyField implements Field<Object> {
         }
 
         @Override
-        public int getWireType() {
-            return WireFormat.WIRETYPE_VARINT;
+        public WireType getWireType() {
+            return WireType.VARINT;
         }
     }),
     BOOLEAN(Scalar.BOOLEAN),
@@ -84,15 +84,14 @@ public enum AnyField implements Field<Object> {
         public boolean[] readFrom(ProtoStreamReader reader) throws IOException {
             byte[] bytes = Scalar.BYTE_ARRAY.cast(byte[].class).readFrom(reader);
             int length = bytes.length;
-            boolean reading = true;
-            while (reading) {
+            while (!reader.isAtEnd()) {
                 int tag = reader.readTag();
-                int index = WireFormat.getTagFieldNumber(tag);
+                int index = WireType.getTagFieldNumber(tag);
                 if (index == INTEGER.getIndex()) {
                     // Adjust length of boolean[]
                     length = ((bytes.length - 1) * Byte.SIZE) + reader.readUInt32();
                 } else {
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
                 }
             }
             BitSet set = BitSet.valueOf(bytes);
@@ -126,7 +125,7 @@ public enum AnyField implements Field<Object> {
         }
 
         @Override
-        public int getWireType() {
+        public WireType getWireType() {
             return Scalar.BYTE_ARRAY.getWireType();
         }
     }),
@@ -143,14 +142,13 @@ public enum AnyField implements Field<Object> {
         public Object readFrom(ProtoStreamReader reader) throws IOException {
             InvocationHandler handler = (InvocationHandler) Scalar.ANY.readFrom(reader);
             List<Class<?>> interfaces = new LinkedList<>();
-            boolean reading = true;
-            while (reading) {
+            while (!reader.isAtEnd()) {
                 int tag = reader.readTag();
-                int index = WireFormat.getTagFieldNumber(tag);
+                int index = WireType.getTagFieldNumber(tag);
                 if (index == ANY.getIndex()) {
                     interfaces.add(ScalarClass.ANY.readFrom(reader));
                 } else {
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
                 }
             }
             return Proxy.newProxyInstance(WildFlySecurityManager.getClassLoaderPrivileged(handler.getClass()), interfaces.toArray(new Class<?>[0]), handler);
@@ -172,8 +170,8 @@ public enum AnyField implements Field<Object> {
         }
 
         @Override
-        public int getWireType() {
-            return WireFormat.WIRETYPE_LENGTH_DELIMITED;
+        public WireType getWireType() {
+            return WireType.LENGTH_DELIMITED;
         }
     }),
     ;

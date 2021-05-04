@@ -28,7 +28,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * Generic marshaller for a Throwable.
@@ -61,10 +61,9 @@ public class ExceptionMarshaller<E extends Throwable> implements ProtoStreamMars
         Throwable cause = null;
         List<StackTraceElement> stackTrace = new LinkedList<>();
         List<Throwable> suppressed = new LinkedList<>();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case CLASS_INDEX:
                     exceptionClass = reader.readObject(Class.class);
                     break;
@@ -81,7 +80,7 @@ public class ExceptionMarshaller<E extends Throwable> implements ProtoStreamMars
                     suppressed.add((Throwable) reader.readObject(Any.class).get());
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         E exception = this.createException(exceptionClass, message, cause);

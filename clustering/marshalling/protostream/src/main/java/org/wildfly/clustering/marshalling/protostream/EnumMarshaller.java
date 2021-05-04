@@ -24,7 +24,7 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * ProtoStream marshaller for enums.
@@ -63,15 +63,14 @@ public class EnumMarshaller<E extends Enum<E>> implements org.infinispan.protost
     @Override
     public E readFrom(ProtoStreamReader reader) throws IOException {
         E result = this.values[DEFAULT_ORDINAL];
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case ORDINAL_INDEX:
                     result = reader.readEnum(this.enumClass);
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         return result;

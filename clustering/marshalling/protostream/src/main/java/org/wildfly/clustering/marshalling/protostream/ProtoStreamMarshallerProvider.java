@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
 
 /**
  * Provides a {@link ProtoStreamMarshaller}.
@@ -47,13 +45,13 @@ public interface ProtoStreamMarshallerProvider extends ProtoStreamMarshaller<Obj
     }
 
     @Override
-    default Object readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        return this.getMarshaller().readFrom(context, reader);
+    default Object read(ReadContext context) throws IOException {
+        return this.getMarshaller().read(context);
     }
 
     @Override
-    default void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, Object object) throws IOException {
-        this.cast(Object.class).writeTo(context, writer, object);
+    default void write(WriteContext context, Object value) throws IOException {
+        this.cast(Object.class).write(context, value);
     }
 
     @Override

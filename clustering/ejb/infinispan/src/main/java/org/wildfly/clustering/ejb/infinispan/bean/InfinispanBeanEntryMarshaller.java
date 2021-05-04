@@ -24,7 +24,7 @@ package org.wildfly.clustering.ejb.infinispan.bean;
 import java.io.IOException;
 import java.time.Instant;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.ejb.client.SessionID;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
@@ -44,10 +44,9 @@ public class InfinispanBeanEntryMarshaller implements ProtoStreamMarshaller<Infi
         String beanName = null;
         SessionID groupId = null;
         Instant lastAccessed = null;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case BEAN_NAME_INDEX:
                     beanName = reader.readString();
                     break;
@@ -58,7 +57,7 @@ public class InfinispanBeanEntryMarshaller implements ProtoStreamMarshaller<Infi
                     lastAccessed = reader.readObject(Instant.class);
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         InfinispanBeanEntry<SessionID> entry = new InfinispanBeanEntry<>(beanName, groupId);

@@ -40,6 +40,7 @@
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.component.annotations"/>
         <module name="org.infinispan.protostream"/>
+        <module name="org.infinispan.protostream.types"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.logging"/>
         <!-- WFLY-14283 Allow Infinispan to resolve exceptions containing JBoss Marshalling TraceInformation -->

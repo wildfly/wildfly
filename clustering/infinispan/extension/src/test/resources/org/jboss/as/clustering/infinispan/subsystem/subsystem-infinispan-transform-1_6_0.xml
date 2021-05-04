@@ -19,8 +19,8 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<subsystem xmlns="urn:jboss:domain:infinispan:12.0">
-    <cache-container name="minimal" default-cache="local" statistics-enabled="true">
+<subsystem xmlns="urn:jboss:domain:infinispan:13.0">
+    <cache-container name="minimal" default-cache="local" statistics-enabled="true" marshaller="LEGACY">
         <local-cache name="local" statistics-enabled="true"/>
     </cache-container>
     <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" modules="org.infinispan" statistics-enabled="true">

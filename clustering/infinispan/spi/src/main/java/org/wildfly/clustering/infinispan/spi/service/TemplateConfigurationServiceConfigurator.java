@@ -26,7 +26,6 @@ import java.util.function.Consumer;
 import org.infinispan.configuration.cache.Configuration;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -36,7 +35,7 @@ import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
 
 /**
- * Configures a {@link Service} providing a cache configuration based on a configuration template.
+ * Configures a {@link org.jboss.msc.Service} providing a cache configuration based on a configuration template.
  * @author Paul Ferraro
  */
 public class TemplateConfigurationServiceConfigurator implements CapabilityServiceConfigurator, Consumer<org.infinispan.configuration.cache.ConfigurationBuilder> {

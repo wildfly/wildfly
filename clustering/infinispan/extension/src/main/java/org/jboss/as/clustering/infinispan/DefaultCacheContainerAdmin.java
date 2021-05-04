@@ -44,18 +44,34 @@ public class DefaultCacheContainerAdmin implements EmbeddedCacheManagerAdmin {
     }
 
     @Override
+    public void createTemplate(String name, Configuration configuration) {
+        this.manager.defineConfiguration(name, configuration);
+    }
+
+    @Override
+    public Configuration getOrCreateTemplate(String name, Configuration configuration) {
+        Configuration existing = this.manager.getCacheConfiguration(name);
+        return (existing != null) ? existing : this.manager.defineConfiguration(name, configuration);
+    }
+
+    @Override
+    public void removeTemplate(String name) {
+        this.manager.undefineConfiguration(name);
+    }
+
+    @Override
     public <K, V> Cache<K, V> createCache(String name, String template) {
-        return this.createCache(name, this.manager.getCacheConfiguration(name));
+        return this.createCache(name, this.manager.getCacheConfiguration(template));
     }
 
     @Override
     public <K, V> Cache<K, V> getOrCreateCache(String name, String template) {
-        return this.getOrCreateCache(name, this.manager.getCacheConfiguration(name));
+        return this.getOrCreateCache(name, this.manager.getCacheConfiguration(template));
     }
 
     @Override
     public synchronized <K, V> Cache<K, V> createCache(String name, Configuration configuration) {
-        this.manager.defineConfiguration(name, configuration);
+        this.createTemplate(name, configuration);
         return this.manager.getCache(name);
     }
 

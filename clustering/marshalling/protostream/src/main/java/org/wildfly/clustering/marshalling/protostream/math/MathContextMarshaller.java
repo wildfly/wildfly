@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -47,10 +47,9 @@ public class MathContextMarshaller implements ProtoStreamMarshaller<MathContext>
     public MathContext readFrom(ProtoStreamReader reader) throws IOException {
         int precision = DEFAULT_PRECISION;
         RoundingMode mode = DEFAULT_ROUNDING_MODE;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case PRECISION_INDEX:
                     precision = reader.readUInt32();
                     break;
@@ -58,7 +57,7 @@ public class MathContextMarshaller implements ProtoStreamMarshaller<MathContext>
                     mode = reader.readEnum(RoundingMode.class);
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         return new MathContext(precision, mode);

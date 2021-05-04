@@ -22,10 +22,12 @@
 
 package org.wildfly.clustering.infinispan.client.near;
 
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.configuration.NearCacheConfiguration;
+import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.near.NearCache;
 import org.infinispan.client.hotrod.near.NearCacheService;
@@ -42,12 +44,12 @@ public class CaffeineNearCacheService<K, V> extends NearCacheService<K, V> {
     private final Supplier<Cache<K, MetadataValue<V>>> factory;
 
     public CaffeineNearCacheService(Supplier<Cache<K, MetadataValue<V>>> factory, ClientListenerNotifier listenerNotifier) {
-        super(null, listenerNotifier);
+        super(new NearCacheConfiguration(NearCacheMode.INVALIDATED, 0, false), listenerNotifier);
         this.factory = factory;
     }
 
     @Override
-    protected NearCache<K, V> createNearCache(NearCacheConfiguration config) {
+    protected NearCache<K, V> createNearCache(NearCacheConfiguration config, BiConsumer<K, MetadataValue<V>> removedConsumer) {
         return new CaffeineNearCache<>(this.factory.get());
     }
 }

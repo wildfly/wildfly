@@ -27,7 +27,7 @@ import java.time.Month;
 import java.time.Year;
 import java.time.YearMonth;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -51,16 +51,15 @@ public class YearMonthMarshaller implements ProtoStreamMarshaller<YearMonth> {
     @Override
     public YearMonth readFrom(ProtoStreamReader reader) throws IOException {
         YearMonth result = DEFAULT;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if (index >= YEAR_INDEX && index < MONTH_INDEX) {
                 result = result.withYear(YearMarshaller.INSTANCE.readField(reader, index - YEAR_INDEX, Year.of(result.getYear())).getValue());
             } else if (index == MONTH_INDEX) {
                 result = result.withMonth(MONTHS[reader.readEnum()].getValue());
             } else {
-                reading = reader.ignoreField(tag);
+                reader.skipField(tag);
             }
         }
         return result;

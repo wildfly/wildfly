@@ -22,6 +22,8 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import org.infinispan.protostream.descriptors.WireType;
+
 /**
  * Marshaller for a field.
  * {@link #writeTo(ProtoStreamWriter, Object)} does not write a field tag, but may write additional tagged fields.
@@ -32,8 +34,8 @@ package org.wildfly.clustering.marshalling.protostream;
 public interface FieldMarshaller<T> extends Marshallable<T> {
 
     /**
-     * Returns the wire type of the scalar first value written by this marshaller.
-     * @return the wire type of the scalar first value written by this marshaller.
+     * Returns the wire type of the scalar value written by this marshaller.
+     * @return the wire type of the scalar value written by this marshaller.
      */
-    int getWireType();
+    WireType getWireType();
 }
