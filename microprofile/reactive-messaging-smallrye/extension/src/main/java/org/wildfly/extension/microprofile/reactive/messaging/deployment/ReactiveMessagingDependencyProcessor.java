@@ -59,13 +59,19 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
     static {
         List<DotName> annotations = new ArrayList<>();
         String rmPackage = "org.eclipse.microprofile.reactive.messaging.";
+        annotations.add(DotName.createSimple(rmPackage + "Acknowledgment"));
+        annotations.add(DotName.createSimple(rmPackage + "Channel"));
         annotations.add(DotName.createSimple(rmPackage + "Incoming"));
         annotations.add(DotName.createSimple(rmPackage + "Outgoing"));
+        annotations.add(DotName.createSimple(rmPackage + "OnOverflow"));
         REACTIVE_MESSAGING_ANNOTATIONS = Collections.unmodifiableList(annotations);
 
+        String spiPackage = "org.eclipse.microprofile.reactive.messaging.spi.";
+        annotations.add(DotName.createSimple(spiPackage + "Connector"));
+        annotations.add(DotName.createSimple(spiPackage + "ConnectorAttribute"));
+        annotations.add(DotName.createSimple(spiPackage + "ConnectorAttributes"));
+
         List<DotName> banned = new ArrayList<>();
-        banned.add(DotName.createSimple(rmPackage + "Channel"));
-        banned.add(DotName.createSimple(rmPackage + "OnOverflow"));
         String smallryePackage = "io.smallrye.reactive.messaging.annotations.";
         banned.add(DotName.createSimple(smallryePackage + "Blocking"));
         banned.add(DotName.createSimple(smallryePackage + "Broadcast"));
