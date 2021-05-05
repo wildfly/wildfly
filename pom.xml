@@ -317,30 +317,31 @@
         <version.io.agroal>1.3</version.io.agroal>
         <version.io.jaegertracing>1.5.0</version.io.jaegertracing>
         <version.io.netty>4.1.66.Final</version.io.netty>
-        <version.io.opentelemetry.opentelemetry>0.16.0</version.io.opentelemetry.opentelemetry>
+        <version.io.opentelemetry.opentelemetry>1.3.0</version.io.opentelemetry.opentelemetry>
         <version.io.opentracing>0.33.0</version.io.opentracing>
         <version.io.opentracing.concurrent>0.4.0</version.io.opentracing.concurrent>
         <version.io.opentracing.interceptors>0.1.3</version.io.opentracing.interceptors>
         <version.io.opentracing.jaxrs2>1.0.0</version.io.opentracing.jaxrs2>
         <version.io.opentracing.tracerresolver>0.1.8</version.io.opentracing.tracerresolver>
         <version.io.opentracing.servlet>0.2.3</version.io.opentracing.servlet>
-        <version.io.reactivex.rxjava2>2.2.20</version.io.reactivex.rxjava2>
+        <version.io.reactivex.rxjava2>2.2.21</version.io.reactivex.rxjava2>
         <version.io.reactivex.rxjava3>3.0.13</version.io.reactivex.rxjava3>
         <version.io.rest-assured>3.0.6</version.io.rest-assured>
         <version.io.smallrye.open-api>2.1.9</version.io.smallrye.open-api>
         <version.io.smallrye.opentracing>2.0.0</version.io.smallrye.opentracing>
-        <version.io.smallrye.reactive-utils>2.1.1</version.io.smallrye.reactive-utils>
+        <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
         <version.io.smallrye.smallrye-common>1.6.0</version.io.smallrye.smallrye-common>
         <version.io.smallrye.smallrye-config>2.4.3</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>5.2.1</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>3.1.1</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>3.1.1</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>3.0.3</version.io.smallrye.smallrye-metrics>
-        <version.io.smallrye.smallrye-mutiny>0.14.0</version.io.smallrye.smallrye-mutiny>
-        <version.io.smallrye.smallrye-reactive-messaging>3.0.0</version.io.smallrye.smallrye-reactive-messaging>
+        <version.io.smallrye.smallrye-mutiny>0.18.1</version.io.smallrye.smallrye-mutiny>
+        <version.io.smallrye.smallrye-mutiny-vertx>2.8.0</version.io.smallrye.smallrye-mutiny-vertx>
+        <version.io.smallrye.smallrye-reactive-messaging>3.3.0</version.io.smallrye.smallrye-reactive-messaging>
         <version.io.undertow.jastow>2.0.9.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
-        <version.io.vertx.vertx>4.0.2</version.io.vertx.vertx>
+        <version.io.vertx.vertx>4.1.0</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
         <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
         <version.jakarta.json.bind.api>1.0.2</version.jakarta.json.bind.api>
@@ -365,7 +366,7 @@
         <version.org.apache.httpcomponents.httpasyncclient>4.1.4</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.jstl>1.2.6-RC1</version.org.apache.jstl>
-        <version.org.apache.kafka>2.7.0</version.org.apache.kafka>
+        <version.org.apache.kafka>2.8.0</version.org.apache.kafka>
         <version.org.apache.lucene>5.5.5</version.org.apache.lucene>
         <version.org.apache.myfaces.core>2.3.8</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
@@ -391,7 +392,11 @@
         <version.org.eclipse.microprofile.metrics.api>3.0</version.org.eclipse.microprofile.metrics.api>
         <version.org.eclipse.microprofile.openapi>2.0</version.org.eclipse.microprofile.openapi>
         <version.org.eclipse.microprofile.opentracing>2.0</version.org.eclipse.microprofile.opentracing>
-        <version.org.eclipse.microprofile.reactive-messaging.api>1.0</version.org.eclipse.microprofile.reactive-messaging.api>
+        <!--
+            Needs https://github.com/eclipse/microprofile-reactive-messaging/pull/136 and
+            https://github.com/eclipse/microprofile-reactive-messaging/pull/135
+        -->
+        <version.org.eclipse.microprofile.reactive-messaging.api>2.0</version.org.eclipse.microprofile.reactive-messaging.api>
         <version.org.eclipse.microprofile.reactive-streams-operators.api>2.0</version.org.eclipse.microprofile.reactive-streams-operators.api>
         <version.org.eclipse.microprofile.rest.client.api>2.0</version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.yasson>1.0.9</version.org.eclipse.yasson>
@@ -481,7 +486,7 @@
         <version.org.picketlink.bindings>2.5.5.SP12-redhat-00013</version.org.picketlink.bindings>
         <version.org.reactivestreams>1.0.3</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
-        <version.org.springframework.kafka>2.6.4</version.org.springframework.kafka>
+        <version.org.springframework.kafka>2.7.3</version.org.springframework.kafka>
         <version.org.testng>6.14.3</version.org.testng>
         <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.core>17.0.0.Beta6</version.org.wildfly.core>
@@ -2299,7 +2304,7 @@
             <dependency>
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-mutiny-vertx-core</artifactId>
-                <version>${version.io.smallrye.reactive-utils}</version>
+                <version>${version.io.smallrye.smallrye-mutiny-vertx}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2311,7 +2316,7 @@
             <dependency>
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-mutiny-vertx-kafka-client</artifactId>
-                <version>${version.io.smallrye.reactive-utils}</version>
+                <version>${version.io.smallrye.smallrye-mutiny-vertx}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2323,7 +2328,7 @@
             <dependency>
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-mutiny-vertx-runtime</artifactId>
-                <version>${version.io.smallrye.reactive-utils}</version>
+                <version>${version.io.smallrye.smallrye-mutiny-vertx}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
