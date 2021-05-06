@@ -458,7 +458,7 @@
         <version.org.jvnet.staxex>1.8.3</version.org.jvnet.staxex>
         <version.org.kohsuke.metainf-services>1.8</version.org.kohsuke.metainf-services>
         <version.org.opensaml.opensaml>3.3.1</version.org.opensaml.opensaml>
-        <version.org.ow2.asm>7.1</version.org.ow2.asm>
+        <version.org.ow2.asm>9.1</version.org.ow2.asm>
         <!-- WildFly overrides the picketbox version from core to use MRRC variants -->
         <version.org.picketbox>5.0.3.Final-redhat-00007</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
