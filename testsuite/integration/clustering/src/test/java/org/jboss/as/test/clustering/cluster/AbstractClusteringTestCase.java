@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.commons.test.skip.OS;
 import org.infinispan.commons.test.skip.SkipJunit;
 import org.infinispan.server.test.core.ServerRunMode;
@@ -99,7 +100,7 @@ public abstract class AbstractClusteringTestCase {
     // Infinispan Server
     public static final String INFINISPAN_SERVER_HOME = System.getProperty("infinispan.server.home");
     public static final String INFINISPAN_SERVER_PROFILE = "infinispan-server/infinispan.xml";
-    public static final String INFINISPAN_SERVER_PROTOCOL_VERSION = "3.0";
+    public static final String INFINISPAN_SERVER_PROTOCOL_VERSION = ProtocolVersion.DEFAULT_PROTOCOL_VERSION.toString();
     public static final String INFINISPAN_SERVER_ADDRESS = "127.0.0.1";
     public static final int INFINISPAN_SERVER_PORT = 11222;
 
