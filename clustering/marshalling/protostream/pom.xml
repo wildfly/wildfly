@@ -93,4 +93,32 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>jdk16</id>
+            <activation>
+                <jdk>[16,)</jdk>
+            </activation>
+            <properties>
+                <!-- We're going to disable the java8-test execution,
+                so restore the standard JDK 9+ args. We need them with SE 16+-->
+                <modular.jdk.args>${default.modular.jdk.args}</modular.jdk.args>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>java8-test</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
