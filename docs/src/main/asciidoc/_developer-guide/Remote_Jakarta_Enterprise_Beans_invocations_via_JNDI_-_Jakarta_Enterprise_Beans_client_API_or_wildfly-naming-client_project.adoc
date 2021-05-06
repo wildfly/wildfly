@@ -1,39 +1,18 @@
-[[Remote_Jakarta_Enterprise_Beans_invocations_via_JNDI_-_Jakarta_Enterprise_Beans_client_API_or_remote-naming_project]]
-= Remote Jakarta Enterprise Beans invocations via JNDI - Jakarta Enterprise Beans client API or remote-naming project
+[[Remote_Jakarta_Enterprise_Beans_invocations_via_JNDI_-_Jakarta_Enterprise_Beans_client_API_or_wildfly-naming-client_project]]
+= Remote Jakarta Enterprise Beans invocations via JNDI - Jakarta Enterprise Beans client API or wildfly-naming-client project
 
 [[purpose]]
 == Purpose
 
-WildFly provides EJB client API project as well as remote-naming project
+WildFly provides EJB client API project as well as wildfly-naming-client project(https://github.com/wildfly/wildfly-naming-client)
 for invoking on remote objects exposed via JNDI. This article explains
 which approach to use when and what the differences and scope of each of
 these projects is.
 
-[[history]]
-== History
-
-Previous versions of JBoss AS (versions < WildFly {wildflyVersion}) used JNP project (
-http://anonsvn.jboss.org/repos/jbossas/projects/naming/) as the JNDI
-naming implementation. Developers of client applications of previous
-versions of JBoss AS will be familiar with the `jnp:// PROVIDER_URL` URL
-they used to use in their applications for communicating with the JNDI
-server on the JBoss server.
-
-Starting WildFly {wildflyVersion}, the JNP project is _not_ used. Neither on the server
-side nor on the client side. The client side of the JNP project has now
-been replaced by jboss-remote-naming project (
-https://github.com/jbossas/jboss-remote-naming). There were various
-reasons why the JNP client was replaced by jboss-remote-naming project.
-One of them was the JNP project did not allow fine grained security
-configurations while communicating with the JNDI server. The
-jboss-remote-naming project is backed by the jboss-remoting project (
-https://github.com/jboss-remoting/jboss-remoting) which allows much more
-and better control over security.
-
 == Overview
 
 Now that we know that for remote client JNDI communication with WildFly
-8 requires jboss-remote-naming project, let's quickly see what the code
+requires wildfly-naming-client project, let's quickly see what the code
 looks like.
 
 [[client-code-relying-on-jndi.properties-in-classpath]]
@@ -41,19 +20,14 @@ looks like.
 
 [source,java,options="nowrap"]
 ----
-void doLookup() {
-  // Create an InitialContext using the javax.naming.* API
-  Context ctx = new InitialContext();
-  ctx.lookup("foo/bar");
-  ...
-}
+// Create an InitialContext using the javax.naming.* API
+InitialContext ctx = new InitialContext();
+Blah blah = (Blah) ctx.lookup("foo:blah");
 ----
 
 As you can see, there's not much here in terms of code. We first create
-a InitialContext (
-http://download.oracle.com/javase/6/docs/api/javax/naming/InitialContext.html)
-which as per the API will look for a jndi.properties in the classpath of
-the application. We'll see what our jndi.properties looks like, later.
+a InitialContext which as per the API will look for a jndi.properties in
+the classpath of the application. We'll see what our jndi.properties looks like, later.
 Once the InitialContext is created, we just use it to do a lookup on a
 JNDI name which we know is bound on the server side. We'll come back to
 the details of this lookup string in a while.
@@ -63,37 +37,22 @@ like:
 
 [source,java,options="nowrap"]
 ----
-java.naming.factory.initial=org.jboss.naming.remote.client.InitialContextFactory
-java.naming.provider.url=http-remoting://localhost:8080
+java.naming.factory.initial=org.wildfly.naming.client.WildFlyInitialContextFactory
+java.naming.provider.url=remote+http://localhost:8080
 ----
 
-Those 2 properties are important for jboss-remote-naming project to be
+Those two properties are important for wildfly-naming-client project to be
 used for communicating with the WildFly server. The first property tells
 the JNDI API which initial context factory to use. In this case we are
-pointing it to the InitailContextFactory class supplied by the
-jboss-remote-naming project. The other property is the PROVIDER_URL.
-Developers familiar with previous JBoss AS versions would remember that
-they used `jnp://localhost:1099` (just an example). In WildFly, the URI
-protocol scheme for jboss-remote-naming project is `remote://`. The rest
+pointing it to the WildFlyInitailContextFactory class supplied by the
+wildfly-naming-client project. The other property is the PROVIDER_URL.
+which is `remote+http://` for wildfly-naming-client. The rest
 of the PROVIDER_URL part is the server hostname or IP and the port on
 which the remoting connector is exposed on the server side. By default
 the http-remoting connector port in WildFly {wildflyVersion} is 8080. That's what we
 have used in our example. The hostname we have used is localhost but
 that should point to the server IP or hostname where the server is
 running.
-
-[NOTE]
-
-JNP client project in previous AS versions allowed a comma separated
-list for PROVIDER_URL value, so that if one of the server isn't
-accessible then the JNDI API would use the next available server. The
-jboss-remote-naming project has similar support starting 1.0.3.Final
-version of that project (which is available in a WildFly release *after*
-7.1.1.Final).
-
-WildFly {wildflyVersion} can use the PROVIDER_URL like:
-
-java.naming.provider.url=http-remoting://server1:8080,http-remoting://server2:8080
 
 So we saw how to setup the JNDI properties in the jndi.properties file.
 The JNDI API also allows you to pass these properties to the constructor
@@ -102,118 +61,152 @@ more details). Let's quickly see what the code would look like:
 
 [source,java,options="nowrap"]
 ----
-void doLookup() {
-  Properties jndiProps = new Properties();
-  jndiProps.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-  jndiProps.put(Context.PROVIDER_URL,"http-remoting://localhost:8080");
-  // create a context passing these properties
-  Context ctx = new InitialContext(jndiProps);
-  // lookup
-  ctx.lookup("foo/bar");
-  ...
-}
+Properties props = new Properties();
+props.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
+props.put(Context.PROVIDER_URL, "remote+https://localhost:8080");
+InitialContext ctx = new InitialContext(props);
+Blah blah = (Blah) ctx.lookup("foo:blah");
 ----
 
 That's it! You can see that the values that we pass to those properties
 are the same as what we did via the jndi.properties. It's upto the
 client application to decide which approach they want to follow.
 
-[[how-does-remoting-naming-work]]
-=== How does remoting naming work
+[[Using-the-wildfly-config.xml]]
+=== Using the wildfly-config.xml
+
+The `wildfly-config.xml` can be used to specify a static configuration for a
+standalone client to use. Below is a simple example specifying plaintext 
+username / password and the remote server connection (host/port).
+The wildfly-config.xml goes in the META-INF directory.
+
+[source,java,options="nowrap"]
+----
+<configuration>
+  <authentication-client xmlns="urn:elytron:1.0.1">
+    <authentication-rules>
+      <rule use-configuration="default"/>
+    </authentication-rules>
+    <authentication-configurations>
+      <configuration name="default">
+        <set-user-name name="ranabir"/>
+        <credentials>
+          <clear-password password="redhat1!"/>
+        </credentials>
+      </configuration>
+    </authentication-configurations>
+  </authentication-client>
+  <jboss-ejb-client xmlns="urn:jboss:wildfly-client-ejb:3.0">
+      <connections>
+          <connection uri="remote+http://127.0.0.1:8080" />
+      </connections>
+</jboss-ejb-client>
+</configuration>
+----
+
+Using the `wildfly-config.xml`, the InitialContext creation does not specify
+the host/port/user/pass since it is already defined in the wildfly-config.xml.
+The EJB lookup
+
+[source,java,options="nowrap"]
+----
+public static Context getInitialContext(String host, Integer port, String username, String password) throws NamingException {
+   Properties props = new Properties();
+   props.put(Context.INITIAL_CONTEXT_FACTORY,  "org.wildfly.naming.client.WildFlyInitialContextFactory");
+   return new InitialContext(props);
+}
+public void callRemoteEjb() {
+   HelloRemote remote = getInitialContext(host, port, user, pass).lookup("ejb:helloWorld/helloWorld-ejb/HelloWorldSLSB!org.jboss.examples.ejb.HelloRemote");
+      remote.helloWorld();
+}
+----
+
+[[how-does-wildfly-naming-client-work]]
+=== How does wildfly naming client work
 
 We have so far had an overview of how the client code looks like when
-using the jboss-remote-naming (henceforth referred to as remote-naming -
-too tired of typing jboss-remote-naming everytime icon:smile-o[role="yellow"]
-) project. Let's now have a brief look at how the remote-naming project
+using the wildfly-naming-client project. Let's now have a brief look at how the wildfly-naming-client project
 internally establishes the communication with the server and allows JNDI
 operations from the client side.
 
-Like previously mentioned, remote-naming internally uses jboss-remoting
-project. When the client code creates an InitialContext backed by the
-org.jboss.naming.remote.client.InitialContextFactory class, the
-`org.jboss.naming.remote.client.InitialContextFactory` internally looks
+When the client code creates an InitialContext backed by the
+org.wildfly.naming.client.WildFlyInitialContextFactory class, the
+`org.wildfly.naming.client.WildFlyInitialContextFactory` internally looks
 for the PROVIDER_URL (and other) properties that are applicable for that
 context ( _doesn't_ matter whether it comes from the jndi.properties
 file or whether passed explicitly to the constructor of the
 InitialContext). Once it identifies the server and port to connect to,
-the remote-naming project internally sets up a connection using the
-jboss-remoting APIs with the remoting connector which is exposed on that
+the wildfly-naming-client project internally sets up a connection using the
+remoting APIs with the remoting connector which is exposed on that
 port.
 
-We previously mentioned that remote-naming, backed by jboss-remoting
-project, has increased support for security configurations. Starting
-WildFly {wildflyVersion}, every service including the http remoting connector (which
-listens by default on port 8080), is secured (see
-https://community.jboss.org/wiki/AS710Beta1-SecurityEnabledByDefault for
-details). This means that when trying to do JNDI operations like a
+It has also increased its support for security configurations.
+Every service including the http+remote connector (which
+listens by default on port 8080), is secured.
+This means that when trying to do JNDI operations like a
 lookup, the client has to pass appropriate user credentials. In our
 examples so far we haven't passed any username/pass or any other
 credentials while creating the InitialContext. That was just to keep the
-examples simple. But let's now take the code a step further and see one
+examples simple. But let's now check and use one
 of the ways how we pass the user credentials. Let's at the moment just
 assume that the remoting connector on port 8080 is accessible to a user
-named " `peter`" whose password is expected to be " `lois`".
-
-[NOTE]
-
-Note: The server side configurations for the remoting connector to allow
-"peter" to access the connector, is out of the scope of this
-documentation. The WildFly {wildflyVersion} documentation already has chapters on how
-to set that up.
+named " `ranabir`" whose password is expected to be " `redhat1!`".
 
 [source,java,options="nowrap"]
 ----
 void doLookup() {
-  Properties jndiProps = new Properties();
-  jndiProps.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-  jndiProps.put(Context.PROVIDER_URL,"http-remoting://localhost:8080");
-  // username
-  jndiProps.put(Context.SECURITY_PRINCIPAL, "peter");
-  // password
-  jndiProps.put(Context.SECURITY_CREDENTIALS, "lois");
+  Properties props = new Properties();
+  props.put(Context.INITIAL_CONTEXT_FACTORY,  "org.wildfly.naming.client.WildFlyInitialContextFactory");
+  props.put(Context.PROVIDER_URL, "remote+https://localhost:8080");
+  // provide an username
+  props.put(Context.SECURITY_PRINCIPAL, "ranabir");
+  // provide a password
+  props.put(Context.SECURITY_CREDENTIALS, "redhat1!");
   // create a context passing these properties
-  Context ctx = new InitialContext(jndiProps);
-  // lookup
-  ctx.lookup("foo/bar");
+  InitialContext ctx = new InitialContext(props);
+  Blah blah = (Blah) ctx.lookup("foo:blah");
   ...
 }
 ----
-
 The code is similar to our previous example, except that we now have
 added 2 additional properties that are passed to the InitialContext
-constructor. The first is
-http://docs.oracle.com/javase/6/docs/api/javax/naming/Context.html#SECURITY_PRINCIPAL
-which passes the username (peter in this case) and the second is
-http://docs.oracle.com/javase/6/docs/api/javax/naming/Context.html#SECURITY_CREDENTIALS
-which passes the password (lois in this case). Of course the same
+constructor. The first is `Context.SECURITY_PRINCIPAL`
+which passes the username (ranabir in this case)
+and the second is Context.SECURITY_CREDENTIALS
+which passes the password (redhat1! in this case). Of course the same
 properties can be configured in the jndi.properties file (read the
 javadoc of the Context class for appropriate properties to be used in
-the jndi.properties). This is one way of passing the security
-credentials for JNDI communication with WildFly. There are some other
-ways to do this too. But we won't go into those details here for two
-reasons. One, it's outside the scope of this article and two (which is
-kind of the real reason) I haven't looked fully at the remote-naming
-implementation details to see what other ways are allowed.
+the jndi.properties) and as well as in wildfly-config.xml.
+This is one way of passing the security credentials for JNDI communication with WildFly.
+There are some other ways to do this too.
 
-[[jndi-operations-allowed-using-remote-naming-project]]
-=== JNDI operations allowed using remote-naming project
+Moreover In order to manage Lookup High Availability, you can provide a list of remote servers
+that will be checked for the Initial Lookup of the remote+http call. Here is the updated
+`PROVIDER_URL` format, supposing you were to contact two servers located at localhost:8080 and localhost:8180
+
+[source,java,options="nowrap"]
+----
+props.put(Context.PROVIDER_URL, "remote+http://localhost:8080,remote+http://localhost:8180");
+----
+
+[[jndi-operations-allowed-using-wildfly-naming-client-project]]
+=== JNDI operations allowed using wildfly-naming-client project
 
 So far we have mainly concentrated on how the naming context is created
 and what it internally does when an instance is created. Let's now take
 this one step further and see what kind of operations are allowed for a
-JNDI context backed by the remote-naming project.
+JNDI context backed by the wildfly-naming-client project.
 
-The JNDI Context has various methods
-http://docs.oracle.com/javase/6/docs/api/javax/naming/Context.html that
+The JNDI Context has various methods that
 are exposed for JNDI operations. One important thing to note in case of
-remote-naming project is that, the project's scope is to allow a client
+wildfly-naming-client project is that, the project's scope is to allow a client
 to communicate with the JNDI backend exposed by the server. As such, the
-remote-naming project does *not* support many of the methods that are
-exposed by the javax.naming.Context class. The remote-naming project
+wildfly-naming-client project does *not* support many of the methods that are
+exposed by the javax.naming.Context class. The wildfly-naming-client project
 only supports the read-only kind of methods (like the lookup() method)
 and does not support any write kind of methods (like the bind() method).
-The client applications are expected to use the remote-naming project
-mainly for lookups of JNDI objects. Neither WildFly {wildflyVersion} nor remote-naming
+The client applications are expected to use the wildfly-naming-client project
+mainly for lookups of JNDI objects. Neither WildFly nor wildfly-naming-client
 project allows writing/binding to the JNDI server from a remote
 application.
 
@@ -234,22 +227,21 @@ remote clients
 Both these conditions are important and are required for the objects to
 be remotely accessible via JNDI.
 
-[[jndi-lookup-strings-for-remote-clients-backed-by-the-remote-naming-project]]
-=== JNDI lookup strings for remote clients backed by the remote-naming
-project
+[[jndi-lookup-strings-for-remote-clients-backed-by-the-wildfly-naming-client-project]]
+=== JNDI lookup strings for remote clients backed by the wildfly-naming-client project
 
 In our examples, so far, we have been consistently using " `foo/bar`" as
-the JNDI name to lookup from a remote client using the remote-naming
+the JNDI name to lookup from a remote client using the wildfly-naming-client
 project. There's a bit more to understand about the JNDI name and how it
 maps to the JNDI name that's bound on the server side.
 
-First of all, the JNDI names used while using the remote-naming project
+First of all, the JNDI names used while using the wildfly-naming-client project
 are *always* relative to the java:jboss/exported/ namespace. So in our
 examples, we are using " `foo/bar`" JNDI name for the lookup, that
 actually is (internally) " `java:jboss/exported/foo/bar`". The
-remote-naming project expects it to *always* be relative to the "
+wildfly-naming-client project expects it to *always* be relative to the "
 `java:jboss/exported/`" namespace. Once connected with the server side,
-the remote-naming project will lookup for "foo/bar" JNDI name under the
+the wildfly-naming-client project will lookup for "foo/bar" JNDI name under the
 " `java:jboss/exported/`" namespace of the server.
 
 [NOTE]
@@ -261,59 +253,80 @@ use the following JNDI name:
 
 ctx.lookup("java:jboss/exported/helloworld");
 
-then remote-naming will translate it to
+then wildfly-naming-client will translate it to
 
 ctx.lookup("java:jboss/exported/java:jboss/exported/helloworld");
 
 and as a result, will fail during lookup.
 
-The remote-naming implementation perhaps should be smart enough to strip
+The wildfly-naming-client implementation perhaps should be smart enough to strip
 off the java:jboss/exported/ namespace prefix if supplied. But let's not
 go into that here.
 
-[[how-does-remote-naming-project-implementation-transfer-the-jndi-objects-to-the-clients]]
-=== How does remote-naming project implementation transfer the JNDI
+[[how-does-wildfly-naming-client-project-implementation-transfer-the-jndi-objects-to-the-clients]]
+=== How does wildfly-naming-client project implementation transfer the JNDI
 objects to the clients
 
-When a lookup is done on a JNDI string, the remote-naming implementation
+When a lookup is done on a JNDI string, the wildfly-naming-client implementation
 internally uses the connection to the remoting connector (which it has
 established based on the properties that were passed to the
 InitialContext) to communicate with the server. On the server side, the
 implementation then looks for the JNDI name under the
 `java:jboss/exported/` namespace. Assuming that the JNDI name is
-available, under that namespace, the remote-naming implementation then
+available, under that namespace, the wildfly-naming-client implementation then
 passes over the object bound at that address to the client. This is
 where the requirement about the JNDI object being serializable comes
-into picture. remote-naming project internally uses jboss-marshalling
+into picture. wildfly-naming-client project internally uses jboss-marshalling
 project to marshal the JNDI object over to the client. On the client
-side the remote-naming implementation then unmarshalles the object and
+side the wildfly-naming-client implementation then unmarshalles the object and
 returns it to the client application.
 
-So literally, each lookup backed by the remote-naming project entails a
+So literally, each lookup backed by the wildfly-naming-client project entails a
 server side communication/interaction and then marshalling/unmarshalling
 of the object graph. This is very important to remember. We'll come back
 to this later, to see why this is important when it comes to using EJB
 client API project for doing EJB lookups ( <<EJB_invocations_from_a_remote_client_using_JNDI,EJB
 invocations from a remote client using JNDI>>) as against using
-remote-naming project for doing the same thing.
+wildfly-naming-client project for doing the same thing.
+
+[[few-more-things-]]
+=== Few more things
+
+Unlike the previous `jboss-remote-naming` project, the connection to
+the peer is not requested. Until an operation is performed on the connection,
+and all consumers of the same remote URL will share a connection.
+The connection lifecycle is independent of any `Context` instances which reference it.
+
+Multiple services can be looked up via the same context. To register providers,
+implement the `org.wildfly.naming.client.NamingProvider` interface and register the
+implementation using the approach described in the `java.util.ServiceLoader` documentation.
+
+[NOTE]
+
+Note: One important thing is that jndi.properties should not be packaged in an
+app running in Wildfly though you can put it in a standalone java app.
+The reason is, when you run in Wildfly , if you do new InitialContext() and
+you have jndi.properties in your classpath, it will read those settings
+and change the default configuration for the whole wildfly JVM.
 
 [[summary-remote-ejb-invocations]]
 == Summary
 
 That pretty much covers whatever is important to know, in the
-remote-naming project, for a typical client application. Don't close the
-browser yet though, since we haven't yet come to the part of EJB
-invocations from a remote client using the remote-naming project. In
-fact, the motivation behind writing this article was to explain why
-_not_ to use remote-naming project (in most cases) for doing EJB
-invocations against WildFly server.
+wildfly-naming-client project, for a typical client application.
+This simple JNDI/naming client library abstracts away some of the
+pain of JNDI by providing the following features:
+Federation support, Class loader based provider extensibility,
+A replacement implementation of the `jboss-remote-naming` protocol,
+Abstract context implementations for supporting relative contexts and
+federation in custom naming providers.
 
 Those of you who don't have client applications doing remote EJB
 invocations, can just skip the rest of this article if you aren't
 interested in those details.
 
-[[remote-ejb-invocations-backed-by-the-remote-naming-project]]
-== Remote EJB invocations backed by the remote-naming project
+[[remote-ejb-invocations-backed-by-the-wildfly-naming-client-project]]
+== Remote EJB invocations backed by the wildfly-naming-client project
 
 In previous sections of this article we saw that whatever is exposed in
 the java:jboss/exported/ namespace is accessible remotely to the client
@@ -329,7 +342,7 @@ your server side application has the following stateless bean:
 [source,java,options="nowrap"]
 ----
 package org.myapp.ejb;
- 
+ 
 @Stateless
 @Remote(Foo.class)
 public class FooBean implements Foo {
@@ -343,8 +356,7 @@ public class FooBean implements Foo {
 Then the " `Foo`" remote view is exposed under the
 `java:jboss/exported/` namespace under the following JNDI name scheme
 (which is similar to that mandated by Jakarta Enterprise Beans 3.2 spec for `java:global/`
-namespace):
-link:/pages/createpage.action?spaceKey=WFLY&title=app-name&linkCreation=true&fromPageId=557285[app-name]
+namespace)
 
 `app-name/module-name/bean-name!bean-interface`
 
@@ -383,52 +395,52 @@ Note that only the java:jboss/exported/ namespace is available to remote
 clients.
 
 So the next logical question would be, are these remote views of EJBs
-accessible and invokable using the remote-naming project on the client
+accessible and invokable using the wildfly-naming-client project on the client
 application. The answer is _yes_! Let's quickly see the client code for
-invoking our `FooBean`. Again, let's just use " `peter`" and " `lois`"
-as username/pass for connecting to the remoting connector.
+invoking our `FooBean`. Again, let's just use " `ranabir`" and " `redhat1!`"
+as username/password for connecting to the remoting connector.
 
 [source,java,options="nowrap"]
 ----
 void doBeanLookup() {
   ...
-  Properties jndiProps = new Properties();
-  jndiProps.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-  jndiProps.put(Context.PROVIDER_URL,"http-remoting://localhost:8080");
+  Properties props = new Properties();
+  props.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
+  props.put(Context.PROVIDER_URL,"remote+https://localhost:8080");
   // username
-  jndiProps.put(Context.SECURITY_PRINCIPAL, "peter");
+  props.put(Context.SECURITY_PRINCIPAL, "ranabir");
   // password
-  jndiProps.put(Context.SECURITY_CREDENTIALS, "lois");
-  // This is an important property to set if you want to do EJB invocations via the remote-naming project
-  jndiProps.put("jboss.naming.client.ejb.context", true);
+  props.put(Context.SECURITY_CREDENTIALS, "redhat1!");
+  // This is an important property to set if you want to do EJB invocations via the wildfly-naming-client project
+  props.put("wildfly.naming.client.ejb.context", true);
   // create a context passing these properties
-  Context ctx = new InitialContext(jndiProps);
+  InitialContext ctx = new InitialContext(props);
   // lookup the bean     Foo
   beanRemoteInterface = (Foo) ctx.lookup("myapp/myejbmodule/FooBean!org.myapp.ejb.Foo");
   String bar = beanRemoteInterface.sayBar();
   System.out.println("Remote Foo bean returned " + bar);
-  ctx.close();
-  // after this point the beanRemoteInterface is not longer valid!
+  ctx.close();
+  // after this point the beanRemoteInterface is not longer valid!
 }
 ----
 
 As you can see, most of the code is similar to what we have been seeing
-so far for setting up a JNDI context backed by the remote-naming
+so far for setting up a JNDI context backed by the wildfly-naming-client
 project. The only parts that change are:
 
-\1) An additional " `jboss.naming.client.ejb.context`" property that is
+\1) An additional " `wildfly.naming.client.ejb.context`" property that is
 added to the properties passed to the InitialContext constructor. +
 2) The JNDI name used for the lookup +
 3) And subsequently the invocation on the bean interface returned by the
 lookup.
 
-Let's see what the " `jboss.naming.client.ejb.context`" does. In
+Let's see what the " `wildfly.naming.client.ejb.context`" does. In
 WildFly, remote access/invocations on EJBs is facilitated by the JBoss
 specific EJB client API, which is a project on its own
-https://github.com/jbossas/jboss-ejb-client. So no matter, what
-mechanism you use (remote-naming or core EJB client API), the
+https://github.com/wildfly/jboss-ejb-client. So no matter, what
+mechanism you use (wildfly-naming-client or core EJB client API), the
 invocations are ultimately routed through the EJB client API project. In
-this case too, the remote-naming internally uses EJB client API to
+this case too, the wildfly-naming-client internally uses EJB client API to
 handle EJB invocations. From a EJB client API project perspective, for
 successful communication with the server, the project expects a
 `EJBClientContext` backed by (atleast one) `EJBReceiver`(s). The
@@ -442,25 +454,25 @@ port, security credentials and other similar parameters. If you were
 using the core EJB client API, then you would have configured all these
 properties via the jboss-ejb-client.properties or via programatic API
 usage as explained here <<EJB_invocations_from_a_remote_client_using_JNDI,EJB invocations from a remote
-client using JNDI>>. But in the example above, we are using remote-naming
+client using JNDI>>. But in the example above, we are using wildfly-naming-client
 project and are _not_ directly interacting with the EJB client API
 project.
 
 If you look closely at what's being passed, via the JNDI properties, to
-the remote-naming project and if you remember the details that we
-explained in a previous section about how the remote-naming project
+the wildfly-naming-client project and if you remember the details that we
+explained in a previous section about how the wildfly-naming-client project
 establishes a connection to the remote server, you'll realize that these
 properties are indeed the same as what the
 `RemotingConnectionEJBReceiver` would expect to be able to establish the
 connection to the server. Now this is where the "
-`jboss.naming.client.ejb.context`" property comes into picture. When
+`wildfly.naming.client.ejb.context`" property comes into picture. When
 this is set to true and passed to the InitialContext creation (either
 via jndi.properties or via the constructor of that class), the
-remote-naming project internally will do whatever is necessary to setup
+wildfly-naming-client project internally will do whatever is necessary to setup
 a `EJBClientContext`, containing a `RemotingConnectionEJBReceiver` which
 is created using the *same* remoting connection that is created by and
-being used by remote-naming project for its own JNDI communication
-usage. So effectively, the InitialContext creation via the remote-naming
+being used by wildfly-naming-client project for its own JNDI communication
+usage. So effectively, the InitialContext creation via the wildfly-naming-client
 project has now internally triggered the creation of a
 `EJBClientContext` containing a `EJBReceiver` capable of handling the
 EJB invocations (remember, no remote EJB invocations are possible
@@ -468,28 +480,28 @@ without the presence of a `EJBClientContext` containing a `EJBReceiver`
 which can handle the EJB).
 
 So we now know the importance of the "
-`jboss.naming.client.ejb.context`" property and its usage. Let's move on
+`wildfly.naming.client.ejb.context`" property and its usage. Let's move on
 the next part in that code, the JNDI name. Notice that we have used the
 JNDI name relative to the `java:jboss/exported/` namespace while doing
 the lookup. And since we know that the Foo view is exposed on that JNDI
 name, we cast the returned object back to the Foo interface. Remember
-that we earlier explained how each lookup via remote-naming triggers a
+that we earlier explained how each lookup via wildfly-naming-client triggers a
 server side communication and a marshalling/unmarshalling process. This
-applies for EJB views too. In fact, the remote-naming project has no
+applies for EJB views too. In fact, the wildfly-naming-client project has no
 clue (since that's not in the scope of that project to know) whether
 it's an EJB or some random object.
 
 Once the unmarshalled object is returned (which actually is a proxy to
 the bean), the rest is straightforward, we just invoke on that returned
-object. Now since the remote-naming implementation has done the
+object. Now since the wildfly-naming-client implementation has done the
 necessary setup for the EJBClientContext (due to the presence of "
-`jboss.naming.client.ejb.context`" property), the invocation on that
+`wildfly.naming.client.ejb.context`" property), the invocation on that
 proxy will internally use the `EJBClientContext` (the proxy is smart
 enough to do that) to interact with the server and return back the
 result. We won't go into the details of how the EJB client API handles
 the communication/invocation.
 
-_Long story short, using the remote-naming project for doing remote EJB
+_Long story short, using the wildfly-naming-client project for doing remote EJB
 invocations against WildFly is possible!_
 
 [[why-use-the-ejb-client-api-approach-then]]
@@ -499,7 +511,7 @@ I can guess that some of you might already question why/when would one
 use the EJB client API style lookups as explained in the
 <<EJB_invocations_from_a_remote_client_using_JNDI,EJB invocations from a remote client using JNDI>>
 article instead of just using (what appears to be a simpler)
-remote-naming style lookups.
+wildfly-naming-client style lookups.
 
 Before we answer that, let's understand a bit about the EJB client
 project. The EJB client project was implemented keeping in mind various
@@ -518,58 +530,16 @@ ctx.lookup("foo/bar");
 Now `foo/bar` JNDI name could potentially point to *any* type of object
 on the server side. The jndi name itself won't have the type/semantic
 information of the object bound to that name on the server side. If the
-context was setup using the remote-naming project (like we have seen
-earlier in our examples), then the only way for remote-naming to return
+context was setup using the wildfly-naming-client project (like we have seen
+earlier in our examples), then the only way for wildfly-naming-client to return
 an object for that lookup operation is to communicate with the server
 and marshal/unmarshal the object bound on the server side. And that's
 exactly what it does (remember, we explained this earlier).
 
-The EJB client API project on the other hand optimizes this lookup. In
-order to do so, it expects the client application to let it know that a
-EJB is being looked up. It does this, by expecting the client
-application to use the JNDI name of the format " `ejb:`" namespace and
-also expecting the client application to setup the JNDI context by
-passing the " `org.jboss.ejb.client.naming`" value for the
-`Context.URL_PKG_PREFIXES` property.
-
-Example:
-
-[source,java,options="nowrap"]
-----
-final Properties jndiProperties = new Properties();
-jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-// create the context
-final Context context = new InitialContext(jndiProperties);
- 
-// lookup
-Foo beanProxy = context.lookup("ejb:myapp/myejbmodule//FooBean!org.myapp.ejb.Foo");
-String bar = beanProxy.sayBar();
-----
-
-More details about such code can be found here <<EJB_invocations_from_a_remote_client_using_JNDI,EJB
-invocations from a remote client using JNDI>>
-
-When a client application looks up anything under the " `ejb:`"
-namespace, it is a clear indication (for the EJB client API project) to
-know that the client is looking up an EJB. That's where it steps in to
-do the necessary optimizations that might be applicable. So unlike, in
-the case of remote-naming project (which has no clue about the semantics
-of the object being looked up), the EJB client API project does *not*
-trigger a server side communication or a marshal/unmarshal process when
-you do lookup for a remote view of a stateless bean (it's important to
-note that we have specifically mentioned stateless bean here, we'll come
-to that later). Instead, the EJB client API just returns a
-java.lang.reflect.Proxy instance of the remote view type that's being
-looked up. This not just saves a network call, marshalling/unmarshalling
-step but it also means that you can create an EJB proxy even when the
-server isn't up yet. Later on, when the invocation on the proxy happens,
-the EJB client API _does_ communicate with the server to carry out the
-invocation.
-
 [[is-the-lookup-optimization-applicable-for-all-bean-types]]
 === Is the lookup optimization applicable for all bean types?
 
-In the previous section we (intentionally) mentioned that the lookup
+In the previous section we have mentioned that the lookup
 optimization by the EJB client API project happens for stateless beans.
 This kind of optimization is *not* possible for stateful beans because
 in case of stateful beans, a lookup is expected to create a session for
@@ -593,45 +563,22 @@ more details about such lookup.
 The presence of " `?stateful`" in the JNDI name lookup string is a
 directive to the EJB client API to let it know that a stateful bean is
 being looked up and it's necessary to communicate with the server and
-create a session during that lookup.
+create a session during that lookup. Though `?stateful` is optional now.
 
 So as you can see, we have managed to optimize certain operations by
 using the EJB client API for EJB lookup/invocation as against using the
-remote-naming project. There are other EJB client API implementation
+wildfly-naming-client project. There are other EJB client API implementation
 details (and probably more might be added) which are superior when it is
 used for remote EJB invocations in client applications as against
-remote-naming project which doesn't have the intelligence to carry out
-such optimizations for EJB invocations. _That's why the remote-naming
+wildfly-naming-client project which doesn't have the intelligence to carry out
+such optimizations for EJB invocations. _That's why the wildfly-naming-client
 project_ *_for remote EJB invocations_* _is considered "_ `deprecated`
-_"_. Note that if you want to use remote-naming for looking up and
+_"_. Note that if you want to use wildfly-naming-client for looking up and
 invoking on non-EJB remote objects then you are free to do so. In fact,
 that's why that project has been provided. You can even use the
-remote-naming project for EJB invocations (like we just saw), if you are
+wildfly-naming-client project for EJB invocations (like we just saw), if you are
 fine with _not_ wanting the optimizations that the EJB client API can do
 for you or if you have other restrictions that force you to use that
 project.
-
-[[restrictions-for-ejbs]]
-=== Restrictions for EJB's
-
-If the remote-naming is used there are some restrictions as there is no
-full support of the ejb-client features.
-
-* No loadbalancing, if the URL conatains multiple "remote://" servers
-there is no loadbalancing, the first available server will be used and
-only in case it is not longer available there will be a failover to the
-next available one.
-* No cluster support. As a cluster needs to be defined in the
-jboss-ejb-client.properties this feature can not be used and there is no
-cluster node added
-* No client side interceptor. The EJBContext.getCurrent() can not be
-used and it is not possible to add a client interceptor
-* No UserTransaction support
-* All proxies become invalid if .close() for the related Initalcontext
-is invoked, or the InitialContext is not longer referenced and gets
-garbage-collected. In this case the underlying EJBContext is destroyed
-and the conections are closed.
-* It is not possible to use remote-naming if the client is an
-application deployed on another JBoss instance
 
 NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
