@@ -22,7 +22,6 @@ import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.PrivilegedAction;
 import java.security.PublicKey;
-import java.security.acl.Group;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -52,6 +51,18 @@ import org.wildfly.security.password.Password;
  */
 public final class SubjectUtil {
 
+    private static final Class<?> groupClass;
+
+    static {
+        Class<?> clazz = null;
+        try {
+            clazz = Class.forName("java.security.acl.Group");
+        } catch (Throwable t) {
+            // ignore
+        }
+        groupClass = clazz;
+    }
+
     /**
      * Converts the supplied {@link SecurityIdentity} into a {@link Subject}.
      *
@@ -61,23 +72,44 @@ public final class SubjectUtil {
     public static Subject fromSecurityIdentity(final SecurityIdentity securityIdentity) {
         return fromSecurityIdentity(securityIdentity, new Subject());
     }
+
     public static Subject fromSecurityIdentity(final SecurityIdentity securityIdentity, Subject subject) {
+
         if (subject == null) {
             subject = new Subject();
         }
+        // The first principal added must be the security identity principal
+        // as logic in both CXF and JBoss WS look for the first non-Group principal
         subject.getPrincipals().add(securityIdentity.getPrincipal());
 
-        // add the 'Roles' group to the subject containing the identity's mapped roles.
-        Group rolesGroup = new SimpleGroup("Roles");
-        for (String role : securityIdentity.getRoles()) {
-            rolesGroup.addMember(new NamePrincipal(role));
-        }
-        subject.getPrincipals().add(rolesGroup);
+        Roles identityRoles = securityIdentity.getRoles();
+        if (groupClass != null) {
+            // add the 'Roles' group to the subject containing the identity's mapped roles.
+            SimpleGroup rolesGroup = new SimpleGroup("Roles");
+            for (String role : identityRoles) {
+                rolesGroup.addMember(new NamePrincipal(role));
+            }
+            subject.getPrincipals().add(rolesGroup);
 
-        // add a 'CallerPrincipal' group containing the identity's principal.
-        Group callerPrincipalGroup = new SimpleGroup("CallerPrincipal");
-        callerPrincipalGroup.addMember(securityIdentity.getPrincipal());
-        subject.getPrincipals().add(callerPrincipalGroup);
+            // add a 'CallerPrincipal' group containing the identity's principal.
+            SimpleGroup callerPrincipalGroup = new SimpleGroup("CallerPrincipal");
+            callerPrincipalGroup.addMember(securityIdentity.getPrincipal());
+            subject.getPrincipals().add(callerPrincipalGroup);
+        } else {
+            // Just add a simple principal for each role instead of aggregating them in a Group.
+            // CXF can use such principals when identifying the subject's roles
+            String principalName = securityIdentity.getPrincipal().getName();
+            Set<Principal> principals = subject.getPrincipals();
+            for (String role : identityRoles) {
+                if (!principalName.equals(role)) {
+                    principals.add(new NamePrincipal(role));
+                }
+            }
+
+            // Don't bother with the 'CallerPrincipal' group, since if there is no Group class,
+            // legacy security realms that use that Group to find the 'caller principal' cannot
+            // be in use
+        }
 
         // process the identity's public and private credentials.
         for (Credential credential : securityIdentity.getPublicCredentials()) {
@@ -140,20 +172,24 @@ public final class SubjectUtil {
         if (identity == null) {
             identity = domain.createAdHocIdentity(principal);
         }
-        // convert subject Group
-        Set<String> roles = new HashSet<>();
-        for (Principal prin : subject.getPrincipals()) {
-            if (prin instanceof Group && "Roles".equalsIgnoreCase(prin.getName())) {
-                Enumeration<? extends Principal> enumeration = ((Group) prin).members();
-                while (enumeration.hasMoreElements()) {
-                    roles.add(enumeration.nextElement().getName());
+
+        if (groupClass != null) {
+            // convert subject Group
+            Set<String> roles = new HashSet<>();
+            for (Principal prin : subject.getPrincipals()) {
+                if (groupClass.isInstance(prin) && "Roles".equalsIgnoreCase(prin.getName())) {
+                    Enumeration<? extends Principal> enumeration = ((java.security.acl.Group) prin).members();
+                    while (enumeration.hasMoreElements()) {
+                        roles.add(enumeration.nextElement().getName());
+                    }
                 }
             }
-        }
-        if (!roles.isEmpty()) {
-            // identity.withRoleMapper will create NEW identity instance instead of set this roleMapper to identity
-            identity = identity.withRoleMapper(roleCategory, (rolesToMap) -> Roles.fromSet(roles));
-        }
+            if (!roles.isEmpty()) {
+                // identity.withRoleMapper will create NEW identity instance instead of set this roleMapper to identity
+                identity = identity.withRoleMapper(roleCategory, (rolesToMap) -> Roles.fromSet(roles));
+            }
+        } // else the class doesn't exist so it couldn't have been used to populate the Subject
+
         // convert public credentials
         IdentityCredentials publicCredentials = IdentityCredentials.NONE;
         for (Object credential : subject.getPublicCredentials()) {
