@@ -10510,20 +10510,10 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>default-compile</id>
-                                <configuration>
-                                    <skipMain>true</skipMain>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>default-testCompile</id>
-                                <configuration>
-                                    <skip>true</skip>
-                                </configuration>
-                            </execution>
-                        </executions>
+                        <configuration>
+                            <skipMain>true</skipMain>
+                            <skip>true</skip>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
