@@ -436,7 +436,7 @@ public abstract class SessionExpirationTestCase extends AbstractClusteringTestCa
             }
 
             // Trigger timeout of sessionId
-            Thread.sleep(AbstractClusteringTestCase.GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+            Thread.sleep(AbstractClusteringTestCase.GRACE_TIME_TO_REPLICATE);
 
             boolean destroyed = false;
             String newSessionId = null;
