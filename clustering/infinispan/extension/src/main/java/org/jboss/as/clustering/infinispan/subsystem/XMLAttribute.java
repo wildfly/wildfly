@@ -58,6 +58,7 @@ public enum XMLAttribute {
     CHUNK_SIZE(StateTransferResourceDefinition.Attribute.CHUNK_SIZE),
     CLASS(CustomStoreResourceDefinition.Attribute.CLASS),
     @Deprecated CLUSTER(JGroupsTransportResourceDefinition.DeprecatedAttribute.CLUSTER),
+    COMPLETE_TIMEOUT(TransactionResourceDefinition.Attribute.COMPLETE_TIMEOUT),
     CONCURRENCY_LEVEL(LockingResourceDefinition.Attribute.CONCURRENCY),
     @Deprecated CONSISTENT_HASH_STRATEGY(SegmentedCacheResourceDefinition.DeprecatedAttribute.CONSISTENT_HASH_STRATEGY),
     CREATE_ON_START(TableResourceDefinition.Attribute.CREATE_ON_START),
