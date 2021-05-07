@@ -64,7 +64,6 @@ public class ReactiveStreamsOperatorsDependencyProcessor implements DeploymentUn
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.smallrye.reactive.converters.api", true, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.smallrye.reactive.converters.rxjava2", true, false, true, false));
 
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.jboss.resteasy.resteasy-rxjava2", true, false, true, false));
     }
 
 
