@@ -538,4 +538,15 @@
         <packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-artemis\-native@.*$</packageUrl>
         <cve>CVE-2021-26117</cve>
     </suppress>
+
+    <!-- The CVE-2021-22696 affects cxf-rt-rs-security-oauth2 which is not a part of WildFly. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: cxf-core-3.3.7.jar
+   file name: cxf-rt-databinding-aegis-3.3.7.jar
+   file name: cxf-xjc-dv-3.3.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.cxf\..*$</packageUrl>
+        <cve>CVE-2021-22696</cve>
+    </suppress>
 </suppressions>
