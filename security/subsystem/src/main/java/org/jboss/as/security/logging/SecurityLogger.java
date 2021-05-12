@@ -263,7 +263,7 @@ public interface SecurityLogger extends BasicLogger {
 //    SecurityException vaultNotInitializedException();
 
     /**
-     * Create a {@link SecurityException} to indicate that the vault is not initialized
+     * Create a {@link SecurityException} to indicate that the user is invalid.
      * @return {@link SecurityException}
      */
     @Message(id = 27, value = "Invalid User")
