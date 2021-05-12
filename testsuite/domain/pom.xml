@@ -109,7 +109,17 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-messaging-activemq</artifactId>
+            <artifactId>wildfly-messaging-activemq-injection</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>*</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>

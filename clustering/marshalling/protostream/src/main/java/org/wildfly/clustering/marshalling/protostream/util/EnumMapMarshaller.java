@@ -31,7 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -55,16 +55,15 @@ public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
     public EnumMap<E, Object> readFrom(ProtoStreamReader reader) throws IOException {
         EnumSetBuilder<E> builder = this.marshaller.getBuilder();
         List<Object> values = new LinkedList<>();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if ((index >= ENUM_SET_INDEX) && (index < ENUM_SET_INDEX + this.marshaller.getFields())) {
                 builder = this.marshaller.readField(reader, index - ENUM_SET_INDEX, builder);
             } else if (index == this.valueIndex) {
                 values.add(reader.readObject(Any.class).get());
             } else {
-                reading = reader.ignoreField(tag);
+                reader.skipField(tag);
             }
         }
         EnumSet<E> enumSet = builder.build();

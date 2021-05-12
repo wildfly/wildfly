@@ -23,7 +23,6 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.util.OptionalInt;
 import java.util.function.Function;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
@@ -69,17 +68,6 @@ public class FunctionalMarshaller<T, V> implements ProtoStreamMarshaller<T> {
         V value = this.function.apply(object);
         ProtoStreamMarshaller<V> marshaller = this.marshallerFactory.apply(writer.getSerializationContext());
         marshaller.writeTo(writer, value);
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, T object) {
-        try {
-            V value = this.function.apply(object);
-            ProtoStreamMarshaller<V> marshaller = this.marshallerFactory.apply(context);
-            return marshaller.size(context, value);
-        } catch (IOException e) {
-            return OptionalInt.empty();
-        }
     }
 
     @Override

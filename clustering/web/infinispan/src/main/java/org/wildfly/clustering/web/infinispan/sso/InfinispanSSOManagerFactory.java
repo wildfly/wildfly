@@ -26,8 +26,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.ee.cache.Key;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.infinispan.InfinispanCacheProperties;
 import org.wildfly.clustering.ee.infinispan.tx.InfinispanBatcher;

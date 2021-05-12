@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.jca.rar;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -132,7 +134,7 @@ public class MultipleManagedConnection1 implements ManagedConnection {
      */
     public void addConnectionEventListener(ConnectionEventListener listener) {
         log.trace("addConnectionEventListener()");
-        if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
+        checkNotNullParam("listener", listener);
         listeners.add(listener);
     }
 
@@ -143,7 +145,7 @@ public class MultipleManagedConnection1 implements ManagedConnection {
      */
     public void removeConnectionEventListener(ConnectionEventListener listener) {
         log.trace("removeConnectionEventListener()");
-        if (listener == null) { throw new IllegalArgumentException("Listener is null"); }
+        checkNotNullParam("listener", listener);
         listeners.remove(listener);
     }
 

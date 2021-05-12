@@ -22,6 +22,8 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
+import org.infinispan.protostream.descriptors.WireType;
+
 /**
  * Marshaller for a single scalar value.
  * This marshaller does not write any tags, nor does it read beyond a single value.
@@ -34,5 +36,5 @@ public interface ScalarMarshaller<T> extends Marshallable<T> {
      * Returns the wire type of the scalar value written by this marshaller.
      * @return the wire type of the scalar value written by this marshaller.
      */
-    int getWireType();
+    WireType getWireType();
 }

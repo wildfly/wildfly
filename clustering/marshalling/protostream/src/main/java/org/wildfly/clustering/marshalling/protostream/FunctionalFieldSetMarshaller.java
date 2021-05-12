@@ -27,7 +27,7 @@ import java.util.OptionalInt;
 import java.util.function.Function;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * Marshaller for an object whose fields are marshalled via a {@link FieldSetMarshaller}.
@@ -50,14 +50,13 @@ public class FunctionalFieldSetMarshaller<T, B> implements ProtoStreamMarshaller
     @Override
     public T readFrom(ProtoStreamReader reader) throws IOException {
         B builder = this.marshaller.getBuilder();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if ((index >= START_INDEX) && (index < START_INDEX + this.marshaller.getFields())) {
                 builder = this.marshaller.readField(reader, index - START_INDEX, builder);
             } else {
-                reading = reader.ignoreField(tag);
+                reader.skipField(tag);
             }
         }
         return this.build.apply(builder);

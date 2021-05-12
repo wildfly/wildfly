@@ -115,8 +115,10 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
             Class<? extends DataSource> dsCls;
             try {
                 dsCls = module.getClassLoader().loadClass(dataSourceClassName).asSubclass(DataSource.class);
-            } catch (ClassNotFoundException | ClassCastException  e) {
+            } catch (ClassNotFoundException  e) {
                 throw SUBSYSTEM_DATASOURCES_LOGGER.failedToLoadDataSourceClass(dataSourceClassName, e);
+            } catch (ClassCastException e) {
+                throw SUBSYSTEM_DATASOURCES_LOGGER.notAValidDataSourceClass(dataSourceClassName, DataSource.class.getName());
             }
             checkDSCls(dsCls, DataSource.class);
         }
@@ -124,8 +126,10 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
             Class<? extends XADataSource> dsCls;
             try {
                 dsCls = module.getClassLoader().loadClass(xaDataSourceClassName).asSubclass(XADataSource.class);
-            } catch (ClassNotFoundException | ClassCastException e) {
+            } catch (ClassNotFoundException e) {
                 throw SUBSYSTEM_DATASOURCES_LOGGER.failedToLoadDataSourceClass(xaDataSourceClassName, e);
+            } catch (ClassCastException e) {
+                throw SUBSYSTEM_DATASOURCES_LOGGER.notAValidDataSourceClass(dataSourceClassName, DataSource.class.getName());
             }
             checkDSCls(dsCls, XADataSource.class);
         }

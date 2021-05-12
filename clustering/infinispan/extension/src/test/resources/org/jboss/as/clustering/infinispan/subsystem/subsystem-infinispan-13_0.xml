@@ -1,0 +1,141 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2021, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+<subsystem xmlns="urn:jboss:domain:infinispan:13.0">
+    <cache-container name="minimal" default-cache="local" marshaller="JBOSS">
+        <local-cache name="local"/>
+    </cache-container>
+    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" marshaller="PROTOSTREAM" modules="org.infinispan org.infinispan.commons" statistics-enabled="true">
+        <transport channel="maximal-channel" lock-timeout="120000"/>
+        <blocking-thread-pool min-threads="11"
+                              max-threads="12"
+                              queue-length="13"
+                              keepalive-time="14"/>
+        <listener-thread-pool min-threads="21"
+                              max-threads="22"
+                              queue-length="23"
+                              keepalive-time="24"/>
+        <non-blocking-thread-pool min-threads="31"
+                              max-threads="32"
+                              queue-length="33"
+                              keepalive-time="34"/>
+        <expiration-thread-pool min-threads="41"
+                                keepalive-time="42"/>
+        <local-cache name="local" modules="org.infinispan org.infinispan.commons" statistics-enabled="true">
+            <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
+            <transaction mode="BATCH" stop-timeout="60000" locking="OPTIMISTIC" complete-timeout="60000"/>
+            <heap-memory size="20000"/>
+            <expiration interval="10000" lifespan="10" max-idle="10"/>
+            <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="false">
+                <write-behind modification-queue-size="2048"/>
+            </file-store>
+        </local-cache>
+        <invalidation-cache name="invalid" modules="org.infinispan" statistics-enabled="true">
+            <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
+            <transaction mode="NON_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
+            <off-heap-memory size="20000" size-unit="BYTES"/>
+            <expiration interval="10000" lifespan="10" max-idle="10"/>
+            <remote-store cache="default" remote-servers="hotrod-server-1 hotrod-server-2" socket-timeout="60000" tcp-no-delay="true" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="true">
+                <write-behind modification-queue-size="2048"/>
+                <property name="valueSizeEstimate">100</property>
+            </remote-store>
+        </invalidation-cache>
+        <invalidation-cache name="invalidation-hotrod">
+            <hotrod-store cache-configuration="transactional" remote-cache-container="my-remote-container"/>
+        </invalidation-cache>
+        <replicated-cache name="repl" statistics-enabled="true">
+            <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
+            <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
+            <off-heap-memory size="20000" size-unit="BYTES"/>
+            <expiration interval="10000" lifespan="10" max-idle="10"/>
+            <store class="org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder" fetch-state="true" passivation="true" preload="false" purge="true" shared="false" singleton="false">
+                <write-behind modification-queue-size="2048"/>
+                <property name="location">${java.io.tmpdir}</property>
+            </store>
+            <partition-handling enabled="false"/>
+            <state-transfer timeout="0" chunk-size="10000"/>
+        </replicated-cache>
+        <distributed-cache name="dist" l1-lifespan="1200000" owners="4" remote-timeout="35000" segments="2" capacity-factor="1.0" consistent-hash-strategy="INTRA_CACHE" statistics-enabled="true">
+            <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
+            <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
+            <heap-memory size="100"/>
+            <expiration interval="10000" lifespan="10" max-idle="10"/>
+            <jdbc-store data-source="ExampleDS" dialect="MARIA_DB" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="false" max-batch-size="100">
+                <write-behind modification-queue-size="2048"/>
+                <table prefix="ispn_bucket" fetch-size="100" create-on-start="false" drop-on-stop="true">
+                    <id-column name="id" type="VARCHAR"/>
+                    <data-column name="datum" type="BINARY"/>
+                    <segment-column name="segment" type="INTEGER"/>
+                    <timestamp-column name="version" type="BIGINT"/>
+                </table>
+            </jdbc-store>
+            <partition-handling enabled="true"/>
+            <state-transfer timeout="60000" chunk-size="10000"/>
+            <backups>
+                <backup site="NYC" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="false"/>
+                <backup site="SFO" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="true"/>
+                <backup site="LON" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="true">
+                    <take-offline after-failures="3" min-wait="10000"/>
+                </backup>
+            </backups>
+        </distributed-cache>
+        <scattered-cache name="scattered" remote-timeout="35000" segments="2" consistent-hash-strategy="INTRA_CACHE" invalidation-batch-size="100" statistics-enabled="true">
+            <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
+            <heap-memory size="20000"/>
+            <expiration interval="10000" lifespan="10" max-idle="10"/>
+            <partition-handling enabled="true"/>
+            <state-transfer timeout="60000" chunk-size="10000"/>
+        </scattered-cache>
+    </cache-container>
+    <remote-cache-container connection-timeout="1000"
+                            default-remote-cluster="primary-site"
+                            key-size-estimate="512"
+                            max-retries="2"
+                            marshaller="JBOSS"
+                            modules="org.infinispan org.infinispan.commons"
+                            name="my-remote-container"
+                            protocol-version="2.5"
+                            socket-timeout="1000"
+                            tcp-no-delay="false"
+                            tcp-keep-alive="true"
+                            transaction-timeout="1000"
+                            value-size-estimate="1234">
+        <async-thread-pool min-threads="90"
+                           max-threads="100"
+                           queue-length="500"
+                           keepalive-time="1000"/>
+        <connection-pool exhausted-action="EXCEPTION"
+                         max-active="1"
+                         max-wait="3"
+                         min-evictable-idle-time="4"
+                         min-idle="5"
+        />
+        <invalidation-near-cache max-entries="20"/>
+        <property name="infinispan.client.hotrod.auth_username">username</property>
+        <property name="infinispan.client.hotrod.auth_password">password</property>
+        <remote-clusters>
+            <remote-cluster name="primary-site" socket-bindings="jdg1 jdg2 jdg3"/>
+            <remote-cluster name="failover-site" socket-bindings="jdg4 jdg5 jdg6"/>
+        </remote-clusters>
+        <security ssl-context="hotrod-elytron"/>
+        <transaction mode="BATCH"/>
+    </remote-cache-container>
+</subsystem>

@@ -30,7 +30,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
@@ -60,10 +60,9 @@ public class AuthenticatedSessionMarshaller implements ProtoStreamMarshaller<Aut
         List<String> roles = new LinkedList<>();
         Object credential = null;
         Principal original = null;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case MECHANISM_INDEX:
                     mechanism = reader.readString();
                     break;
@@ -80,7 +79,7 @@ public class AuthenticatedSessionMarshaller implements ProtoStreamMarshaller<Aut
                     original = new AccountImpl(reader.readString()).getPrincipal();
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         Account account = new AccountImpl(principal, new CopyOnWriteArraySet<>(roles), credential, original);

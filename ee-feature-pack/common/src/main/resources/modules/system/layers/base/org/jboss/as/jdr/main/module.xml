@@ -44,7 +44,6 @@
         <module name="java.management"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="org.apache.commons.cli"/>
-        <module name="org.apache.commons.io"/>
         <module name="org.apache.xalan" services="import"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>

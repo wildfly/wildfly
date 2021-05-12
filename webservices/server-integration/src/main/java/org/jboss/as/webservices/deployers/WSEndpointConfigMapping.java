@@ -22,6 +22,8 @@
 
 package org.jboss.as.webservices.deployers;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,9 +45,9 @@ public final class WSEndpointConfigMapping {
      * @param config Config with endpoint
      */
     public void registerEndpointConfig(final String endpointClass, final EndpointConfig config) {
-        if ((endpointClass == null) || (config == null)) {
-            throw new IllegalArgumentException();
-        }
+        checkNotNullParam("endpointClass", endpointClass);
+        checkNotNullParam("config", config);
+
         endpointConfigMap.put(endpointClass, config);
     }
 

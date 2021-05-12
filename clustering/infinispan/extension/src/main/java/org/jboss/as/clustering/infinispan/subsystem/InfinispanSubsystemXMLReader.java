@@ -182,7 +182,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
                 case MODULES: {
                     if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
-                        readAttribute(reader, i, operation, CacheResourceDefinition.ListAttribute.MODULES);
+                        readAttribute(reader, i, operation, CacheContainerResourceDefinition.ListAttribute.MODULES);
+                        break;
+                    }
+                }
+                case MARSHALLER: {
+                    if (this.schema.since(InfinispanSchema.VERSION_13_0)) {
+                        readAttribute(reader, i, operation, CacheContainerResourceDefinition.Attribute.MARSHALLER);
                         break;
                     }
                 }
@@ -1038,6 +1044,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     }
                     ROOT_LOGGER.attributeDeprecated(attribute.getLocalName(), reader.getLocalName());
                     break;
+                }
+                case COMPLETE_TIMEOUT: {
+                    if (this.schema.since(InfinispanSchema.VERSION_13_0)) {
+                        readAttribute(reader, i, operation, TransactionResourceDefinition.Attribute.COMPLETE_TIMEOUT);
+                        break;
+                    }
                 }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
@@ -1920,7 +1932,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case KEY_SIZE_ESTIMATE: {
-                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.KEY_SIZE_ESTIMATE);
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.DeprecatedAttribute.KEY_SIZE_ESTIMATE);
                     break;
                 }
                 case MAX_RETRIES: {
@@ -1951,7 +1963,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case VALUE_SIZE_ESTIMATE: {
-                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.VALUE_SIZE_ESTIMATE);
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.DeprecatedAttribute.VALUE_SIZE_ESTIMATE);
                     break;
                 }
                 case STATISTICS_ENABLED: {
@@ -1963,6 +1975,18 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 case MODULES: {
                     if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
                         readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.ListAttribute.MODULES);
+                        break;
+                    }
+                }
+                case MARSHALLER: {
+                    if (this.schema.since(InfinispanSchema.VERSION_13_0)) {
+                        readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.MARSHALLER);
+                        break;
+                    }
+                }
+                case TRANSACTION_TIMEOUT: {
+                    if (this.schema.since(InfinispanSchema.VERSION_13_0)) {
+                        readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.TRANSACTION_TIMEOUT);
                         break;
                     }
                 }
@@ -2146,6 +2170,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case TIMEOUT: {
+                    if (this.schema.since(InfinispanSchema.VERSION_13_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
                     readAttribute(reader, i, operation, RemoteTransactionResourceDefinition.Attribute.TIMEOUT);
                     break;
                 }

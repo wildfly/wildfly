@@ -27,7 +27,7 @@ import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.function.Function;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -54,10 +54,10 @@ public class SortedSetMarshaller<T extends SortedSet<Object>> extends AbstractCo
     public T readFrom(ProtoStreamReader reader) throws IOException {
         Comparator<Object> comparator = (Comparator<Object>) ComparatorMarshaller.INSTANCE.getBuilder();
         T set = this.factory.apply(comparator);
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
+
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if (index == 1) {
                 set.add(reader.readObject(Any.class).get());
             } else if ((index >= COMPARATOR_INDEX) && (index < COMPARATOR_INDEX + ComparatorMarshaller.INSTANCE.getFields())) {
@@ -66,7 +66,7 @@ public class SortedSetMarshaller<T extends SortedSet<Object>> extends AbstractCo
                 set = this.factory.apply(comparator);
                 set.addAll(existing);
             } else {
-                reading = reader.ignoreField(tag);
+                reader.skipField(tag);
             }
         }
         return set;

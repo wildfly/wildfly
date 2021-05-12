@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.wildfly.clustering.ee.cache.Key;
+import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 
 /**

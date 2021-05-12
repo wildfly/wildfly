@@ -27,7 +27,7 @@ import java.lang.reflect.Array;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * Marshaller for an Object array, using a repeated element field.
@@ -45,14 +45,13 @@ public class TypedArrayMarshaller implements FieldMarshaller<Object> {
     public Object readFrom(ProtoStreamReader reader) throws IOException {
         Class<?> componentType = this.componentType.readFrom(reader);
         List<Object> list = new LinkedList<>();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if (index == AnyField.ANY.getIndex()) {
                 list.add(Scalar.ANY.readFrom(reader));
             } else {
-                reading = reader.ignoreField(tag);
+                reader.skipField(tag);
             }
         }
         Object array = Array.newInstance((componentType == Any.class) ? Object.class : componentType, list.size());
@@ -79,7 +78,7 @@ public class TypedArrayMarshaller implements FieldMarshaller<Object> {
     }
 
     @Override
-    public int getWireType() {
+    public WireType getWireType() {
         return this.componentType.getWireType();
     }
 }

@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 
@@ -48,16 +48,15 @@ public class CollectionMarshaller<T extends Collection<Object>> extends Abstract
     @Override
     public T readFrom(ProtoStreamReader reader) throws IOException {
         T collection = this.factory.get();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             switch (index) {
                 case ELEMENT_INDEX:
                     collection.add(reader.readObject(Any.class).get());
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         return collection;

@@ -67,7 +67,7 @@ public abstract class AbstractModuleDeploymentTestCase extends
         if (withDependencies) {
             ja.addAsManifestResource(
                     new StringAsset(
-                            "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,javax.inject.api,org.jboss.as.connector\n"),
+                            "Dependencies: org.jboss.as.controller-client,org.jboss.dmr,javax.inject.api,org.jboss.as.connector,org.wildfly.common\n"),
                     "MANIFEST.MF");
         }
 

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * Provider for a {@link ScalarMarshaller}.
@@ -40,7 +41,7 @@ public interface ScalarMarshallerProvider extends ScalarMarshaller<Object> {
     }
 
     @Override
-    default int getWireType() {
+    default WireType getWireType() {
         return this.getMarshaller().getWireType();
     }
 

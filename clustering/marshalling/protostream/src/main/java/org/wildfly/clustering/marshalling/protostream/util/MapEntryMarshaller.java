@@ -27,7 +27,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
@@ -55,10 +55,9 @@ public class MapEntryMarshaller<T extends Map.Entry<Object, Object>> implements 
     @Override
     public T readFrom(ProtoStreamReader reader) throws IOException {
         SimpleEntry<Object, Object> entry = new SimpleEntry<>(null, null);
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             switch (index) {
                 case KEY_INDEX:
                     Object key = reader.readObject(Any.class).get();
@@ -69,7 +68,7 @@ public class MapEntryMarshaller<T extends Map.Entry<Object, Object>> implements 
                     entry.setValue(value);
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         return this.factory.apply(entry);

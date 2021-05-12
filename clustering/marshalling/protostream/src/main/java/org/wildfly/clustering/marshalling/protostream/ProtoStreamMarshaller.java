@@ -24,17 +24,14 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.RawProtoStreamReader;
-import org.infinispan.protostream.RawProtoStreamWriter;
-import org.infinispan.protostream.RawProtobufMarshaller;
+import org.infinispan.protostream.ProtobufTagMarshaller;
 
 /**
- * A {@link RawProtobufMarshaller} that include a facility for computing buffer sizes.
+ * A {@link ProtobufTagMarshaller} that include a facility for computing buffer sizes.
  * @author Paul Ferraro
  * @param <T> the type of this marshaller.
  */
-public interface ProtoStreamMarshaller<T> extends RawProtobufMarshaller<T>, Marshallable<T> {
+public interface ProtoStreamMarshaller<T> extends ProtobufTagMarshaller<T>, Marshallable<T> {
 
     @Override
     default String getTypeName() {
@@ -44,12 +41,12 @@ public interface ProtoStreamMarshaller<T> extends RawProtobufMarshaller<T>, Mars
     }
 
     @Override
-    default T readFrom(ImmutableSerializationContext context, RawProtoStreamReader reader) throws IOException {
-        return this.readFrom(new DefaultProtoStreamReader(context, reader));
+    default T read(ReadContext context) throws IOException {
+        return this.readFrom(new DefaultProtoStreamReader(context));
     }
 
     @Override
-    default void writeTo(ImmutableSerializationContext context, RawProtoStreamWriter writer, T value) throws IOException {
-        this.writeTo(new DefaultProtoStreamWriter(context, writer), value);
+    default void write(WriteContext context, T value) throws IOException {
+        this.writeTo(new DefaultProtoStreamWriter(context), value);
     }
 }

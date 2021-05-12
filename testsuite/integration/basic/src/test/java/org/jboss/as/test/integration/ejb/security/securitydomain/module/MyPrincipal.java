@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.security.securitydomain.module;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 import java.security.Principal;
 
 /**
@@ -32,10 +34,7 @@ public class MyPrincipal implements Principal {
     private final String name;
 
     public MyPrincipal(String name) {
-        if (name == null) {
-            throw new IllegalArgumentException("name cannot be null");
-        }
-        this.name = name;
+        this.name = checkNotNullParam("name", name);
     }
 
     public String getName() {

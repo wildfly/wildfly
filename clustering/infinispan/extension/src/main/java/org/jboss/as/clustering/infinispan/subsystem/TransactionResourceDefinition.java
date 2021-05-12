@@ -68,6 +68,8 @@ import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -107,6 +109,12 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
                 return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
             }
         },
+        COMPLETE_TIMEOUT("complete-timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(60))) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setMeasurementUnit(MeasurementUnit.MILLISECONDS);
+            }
+        }
         ;
         private final SimpleAttributeDefinition definition;
 
@@ -189,6 +197,12 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
     @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH, RequiredChildResourceDiscardPolicy.NEVER) : parent.addChildResource(PATH);
+
+        if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                   .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.COMPLETE_TIMEOUT.getName())
+                   .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.COMPLETE_TIMEOUT.getDefinition());
+        }
 
         List<org.jboss.as.controller.transform.OperationTransformer> addOperationTransformers = new LinkedList<>();
         List<org.jboss.as.controller.transform.OperationTransformer> removeOperationTransformers = new LinkedList<>();

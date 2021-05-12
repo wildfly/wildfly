@@ -29,7 +29,7 @@ import java.util.Iterator;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.ScalarMarshaller;
@@ -74,7 +74,7 @@ public enum SessionIdentifierMarshaller implements ScalarMarshaller<String> {
         ByteBuffer buffer = this.marshaller.write(id);
         int offset = buffer.arrayOffset();
         int length = buffer.limit() - offset;
-        writer.writeUInt32NoTag(length);
+        writer.writeVarint32(length);
         writer.writeRawBytes(buffer.array(), offset, length);
     }
 
@@ -84,7 +84,7 @@ public enum SessionIdentifierMarshaller implements ScalarMarshaller<String> {
     }
 
     @Override
-    public int getWireType() {
-        return WireFormat.WIRETYPE_LENGTH_DELIMITED;
+    public WireType getWireType() {
+        return WireType.LENGTH_DELIMITED;
     }
 }

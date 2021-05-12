@@ -27,7 +27,7 @@ import java.io.IOException;
 import org.infinispan.container.versioning.NumericVersion;
 import org.infinispan.container.versioning.SimpleClusteredVersion;
 import org.infinispan.metadata.EmbeddedMetadata;
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -54,10 +54,9 @@ public class EmbeddedMetadataMarshaller<MD extends EmbeddedMetadata> implements 
         EmbeddedMetadata.Builder builder = new EmbeddedMetadata.Builder();
         Long version = null;
         Integer topologyId = null;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case VERSION_INDEX: {
                     version = reader.readSInt64();
                     break;
@@ -75,7 +74,7 @@ public class EmbeddedMetadataMarshaller<MD extends EmbeddedMetadata> implements 
                     break;
                 }
                 default: {
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
                 }
             }
         }

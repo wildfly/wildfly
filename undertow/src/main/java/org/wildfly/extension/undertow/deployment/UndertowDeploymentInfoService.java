@@ -77,9 +77,9 @@ import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
 import org.jboss.as.server.suspend.SuspendController;
+import org.jboss.as.web.common.CachingWebInjectionContainer;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.ServletContextAttribute;
-import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.as.web.session.SharedSessionManagerConfig;
 import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
@@ -669,7 +669,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             final ServletInfo jspServlet = jspConfig != null ? jspConfig.createJSPServletInfo() : null;
             if (jspServlet != null) { //this would be null if jsp support is disabled
                 HashMap<String, JspPropertyGroup> propertyGroups = createJspConfig(mergedMetaData);
-                JspServletBuilder.setupDeployment(d, propertyGroups, tldInfo, new UndertowJSPInstanceManager(new WebInjectionContainer(module.getClassLoader(), componentRegistry)));
+                JspServletBuilder.setupDeployment(d, propertyGroups, tldInfo, new UndertowJSPInstanceManager(new CachingWebInjectionContainer(module.getClassLoader(), componentRegistry)));
 
                 if (mergedMetaData.getJspConfig() != null) {
                     Collection<JspPropertyGroup> values = new LinkedHashSet<>(propertyGroups.values());

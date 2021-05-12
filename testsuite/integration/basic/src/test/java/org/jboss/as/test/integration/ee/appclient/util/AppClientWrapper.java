@@ -171,11 +171,15 @@ public class AppClientWrapper implements Runnable {
         }
         final ZipExporter exporter = archive.as(ZipExporter.class);
         exporter.exportTo(archiveOnDisk);
+        final String archivePath = archiveOnDisk.getAbsolutePath();
+
+        // We don't directly pass the archive file and deployment name to appclient's main
+        // Instead we prove expressions work by passing an expression
         final String archiveArg;
         if(clientArchiveName == null) {
-            archiveArg = archiveOnDisk.getAbsolutePath();
+            archiveArg = "${test.expr.appclient.file: " + archivePath + "}";
         } else {
-            archiveArg = archiveOnDisk.getAbsolutePath() + "#" + clientArchiveName;
+            archiveArg = "${test.expr.appclient.file:" + archivePath + "}#${test.expr.appclient.deployment:" + clientArchiveName + "}";
         }
 
         // TODO: Move to a shared testsuite lib.
@@ -202,6 +206,8 @@ public class AppClientWrapper implements Runnable {
                 " -Djboss.server.base.dir="+ asDist + "/appclient" +
                 " -Djboss.home.dir="+ asDist +
                 " " + this.appClientArgs + " " + archiveArg + " " + args;
+
+        System.out.println(appClientCommand);
         return appClientCommand;
     }
 
@@ -232,12 +238,12 @@ public class AppClientWrapper implements Runnable {
     }
 
     private synchronized void outputLineReceived(String line) {
-        LOGGER.trace("[" + outThreadHame + "] " + line);
+        LOGGER.info("[" + outThreadHame + "] " + line);
         outputQueue.add(line);
     }
 
     private synchronized void errorLineReceived(String line) {
-        LOGGER.trace("[" + outThreadHame + "] " + line);
+        LOGGER.info("[" + outThreadHame + "] " + line);
     }
 
 }

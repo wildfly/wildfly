@@ -24,7 +24,7 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * @author Paul Ferraro
@@ -49,10 +49,9 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
         String classLoaderName = null;
         String moduleName = null;
         String moduleVersion = null;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case CLASS_NAME_INDEX:
                     className = (String) reader.readObject(Any.class).get();
                     break;
@@ -79,7 +78,7 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
                     moduleVersion = (String) reader.readObject(Any.class).get();
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         return new StackTraceElement(classLoaderName, moduleName, moduleVersion, className, methodName, fileName, line);

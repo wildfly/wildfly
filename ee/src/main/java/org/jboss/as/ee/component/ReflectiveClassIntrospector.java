@@ -67,6 +67,11 @@ public class ReflectiveClassIntrospector implements EEClassIntrospector, Service
     }
 
     @Override
+    public ManagedReference getInstance(Object instance) {
+        return null;
+    }
+
+    @Override
     public void start(StartContext startContext) throws StartException {
     }
 

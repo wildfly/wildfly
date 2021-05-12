@@ -25,7 +25,7 @@ package org.wildfly.clustering.web.cache.session;
 import java.io.IOException;
 import java.time.Duration;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -47,10 +47,9 @@ public class SessionAccessMetaDataMarshaller implements ProtoStreamMarshaller<Si
     public SimpleSessionAccessMetaData readFrom(ProtoStreamReader reader) throws IOException {
         Duration sinceCreation = DEFAULT_SINCE_CREATION;
         Duration lastAccess = DEFAULT_LAST_ACCESS;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case SINCE_CREATION_INDEX:
                     sinceCreation = reader.readObject(Duration.class);
                     break;
@@ -58,7 +57,7 @@ public class SessionAccessMetaDataMarshaller implements ProtoStreamMarshaller<Si
                     lastAccess = reader.readObject(Duration.class);
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         SimpleSessionAccessMetaData metaData = new SimpleSessionAccessMetaData();

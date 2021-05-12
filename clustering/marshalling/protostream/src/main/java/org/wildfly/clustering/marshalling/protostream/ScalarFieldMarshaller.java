@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * A field marshaller based on a scaler marshaller.
@@ -43,10 +44,9 @@ public class ScalarFieldMarshaller<T> implements FieldMarshaller<T> {
     @Override
     public T readFrom(ProtoStreamReader reader) throws IOException {
         T result = this.marshaller.readFrom(reader);
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            reading = reader.ignoreField(tag);
+            reader.skipField(tag);
         }
         return result;
     }
@@ -67,7 +67,7 @@ public class ScalarFieldMarshaller<T> implements FieldMarshaller<T> {
     }
 
     @Override
-    public int getWireType() {
+    public WireType getWireType() {
         return this.marshaller.getWireType();
     }
 }

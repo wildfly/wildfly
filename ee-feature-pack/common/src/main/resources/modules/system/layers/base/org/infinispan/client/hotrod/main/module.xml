@@ -38,6 +38,7 @@
         <module name="io.netty"/>
         <module name="io.reactivex.rxjava3.rxjava"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.protostream.types"/>
         <module name="org.jboss.logging"/>
         <module name="org.reactivestreams"/>
         <module name="org.wildfly.security.elytron-private"/>

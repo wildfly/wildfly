@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.as.network.ClientMapping;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
@@ -45,10 +45,9 @@ public class ClientMappingsRegistryEntryMarshaller implements ProtoStreamMarshal
     public ClientMappingsRegistryEntry readFrom(ProtoStreamReader reader) throws IOException {
         String memberName = null;
         List<ClientMapping> mappings = new LinkedList<>();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case MEMBER_INDEX:
                     memberName = reader.readString();
                     break;
@@ -56,7 +55,7 @@ public class ClientMappingsRegistryEntryMarshaller implements ProtoStreamMarshal
                     mappings.add(reader.readObject(ClientMapping.class));
                     break;
                 default:
-                    reading = reader.ignoreField(tag);
+                    reader.skipField(tag);
             }
         }
         return new ClientMappingsRegistryEntry(memberName, mappings);

@@ -130,7 +130,13 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-messaging-activemq</artifactId>
+            <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-messaging-activemq-injection</artifactId>
             <scope>test</scope>
         </dependency>
 

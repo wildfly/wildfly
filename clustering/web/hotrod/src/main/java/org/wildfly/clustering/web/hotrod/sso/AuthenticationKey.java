@@ -22,12 +22,12 @@
 
 package org.wildfly.clustering.web.hotrod.sso;
 
-import org.wildfly.clustering.infinispan.client.Key;
+import org.wildfly.clustering.ee.hotrod.RemoteCacheKey;
 
 /**
  * @author Paul Ferraro
  */
-public class AuthenticationKey extends Key<String> {
+public class AuthenticationKey extends RemoteCacheKey<String> {
 
     public AuthenticationKey(String id) {
         super(id);

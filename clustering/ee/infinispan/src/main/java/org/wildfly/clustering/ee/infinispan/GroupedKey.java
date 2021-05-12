@@ -25,10 +25,10 @@ package org.wildfly.clustering.ee.infinispan;
 import java.util.Objects;
 
 import org.infinispan.distribution.group.Group;
-import org.wildfly.clustering.ee.cache.Key;
+import org.wildfly.clustering.ee.Key;
 
 /**
- * A cache key supporting group co-location.
+ * An embedded cache key supporting group co-location.
  * @author Paul Ferraro
  */
 public class GroupedKey<K> implements Key<K> {

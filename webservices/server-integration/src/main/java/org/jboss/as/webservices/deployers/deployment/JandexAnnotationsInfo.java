@@ -22,6 +22,7 @@
 package org.jboss.as.webservices.deployers.deployment;
 
 import static org.jboss.as.server.deployment.Attachments.ANNOTATION_INDEX;
+import static org.wildfly.common.Assert.checkNotNullParam;
 
 import java.util.List;
 
@@ -48,9 +49,7 @@ public final class JandexAnnotationsInfo implements AnnotationsInfo {
 
     @Override
     public boolean hasAnnotatedClasses(String... annotation) {
-        if (annotation == null) {
-            throw new IllegalArgumentException();
-        }
+        checkNotNullParam("annotation", annotation);
         if (resourceRoots != null) {
             Index index = null;
             for (ResourceRoot resourceRoot : resourceRoots) {

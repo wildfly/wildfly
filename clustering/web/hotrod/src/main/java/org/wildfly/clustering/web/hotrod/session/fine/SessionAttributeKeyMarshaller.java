@@ -24,7 +24,7 @@ package org.wildfly.clustering.web.hotrod.session.fine;
 
 import java.io.IOException;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -44,16 +44,15 @@ public class SessionAttributeKeyMarshaller implements ProtoStreamMarshaller<Sess
     public SessionAttributeKey readFrom(ProtoStreamReader reader) throws IOException {
         String sessionId = null;
         UUIDBuilder attributeId = UUIDMarshaller.INSTANCE.getBuilder();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if (index == SESSION_IDENTIFIER_INDEX) {
                 sessionId = SessionIdentifierMarshaller.INSTANCE.readFrom(reader);
             } else if (index >= ATTRIBUTE_IDENTIFIER_INDEX && index < ATTRIBUTE_IDENTIFIER_INDEX + UUIDMarshaller.INSTANCE.getFields()) {
                 attributeId = UUIDMarshaller.INSTANCE.readField(reader, index - ATTRIBUTE_IDENTIFIER_INDEX, attributeId);
             } else {
-                reading = reader.ignoreField(tag);
+                reader.skipField(tag);
             }
         }
         return new SessionAttributeKey(sessionId, attributeId.build());

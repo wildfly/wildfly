@@ -22,13 +22,13 @@
 
 package org.wildfly.clustering.web.hotrod.session;
 
-import org.wildfly.clustering.infinispan.client.Key;
+import org.wildfly.clustering.ee.hotrod.RemoteCacheKey;
 
 /**
  * Cache key for the session creation meta data entry.
  * @author Paul Ferraro
  */
-public class SessionCreationMetaDataKey extends Key<String> {
+public class SessionCreationMetaDataKey extends RemoteCacheKey<String> {
 
     public SessionCreationMetaDataKey(String id) {
         super(id);

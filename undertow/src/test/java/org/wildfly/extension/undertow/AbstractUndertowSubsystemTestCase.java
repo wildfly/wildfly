@@ -188,6 +188,18 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
 
         ModelNode res = ModelTestUtils.checkOutcome(mainServices.executeOperation(op));
         Assert.assertNotNull(res);
+
+        // WFLY-14648 Check expression in enabled attribute is resolved.
+        op = Util.createOperation("write-attribute",
+                PathAddress.pathAddress(UndertowExtension.SUBSYSTEM_PATH)
+                        .append("server", virtualHostName)
+                        .append("http-listener", "default")
+        );
+        op.get("name").set("enabled");
+        op.get("value").set("${env.val:true}");
+
+        res = ModelTestUtils.checkOutcome(mainServices.executeOperation(op));
+        Assert.assertNotNull(res);
     }
 
     public static void testRuntimeOther(KernelServices mainServices) {

@@ -24,7 +24,7 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * Marshaller for a typed enumeration.
@@ -46,14 +46,13 @@ public class TypedEnumMarshaller<E extends Enum<E>> implements FieldMarshaller<E
         @SuppressWarnings("unchecked")
         Class<E> enumClass = (Class<E>) this.type.readFrom(reader);
         E result = enumClass.getEnumConstants()[DEFAULT_ORDINAL];
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if (index == AnyField.ANY.getIndex()) {
                 result = reader.readEnum(enumClass);
             } else {
-                reading = reader.ignoreField(tag);
+                reader.skipField(tag);
             }
         }
         return result;
@@ -76,7 +75,7 @@ public class TypedEnumMarshaller<E extends Enum<E>> implements FieldMarshaller<E
     }
 
     @Override
-    public int getWireType() {
+    public WireType getWireType() {
         return this.type.getWireType();
     }
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.mdb.objectmessage;
 
+import static org.wildfly.common.Assert.checkNotNullParam;
+
 import java.io.Serializable;
 
 /**
@@ -32,10 +34,7 @@ public class SimpleMessageInEarLibJar implements Serializable {
     private final String msg;
 
     public SimpleMessageInEarLibJar(String msg) {
-        if (msg == null) {
-            throw new IllegalArgumentException("Message cannot be null");
-        }
-        this.msg = msg;
+        this.msg = checkNotNullParam("msg", msg);
     }
 
     public String getMessage() {

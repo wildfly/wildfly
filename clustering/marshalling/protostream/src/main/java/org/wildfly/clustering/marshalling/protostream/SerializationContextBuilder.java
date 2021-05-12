@@ -42,6 +42,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Paul Ferraro
  */
 public class SerializationContextBuilder {
+    private static final String PROTOSTREAM_BASE_PACKAGE_NAME = org.infinispan.protostream.BaseMarshaller.class.getPackage().getName();
 
     private final SerializationContext context = new SerializationContextImpl(Configuration.builder().build());
 
@@ -88,7 +89,9 @@ public class SerializationContextBuilder {
      * @return this builder
      */
     public SerializationContextBuilder register(Iterable<? extends SerializationContextInitializer> initializers) {
-        this.init(initializers.iterator());
+        for (SerializationContextInitializer initializer : initializers) {
+            this.init(initializer);
+        }
         return this;
     }
 
@@ -115,22 +118,22 @@ public class SerializationContextBuilder {
     }
 
     private boolean tryLoad(ClassLoader loader) {
-        PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>() {
+        PrivilegedAction<Iterator<SerializationContextInitializer>> action = new PrivilegedAction<Iterator<SerializationContextInitializer>>() {
             @Override
-            public Boolean run() {
-                Iterator<SerializationContextInitializer> initializers = ServiceLoader.load(SerializationContextInitializer.class, loader).iterator();
-                boolean init = initializers.hasNext();
-                SerializationContextBuilder.this.init(initializers);
-                return init;
+            public Iterator<SerializationContextInitializer> run() {
+                return ServiceLoader.load(SerializationContextInitializer.class, loader).iterator();
             }
         };
-        return WildFlySecurityManager.doUnchecked(action).booleanValue();
-    }
-
-    void init(Iterator<? extends SerializationContextInitializer> initializers) {
+        Iterator<SerializationContextInitializer> initializers = WildFlySecurityManager.doUnchecked(action);
+        boolean init = initializers.hasNext();
         while (initializers.hasNext()) {
-            this.init(initializers.next());
+            SerializationContextInitializer initializer = initializers.next();
+            // Do not load initializers from protostream-types
+            if (!initializer.getClass().getName().startsWith(PROTOSTREAM_BASE_PACKAGE_NAME)) {
+                this.init(initializer);
+            }
         }
+        return init;
     }
 
     private void init(SerializationContextInitializer initializer) {
