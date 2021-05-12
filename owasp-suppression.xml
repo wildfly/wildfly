@@ -546,7 +546,7 @@
    file name: cxf-rt-databinding-aegis-3.3.7.jar
    file name: cxf-xjc-dv-3.3.0.jar
    ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.cxf\..*$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.cxf.*$</packageUrl>
         <cve>CVE-2021-22696</cve>
     </suppress>
 </suppressions>
