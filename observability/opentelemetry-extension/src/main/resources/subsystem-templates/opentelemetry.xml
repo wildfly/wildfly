@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+    <extension-module>org.wildfly.extension.opentelemetry</extension-module>
+    <subsystem xmlns="urn:wildfly:opentelemetry:1.0"
+               exporter="jaeger"
+               endpoint="http://localhost:14250"
+               span-processor="batch"
+               batch-delay="5000"
+               max-queue-size="2048"
+               max-export-batch-size="512"
+               export-timeout="30000"
+               />
+</config>

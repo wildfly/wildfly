@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2021, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:wildfly:opentelemetry:1.0"
+           xmlns="urn:wildfly:opentelemetry:1.0"
+           elementFormDefault="qualified"
+           version="1.0">
+
+    <xs:element name="subsystem">
+        <xs:complexType>
+            <xs:attribute name="exporter" default="jaeger" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        The name of the exporter to use
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="endpoint" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        The URL for the exporter endpoint.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="span-processor" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        The type of span processor. Acceptable values are 'batch' (default) and 'simple'.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="batch-delay" type="xs:long">
+                <xs:annotation>
+                    <xs:documentation>
+                        The interval, in milliseconds, between two consecutive exports. Default is 5000.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="max-queue-size" type="xs:integer">
+                <xs:annotation>
+                    <xs:documentation>
+                        The maximum size of the queue before it is exported.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="max-export-batch-size" type="xs:integer">
+                <xs:annotation>
+                    <xs:documentation>
+                        The maximum size of the export batch.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="export-timeout" type="xs:long">
+                <xs:annotation>
+                    <xs:documentation>
+                        The maximum allowed time, in milliseconds, to export data.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="sampler" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        The type of sampler to use
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="sampler_arg" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        The argument to configure the sampler
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

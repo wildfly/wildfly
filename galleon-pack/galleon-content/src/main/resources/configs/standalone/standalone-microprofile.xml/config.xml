@@ -13,6 +13,7 @@
         <include name="microprofile-rest-client"/>
         <include name="undertow-legacy-https"/>
         <exclude name="management-security-realm"/>
+        <include name="opentelemetry-api"/>
     </layers>
     <!-- TODO WFLY-13150 encapsulate these in a layer -->
     <feature-group name="distributable-web-local"/>
