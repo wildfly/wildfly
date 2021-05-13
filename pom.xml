@@ -366,7 +366,6 @@
         <version.org.awaitility.awaitility>4.0.2</version.org.awaitility.awaitility>
         <version.org.bitbucket.jose4j>0.7.2</version.org.bitbucket.jose4j>
         <version.org.bytebuddy>1.9.11</version.org.bytebuddy>
-        <version.org.codehaus.jackson>1.9.13.redhat-00007</version.org.codehaus.jackson>
         <version.org.codehaus.jettison>1.4.0</version.org.codehaus.jettison>
         <version.org.cryptacular>1.2.4</version.org.cryptacular>
         <version.org.eclipse.jdt.core.compiler>4.6.1</version.org.eclipse.jdt.core.compiler>
@@ -390,7 +389,7 @@
         <version.org.hamcrest.java-hamcrest>2.0.0.0</version.org.hamcrest.java-hamcrest>
         <version.org.hibernate>5.3.20.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.5.Final</version.org.hibernate.commons.annotations>
-        <version.org.hibernate.search>5.10.7.Final</version.org.hibernate.search>
+        <version.org.hibernate.search>5.10.11.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>6.0.22.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <!-- n.b. Infinispan Server version used for integration testing is defined separately in testsuite/integration/clustering/pom.xml -->
@@ -6053,30 +6052,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-core-asl</artifactId>
-                <version>${version.org.codehaus.jackson}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-jaxrs</artifactId>
-                <version>${version.org.codehaus.jackson}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-mapper-asl</artifactId>
-                <version>${version.org.codehaus.jackson}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-xc</artifactId>
-                <version>${version.org.codehaus.jackson}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.codehaus.jettison</groupId>
                 <artifactId>jettison</artifactId>
                 <version>${version.org.codehaus.jettison}</version>
@@ -7789,30 +7764,6 @@
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-jackson-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.codehaus.jackson</groupId>
-                        <artifactId>jackson-core-asl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.jackson</groupId>
-                        <artifactId>jackson-mapper-asl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.jackson</groupId>
-                        <artifactId>jackson-jaxrs</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.jackson</groupId>
-                        <artifactId>jackson-xc</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -9806,6 +9757,10 @@
                                             <exclude>org.apache.geronimo.specs:geronimo-stax-api_1.0_spec</exclude>
                                             <exclude>org.apache.xalan:serializer</exclude>
                                             <exclude>org.apache.xalan:xalan</exclude>
+                                            <exclude>org.codehaus.jackson:jackson-core-asl</exclude>
+                                            <exclude>org.codehaus.jackson:jackson-jaxrs</exclude>
+                                            <exclude>org.codehaus.jackson:jackson-mapper-asl</exclude>
+                                            <exclude>org.codehaus.jackson:jackson-xc</exclude>
                                             <exclude>org.glassfish:javax.json</exclude>
                                             <exclude>org.glassfish.soteria:javax.security.enterprise</exclude>
                                             <exclude>org.hibernate:ejb3-persistence</exclude>
@@ -9836,6 +9791,7 @@
                                             <!-- replaced by io.netty:netty-all -->
                                             <exclude>io.netty:netty</exclude>
                                             <exclude>org.jboss.remoting3:jboss-remoting</exclude>
+                                            <exclude>org.jboss.resteasy:resteasy-jackson-provider</exclude>
                                             <exclude>org.jboss.security:jbosssx</exclude>
                                             <!-- replaced by wildfly-elytron -->
                                             <exclude>org.jboss.sasl:jboss-sasl</exclude>

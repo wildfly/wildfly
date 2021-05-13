@@ -54,12 +54,6 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
     public static final ModuleIdentifier JSON_API = ModuleIdentifier.create("javax.json.api");
     public static final ModuleIdentifier JAXRS_API = ModuleIdentifier.create("javax.ws.rs.api");
 
-    /**
-     * We include this so that jackson annotations will be available, otherwise they will be ignored which leads
-     * to confusing behaviour.
-     *
-     */
-    public static final ModuleIdentifier JACKSON_CORE_ASL = ModuleIdentifier.create("org.codehaus.jackson.jackson-core-asl");
     public static final ModuleIdentifier MP_REST_CLIENT = ModuleIdentifier.create("org.eclipse.microprofile.restclient");
 
     public static final JaxrsSubsystemDefinition INSTANCE = new JaxrsSubsystemDefinition();
@@ -87,14 +81,12 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
                     RuntimePackageDependency.optional(RESTEASY_JSAPI.getName()),
                     RuntimePackageDependency.optional(RESTEASY_MULTIPART.getName()),
                     RuntimePackageDependency.optional(RESTEASY_YAML.getName()),
-                    RuntimePackageDependency.optional(JACKSON_CORE_ASL.getName()),
                     RuntimePackageDependency.optional(RESTEASY_CRYPTO.getName()),
                     RuntimePackageDependency.optional(JACKSON_DATATYPE_JDK8.getName()),
                     RuntimePackageDependency.optional(JACKSON_DATATYPE_JSR310.getName()),
                     // The following ones are optional dependencies located in org.jboss.as.jaxrs module.xml
                     // To be provisioned, they need to be explicitly added as optional packages.
                     RuntimePackageDependency.optional("org.jboss.resteasy.resteasy-jettison-provider"),
-                    RuntimePackageDependency.optional("org.jboss.resteasy.resteasy-jackson-provider"),
                     RuntimePackageDependency.optional("org.jboss.resteasy.resteasy-spring"));
     }
 }

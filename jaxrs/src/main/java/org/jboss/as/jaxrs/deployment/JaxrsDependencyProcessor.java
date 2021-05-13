@@ -36,7 +36,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 
-import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JACKSON_CORE_ASL;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JACKSON_DATATYPE_JDK8;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JACKSON_DATATYPE_JSR310;
 import static org.jboss.as.jaxrs.JaxrsSubsystemDefinition.JAXB_API;
@@ -99,7 +98,6 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, RESTEASY_JSAPI, true, false);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_MULTIPART, true, false);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_YAML, true, false);
-        addDependency(moduleSpecification, moduleLoader, JACKSON_CORE_ASL, true, false);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_CRYPTO, true, false);
         addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JDK8, true, false);
         addDependency(moduleSpecification, moduleLoader, JACKSON_DATATYPE_JSR310, true, false);
