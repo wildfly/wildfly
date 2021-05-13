@@ -76,6 +76,7 @@
         <version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.0</version.jakarta.xml.bind.jakarta-xml-bind-api>
         <version.org.eclipse.yasson>2.0.1</version.org.eclipse.yasson>
         <version.org.glassfish.jakarta.el>4.0.0</version.org.glassfish.jakarta.el>
+        <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
 		<!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
 		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version --> 
         <version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</version.org.glassfish.jaxb.jaxb-xjc>
@@ -856,7 +857,6 @@
             </exclusions>
         </dependency>
 
-        <!-- TODO EE 9 glassfish 6 M1 version not yet on maven cental
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.enterprise.concurrent</artifactId>
@@ -866,8 +866,12 @@
                     <groupId>jakarta.enterprise.concurrent</groupId>
                     <artifactId>jakarta.enterprise.concurrent-api</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>jakarta.platform</groupId>
+                    <artifactId>jakarta.jakartaee-api</artifactId>
+                </exclusion>
             </exclusions>
-        </dependency>-->
+        </dependency>
 
         <dependency>
             <groupId>org.glassfish</groupId>
