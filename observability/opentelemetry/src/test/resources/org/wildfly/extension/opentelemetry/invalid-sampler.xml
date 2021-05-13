@@ -1,0 +1,3 @@
+<subsystem xmlns="urn:wildfly:opentelemetry:1.0" service-name="foo">
+    <sampler type="bad"></sampler>
+</subsystem>

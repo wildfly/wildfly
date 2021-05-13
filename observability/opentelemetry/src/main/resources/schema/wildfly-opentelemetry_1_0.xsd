@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2021, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:wildfly:opentelemetry:1.0"
+           xmlns="urn:wildfly:opentelemetry:1.0"
+           elementFormDefault="qualified"
+           version="1.0">
+
+    <xs:element name="subsystem">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="exporter" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Configures the exporter used to export traces
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:attribute name="type" default="jaeger">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The type of exporter to use. Can be either 'jaeger' or 'otlp'.
+                                </xs:documentation>
+                            </xs:annotation>
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="jaeger"/>
+                                    <xs:enumeration value="otlp"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="endpoint" type="xs:string">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The endpoint to which traces are exported. Value will be exporter-type-dependent.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="span-processor" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>
+                            This configures the processor for the spans in the trace
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:attribute name="type" default="batch">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The type of processor to use. Valid values are 'simple' and 'batch'.
+                                </xs:documentation>
+                            </xs:annotation>
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="batch"/>
+                                    <xs:enumeration value="simple"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute type="xs:integer" name="batch-delay" default="5000">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The interval, in milliseconds, between two consecutive exports. Default is 5000.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute type="xs:integer" name="max-queue-size" default="2048">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The maximum number of traces in the queue before they are exported.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute type="xs:integer" name="max-export-batch-size" default="512">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The maximum number of traces to be exported in a given batch.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute type="xs:integer" name="export-timeout" default="30000">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The interval, in milliseconds, between two consecutive exports. Default is 5000.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="sampler" minOccurs="0">
+                    <xs:complexType>
+                        <xs:attribute name="type">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The sampling strategy to use.
+                                </xs:documentation>
+                            </xs:annotation>
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="on"/>
+                                    <xs:enumeration value="off"/>
+                                    <xs:enumeration value="ratio"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute type="xs:float" name="ratio">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    For the ratio-based sampler, this configures the percentage of traces to sample.
+                                    Must be between 0.0 and 1.0.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="service-name">
+                <xs:annotation>
+                    <xs:documentation>
+                        The service name reported to the trace collector
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
