@@ -28,6 +28,7 @@ import javax.ws.rs.core.Application;
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
-@ApplicationPath("/microprofile-metrics-app")
+@ApplicationPath(TestApplication.CONTEXT_ROOT)
 public class TestApplication extends Application {
+    public static final String CONTEXT_ROOT = "/microprofile-metrics-app";
 }
