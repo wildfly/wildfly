@@ -34,7 +34,7 @@
     </dependencies>
 
     <resources>
-        <artifact name="${com.io7m.xom:xom}"/>
+        <artifact name="${xom:xom}"/>
     </resources>
 
 </module>
