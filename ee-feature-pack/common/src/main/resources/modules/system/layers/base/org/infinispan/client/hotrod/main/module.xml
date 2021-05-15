@@ -34,10 +34,10 @@
         <module name="javax.transaction.api"/>
 
         <module name="com.github.ben-manes.caffeine"/>
-        <module name="com.google.protobuf" optional="true"/>
         <module name="io.netty"/>
         <module name="io.reactivex.rxjava3.rxjava"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.protostream"/>
         <module name="org.infinispan.protostream.types"/>
         <module name="org.jboss.logging"/>
         <module name="org.reactivestreams"/>
