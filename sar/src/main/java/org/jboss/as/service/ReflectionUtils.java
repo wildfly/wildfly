@@ -25,13 +25,10 @@ package org.jboss.as.service;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.service.logging.SarLogger;
 
 /**
@@ -140,18 +137,6 @@ final class ReflectionUtils {
         } catch (final ClassNotFoundException e) {
             throw SarLogger.ROOT_LOGGER.classNotFound(e);
         }
-    }
-
-    static List<ClassReflectionIndex> getClassHierarchy(final String className, final DeploymentReflectionIndex index, final ClassLoader classLoader) {
-        final List<ClassReflectionIndex> retVal = new LinkedList<ClassReflectionIndex>();
-
-        Class<?> temp = getClass(className, classLoader);
-        while (temp != null) {
-            retVal.add(index.getClassIndex(temp));
-            temp = temp.getSuperclass();
-        }
-
-        return Collections.unmodifiableList(retVal);
     }
 
     private static String parameterList(final Class<?>[] parameterTypes) {
