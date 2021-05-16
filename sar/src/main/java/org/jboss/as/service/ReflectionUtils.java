@@ -38,6 +38,8 @@ import org.jboss.as.service.logging.SarLogger;
  */
 final class ReflectionUtils {
 
+    private static final Class<?>[] NO_ARGS = new Class<?>[0];
+
     private ReflectionUtils() {
         // forbidden instantiation
     }
@@ -47,37 +49,16 @@ final class ReflectionUtils {
         final String iserName = "is" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
 
         try {
-            return clazz.getMethod(getterName, new Class[]{});
+            return clazz.getMethod(getterName, NO_ARGS);
         } catch (NoSuchMethodException e) {
             // ignore for now - might be a boolean property
         }
         try {
-            return clazz.getMethod(iserName, new Class[]{});
+            return clazz.getMethod(iserName, NO_ARGS);
         } catch (NoSuchMethodException e) {
             final String className = clazz.getName();
             throw SarLogger.ROOT_LOGGER.propertyMethodNotFound("Get", propertyName, className);
         }
-    }
-
-    static Method getGetter(final List<ClassReflectionIndex> classHierarchy, final String propertyName) {
-        final String getterName = "get" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
-        final String iserName = "is" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
-
-        for (final ClassReflectionIndex classIndex : classHierarchy) {
-            final Iterator<Method> methods = classIndex.getMethods().iterator();
-            Method method = null;
-            String methodName = null;
-            while (methods.hasNext()) {
-                method = methods.next();
-                methodName = method.getName();
-                if ((getterName.equals(methodName) || iserName.equals(methodName)) && method.getParameterTypes().length == 0) {
-                    return method;
-                }
-            }
-        }
-
-        final String className = classHierarchy.get(0).getIndexedClass().getName();
-        throw SarLogger.ROOT_LOGGER.propertyMethodNotFound("Get", propertyName, className);
     }
 
     static Method getSetter(final List<ClassReflectionIndex> classHierarchy, final String propertyName) {
@@ -85,12 +66,10 @@ final class ReflectionUtils {
 
         for (final ClassReflectionIndex classIndex : classHierarchy) {
             final Iterator<Method> methods = classIndex.getMethods().iterator();
-            Method method = null;
-            String methodName = null;
+            Method method;
             while (methods.hasNext()) {
                 method = methods.next();
-                methodName = method.getName();
-                if (setterName.equals(methodName) && method.getParameterTypes().length == 1) {
+                if (setterName.equals(method.getName()) && method.getParameterTypes().length == 1) {
                     return method;
                 }
             }
@@ -108,19 +87,15 @@ final class ReflectionUtils {
         }
     }
 
-    static Method getMethod(final List<ClassReflectionIndex> classHierarchy, final String methodName, final Class<?>[] types, final boolean fail) {
+    static Method getNoArgMethod(final List<ClassReflectionIndex> classHierarchy, final String methodName) {
         for (final ClassReflectionIndex classIndex : classHierarchy) {
-            final Collection<Method> methods = classIndex.getMethods(methodName, types);
+            final Collection<Method> methods = classIndex.getMethods(methodName, NO_ARGS);
             if (methods.size() == 1) {
                 return methods.iterator().next();
             }
         }
-        if (fail) {
-            final String className = classHierarchy.get(0).getIndexedClass().getName();
-            throw SarLogger.ROOT_LOGGER.methodNotFound(methodName, parameterList(types), className);
-        } else {
-            return null;
-        }
+
+        return null;
     }
 
     static Object newInstance(final Constructor<?> constructor, final Object[] args) {

@@ -50,7 +50,6 @@ final class MBeanServices {
     private static final String DESTROY_METHOD_NAME = "destroy";
     private static final String START_METHOD_NAME = "start";
     private static final String STOP_METHOD_NAME = "stop";
-    private static final Class<?>[] NO_ARGS = new Class<?>[0];
     private final String mBeanName;
     private final ServiceName createDestroyServiceName;
     private final ServiceName startStopServiceName;
@@ -80,8 +79,8 @@ final class MBeanServices {
             throw SarLogger.ROOT_LOGGER.nullVar("mbeanServerServiceName");
         }
 
-        final Method createMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, CREATE_METHOD_NAME, NO_ARGS, false);
-        final Method destroyMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, DESTROY_METHOD_NAME, NO_ARGS, false);
+        final Method createMethod = ReflectionUtils.getNoArgMethod(mBeanClassHierarchy, CREATE_METHOD_NAME);
+        final Method destroyMethod = ReflectionUtils.getNoArgMethod(mBeanClassHierarchy, DESTROY_METHOD_NAME);
         createDestroyServiceName = ServiceNameFactory.newCreateDestroy(mBeanName);
         createDestroyServiceBuilder = target.addService(createDestroyServiceName);
         Consumer<Object> mBeanInstanceConsumer = createDestroyServiceBuilder.provides(createDestroyServiceName);
@@ -93,8 +92,8 @@ final class MBeanServices {
             createDestroyServiceBuilder.requires(componentInstantiator.getComponentStartServiceName());
         }
 
-        final Method startMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, START_METHOD_NAME, NO_ARGS, false);
-        final Method stopMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, STOP_METHOD_NAME, NO_ARGS, false);
+        final Method startMethod = ReflectionUtils.getNoArgMethod(mBeanClassHierarchy, START_METHOD_NAME);
+        final Method stopMethod = ReflectionUtils.getNoArgMethod(mBeanClassHierarchy, STOP_METHOD_NAME);
         startStopServiceName = ServiceNameFactory.newStartStop(mBeanName);
         startStopServiceBuilder = target.addService(startStopServiceName);
         mBeanInstanceConsumer = startStopServiceBuilder.provides(startStopServiceName);
