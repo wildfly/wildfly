@@ -21,12 +21,12 @@
  */
 package org.wildfly.test.extension.rts.common;
 
-import org.codehaus.jettison.json.JSONArray;
 import org.jboss.jbossts.star.util.TxLinkNames;
 import org.jboss.jbossts.star.util.TxStatus;
 import org.jboss.jbossts.star.util.TxSupport;
 import org.jboss.logging.Logger;
 
+import javax.json.Json;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.PUT;
@@ -137,7 +137,7 @@ public class LoggingRestATResource {
             LOG.trace("LoggingRestATResource.getInvocations()");
         }
 
-        return new JSONArray(invocations).toString();
+        return Json.createArrayBuilder(invocations).build().toString();
     }
 
     @PUT

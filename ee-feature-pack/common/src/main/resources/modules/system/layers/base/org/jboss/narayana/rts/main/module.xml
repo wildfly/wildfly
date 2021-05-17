@@ -31,9 +31,10 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.resteasy.resteasy-jaxrs"/>
+        <module name="org.jboss.resteasy.resteasy-core-spi"/>
+        <module name="org.jboss.resteasy.resteasy-core"/>
         <module name="org.jboss.resteasy.resteasy-jaxb-provider"/>
-        <module name="org.jboss.resteasy.resteasy-jettison-provider"/>
+        <module name="org.jboss.resteasy.resteasy-json-p-provider"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.transaction.api"/>
         <module name="javax.resource.api"/>

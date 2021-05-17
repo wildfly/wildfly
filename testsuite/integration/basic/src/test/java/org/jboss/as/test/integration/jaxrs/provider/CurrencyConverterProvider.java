@@ -21,24 +21,27 @@
  */
 package org.jboss.as.test.integration.jaxrs.provider;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.Currency;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.ext.ParamConverter;
+import javax.ws.rs.ext.ParamConverterProvider;
 import javax.ws.rs.ext.Provider;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.spi.StringConverter;
 
 /**
- * A RestEasy {@link StringConverter} test implementation for Currency.
+ * A Jakarta RESTful Web Services {@link ParamConverter} test implementation for Currency.
  *
  * @author Josef Cacek
  */
 @Provider
 @Path("/")
-public class CurrencyConverterProvider implements StringConverter<Currency> {
+public class CurrencyConverterProvider implements ParamConverter<Currency>, ParamConverterProvider {
 
     private static Logger LOGGER = Logger.getLogger(CurrencyConverterProvider.class);
 
@@ -52,8 +55,8 @@ public class CurrencyConverterProvider implements StringConverter<Currency> {
      *
      * @param str
      * @return
-     * @see org.jboss.resteasy.spi.StringConverter#fromString(java.lang.String)
      */
+    @Override
     public Currency fromString(String str) {
         LOGGER.trace("Converting to currency: " + str);
         return Currency.getInstance(str);
@@ -64,8 +67,8 @@ public class CurrencyConverterProvider implements StringConverter<Currency> {
      *
      * @param currency
      * @return
-     * @see org.jboss.resteasy.spi.StringConverter#toString(java.lang.Object)
      */
+    @Override
     public String toString(Currency currency) {
         return currency.getCurrencyCode();
     }
@@ -83,4 +86,12 @@ public class CurrencyConverterProvider implements StringConverter<Currency> {
         return currency.getSymbol();
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> ParamConverter<T> getConverter(final Class<T> rawType, final Type genericType, final Annotation[] annotations) {
+        if (Currency.class.isAssignableFrom(rawType)) {
+            return (ParamConverter<T>) this;
+        }
+        return null;
+    }
 }
