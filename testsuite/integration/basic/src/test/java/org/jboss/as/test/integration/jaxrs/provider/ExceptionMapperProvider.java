@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.integration.jaxrs.provider;
 
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
@@ -38,12 +36,10 @@ import org.jboss.logging.Logger;
  * @author Josef Cacek
  */
 @Provider
-@Startup
-@Singleton
 @Path("/")
 public class ExceptionMapperProvider implements ExceptionMapper<Exception> {
 
-    private static Logger LOGGER = Logger.getLogger(ExceptionMapperProvider.class);
+    private static final Logger LOGGER = Logger.getLogger(ExceptionMapperProvider.class);
 
     public static final String ERROR_MESSAGE = "ERROR OCCURRED";
     public static final String PATH_EXCEPTION = "/exception";
@@ -54,7 +50,9 @@ public class ExceptionMapperProvider implements ExceptionMapper<Exception> {
      * Responds {@value #ERROR_MESSAGE} to the OK (200) response.
      *
      * @param exception
+     *
      * @return
+     *
      * @see javax.ws.rs.ext.ExceptionMapper#toResponse(java.lang.Throwable)
      */
     @Override

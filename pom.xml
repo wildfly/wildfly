@@ -297,6 +297,7 @@
         <version.com.google.guava>30.1-jre</version.com.google.guava>
         <version.com.google.guava.failureaccess>1.0.1</version.com.google.guava.failureaccess>
         <version.com.h2database>1.4.197</version.com.h2database>
+        <version.com.ibm.async.asyncutil>0.1.0</version.com.ibm.async.asyncutil>
         <version.com.microsoft.azure>8.6.5</version.com.microsoft.azure>
         <version.com.nimbus.jose-jwt>8.11</version.com.nimbus.jose-jwt>
         <version.com.squareup.okhttp3>3.9.0</version.com.squareup.okhttp3>
@@ -382,7 +383,6 @@
         <version.org.awaitility.awaitility>4.0.2</version.org.awaitility.awaitility>
         <version.org.bitbucket.jose4j>0.7.2</version.org.bitbucket.jose4j>
         <version.org.bytebuddy>1.11.12</version.org.bytebuddy>
-        <version.org.codehaus.jettison>1.4.0</version.org.codehaus.jettison>
         <version.org.cryptacular>1.2.4</version.org.cryptacular>
         <version.org.eclipse.jdt>3.26.0</version.org.eclipse.jdt>
         <version.org.eclipse.microprofile.config.api>2.0</version.org.eclipse.microprofile.config.api>
@@ -432,7 +432,7 @@
         <version.org.jboss.narayana>5.12.0.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.5.Final</version.org.jboss.openjdk-orb>
         <version.org.picketbox>5.0.3.Final-redhat-00007</version.org.picketbox>
-        <version.org.jboss.resteasy>3.15.1.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>4.7.0.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>3.0.6.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
@@ -1812,6 +1812,12 @@
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
                 <version>${version.com.h2database}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.ibm.async</groupId>
+                <artifactId>asyncutil</artifactId>
+                <version>${version.com.ibm.async.asyncutil}</version>
             </dependency>
 
             <dependency>
@@ -5678,7 +5684,7 @@
                         <groupId>jakarta.xml.bind</groupId>
                         <artifactId>jakarta.xml.bind-api</artifactId>
                     </exclusion>
-                    <exclusion>
+                   <exclusion>
                         <groupId>jakarta.annotation</groupId>
                         <artifactId>jakarta.annotation-api</artifactId>
                     </exclusion>
@@ -5718,11 +5724,11 @@
                         <groupId>jakarta.xml.bind</groupId>
                         <artifactId>jakarta.xml.bind-api</artifactId>
                     </exclusion>
-                    <exclusion>
+                   <exclusion>
                         <groupId>jakarta.activation</groupId>
                         <artifactId>jakarta.activation-api</artifactId>
                     </exclusion>
-                    <exclusion>
+                   <exclusion>
                         <groupId>jakarta.annotation</groupId>
                         <artifactId>jakarta.annotation-api</artifactId>
                     </exclusion>
@@ -6168,18 +6174,6 @@
                     <exclusion>
                         <groupId>jakarta.xml.bind</groupId>
                         <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.codehaus.jettison</groupId>
-                <artifactId>jettison</artifactId>
-                <version>${version.org.codehaus.jettison}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>stax</groupId>
-                        <artifactId>stax-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -7823,12 +7817,8 @@
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.bouncycastle</groupId>
-                        <artifactId>bcprov-jdk16</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -7839,12 +7829,8 @@
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -7855,18 +7841,8 @@
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>jaxrs-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
-                    </exclusion>
-                    <!-- TODO remove this exclusion once this supports Jakarta Validation -->
-                    <!-- Superceded by jakarta.validation:jakarta.validation-api -->
-                    <exclusion>
-                        <groupId>javax.validation</groupId>
-                        <artifactId>validation-api</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -7877,12 +7853,20 @@
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.spec.javax.ws.rs</groupId>
-                        <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-client-api</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -7913,36 +7897,36 @@
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-core</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-core-spi</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-crypto</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.bouncycastle</groupId>
-                        <artifactId>bcprov-jdk16</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.bouncycastle</groupId>
-                        <artifactId>bcmail-jdk16</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.mail</groupId>
-                        <artifactId>javax.mail</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.james</groupId>
-                        <artifactId>apache-mime4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-client</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.annotation</groupId>
-                        <artifactId>jboss-annotations-api_1.2_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -7953,24 +7937,8 @@
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>com.fasterxml.jackson.core</groupId>
-                        <artifactId>jackson-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.fasterxml.jackson.core</groupId>
-                        <artifactId>jackson-databind</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.fasterxml.jackson.core</groupId>
-                        <artifactId>jackson-annotations</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                        <artifactId>jackson-jaxrs-json-provider</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.github.fge</groupId>
-                        <artifactId>json-patch</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -7989,88 +7957,12 @@
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-jaxrs</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-simple</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>jaxrs-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-httpclient</groupId>
-                        <artifactId>commons-httpclient</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.httpcomponents</groupId>
-                        <artifactId>httpcore</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.httpcomponents</groupId>
-                        <artifactId>httpclient</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>net.jcip</groupId>
-                        <artifactId>jcip</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>net.jcip</groupId>
-                        <artifactId>jcip-annotations</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.annotation</groupId>
-                        <artifactId>jboss-annotations-api_1.2_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.annotation</groupId>
-                        <artifactId>jsr250-api</artifactId>
-                    </exclusion>
-                    <!-- TODO remove this exclusion once this supports Jakarta Validation -->
-                    <!-- Superceded by jakarta.validation:jakarta.validation-api -->
-                    <exclusion>
-                        <groupId>javax.validation</groupId>
-                        <artifactId>validation-api</artifactId>
-                    </exclusion>
-                    <!-- TODO remove this exclusion once this supports Jakarta Activation -->
-                    <!-- Superceded by com.sun.activation:jakarta.activation -->
-                    <exclusion>
-                        <groupId>javax.activation</groupId>
-                        <artifactId>activation</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-jettison-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jsapi</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.spec.javax.ws.rs</groupId>
-                        <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>jaxrs-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -8105,16 +7997,8 @@
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>javax.servlet</groupId>
-                        <artifactId>servlet-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.mail</groupId>
-                        <artifactId>javax.mail</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -8125,8 +8009,8 @@
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
-                        <artifactId>jboss-logging</artifactId>
-                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>*</artifactId>
+                        <groupId>*</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -8137,16 +8021,8 @@
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>javax.activation</groupId>
-                        <artifactId>activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.annotation</groupId>
-                        <artifactId>jboss-annotations-api_1.2_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>jaxrs-api</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -8157,32 +8033,8 @@
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.weld.se</groupId>
-                        <artifactId>weld-se</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-yaml-provider</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.yaml</groupId>
-                        <artifactId>snakeyaml</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-client</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -9982,7 +9834,6 @@
                                             <!-- replaced by io.netty:netty-all -->
                                             <exclude>io.netty:netty</exclude>
                                             <exclude>org.jboss.remoting3:jboss-remoting</exclude>
-                                            <exclude>org.jboss.resteasy:resteasy-jackson-provider</exclude>
                                             <exclude>org.jboss.security:jbosssx</exclude>
                                             <!-- replaced by wildfly-elytron -->
                                             <exclude>org.jboss.sasl:jboss-sasl</exclude>
