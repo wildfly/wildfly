@@ -23,6 +23,8 @@
 package org.jboss.as.service;
 
 import java.beans.PropertyEditor;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.function.Supplier;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -31,7 +33,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.management.MalformedObjectNameException;
+import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
+import javax.management.StandardMBean;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -116,7 +120,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
 
     private void addServices(final ServiceTarget target, final JBossServiceConfig mBeanConfig, final ClassLoader classLoader, final DeploymentReflectionIndex index, ServiceComponentInstantiator componentInstantiator, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final String mBeanClassName = mBeanConfig.getCode();
-        final List<ClassReflectionIndex> mBeanClassHierarchy = ReflectionUtils.getClassHierarchy(mBeanClassName, index, classLoader);
+        final List<ClassReflectionIndex> mBeanClassHierarchy = getClassHierarchy(mBeanClassName, index, classLoader);
         final Object mBeanInstance = newInstance(mBeanConfig, mBeanClassHierarchy, classLoader);
         final String mBeanName = mBeanConfig.getName();
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -267,6 +271,34 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         editor.setAsText(value);
 
         return editor.getValue();
+    }
+
+    /**
+     * Uses the provided DeploymentReflectionIndex to provide an reflection index for the class hierarchy for
+     * the class with the given name. Superclass data will not be provided for java.lang.Object or for
+     * javax.management.NotificationBroadcasterSupport or javax.management.StandardMBean as those classes do not
+     * provide methods relevant to our use of superclass information from the reflection index. Not providing an
+     * index for those classes avoids the need to include otherwise unneeded --add-opens calls when lauching the server.
+     *
+     * @param className the name of the initial class in the hierarchy
+     * @param index DeploymentReflectionIndex to use for creating the ClassReflectionIndex elements
+     * @param classLoader classloader to use to load {@code className}
+     * @return reflection indices for the class hierarchy. The first element in the returned list will be for the
+     *         provided className; later elements will be for superclasses.
+     */
+    private static List<ClassReflectionIndex> getClassHierarchy(final String className, final DeploymentReflectionIndex index, final ClassLoader classLoader) {
+        final List<ClassReflectionIndex> retVal = new LinkedList<ClassReflectionIndex>();
+
+        Class<?> initialClazz = ReflectionUtils.getClass(className, classLoader);
+        Class<?> temp = initialClazz;
+        while (temp != null
+                && (temp == initialClazz
+                || (temp != Object.class && temp != NotificationBroadcasterSupport.class && temp != StandardMBean.class))) {
+            retVal.add(index.getClassIndex(temp));
+            temp = temp.getSuperclass();
+        }
+
+        return Collections.unmodifiableList(retVal);
     }
 
 }
