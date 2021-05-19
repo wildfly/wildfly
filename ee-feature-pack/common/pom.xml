@@ -1315,17 +1315,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.io7m.xom</groupId>
-            <artifactId>xom</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>org.cryptacular</groupId>
             <artifactId>cryptacular</artifactId>
             <exclusions>
@@ -2962,6 +2951,17 @@
         <dependency>
             <groupId>xml-resolver</groupId>
             <artifactId>xml-resolver</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>xom</groupId>
+            <artifactId>xom</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>

@@ -480,8 +480,7 @@
         <version.sun.saaj-impl>1.4.1.SP1</version.sun.saaj-impl>
         <version.wsdl4j>1.6.3</version.wsdl4j>
         <version.xml-resolver>1.2</version.xml-resolver>
-        <!-- Apache xml-resolver -->
-        <version.xom>1.2.10</version.xom>
+        <version.xom>1.3.7</version.xom>
 
     </properties>
 
@@ -1804,22 +1803,6 @@
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
                 <version>${version.com.h2database}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.io7m.xom</groupId>
-                <artifactId>xom</artifactId>
-                <version>${version.xom}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.mock-server</groupId>
-                        <artifactId>mockserver-netty</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -9416,6 +9399,22 @@
                 <artifactId>metainf-services</artifactId>
                 <version>${version.org.kohsuke.metainf-services}</version>
                 <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>xom</groupId>
+                <artifactId>xom</artifactId>
+                <version>${version.xom}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xerces</groupId>
+                        <artifactId>xercesImpl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
