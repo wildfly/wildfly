@@ -38,12 +38,16 @@ import org.jboss.msc.service.ServiceName;
  */
 public class StatelessSerializedProxy implements Serializable {
 
-
     private static final long serialVersionUID = 45678904536435L;
+
     private final String viewName;
 
     public StatelessSerializedProxy(final String viewName) {
         this.viewName = viewName;
+    }
+
+    public String getViewName() {
+        return this.viewName;
     }
 
     private Object readResolve() throws ObjectStreamException {

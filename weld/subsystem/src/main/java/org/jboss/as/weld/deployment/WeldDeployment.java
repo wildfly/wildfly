@@ -49,6 +49,7 @@ import org.jboss.weld.bootstrap.spi.CDI11Deployment;
 import org.jboss.weld.bootstrap.spi.EEModuleDescriptor;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.resources.spi.ResourceLoader;
+import org.jboss.weld.serialization.spi.ContextualStore;
 import org.jboss.weld.serialization.spi.ProxyServices;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -64,6 +65,7 @@ public class WeldDeployment implements CDI11Deployment {
 
     public static final String ADDITIONAL_CLASSES_BDA_SUFFIX = ".additionalClasses";
     public static final String BOOTSTRAP_CLASSLOADER_BDA_ID = "bootstrapBDA" + ADDITIONAL_CLASSES_BDA_SUFFIX;
+    static final Set<Class<?>> NON_OVERRIDABLE_SERVICES = Collections.singleton(ContextualStore.class);
 
     private final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives;
 
@@ -95,7 +97,14 @@ public class WeldDeployment implements CDI11Deployment {
         this.beanDeploymentArchives = Collections.newSetFromMap(new ConcurrentHashMap<>());
         this.beanDeploymentArchives.addAll(beanDeploymentArchives);
         this.extensions = new HashSet<Metadata<Extension>>(extensions);
-        this.serviceRegistry = new SimpleServiceRegistry();
+        this.serviceRegistry = new SimpleServiceRegistry() {
+            @Override
+            public <S extends Service> void add(Class<S> type, S service) {
+                if (!this.contains(type) || !NON_OVERRIDABLE_SERVICES.contains(type)) {
+                    super.add(type, service);
+                }
+            }
+        };
         this.additionalBeanDeploymentArchivesByClassloader = new ConcurrentHashMap<>();
         this.module = module;
         this.rootBeanDeploymentModule = rootBeanDeploymentModule;

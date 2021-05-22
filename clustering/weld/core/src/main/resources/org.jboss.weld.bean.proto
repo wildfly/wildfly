@@ -1,0 +1,16 @@
+package org.jboss.weld.bean;
+
+
+/**
+ * @TypeId(420)
+ */
+message ManagedBeanIdentifier {
+	optional	bytes	identifier	 = 1;
+}
+
+/**
+ * @TypeId(421)
+ */
+message StringBeanIdentifier {
+	optional	string	value	 = 1;
+}

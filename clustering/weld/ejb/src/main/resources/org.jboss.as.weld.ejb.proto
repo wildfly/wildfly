@@ -1,0 +1,21 @@
+package org.jboss.as.weld.ejb;
+
+import "java.lang.proto";
+import "org.jboss.ejb.client.proto";
+
+/**
+ * @TypeId(495)
+ */
+message SerializedStatefulSessionObject {
+	optional	string	componentServiceName	 = 1;
+	optional	org.jboss.ejb.client.SessionID	id	 = 2;
+	repeated	java.lang.Class	viewClass	 = 3;
+	repeated	string	viewServiceName	 = 4;
+}
+
+/**
+ * @TypeId(496)
+ */
+message StatefulSessionObjectReferenceImpl {
+	optional	bytes	proxy	 = 1;
+}

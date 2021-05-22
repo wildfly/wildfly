@@ -58,6 +58,7 @@
         <module>service</module>
         <module>singleton</module>
         <module>web</module>
+        <module>weld</module>
     </modules>
 
     <dependencyManagement>

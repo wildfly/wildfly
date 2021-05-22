@@ -1,0 +1,19 @@
+package org.wildfly.clustering.weld.contexts;
+
+/**
+ * @TypeId(400)
+ */
+message PassivationCapableSerializableBean {
+	optional	bytes	contextId	= 1;
+	optional	bytes	contextual	= 2;
+	optional	bytes	identifier	= 3;
+}
+
+/**
+ * @TypeId(401)
+ */
+message PassivationCapableSerializableContextual {
+	optional	bytes	contextId	= 1;
+	optional	bytes	contextual	= 2;
+	optional	bytes	identifier	= 3;
+}

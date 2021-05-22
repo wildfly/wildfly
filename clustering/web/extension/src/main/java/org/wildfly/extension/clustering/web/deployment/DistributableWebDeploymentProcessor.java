@@ -22,12 +22,22 @@
 
 package org.wildfly.extension.clustering.web.deployment;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.controller.capability.CapabilityServiceSupport.NoSuchCapabilityException;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.weld.Capabilities;
+import org.jboss.as.weld.WeldCapability;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
+import org.wildfly.extension.clustering.web.SessionMarshallerFactory;
 
 /**
  * {@link DeploymentUnitProcessor} that attaches any configured {@link DistributableSessionManagementProvider} to the deployment unit.
@@ -35,12 +45,39 @@ import org.wildfly.clustering.web.session.DistributableSessionManagementConfigur
  */
 public class DistributableWebDeploymentProcessor implements DeploymentUnitProcessor {
 
+    private static final String PROTOSTREAM = "org.infinispan.protostream";
+    private static final String EL_GLASSFISH = "org.wildfly.clustering.el.glassfish";
+    private static final String WELD_CORE = "org.wildfly.clustering.weld.core";
+    private static final String WELD_EJB = "org.wildfly.clustering.weld.ejb";
+    private static final String WELD_WEB = "org.wildfly.clustering.weld.web";
+
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
         DeploymentUnit unit = context.getDeploymentUnit();
         DistributableSessionManagementProvider<DistributableSessionManagementConfiguration<DeploymentUnit>> provider = context.getAttachment(DistributableSessionManagementProvider.ATTACHMENT_KEY);
         if (provider != null) {
             unit.putAttachment(DistributableSessionManagementProvider.ATTACHMENT_KEY, provider);
+
+            if (provider.getSessionManagementConfiguration().getMarshallerFactory() == SessionMarshallerFactory.PROTOSTREAM) {
+                ModuleSpecification specification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
+                ModuleLoader loader = Module.getBootModuleLoader();
+                specification.addSystemDependency(new ModuleDependency(loader, PROTOSTREAM, false, false, false, false));
+
+                CapabilityServiceSupport support = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+                if (support.hasCapability(Capabilities.WELD_CAPABILITY_NAME)) {
+                    try {
+                        WeldCapability weldCapability = support.getCapabilityRuntimeAPI(Capabilities.WELD_CAPABILITY_NAME, WeldCapability.class);
+                        if (weldCapability.isPartOfWeldDeployment(unit)) {
+                            specification.addSystemDependency(new ModuleDependency(loader, EL_GLASSFISH, false, false, true, false));
+                            specification.addSystemDependency(new ModuleDependency(loader, WELD_CORE, false, false, true, false));
+                            specification.addSystemDependency(new ModuleDependency(loader, WELD_EJB, false, false, true, false));
+                            specification.addSystemDependency(new ModuleDependency(loader, WELD_WEB, false, false, true, false));
+                        }
+                    } catch (NoSuchCapabilityException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+            }
         }
     }
 

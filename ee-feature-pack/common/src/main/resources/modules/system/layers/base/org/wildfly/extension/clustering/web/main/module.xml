@@ -45,7 +45,9 @@
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.web-common"/>
+        <module name="org.jboss.as.weld.common"/>
         <module name="org.jboss.dmr"/>
+        <module name="org.jboss.invocation" optional="true"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.metadata.common"/>
@@ -57,6 +59,7 @@
         <module name="org.wildfly.clustering.ee.cache"/>
         <module name="org.wildfly.clustering.ee.infinispan"/>
         <module name="org.wildfly.clustering.ee.spi"/>
+        <module name="org.wildfly.clustering.el.glassfish"/>
         <module name="org.wildfly.clustering.infinispan.client.api"/>
         <module name="org.wildfly.clustering.infinispan.client.service"/>
         <module name="org.wildfly.clustering.infinispan.embedded.api"/>
@@ -74,5 +77,8 @@
         <module name="org.wildfly.clustering.web.infinispan"/>
         <module name="org.wildfly.clustering.web.service"/>
         <module name="org.wildfly.clustering.web.spi"/>
+        <module name="org.wildfly.clustering.weld.core"/>
+        <module name="org.wildfly.clustering.weld.ejb"/>
+        <module name="org.wildfly.clustering.weld.web"/>
     </dependencies>
 </module>

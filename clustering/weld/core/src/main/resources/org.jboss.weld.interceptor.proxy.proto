@@ -1,0 +1,17 @@
+package org.jboss.weld.interceptor.proxy;
+
+/**
+ * @TypeId(476)
+ */
+message InterceptionContext {
+	optional	bytes	interceptorInstances	 = 1;
+	optional	bytes	manager	 = 2;
+	optional	bytes	annotatedType	 = 3;
+}
+
+/**
+ * @TypeId(477)
+ */
+message InterceptorMethodHandler {
+	optional	InterceptionContext	context	 = 1;
+}

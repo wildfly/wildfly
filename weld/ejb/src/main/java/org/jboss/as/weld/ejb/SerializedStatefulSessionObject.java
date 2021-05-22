@@ -26,7 +26,6 @@ import org.jboss.msc.service.ServiceName;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -36,27 +35,29 @@ import java.util.Map;
  */
 public class SerializedStatefulSessionObject implements Serializable {
 
-
-    private final String componentServiceName;
+    private final ServiceName componentServiceName;
     private final SessionID sessionID;
-    private final Map<Class<?>, String> serviceNames;
+    private final Map<Class<?>, ServiceName> serviceNames;
 
     public SerializedStatefulSessionObject(final ServiceName componentServiceName, final SessionID sessionID, final Map<Class<?>, ServiceName> serviceNames) {
-        this.componentServiceName = componentServiceName.getCanonicalName();
+        this.componentServiceName = componentServiceName;
         this.sessionID = sessionID;
-        Map<Class<?>, String> names = new HashMap<Class<?>, String>();
-        for (Map.Entry<Class<?>, ServiceName> e : serviceNames.entrySet()) {
-            names.put(e.getKey(), e.getValue().getCanonicalName());
-        }
-        this.serviceNames = names;
+        this.serviceNames = serviceNames;
     }
 
     private Object readResolve() throws ObjectStreamException {
-        Map<Class<?>, ServiceName> names = new HashMap<Class<?>, ServiceName>();
-        for (Map.Entry<Class<?>, String> e : serviceNames.entrySet()) {
-            names.put(e.getKey(), ServiceName.parse(e.getValue()));
-        }
-        return new StatefulSessionObjectReferenceImpl(sessionID, ServiceName.parse(componentServiceName), names);
+        return new StatefulSessionObjectReferenceImpl(sessionID, componentServiceName, serviceNames);
+    }
 
+    public ServiceName getComponentServiceName() {
+        return this.componentServiceName;
+    }
+
+    public SessionID getSessionID() {
+        return this.sessionID;
+    }
+
+    public Map<Class<?>, ServiceName> getServiceNames() {
+        return this.serviceNames;
     }
 }
