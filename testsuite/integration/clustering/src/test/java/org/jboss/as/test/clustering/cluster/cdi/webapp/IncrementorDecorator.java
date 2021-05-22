@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,31 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.cluster.cdi;
+package org.jboss.as.test.clustering.cluster.cdi.webapp;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.ejb.Stateful;
-import javax.enterprise.context.SessionScoped;
+import java.io.Serializable;
+import javax.annotation.Priority;
+import javax.decorator.Decorator;
+import javax.decorator.Delegate;
+import javax.inject.Inject;
+import javax.interceptor.Interceptor;
 
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
 
 /**
- * @author Tomas Remes
+ * Test that Weld's {@link Decorator} impl serializes and deserializes on a remote note.
+ *
+ * @author Radoslav Husar
  */
-@Stateful
-@SessionScoped
-public class CdiIncrementorBean implements Incrementor {
+@Decorator
+@Priority(Interceptor.Priority.APPLICATION)
+public class IncrementorDecorator implements Incrementor, Serializable {
+    private static final long serialVersionUID = 7389752076482339566L;
 
-    private final AtomicInteger count = new AtomicInteger(0);
+    @Inject
+    @Delegate
+    private Incrementor delegate;
 
     @Override
     public int increment() {
-        return this.count.incrementAndGet();
-    }
-
-    @Override
-    public void reset() {
-        this.count.set(0);
+        return delegate.increment();
     }
 }

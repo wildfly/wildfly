@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.cluster.cdi;
+package org.jboss.as.test.clustering.cluster.cdi.webapp;
 
 import java.io.IOException;
 
@@ -38,7 +38,7 @@ import org.jboss.as.test.clustering.single.web.SimpleServlet;
  * @author Tomas Remes
  * @author Radoslav Husar
  */
-public class CdiServlet extends SimpleServlet {
+public class CDIServlet extends SimpleServlet {
 
     private static final long serialVersionUID = 5167789049451718160L;
 

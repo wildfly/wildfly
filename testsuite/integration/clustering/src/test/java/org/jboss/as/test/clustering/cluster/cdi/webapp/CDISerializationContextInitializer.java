@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,32 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.cluster.cdi;
 
-import java.io.Serializable;
-import javax.annotation.Priority;
-import javax.decorator.Decorator;
-import javax.decorator.Delegate;
-import javax.inject.Inject;
-import javax.interceptor.Interceptor;
+package org.jboss.as.test.clustering.cluster.cdi.webapp;
 
-import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
+import org.infinispan.protostream.SerializationContextInitializer;
+import org.infinispan.protostream.annotations.AutoProtoSchemaBuilder;
 
 /**
- * Test that Weld's {@link Decorator} impl serializes and deserializes on a remote note.
- *
- * @author Radoslav Husar
+ * @author Paul Ferraro
  */
-@Decorator
-@Priority(Interceptor.Priority.APPLICATION)
-public class IncrementorDecorator implements Incrementor, Serializable {
+@AutoProtoSchemaBuilder(includeClasses = { IncrementorBean.class }, service = false)
+public interface CDISerializationContextInitializer extends SerializationContextInitializer {
 
-    @Inject
-    @Delegate
-    private Incrementor delegate;
-
-    @Override
-    public int increment() {
-        return delegate.increment();
-    }
 }

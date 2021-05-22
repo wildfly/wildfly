@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,11 +21,14 @@
  */
 package org.jboss.as.test.clustering.cluster.cdi;
 
+import org.infinispan.protostream.SerializationContextInitializer;
 import org.infinispan.transaction.TransactionMode;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.ClusterTestUtil;
+import org.jboss.as.test.clustering.cluster.cdi.webapp.IncrementorBean;
+import org.jboss.as.test.clustering.cluster.cdi.webapp.CDISerializationContextInitializer;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.web.AbstractWebFailoverTestCase;
 import org.jboss.as.test.clustering.single.web.Mutable;
@@ -36,18 +39,17 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 
 /**
- * Test failover with CDI session bean.
+ * Test failover with CDI session scoped bean using ProtoStream.
  *
- * @author Tomas Remes
- * @author Radoslav Husar
+ * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-public class CdiFailoverTestCase extends AbstractWebFailoverTestCase {
+public class ProtoStreamCDIFailoverTestCase extends AbstractWebFailoverTestCase {
 
-    private static final String MODULE_NAME = CdiFailoverTestCase.class.getSimpleName();
+    private static final String MODULE_NAME = CDIFailoverTestCase.class.getSimpleName();
     private static final String DEPLOYMENT_NAME = MODULE_NAME + ".war";
 
-    public CdiFailoverTestCase() {
+    public ProtoStreamCDIFailoverTestCase() {
         super(DEPLOYMENT_NAME, TransactionMode.TRANSACTIONAL);
     }
 
@@ -71,10 +73,12 @@ public class CdiFailoverTestCase extends AbstractWebFailoverTestCase {
 
     private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
-        war.addClasses(Incrementor.class, CdiIncrementorBean.class, CdiServlet.class, SimpleServlet.class, Mutable.class, IncrementorDecorator.class);
+        war.addPackage(IncrementorBean.class.getPackage());
+        war.addClasses(Incrementor.class, SimpleServlet.class, Mutable.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
-        war.setWebXML(CdiFailoverTestCase.class.getPackage(), "web.xml");
+        war.setWebXML(CDIFailoverTestCase.class.getPackage(), "web.xml");
+        war.addAsWebInfResource(CDIFailoverTestCase.class.getPackage(), "distributable-web.xml", "distributable-web.xml");
+        war.addAsServiceProvider(SerializationContextInitializer.class.getName(), CDISerializationContextInitializer.class.getName() + "Impl");
         return war;
     }
-
 }
