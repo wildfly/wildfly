@@ -50,7 +50,7 @@ public class ModelNodeUtil {
             Map<String, String> unwrapped = propertyName.unwrap(operationContext, dataSourceNode);
             Map<String, String> exceptionSorterProperty = unwrapped.size() > 0 ? unwrapped : null;
 
-            return new Extension(exceptionSorterClassName, exceptionSorterProperty);
+            return new Extension(exceptionSorterClassName, null, exceptionSorterProperty);
         } else {
             return null;
         }
