@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2021, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -66,6 +66,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.ELYTRON_EN
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
@@ -97,6 +98,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.SET_TX_QUE
 import static org.jboss.as.connector.subsystems.datasources.Constants.SHARE_PREPARED_STATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACK_STATEMENTS;
@@ -110,6 +112,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_C
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_TRY_LOCK;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATE_ON_MATCH;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
@@ -2456,11 +2459,11 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case EXCEPTION_SORTER: {
-                            parseExtension(reader, currTag.getLocalName(), operation, EXCEPTION_SORTER_CLASSNAME, EXCEPTION_SORTER_PROPERTIES);
+                            parseModuleExtension(reader, currTag.getLocalName(), operation, EXCEPTION_SORTER_CLASSNAME, EXCEPTION_SORTER_MODULE, EXCEPTION_SORTER_PROPERTIES);
                             break;
                         }
                         case STALE_CONNECTION_CHECKER: {
-                            parseExtension(reader, currTag.getLocalName(), operation, STALE_CONNECTION_CHECKER_CLASSNAME, STALE_CONNECTION_CHECKER_PROPERTIES);
+                            parseModuleExtension(reader, currTag.getLocalName(), operation, STALE_CONNECTION_CHECKER_CLASSNAME, STALE_CONNECTION_CHECKER_MODULE, STALE_CONNECTION_CHECKER_PROPERTIES);
                             break;
                         }
                         case USE_FAST_FAIL: {
@@ -2474,7 +2477,7 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case VALID_CONNECTION_CHECKER: {
-                            parseExtension(reader, currTag.getLocalName(), operation, VALID_CONNECTION_CHECKER_CLASSNAME, VALID_CONNECTION_CHECKER_PROPERTIES);
+                            parseModuleExtension(reader, currTag.getLocalName(), operation, VALID_CONNECTION_CHECKER_CLASSNAME, VALID_CONNECTION_CHECKER_MODULE, VALID_CONNECTION_CHECKER_PROPERTIES);
                             break;
                         }
                         default: {

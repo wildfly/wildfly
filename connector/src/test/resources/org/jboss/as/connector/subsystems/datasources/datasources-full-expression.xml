@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:datasources:6.0">
+<subsystem xmlns="urn:jboss:domain:datasources:6.1">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool"
                     use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" jta="${test.expr:false}"
@@ -50,7 +50,7 @@
                 </reauth-plugin>
             </security>
             <validation>
-                <valid-connection-checker class-name="${test.expr:someClass2}">
+                <valid-connection-checker class-name="${test.expr:someClass2}" module="${test.expr:someModule1}">
                     <config-property name="name">${test.expr:Property2}</config-property>
                 </valid-connection-checker>
                 <check-valid-connection-sql>
@@ -68,10 +68,10 @@
                 <use-fast-fail>
                     ${test.expr:true}
                 </use-fast-fail>
-                <stale-connection-checker class-name="${test.expr:someClass3}">
+                <stale-connection-checker class-name="${test.expr:someClass3}" module="${test.expr:someModule2}">
                     <config-property name="name">${test.expr:Property3}</config-property>
                 </stale-connection-checker>
-                <exception-sorter class-name="${test.expr:someClass4}">
+                <exception-sorter class-name="${test.expr:someClass4}" module="${test.expr:someModule3}">
                     <config-property name="name">${test.expr:Property4}</config-property>
                 </exception-sorter>
             </validation>
@@ -179,7 +179,7 @@
                 </recover-plugin>
             </recovery>
             <validation>
-                <valid-connection-checker class-name="${test.expr:someClass2}">
+                <valid-connection-checker class-name="${test.expr:someClass2}" module="${test.expr:someModule4}">
                     <config-property name="name">${test.expr:Property2}</config-property>
                 </valid-connection-checker>
                 <check-valid-connection-sql>
@@ -197,10 +197,10 @@
                 <use-fast-fail>
                     ${test.expr:true}
                 </use-fast-fail>
-                <stale-connection-checker class-name="${test.expr:someClass3}">
+                <stale-connection-checker class-name="${test.expr:someClass3}" module="${test.expr:someModule5}">
                     <config-property name="name">${test.expr:Property3}</config-property>
                 </stale-connection-checker>
-                <exception-sorter class-name="${test.expr:someClass4}">
+                <exception-sorter class-name="${test.expr:someClass4}" module="${test.expr:someModule6}">
                     <config-property name="name">${test.expr:Property4}</config-property>
                 </exception-sorter>
             </validation>

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2021, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -59,8 +59,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXS
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVER_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVER_PLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
@@ -1255,7 +1255,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                             break;
                         }
                         case RECOVER_PLUGIN: {
-                            parseExtension(reader, tag.getLocalName(), node, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
+                            parseExtension(reader, tag.getLocalName(), node, RECOVER_PLUGIN_CLASSNAME, RECOVER_PLUGIN_PROPERTIES);
                             break;
                         }
                         default:
@@ -1305,7 +1305,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                             break;
                         }
                         case RECOVER_PLUGIN: {
-                            parseExtension(reader, tag.getLocalName(), node, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
+                            parseExtension(reader, tag.getLocalName(), node, RECOVER_PLUGIN_CLASSNAME, RECOVER_PLUGIN_PROPERTIES);
                             break;
                         }
                         default:

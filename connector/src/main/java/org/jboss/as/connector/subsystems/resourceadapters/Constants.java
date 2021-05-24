@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -188,9 +188,9 @@ public class Constants {
 
     private static final String RECOVERY_AUTHENTICATION_CONTEXT_NAME = "recovery-authentication-context";
 
-    private static final String RECOVERLUGIN_CLASSNAME_NAME = "recovery-plugin-class-name";
+    private static final String RECOVER_PLUGIN_CLASSNAME_NAME = "recovery-plugin-class-name";
 
-    private static final String RECOVERLUGIN_PROPERTIES_NAME = "recovery-plugin-properties";
+    private static final String RECOVER_PLUGIN_PROPERTIES_NAME = "recovery-plugin-properties";
 
     private static final String NO_RECOVERY_NAME = "no-recovery";
 
@@ -647,13 +647,13 @@ public class Constants {
             .setRestartAllServices()
             .build();
 
-    static SimpleAttributeDefinition RECOVERLUGIN_CLASSNAME = new SimpleAttributeDefinitionBuilder(RECOVERLUGIN_CLASSNAME_NAME, ModelType.STRING, true)
+    static SimpleAttributeDefinition RECOVER_PLUGIN_CLASSNAME = new SimpleAttributeDefinitionBuilder(RECOVER_PLUGIN_CLASSNAME_NAME, ModelType.STRING, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    static PropertiesAttributeDefinition RECOVERLUGIN_PROPERTIES = new PropertiesAttributeDefinition.Builder(RECOVERLUGIN_PROPERTIES_NAME, true)
+    static PropertiesAttributeDefinition RECOVER_PLUGIN_PROPERTIES = new PropertiesAttributeDefinition.Builder(RECOVER_PLUGIN_PROPERTIES_NAME, true)
             .setAllowExpression(true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setRestartAllServices()

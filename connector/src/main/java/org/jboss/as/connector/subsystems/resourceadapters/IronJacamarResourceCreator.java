@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -54,8 +54,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDIN
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVER_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVER_PLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
@@ -253,10 +253,10 @@ public class IronJacamarResourceCreator {
             setAttribute(model, NO_RECOVERY, recovery.getNoRecovery());
             final Extension recoverPlugin = recovery.getRecoverPlugin();
             if (recoverPlugin != null) {
-                setAttribute(model, RECOVERLUGIN_CLASSNAME, recoverPlugin.getClassName());
+                setAttribute(model, RECOVER_PLUGIN_CLASSNAME, recoverPlugin.getClassName());
                 if (recoverPlugin.getConfigPropertiesMap() != null) {
                     for (Map.Entry<String, String> config : recoverPlugin.getConfigPropertiesMap().entrySet()) {
-                        model.get(RECOVERLUGIN_PROPERTIES.getName(), config.getKey()).set(config.getValue());
+                        model.get(RECOVER_PLUGIN_PROPERTIES.getName(), config.getKey()).set(config.getValue());
                     }
                 }
             }

@@ -30,6 +30,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import java.sql.Driver;
 import java.util.Set;
 
+import javax.resource.ResourceException;
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -44,6 +45,7 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
 
@@ -453,7 +455,7 @@ public interface ConnectorLogger extends BasicLogger {
      * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 47, value = "Connection is not valid")
-    IllegalStateException invalidConnection();
+    IllegalStateException invalidConnection(@Cause ResourceException cause);
 
 //    /**
 //     * A message indicating the parameter name is invalid.
@@ -953,4 +955,7 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 122, value = "Thread pool name %s(type: %s) must match the workmanager name %s.")
     OperationFailedException threadPoolNameMustMatchWorkManagerName(String threadPoolName, String threadPoolType, String workManagerName);
+
+    @Message(id = 123, value = "Cannot load module")
+    OperationFailedException cannotLoadModule(@Cause ModuleLoadException e);
 }

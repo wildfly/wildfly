@@ -25,10 +25,13 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.AUTHENTICA
 import static org.jboss.as.connector.subsystems.datasources.Constants.CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ELYTRON_ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_ELYTRON_ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
 
 import java.io.IOException;
@@ -75,7 +78,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-datasources_6_0.xsd";
+        return "schema/wildfly-datasources_6_1.xsd";
     }
 
     @Override
@@ -98,7 +101,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testElytronConfig() throws Exception {
-        standardSubsystemTest("datasources-elytron-enabled_6_0.xml");
+        standardSubsystemTest("datasources-elytron-enabled.xml");
     }
 
     @Test
@@ -120,7 +123,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformerEAP64() throws Exception {
-        testTransformer("datasources-full.xml", ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1, 3, 0));
+        testTransformer("datasources-full-no-custom-modules.xml", ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1, 3, 0));
     }
 
     @Test
@@ -130,16 +133,16 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformerElytronEnabledEAP64() throws Exception {
-        testTransformerElytronEnabled("datasources-elytron-enabled_6_0.xml", ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1, 3, 0));
+        testTransformerElytronEnabled("datasources-elytron-enabled.xml", ModelTestControllerVersion.EAP_6_4_0, ModelVersion.create(1, 3, 0));
     }
     @Test
     public void testTransformerEAP7() throws Exception {
-        testTransformerEAP7FullConfiguration("datasources-full.xml");
+        testTransformerEAP7FullConfiguration("datasources-full-no-custom-modules.xml");
     }
 
     @Test
     public void testTransformerEAP71() throws Exception {
-        testTransformerEAP7FullConfiguration("datasources-full.xml");
+        testTransformerEAP7FullConfiguration("datasources-full-no-custom-modules.xml");
     }
 
     @Test
@@ -149,7 +152,12 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRejectionsEAP71() throws Exception {
-        testTransformerEAP71Rejection("datasources_6_0-reject.xml");
+        testTransformerEAP71Rejection("datasources_clear-text-reject.xml");
+    }
+
+    @Test
+    public void testRejectionsEAP72() throws Exception {
+        testTransformerEAP72Rejection("datasources-full.xml");
     }
 
     private KernelServices initialKernelServices(KernelServicesBuilder builder, ModelTestControllerVersion controllerVersion, final ModelVersion modelVersion) throws Exception {
@@ -275,6 +283,25 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                         FailedOperationTransformationConfig.REJECTED_RESOURCE)
                 .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(DATA_SOURCE, "token")),
                         FailedOperationTransformationConfig.REJECTED_RESOURCE));
+    }
+
+    private void testTransformerEAP72Rejection(String subsystemXml) throws Exception {
+        ModelTestControllerVersion eap72ControllerVersion = ModelTestControllerVersion.EAP_7_2_0;
+        ModelVersion eap72ModelVersion = ModelVersion.create(6, 0, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+        KernelServices mainServices = initialKernelServices(builder, eap72ControllerVersion, eap72ModelVersion);
+        List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
+        PathAddress subsystemAddress = PathAddress.pathAddress(DataSourcesSubsystemRootDefinition.PATH_SUBSYSTEM);
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, eap72ModelVersion, ops, new FailedOperationTransformationConfig()
+                .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(DATA_SOURCE, "complexDs_Pool")),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                EXCEPTION_SORTER_MODULE, VALID_CONNECTION_CHECKER_MODULE, STALE_CONNECTION_CHECKER_MODULE
+                        ))
+                .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(XA_DATASOURCE, "complexXaDs_Pool")),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(
+                                EXCEPTION_SORTER_MODULE, VALID_CONNECTION_CHECKER_MODULE, STALE_CONNECTION_CHECKER_MODULE
+                        )));
     }
 
     private static class RejectUndefinedAttribute extends AttributesPathAddressConfig<RejectUndefinedAttribute> {

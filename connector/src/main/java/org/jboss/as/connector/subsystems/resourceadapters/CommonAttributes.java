@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -61,8 +61,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODUL
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVER_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVER_PLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_CREDENTIAL_REFERENCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
@@ -138,8 +138,8 @@ public class CommonAttributes {
             BACKGROUNDVALIDATION,
             USE_FAST_FAIL, VALIDATE_ON_MATCH, USE_CCM,
             SHARABLE, ENLISTMENT, ENLISTMENT_TRACE, MCP,
-            RECOVERLUGIN_CLASSNAME,
-            RECOVERLUGIN_PROPERTIES,
+            RECOVER_PLUGIN_CLASSNAME,
+            RECOVER_PLUGIN_PROPERTIES,
             RECOVERY_PASSWORD,
             RECOVERY_CREDENTIAL_REFERENCE,
             RECOVERY_SECURITY_DOMAIN,

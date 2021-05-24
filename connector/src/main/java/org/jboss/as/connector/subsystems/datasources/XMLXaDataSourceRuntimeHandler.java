@@ -34,6 +34,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.XaPool;
 import org.jboss.jca.common.api.metadata.ds.DsXaPool;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
+import org.jboss.modules.ModuleClassLoader;
 
 /**
  * Runtime attribute handler for XA XML datasources
@@ -322,6 +323,30 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
                 return;
             }
             setStringIfNotNull(context, dataSource.getValidation().getExceptionSorter().getClassName());
+        } else if (attributeName.equals(Constants.EXCEPTION_SORTER_MODULE.getName())) {
+            if (dataSource.getValidation() == null) {
+                return;
+            }
+            if (dataSource.getValidation().getExceptionSorter() == null) {
+                return;
+            }
+            if (dataSource.getValidation().getExceptionSorter().getClassLoader() == null) {
+                return;
+            }
+            String module = ((ModuleClassLoader) dataSource.getValidation().getExceptionSorter().getClassLoader()).getModule().getName();
+            setStringIfNotNull(context, module);
+        } else if (attributeName.equals(Constants.VALID_CONNECTION_CHECKER_MODULE.getName())) {
+            if (dataSource.getValidation() == null) {
+                return;
+            }
+            if (dataSource.getValidation().getValidConnectionChecker() == null) {
+                return;
+            }
+            if (dataSource.getValidation().getValidConnectionChecker().getClassLoader() == null) {
+                return;
+            }
+            String module = ((ModuleClassLoader) dataSource.getValidation().getValidConnectionChecker().getClassLoader()).getModule().getName();
+            setStringIfNotNull(context, module);
         } else if (attributeName.equals(Constants.EXCEPTION_SORTER_PROPERTIES.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
@@ -344,6 +369,18 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
                 return;
             }
             setStringIfNotNull(context, dataSource.getValidation().getStaleConnectionChecker().getClassName());
+        } else if (attributeName.equals(Constants.STALE_CONNECTION_CHECKER_MODULE.getName())) {
+            if (dataSource.getValidation() == null) {
+                return;
+            }
+            if (dataSource.getValidation().getStaleConnectionChecker() == null) {
+                return;
+            }
+            if (dataSource.getValidation().getStaleConnectionChecker().getClassLoader() == null) {
+                return;
+            }
+            String module = ((ModuleClassLoader) dataSource.getValidation().getStaleConnectionChecker().getClassLoader()).getModule().getName();
+            setStringIfNotNull(context, module);
         } else if (attributeName.equals(Constants.STALE_CONNECTION_CHECKER_PROPERTIES.getName())) {
             if (dataSource.getValidation() == null) {
                 return;

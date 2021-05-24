@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -54,6 +54,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.ELYTRON_EN
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
@@ -81,6 +82,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.SET_TX_QUE
 import static org.jboss.as.connector.subsystems.datasources.Constants.SHARE_PREPARED_STATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACK_STATEMENTS;
@@ -94,6 +96,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_C
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_TRY_LOCK;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATE_ON_MATCH;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_CLASS;
@@ -213,11 +216,11 @@ class DataSourceModelNodeUtil {
 
         final String checkValidConnectionSql = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CHECK_VALID_CONNECTION_SQL);
 
-        final Extension exceptionSorter = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, EXCEPTION_SORTER_CLASSNAME, EXCEPTION_SORTER_PROPERTIES);
+        final Extension exceptionSorter = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, EXCEPTION_SORTER_CLASSNAME, EXCEPTION_SORTER_MODULE, EXCEPTION_SORTER_PROPERTIES);
         final Extension staleConnectionChecker = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, STALE_CONNECTION_CHECKER_CLASSNAME,
-                STALE_CONNECTION_CHECKER_PROPERTIES);
+                STALE_CONNECTION_CHECKER_MODULE, STALE_CONNECTION_CHECKER_PROPERTIES);
         final Extension validConnectionChecker = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, VALID_CONNECTION_CHECKER_CLASSNAME,
-                VALID_CONNECTION_CHECKER_PROPERTIES);
+                VALID_CONNECTION_CHECKER_MODULE, VALID_CONNECTION_CHECKER_PROPERTIES);
 
         Long backgroundValidationMillis = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATIONMILLIS);
         final Boolean backgroundValidation = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATION);
@@ -313,11 +316,12 @@ class DataSourceModelNodeUtil {
         }
         final String checkValidConnectionSql = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CHECK_VALID_CONNECTION_SQL);
 
-        final Extension exceptionSorter = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, EXCEPTION_SORTER_CLASSNAME, EXCEPTION_SORTER_PROPERTIES);
+        final Extension exceptionSorter = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, EXCEPTION_SORTER_CLASSNAME,
+                EXCEPTION_SORTER_MODULE, EXCEPTION_SORTER_PROPERTIES);
         final Extension staleConnectionChecker = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, STALE_CONNECTION_CHECKER_CLASSNAME,
-                STALE_CONNECTION_CHECKER_PROPERTIES);
+                STALE_CONNECTION_CHECKER_MODULE, STALE_CONNECTION_CHECKER_PROPERTIES);
         final Extension validConnectionChecker = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, VALID_CONNECTION_CHECKER_CLASSNAME,
-                VALID_CONNECTION_CHECKER_PROPERTIES);
+                VALID_CONNECTION_CHECKER_MODULE, VALID_CONNECTION_CHECKER_PROPERTIES);
 
         Long backgroundValidationMillis = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATIONMILLIS);
         final Boolean backgroundValidation = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, BACKGROUNDVALIDATION);
