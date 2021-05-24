@@ -58,5 +58,7 @@
         <module name="org.reactivestreams"/>
         <module name="org.slf4j"/>
         <module name="org.wildfly.reactive.messaging.config" services="import"/>
+        <module name="io.smallrye.metrics" optional="true"/>
+        <module name="org.eclipse.microprofile.metrics.api"/>
     </dependencies>
 </module>
