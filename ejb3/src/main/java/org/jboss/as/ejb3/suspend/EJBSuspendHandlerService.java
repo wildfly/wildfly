@@ -208,10 +208,11 @@ public class EJBSuspendHandlerService implements Service<EJBSuspendHandlerServic
         final int activeInvocationCount = activeInvocationCountUpdater.get(this);
         if (activeInvocationCount == 0) {
             if (gracefulTxnShutdown) {
-                if (activeTransactionCountUpdater.get(this) == 0) {
+                final int activeTransactionCountUpdaterAtShutdown = activeTransactionCountUpdater.get(this);
+                if (activeTransactionCountUpdaterAtShutdown == 0) {
                     this.doneSuspended();
                 } else {
-                    EjbLogger.ROOT_LOGGER.suspensionWaitingActiveTransactions(activeInvocationCount);
+                    EjbLogger.ROOT_LOGGER.suspensionWaitingActiveTransactions(activeTransactionCountUpdaterAtShutdown);
                 }
             } else {
                 this.doneSuspended();
