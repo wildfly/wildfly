@@ -19,19 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.cluster.jsf;
+package org.jboss.as.test.clustering.cluster.jsf.webapp;
 
 import java.io.Serializable;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.spi.CDI;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.infinispan.protostream.annotations.ProtoFactory;
+import org.infinispan.protostream.annotations.ProtoField;
 
 @Named
 @SessionScoped
@@ -48,7 +52,7 @@ public class Game implements Serializable {
 
     @Inject
     @MaxNumber
-    private int maxNumber;
+    int maxNumber;
 
     private int biggest;
     private int remainingGuesses;
@@ -57,13 +61,30 @@ public class Game implements Serializable {
     @Random
     Instance<Integer> randomNumber;
 
-    public Game() {
+    @SuppressWarnings("unchecked")
+    @ProtoFactory
+    static Game create(int number, int guess, int smallest, int biggest, int remainingGuesses) {
+        Game game = new Game();
+        game.number = number;
+        game.guess = guess;
+        game.smallest = smallest;
+        game.biggest = biggest;
+        game.remainingGuesses = remainingGuesses;
+        try {
+            game.maxNumber = (Integer) CDI.current().select(game.getClass().getDeclaredField("maxNumber").getAnnotation(MaxNumber.class)).get();
+            game.randomNumber = (Instance<Integer>) (Instance<?>) CDI.current().select(game.getClass().getDeclaredField("randomNumber").getAnnotation(Random.class));
+            return game;
+        } catch (NoSuchFieldException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
+    @ProtoField(number = 1, defaultValue = "0")
     public int getNumber() {
         return number;
     }
 
+    @ProtoField(number = 2, defaultValue = "0")
     public int getGuess() {
         return guess;
     }
@@ -72,14 +93,17 @@ public class Game implements Serializable {
         this.guess = guess;
     }
 
+    @ProtoField(number = 3, defaultValue = "0")
     public int getSmallest() {
         return smallest;
     }
 
+    @ProtoField(number = 4, defaultValue = "0")
     public int getBiggest() {
         return biggest;
     }
 
+    @ProtoField(number = 5, defaultValue = "0")
     public int getRemainingGuesses() {
         return remainingGuesses;
     }

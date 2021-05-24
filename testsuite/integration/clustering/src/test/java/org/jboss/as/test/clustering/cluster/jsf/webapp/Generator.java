@@ -19,17 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.cluster.jsf;
-
-import java.io.Serializable;
+package org.jboss.as.test.clustering.cluster.jsf.webapp;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
 @ApplicationScoped
-public class Generator implements Serializable {
-    private static final long serialVersionUID = -7213673465118041882L;
-
+public class Generator {
 
     private int maxNumber = 100;
 

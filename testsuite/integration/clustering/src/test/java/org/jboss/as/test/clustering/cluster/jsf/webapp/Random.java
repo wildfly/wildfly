@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.cluster.jsf;
+package org.jboss.as.test.clustering.cluster.jsf.webapp;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -37,6 +37,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Documented
 @Qualifier
-public @interface MaxNumber {
+public @interface Random {
 
 }

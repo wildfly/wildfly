@@ -21,10 +21,12 @@
  */
 package org.jboss.as.test.clustering.cluster.jsf;
 
+import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.cluster.jsf.webapp.Game;
+import org.jboss.as.test.clustering.cluster.jsf.webapp.JSFSerializationContextInitializer;
 import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -36,9 +38,9 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-public class JSFFailoverTestCase extends AbstractJSFFailoverTestCase {
+public class ProtoStreamJSFFailoverTestCase extends AbstractJSFFailoverTestCase {
 
-    private static final String MODULE_NAME = JSFFailoverTestCase.class.getSimpleName();
+    private static final String MODULE_NAME = ProtoStreamJSFFailoverTestCase.class.getSimpleName();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
@@ -58,7 +60,9 @@ public class JSFFailoverTestCase extends AbstractJSFFailoverTestCase {
         war.setWebXML(DistributableTestCase.class.getPackage(), "web.xml");
         war.addAsWebResource(AbstractJSFFailoverTestCase.class.getPackage(), "home.xhtml", "home.xhtml");
         war.addAsWebInfResource(AbstractJSFFailoverTestCase.class.getPackage(), "faces-config.xml", "faces-config.xml");
+        war.addAsWebInfResource(AbstractJSFFailoverTestCase.class.getPackage(), "distributable-web.xml", "distributable-web.xml");
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.addAsServiceProvider(SerializationContextInitializer.class.getName(), JSFSerializationContextInitializer.class.getName() + "Impl");
         return war;
     }
 
