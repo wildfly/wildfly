@@ -52,6 +52,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -198,7 +199,7 @@ public class DatabaseTimerServiceMultiNodeTestCase {
         try {
             RemoteTimedBean clientBean = (RemoteTimedBean) clientContext.lookup(ARCHIVE_NAME + "/" + TimedObjectTimerServiceBean.class.getSimpleName() + "!" + RemoteTimedBean.class.getName());
             Set<String> names = new HashSet<>();
-            long time = System.currentTimeMillis() + TIMER_DELAY;
+            long time = System.currentTimeMillis() + TimeoutUtil.adjust(TIMER_DELAY);
             for (int i = 0; i < TIMER_COUNT; ++i) {
                 String name = "timer" + i;
                 clientBean.scheduleTimer(time, name);
