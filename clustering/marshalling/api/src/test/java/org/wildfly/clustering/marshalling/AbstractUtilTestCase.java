@@ -38,7 +38,6 @@ import java.util.Currency;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,7 +45,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -313,28 +311,11 @@ public abstract class AbstractUtilTestCase {
     }
 
     // java.util.Collections.emptyXXX() methods
-    @Test
-    public void testEmptyEnumeration() throws IOException {
-        MarshallingTester<Enumeration<Object>> tester = this.factory.createTester();
-        tester.test(Collections.emptyEnumeration(), Assert::assertSame);
-    }
-
-    @Test
-    public void testEmptyIterator() throws IOException {
-        MarshallingTester<Iterator<Object>> tester = this.factory.createTester();
-        tester.test(Collections.emptyIterator(), Assert::assertSame);
-    }
 
     @Test
     public void testEmptyList() throws IOException {
         MarshallingTester<List<Object>> tester = this.factory.createTester();
         tester.test(Collections.emptyList(), Assert::assertSame);
-    }
-
-    @Test
-    public void testEmptyListIterator() throws IOException {
-        MarshallingTester<ListIterator<Object>> tester = this.factory.createTester();
-        tester.test(Collections.emptyListIterator(), Assert::assertSame);
     }
 
     @Test
