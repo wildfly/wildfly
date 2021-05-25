@@ -7,31 +7,31 @@ import "java.lang.proto";
 // Empty collections
 
 /**
- * @TypeId(12)
+ * @TypeId(10)
  */
 message EmptyList {
 }
 
 /**
- * @TypeId(14)
+ * @TypeId(11)
  */
 message EmptyMap {
 }
 
 /**
- * @TypeId(15)
+ * @TypeId(12)
  */
 message EmptyNavigableMap {
 }
 
 /**
- * @TypeId(16)
+ * @TypeId(13)
  */
 message EmptyNavigableSet {
 }
 
 /**
- * @TypeId(17)
+ * @TypeId(14)
  */
 message EmptySet {
 }
@@ -39,14 +39,14 @@ message EmptySet {
 // Singleton collections
 
 /**
- * @TypeId(20)
+ * @TypeId(15)
  */
 message SingletonList {
 	optional	bytes	value	= 1;
 }
 
 /**
- * @TypeId(21)
+ * @TypeId(16)
  */
 message SingletonMap {
 	optional	bytes	key	= 1;
@@ -54,7 +54,7 @@ message SingletonMap {
 }
 
 /**
- * @TypeId(22)
+ * @TypeId(17)
  */
 message SingletonSet {
 	optional	bytes	value	= 1;
