@@ -384,6 +384,9 @@
                             <jakarta-transform>true</jakarta-transform>
                             <!--<jakarta-transform-configs-dir>EXTERNAL_FOLDER</jakarta-transform-configs-dir>-->
                             <!--<jakarta-transform-verbose>true</jakarta-transform-verbose>-->
+                            <jakarta-transform-excluded-artifacts>
+                                <exclude>com.h2database:h2\z</exclude>
+                            </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
                 </executions>
