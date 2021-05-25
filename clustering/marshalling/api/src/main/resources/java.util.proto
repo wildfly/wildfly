@@ -7,27 +7,9 @@ import "java.lang.proto";
 // Empty collections
 
 /**
- * @TypeId(10)
- */
-message EmptyEnumeration {
-}
-
-/**
- * @TypeId(11)
- */
-message EmptyIterator {
-}
-
-/**
  * @TypeId(12)
  */
 message EmptyList {
-}
-
-/**
- * @TypeId(13)
- */
-message EmptyListIterator {
 }
 
 /**
