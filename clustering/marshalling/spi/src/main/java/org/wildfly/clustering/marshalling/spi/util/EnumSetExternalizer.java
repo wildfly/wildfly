@@ -40,6 +40,19 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class EnumSetExternalizer<E extends Enum<E>> implements Externalizer<EnumSet<E>> {
 
+    static final Field ENUM_SET_CLASS_FIELD = WildFlySecurityManager.doUnchecked(new PrivilegedAction<Field>() {
+        @Override
+        public Field run() {
+            for (Field field : EnumSet.class.getDeclaredFields()) {
+                if (field.getType() == Class.class) {
+                    field.setAccessible(true);
+                    return field;
+                }
+            }
+            throw new IllegalStateException();
+        }
+    });
+
     @Override
     public void writeObject(ObjectOutput output, EnumSet<E> set) throws IOException {
         Class<?> enumClass = this.findEnumClass(set);
@@ -86,10 +99,8 @@ public class EnumSetExternalizer<E extends Enum<E>> implements Externalizer<Enum
             @Override
             public Class<?> run() {
                 try {
-                    Field field = EnumSet.class.getDeclaredField("elementType");
-                    field.setAccessible(true);
-                    return (Class<?>) field.get(set);
-                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    return (Class<?>) ENUM_SET_CLASS_FIELD.get(set);
+                } catch (IllegalAccessException e) {
                     throw new IllegalStateException(e);
                 }
             }

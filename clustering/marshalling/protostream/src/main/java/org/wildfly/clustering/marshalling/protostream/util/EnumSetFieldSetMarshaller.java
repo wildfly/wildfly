@@ -43,6 +43,19 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class EnumSetFieldSetMarshaller<E extends Enum<E>> implements FieldSetMarshaller<EnumSet<E>, EnumSetBuilder<E>> {
 
+    static final Field ENUM_SET_CLASS_FIELD = WildFlySecurityManager.doUnchecked(new PrivilegedAction<Field>() {
+        @Override
+        public Field run() {
+            for (Field field : EnumSet.class.getDeclaredFields()) {
+                if (field.getType() == Class.class) {
+                    field.setAccessible(true);
+                    return field;
+                }
+            }
+            throw new IllegalStateException();
+        }
+    });
+
     private static final int CLASS_INDEX = 0;
     private static final int COMPLEMENT_CLASS_INDEX = 1;
     private static final int BITS_INDEX = 2;
@@ -112,10 +125,8 @@ public class EnumSetFieldSetMarshaller<E extends Enum<E>> implements FieldSetMar
             @Override
             public Class<?> run() {
                 try {
-                    Field field = EnumSet.class.getDeclaredField("elementType");
-                    field.setAccessible(true);
-                    return (Class<?>) field.get(set);
-                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    return (Class<?>) ENUM_SET_CLASS_FIELD.get(set);
+                } catch (IllegalAccessException e) {
                     throw new IllegalStateException(e);
                 }
             }

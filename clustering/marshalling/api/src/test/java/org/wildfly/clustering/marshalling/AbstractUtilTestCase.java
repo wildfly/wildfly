@@ -166,6 +166,13 @@ public abstract class AbstractUtilTestCase {
     }
 
     @Test
+    public void testEmptyEnumSet() throws IOException {
+        MarshallingTester<EnumSet<Empty>> tester = this.factory.createTester();
+        EnumSet<Empty> set = EnumSet.noneOf(Empty.class);
+        tester.test(set, AbstractUtilTestCase::assertCollectionEquals);
+    }
+
+    @Test
     public void testHashMap() throws IOException {
         MarshallingTester<HashMap<Object, Object>> tester = this.factory.createTester();
         tester.test(new HashMap<>(BASIS), AbstractUtilTestCase::assertMapEquals);

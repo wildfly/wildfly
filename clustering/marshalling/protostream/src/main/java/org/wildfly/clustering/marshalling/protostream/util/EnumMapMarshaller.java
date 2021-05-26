@@ -46,6 +46,19 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshaller<EnumMap<E, Object>> {
 
+    static final Field ENUM_MAP_KEY_CLASS_FIELD = WildFlySecurityManager.doUnchecked(new PrivilegedAction<Field>() {
+        @Override
+        public Field run() {
+            for (Field field : EnumMap.class.getDeclaredFields()) {
+                if (field.getType() == Class.class) {
+                    field.setAccessible(true);
+                    return field;
+                }
+            }
+            throw new IllegalStateException();
+        }
+    });
+
     private static final int ENUM_SET_INDEX = 1;
 
     private final FieldSetMarshaller<EnumSet<E>, EnumSetBuilder<E>> marshaller = new EnumSetFieldSetMarshaller<>();
@@ -103,10 +116,8 @@ public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
             @Override
             public Class<E> run() {
                 try {
-                    Field field = EnumMap.class.getDeclaredField("keyType");
-                    field.setAccessible(true);
-                    return (Class<E>) field.get(map);
-                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    return (Class<E>) ENUM_MAP_KEY_CLASS_FIELD.get(map);
+                } catch (IllegalAccessException e) {
                     throw new IllegalStateException(e);
                 }
             }

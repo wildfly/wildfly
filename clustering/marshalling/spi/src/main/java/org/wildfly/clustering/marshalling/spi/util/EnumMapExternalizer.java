@@ -40,6 +40,19 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class EnumMapExternalizer<E extends Enum<E>> implements Externalizer<EnumMap<E, Object>> {
 
+    static final Field ENUM_MAP_KEY_CLASS_FIELD = WildFlySecurityManager.doUnchecked(new PrivilegedAction<Field>() {
+        @Override
+        public Field run() {
+            for (Field field : EnumMap.class.getDeclaredFields()) {
+                if (field.getType() == Class.class) {
+                    field.setAccessible(true);
+                    return field;
+                }
+            }
+            throw new IllegalStateException();
+        }
+    });
+
     @Override
     public void writeObject(ObjectOutput output, EnumMap<E, Object> map) throws IOException {
         Class<?> enumClass = this.findEnumClass(map);
@@ -87,10 +100,8 @@ public class EnumMapExternalizer<E extends Enum<E>> implements Externalizer<Enum
             @Override
             public Class<?> run() {
                 try {
-                    Field field = EnumMap.class.getDeclaredField("keyType");
-                    field.setAccessible(true);
-                    return (Class<?>) field.get(map);
-                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    return (Class<?>) ENUM_MAP_KEY_CLASS_FIELD.get(map);
+                } catch (IllegalAccessException e) {
                     throw new IllegalStateException(e);
                 }
             }

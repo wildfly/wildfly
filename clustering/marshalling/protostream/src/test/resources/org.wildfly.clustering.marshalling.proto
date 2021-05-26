@@ -14,3 +14,9 @@ message TestComparator {
 message TestInvocationHandler {
 	required	java.util.UUID	value	= 1;
 }
+
+/**
+ * @TypeId(1002)
+ */
+enum Empty {
+}
