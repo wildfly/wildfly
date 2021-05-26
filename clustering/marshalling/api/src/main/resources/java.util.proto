@@ -9,47 +9,29 @@ import "java.lang.proto";
 /**
  * @TypeId(10)
  */
-message EmptyEnumeration {
+message EmptyList {
 }
 
 /**
  * @TypeId(11)
  */
-message EmptyIterator {
+message EmptyMap {
 }
 
 /**
  * @TypeId(12)
  */
-message EmptyList {
+message EmptyNavigableMap {
 }
 
 /**
  * @TypeId(13)
  */
-message EmptyListIterator {
-}
-
-/**
- * @TypeId(14)
- */
-message EmptyMap {
-}
-
-/**
- * @TypeId(15)
- */
-message EmptyNavigableMap {
-}
-
-/**
- * @TypeId(16)
- */
 message EmptyNavigableSet {
 }
 
 /**
- * @TypeId(17)
+ * @TypeId(14)
  */
 message EmptySet {
 }
@@ -57,14 +39,14 @@ message EmptySet {
 // Singleton collections
 
 /**
- * @TypeId(20)
+ * @TypeId(15)
  */
 message SingletonList {
 	optional	bytes	value	= 1;
 }
 
 /**
- * @TypeId(21)
+ * @TypeId(16)
  */
 message SingletonMap {
 	optional	bytes	key	= 1;
@@ -72,7 +54,7 @@ message SingletonMap {
 }
 
 /**
- * @TypeId(22)
+ * @TypeId(17)
  */
 message SingletonSet {
 	optional	bytes	value	= 1;
