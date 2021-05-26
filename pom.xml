@@ -9695,7 +9695,7 @@
                     </configuration>
                 </plugin>
 
-                <!-- Ban bad dependencies -->
+                <!-- Ban bad dependencies and require Java 8 for deploying -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
@@ -9818,6 +9818,20 @@
                                         </excludes>
                                     </bannedDependencies>
                                     <dependencyConvergence></dependencyConvergence>
+                                </rules>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>require-java8</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <phase>deploy</phase>
+                            <configuration>
+                                <rules>
+                                    <requireJavaVersion>
+                                        <version>[1.8,9)</version>
+                                    </requireJavaVersion>
                                 </rules>
                             </configuration>
                         </execution>
