@@ -6,6 +6,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
 
 import org.apache.http.Header;
@@ -130,8 +131,10 @@ public class ForwardedHandlerTestCase {
             final String proto = "https";
             final String forAddrOnly = "192.121.210.60";
             final String forAddr = forAddrOnly + ":455";
-            final String byAddrOnly = "203.0.113.43";
-            final String by = byAddrOnly + ":777";
+            final String by = "203.0.113.43:777";
+            final InetAddress addr = InetAddress.getByName(url.getHost());
+            final String localAddrName = addr.getHostName();
+            final String localAddr = addr.getHostAddress() + ":" + url.getPort();
 
             HttpGet httpget = new HttpGet(url.toExternalForm());
             httpget.addHeader("Forwarded", "for=" + forAddr + ";proto=" + proto + ";by=" + by);
@@ -145,12 +148,10 @@ public class ForwardedHandlerTestCase {
             if (header) {
                 Header[] hdrs = response.getHeaders(ForwardedTestHelperHandler.FORWARD_TEST_HEADER);
                 Assert.assertEquals(1, hdrs.length);
-                // FIXME WFLY-14815
-                //Assert.assertEquals("/" + forAddr + "|" + proto + "|" + "/" + by, hdrs[0].getValue());
+                Assert.assertEquals("/" + forAddr + "|" + proto + "|" + "/" + localAddr, hdrs[0].getValue());
             } else {
                 String result = EntityUtils.toString(entity);
-                // FIXME WFLY-14815
-                //Assert.assertEquals(forAddrOnly + "|" + forAddr + "|" + proto + "|" + byAddrOnly + "|" + by, result);
+                Assert.assertEquals(forAddrOnly + "|" + forAddr + "|" + proto + "|" + localAddrName + "|" + localAddr, result);
             }
         }
     }
