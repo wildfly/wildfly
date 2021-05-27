@@ -210,8 +210,6 @@ public class DatabaseTimerServiceMultiNodeTestCase {
                 Collector serverBean = (Collector) remoteContext.lookup(ARCHIVE_NAME + "/" + CollectionSingleton.class.getSimpleName() + "!" + Collector.class.getName());
                 List<TimerData> res = serverBean.collect(TIMER_COUNT);
                 Assert.assertEquals("Expected " + TIMER_COUNT + " was " + res.size() + " " + res, TIMER_COUNT, res.size());
-                boolean server = false;
-                boolean client = false;
                 final Set<String> newNames = new HashSet<>(names);
                 for (TimerData r : res) {
                     if (!newNames.remove(r.getInfo())) {
@@ -221,14 +219,7 @@ public class DatabaseTimerServiceMultiNodeTestCase {
                             throw new RuntimeException("Timer " + r.getInfo() + " run twice " + res);
                         }
                     }
-                    if (r.getNode().equals("client")) {
-                        client = true;
-                    } else if (r.getNode().equals("server")) {
-                        server = true;
-                    }
                 }
-                Assert.assertTrue(client);
-                Assert.assertTrue(server);
             } finally {
                 remoteContext.close();
             }
