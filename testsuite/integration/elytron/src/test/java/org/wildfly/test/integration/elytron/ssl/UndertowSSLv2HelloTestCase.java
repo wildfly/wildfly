@@ -32,6 +32,7 @@ import java.security.PrivilegedAction;
 import java.security.Security;
 
 import javax.ws.rs.ProcessingException;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
@@ -45,17 +46,19 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.AssumptionViolatedException;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.junit.runners.model.Statement;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.ElytronXmlParser;
 import org.wildfly.security.auth.client.InvalidAuthenticationConfigurationException;
@@ -85,7 +88,6 @@ import org.wildfly.test.security.common.elytron.SimpleTrustManager;
 @RunWith(Arquillian.class)
 @ServerSetup({ UndertowSSLv2HelloTestCase.ElytronSslContextInUndertowSetupTask.class, WelcomeContent.SetupTask.class})
 @RunAsClient
-@Ignore("WFLY-14835")
 public class UndertowSSLv2HelloTestCase {
 
     private static final String NAME = UndertowTwoWaySslNeedClientAuthTestCase.class.getSimpleName();
@@ -99,6 +101,10 @@ public class UndertowSSLv2HelloTestCase {
     private static final String HTTPS = "https";
     private static URL securedRootUrl;
     public static String disabledAlgorithms;
+
+    @ClassRule
+    public static IbmVerification ibmVerification =
+            new IbmVerification(TestSuiteEnvironment.isIbmJvm());
 
     // just to make server setup task work
     @Deployment(testable = false)
@@ -134,7 +140,7 @@ public class UndertowSSLv2HelloTestCase {
      * Handshake should succeed.
      */
     @Test
-    public void testOneWayRestEasyElytronClientServerSupportsSSLv2Hello() throws Exception {
+    public void testOneWayElytronClientServerSupportsSSLv2Hello() throws Exception {
 
         configureSSLContext(SSLV2HELLO_CONTEXT_ONE_WAY);
 
@@ -147,8 +153,8 @@ public class UndertowSSLv2HelloTestCase {
             }
         });
         context.run(() -> {
-            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
-            ResteasyClient client = resteasyClientBuilder.build();
+            ClientBuilder clientBuilder = ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
+            Client client = clientBuilder.build();
             Response response = client.target(String.valueOf(securedRootUrl)).request().get();
             Assert.assertEquals(200, response.getStatus());
         });
@@ -161,8 +167,7 @@ public class UndertowSSLv2HelloTestCase {
      * Handshake should succeed.
      */
     @Test
-    public void testTwoWayRestEasyElytronClientServerSupportsSSLv2Hello() throws Exception {
-
+    public void testTwoWayElytronClientServerSupportsSSLv2Hello() throws Exception {
         configureSSLContext(SSLV2HELLO_CONTEXT);
 
         AuthenticationContext context = doPrivileged((PrivilegedAction<AuthenticationContext>) () -> {
@@ -174,8 +179,8 @@ public class UndertowSSLv2HelloTestCase {
             }
         });
         context.run(() -> {
-            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
-            ResteasyClient client = resteasyClientBuilder.build();
+            ClientBuilder clientBuilder = ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
+            Client client = clientBuilder.build();
             Response response = client.target(String.valueOf(securedRootUrl)).request().get();
             Assert.assertEquals(200, response.getStatus());
         });
@@ -188,7 +193,7 @@ public class UndertowSSLv2HelloTestCase {
      * Handshake should succeed as they still share protocol TLSv1 in common.
      */
     @Test
-    public void testTwoWayRestEasyElytronClientNoSSLv2HelloSupport() throws Exception {
+    public void testTwoWayElytronClientNoSSLv2HelloSupport() throws Exception {
         configureSSLContext(SSLV2HELLO_CONTEXT);
         AuthenticationContext context = doPrivileged((PrivilegedAction<AuthenticationContext>) () -> {
             try {
@@ -199,8 +204,8 @@ public class UndertowSSLv2HelloTestCase {
             }
         });
         context.run(() -> {
-            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
-            ResteasyClient client = resteasyClientBuilder.build();
+            ClientBuilder clientBuilder =  ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
+            Client client = clientBuilder.build();
             Response response = client.target(String.valueOf(securedRootUrl)).request().get();
             Assert.assertEquals(200, response.getStatus());
         });
@@ -212,7 +217,7 @@ public class UndertowSSLv2HelloTestCase {
      * Handshake should fail.
      */
     @Test(expected = ProcessingException.class)
-    public void testTwoWayRestEasyElytronServerNoSSLv2HelloSupport() throws Exception {
+    public void testTwoWayElytronServerNoSSLv2HelloSupport() throws Exception {
         configureSSLContext(DEFAULT_CONTEXT);
         AuthenticationContext context = doPrivileged((PrivilegedAction<AuthenticationContext>) () -> {
             try {
@@ -223,8 +228,8 @@ public class UndertowSSLv2HelloTestCase {
             }
         });
         context.run(() -> {
-            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
-            ResteasyClient client = resteasyClientBuilder.build();
+            ClientBuilder clientBuilder = ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
+            Client client = clientBuilder.build();
             Response response = client.target(String.valueOf(securedRootUrl)).request().get();
             Assert.assertEquals(200, response.getStatus());
         });
@@ -236,7 +241,7 @@ public class UndertowSSLv2HelloTestCase {
      * They each have their default configuration. Handshake should succeed.
      */
     @Test
-    public void testTwoWayRestEasyElytronServerClientDefaultConfig() throws Exception{
+    public void testTwoWayElytronServerClientDefaultConfig() throws Exception {
         configureSSLContext(DEFAULT_CONTEXT);
         AuthenticationContext context = doPrivileged((PrivilegedAction<AuthenticationContext>) () -> {
             try {
@@ -247,8 +252,8 @@ public class UndertowSSLv2HelloTestCase {
             }
         });
         context.run(() -> {
-            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
-            ResteasyClient client = resteasyClientBuilder.build();
+            ClientBuilder clientBuilder = ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
+            Client client = clientBuilder.build();
             Response response = client.target(String.valueOf(securedRootUrl)).request().get();
             Assert.assertEquals(200, response.getStatus());
         });
@@ -277,6 +282,29 @@ public class UndertowSSLv2HelloTestCase {
                     "(name=security-realm,value=ApplicationRealm)", HTTPS));
             cli.sendLine("run-batch");
             cli.sendLine("reload");
+        }
+    }
+
+    public static class IbmVerification implements TestRule {
+
+        private boolean isIbm;
+
+        public IbmVerification(boolean isIbm) {
+            this.isIbm = isIbm;
+        }
+
+        @Override
+        public Statement apply(Statement base, Description description) {
+            return new Statement() {
+                @Override
+                public void evaluate() throws Throwable {
+                    if (isIbm) {
+                        throw new AssumptionViolatedException("IBM JDK does not support SSLv2Hello. Skipping test!");
+                    } else {
+                        base.evaluate();
+                    }
+                }
+            };
         }
     }
 

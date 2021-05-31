@@ -11,6 +11,9 @@
             <ssl-context name="client-context">
                 <trust-store key-store-name="truststore"/>
                 <protocol names="SSLv2Hello TLSv1"/>
+                <providers>
+                    <global/>
+                </providers>
             </ssl-context>
         </ssl-contexts>
         <ssl-context-rules>

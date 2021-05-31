@@ -18,6 +18,9 @@
                     <key-store-clear-password password="123456" />
                 </key-store-ssl-certificate>
                 <protocol names="SSLv2Hello TLSv1"/>
+                <providers>
+                    <global/>
+                </providers>
             </ssl-context>
         </ssl-contexts>
         <ssl-context-rules>
