@@ -53,6 +53,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.auth.client.AuthenticationContext;
@@ -84,6 +85,7 @@ import org.wildfly.test.security.common.elytron.SimpleTrustManager;
 @RunWith(Arquillian.class)
 @ServerSetup({ UndertowSSLv2HelloTestCase.ElytronSslContextInUndertowSetupTask.class, WelcomeContent.SetupTask.class})
 @RunAsClient
+@Ignore("WFLY-14835")
 public class UndertowSSLv2HelloTestCase {
 
     private static final String NAME = UndertowTwoWaySslNeedClientAuthTestCase.class.getSimpleName();
