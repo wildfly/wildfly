@@ -32,7 +32,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
+import org.apache.commons.cli.DefaultParser;
 
 /**
  * Command Line Tool for the default implementation of the {@link org.jboss.security.vault.SecurityVault}
@@ -130,7 +130,7 @@ public class VaultTool {
 
     public VaultTool(String[] args) {
         initOptions();
-        parser = new PosixParser();
+        parser = new DefaultParser();
         try {
             cmdLine = parser.parse(options, args, true);
         } catch (ParseException e) {
