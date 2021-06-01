@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.spi.util;
 import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Currency;
@@ -33,17 +34,26 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.DecoratorExternalizer;
 import org.wildfly.clustering.marshalling.spi.ExternalizerProvider;
 import org.wildfly.clustering.marshalling.spi.ObjectExternalizer;
 import org.wildfly.clustering.marshalling.spi.StringExternalizer;
+import org.wildfly.clustering.marshalling.spi.SynchronizedDecoratorExternalizer;
 import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
 
 /**
@@ -90,9 +100,27 @@ public enum UtilExternalizerProvider implements ExternalizerProvider {
     SINGLETON_LIST(new SingletonCollectionExternalizer<>(Collections::singletonList)),
     SINGLETON_MAP(new SingletonMapExternalizer()),
     SINGLETON_SET(new SingletonCollectionExternalizer<>(Collections::singleton)),
+    SYNCHRONIZED_COLLECTION(new SynchronizedDecoratorExternalizer<>(Collection.class, Collections::synchronizedCollection, Collections.emptyList())),
+    SYNCHRONIZED_LIST(new SynchronizedDecoratorExternalizer<>(List.class, Collections::synchronizedList, new LinkedList<>())),
+    SYNCHRONIZED_MAP(new SynchronizedDecoratorExternalizer<>(Map.class, Collections::synchronizedMap, Collections.emptyMap())),
+    SYNCHRONIZED_NAVIGABLE_MAP(new SynchronizedDecoratorExternalizer<>(NavigableMap.class, Collections::synchronizedNavigableMap, Collections.emptyNavigableMap())),
+    SYNCHRONIZED_NAVIGABLE_SET(new SynchronizedDecoratorExternalizer<>(NavigableSet.class, Collections::synchronizedNavigableSet, Collections.emptyNavigableSet())),
+    SYNCHRONIZED_RANDOM_ACCESS_LIST(new SynchronizedDecoratorExternalizer<>(List.class, Collections::synchronizedList, Collections.emptyList())),
+    SYNCHRONIZED_SET(new SynchronizedDecoratorExternalizer<>(Set.class, Collections::synchronizedSet, Collections.emptySet())),
+    SYNCHRONIZED_SORTED_MAP(new SynchronizedDecoratorExternalizer<>(SortedMap.class, Collections::synchronizedSortedMap, Collections.emptySortedMap())),
+    SYNCHRONIZED_SORTED_SET(new SynchronizedDecoratorExternalizer<>(SortedSet.class, Collections::synchronizedSortedSet, Collections.emptySortedSet())),
     TIME_ZONE(new StringExternalizer<>(TimeZone.class, TimeZone::getTimeZone, TimeZone::getID)),
     TREE_MAP(new SortedMapExternalizer<>(TreeMap.class, TreeMap::new)),
     TREE_SET(new SortedSetExternalizer<>(TreeSet.class, TreeSet::new)),
+    UNMODIFIABLE_COLLECTION(new DecoratorExternalizer<>(Collection.class, Collections::unmodifiableCollection, Collections.emptyList())),
+    UNMODIFIABLE_LIST(new DecoratorExternalizer<>(List.class, Collections::unmodifiableList, new LinkedList<>())),
+    UNMODIFIABLE_MAP(new DecoratorExternalizer<>(Map.class, Collections::unmodifiableMap, Collections.emptyMap())),
+    UNMODIFIABLE_NAVIGABLE_MAP(new DecoratorExternalizer<>(NavigableMap.class, Collections::unmodifiableNavigableMap, Collections.emptyNavigableMap())),
+    UNMODIFIABLE_NAVIGABLE_SET(new DecoratorExternalizer<>(NavigableSet.class, Collections::unmodifiableNavigableSet, Collections.emptyNavigableSet())),
+    UNMODIFIABLE_RANDOM_ACCESS_LIST(new DecoratorExternalizer<>(List.class, Collections::unmodifiableList, Collections.emptyList())),
+    UNMODIFIABLE_SET(new DecoratorExternalizer<>(Set.class, Collections::unmodifiableSet, Collections.emptySet())),
+    UNMODIFIABLE_SORTED_MAP(new DecoratorExternalizer<>(SortedMap.class, Collections::unmodifiableSortedMap, Collections.emptySortedMap())),
+    UNMODIFIABLE_SORTED_SET(new DecoratorExternalizer<>(SortedSet.class, Collections::unmodifiableSortedSet, Collections.emptySortedSet())),
     UUID(new UUIDExternalizer()),
     ;
     private final Externalizer<?> externalizer;

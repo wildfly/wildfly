@@ -60,6 +60,112 @@ message SingletonSet {
 	optional	bytes	value	= 1;
 }
 
+// Synchronized collections
+
+/**
+ * @TypeId(20)
+ */
+message SynchronizedCollection {
+	optional	bytes	value	 = 1;
+}
+
+/**
+ * @TypeId(21)
+ */
+message SynchronizedList {
+	optional	bytes	value	 = 1;
+}
+
+/**
+ * @TypeId(22)
+ */
+message SynchronizedMap {
+	optional	bytes	value	 = 1;
+}
+
+message SynchronizedNavigableMap {
+	optional	bytes	value	 = 1;
+}
+
+message SynchronizedNavigableSet {
+	optional	bytes	value	 = 1;
+}
+
+/**
+ * @TypeId(23)
+ */
+message SynchronizedRandomAccessList {
+	optional	bytes	value	 = 1;
+}
+
+/**
+ * @TypeId(24)
+ */
+message SynchronizedSet {
+	optional	bytes	value	 = 1;
+}
+
+message SynchronizedSortedMap {
+	optional	bytes	value	 = 1;
+}
+
+message SynchronizedSortedSet {
+	optional	bytes	value	 = 1;
+}
+
+// Unmodifiable collections
+
+/**
+ * @TypeId(25)
+ */
+message UnmodifiableCollection {
+	optional	bytes	collection	 = 1;
+}
+
+/**
+ * @TypeId(26)
+ */
+message UnmodifiableList {
+	optional	bytes	collection	 = 1;
+}
+
+/**
+ * @TypeId(27)
+ */
+message UnmodifiableMap {
+	optional	bytes	collection	 = 1;
+}
+
+message UnmodifiableNavigableMap {
+	optional	bytes	collection	 = 1;
+}
+
+message UnmodifiableNavigableSet {
+	optional	bytes	collection	 = 1;
+}
+
+/**
+ * @TypeId(28)
+ */
+message UnmodifiableRandomAccessList {
+	optional	bytes	collection	 = 1;
+}
+
+/**
+ * @TypeId(29)
+ */
+message UnmodifiableSet {
+	optional	bytes	collection	 = 1;
+}
+
+message UnmodifiableSortedMap {
+	optional	bytes	collection	 = 1;
+}
+
+message UnmodifiableSortedSet {
+	optional	bytes	collection	 = 1;
+}
+
 // Collections
 
 /**

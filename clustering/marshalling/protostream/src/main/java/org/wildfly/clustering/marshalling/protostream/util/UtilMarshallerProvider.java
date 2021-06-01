@@ -27,6 +27,7 @@ import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
@@ -34,17 +35,26 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.wildfly.clustering.marshalling.protostream.DecoratorMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilderFieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
+import org.wildfly.clustering.marshalling.protostream.SynchronizedDecoratorMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ValueMarshaller;
 import org.wildfly.common.function.Functions;
 
@@ -83,9 +93,27 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     SINGLETON_LIST(new SingletonCollectionMarshaller<>(Collections::singletonList)),
     SINGLETON_MAP(new SingletonMapMarshaller(Collections::singletonMap)),
     SINGLETON_SET(new SingletonCollectionMarshaller<>(Collections::singleton)),
+    SYNCHRONIZED_COLLECTION(new SynchronizedDecoratorMarshaller<>(Collection.class, Collections::synchronizedCollection, Collections.emptyList())),
+    SYNCHRONIZED_LIST(new SynchronizedDecoratorMarshaller<>(List.class, Collections::synchronizedList, new LinkedList<>())),
+    SYNCHRONIZED_MAP(new SynchronizedDecoratorMarshaller<>(Map.class, Collections::synchronizedMap, Collections.emptyMap())),
+    SYNCHRONIZED_NAVIGABLE_MAP(new SynchronizedDecoratorMarshaller<>(NavigableMap.class, Collections::synchronizedNavigableMap, Collections.emptyNavigableMap())),
+    SYNCHRONIZED_NAVIGABLE_SET(new SynchronizedDecoratorMarshaller<>(NavigableSet.class, Collections::synchronizedNavigableSet, Collections.emptyNavigableSet())),
+    SYNCHRONIZED_RANDOM_ACCESS_LIST(new SynchronizedDecoratorMarshaller<>(List.class, Collections::synchronizedList, Collections.emptyList())),
+    SYNCHRONIZED_SET(new SynchronizedDecoratorMarshaller<>(Set.class, Collections::synchronizedSet, Collections.emptySet())),
+    SYNCHRONIZED_SORTED_MAP(new SynchronizedDecoratorMarshaller<>(SortedMap.class, Collections::synchronizedSortedMap, Collections.emptySortedMap())),
+    SYNCHRONIZED_SORTED_SET(new SynchronizedDecoratorMarshaller<>(SortedSet.class, Collections::synchronizedSortedSet, Collections.emptySortedSet())),
     TIME_ZONE(new FunctionalScalarMarshaller<>(TimeZone.class, Scalar.STRING.cast(String.class), Functions.constantSupplier(TimeZone.getDefault()), TimeZone::getID, TimeZone::getTimeZone)),
     TREE_MAP(new SortedMapMarshaller<>(TreeMap::new)),
     TREE_SET(new SortedSetMarshaller<>(TreeSet::new)),
+    UNMODIFIABLE_COLLECTION(new DecoratorMarshaller<>(Collection.class, Collections::unmodifiableCollection, Collections.emptyList())),
+    UNMODIFIABLE_LIST(new DecoratorMarshaller<>(List.class, Collections::unmodifiableList, new LinkedList<>())),
+    UNMODIFIABLE_MAP(new DecoratorMarshaller<>(Map.class, Collections::unmodifiableMap, Collections.emptyMap())),
+    UNMODIFIABLE_NAVIGABLE_MAP(new DecoratorMarshaller<>(NavigableMap.class, Collections::unmodifiableNavigableMap, Collections.emptyNavigableMap())),
+    UNMODIFIABLE_NAVIGABLE_SET(new DecoratorMarshaller<>(NavigableSet.class, Collections::unmodifiableNavigableSet, Collections.emptyNavigableSet())),
+    UNMODIFIABLE_RANDOM_ACCESS_LIST(new DecoratorMarshaller<>(List.class, Collections::unmodifiableList, Collections.emptyList())),
+    UNMODIFIABLE_SET(new DecoratorMarshaller<>(Set.class, Collections::unmodifiableSet, Collections.emptySet())),
+    UNMODIFIABLE_SORTED_MAP(new DecoratorMarshaller<>(SortedMap.class, Collections::unmodifiableSortedMap, Collections.emptySortedMap())),
+    UNMODIFIABLE_SORTED_SET(new DecoratorMarshaller<>(SortedSet.class, Collections::unmodifiableSortedSet, Collections.emptySortedSet())),
     UUID(new ProtoStreamBuilderFieldSetMarshaller<>(UUIDMarshaller.INSTANCE)),
     ;
     private final ProtoStreamMarshaller<?> marshaller;
