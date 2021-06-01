@@ -3,10 +3,12 @@ package org.jboss.as.test.integration.web.handlers;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.SocketPermission;
 import java.net.URL;
 
 import org.apache.http.Header;
@@ -71,7 +73,11 @@ public class ForwardedHandlerTestCase {
         return ShrinkWrap.create(WebArchive.class, FORWARDED_HANDLER_NO_UT_HANDLERS + ".war")
                 .addPackage(ForwardedHandlerTestCase.class.getPackage())
                 .addAsWebInfResource(new StringAsset(JBOSS_WEB_TEXT), "jboss-web.xml")
-                .addAsWebResource(new StringAsset("A file"), "index.html");
+                .addAsWebResource(new StringAsset("A file"), "index.html")
+                .addAsManifestResource(
+                    createPermissionsXmlAsset(
+                       new SocketPermission("*:0", "listen,resolve")),
+                    "permissions.xml");
     }
 
     @Deployment(name = FORWARDED_SERVLET)
