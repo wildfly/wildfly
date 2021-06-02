@@ -57,6 +57,10 @@
             <artifactId>jboss-ejb3-ext-api</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.batch</groupId>
+            <artifactId>jboss-batch-api_1.0_spec</artifactId>
+        </dependency>
     </dependencies>
 
     <profiles>

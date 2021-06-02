@@ -135,6 +135,11 @@ abstract class JobRepositoryService implements JobRepository, Service<JobReposit
     }
 
     @Override
+    public void stopJobExecution(final JobExecutionImpl jobExecution) {
+        getAndCheckDelegate().stopJobExecution(jobExecution);
+    }
+
+    @Override
     public List<Long> getRunningExecutions(final String jobName) {
         return getAndCheckDelegate().getRunningExecutions(jobName);
     }
@@ -187,6 +192,11 @@ abstract class JobRepositoryService implements JobRepository, Service<JobReposit
     @Override
     public void savePersistentData(final JobExecution jobExecution, final AbstractStepExecution stepOrPartitionExecution) {
         getAndCheckDelegate().savePersistentData(jobExecution, stepOrPartitionExecution);
+    }
+
+    @Override
+    public int savePersistentDataIfNotStopping(final JobExecution jobExecution, final AbstractStepExecution abstractStepExecution) {
+        return getAndCheckDelegate().savePersistentDataIfNotStopping(jobExecution, abstractStepExecution);
     }
 
     protected abstract void startJobRepository(StartContext context) throws StartException;
