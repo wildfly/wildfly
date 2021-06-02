@@ -2308,6 +2308,26 @@ creation time can be used to test if a session was resumed. Currently, clients n
 the first handshake in order to receive the `NewSessionTicket` that can be used for resumption. However, this may
 change once https://bugs.openjdk.java.net/browse/JDK-8209953[JDK-8209953] is resolved.
 
+==== Dynamic client SSLContext
+
+Using the Elytron subsystem, it is possible to configure an SSLContext that will delegate to alternate instances based on host and port you are connecting to.
+
+You can add such SSLContext as follows:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/dynamic-client-ssl-context=example-dynamic-ssl-context:add(authentication-context=example-authentication-context)
+----
+
+The attribute authentication-context refers to the resource `authentication-context` configured in the elytron subsystem.
+This attribute will be used to obtain rules based on which the dynamic client SSL context chooses the specific SSL context to use when making a connection.
+
+Example of adding authentication-context:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/authentication-context=ac:add(match-rules=[{match-port=9443,ssl-context=client1-ssl-context},{match-host="127.0.0.1",ssl-context=client2-ssl-context}])
+----
 
 === Default SSLContext
 
