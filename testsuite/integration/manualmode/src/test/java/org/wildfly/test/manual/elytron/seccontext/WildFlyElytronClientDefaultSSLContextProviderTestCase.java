@@ -201,6 +201,6 @@ public class WildFlyElytronClientDefaultSSLContextProviderTestCase {
     }
 
     private int getManagementPort() {
-        return 9990;
+        return TestSuiteEnvironment.getServerPort();
     }
 }
