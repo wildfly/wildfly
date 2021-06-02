@@ -292,6 +292,47 @@ The individual match elements are: -
 * <match-domain-name name="..."/>:: Matches where the protocol of the URI is 'domain' and the scheme specific part of the URI is the name specified within this match element.
  <match-abstract-type name="..." authority="..." />:: Matches the abstract type and/or authority against the values specified within this match element.
 
+=== Elytron client default SSL context security provider
+
+You can register the `org.wildfly.security.auth.client.ElytronClientDefaultSSLContextProvider` security provider. This java security provider loads Elytron client configuration and provides an initialized default SSL context. You can make use of this SSL context by calling `SSLContext.getDefault()` if this provider is registered with high enough priority.
+
+The provider loads the SSL context from either current authentication context obtained from classpath, or from authentication context obtained from file whose path is passed into the security provider either programmatically or as an argument in `java.security` file. Argument passed to the provider directly has precedence over authentication context from classpath.
+
+The SSL context configured to match all rules is the one that will be initialized and returned by this provider:
+
+[source,xml,options="nowrap"]
+----
+<rule use-ssl-context="ssl-context-for-client-provider" />
+----
+
+Or:
+
+----
+myAuthenticationContext.withSsl(MatchRule.ALL, myDefaultSslContext);
+----
+
+Example of dynamic configuration of client default SSL context provider with configuration file path provided:
+
+[source,java,options="nowrap"]
+----
+Security.insertProviderAt(new ElytronClientDefaultSSLContextProvider(CONFIG_FILE_PATH), 1);
+----
+
+Example of static configuration of client default SSL context provider in `java.security` file with configuration file path provided:
+
+[source,bash,options="nowrap"]
+----
+security.provider.1=org.wildfly.security.auth.client.ElytronClientDefaultSSLContextProvider CONFIG_FILE_PATH
+----
+
+When you have default SSL context configured and you register this provider with high enough priority, you can make use of it by calling:
+
+```
+SSLContext.getDefault();
+```
+
+If no default SSL context is configured or there is no configuration present, the provider will be ignored.
+
 == <authentication-configurations />
 
 The <authentication-configurations /> element contains named configurations that can then be matched from the <authentication-rules />
