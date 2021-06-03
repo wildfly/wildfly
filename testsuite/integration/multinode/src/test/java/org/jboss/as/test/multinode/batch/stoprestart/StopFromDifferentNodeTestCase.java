@@ -259,8 +259,8 @@ public class StopFromDifferentNodeTestCase {
     }
 
     private static BatchStatus waitForBatchStatus(BatchClientIF bean, long jobExecutionId, BatchStatus batchStatus) throws Exception {
-        final int checkIntervalMillis = 50;
-        final int maxCount = 50;
+        final int checkIntervalMillis = TimeoutUtil.adjust(50);
+        final int maxCount = TimeoutUtil.adjust(50);
         int count = 0;
         BatchStatus finalStatus = null;
         do {
