@@ -35,9 +35,11 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -47,6 +49,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.shared.CliUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -65,7 +68,6 @@ import org.wildfly.test.security.common.elytron.SimpleKeyManager;
 import org.wildfly.test.security.common.elytron.SimpleKeyStore;
 import org.wildfly.test.security.common.elytron.SimpleServerSslContext;
 import org.wildfly.test.security.common.elytron.SimpleTrustManager;
-import org.wildfly.test.security.common.elytron.UndertowSslContext;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.CRLReason;
@@ -91,21 +93,28 @@ public class CertificateRevocationListTestBase extends CommonBase {
     protected static KeyStore trustStore;
     protected static KeyStore goodCertKeyStore;
     protected static KeyStore revokedCertKeyStore;
+    protected static KeyStore otherRevokedCertKeyStore;
 
     protected static final String PASSWORD = "Elytron";
+    protected static final String TWO_WAY_SSL_CONTEXT_NAME = "serverSslContext";
+    protected static final String TWO_WAY_MULTIPLE_CRL_SSL_CONTEXT = "otherServerSslContext";
+    protected static final String TWO_WAY_SINGLE_CRL_SSL_CONTEXT = "singleCrlSslContext";
+
     private static final char[] PASSWORD_CHAR = PASSWORD.toCharArray();
+    private static final String HTTPS = "https";
     private static final String CA_JKS_LOCATION = "." + File.separator + "target" + File.separator + "test-classes" +
             File.separator + "ca" + File.separator + "jks";
     private static final File WORKING_DIR_CA = new File(CA_JKS_LOCATION);
     private static final File LADYBIRD_FILE = new File(WORKING_DIR_CA, "ladybird.keystore");
     private static final File CHECKED_GOOD_FILE = new File(WORKING_DIR_CA, "checked-good.keystore");
     private static final File CHECKED_REVOKED_FILE = new File(WORKING_DIR_CA, "checked-revoked.keystore");
+    private static final File OTHER_REVOKED_FILE = new File(WORKING_DIR_CA, "other-revoked.keystore");
     private static final File TRUST_FILE = new File(WORKING_DIR_CA, "ca.truststore");
-
     private static final String CA_CRL_LOCATION = "." + File.separator + "target" + File.separator + "test-classes" +
             File.separator + "ca" + File.separator + "crl";
     private static final File WORKING_DIR_CACRL = new File(CA_CRL_LOCATION);
     private static final File CA_BLANK_PEM_CRL = new File(WORKING_DIR_CACRL, "blank.pem");
+    private static final File CA_OTHER_PEM_CRL = new File(WORKING_DIR_CACRL, "other.pem");
 
     private static KeyStore createKeyStore() throws Exception {
         KeyStore ks = KeyStore.getInstance("JKS");
@@ -216,7 +225,30 @@ public class CertificateRevocationListTestBase extends CommonBase {
                 new X509Certificate[]{checkedRevokedCertificate, issuerCertificate});
         createTemporaryKeyStoreFile(revokedCertKeyStore, CHECKED_REVOKED_FILE, PASSWORD_CHAR);
 
-        prepareCrlFiles(issuerCertificate, issuerSelfSignedX509CertificateAndSigningKey, checkedRevokedCertificate);
+        // Creates the CRL for ca/crl/blank.pem
+        prepareCrlFiles(issuerCertificate, issuerSelfSignedX509CertificateAndSigningKey, checkedRevokedCertificate, CA_BLANK_PEM_CRL);
+
+        // Generates another REVOKED certificate - this one will be part of another CRL
+        KeyPair otherRevokedKeys = keyPairGenerator.generateKeyPair();
+        PrivateKey otherRevokedSigningKey = otherRevokedKeys.getPrivate();
+        PublicKey otherRevokedPublicKey = otherRevokedKeys.getPublic();
+
+        X509Certificate otherRevokedCertificate = new X509CertificateBuilder().setIssuerDn(issuerDN)
+                .setSubjectDn(new X500Principal("OU=Elytron, O=Elytron, C=UK, ST=Elytron, CN=localhost"))
+                .setSignatureAlgorithmName("SHA256withRSA")
+                .setSigningKey(issuerSelfSignedX509CertificateAndSigningKey.getSigningKey())
+                .setPublicKey(otherRevokedPublicKey)
+                .setSerialNumber(new BigInteger("17"))
+                .addExtension(new BasicConstraintsExtension(false, false, -1))
+                .build();
+        otherRevokedCertKeyStore = createKeyStore();
+        otherRevokedCertKeyStore.setCertificateEntry("ca", issuerCertificate);
+        otherRevokedCertKeyStore.setKeyEntry("localhost", otherRevokedSigningKey, PASSWORD_CHAR,
+                new X509Certificate[]{otherRevokedCertificate, issuerCertificate});
+        createTemporaryKeyStoreFile(otherRevokedCertKeyStore, OTHER_REVOKED_FILE, PASSWORD_CHAR);
+
+        // Creates the CRL for ca/crl/other.pem
+        prepareCrlFiles(issuerCertificate, issuerSelfSignedX509CertificateAndSigningKey, otherRevokedCertificate, CA_OTHER_PEM_CRL);
 
         // Create the temporary files
         createTemporaryKeyStoreFile(ladybirdKeyStore, LADYBIRD_FILE, PASSWORD_CHAR); // keystore for server config
@@ -225,7 +257,7 @@ public class CertificateRevocationListTestBase extends CommonBase {
 
     private static void prepareCrlFiles(X509Certificate intermediateIssuerCertificate,
             SelfSignedX509CertificateAndSigningKey issuerSelfSignedX509CertificateAndSigningKey,
-            X509Certificate revoked) throws Exception {
+            X509Certificate revoked, File crlFile) throws Exception {
         // Used for all CRLs
         Calendar calendar = Calendar.getInstance();
         Date currentDate = calendar.getTime();
@@ -235,7 +267,6 @@ public class CertificateRevocationListTestBase extends CommonBase {
         calendar.add(Calendar.SECOND, -30);
         Date revokeDate = calendar.getTime();
 
-        // Creates the CRL for ca/crl/blank.pem
         X509v2CRLBuilder caBlankCrlBuilder =
                 new X509v2CRLBuilder(convertSunStyleToBCStyle(intermediateIssuerCertificate.getIssuerDN()),
                         currentDate);
@@ -245,7 +276,7 @@ public class CertificateRevocationListTestBase extends CommonBase {
                 new JcaContentSignerBuilder("SHA256withRSA").setProvider("BC").build(
                         issuerSelfSignedX509CertificateAndSigningKey.getSigningKey()));
 
-        PemWriter caBlankCrlOutput = new PemWriter(new OutputStreamWriter(new FileOutputStream(CA_BLANK_PEM_CRL)));
+        PemWriter caBlankCrlOutput = new PemWriter(new OutputStreamWriter(new FileOutputStream(crlFile)));
         caBlankCrlOutput.writeObject(new MiscPEMGenerator(caBlankCrlHolder));
         caBlankCrlOutput.close();
     }
@@ -254,10 +285,36 @@ public class CertificateRevocationListTestBase extends CommonBase {
         Assert.assertTrue(LADYBIRD_FILE.delete());
         Assert.assertTrue(CHECKED_GOOD_FILE.delete());
         Assert.assertTrue(CHECKED_REVOKED_FILE.delete());
+        Assert.assertTrue(OTHER_REVOKED_FILE.delete());
         Assert.assertTrue(TRUST_FILE.delete());
         Assert.assertTrue(WORKING_DIR_CA.delete());
         Assert.assertTrue(CA_BLANK_PEM_CRL.delete());
+        Assert.assertTrue(CA_OTHER_PEM_CRL.delete());
         Assert.assertTrue(WORKING_DIR_CACRL.delete());
+    }
+
+    protected static void configureSSLContext(String sslContextName) throws Exception {
+        try(CLIWrapper cli = new CLIWrapper(true)) {
+            cli.sendLine("batch");
+            cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:undefine-attribute" +
+                    "(name=security-realm)", HTTPS));
+            cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:write-attribute" +
+                    "(name=ssl-context,value=%s)", HTTPS, sslContextName));
+            cli.sendLine("run-batch");
+            cli.sendLine("reload");
+        }
+    }
+
+    protected void restoreConfiguration() throws Exception {
+        try (CLIWrapper cli = new CLIWrapper(true)) {
+            cli.sendLine("batch");
+            cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:undefine-attribute" +
+                    "(name=ssl-context)", HTTPS));
+            cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:write-attribute" +
+                    "(name=security-realm,value=ApplicationRealm)", HTTPS));
+            cli.sendLine("run-batch");
+            cli.sendLine("reload");
+        }
     }
 
     // This is a dummy deployment just to CrlServerSetup task is kicked off. Not sure about better way ATM.
@@ -320,17 +377,49 @@ public class CertificateRevocationListTestBase extends CommonBase {
                             serverTrustStore.getName()).withSoftFail(false).withCrl(crl).withAlgorithm("PKIX").build();
             elements.add(serverTrustManager);
 
-            // Create final server ssl context with prepared key and trust managers.
-            SimpleServerSslContext serverSslContext =
-                    SimpleServerSslContext.builder().withName("serverSslContext").withKeyManagers(
+            // Prepare alternative server trust manager (with multiple CRLs configuration) to test CRLs support
+            CertificateRevocationList crl2 =
+                    CertificateRevocationList.builder().withPath(CliUtils.asAbsolutePath(CA_OTHER_PEM_CRL)).build();
+
+            List<CertificateRevocationList> crls = new ArrayList<>();
+            crls.add(crl);
+            crls.add(crl2);
+
+            SimpleTrustManager multipleCrlServerTrustManager =
+                    SimpleTrustManager.builder().withName("multipleCrlServerTrustManager").withKeyStore(
+                            serverTrustStore.getName()).withSoftFail(false).withCrls(crls).withAlgorithm("PKIX").build();
+            elements.add(multipleCrlServerTrustManager);
+
+
+            // Prepare trust manager that configures a single CRL using the certificate-revocation-lists attribute
+            crls.remove(crl2);
+            SimpleTrustManager singleCrlServerTrustManager =
+                    SimpleTrustManager.builder().withName("singleCrlServerTrustManager").withKeyStore(
+                            serverTrustStore.getName()).withSoftFail(false).withCrls(crls).withAlgorithm("PKIX").build();
+
+            elements.add(singleCrlServerTrustManager);
+
+            // Create two way server ssl context with prepared key and trust managers.
+            SimpleServerSslContext twoWayServerSslContext =
+                    SimpleServerSslContext.builder().withName(TWO_WAY_SSL_CONTEXT_NAME).withKeyManagers(
                             serverKeyManager.getName()).withNeedClientAuth(true).withTrustManagers(
                             serverTrustManager.getName()).build();
-            elements.add(serverSslContext);
+            elements.add(twoWayServerSslContext);
 
-            // Configure created server ssl context for undertow default HTTPS listener.
-            UndertowSslContext undertowSslContext = UndertowSslContext.builder().withHttpsListener("https").withName(
-                    serverSslContext.getName()).build();
-            elements.add(undertowSslContext);
+            // Create another two way server ssl context to use the trust manager that supports multiple CRLs
+            SimpleServerSslContext otherTwoWaySslContext =
+                    SimpleServerSslContext.builder().withName(TWO_WAY_MULTIPLE_CRL_SSL_CONTEXT).withKeyManagers(
+                            serverKeyManager.getName()).withNeedClientAuth(true).withTrustManagers(
+                            multipleCrlServerTrustManager.getName()).build();
+            elements.add(otherTwoWaySslContext);
+
+            // Creates another two way server ssl context to use the trust manager that has configured a single CRL
+            // using the certificate-revocation-lists attribute
+            SimpleServerSslContext singleCrlTwoWaySslContext =
+                    SimpleServerSslContext.builder().withName(TWO_WAY_SINGLE_CRL_SSL_CONTEXT).withKeyManagers(
+                            serverKeyManager.getName()).withNeedClientAuth(true).withTrustManagers(
+                            singleCrlServerTrustManager.getName()).build();
+            elements.add(singleCrlTwoWaySslContext);
 
             return elements.toArray(new ConfigurableElement[]{});
         }
