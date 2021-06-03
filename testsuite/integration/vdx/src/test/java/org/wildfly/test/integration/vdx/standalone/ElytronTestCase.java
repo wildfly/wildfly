@@ -52,6 +52,8 @@ public class ElytronTestCase extends TestBase {
         assertContains(errorLog, "groups-attribute");
         assertContains(errorLog, "name");
         assertContains(errorLog, "groups-properties");
+        assertContains(errorLog, "hash-charset");
+        assertContains(errorLog, "hash-encoding");
         assertContains(errorLog, "users-properties");
         assertContains(errorLog, "'plain-text' is allowed on elements:");
         assertContains(errorLog, "server > management > security-realms > security-realm > authentication > properties");

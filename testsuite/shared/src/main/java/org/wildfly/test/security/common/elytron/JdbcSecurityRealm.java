@@ -40,11 +40,13 @@ public class JdbcSecurityRealm implements SecurityRealm {
     private final PathAddress address;
     private final String name;
     private final List<ModelNode> principalQueries;
+    private final String hashCharset;
 
-    JdbcSecurityRealm(final String name, final List<ModelNode> principalQueries) {
+    JdbcSecurityRealm(final String name, final List<ModelNode> principalQueries, String hashCharset) {
         this.name = name;
         this.address = PathAddress.pathAddress(PathElement.pathElement("subsystem", "elytron"), PathElement.pathElement("jdbc-realm", name));
         this.principalQueries = principalQueries;
+        this.hashCharset = hashCharset;
     }
 
     @Override
@@ -55,6 +57,7 @@ public class JdbcSecurityRealm implements SecurityRealm {
     public ModelNode getAddOperation() {
         ModelNode addOperation = Util.createAddOperation(address);
         addOperation.get("principal-query").set(principalQueries);
+        addOperation.get("hash-charset").set(hashCharset);
 
         return addOperation;
     }
@@ -152,6 +155,7 @@ public class JdbcSecurityRealm implements SecurityRealm {
 
         private final String name;
         private List<ModelNode> queries = new ArrayList<>();
+        private String hashCharset;
 
         Builder(final String name) {
             this.name = name;
@@ -167,8 +171,14 @@ public class JdbcSecurityRealm implements SecurityRealm {
             return this;
         }
 
+        public Builder withHashCharset(String hashCharset) {
+            this.hashCharset = hashCharset;
+
+            return this;
+        }
+
         public SecurityRealm build() {
-            return new JdbcSecurityRealm(name, queries);
+            return new JdbcSecurityRealm(name, queries, hashCharset != null ? hashCharset : "UTF-8");
         }
 
     }
