@@ -50,7 +50,6 @@ public class DecoratorMarshaller<T> implements ProtoStreamMarshaller<T>, Paramet
      * @param sample a sample object used to determine the type of the decorated object
      */
     public DecoratorMarshaller(Class<T> decoratedClass, UnaryOperator<T> decorator, T sample) {
-        try {
         this.decorator = decorator;
         Class<?> decoratorClass = decorator.apply(sample).getClass();
         this.decoratorClass = decoratorClass.asSubclass(decoratedClass);
@@ -62,10 +61,6 @@ public class DecoratorMarshaller<T> implements ProtoStreamMarshaller<T>, Paramet
                 return field;
             }
         });
-        } catch (RuntimeException | Error e) {
-            e.printStackTrace();
-            throw e;
-        }
     }
 
     static Field findDecoratedField(Class<?> decoratorClass, Class<?> decoratedClass) {
