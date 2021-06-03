@@ -203,7 +203,8 @@
         <!-- Surefire args -->
         <surefire.extra.args></surefire.extra.args>
         <surefire.jpda.args></surefire.jpda.args>
-        <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} -ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=512m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.system.args>
+        <surefire.non-modular.system.args>-ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=512m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.non-modular.system.args>
+        <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} ${surefire.non-modular.system.args}</surefire.system.args>
 
         <!-- Galleon feature pack to use in testsuite provisioning executions that provide content
              that *could* be obtained solely from the wildfly-ee-galleon-pack or its dependencies.
@@ -9654,7 +9655,19 @@
                         </systemProperties>
                         <argLine>${surefire.system.args}</argLine>
                     </configuration>
-
+                    <executions>
+                        <!-- The java8-test execution is defined by the org:jboss:jboss-parent pom
+                             and is used when a SE > 8 build is configured to test a multi-release jar
+                             using a separate SE 8 JDK. Redefine the surefire argline for this
+                             case to not include the modular.jdk.args/modular.jdk.props that will not
+                             work with that SE 8 JDK-->
+                        <execution>
+                            <id>java8-test</id>
+                            <configuration>
+                                <argLine>${surefire.non-modular.system.args}</argLine>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
