@@ -133,6 +133,11 @@
           <url>http://www.opensource.org/licenses/MIT</url>
           <distribution>repo</distribution>
         </license>
+        <license>
+          <name>Apache License 1.1</name>
+          <url>http://www.apache.org/licenses/LICENSE-1.1</url>
+          <distribution>repo</distribution>
+        </license>
       </licenses>
     </dependency>
     <dependency>
@@ -211,7 +216,7 @@
           <distribution>repo</distribution>
         </license>
         <license>
-          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <name>GNU General Public License v2.0 only, with Classpath exception</name>
           <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
           <distribution>repo</distribution>
         </license>
@@ -457,8 +462,8 @@
       <artifactId>jboss-threads</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1120,6 +1125,17 @@
     <dependency>
       <groupId>org.wildfly.openssl</groupId>
       <artifactId>wildfly-openssl-linux-s390x</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.wildfly.openssl</groupId>
+      <artifactId>wildfly-openssl-macosx-x86_64</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
