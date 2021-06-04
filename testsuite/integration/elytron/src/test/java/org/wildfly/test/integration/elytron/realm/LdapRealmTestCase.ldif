@@ -21,6 +21,26 @@ sn: One Role
 uid: userWithOneRole
 userPassword: Password1
 
+dn: uid=ssha512UserCharset,ou=People,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+cn: ssha512UserCharset
+sn: ssha512UserCharset
+uid: ssha512UserCharset
+userPassword:: e3NzaGE1MTJ9QUcvNmJGQWZFbmhiZUl3UHdjWjg4TjVkeEhMZGR2VXUxeEhVTlRXMXFqaTNuc0VmWGNQV3BZcVFib2NhRmh3cnpaUUc5OEhla0dMY1NMN09WTEowNEkzM0Y5anRaamRxMzRQemVRdGFHTG89
+# Password password密码 using a the GB2312 character set
+
+dn: uid=cryptUserCharsetHex,ou=People,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+cn: cryptUserCharsetHex
+sn: cryptUserCharsetHex
+uid: cryptUserCharsetHex
+userPassword: {crypt}XQ8317569289fa78a2
+# Password password密码 using a the GB2312 character set
+
 dn: uid=userWithoutRole,ou=People,dc=jboss,dc=org
 objectClass: top
 objectClass: person
@@ -42,6 +62,8 @@ cn: JBossAdmin
 description: the JBossAdmin group
 member: uid=userWithMoreRoles,ou=People,dc=jboss,dc=org
 member: uid=userWithOneRole,ou=People,dc=jboss,dc=org
+member: uid=ssha512UserCharset,ou=People,dc=jboss,dc=org
+member: uid=cryptUserCharsetHex,ou=People,dc=jboss,dc=org
 
 dn: cn=TheDuke,ou=Roles,dc=jboss,dc=org
 objectClass: groupOfNames

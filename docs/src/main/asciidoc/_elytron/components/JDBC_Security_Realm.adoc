@@ -30,7 +30,7 @@ A JDBC security realm can be defined as: -
                       clear-password-mapper={password-index=1}}])
 ----
 
-This realm is defined within a single `princpal-query` against the `Identities` datasource.  For the user `test` the result of the query would be: -
+This realm is defined within a single `principal-query` against the `Identities` datasource.  For the user `test` the result of the query would be: -
 
 .Query Results
 [width=25%]
@@ -111,6 +111,26 @@ The `scram-mapper` supports the loading of SCRAM passwords which use both a salt
  * `salt-index` - The index of the column containing the encoded salt.
  * `salt-encoding` - The encoding of the salt, either `base64` or `hex`.
  * `iteration-count-index` - The index of the column containing the iteration count.
+
+
+== Hash Character Sets
+
+The various password mappers allow loading multiples values from the database to hash the client provided password in order
+to compare against the password stored in the database.
+
+The JDBC realm supports specifying the character set via the attribute ``hash-charset`` to use when converting
+the client provided password string to a byte array. This is useful when our database is storing
+hashed passwords using a charset other than ``UTF-8``, as the JDBC realm assumes that is the charset being used by default.
+
+NOTE: Although more than one password mapper can be defined on a single ``principal-query``, only one ``hash-charset``
+can be defined across the whole realm.
+
+For example, the following JDBC realm is configured using the GB2312 charset:
+
+[source,options="nowrap"]
+----
+ /subsystem=elytron/jdbc-realm=exampleDbRealm:add(principal-query=[{sql="SELECT password FROM all_users WHERE user=?",data-source=exampleDS,simple-digest-mapper={algorithm=password-salt-digest-md5,password-index=1}}])
+----
 
 == Using a Hashed Password Representation
 
