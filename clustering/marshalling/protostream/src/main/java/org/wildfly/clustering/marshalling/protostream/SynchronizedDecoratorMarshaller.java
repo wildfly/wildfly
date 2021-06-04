@@ -48,7 +48,7 @@ public class SynchronizedDecoratorMarshaller<T> extends DecoratorMarshaller<T> {
     public void writeTo(ProtoStreamWriter writer, T value) throws IOException {
         T decorated = WildFlySecurityManager.doUnchecked(value, this);
         if (decorated != null) {
-            synchronized (decorated) {
+            synchronized (value) {
                 writer.writeObject(DECORATED_INDEX, new Any(decorated));
             }
         }
