@@ -61,7 +61,6 @@ public class ValidSession<L> implements Session<L> {
 
     @Override
     public L getLocalContext() {
-        this.validate();
         return this.session.getLocalContext();
     }
 
