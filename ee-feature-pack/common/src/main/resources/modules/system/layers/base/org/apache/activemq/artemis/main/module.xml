@@ -63,7 +63,7 @@
         <module name="org.jboss.jboss-transaction-spi"/>
         <!--this reverse dependency is here so integration classes in the AS code base can be instantiated by Artemis-->
         <module name="org.wildfly.extension.messaging-activemq" services="import"/>
-        <module name="org.picketbox"/>
+        <module name="org.picketbox" optional="true"/>
         <module name="org.jboss.as.security-plugins"/>
         <!-- Use of legacy security domain ends up using this module's class loader. -->
         <module name="org.jboss.as.security" optional="true"/>

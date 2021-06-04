@@ -17,6 +17,9 @@
         <feature spec="subsystem.messaging-activemq">
             <feature spec="subsystem.messaging-activemq.server">
                 <param name="server" value="default"/>
+                <!--<unset param="security-domain"/>
+                <param name="elytron-domain" value="ApplicationDomain"/>
+                -->
                 <param name="persistence-enabled" value="true"/>
                 <param name="cluster-password" value="${jboss.messaging.cluster.password:CHANGE ME!!}"/>
                 <param name="journal-file-size" value="102400"/>

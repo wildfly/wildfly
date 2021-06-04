@@ -315,6 +315,7 @@ public class MessagingActiveMQSubsystem_6_0_TestCase extends AbstractSubsystemBa
                 Capabilities.ELYTRON_DOMAIN_CAPABILITY,
                 Capabilities.ELYTRON_DOMAIN_CAPABILITY + ".elytronDomain",
                 CredentialReference.CREDENTIAL_STORE_CAPABILITY + ".cs1",
-                Capabilities.DATA_SOURCE_CAPABILITY + ".fooDS");
+                Capabilities.DATA_SOURCE_CAPABILITY + ".fooDS",
+                Capabilities.LEGACY_SECURITY_DOMAIN_CAPABILITY.getDynamicName("other"));
     }
 }

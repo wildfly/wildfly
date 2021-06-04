@@ -57,6 +57,13 @@ public class Capabilities {
             .build();
 
     /**
+     * A capability name for the legacy security domain.
+     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/security/security-domain/capability.adoc">Capability documentation</a>
+     */
+    static final RuntimeCapability<Void> LEGACY_SECURITY_DOMAIN_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.security.legacy-security-domain", true)
+            .build();
+
+    /**
      * The capability name for the Elytron security domain.
      */
     static final String ELYTRON_DOMAIN_CAPABILITY = "org.wildfly.security.security-domain";
