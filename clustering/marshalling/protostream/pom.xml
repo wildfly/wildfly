@@ -45,12 +45,6 @@
         Also contains wildfly-clustering-marshalling-spi implementations using ProtoStream.
     </description>
 
-    <properties>
-        <jdk.max.version>9</jdk.max.version>
-        <!-- This property otherwise causes the java8-test execution to crash -->
-        <modular.jdk.args></modular.jdk.args>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
