@@ -85,7 +85,10 @@ public class ValidSession<L> implements Session<L> {
 
     @Override
     public void close() {
-        this.session.close();
-        this.closeTask.accept(this.session);
+        try {
+            this.session.close();
+        } finally {
+            this.closeTask.accept(this.session);
+        }
     }
 }
