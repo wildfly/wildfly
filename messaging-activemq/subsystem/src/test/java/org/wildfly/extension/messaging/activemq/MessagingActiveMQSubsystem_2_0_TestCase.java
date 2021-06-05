@@ -214,7 +214,8 @@ public class MessagingActiveMQSubsystem_2_0_TestCase extends AbstractSubsystemBa
                 .require(Capabilities.ELYTRON_DOMAIN_CAPABILITY)
                 .require(Capabilities.ELYTRON_DOMAIN_CAPABILITY + ".elytronDomain")
                 .require(CommonUnaryRequirement.CREDENTIAL_STORE, "cs1")
-                .require(Capabilities.DATA_SOURCE_CAPABILITY + ".fooDS");
+                .require(Capabilities.DATA_SOURCE_CAPABILITY + ".fooDS")
+                .require(Capabilities.LEGACY_SECURITY_DOMAIN_CAPABILITY.getDynamicName("other"));
     }
 
     @Override

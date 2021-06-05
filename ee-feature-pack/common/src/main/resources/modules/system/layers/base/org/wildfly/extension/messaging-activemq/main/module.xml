@@ -78,7 +78,7 @@
         <module name="org.jboss.as.security-plugins"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.jts"/>
-        <module name="org.picketbox"/>
+        <module name="org.picketbox" optional="true"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.wildfly.naming-client" services="import"/>
         <module name="org.jboss.threads"/>

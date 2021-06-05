@@ -28,6 +28,8 @@ import static org.jboss.as.controller.security.CredentialReference.applyCredenti
 import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
 import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREDENTIAL_REFERENCE;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.ELYTRON_DOMAIN;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.SECURITY_DOMAIN;
 
 import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
@@ -76,6 +78,9 @@ public class ActiveMQServerControlWriteHandler extends AbstractWriteAttributeHan
         super.finishModelStage(context, operation, attributeName, newValue, oldValue, resource);
         if (attributeName.equals(CREDENTIAL_REFERENCE.getName())) {
             handleCredentialReferenceUpdate(context, resource.getModel().get(attributeName), attributeName);
+        }
+        if(attributeName.equals(SECURITY_DOMAIN.getName()) || attributeName.equals(ELYTRON_DOMAIN.getName())) {
+            context.addStep(SecurityDomainCheckHandler.INSTANCE, OperationContext.Stage.MODEL);
         }
     }
 

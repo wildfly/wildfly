@@ -226,7 +226,9 @@ public class MigrateTestCase extends AbstractSubsystemTest {
             registerCapabilities(capabilityRegistry,
                     JGroupsDefaultRequirement.CHANNEL_FACTORY.getName(),
                     "org.wildfly.remoting.http-listener-registry",                          // static capability
-                    "org.wildfly.undertow.listener.http-upgrade-registry.default");         // dynamic capability based on httpListenerName
+                    "org.wildfly.undertow.listener.http-upgrade-registry.default",         // dynamic capability based on httpListenerName
+                    "org.wildfly.security.legacy-security-domain.other",                   // dynamic capability based on legacy security domain
+                    "org.wildfly.security.legacy-security-domain.someDomain");             // dynamic capability based on legacy security domain
         }
 
         @Override

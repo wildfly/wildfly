@@ -13,7 +13,7 @@ echo INFO: Updating configuration to use elytron
 
 # This applies to full configurations only.
 if (outcome == success) of /subsystem=messaging-activemq/server=default:read-resource
-  /subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
+  /subsystem=messaging-activemq/server=default:write-attribute(name=security-domain)
   /subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
 end-if
 
