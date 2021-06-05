@@ -25,8 +25,8 @@
 <module xmlns="urn:jboss:module:1.9" name="jakarta.security.jacc.api">
 
     <resources>
-        <artifact name="${org.jboss.spec.javax.security.jacc:jboss-jacc-api_1.5_spec}"/>
-        <!--<artifact name="${jakarta.authorization:jakarta.authorization-api}"/>-->
+        <!--<artifact name="${org.jboss.spec.javax.security.jacc:jboss-jacc-api_1.5_spec}"/>-->
+        <artifact name="${jakarta.authorization:jakarta.authorization-api}"/>
     </resources>
 
     <dependencies>
