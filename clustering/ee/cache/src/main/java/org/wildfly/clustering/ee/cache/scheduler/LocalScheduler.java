@@ -116,7 +116,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Iterable<T>, Ru
 
     @Override
     public void close() {
-        WildFlySecurityManager.doPrivilegedWithParameter(this.executor, DefaultExecutorService.SHUTDOWN_NOW_ACTION);
+        WildFlySecurityManager.doPrivilegedWithParameter(this.executor, DefaultExecutorService.SHUTDOWN_ACTION);
         if (!this.closeTimeout.isNegative() && !this.closeTimeout.isZero()) {
             try {
                 this.executor.awaitTermination(this.closeTimeout.toMillis(), TimeUnit.MILLISECONDS);
@@ -130,7 +130,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Iterable<T>, Ru
     public void run() {
         Iterator<Map.Entry<T, Instant>> entries = this.entries.iterator();
         while (entries.hasNext()) {
-            if (Thread.currentThread().isInterrupted()) return;
+            if (Thread.currentThread().isInterrupted() || this.executor.isShutdown()) return;
             Map.Entry<T, Instant> entry = entries.next();
             if (entry.getValue().isAfter(Instant.now())) break;
             T key = entry.getKey();
