@@ -22,13 +22,14 @@
 
 package org.wildfly.clustering.ee.infinispan.scheduler;
 
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -36,10 +37,9 @@ import java.util.function.Consumer;
 import org.infinispan.Cache;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
-import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
+import org.infinispan.remoting.transport.Address;
 import org.infinispan.util.concurrent.CompletableFutures;
 import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
@@ -56,8 +56,7 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements 
 
     private final Cache<K, V> cache;
     private final ExecutorService executor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(SchedulerTopologyChangeListener.class));
-    private final AtomicReference<Future<?>> rehashFuture = new AtomicReference<>();
-    private final AtomicInteger rehashTopology = new AtomicInteger();
+    private final AtomicReference<Future<?>> scheduleTaskFuture = new AtomicReference<>();
     private final Consumer<Locality> cancelTask;
     private final BiConsumer<Locality, Locality> scheduleTask;
 
@@ -83,54 +82,37 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements 
         }
     }
 
-    @DataRehashed
-    public CompletionStage<Void> dataRehashed(DataRehashedEvent<K, V> event) {
-        if (event.isPre()) {
-            this.rehashTopology.set(event.getNewTopologyId());
-            this.cancel(event.getCache(), event.getConsistentHashAtEnd());
-        } else {
-            this.rehashTopology.compareAndSet(event.getNewTopologyId(), 0);
-            this.schedule(event.getCache(), event.getConsistentHashAtStart(), event.getConsistentHashAtEnd());
-        }
-        return CompletableFutures.completedNull();
-    }
-
     @TopologyChanged
     public CompletionStage<Void> topologyChanged(TopologyChangedEvent<K, V> event) {
-        if (!event.isPre()) {
-            // If this topology change has no corresponding rehash event, we must reschedule expirations as primary ownership may have changed
-            if (this.rehashTopology.get() != event.getNewTopologyId()) {
-                this.schedule(event.getCache(), event.getReadConsistentHashAtStart(), event.getWriteConsistentHashAtEnd());
-            }
-        }
-        return CompletableFutures.completedNull();
-    }
-
-    private void cancel(Cache<K, V> cache, ConsistentHash hash) {
-        Future<?> future = this.rehashFuture.getAndSet(null);
-        if (future != null) {
-            future.cancel(true);
-        }
-        try {
-            this.executor.submit(() -> this.cancelTask.accept(new ConsistentHashLocality(cache, hash)));
-        } catch (RejectedExecutionException e) {
-            // Executor was shutdown
-        }
-    }
-
-    private void schedule(Cache<K, V> cache, ConsistentHash oldHash, ConsistentHash newHash) {
-        // Skip rescheduling if we do not own any segments
-        if (!newHash.getPrimarySegmentsForOwner(cache.getCacheManager().getAddress()).isEmpty()) {
-            Locality oldLocality = new ConsistentHashLocality(cache, oldHash);
-            Locality newLocality = new ConsistentHashLocality(cache, newHash);
-            try {
-                Future<?> future = this.rehashFuture.getAndSet(this.executor.submit(() -> this.scheduleTask.accept(oldLocality, newLocality)));
+        Address address = event.getCache().getCacheManager().getAddress();
+        ConsistentHash oldHash = event.getWriteConsistentHashAtStart();
+        Set<Integer> oldSegments = oldHash.getPrimarySegmentsForOwner(address);
+        ConsistentHash newHash = event.getWriteConsistentHashAtEnd();
+        Set<Integer> newSegments = newHash.getPrimarySegmentsForOwner(address);
+        if (event.isPre()) {
+            // If there are segments that we no longer own, then run cancellation task
+            if (!newSegments.containsAll(oldSegments)) {
+                Future<?> future = this.scheduleTaskFuture.getAndSet(null);
                 if (future != null) {
                     future.cancel(true);
                 }
-            } catch (RejectedExecutionException e) {
-                // Executor was shutdown
+                return CompletableFuture.runAsync(() -> this.cancelTask.accept(new ConsistentHashLocality(event.getCache(), newHash)), this.executor);
+            }
+        } else {
+            // If we have newly owned segments, then run schedule task
+            if (!oldSegments.containsAll(newSegments)) {
+                Locality oldLocality = new ConsistentHashLocality(event.getCache(), oldHash);
+                Locality newLocality = new ConsistentHashLocality(event.getCache(), newHash);
+                try {
+                    Future<?> future = this.scheduleTaskFuture.getAndSet(this.executor.submit(() -> this.scheduleTask.accept(oldLocality, newLocality)));
+                    if (future != null) {
+                        future.cancel(true);
+                    }
+                } catch (RejectedExecutionException e) {
+                    // Executor was shutdown
+                }
             }
         }
+        return CompletableFutures.completedNull();
     }
 }
