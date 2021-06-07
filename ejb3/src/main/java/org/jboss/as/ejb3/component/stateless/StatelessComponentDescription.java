@@ -191,10 +191,7 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
             }
         });
 
-
-        if (view instanceof EJBViewDescription) {
-            EJBViewDescription ejbViewDescription = (EJBViewDescription) view;
-            if (ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE) {
+            if (view.getMethodIntf() == MethodIntf.REMOTE) {
                 view.getConfigurators().add(new ViewConfigurator() {
                     @Override
                     public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
@@ -203,8 +200,6 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
                     }
                 });
             }
-        }
-
     }
 
     private void addViewSerializationInterceptor(final ViewDescription view) {
