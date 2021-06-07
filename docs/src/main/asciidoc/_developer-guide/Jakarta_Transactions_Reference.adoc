@@ -484,16 +484,16 @@ http://byteman.jboss.org[Byteman tool].
 == Transactions configuration
 
 Configuration related to the behaviour of the Narayana transaction manager
-is covered under `transactions` subsystem. For the details of the configuration
-options please check the description in the transactions subsystem model
-and see the http://narayana.io/documentation[Narayana documentation].
+is covered under `transactions` subsystem. For the details refer to
+link:Admin_Guide{outfilesuffix}#Transactions_Subsystem[Admin Guide Transactions subsystem].
 
 To check the subsystem model you can use the link:wildscribe[WildFly model reference^]
-or you can list all the configuration options of the subsystem in `jboss-cli`
+or list all the configuration options of the subsystem in `jboss-cli`
 
-```bash
+[source,bash]
+----
 /subsystem=transactions:read-resource-description(recursive=true)
-```
+----
 
 NOTE: References in this document to CDI refer to Jakarta Contexts and Dependency Injection unless otherwise noted.
       References in this document to Java Transaction API(JTA) refer to Jakarta Transactions unless otherwise noted.
