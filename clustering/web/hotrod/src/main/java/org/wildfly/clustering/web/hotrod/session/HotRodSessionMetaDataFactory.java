@@ -97,9 +97,6 @@ public class HotRodSessionMetaDataFactory<L> implements SessionMetaDataFactory<C
         if ((creationMetaDataEntry != null) && (accessMetaData != null)) {
             return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry, accessMetaData);
         }
-        if ((creationMetaDataEntry != null) || (accessMetaData != null)) {
-            this.purge(id);
-        }
         return null;
     }
 
@@ -125,8 +122,8 @@ public class HotRodSessionMetaDataFactory<L> implements SessionMetaDataFactory<C
 
     @Override
     public boolean remove(String id) {
-        this.creationMetaDataCache.remove(new SessionCreationMetaDataKey(id));
         this.accessMetaDataCache.remove(new SessionAccessMetaDataKey(id));
+        this.creationMetaDataCache.remove(new SessionCreationMetaDataKey(id));
         return true;
     }
 }
