@@ -312,7 +312,7 @@
         <version.io.opentracing.tracerresolver>0.1.8</version.io.opentracing.tracerresolver>
         <version.io.opentracing.servlet>0.2.3</version.io.opentracing.servlet>
         <version.io.reactivex.rxjava2>2.2.20</version.io.reactivex.rxjava2>
-        <version.io.reactivex.rxjava3>3.0.12</version.io.reactivex.rxjava3>
+        <version.io.reactivex.rxjava3>3.0.13</version.io.reactivex.rxjava3>
         <version.io.rest-assured>3.0.6</version.io.rest-assured>
         <version.io.smallrye.open-api>2.1.5</version.io.smallrye.open-api>
         <version.io.smallrye.opentracing>2.0.0</version.io.smallrye.opentracing>
@@ -394,7 +394,7 @@
         <version.org.hibernate.validator>6.0.22.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <!-- n.b. Infinispan Server version used for integration testing is defined separately in testsuite/integration/clustering/pom.xml -->
-        <version.org.infinispan>12.1.3.Final</version.org.infinispan>
+        <version.org.infinispan>12.1.4.Final</version.org.infinispan>
         <version.org.infinispan.protostream>4.4.1.Final</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.javassist>3.23.2-GA</version.org.javassist>
