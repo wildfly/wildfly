@@ -115,8 +115,8 @@ of the documentation details the available quickstarts.
 == More Resources
 
 * link:Glossary.html[Glossary]
-* http://www.wildfly.org[WildFly project page]
+* https://www.wildfly.org[WildFly project page]
 * https://issues.redhat.com/browse/WFLY[WildFly issue tracker]
-* https://community.jboss.org/en/wildfly[WildFly user forum]
+* https://groups.google.com/g/wildfly[WildFly user forum]
 * https://community.jboss.org/en/wildfly/dev[WildFly wiki]
 * https://github.com/wildfly/wildfly/[WildFly source]
