@@ -48,6 +48,7 @@ import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.server.session.SessionManagerStatistics;
+import io.undertow.servlet.UndertowServletMessages;
 import io.undertow.util.AttachmentKey;
 
 /**
@@ -146,6 +147,10 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
     public io.undertow.server.session.Session createSession(HttpServerExchange exchange, SessionConfig config) {
         if (config == null) {
             throw UndertowMessages.MESSAGES.couldNotFindSessionCookieConfig();
+        }
+        // Workaround for UNDERTOW-1902
+        if (exchange.isResponseStarted()) { // Should match the condition in io.undertow.servlet.spec.HttpServletResponseImpl#isCommitted()
+            throw UndertowServletMessages.MESSAGES.responseAlreadyCommited();
         }
 
         String requestedId = config.findSessionId(exchange);
