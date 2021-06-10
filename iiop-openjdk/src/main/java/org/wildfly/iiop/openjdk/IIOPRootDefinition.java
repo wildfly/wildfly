@@ -22,12 +22,17 @@
 
 package org.wildfly.iiop.openjdk;
 
+import static org.wildfly.iiop.openjdk.Capabilities.IIOP_CAPABILITY;
+import static org.wildfly.iiop.openjdk.Capabilities.LEGACY_SECURITY;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -41,6 +46,7 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -435,7 +441,20 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     private IIOPRootDefinition() {
         super(new SimpleResourceDefinition.Parameters(IIOPExtension.PATH_SUBSYSTEM, IIOPExtension.getResourceDescriptionResolver())
                 .setAddHandler(new IIOPSubsystemAdd(ALL_ATTRIBUTES))
-                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setRemoveHandler(new ReloadRequiredRemoveStepHandler() {
+
+                    @Override
+                    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation,
+                            Resource resource) throws OperationFailedException {
+                        super.recordCapabilitiesAndRequirements(context, operation, resource);
+                        ModelNode model = resource.getModel();
+                        String security = IIOPRootDefinition.SECURITY.resolveModelAttribute(context, model).asStringOrNull();
+                        if (SecurityAllowedValues.IDENTITY.toString().equals(security)) {
+                            context.deregisterCapabilityRequirement(LEGACY_SECURITY, Capabilities.IIOP_CAPABILITY, Constants.ORB_INIT_SECURITY);
+                        }
+                    }
+
+                })
                 .addCapabilities(IIOP_CAPABILITY));
     }
 
