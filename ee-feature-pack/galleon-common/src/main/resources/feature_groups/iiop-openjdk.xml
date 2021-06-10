@@ -7,4 +7,7 @@
         <param name="server-requires-ssl" value="false"/>
         <param name="client-requires-ssl" value="false"/>
     </feature>
+    <packages>
+        <package name="org.picketbox" />
+    </packages>
 </feature-group-spec>
