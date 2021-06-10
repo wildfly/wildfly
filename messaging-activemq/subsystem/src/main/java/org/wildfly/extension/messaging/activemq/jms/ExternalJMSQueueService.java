@@ -75,6 +75,7 @@ public class ExternalJMSQueueService implements Service<Queue> {
         if(namingStore!= null) {
             final Queue managementQueue = config.getManagementQueue();
             final NamingContext storeBaseContext = new NamingContext(namingStore, null);
+            Throwable originalException = null;
             try {
                 ConnectionFactory cf = (ConnectionFactory) storeBaseContext.lookup(pcfInjector.getValue().getBindInfo().getAbsoluteJndiName());
                 if (cf instanceof ActiveMQRAConnectionFactory) {
@@ -113,13 +114,34 @@ public class ExternalJMSQueueService implements Service<Queue> {
                     config.createQueue(cf, managementQueue, queueName);
                 }
             } catch (Exception ex) {
+                if (ex instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
                 MessagingLogger.ROOT_LOGGER.errorf(ex, "Error starting the external queue service %s", ex.getMessage());
-                throw new StartException(ex);
+                originalException = new StartException(ex);
+            } catch (Throwable ex) {
+                originalException = ex;
             } finally {
+                Throwable suppressed = originalException; //OK to be null
                 try {
                     storeBaseContext.close();
                 } catch (NamingException ex) {
-                    throw new StartException(ex);
+                    suppressed = new StartException(ex);
+                    if (originalException != null) {
+                        originalException.addSuppressed(suppressed);
+                        suppressed = originalException;
+                    }
+                }
+                if (suppressed != null) {
+                    if (suppressed instanceof RuntimeException) {
+                        throw (RuntimeException) suppressed;
+                    }
+                    if (suppressed instanceof Error) {
+                        throw (Error) suppressed;
+                    }
+                    if (suppressed instanceof StartException) {
+                        throw (StartException) suppressed;
+                    }
                 }
             }
         }

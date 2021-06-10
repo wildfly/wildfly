@@ -47,25 +47,46 @@ public class AdditionalSetupInterceptor implements Interceptor {
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
+        Throwable originalException = null;
+        Object retValue = null;
         try {
             for (int i = 0; i < actions.length; ++i) {
                 actions[i].setup(Collections.<String, Object>emptyMap());
             }
-            return context.proceed();
+            retValue = context.proceed();
+        } catch(Throwable ex) {
+            if (ex instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            originalException = ex;
         } finally {
-            Throwable error = null;
+            Throwable suppressed = originalException;
             for (int i = actions.length - 1; i >=0; --i) {
                 SetupAction action = actions[i];
                 try {
                     action.teardown(Collections.<String, Object>emptyMap());
-                } catch (Throwable e) {
-                    error = e;
+                } catch (Throwable t) {
+                    if (suppressed != null) {
+                        suppressed.addSuppressed(t);
+                    } else {
+                        suppressed = t;
+                    }
                 }
             }
-            if (error != null) {
-                throw new RuntimeException(error);
+            if (suppressed != null) {
+                if (suppressed instanceof RuntimeException) {
+                    throw (RuntimeException) suppressed;
+                }
+                if (suppressed instanceof Error) {
+                    throw (Error) suppressed;
+                }
+                if (suppressed instanceof Exception) {
+                    throw (Exception) suppressed;
+                }
+                throw new RuntimeException(suppressed);
             }
         }
+        return retValue;
     }
 
     public static InterceptorFactory factory(final List<SetupAction> actions) {
