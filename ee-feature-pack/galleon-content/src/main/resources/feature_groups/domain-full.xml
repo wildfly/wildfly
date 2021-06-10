@@ -22,7 +22,7 @@
         <param name="profile" value="full"/>
         <feature-group name="domain-profile"/>
         <feature-group name="jsr77"/>
-        <feature-group name="iiop-openjdk"/>
+        <feature-group name="iiop-openjdk-legacy"/>
         <feature-group name="messaging-activemq"/>
         <feature spec="subsystem.ejb3">
             <feature spec="subsystem.ejb3.service.iiop">
