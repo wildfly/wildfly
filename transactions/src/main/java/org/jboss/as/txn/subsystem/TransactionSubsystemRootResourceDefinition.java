@@ -169,7 +169,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     public static final SimpleAttributeDefinition ENABLE_TSM_STATUS = new SimpleAttributeDefinitionBuilder(CommonAttributes.ENABLE_TSM_STATUS, ModelType.BOOLEAN, true)
             .setDefaultValue(ModelNode.FALSE)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO is this runtime-changeable?
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setXmlName(Attribute.ENABLE_TSM_STATUS.getLocalName())
             .setAllowExpression(true).build();
 
