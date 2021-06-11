@@ -227,6 +227,11 @@ link:#gal.h2-datasource[h2-datasource] +
 |
 link:#gal.base-server[base-server] +
 
+|[[gal.iiop-openjdk]]iiop-openjdk
+|Support for IIOP
+|
+link:#gal.naming[naming] +
+
 |[[gal.io]]io
 |Support for XNIO workers and buffer pools.
 |
