@@ -247,7 +247,7 @@
         <version.org.wildfly.common>1.5.2.Final</version.org.wildfly.common>
         <version.org.wildfly.component-matrix-plugin>1.0.3.Final</version.org.wildfly.component-matrix-plugin>
         <version.org.wildfly.galleon-plugins>5.2.0.Final</version.org.wildfly.galleon-plugins>
-        <version.org.wildfly.jar.plugin>4.0.3.Final</version.org.wildfly.jar.plugin>
+        <version.org.wildfly.jar.plugin>5.0.0.Beta1</version.org.wildfly.jar.plugin>
         <version.org.wildfly.maven.plugins>2.2.0.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>2.0.1.Final</version.org.wildfly.plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
@@ -414,7 +414,7 @@
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
         <version.org.jboss.metadata>13.0.0.Final</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.4.3.Final</version.org.jboss.mod_cluster>
-        <version.org.jboss.narayana>5.11.2.Final</version.org.jboss.narayana>
+        <version.org.jboss.narayana>5.12.0.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.5.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.resteasy>3.15.1.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
@@ -470,7 +470,7 @@
         <version.org.springframework.kafka>2.6.4</version.org.springframework.kafka>
         <version.org.testng>6.14.3</version.org.testng>
         <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>16.0.0.Beta5</version.org.wildfly.core>
+        <version.org.wildfly.core>16.0.0.Final</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.1.7.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.14.Final</version.org.wildfly.naming-client>
