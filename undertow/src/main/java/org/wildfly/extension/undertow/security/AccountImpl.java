@@ -75,11 +75,6 @@ public class AccountImpl implements Account, Serializable {
         this.roles.addAll(roles);
     }
 
-    void setRoles(final Set<String> roles) {
-        this.roles.clear();
-        roles.addAll(roles);
-    }
-
     @Override
     public boolean equals(final Object o) {
         if (this == o)
