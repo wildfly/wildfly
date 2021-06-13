@@ -67,7 +67,15 @@ public class ConcurrentSessionManager<L, B extends Batch> implements SessionMana
                 return (session != null) ? new ConcurrentSession<>(session, closeTask) : null;
             }
         };
-        return this.concurrentManager.apply(id, factory);
+        @SuppressWarnings("resource")
+        Session<L> session = this.concurrentManager.apply(id, factory);
+        // If session was invalidated by a concurrent thread, return null instead of an invalid session
+        // This will reduce the likelihood that a duplicate invalidation request (e.g. from a double-clicked logout) results in an ISE
+        if (session != null && !session.isValid()) {
+            session.close();
+            return null;
+        }
+        return session;
     }
 
     @Override
