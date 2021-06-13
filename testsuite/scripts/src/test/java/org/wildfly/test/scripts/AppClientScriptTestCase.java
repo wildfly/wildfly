@@ -42,7 +42,14 @@ public class AppClientScriptTestCase extends ScriptTestCase {
         validateProcess(script);
 
         final List<String> lines = script.getStdout();
-        final int expectedLines = (script.getShell() == Shell.BATCH ? 3 : 2);
-        Assert.assertEquals(script.getErrorMessage(String.format("Expected %d lines.", expectedLines)), expectedLines, lines.size());
+        int count = 2;
+        for (String stdout : lines) {
+            if (stdout.startsWith("Picked up")) {
+                count += 1;
+            }
+        }
+        final int expectedLines = (script.getShell() == Shell.BATCH ? 3 : count );
+        Assert.assertEquals(script.getErrorMessage(String.format("Expected %d lines.", expectedLines)), expectedLines,
+                lines.size());
     }
 }
