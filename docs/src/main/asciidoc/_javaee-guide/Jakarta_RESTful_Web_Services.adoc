@@ -27,9 +27,9 @@ https://openshift.redhat.com/app[OpenShift], is a portfolio of portable
 cloud services for deploying and managing applications in the cloud.
 This tutorial shows how to deploy a RESTful web service on the free
 OpenShift Express JavaEE cartridge that runs
-http://www.jboss.org/jbossas[JBossAS 7].
+https://www.wildfly.org/[WildFly].
 
-An application running on http://www.android.com[Android] shows how to
+An application running on https://www.android.com[Android] shows how to
 leverage JBoss technology on mobile devices. Specifically, we show how
 use the RESTEasy client API from an Android device to integrate with a
 RESTful service running on a JBossAS 7 instance in the cloud.
@@ -213,14 +213,12 @@ The root context is defined in jboss-web.xml
 </jboss-web>
 ----
 
-The code for the JAX-RS part of this tutorial is available on
-https://github.com/tdiesler/javaee-tutorial/tree/master/jaxrs. In this
-step we clone the repository and build the endpoint using
-http://maven.apache.org[maven]. There are a number of JAX-RS client
+In this step we clone the repository and build the endpoint using
+https://maven.apache.org[maven]. There are a number of JAX-RS client
 tests that run against a local JBossAS 7 instance. Before we build the
 project, we set the JBOSS_HOME environment variable accordingly.
 
-http://www.jboss.org/arquillian[Arquillian], the test framework we use
+https://www.jboss.org/arquillian[Arquillian], the test framework we use
 throughout this tutorial, can manage server startup/shutdown. It is
 however also possible to startup the server instance manually before you
 run the tests. The latter allows you to look at the console and see what
@@ -261,7 +259,7 @@ start document] that you have access to after login.
 
 For this tutorial we assume you have done the above and that we can
 continue by creating the OpenShift application. This step sets up your
-JBossAS 7 instance in the cloud. Additionally a http://git-scm.com[Git]
+JBossAS 7 instance in the cloud. Additionally a https://git-scm.com[Git]
 repository is configured that gives access to your deployed application.
 
 [source,java,options="nowrap"]
@@ -355,11 +353,11 @@ $ curl http://tutorial-tdiesler.rhcloud.com/jaxrs-sample/library/books
 The source associated with this tutorial contains a fully working mobile
 client application for the Android framework. If not done so already
 please follow steps described in
-http://developer.android.com/sdk/installing.html[Installing the SDK]. In
+https://developer.android.com/sdk/installing.html[Installing the SDK]. In
 addition to the Android SDK, I recommend installing the
-http://m2eclipse.sonatype.org/installing-m2eclipse.html[m2eclipse] and
-the http://www.eclipse.org/egit/download/[EGit] plugin to
-http://www.eclipse.org/downloads/packages/eclipse-classic-37/indigor[Eclipse].
+https://www.eclipse.org/m2e/[m2eclipse] and
+the https://www.eclipse.org/egit/download/[EGit] plugin to
+https://www.eclipse.org/downloads/packages/[Eclipse].
 
 First, go to File|Import... and choose "Existing Maven Projects" to
 import the tutorial sources
