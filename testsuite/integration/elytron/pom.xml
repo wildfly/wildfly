@@ -51,13 +51,14 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <wildfly.dir>${basedir}/target/${wildfly.instance.name}</wildfly.dir>
-
+        <security.properties>${project.basedir}/src/test/resources/reenabled_tlsv1.properties</security.properties>
         <version.org.hsqldb.hsqldb>2.5.0</version.org.hsqldb.hsqldb>
         <version.org.mock-server.mockserver>5.6.1</version.org.mock-server.mockserver>
         <version.org.mock-server.mockserver-netty>5.6.1</version.org.mock-server.mockserver-netty>
         <version.org.xipki.pki.ocsp-server>3.0.0</version.org.xipki.pki.ocsp-server>
         <version.javax.xml.bind.jaxb-api>2.4.0-b180830.0359</version.javax.xml.bind.jaxb-api>
         <version.org.glassfish.jaxb.jaxb-runtime>2.4.0-b180830.0438</version.org.glassfish.jaxb.jaxb-runtime>
+        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} ${extra.server.jvm.args}</server.jvm.args>
     </properties>
 
     <dependencies>
@@ -273,6 +274,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <skip>true</skip>
+                    <reuseForks>false</reuseForks>
                     <environmentVariables>
                         <JBOSS_HOME>${wildfly.dir}</JBOSS_HOME>
                     </environmentVariables>
@@ -281,11 +284,43 @@
                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                         <jboss.inst>${wildfly.dir}</jboss.inst>
                         <module.path>${wildfly.dir}/modules</module.path>
-                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} ${extra.server.jvm.args}</server.jvm.args>
+                        <server.jvm.args>${server.jvm.args}</server.jvm.args>
                         <node0>${node0}</node0>
                     </systemPropertyVariables>
                     <argLine>${surefire.system.args} ${jvm.args.ip.client}</argLine>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                            <excludes>
+                                <exclude>***/UndertowSSLv2HelloTestCase</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>sslv2-tests</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                            <argLine>-Djava.security.properties=${security.properties} ${surefire.system.args} ${jvm.args.ip.client}</argLine>
+                            <systemPropertyVariables>
+                                <server.jvm.args>-Djava.security.properties=${security.properties} ${server.jvm.args}</server.jvm.args>
+                            </systemPropertyVariables>
+                            <includes>
+                                <include>***/UndertowSSLv2HelloTestCase</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -550,6 +585,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
+                            <skip>false</skip>
                             <systemPropertyVariables>
                                 <!-- Override the standard module path that points at the shared module set from dist.
                                      Have all the servers use wildfly-1 for the modules -->
@@ -571,7 +607,26 @@
                                         <exclude>org/wildfly/test/integration/elytron/sasl/AnonymousSaslMechTestCase.java</exclude>
                                         <exclude>org/wildfly/test/integration/elytron/sasl/DefaultSaslConfigTestCase.java</exclude>
                                         <exclude>org/wildfly/test/integration/elytron/sasl/OtpSaslTestCase.java</exclude>
+                                        <!-- Needs jvm properties -->
+                                        <exclude>***/UndertowSSLv2HelloTestCase</exclude>
                                     </excludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>sslv2-tests</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>false</skip>
+                                    <argLine>-Djava.security.properties=${security.properties} ${surefire.system.args} ${jvm.args.ip.client}</argLine>
+                                    <systemPropertyVariables>
+                                        <server.jvm.args>-Djava.security.properties=${security.properties} ${server.jvm.args}</server.jvm.args>
+                                    </systemPropertyVariables>
+                                    <includes>
+                                        <include>***/UndertowSSLv2HelloTestCase</include>
+                                    </includes>
                                 </configuration>
                             </execution>
                         </executions>
@@ -686,16 +741,24 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skip>false</skip>
+                            <systemPropertyVariables>
+                                <install.dir>${project.build.directory}/${wildfly.instance.name}</install.dir>
+                                <bootable.jar>${project.build.directory}/test-wildfly.jar</bootable.jar>
+                                <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
+                            </systemPropertyVariables>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>
+                                    org.wildfly.arquillian:wildfly-arquillian-container-managed
+                                </classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                        </configuration>
                         <executions>
                             <!-- Configure the default tests -->
                             <execution>
                                 <id>default-test</id>
                                 <configuration>
-                                    <systemPropertyVariables>
-                                        <install.dir>${project.build.directory}/${wildfly.instance.name}</install.dir>
-                                        <bootable.jar>${project.build.directory}/test-wildfly.jar</bootable.jar>
-                                        <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
-                                    </systemPropertyVariables>
                                     <excludes combine-children="append">
                                         <!-- Needs batch -->
                                         <exclude>org/wildfly/test/integration/elytron/batch/*TestCase.java</exclude>
@@ -706,12 +769,25 @@
                                         <exclude>org/wildfly/test/integration/elytron/sasl/AnonymousSaslMechTestCase.java</exclude>
                                         <exclude>org/wildfly/test/integration/elytron/sasl/DefaultSaslConfigTestCase.java</exclude>
                                         <exclude>org/wildfly/test/integration/elytron/sasl/OtpSaslTestCase.java</exclude>
+                                        <exclude>***/UndertowSSLv2HelloTestCase</exclude>
                                     </excludes>
-                                    <classpathDependencyExcludes>
-                                        <classpathDependencyExclude>
-                                            org.wildfly.arquillian:wildfly-arquillian-container-managed
-                                        </classpathDependencyExclude>
-                                    </classpathDependencyExcludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>sslv2-tests</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>false</skip>
+                                    <argLine>-Djava.security.properties=${security.properties} ${surefire.system.args} ${jvm.args.ip.client}</argLine>
+                                    <systemPropertyVariables>
+                                        <server.jvm.args>-Djava.security.properties=${security.properties} ${server.jvm.args}</server.jvm.args>
+                                    </systemPropertyVariables>
+                                    <includes>
+                                        <include>***/UndertowSSLv2HelloTestCase</include>
+                                    </includes>
                                 </configuration>
                             </execution>
                         </executions>
