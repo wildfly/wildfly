@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.ee.infinispan.scheduler;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -84,11 +85,12 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements 
 
     @TopologyChanged
     public CompletionStage<Void> topologyChanged(TopologyChangedEvent<K, V> event) {
-        Address address = event.getCache().getCacheManager().getAddress();
+        Cache<K, V> cache = event.getCache();
+        Address address = cache.getCacheManager().getAddress();
         ConsistentHash oldHash = event.getWriteConsistentHashAtStart();
-        Set<Integer> oldSegments = oldHash.getPrimarySegmentsForOwner(address);
+        Set<Integer> oldSegments = oldHash.getMembers().contains(address) ? oldHash.getPrimarySegmentsForOwner(address) : Collections.emptySet();
         ConsistentHash newHash = event.getWriteConsistentHashAtEnd();
-        Set<Integer> newSegments = newHash.getPrimarySegmentsForOwner(address);
+        Set<Integer> newSegments = newHash.getMembers().contains(address) ? newHash.getPrimarySegmentsForOwner(address) : Collections.emptySet();
         if (event.isPre()) {
             // If there are segments that we no longer own, then run cancellation task
             if (!newSegments.containsAll(oldSegments)) {
@@ -96,13 +98,13 @@ public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements 
                 if (future != null) {
                     future.cancel(true);
                 }
-                return CompletableFuture.runAsync(() -> this.cancelTask.accept(new ConsistentHashLocality(event.getCache(), newHash)), this.executor);
+                return CompletableFuture.runAsync(() -> this.cancelTask.accept(new ConsistentHashLocality(cache, newHash)), this.executor);
             }
         } else {
             // If we have newly owned segments, then run schedule task
             if (!oldSegments.containsAll(newSegments)) {
-                Locality oldLocality = new ConsistentHashLocality(event.getCache(), oldHash);
-                Locality newLocality = new ConsistentHashLocality(event.getCache(), newHash);
+                Locality oldLocality = new ConsistentHashLocality(cache, oldHash);
+                Locality newLocality = new ConsistentHashLocality(cache, newHash);
                 try {
                     Future<?> future = this.scheduleTaskFuture.getAndSet(this.executor.submit(() -> this.scheduleTask.accept(oldLocality, newLocality)));
                     if (future != null) {
