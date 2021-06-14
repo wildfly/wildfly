@@ -1,5 +1,20 @@
 [[Quickstarts]]
 = Quickstarts
+WildFly team;
+:revnumber: {version}
+:revdate: {localdate}
+:toc: macro
+:toclevels: 3
+:toc-title: WildFly Quickstarts
+:doctype: book
+:icons: font
+:source-highlighter: coderay
+ifdef::env-github[:imagesdir: images/]
+
+(C) 2021 The original authors.
+
+ifdef::basebackend-html[toc::[]]
+:numbered:
 
 WildFly ships with a number of quickstarts that show you how to get
 started with a variety of technologies in WildFly. You'll find out how

@@ -106,10 +106,7 @@ configuration options, using information generated directly from the WildFly man
 [[quickstarts]]
 == Quickstarts
 
-WildFly comes with a number of quickstarts, examples which introduce to
-a particular technology or feature of the application server. The
-link:https://github.com/jboss-developer/jboss-developer-shared-resources/blob/master/guides/CONTRIBUTING.md#contribute-a-quickstart[Contributing a Quickstart] section
-of the documentation details the available quickstarts.
+* The link:Quickstarts{outfilesuffix}[WildFly Quickstarts] describes how to use the WildFly examples, which introduce a particular technology or feature of the application server.
 
 [[more-resources]]
 == More Resources
