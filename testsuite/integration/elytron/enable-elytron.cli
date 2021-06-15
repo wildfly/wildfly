@@ -19,9 +19,6 @@ embed-server --admin-only=true --server-config=standalone-full.xml
 /core-service=management/security-realm=ApplicationRealm/authentication=properties:remove
 /core-service=management/security-realm=ApplicationRealm/authorization=properties:remove
 
-stop-embedded-server
-embed-server --server-config=standalone-full.xml
-
 # Legacy security subsystem is not needed
 /subsystem=security:remove
 /extension=org.jboss.as.security:remove
