@@ -31,9 +31,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class LogStoreTransactionParticipantDefinition extends SimpleResourceDefinition {
-    static final SimpleAttributeDefinition[] PARTECIPANT_RW_ATTRIBUTE = new SimpleAttributeDefinition[]{
-    };
-    static final SimpleAttributeDefinition[] PARTECIPANT_ATTRIBUTE = new SimpleAttributeDefinition[]{
+    static final SimpleAttributeDefinition[] PARTICIPANT_ATTRIBUTES = new SimpleAttributeDefinition[]{
             LogStoreConstants.JMX_NAME, LogStoreConstants.PARTICIPANT_JNDI_NAME,
             LogStoreConstants.PARTICIPANT_STATUS, LogStoreConstants.RECORD_TYPE,
             LogStoreConstants.EIS_NAME, LogStoreConstants.EIS_VERSION};
@@ -61,10 +59,7 @@ public class LogStoreTransactionParticipantDefinition extends SimpleResourceDefi
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (final SimpleAttributeDefinition attribute : PARTECIPANT_RW_ATTRIBUTE) {
-            resourceRegistration.registerReadWriteAttribute(attribute, null, new ParticipantWriteAttributeHandler(attribute));
-        }
-        for (final SimpleAttributeDefinition attribute : PARTECIPANT_ATTRIBUTE) {
+        for (final SimpleAttributeDefinition attribute : PARTICIPANT_ATTRIBUTES) {
             resourceRegistration.registerReadOnlyAttribute(attribute, null);
         }
 
