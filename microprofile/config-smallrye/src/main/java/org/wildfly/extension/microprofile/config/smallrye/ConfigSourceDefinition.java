@@ -96,7 +96,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
 
     static ObjectTypeAttributeDefinition DIR = ObjectTypeAttributeDefinition.Builder.of("dir", PATH, RELATIVE_TO)
             .setAlternatives("properties", "class")
-            .setAllowNull(true)
+            .setRequired(false)
             .setAttributeMarshaller(AttributeMarshaller.ATTRIBUTE_OBJECT)
             .setRestartAllServices()
             .setCapabilityReference("org.wildfly.management.path-manager")
