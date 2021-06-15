@@ -106,7 +106,7 @@ configuration options, using information generated directly from the WildFly man
 [[quickstarts]]
 == Quickstarts
 
-* The link:Quickstarts{outfilesuffix}[WildFly Quickstarts] describes how to use the WildFly examples, which introduce a particular technology or feature of the application server.
+* The link:Quickstarts{outfilesuffix}[WildFly Quickstarts] describe how to use the WildFly examples, which introduce a particular technology or feature of the application server.
 
 [[more-resources]]
 == More Resources
