@@ -77,12 +77,6 @@ build.
 you through every deployment descriptor and every annotation offered by
 WildFly.
 
-* The link:JavaEE_Tutorial{outfilesuffix}[JavaEE Tutorial] ( _in progress_)
-builds on what you learnt in the
-link:Getting_Started_Developing_Applications_Guide{outfilesuffix}[Getting Started
-Developing Applications Guide], and shows you how to build a complex
-application using Jakarta EE and portable extensions.
-
 * The link:Extending_WildFly{outfilesuffix}[Extending WildFly] guide walks you
 through creating a new WildFly subsystem extension, in order to add more
 functionality to WildFly, and shows how to test it before plugging it
