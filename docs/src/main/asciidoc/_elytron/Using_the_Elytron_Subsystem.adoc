@@ -2263,6 +2263,7 @@ use custom implementations of the following components:
 * _key-manager_
 * _trust-manager_
 * _client-ssl-context_
+* _dynamic-client-ssl-context_
 * _server-ssl-context_
 * _certificate-authority-account_
 
@@ -2368,6 +2369,21 @@ creation time can be used to test if a session was resumed. Currently, clients n
 the first handshake in order to receive the `NewSessionTicket` that can be used for resumption. However, this may
 change once https://bugs.openjdk.java.net/browse/JDK-8209953[JDK-8209953] is resolved.
 
+=== Configuring a dynamic client SSLContext
+
+Using the Elytron subsystem, it is possible to configure a `dynamic SSLContext` for use on the client side of a connection.
+When a `dynamic-client-ssl-context` is used as an SSL context for the outbound requests, it will delegate between different
+`SSLContext` configurations based on destination’s host and port.
+
+Adding a client `SSLContext` takes the general form:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/dynamic-client-ssl-context=test-dynamic-client-ssl-context:add(authentication-context=test-authentication-context)
+----
+
+authentication-context:: A reference to the `authentication-context` to be used by this dynamic client `SSLContext`.
+Rules for choosing specific SSL context to use for the connection will be obtained from this `authentication-context`.
 
 === Configuring SSLv2Hello
 

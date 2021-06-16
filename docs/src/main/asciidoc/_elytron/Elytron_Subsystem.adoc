@@ -356,6 +356,10 @@ Regex can capture groups that replacement pattern can make use of.
 |client-ssl-context |An SSLContext for use on the client side of a
 connection.
 
+|dynamic-client-ssl-context |An SSL context for use on the client side of a
+connection. It delegates to alternate instances based on peer information
+and rules provided in its authentication-context attribute.
+
 |filtering-key-store |A filtering keystore definition, which provides a
 keystore by filtering a key-store.
 
