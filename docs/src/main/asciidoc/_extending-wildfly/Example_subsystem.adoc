@@ -490,7 +490,7 @@ new SimpleAttributeDefinitionBuilder(TrackerExtension.TICK, ModelType.LONG)
   .setXmlName(TrackerExtension.TICK)
   .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
   .setDefaultValue(new ModelNode(1000))
-  .setAllowNull(false)
+  .setRequired(true)
   .build();
  
 private TypeDefinition(){

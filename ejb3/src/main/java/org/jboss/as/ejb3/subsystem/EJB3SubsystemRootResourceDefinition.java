@@ -217,7 +217,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     public static final ObjectListAttributeDefinition SERVER_INTERCEPTORS = ObjectListAttributeDefinition.Builder.of(EJB3SubsystemModel.SERVER_INTERCEPTORS, SERVER_INTERCEPTOR)
             .setRequired(false)
             .setAllowExpression(false)
-            .setAllowNull(true)
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
             .build();
@@ -234,7 +233,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     public static final ObjectListAttributeDefinition CLIENT_INTERCEPTORS = ObjectListAttributeDefinition.Builder.of(EJB3SubsystemModel.CLIENT_INTERCEPTORS, CLIENT_INTERCEPTOR)
             .setRequired(false)
             .setAllowExpression(false)
-            .setAllowNull(true)
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
             .build();

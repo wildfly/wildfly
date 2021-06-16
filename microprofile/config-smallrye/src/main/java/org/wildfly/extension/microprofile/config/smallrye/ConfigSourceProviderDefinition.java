@@ -57,8 +57,7 @@ class ConfigSourceProviderDefinition extends PersistentResourceDefinition {
             create(MODULE, ModelType.STRING, false)
                     .setAllowExpression(false)
                     .build())
-            .setAllowNull(false)
-            .setAllowNull(true)
+            .setRequired(false)
             .setAttributeMarshaller(AttributeMarshaller.ATTRIBUTE_OBJECT)
             .setRestartAllServices()
             .build();
