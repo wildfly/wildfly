@@ -27,7 +27,17 @@
             xmlns:server="urn:infinispan:server:12.1">
 
     <cache-container name="default" statistics="true">
-        <!--transport cluster="${infinispan.cluster.name:infinispan}" stack="${infinispan.cluster.stack:tcp}" node-name="${infinispan.node.name:infinispan-1}"/-->
+        <security>
+            <authorization>
+                <!-- Declare a role mapper that associates a security principal to each role. -->
+                <cluster-role-mapper/>
+                <!-- Specify user roles and corresponding permissions. -->
+                <roles>
+                    <role name="testsuite-application-group" permissions="ALL"/>
+                </roles>
+            </authorization>
+        </security>
+
         <local-cache name="default"/>
         <local-cache name="transactional">
             <transaction mode="NON_XA" locking="PESSIMISTIC"/>
@@ -47,27 +57,21 @@
         </socket-bindings>
 
         <security>
+            <credential-stores>
+                <credential-store name="credentials" path="credentials.pfx">
+                    <clear-text-credential clear-text="secret"/>
+                </credential-store>
+            </credential-stores>
             <security-realms>
                 <security-realm name="default">
-                    <!-- Uncomment to enable TLS on the realm -->
-                    <!-- server-identities>
-                       <ssl>
-                          <keystore path="application.keystore" relative-to="infinispan.server.config.path"
-                                    keystore-password="password" alias="server" key-password="password"
-                                    generate-self-signed-certificate-host="localhost"/>
-                       </ssl>
-                    </server-identities-->
                     <properties-realm groups-attribute="Roles">
-                        <user-properties path="users.properties" relative-to="infinispan.server.config.path" plain-text="true"/>
-                        <group-properties path="groups.properties" relative-to="infinispan.server.config.path"/>
+                        <user-properties path="users.properties"/>
+                        <group-properties path="groups.properties"/>
                     </properties-realm>
                 </security-realm>
             </security-realms>
         </security>
 
-        <endpoints socket-binding="default">
-            <hotrod-connector name="hotrod"/>
-            <rest-connector name="rest"/>
-        </endpoints>
+        <endpoints socket-binding="default" security-realm="default"/>
     </server>
 </infinispan>
