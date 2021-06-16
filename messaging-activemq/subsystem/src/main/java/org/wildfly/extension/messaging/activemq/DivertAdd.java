@@ -78,13 +78,11 @@ public class DivertAdd extends AbstractAddStepHandler {
     }
 
     static DivertConfiguration createDivertConfiguration(final OperationContext context, String name, ModelNode model) throws OperationFailedException {
-        final ModelNode routingNode = DivertDefinition.ROUTING_NAME.resolveModelAttribute(context, model);
-        final String routingName = routingNode.isDefined() ? routingNode.asString() : null;
+        final String routingName = DivertDefinition.ROUTING_NAME.resolveModelAttribute(context, model).asStringOrNull();
         final String address = DivertDefinition.ADDRESS.resolveModelAttribute(context, model).asString();
         final String forwardingAddress = DivertDefinition.FORWARDING_ADDRESS.resolveModelAttribute(context, model).asString();
         final boolean exclusive = DivertDefinition.EXCLUSIVE.resolveModelAttribute(context, model).asBoolean();
-        final ModelNode filterNode = CommonAttributes.FILTER.resolveModelAttribute(context, model);
-        final String filter = filterNode.isDefined() ? filterNode.asString() : null;
+        final String filter = CommonAttributes.FILTER.resolveModelAttribute(context, model).asStringOrNull();
         DivertConfiguration config = new DivertConfiguration()
                 .setName(name)
                 .setRoutingName(routingName)
