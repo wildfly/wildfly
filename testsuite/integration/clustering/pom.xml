@@ -618,8 +618,6 @@
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
-                                    <!-- Workaround for @ClassRule Infinispan Server -->
-                                    <reuseForks>false</reuseForks>
                                     <!-- Fix test order to speed up execution by grouping tests that run against same group of containers -->
                                     <runOrder>alphabetical</runOrder>
                                     <!-- Tests to execute. -->
