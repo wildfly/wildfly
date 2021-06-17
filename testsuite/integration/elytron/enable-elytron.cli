@@ -5,6 +5,7 @@ embed-server --admin-only=true --server-config=standalone-full.xml
 /subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
 /subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
 /subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
+/subsystem=iiop-openjdk:write-attribute(name=security, value=elytron)
 
 /subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
 /subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
@@ -19,7 +20,6 @@ embed-server --admin-only=true --server-config=standalone-full.xml
 /core-service=management/security-realm=ApplicationRealm/authorization=properties:remove
 
 # Legacy security subsystem is not needed
-
 /subsystem=security:remove
 /extension=org.jboss.as.security:remove
 
