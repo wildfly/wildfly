@@ -23,9 +23,12 @@ package org.jboss.as.test.clustering.cluster;
 
 import static org.wildfly.common.Assert.checkNotNullArrayParam;
 
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
@@ -103,9 +106,16 @@ public abstract class AbstractClusteringTestCase {
     public static final String INFINISPAN_APPLICATION_USER = "testsuite-application-user";
     public static final String INFINISPAN_APPLICATION_PASSWORD = "testsuite-application-password";
 
-    public static TestRule infinispanServerTestRule() {
+    public static TestRule infinispanServerTestRule()  {
+        // Workaround for "ISPN-13107 ServerRunMode.FORKED yields InvalidPathException with relative server config paths on Windows platform" by using absolute file path which won't get mangled.
+        String absoluteConfigurationFile = null;
+        try {
+            absoluteConfigurationFile = Paths.get(Objects.requireNonNull(AbstractClusteringTestCase.class.getClassLoader().getResource(INFINISPAN_SERVER_PROFILE)).toURI()).toFile().toString();
+        } catch (URISyntaxException ignore) {
+        }
+
         return InfinispanServerRuleBuilder
-                .config(INFINISPAN_SERVER_PROFILE)
+                .config(absoluteConfigurationFile)
                 .property(TestSystemPropertyNames.INFINISPAN_TEST_SERVER_DIR, INFINISPAN_SERVER_HOME)
                 .property("infinispan.client.rest.auth_username", "testsuite-driver-user")
                 .property("infinispan.client.rest.auth_password", "testsuite-driver-password")
