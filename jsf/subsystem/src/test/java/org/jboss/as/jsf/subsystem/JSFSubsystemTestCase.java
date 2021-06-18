@@ -53,19 +53,6 @@ public class JSFSubsystemTestCase extends AbstractSubsystemBaseTest {
         return "schema/jboss-as-jsf_1_1.xsd";
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/jsf.xml"
-        };
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
-    }
-
     @Test
     public void testAttributes() throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(null)

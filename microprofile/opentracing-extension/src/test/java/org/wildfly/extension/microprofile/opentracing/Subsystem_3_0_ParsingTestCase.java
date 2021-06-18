@@ -71,18 +71,6 @@ public class Subsystem_3_0_ParsingTestCase extends AbstractSubsystemBaseTest {
         return System.getProperties();
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{
-            "/subsystem-templates/microprofile-opentracing-smallrye.xml",};
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
-    }
-
     @Test
     public void testTransformersWildFly20() throws Exception {
         testTransformers(ModelTestControllerVersion.EAP_7_3_0, SubsystemExtension.VERSION_1_0_0);

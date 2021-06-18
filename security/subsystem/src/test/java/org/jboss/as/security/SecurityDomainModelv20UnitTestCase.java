@@ -23,7 +23,6 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * Security subsystem tests for the version 2.0 of the subsystem schema.
@@ -72,23 +71,10 @@ public class SecurityDomainModelv20UnitTestCase extends AbstractSubsystemBaseTes
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/security.xml"
-        };
-    }
-
-    @Override
     protected Properties getResolvedProperties() {
         Properties properties = new Properties();
         properties.put("jboss.server.config.dir", System.getProperty("java.io.tmpdir"));
         return properties;
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
     }
 
     @Override

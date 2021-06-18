@@ -55,7 +55,6 @@
         <module>batch-jberet</module>
         <module>bean-validation</module>
         <module>build</module>
-        <module>build-legacy</module>
         <module>client/properties</module>
         <module>client/shade</module>
         <module>clustering</module>
@@ -63,7 +62,6 @@
         <module>connector</module>
         <module>datasources-agroal</module>
         <module>dist</module>
-        <module>dist-legacy</module>
         <module>ee</module>
         <module>ee-build</module>
         <module>ee-dist</module>
@@ -100,10 +98,8 @@
         <module>transactions</module>
         <module>undertow</module>
         <module>servlet-build</module>
-        <module>servlet-build-legacy</module>
         <module>web-common</module>
         <module>servlet-dist</module>
-        <module>servlet-dist-legacy</module>
         <module>servlet-feature-pack</module>
         <module>webservices</module>
         <module>weld</module>

@@ -60,13 +60,6 @@ public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() {
-        return new String[] {
-                "/subsystem-templates/microprofile-health-smallrye.xml"
-        };
-    }
-
-    @Override
     protected String getSubsystemXsdPath() {
         return "schema/wildfly-microprofile-health-smallrye_2_0.xsd";
     }

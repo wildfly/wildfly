@@ -70,19 +70,6 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
         return "schema/wildfly-iiop-openjdk_2_1.xsd";
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{
-                "/subsystem-templates/iiop-openjdk.xml"
-        };
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
-    }
-
     @Test
     public void testParseEmptySubsystem() throws Exception {
         // parse the subsystem xml into operations.

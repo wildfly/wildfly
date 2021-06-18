@@ -81,20 +81,6 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{
-                "/subsystem-templates/resource-adapters.xml",
-                "/subsystem-templates/resource-adapters-genericjms.xml"
-        };
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
-    }
-
-    @Override
     protected Properties getResolvedProperties() {
         Properties properties = new Properties();
         properties.put("genericjms.cf.jndi-name", "genericjms");

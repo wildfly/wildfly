@@ -62,19 +62,6 @@ public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
         return "schema/wildfly-batch-jberet_2_0.xsd";
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-            "/subsystem-templates/batch-jberet.xml"
-        };
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
-    }
-
     @Test
     public void testMinimalSubsystem() throws Exception {
         standardSubsystemTest("/minimal-subsystem.xml");
