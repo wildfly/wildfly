@@ -37,6 +37,7 @@ import org.apache.http.HttpResponse;
 import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.server.test.core.ServerRunMode;
 import org.infinispan.server.test.core.TestSystemPropertyNames;
+import org.infinispan.server.test.junit4.InfinispanServerRule;
 import org.infinispan.server.test.junit4.InfinispanServerRuleBuilder;
 import org.jboss.arquillian.container.spi.Container;
 import org.jboss.arquillian.container.spi.ContainerRegistry;
@@ -105,8 +106,9 @@ public abstract class AbstractClusteringTestCase {
     public static final int INFINISPAN_SERVER_PORT = 11222;
     public static final String INFINISPAN_APPLICATION_USER = "testsuite-application-user";
     public static final String INFINISPAN_APPLICATION_PASSWORD = "testsuite-application-password";
+    public static final InfinispanServerRule INFINISPAN_SERVER_RULE;
 
-    public static TestRule infinispanServerTestRule()  {
+    static {
         // Workaround for "ISPN-13107 ServerRunMode.FORKED yields InvalidPathException with relative server config paths on Windows platform" by using absolute file path which won't get mangled.
         String absoluteConfigurationFile = null;
         try {
@@ -114,7 +116,7 @@ public abstract class AbstractClusteringTestCase {
         } catch (URISyntaxException ignore) {
         }
 
-        return InfinispanServerRuleBuilder
+        INFINISPAN_SERVER_RULE = InfinispanServerRuleBuilder
                 .config(absoluteConfigurationFile)
                 .property(TestSystemPropertyNames.INFINISPAN_TEST_SERVER_DIR, INFINISPAN_SERVER_HOME)
                 .property("infinispan.client.rest.auth_username", "testsuite-driver-user")
@@ -122,6 +124,10 @@ public abstract class AbstractClusteringTestCase {
                 .numServers(1)
                 .runMode(ServerRunMode.FORKED)
                 .build();
+    }
+
+    public static TestRule infinispanServerTestRule() {
+        return INFINISPAN_SERVER_RULE;
     }
 
     // Undertow-based WildFly load-balancer
