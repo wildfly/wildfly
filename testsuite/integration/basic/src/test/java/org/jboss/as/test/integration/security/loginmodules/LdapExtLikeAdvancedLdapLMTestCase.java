@@ -445,7 +445,7 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
                                     .name("AdvancedLdap")
                                     .options(getCommonOptions())
                                     .putOption("bindDN", "uid=sa,o=example6,dc=jboss,dc=org")
-                                    .putOption("bindCredential", LdapExtLDAPServerSetupTask.SECURITY_CREDENTIALS)
+                                    .putOption("bindCredential", "secretValue")
                                     .putOption("java.naming.provider.url", ldapUrl)
                                     .putOption("baseCtxDN", "o=example6,dc=jboss,dc=org")
                                     .putOption("baseFilter", "(uid={0})")

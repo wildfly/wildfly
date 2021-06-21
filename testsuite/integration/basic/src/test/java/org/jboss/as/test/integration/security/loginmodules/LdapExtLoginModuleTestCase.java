@@ -511,7 +511,7 @@ public class LdapExtLoginModuleTestCase {
                             new SecurityModule.Builder().name("org.jboss.security.auth.spi.LdapExtLoginModule")
                                     .options(getCommonOptions()) //
                                     .putOption("bindDN", "uid=sa,o=example6,dc=jboss,dc=org")
-                                    .putOption("bindCredential", "secret")
+                                    .putOption("bindCredential", "secretValue")
                                     .putOption("java.naming.provider.url", ldapUrl)
                                     .putOption("baseCtxDN", "o=example6,dc=jboss,dc=org")
                                     .putOption("baseFilter", "(uid={0})")
