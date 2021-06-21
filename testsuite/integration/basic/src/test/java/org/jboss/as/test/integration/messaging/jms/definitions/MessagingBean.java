@@ -92,8 +92,8 @@ import javax.jms.TopicConnectionFactory;
                 @JMSConnectionFactoryDefinition(
                         name="java:comp/env/myFactory5",
                         interfaceName = "javax.jms.QueueConnectionFactory",
-                        user = "${VAULT::messaging::userName::1}",
-                        password = "${VAULT::messaging::password::1}"
+                        user = "guest",
+                        password = "guest"
                 )
         }
 )
