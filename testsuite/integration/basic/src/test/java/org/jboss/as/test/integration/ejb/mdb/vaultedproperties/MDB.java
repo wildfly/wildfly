@@ -35,8 +35,7 @@ import javax.jms.TextMessage;
   * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
  */
 @MessageDriven(activationConfig = {
-        // value was put in the vault by org.jboss.as.test.integration.ejb.mdb.vaultedproperties.MDBWithVaultedPropertiesTestCase.StoreVaultedPropertyTask
-        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "${VAULT::messaging::destination::1}")
+        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = MDBWithVaultedPropertiesTestCase.CLEAR_TEXT_DESTINATION_LOOKUP)
 })
 public class MDB implements MessageListener {
 
