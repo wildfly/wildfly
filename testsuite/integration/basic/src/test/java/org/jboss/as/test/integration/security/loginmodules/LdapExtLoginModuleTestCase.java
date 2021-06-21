@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.integration.security.loginmodules;
 
-import static org.jboss.as.test.integration.security.common.BasicVaultServerSetupTask.ATTRIBUTE_NAME;
-import static org.jboss.as.test.integration.security.common.BasicVaultServerSetupTask.VAULT_BLOCK;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -46,7 +44,6 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
-import org.jboss.as.test.integration.security.common.BasicVaultServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
@@ -67,7 +64,7 @@ import org.junit.runner.RunWith;
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({BasicVaultServerSetupTask.class, LdapExtLDAPServerSetupTask.SystemPropertiesSetup.class,
+@ServerSetup({LdapExtLDAPServerSetupTask.SystemPropertiesSetup.class,
         LdapExtLDAPServerSetupTask.class,
         LdapExtLoginModuleTestCase.SecurityDomainsSetup.class})
 @RunAsClient
@@ -514,7 +511,7 @@ public class LdapExtLoginModuleTestCase {
                             new SecurityModule.Builder().name("org.jboss.security.auth.spi.LdapExtLoginModule")
                                     .options(getCommonOptions()) //
                                     .putOption("bindDN", "uid=sa,o=example6,dc=jboss,dc=org")
-                                    .putOption("bindCredential", "VAULT::" + VAULT_BLOCK + "::" + ATTRIBUTE_NAME + "::1")
+                                    .putOption("bindCredential", "secret")
                                     .putOption("java.naming.provider.url", ldapUrl)
                                     .putOption("baseCtxDN", "o=example6,dc=jboss,dc=org")
                                     .putOption("baseFilter", "(uid={0})")
