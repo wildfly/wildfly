@@ -38,7 +38,6 @@
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="org.apache.commons.codec"/>
         <module name="org.apache.commons.logging"/>
-        <module name="org.apache.james.mime4j"/>
         <module name="org.apache.httpcomponents.core" export="true" services="export" />
     </dependencies>
 </module>

@@ -29,7 +29,9 @@
     </properties>
 
     <resources>
-        <artifact name="${org.apache.james:apache-mime4j}"/>
+        <artifact name="${org.apache.james:apache-mime4j-core}"/>
+        <artifact name="${org.apache.james:apache-mime4j-dom}"/>
+        <artifact name="${org.apache.james:apache-mime4j-storage}"/>
     </resources>
 
     <dependencies>
