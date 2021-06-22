@@ -95,6 +95,17 @@
 
         <!-- module and copy artifact dependencies -->
         <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-http-oidc</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>*</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-elytron-oidc-subsystem</artifactId>
             <exclusions>

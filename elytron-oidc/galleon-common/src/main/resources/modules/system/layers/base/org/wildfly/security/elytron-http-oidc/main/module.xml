@@ -17,25 +17,22 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
-<module xmlns="urn:jboss:module:1.9" name="org.wildfly.extension.elytron-oidc">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.security.elytron-http-oidc">
 
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-elytron-oidc-subsystem}"/>
+        <artifact name="${org.wildfly.security:wildfly-elytron-http-oidc}"/>
     </resources>
 
     <dependencies>
-        <module name="org.jboss.staxmapper"/>
-        <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.server"/>
-        <module name="org.jboss.metadata.web"/>
-        <module name="org.jboss.modules"/>
-        <module name="org.jboss.msc"/>
+        <module name="org.wildfly.common"/>
+        <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.apache.httpcomponents.core"/>
+        <module name="org.bitbucket.jose4j"/>
         <module name="org.jboss.logging"/>
-        <module name="org.wildfly.security.elytron-http-oidc" />
+        <module name="javax.json.api"/>
     </dependencies>
 </module>
