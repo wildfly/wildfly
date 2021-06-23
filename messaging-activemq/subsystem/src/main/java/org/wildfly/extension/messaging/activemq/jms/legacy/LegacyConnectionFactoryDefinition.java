@@ -19,15 +19,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.messaging.activemq.jms.legacy;
 
-import static org.hornetq.api.jms.JMSFactoryType.CF;
-import static org.hornetq.api.jms.JMSFactoryType.QUEUE_CF;
-import static org.hornetq.api.jms.JMSFactoryType.QUEUE_XA_CF;
-import static org.hornetq.api.jms.JMSFactoryType.TOPIC_CF;
-import static org.hornetq.api.jms.JMSFactoryType.TOPIC_XA_CF;
-import static org.hornetq.api.jms.JMSFactoryType.XA_CF;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
@@ -40,21 +33,22 @@ import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.jms.JMSFactoryType;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.RuntimePackageDependency;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
@@ -120,7 +114,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
     /**
      * @see HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD
      */
-    public static final AttributeDefinition CLIENT_FAILURE_CHECK_PERIOD =SimpleAttributeDefinitionBuilder.create("client-failure-check-period", LONG)
+    public static final AttributeDefinition CLIENT_FAILURE_CHECK_PERIOD = SimpleAttributeDefinitionBuilder.create("client-failure-check-period", LONG)
             .setDefaultValue(new ModelNode(30000L))
             .setMeasurementUnit(MILLISECONDS)
             .setRequired(false)
@@ -324,7 +318,6 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .setRestartAllServices()
             .build();
 
-
     /**
      * @see HornetQClient.DEFAULT_RECONNECT_ATTEMPTS
      */
@@ -441,54 +434,54 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = {
-            ENTRIES,
-
-            AUTO_GROUP,
-            BLOCK_ON_ACKNOWLEDGE,
-            BLOCK_ON_DURABLE_SEND,
-            BLOCK_ON_NON_DURABLE_SEND,
-            CACHE_LARGE_MESSAGE_CLIENT,
-            CALL_FAILOVER_TIMEOUT,
-            CALL_TIMEOUT,
-            CLIENT_FAILURE_CHECK_PERIOD,
-            CLIENT_ID,
-            COMPRESS_LARGE_MESSAGES,
-            CONFIRMATION_WINDOW_SIZE,
-            CONNECTION_LOAD_BALANCING_CLASS_NAME,
-            CONNECTION_TTL,
-            CONSUMER_MAX_RATE,
-            CONSUMER_WINDOW_SIZE,
-            DUPS_OK_BATCH_SIZE,
-            FACTORY_TYPE,
-            FAILOVER_ON_INITIAL_CONNECTION,
-            GROUP_ID,
-            HA,
-            INITIAL_CONNECT_ATTEMPTS,
-            INITIAL_MESSAGE_PACKET_SIZE,
-            MAX_RETRY_INTERVAL,
-            MIN_LARGE_MESSAGE_SIZE,
-            PRE_ACKNOWLEDGE,
-            PRODUCER_MAX_RATE,
-            PRODUCER_WINDOW_SIZE,
-            RECONNECT_ATTEMPTS,
-            RETRY_INTERVAL,
-            RETRY_INTERVAL_MULTIPLIER,
-            SCHEDULED_THREAD_POOL_MAX_SIZE,
-            THREAD_POOL_MAX_SIZE,
-            TRANSACTION_BATCH_SIZE,
-            USE_GLOBAL_POOLS,
-
-            DISCOVERY_GROUP,
-            CONNECTORS
+        ENTRIES,
+        AUTO_GROUP,
+        BLOCK_ON_ACKNOWLEDGE,
+        BLOCK_ON_DURABLE_SEND,
+        BLOCK_ON_NON_DURABLE_SEND,
+        CACHE_LARGE_MESSAGE_CLIENT,
+        CALL_FAILOVER_TIMEOUT,
+        CALL_TIMEOUT,
+        CLIENT_FAILURE_CHECK_PERIOD,
+        CLIENT_ID,
+        COMPRESS_LARGE_MESSAGES,
+        CONFIRMATION_WINDOW_SIZE,
+        CONNECTION_LOAD_BALANCING_CLASS_NAME,
+        CONNECTION_TTL,
+        CONSUMER_MAX_RATE,
+        CONSUMER_WINDOW_SIZE,
+        DUPS_OK_BATCH_SIZE,
+        FACTORY_TYPE,
+        FAILOVER_ON_INITIAL_CONNECTION,
+        GROUP_ID,
+        HA,
+        INITIAL_CONNECT_ATTEMPTS,
+        INITIAL_MESSAGE_PACKET_SIZE,
+        MAX_RETRY_INTERVAL,
+        MIN_LARGE_MESSAGE_SIZE,
+        PRE_ACKNOWLEDGE,
+        PRODUCER_MAX_RATE,
+        PRODUCER_WINDOW_SIZE,
+        RECONNECT_ATTEMPTS,
+        RETRY_INTERVAL,
+        RETRY_INTERVAL_MULTIPLIER,
+        SCHEDULED_THREAD_POOL_MAX_SIZE,
+        THREAD_POOL_MAX_SIZE,
+        TRANSACTION_BATCH_SIZE,
+        USE_GLOBAL_POOLS,
+        DISCOVERY_GROUP,
+        CONNECTORS
     };
 
     public static final LegacyConnectionFactoryDefinition INSTANCE = new LegacyConnectionFactoryDefinition();
 
     protected LegacyConnectionFactoryDefinition() {
-        super(MessagingExtension.LEGACY_CONNECTION_FACTORY_PATH,
-                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTION_FACTORY),
-                LegacyConnectionFactoryAdd.INSTANCE,
-                LegacyConnectionFactoryRemove.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(
+                MessagingExtension.LEGACY_CONNECTION_FACTORY_PATH,
+                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTION_FACTORY))
+                .setAddHandler(LegacyConnectionFactoryAdd.INSTANCE)
+                .setRemoveHandler(LegacyConnectionFactoryRemove.INSTANCE)
+                .setAdditionalPackages(RuntimePackageDependency.required("org.hornetq.client")));
     }
 
     @Override
@@ -496,24 +489,14 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
         return Arrays.asList(ATTRIBUTES);
     }
 
-    enum HornetQConnectionFactoryType {
-        GENERIC(CF),
-        TOPIC(TOPIC_CF),
-        QUEUE(QUEUE_CF),
-        XA_GENERIC(XA_CF),
-        XA_QUEUE(QUEUE_XA_CF),
-        XA_TOPIC(TOPIC_XA_CF);
+    public enum HornetQConnectionFactoryType {
+        GENERIC,
+        TOPIC,
+        QUEUE,
+        XA_GENERIC,
+        XA_QUEUE,
+        XA_TOPIC;
 
-        private final JMSFactoryType type;
-
-        static final ParameterValidator VALIDATOR = new EnumValidator<>(HornetQConnectionFactoryType.class, true, false);
-
-        HornetQConnectionFactoryType(JMSFactoryType type) {
-            this.type = type;
-        }
-
-        public JMSFactoryType getType() {
-            return type;
-        }
+        static final ParameterValidator VALIDATOR = new EnumValidator<>(HornetQConnectionFactoryType.class, EnumSet.allOf(HornetQConnectionFactoryType.class));
     }
 }
