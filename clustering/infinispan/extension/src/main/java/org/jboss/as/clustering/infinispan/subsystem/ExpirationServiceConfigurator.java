@@ -62,7 +62,7 @@ public class ExpirationServiceConfigurator extends ComponentServiceConfigurator<
         return new ConfigurationBuilder().expiration()
                 .lifespan(this.lifespan, TimeUnit.MILLISECONDS)
                 .maxIdle(this.maxIdle, TimeUnit.MILLISECONDS)
-                .reaperEnabled((this.lifespan > 0) || (this.maxIdle > 0))
+                .reaperEnabled(this.interval > 0)
                 .wakeUpInterval(this.interval, TimeUnit.MILLISECONDS)
                 .create();
     }
