@@ -28,6 +28,7 @@ import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufTagMarshaller;
 import org.infinispan.protostream.TagWriter;
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A {@link TagWriter} with the additional ability to write an arbitrary embedded object.
@@ -85,7 +86,8 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
                 if (exception == null) {
                     exception = e;
                 }
-                targetClass = targetClass.getSuperclass();
+                // Search superclass only for base module
+                targetClass = WildFlySecurityManager.getClassLoaderPrivileged(targetClass) == WildFlySecurityManager.getClassLoaderPrivileged(Object.class) ? targetClass.getSuperclass() : null;
             }
         }
         throw exception;

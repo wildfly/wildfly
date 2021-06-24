@@ -32,6 +32,7 @@ import java.util.OptionalInt;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufUtil;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
@@ -73,7 +74,8 @@ public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
             if (this.context.canMarshall(targetClass)) {
                 return true;
             }
-            targetClass = targetClass.getSuperclass();
+            // Search superclass only for base module
+            targetClass = WildFlySecurityManager.getClassLoaderPrivileged(targetClass) == WildFlySecurityManager.getClassLoaderPrivileged(Object.class) ? targetClass.getSuperclass() : null;
         }
         return false;
     }
