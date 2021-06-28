@@ -24,7 +24,7 @@ package org.wildfly.test.integration.elytron.certs.crl;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,6 +35,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("WFLY-14880 / WFCORE-5461 temporary disable for CI of WFCORE")
 public class CertificateRevocationListTestCase extends CertificateRevocationListTestBase {
 
     /**
