@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.eclipse.jdt.core.compiler:ecj}"/>
+        <artifact name="${org.eclipse.jdt:ecj}"/>
     </resources>
 
     <dependencies>
