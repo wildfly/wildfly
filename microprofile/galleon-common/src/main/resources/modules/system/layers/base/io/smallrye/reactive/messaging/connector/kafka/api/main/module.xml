@@ -21,18 +21,17 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="io.smallrye.reactive.messaging.connector">
+<module xmlns="urn:jboss:module:1.8" name="io.smallrye.reactive.messaging.connector.kafka.api">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
+    <resources>
+        <artifact name="${io.smallrye.reactive:smallrye-reactive-messaging-kafka-api}"/>
+    </resources>
+
     <dependencies>
-        <module name="io.smallrye.reactive.messaging.connector.amqp" optional="true" export="true" services="export"/>
-
-        <module name="io.smallrye.reactive.messaging.connector.kafka" optional="true" export="true" services="export"/>
-        <!-- Add the kafka API module here so that it will be added to the deployment classpath by the DUP -->
-        <module name="io.smallrye.reactive.messaging.connector.kafka.api" optional="true" export="true" services="export"/>
-
-        <module name="io.smallrye.reactive.messaging.connector.mqtt" optional="true" export="true" services="export"/>
+        <module name="org.eclipse.microprofile.reactive-messaging.api"/>
+        <module name="org.apache.kafka.client"/>
     </dependencies>
 </module>

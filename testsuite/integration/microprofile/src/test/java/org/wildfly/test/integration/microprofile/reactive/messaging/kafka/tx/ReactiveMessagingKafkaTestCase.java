@@ -24,8 +24,11 @@ package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.tx;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.PropertyPermission;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -79,7 +82,10 @@ public class ReactiveMessagingKafkaTestCase {
     public void test() throws InterruptedException {
         boolean wait = bean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
         Assert.assertTrue("Timed out", wait);
-        Assert.assertEquals("hello reactive messaging", bean.getPhrase());
+        // TODO check ordering once we have kafka API
+        Set<String> expected = new HashSet<>(Arrays.asList("hello", "reactive", "messaging"));
+        Assert.assertEquals(expected.size(), bean.getWords().size());
+        Assert.assertTrue("Expected " + bean.getWords() + " to contain all of " + expected, bean.getWords().containsAll(expected));
 
         // Check the data was stored
         txBean.checkValues(Collections.singleton("reactive"));
