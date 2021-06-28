@@ -22,6 +22,8 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.tx;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CountDownLatch;
@@ -43,7 +45,7 @@ import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
 @ApplicationScoped
 public class Bean {
     private final CountDownLatch latch = new CountDownLatch(3);
-    private StringBuilder phrase = new StringBuilder();
+    private List<String> words = new ArrayList<>();
 
     @Inject
     TransactionalBean txBean;
@@ -88,14 +90,11 @@ public class Bean {
 
     @Incoming("sink")
     public void sink(String word) {
-        if (phrase.length() > 0) {
-            phrase.append(" ");
-        }
-        this.phrase.append(word);
+        words.add(word);
         latch.countDown();
     }
 
-    public String getPhrase() {
-        return phrase.toString();
+    public List<String> getWords() {
+        return words;
     }
 }

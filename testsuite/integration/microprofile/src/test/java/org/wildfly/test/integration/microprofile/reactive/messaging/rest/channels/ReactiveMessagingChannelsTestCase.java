@@ -28,6 +28,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.http.NameValuePair;
@@ -82,7 +84,7 @@ public class ReactiveMessagingChannelsTestCase {
     @Test
     public void testPublisherToChannelPublisher() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()){
-            getData(client, "publisher-to-channel-publisher/poll", "One", "Zwei", "Tres");
+            checkData(client, "publisher-to-channel-publisher/poll", "One", "Zwei", "Tres");
         }
     }
 
@@ -91,7 +93,7 @@ public class ReactiveMessagingChannelsTestCase {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()){
             postData(client,"emitter-to-subscriber/publish", "Hello");
             postData(client,"emitter-to-subscriber/publish", "world");
-            getData(client, "emitter-to-subscriber/poll", "Hello", "world");
+            checkData(client, "emitter-to-subscriber/poll", "Hello", "world");
         }
     }
 
@@ -101,7 +103,7 @@ public class ReactiveMessagingChannelsTestCase {
             postData(client,"emitter-to-subscribed-channel-publisher-builder/publish", "Hola");
             postData(client,"emitter-to-subscribed-channel-publisher-builder/publish", "mundo");
             postData(client,"emitter-to-subscribed-channel-publisher-builder/publish", "-end-");
-            getData(client, "emitter-to-subscribed-channel-publisher-builder/poll", "Hola", "mundo");
+            checkData(client, "emitter-to-subscribed-channel-publisher-builder/poll", "Hola", "mundo");
         }
     }
 
@@ -115,11 +117,14 @@ public class ReactiveMessagingChannelsTestCase {
             // Kafka is slower than the other in-memory examples, so do some retrying here
             long end = System.currentTimeMillis() + TimeoutUtil.adjust(5000);
             AssertionError error = null;
+            HashSet<String> expected = new HashSet<>(Arrays.asList("Welcome", "to", "Kafka"));
+            List<String> list = null;
             while (System.currentTimeMillis() < end) {
                 Thread.sleep(200);
                 error = null;
                 try {
-                    getData(client, "emitter-to-subscribed-channel-publisher-via-kafka/poll", "Welcome", "to", "Kafka");
+                    list = getData(client, "emitter-to-subscribed-channel-publisher-via-kafka/poll");
+                    Assert.assertEquals(expected.size(), list.size());
                     break;
                 } catch (AssertionError e) {
                     error = e;
@@ -130,6 +135,9 @@ public class ReactiveMessagingChannelsTestCase {
                 throw error;
             }
 
+            for (String s : expected) {
+                Assert.assertTrue(list.contains("data: " + s));
+            }
         }
     }
 
@@ -144,7 +152,15 @@ public class ReactiveMessagingChannelsTestCase {
         }
     }
 
-    private void getData(CloseableHttpClient client, String path, String... expected) throws Exception {
+    private void checkData(CloseableHttpClient client, String path, String... expected) throws Exception {
+        List<String> lines = getData(client, path);
+        Assert.assertEquals(expected.length, lines.size());
+        for (int i = 0; i < expected.length; i++) {
+            Assert.assertTrue(lines.get(i).contains(expected[i]));
+        }
+    }
+
+    private List<String> getData(CloseableHttpClient client, String path) throws Exception {
         HttpGet get = new HttpGet(url + path);
         List<String> lines = new ArrayList<>();
 
@@ -162,11 +178,7 @@ public class ReactiveMessagingChannelsTestCase {
                 }
             }
         }
-
-        Assert.assertEquals(expected.length, lines.size());
-        for (int i = 0; i < expected.length; i++) {
-            Assert.assertTrue(lines.get(i).contains(expected[i]));
-        }
+        return lines;
     }
 
 }

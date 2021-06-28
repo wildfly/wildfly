@@ -78,13 +78,23 @@ public class ReactiveMessagingKafkaSerializerTestCase {
         List<Person> list = bean.getReceived();
         Assert.assertEquals(3, list.size());
 
-        Assert.assertEquals("Kabir", list.get(0).getName());
-        Assert.assertEquals(101, list.get(0).getAge());
+        Person kabir = findPerson(list, "Kabir");
+        Person bob = findPerson(list, "Bob");
+        Person roger = findPerson(list, "Roger");
 
-        Assert.assertEquals("Bob", list.get(1).getName());
-        Assert.assertEquals(18, list.get(1).getAge());
 
-        Assert.assertEquals("Roger", list.get(2).getName());
-        Assert.assertEquals(21, list.get(2).getAge());
+        Assert.assertEquals(101, kabir.getAge());
+        Assert.assertEquals(18, bob.getAge());
+        Assert.assertEquals(21, roger.getAge());
+    }
+
+    private Person findPerson(List<Person> list, String name) {
+        for (Person p : list) {
+            if (p.getName().equals(name)) {
+                return p;
+            }
+        }
+        Assert.fail("Could not find " + name);
+        return null;
     }
 }

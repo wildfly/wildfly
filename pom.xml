@@ -317,7 +317,7 @@
         <version.io.agroal>1.3</version.io.agroal>
         <version.io.jaegertracing>1.5.0</version.io.jaegertracing>
         <version.io.netty>4.1.66.Final</version.io.netty>
-        <version.io.opentelemetry.opentelemetry>1.3.0</version.io.opentelemetry.opentelemetry>
+        <version.io.opentelemetry.opentelemetry>1.4.1</version.io.opentelemetry.opentelemetry>
         <version.io.opentracing>0.33.0</version.io.opentracing>
         <version.io.opentracing.concurrent>0.4.0</version.io.opentracing.concurrent>
         <version.io.opentracing.interceptors>0.1.3</version.io.opentracing.interceptors>
@@ -337,11 +337,11 @@
         <version.io.smallrye.smallrye-jwt>3.1.1</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>3.0.3</version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.smallrye-mutiny>0.18.1</version.io.smallrye.smallrye-mutiny>
-        <version.io.smallrye.smallrye-mutiny-vertx>2.8.0</version.io.smallrye.smallrye-mutiny-vertx>
-        <version.io.smallrye.smallrye-reactive-messaging>3.3.0</version.io.smallrye.smallrye-reactive-messaging>
+        <version.io.smallrye.smallrye-mutiny-vertx>2.11.0</version.io.smallrye.smallrye-mutiny-vertx>
+        <version.io.smallrye.smallrye-reactive-messaging>3.9.0</version.io.smallrye.smallrye-reactive-messaging>
         <version.io.undertow.jastow>2.0.9.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
-        <version.io.vertx.vertx>4.1.0</version.io.vertx.vertx>
+        <version.io.vertx.vertx>4.1.2</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
         <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
         <version.jakarta.json.bind.api>1.0.2</version.jakarta.json.bind.api>
@@ -2363,6 +2363,18 @@
             <dependency>
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-reactive-messaging-kafka</artifactId>
+                <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>smallrye-reactive-messaging-kafka-api</artifactId>
                 <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
                 <exclusions>
                     <exclusion>
