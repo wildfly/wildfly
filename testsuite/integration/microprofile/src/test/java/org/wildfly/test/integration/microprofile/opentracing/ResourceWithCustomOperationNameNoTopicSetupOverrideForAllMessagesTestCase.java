@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 @RunWith(Arquillian.class)
-public class ResourceWithCustomOperationNameBeanTestCase {
+public class ResourceWithCustomOperationNameNoTopicSetupOverrideForAllMessagesTestCase {
     @Inject
     Tracer tracer;
 
@@ -41,7 +41,7 @@ public class ResourceWithCustomOperationNameBeanTestCase {
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
-        war.addClass(ResourceWithCustomOperationNameBeanTestCase.class);
+        war.addClass(ResourceWithCustomOperationNameNoTopicSetupOverrideForAllMessagesTestCase.class);
 
         war.addClass(MockTracerFactory.class);
         war.addPackage(MockTracer.class.getPackage());

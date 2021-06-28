@@ -38,6 +38,9 @@ import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
+import io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata;
+import io.smallrye.reactive.messaging.kafka.api.KafkaMetadataUtil;
+
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
@@ -82,7 +85,7 @@ public class EmitterToChannelPublisherViaKafkaEndpoint {
             }
         });
     }
-
+    
     @POST
     @Path("/publish")
     @Produces("text/plain")

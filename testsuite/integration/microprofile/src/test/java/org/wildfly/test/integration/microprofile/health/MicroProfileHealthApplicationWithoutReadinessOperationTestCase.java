@@ -30,11 +30,17 @@ import java.io.IOException;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.dmr.ModelNode;
+import org.junit.BeforeClass;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2019 Red Hat inc.
  */
 public class MicroProfileHealthApplicationWithoutReadinessOperationTestCase extends MicroProfileHealthApplicationReadyTestBase {
+
+    @BeforeClass
+    public static void blah() {
+        System.out.println("Hello");
+    }
 
     void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException {
         final ModelNode address = new ModelNode();

@@ -47,14 +47,22 @@ public class RunKafkaSetupTask implements ServerSetupTask {
 
         Files.createDirectories(kafkaDir);
 
-        broker = new EmbeddedKafkaBroker(1, true)
+        broker = new EmbeddedKafkaBroker(1, true, getTopics())
                 .zkPort(2181)
                 .kafkaPorts(9092)
                 .brokerProperty("log.dir", kafkaDir.toString())
-                .brokerProperty("num.partitions", 1)
+                .brokerProperty("num.partitions", getPartitions())
                 .brokerProperty("offsets.topic.num.partitions", 5);
 
         broker.afterPropertiesSet();
+    }
+
+    protected String[] getTopics() {
+        return new String[]{"testing"};
+    }
+
+    protected int getPartitions() {
+        return 1;
     }
 
     @Override
