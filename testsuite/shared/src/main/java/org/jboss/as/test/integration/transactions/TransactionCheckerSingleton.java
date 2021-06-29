@@ -69,13 +69,11 @@ public class TransactionCheckerSingleton implements TransactionCheckerSingletonR
 
     @Override
     public int getRolledback() {
-        System.out.println("returning rollback value " + rolledback.get() + "!::" + this);
         return rolledback.get();
     }
 
     @Override
     public void addRollback() {
-        System.out.println("incrementing rollback value!::" + this);
         rolledback.incrementAndGet();
     }
 
@@ -126,7 +124,6 @@ public class TransactionCheckerSingleton implements TransactionCheckerSingletonR
 
     @Override
     public void resetRolledback() {
-        System.out.println("rollback reset! ::" + this);
         rolledback.set(0);
     }
 
