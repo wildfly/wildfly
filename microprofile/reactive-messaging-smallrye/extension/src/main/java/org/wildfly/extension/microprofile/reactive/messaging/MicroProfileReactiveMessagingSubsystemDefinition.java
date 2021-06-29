@@ -32,6 +32,7 @@ import static org.wildfly.extension.microprofile.reactive.messaging.MicroProfile
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ServiceLoader;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -46,8 +47,15 @@ import org.jboss.as.controller.registry.RuntimePackageDependency;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 import org.wildfly.extension.microprofile.reactive.messaging._private.MicroProfileReactiveMessagingLogger;
 import org.wildfly.extension.microprofile.reactive.messaging.deployment.ReactiveMessagingDependencyProcessor;
+import org.wildfly.microprofile.reactive.messaging.common.DynamicDeploymentProcessorAdder;
+import org.wildfly.microprofile.reactive.messaging.config.kafka.ssl.context.ElytronSSLContextRegistry;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
@@ -104,13 +112,40 @@ public class MicroProfileReactiveMessagingSubsystemDefinition extends Persistent
         protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performBoottime(context, operation, model);
 
+            installKafkaElytronSSLContextRegistryServiceIfPresent(context);
+
             context.addStep(new AbstractDeploymentChainStep() {
                 public void execute(DeploymentProcessorTarget processorTarget) {
-                    processorTarget.addDeploymentProcessor(SUBSYSTEM_NAME, DEPENDENCIES, DEPENDENCIES_MICROPROFILE_REACTIVE_MESSAGING, new ReactiveMessagingDependencyProcessor());
+                    processorTarget.addDeploymentProcessor(SUBSYSTEM_NAME, DEPENDENCIES,
+                            DEPENDENCIES_MICROPROFILE_REACTIVE_MESSAGING, new ReactiveMessagingDependencyProcessor());
+
+                    MicroProfileReactiveMessagingLogger.LOGGER.debug("Looking for DynamicDeploymentProcessorAdder implementations");
+                    Module module =
+                            ((ModuleClassLoader)WildFlySecurityManager.getClassLoaderPrivileged(this.getClass())).getModule();
+                    ServiceLoader<DynamicDeploymentProcessorAdder> sl = module.loadService(DynamicDeploymentProcessorAdder.class);
+                    for (DynamicDeploymentProcessorAdder adder : sl) {
+                        MicroProfileReactiveMessagingLogger.LOGGER.debugf("Invoking DynamicDeploymentProcessorAdder implementation: %s", adder);
+                        adder.addDeploymentProcessor(processorTarget, SUBSYSTEM_NAME);
+                    }
                 }
+
+
             }, RUNTIME);
 
             MicroProfileReactiveMessagingLogger.LOGGER.activatingSubsystem();
+        }
+
+        private void installKafkaElytronSSLContextRegistryServiceIfPresent(OperationContext context) {
+            ClassLoader cl = WildFlySecurityManager.getClassLoaderPrivileged(this.getClass());
+            if (cl instanceof ModuleClassLoader) {
+                ModuleLoader loader = ((ModuleClassLoader)cl).getModule().getModuleLoader();
+                try {
+                    loader.loadModule("org.wildfly.reactive.messaging.kafka");
+                    ElytronSSLContextRegistry.setServiceRegistry(context.getServiceRegistry(false));
+                } catch (ModuleLoadException e) {
+                    // Ignore, it means the module is not available so we don't install the service
+                }
+            }
         }
     }
 }
