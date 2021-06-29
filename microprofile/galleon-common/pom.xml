@@ -713,7 +713,29 @@
 
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-reactive-messaging-common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-reactive-messaging-config</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-reactive-messaging-kafka</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

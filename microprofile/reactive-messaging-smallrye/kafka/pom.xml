@@ -36,13 +36,13 @@
     </parent>
 
 
-    <artifactId>wildfly-microprofile-reactive-messaging</artifactId>
-    <name>WildFly: MicroProfile Reactive Messaging Extension With SmallRye</name>
+    <artifactId>wildfly-microprofile-reactive-messaging-kafka</artifactId>
+    <name>WildFly: MicroProfile Reactive Messaging Kakfa</name>
 
     <dependencies>
         <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
@@ -63,35 +63,20 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-controller</artifactId>
+            <groupId>org.jboss.msc</groupId>
+            <artifactId>jboss-msc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-microprofile-reactive-messaging-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-server</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-microprofile-reactive-messaging-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-microprofile-reactive-messaging-kafka</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-subsystem-test</artifactId>
-            <type>pom</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron-security-manager</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-microprofile-reactive-messaging-config</artifactId>
         </dependency>
     </dependencies>
 </project>
