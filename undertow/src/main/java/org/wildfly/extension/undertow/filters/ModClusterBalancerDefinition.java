@@ -43,7 +43,7 @@ import org.wildfly.extension.undertow.UndertowExtension;
  */
 class ModClusterBalancerDefinition extends SimpleResourceDefinition {
 
-    public static ModClusterBalancerDefinition INSTANCE = new ModClusterBalancerDefinition();
+    public static final ModClusterBalancerDefinition INSTANCE = new ModClusterBalancerDefinition();
 
     public static final AttributeDefinition STICKY_SESSION_COOKIE = new SimpleAttributeDefinitionBuilder(Constants.STICKY_SESSION_COOKIE, ModelType.STRING)
             .setRequired(false)

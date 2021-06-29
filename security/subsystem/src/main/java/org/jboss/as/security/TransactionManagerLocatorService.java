@@ -20,7 +20,7 @@ import javax.transaction.TransactionManager;
  */
 public class TransactionManagerLocatorService implements Service<Void> {
 
-    public static ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("transaction-manager-locator");
+    public static final ServiceName SERVICE_NAME = SecurityExtension.JBOSS_SECURITY.append("transaction-manager-locator");
 
     private final InjectedValue<TransactionManager> transactionManagerInjectedValue = new InjectedValue<>();
 

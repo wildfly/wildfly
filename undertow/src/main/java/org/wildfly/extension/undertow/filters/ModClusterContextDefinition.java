@@ -45,7 +45,7 @@ import org.wildfly.extension.undertow.UndertowExtension;
  */
 class ModClusterContextDefinition extends SimpleResourceDefinition {
 
-    public static ModClusterContextDefinition INSTANCE = new ModClusterContextDefinition();
+    public static final ModClusterContextDefinition INSTANCE = new ModClusterContextDefinition();
 
 
     private static final AttributeDefinition STATUS = new SimpleAttributeDefinitionBuilder(Constants.STATUS, ModelType.STRING)

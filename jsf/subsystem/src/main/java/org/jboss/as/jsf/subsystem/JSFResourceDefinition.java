@@ -43,7 +43,7 @@ public class JSFResourceDefinition extends PersistentResourceDefinition {
     public static final String DISALLOW_DOCTYPE_DECL_ATTR_NAME = "disallow-doctype-decl";
     public static final String DEFAULT_SLOT = "main";
 
-    public static JSFResourceDefinition INSTANCE = new JSFResourceDefinition();
+    public static final JSFResourceDefinition INSTANCE = new JSFResourceDefinition();
 
     protected static final SimpleAttributeDefinition DEFAULT_JSF_IMPL_SLOT =
             new SimpleAttributeDefinitionBuilder(DEFAULT_SLOT_ATTR_NAME, ModelType.STRING, true)

@@ -123,7 +123,7 @@ public class Constants {
             .setRestartAllServices()
             .build();
 
-    public static SimpleAttributeDefinition VALIDATE_ON_MATCH = new SimpleAttributeDefinitionBuilder(VALIDATEONMATCH_NAME, ModelType.BOOLEAN, true)
+    public static final SimpleAttributeDefinition VALIDATE_ON_MATCH = new SimpleAttributeDefinitionBuilder(VALIDATEONMATCH_NAME, ModelType.BOOLEAN, true)
             .setXmlName(Validation.Tag.VALIDATE_ON_MATCH.getLocalName())
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -149,13 +149,13 @@ public class Constants {
             .setRequired(false)
             .build();
 
-    public static SimpleAttributeDefinition CAPACITY_INCREMENTER_CLASS = new SimpleAttributeDefinitionBuilder(CAPACITY_INCREMENTER_CLASS_NAME, ModelType.STRING, true)
+    public static final SimpleAttributeDefinition CAPACITY_INCREMENTER_CLASS = new SimpleAttributeDefinitionBuilder(CAPACITY_INCREMENTER_CLASS_NAME, ModelType.STRING, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static PropertiesAttributeDefinition CAPACITY_INCREMENTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CAPACITY_INCREMENTER_PROPERTIES_NAME, true)
+    public static final PropertiesAttributeDefinition CAPACITY_INCREMENTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CAPACITY_INCREMENTER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setRequired(false)
             .setAllowExpression(true)
@@ -174,13 +174,13 @@ public class Constants {
             .setRestartAllServices()
             .build();
 
-    public static SimpleAttributeDefinition CAPACITY_DECREMENTER_CLASS = new SimpleAttributeDefinitionBuilder(CAPACITY_DECREMENTER_CLASS_NAME, ModelType.STRING, true)
+    public static final SimpleAttributeDefinition CAPACITY_DECREMENTER_CLASS = new SimpleAttributeDefinitionBuilder(CAPACITY_DECREMENTER_CLASS_NAME, ModelType.STRING, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    public static PropertiesAttributeDefinition CAPACITY_DECREMENTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CAPACITY_DECREMENTER_PROPERTIES_NAME, true)
+    public static final PropertiesAttributeDefinition CAPACITY_DECREMENTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CAPACITY_DECREMENTER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setRequired(false)
             .setAllowExpression(true)
@@ -234,7 +234,7 @@ public class Constants {
             BACKGROUNDVALIDATION, USE_FAST_FAIL, VALIDATE_ON_MATCH, MAX_POOL_SIZE, MIN_POOL_SIZE, INITIAL_POOL_SIZE, POOL_PREFILL, POOL_FAIR, POOL_USE_STRICT_MIN, POOL_FLUSH_STRATEGY,
             CAPACITY_INCREMENTER_CLASS, CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES, CAPACITY_DECREMENTER_PROPERTIES};
 
-    public static SimpleAttributeDefinition POOL_STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
+    public static final SimpleAttributeDefinition POOL_STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
             .setStorageRuntime()
             .build();
 }

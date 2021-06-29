@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class NotEmptyResourceValidationStepHandler implements ModelValidationStepHandler {
 
-    public static NotEmptyResourceValidationStepHandler INSTANCE = new NotEmptyResourceValidationStepHandler();
+    public static final NotEmptyResourceValidationStepHandler INSTANCE = new NotEmptyResourceValidationStepHandler();
 
     private NotEmptyResourceValidationStepHandler() {
     }
