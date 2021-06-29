@@ -176,7 +176,7 @@ Next we will briefly discuss each of these entries. Remember the `to` channel is
 
 In addition to the above, Apache Kafka, and SmallRye Reactive Messaging's Kafka connector understand a lot more properties. These can be found in the SmallRye Reactive Messaging Kafka connector https://smallrye.io/smallrye-reactive-messaging/smallrye-reactive-messaging/{smallrye-reactive-messaging-version}/kafka/kafka.html[documentation], and in the Apache Kafka documentation for the https://kafka.apache.org/documentation/#producerconfigs[producers] and the https://kafka.apache.org/documentation/#consumerconfigs[consumers].
 
-The prefixes discussed above are stripped off before passing the property to Kafka.
+The prefixes discussed above are stripped off before passing the property to Kafka. The same happens for other configuration properties. See the Kafka documentation for more details about how to configure Kafka consumers and producers.
 
 ===== Kafka User API
 In order to be able to get more information about messages received from Kafka, and to be able to influence how Kafka handles messages, there is a user API for Kafka. This API lives in the https://github.com/smallrye/smallrye-reactive-messaging/tree/{smallrye-reactive-messaging-tag}/smallrye-reactive-messaging-kafka-api/src/main/java/io/smallrye/reactive/messaging/kafka/api[`io/smallrye/reactive/messaging/kafka/api`] package.
@@ -246,7 +246,7 @@ mp.messaging.incoming.from-kafka.key.deserializer=org.apache.kafka.common.serial
 ```
 This configuration looks a lot like the previous configuration tht we saw, but note that we need to specify the `key.serializer` for the outgoing channel, and the `key.deserializer` for the incoming channel. As before, they are implementations of `org.apache.kafka.common.serialization.Serializer` and `org.apache.kafka.common.serialization.Deserializer` respectively. Kafka provides implementations for basic types, and you may write your own and include them in the deployment.
 
-===== A note on `org.apache.kafka` classes
+====== A note on `org.apache.kafka` classes
 While we do expose the Kafka Clients jar in our BOMs, its usage is limited to
 
 * Classes/interfaces exposed via the Kafka User API, e.g.:
@@ -258,6 +258,27 @@ While we do expose the Kafka Clients jar in our BOMs, its usage is limited to
 ** `org.apache.kafka.common.serialization.Serializer`
 ** Implementatations of `org.apache.kafka.common.serialization.Deserializer` and `org.apache.kafka.common.serialization.Serializer` in the `org.apache.kafka.common.serialization` package
 
+===== Connecting to secure Kafka
+If connecting to a Kafka instance secured with SSL and SASL, the following example 'microprofile-config.properties' will help you get started. There are a few new properties. We are showing them on the connector level but they could equally well be defined on the channel level (i.e. with the mp.messaging.outgoing.to-kafka. and `mp.messaging.incoming.from-kafka.` prefixes from the previous examples rather than the connector-wide `mp.messaging.connector.smallrye-kafka` prefix).
+
+[source]
+----
+mp.messaging.connector.smallrye-kafka.bootstrap.servers=localhost:9092
+mp.messaging.connector.smallrye-kafka.sasl.mechanism=PLAIN
+mp.messaging.connector.smallrye-kafka.security.protocol=SASL_SSL
+mp.messaging.connector.smallrye-kafka.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
+  username="${USER}" \
+  password="${PASSWORD}";
+mp.messaging.connector.smallrye-kafka.wildfly.elytron.ssl.context=test
+
+# Channel configuration would follow here, but is left out for brevity
+----
+Each of these lines has the following meaning:
+* `mp.messaging.connector.smallrye-kafka.bootstrap.servers=localhost:9092` - specifies the Kafka servers to connect to. This is the same as in the previous examples
+* `mp.messaging.connector.smallrye-kafka.sasl.mechanism=PLAIN` - specifies the SASL mechanism to use. See `sasl.mechanism` in the Kafka documentation for other choices.
+* `mp.messaging.connector.smallrye-kafka.security.protocol` - specifies the protocol to use mechanism to use. See `security.protocol` in the Kafka documentation for other choices. In this case we are using `SASL_SSL` which means that communication is over SSL, and that SASL is used to authenticate
+* `mp.messaging.connector.smallrye-kafka.sasl.jaas.config=...` - specifies how we will authenticate with Kafka. In order to not hardcode the credentials in our `microprofile-config.properties file` we are using the property substitution feature of MicroProfile Config. In this case, if you have defined the `USER` and `PASSWORD` environment variables they will be passed in as part of the configuration
+* `mp.messaging.connector.smallrye-kafka.wildfly.elytron.ssl.context=test` - this is not needed if Kafka is secured with a CA signed certificate. If you are using self-signed certificates, you will need to specify a truststore in the Elytron subsystem, and create an `SSLContext` referencing that. The value of this property is used to look up the `SSLContext` in the Elytron subsystem under `/subsystem=elytron/client-ssl-context=*` in the WildFly management model. In this case the property value is `test`, so we look up the `SSLContext` defined by `/subsystem=elytron/client-ssl-context=test` and use that configure the truststore to use for the connection to Kafka.
 
 == Component Reference
 

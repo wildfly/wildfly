@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.microprofile.reactive.messaging.deployment;
 
+import static org.wildfly.microprofile.reactive.messaging.common.ReactiveMessagingAttachments.IS_REACTIVE_MESSAGING_DEPLOYMENT;
+
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -89,6 +91,7 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isReactiveMessagingDeployment(deploymentUnit)) {
             addModuleDependencies(deploymentUnit);
+            deploymentUnit.putAttachment(IS_REACTIVE_MESSAGING_DEPLOYMENT, true);
         }
     }
 

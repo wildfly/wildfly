@@ -21,19 +21,28 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="io.smallrye.reactive.messaging.connector">
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
-
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <dependencies>
-        <module name="io.smallrye.reactive.messaging.connector.amqp" optional="true" export="true" services="export"/>
-
-        <module name="io.smallrye.reactive.messaging.connector.kafka" optional="true" export="true" services="export"/>
-        <!-- Add the kafka API module and a few other central ones so that it will be added to the deployment classpath by the DUP -->
-        <module name="io.smallrye.reactive.messaging.connector.kafka.api" optional="true" export="true" services="export"/>
-        <module name="org.wildfly.reactive.messaging.kafka" optional="true" export="true" services="export"/>
-
-        <module name="io.smallrye.reactive.messaging.connector.mqtt" optional="true" export="true" services="export"/>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-server</artifactId>
+        </dependency>
     </dependencies>
-</module>
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-microprofile-reactive-messaging-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>25.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+
+    <artifactId>wildfly-microprofile-reactive-messaging-common</artifactId>
+    <name>WildFly: MicroProfile Reactive Messaging Common</name>
+
+</project>
