@@ -23,6 +23,7 @@ package org.wildfly.extension.metrics.jmx;
 
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.NONE;
 import static org.wildfly.common.Assert.checkNotNullParam;
+import static org.wildfly.extension.metrics._private.MetricsLogger.LOGGER;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -99,7 +100,7 @@ public class JmxMetricCollector {
                 // now, it has been expanded, remove the "multi" mbean
                 iterator.remove();
             } catch (MalformedObjectNameException e) {
-                e.printStackTrace();
+                LOGGER.malformedName(e);
             }
         }
         configs.addAll(expandedConfigs);
