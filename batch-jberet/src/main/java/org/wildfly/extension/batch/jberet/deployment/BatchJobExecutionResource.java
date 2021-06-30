@@ -22,14 +22,11 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
-import javax.batch.runtime.JobExecution;
-import javax.batch.runtime.JobInstance;
+import java.util.stream.Collectors;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -63,7 +60,7 @@ public class BatchJobExecutionResource implements Resource {
      * any incoming refresh request will be performed; otherwise, it is ignored
      * and the current result is returned.
      */
-    private final int refreshMinInterval = 3000;
+    private static final int refreshMinInterval = 3000;
 
     BatchJobExecutionResource(final WildFlyJobOperator jobOperator, final String jobName) {
         this(Factory.create(true), jobOperator, jobName);
@@ -233,18 +230,10 @@ public class BatchJobExecutionResource implements Resource {
             return;
         }
 
-        final List<JobExecution> executions = new ArrayList<>();
-        // Casting to (Supplier<List<JobInstance>>) is done here on purpose as a workaround for a bug in 1.8.0_45
-        final List<JobInstance> instances = jobOperator.allowMissingJob((Supplier<List<JobInstance>>)() -> jobOperator.getJobInstances(jobName, 0, Integer.MAX_VALUE)
-                , Collections.emptyList());
-        for (JobInstance instance : instances) {
-            executions.addAll(jobOperator.getJobExecutions(instance));
-        }
+        final List<Long> executionIds = jobOperator.getJobExecutionsByJob(jobName);
+        final Set<String> asNames = executionIds.stream().map(Object::toString).collect(Collectors.toSet());
         children.clear();
-        for (JobExecution execution : executions) {
-            final String name = Long.toString(execution.getExecutionId());
-            children.add(name);
-        }
+        children.addAll(asNames);
         lastRefreshedTime = System.currentTimeMillis();
     }
 }
