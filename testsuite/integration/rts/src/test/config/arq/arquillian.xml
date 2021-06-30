@@ -27,7 +27,7 @@
     Use Servlet 3.0 protocol to make sure the following issue does not happen:
     http://discuss.arquillian.org/t/solved-randomly-before-method-runs-twice/193/4.
     -->
-    <defaultProtocol type="Servlet 3.0" />
+    <defaultProtocol type="${arquillian.servlet.protocol}" />
 
     <container qualifier="jboss" default="true">
         <configuration>
