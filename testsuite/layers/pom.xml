@@ -831,38 +831,6 @@
                                     </configurations>
                                 </configuration>
                             </execution>
-                            <!-- Test the vault layer from the servlet feature pack.
-                                 It is overridden in the wildfly-ee feature pack, which we test below.
-                                  So, here we specifically use the servlet feature pack
-                                  and the output location for dists produced from it. -->
-                            <execution>
-                                <id>vault-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase.preview.excluded}</phase>
-                                <configuration>
-                                    <install-dir>${servlet.layers.install.root}/vault</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${ee.maven.groupId}</groupId>
-                                            <artifactId>wildfly-servlet-galleon-pack</artifactId>
-                                            <version>${ee.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>vault</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
                             <execution>
                                 <id>legacy-security-provisioning</id>
                                 <goals>
@@ -975,7 +943,6 @@
                                                 <layer>ee</layer>
                                                 <layer>undertow-load-balancer</layer>
                                                 <layer>naming</layer>
-                                                <layer>vault</layer>
                                                 <layer>legacy-security</layer>
                                                 <layer>undertow</layer>
                                                 <layer>undertow-legacy-https</layer>
@@ -1872,34 +1839,6 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>vault-provisioning-full</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase.preview.excluded}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/vault</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
-                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>vault</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
                                 <id>web-console-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -2338,7 +2277,6 @@
                                                 <layer>undertow</layer>
                                                 <layer>undertow-legacy-https</layer>
                                                 <layer>undertow-load-balancer</layer>
-                                                <layer>vault</layer>
                                                 <layer>web-passivation</layer>
                                                 <layer>web-console</layer>
                                                 <layer>web-server</layer>
@@ -2439,7 +2377,6 @@
                                                 <layer>undertow</layer>
                                                 <layer>undertow-legacy-https</layer>
                                                 <layer>undertow-load-balancer</layer>
-                                                <layer>vault</layer>
                                                 <layer>web-clustering</layer>
                                                 <layer>web-console</layer>
                                                 <layer>web-server</layer>

@@ -1,6 +1,5 @@
 <?xml version="1.0" ?>
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="undertow-load-balancer">
-    <!-- Redefine the 'undertow-load-balancer' layer from servlet to drop its 'vault' dependency -->
     <dependencies>
         <layer name="base-server"/>
         <layer name="io"/>
@@ -11,9 +10,4 @@
     </feature>
     <feature-group name="private-interface"/>
     <feature-group name="undertow-load-balancer"/>
-    <packages>
-        <!-- Pull in one of picketbox's optional deps until all PB use is gone.
-             TODO confirm this is needed. -->
-        <package name="javax.xml.stream.api"/>
-    </packages>
 </layer-spec>
