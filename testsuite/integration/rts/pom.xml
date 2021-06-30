@@ -182,6 +182,15 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <!-- Required for the protocol in the arquillian.xml -->
+                                <arquillian.servlet.protocol>${arquillian.servlet.protocol}</arquillian.servlet.protocol>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
         </profile>

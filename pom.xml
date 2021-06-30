@@ -207,6 +207,7 @@
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.non-modular.system.args>-ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=512m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.non-modular.system.args>
         <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} ${surefire.non-modular.system.args}</surefire.system.args>
+        <arquillian.servlet.protocol>Servlet 3.0</arquillian.servlet.protocol>
 
         <!-- Galleon feature pack to use in testsuite provisioning executions that provide content
              that *could* be obtained solely from the wildfly-ee-galleon-pack or its dependencies.
@@ -10380,6 +10381,11 @@
                 <!-- Disable the surefire tests (at least the default ones) for all modules except for
                      those where this profile turns them back on. -->
                 <surefire.default-test.phase>none</surefire.default-test.phase>
+
+                <!-- WildFly Arquillian Adapter with Jakarta EE Support -->
+                <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
+                <version.org.wildfly.arquillian>5.0.0.Alpha1</version.org.wildfly.arquillian>
+                <arquillian.servlet.protocol>Servlet 5.0</arquillian.servlet.protocol>
             </properties>
         </profile>
         
@@ -10396,6 +10402,11 @@
                 <!-- Disable the default surefire test execution for all modules except for
                      those where this profile turns them back on. -->
                 <surefire.default-test.phase>none</surefire.default-test.phase>
+
+                <!-- WildFly Arquillian Adapter with Jakarta EE Support -->
+                <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
+                <version.org.wildfly.arquillian>5.0.0.Alpha1</version.org.wildfly.arquillian>
+                <arquillian.servlet.protocol>Servlet 5.0</arquillian.servlet.protocol>
             </properties>
         </profile>
 

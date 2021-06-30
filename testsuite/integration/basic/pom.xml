@@ -3664,6 +3664,8 @@
                                         <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude><!-- Problem is probably MDB use -->
                                         <!-- EE 8 vs EE 9 differences beyond javax->jakarta -->
                                         <exclude>org/jboss/as/test/integration/ejb/security/LifecycleTestCase.java</exclude><!-- EJBContext.getCallerIdentity was removed -->
+                                        <!-- Requires the Arquillian Servlet 3.0 protocol to be overridden to Servlet 5.0 -->
+                                        <exclude>org/jboss/as/test/integration/logging/config/LoggingProfileSharedTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -3739,6 +3741,8 @@
                                         <exclude>org/wildfly/test/integration/agroal/*TestCase.java</exclude>
                                         <!-- No Hibernate 5.0 module -->
                                         <exclude>org/jboss/as/test/integration/deployment/moduleslisting/DeploymentModulesListTestCase.java</exclude>
+                                        <!-- Requires the Arquillian Servlet 3.0 protocol to be overridden to Servlet 5.0 -->
+                                        <exclude>org/jboss/as/test/integration/logging/config/LoggingProfileSharedTestCase.java</exclude>
                                         <!-- TODO figure out the problem -->
                                         <exclude>org/jboss/as/test/integration/batch/repository/JdbcRepositoryTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/appclient/basic/SimpleApplicationClientTestCase.java</exclude>

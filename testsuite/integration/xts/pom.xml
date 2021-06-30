@@ -218,6 +218,8 @@
                             </includes>
                             <systemPropertyVariables combine.children="append">
                                 <arquillian.launch>xts-servers</arquillian.launch>
+                                <!-- Required for the protocol in the arquillian.xml -->
+                                <arquillian.servlet.protocol>${arquillian.servlet.protocol}</arquillian.servlet.protocol>
                             </systemPropertyVariables>
                             <!--<argLine>${surefire.system.args}</argLine>-->
                         </configuration>
