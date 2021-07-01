@@ -125,7 +125,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
         Scheduler<String, ImmutableSessionMetaData> localScheduler = new SessionExpirationScheduler<>(this.batcher, this.factory.getMetaDataFactory(), remover, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()));
         CommandDispatcherFactory dispatcherFactory = config.getCommandDispatcherFactory();
         Group group = dispatcherFactory.getGroup();
-        this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(dispatcherFactory, this.cache.getName(), localScheduler, new PrimaryOwnerLocator<>(this.cache, config.getMemberFactory(), group), SessionCreationMetaDataKey::new);
+        this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(dispatcherFactory, this.cache.getName(), localScheduler, new PrimaryOwnerLocator<>(this.cache, config.getMemberFactory()), SessionCreationMetaDataKey::new);
 
         this.scheduleTask = new ScheduleLocalKeysTask<>(this.cache, SessionCreationMetaDataKeyFilter.INSTANCE, localScheduler);
         this.listener = new SchedulerTopologyChangeListener<>(this.cache, localScheduler, this.scheduleTask);

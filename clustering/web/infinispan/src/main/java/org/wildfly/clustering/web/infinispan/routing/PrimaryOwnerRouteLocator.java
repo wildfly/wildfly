@@ -43,7 +43,7 @@ public class PrimaryOwnerRouteLocator implements RouteLocator {
 
     public PrimaryOwnerRouteLocator(PrimaryOwnerRouteLocatorConfiguration config) {
         this.registry = config.getRegistry();
-        this.primaryOwnerLocator = new PrimaryOwnerLocator<>(config.getCache(), config.getMemberFactory(), this.registry.getGroup());
+        this.primaryOwnerLocator = new PrimaryOwnerLocator<>(config.getCache(), config.getMemberFactory());
         this.preferPrimary = config.getCache().getCacheConfiguration().clustering().cacheMode().isClustered();
         this.localRoute = this.registry.getEntry(this.registry.getGroup().getLocalMember()).getKey();
     }
