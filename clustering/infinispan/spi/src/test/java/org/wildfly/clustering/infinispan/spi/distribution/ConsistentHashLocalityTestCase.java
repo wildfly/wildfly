@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,25 +22,33 @@
 
 package org.wildfly.clustering.infinispan.spi.distribution;
 
-import org.infinispan.Cache;
-import org.infinispan.distribution.DistributionManager;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.infinispan.remoting.transport.Address;
+import org.junit.Test;
 
 /**
- * A {@link Locality} implementation that delegates to either a {@link ConsistentHashLocality} or {@link SimpleLocality} depending on the cache mode.
- * Instances of this object should not be retained for longer than a single unit of work, since this object holds a final reference to the current ConsistentHash, which will become stale on topology change.
  * @author Paul Ferraro
  */
-public class CacheLocality implements Locality {
+public class ConsistentHashLocalityTestCase {
 
-    private final Locality locality;
+    @Test
+    public void test() {
+        KeyDistribution distribution = mock(KeyDistribution.class);
+        Address localAddress = mock(Address.class);
+        Address remoteAddress = mock(Address.class);
+        Object localKey = new Object();
+        Object remoteKey = new Object();
 
-    public CacheLocality(Cache<?, ?> cache) {
-        DistributionManager dist = cache.getAdvancedCache().getDistributionManager();
-        this.locality = (dist != null) ? new ConsistentHashLocality(cache, dist.getCacheTopology().getWriteConsistentHash()) : new SimpleLocality(true);
-    }
+        Locality locality = new ConsistentHashLocality(distribution, localAddress);
 
-    @Override
-    public boolean isLocal(Object key) {
-        return this.locality.isLocal(key);
+        when(distribution.getPrimaryOwner(localKey)).thenReturn(localAddress);
+        when(distribution.getPrimaryOwner(remoteKey)).thenReturn(remoteAddress);
+
+        assertTrue(locality.isLocal(localKey));
+        assertFalse(locality.isLocal(remoteKey));
     }
 }
