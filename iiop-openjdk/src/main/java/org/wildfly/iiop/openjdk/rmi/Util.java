@@ -410,19 +410,6 @@ public class Util {
     }
 
     /**
-     * Determine if a <code>char</code> is legal start of an IDL identifier.
-     */
-    private static boolean isLegalIDLStartIdentifierChar(char c) {
-        if (c >= 0x61 && c <= 0x7a)
-            return true; // lower case letter
-
-        if (c >= 0x41 && c <= 0x5a)
-            return true; // upper case letter
-
-        return false;
-    }
-
-    /**
      * Return the class hash code, as specified in "The Common Object
      * Request Broker: Architecture and Specification" (01-02-33),
      * section 10.6.2.
@@ -558,22 +545,6 @@ public class Util {
         }
 
         return "L" + cls.getName().replace('.', '/') + ";";
-    }
-
-    /**
-     * Calculate the signature of a method, according to the Java VM
-     * specification, section 4.3.3.
-     */
-    private static String getSignature(Method method) {
-        StringBuffer b = new StringBuffer("(");
-        Class[] parameterTypes = method.getParameterTypes();
-
-        for (int i = 0; i < parameterTypes.length; ++i)
-            b.append(getSignature(parameterTypes[i]));
-
-        b.append(')').append(getSignature(method.getReturnType()));
-
-        return b.toString();
     }
 
     /**

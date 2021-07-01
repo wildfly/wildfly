@@ -731,13 +731,6 @@ public class MigrateOperation implements OperationStepHandler {
         }
     }
 
-    private void discardUnsupportedAttribute(ModelNode newAddOp, AttributeDefinition legacyAttributeDefinition, List<String> warnings) {
-        if (newAddOp.hasDefined(legacyAttributeDefinition.getName())) {
-            newAddOp.remove(legacyAttributeDefinition.getName());
-            warnings.add(MessagingLogger.ROOT_LOGGER.couldNotMigrateUnsupportedAttribute(legacyAttributeDefinition.getName(), pathAddress(newAddOp.get(OP_ADDR))));
-        }
-    }
-
     private void discardFailbackDelay(ModelNode newAddOp, List<String> warnings) {
         if (newAddOp.hasDefined(FAILBACK_DELAY.getName())) {
             newAddOp.remove(FAILBACK_DELAY.getName());
