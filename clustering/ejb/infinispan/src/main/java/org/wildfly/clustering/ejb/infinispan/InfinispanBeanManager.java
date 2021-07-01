@@ -22,8 +22,6 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -63,7 +61,6 @@ import org.wildfly.clustering.infinispan.spi.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
 import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A {@link BeanManager} implementation backed by an infinispan cache.
@@ -75,9 +72,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, TransactionBatch> {
 
-    private static final String IDLE_TIMEOUT_PROPERTY = "jboss.ejb.stateful.%s.idle-timeout";
-
-    private final String name;
     private final Cache<BeanKey<I>, BeanEntry<I>> cache;
     private final CacheProperties properties;
     private final BeanFactory<I, T> beanFactory;
@@ -96,7 +90,6 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
     private volatile SchedulerListener listener;
 
     public InfinispanBeanManager(InfinispanBeanManagerConfiguration<I, T> configuration, IdentifierFactory<I> identifierFactory, Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration, Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T, C>, BeanGroupFactory<I, T, C>> groupConfiguration) {
-        this.name = configuration.getName();
         this.filter = configuration.getBeanFilter();
         this.groupFactory = groupConfiguration.getFactory();
         this.beanFactory = beanConfiguration.getFactory();
@@ -120,24 +113,10 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
         this.affinity.start();
 
         Duration stopTimeout = Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout());
-        List<Scheduler<I, ImmutableBeanEntry<I>>> schedulers = new ArrayList<>(2);
         Duration timeout = this.expiration.getTimeout();
-        if ((timeout != null) && !timeout.isNegative()) {
-            schedulers.add(new BeanExpirationScheduler<>(this.dispatcherFactory.getGroup(), this.batcher, this.beanFactory, this.expiration, new ExpiredBeanRemover<>(this.beanFactory, this.expiration), stopTimeout));
-        }
+        Scheduler<I, ImmutableBeanEntry<I>> localScheduler = (timeout != null) && !timeout.isNegative() ? new BeanExpirationScheduler<>(this.dispatcherFactory.getGroup(), this.batcher, this.beanFactory, this.expiration, new ExpiredBeanRemover<>(this.beanFactory, this.expiration), stopTimeout) : null;
 
         String dispatcherName = String.join("/", this.cache.getName(), this.filter.toString());
-
-        String globalIdleTimeout = WildFlySecurityManager.getPropertyPrivileged("jboss.ejb.stateful.idle-timeout", null);
-        String idleTimeout = WildFlySecurityManager.getPropertyPrivileged(String.format(IDLE_TIMEOUT_PROPERTY, this.name), globalIdleTimeout);
-        if (idleTimeout != null) {
-            Duration idleDuration = Duration.parse(idleTimeout);
-            if (!idleDuration.isNegative()) {
-                schedulers.add(new EagerEvictionScheduler<>(this.dispatcherFactory.getGroup(), this.batcher, this.beanFactory, this.groupFactory, idleDuration, this.dispatcherFactory, dispatcherName + "/eager-passivation", stopTimeout));
-            }
-        }
-
-        Scheduler<I, ImmutableBeanEntry<I>> localScheduler = !schedulers.isEmpty() ? new CompositeScheduler<>(schedulers) : null;
         this.scheduler = (localScheduler != null) ? (this.dispatcherFactory.getGroup().isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(this.dispatcherFactory, dispatcherName, localScheduler, this.primaryOwnerLocator, InfinispanBeanKey::new)) : null;
 
         BiConsumer<Locality, Locality> scheduleTask = new ScheduleLocalEntriesTask<>(this.cache, this.filter, localScheduler);
