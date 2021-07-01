@@ -164,7 +164,7 @@ abstract class AbstractMetaDataBuilderEJB {
 
     private static boolean isSecureWsdlAccess(final EJBEndpoint ejbEndpoint, final JBossPortComponentMetaData portComponentMD) {
         if (ejbEndpoint.isSecureWsdlAccess()) return true;
-        return (portComponentMD != null && portComponentMD.getSecureWSDLAccess() != null) ? portComponentMD.getSecureWSDLAccess() : false;
+        return (portComponentMD != null && portComponentMD.getSecureWSDLAccess() != null) && portComponentMD.getSecureWSDLAccess();
     }
 
     private static String getRealmName(final EJBEndpoint ejbEndpoint, final JBossPortComponentMetaData portComponentMD) {

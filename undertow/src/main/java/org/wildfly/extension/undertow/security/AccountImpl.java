@@ -149,7 +149,7 @@ public class AccountImpl implements Account, Serializable {
 
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof AccountPrincipal ? equals((AccountPrincipal) obj) : false;
+            return (obj instanceof AccountPrincipal) && equals((AccountPrincipal) obj);
         }
 
         private boolean equals(AccountPrincipal other) {

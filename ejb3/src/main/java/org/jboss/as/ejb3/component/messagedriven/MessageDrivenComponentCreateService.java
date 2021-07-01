@@ -186,7 +186,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
         validActivationConfigProps.putAll(activationConfigProps);
         while (propNames.hasMoreElements()) {
             final Object propName = propNames.nextElement();
-            if (raActivationConfigProps.containsKey(propName) == false && raRequiredConfigProps.contains(propName) == false) {
+            if (!raActivationConfigProps.containsKey(propName) && !raRequiredConfigProps.contains(propName)) {
                 // not a valid activation config property, so log a WARN and filter it out from the valid activation config properties
                 validActivationConfigProps.remove(propName);
                 EjbLogger.ROOT_LOGGER.activationConfigPropertyIgnored(propName, resourceAdapterName);

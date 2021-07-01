@@ -44,7 +44,7 @@ public class HibernatePatternFilter implements VirtualFileFilter {
             throw JPA_LOGGER.nullVar("pattern");
 
         exact = !pattern.contains(SLASH); // no path split or glob
-        if (exact == false && (pattern.startsWith(PREFIX))) {
+        if (!exact && (pattern.startsWith(PREFIX))) {
             this.pattern = pattern.substring(4);
         } else {
             this.pattern = pattern;

@@ -47,7 +47,7 @@ public class MessageDrivenComponentInstanceAssociatingFactory extends ComponentI
 
     @Override
     protected Interceptor create(Component component, InterceptorFactoryContext context) {
-        if (component instanceof MessageDrivenComponent == false) {
+        if (!(component instanceof MessageDrivenComponent)) {
             throw EjbLogger.ROOT_LOGGER.unexpectedComponent(component, MessageDrivenComponent.class);
         }
         final MessageDrivenComponent mdbComponent = (MessageDrivenComponent) component;

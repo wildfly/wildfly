@@ -153,7 +153,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
         for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
             String jpaContainerManaged = pu.getProperties().getProperty(Configuration.JPA_CONTAINER_MANAGED);
-            boolean deployPU = (jpaContainerManaged == null? true : Boolean.parseBoolean(jpaContainerManaged));
+            boolean deployPU = ((jpaContainerManaged == null) || Boolean.parseBoolean(jpaContainerManaged));
             if (deployPU) {
                 final ServiceName puServiceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
                 for (final ComponentDescription component : components) {

@@ -167,7 +167,7 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
                                 if (entityManagerFactoryBuilder != null) {
                                     WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
                                     try {
-                                        if (secondPhaseStarted == false) {
+                                        if (!secondPhaseStarted) {
                                             ROOT_LOGGER.tracef("PhaseOnePersistenceUnitServiceImpl cancelling %s " +
                                                     "which didn't start (phase 2 not reached)", pu.getScopedPersistenceUnitName());
                                             entityManagerFactoryBuilder.cancel();

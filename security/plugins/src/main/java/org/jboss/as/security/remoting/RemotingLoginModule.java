@@ -90,7 +90,7 @@ public class RemotingLoginModule extends AbstractServerLoginModule {
     @SuppressWarnings("unchecked")
     @Override
     public boolean login() throws LoginException {
-        if (super.login() == true) {
+        if (super.login()) {
             log.debug("super.login()==true");
             return true;
         }

@@ -231,7 +231,7 @@ public final class WSIntegrationProcessorJAXWS_EJB implements DeploymentUnitProc
         private boolean booleanValue(final AnnotationInstance annotation, final String attribute) {
             if (annotation == null) return false;
             final AnnotationValue value = annotation.value(attribute);
-            return value != null ? value.asBoolean() : false;
+            return (value != null) && value.asBoolean();
         }
     }
 

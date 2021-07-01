@@ -75,7 +75,7 @@ public class EJBSecurityMetaData {
      * @param componentConfiguration Component configuration of the Jakarta Enterprise Beans component
      */
     public EJBSecurityMetaData(final ComponentConfiguration componentConfiguration) {
-        if (componentConfiguration.getComponentDescription() instanceof EJBComponentDescription == false) {
+        if (!(componentConfiguration.getComponentDescription() instanceof EJBComponentDescription)) {
             throw EjbLogger.ROOT_LOGGER.invalidComponentConfiguration(componentConfiguration.getComponentName());
         }
         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();

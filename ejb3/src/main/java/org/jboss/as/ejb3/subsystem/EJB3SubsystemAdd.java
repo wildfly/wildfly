@@ -314,7 +314,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         final DefaultDistinctNameService defaultDistinctNameService = new DefaultDistinctNameService(defaultDistinctName.isDefined() ? defaultDistinctName.asString() : null);
         context.getServiceTarget().addService(DefaultDistinctNameService.SERVICE_NAME, defaultDistinctNameService).install();
         final ModelNode ejbNameRegex = EJB3SubsystemRootResourceDefinition.ALLOW_EJB_NAME_REGEX.resolveModelAttribute(context, model);
-        final EjbNameRegexService ejbNameRegexService = new EjbNameRegexService(ejbNameRegex.isDefined() ? ejbNameRegex.asBoolean() : false);
+        final EjbNameRegexService ejbNameRegexService = new EjbNameRegexService(ejbNameRegex.isDefined() && ejbNameRegex.asBoolean());
         context.getServiceTarget().addService(EjbNameRegexService.SERVICE_NAME, ejbNameRegexService).install();
 
         // set the default security domain name in the deployment unit processor, configured at the subsystem level

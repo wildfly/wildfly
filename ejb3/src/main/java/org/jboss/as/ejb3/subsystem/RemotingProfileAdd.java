@@ -155,7 +155,7 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
                 final ModelNode passByValueNode = RemotingProfileResourceDefinition.LOCAL_RECEIVER_PASS_BY_VALUE.resolveModelAttribute(context, profileNode);
 
                 if (passByValueNode.isDefined()) {
-                    final ServiceName localTransportProviderServiceName = passByValueNode.asBoolean() == true ? LocalTransportProvider.BY_VALUE_SERVICE_NAME
+                    final ServiceName localTransportProviderServiceName = passByValueNode.asBoolean() ? LocalTransportProvider.BY_VALUE_SERVICE_NAME
                             : LocalTransportProvider.BY_REFERENCE_SERVICE_NAME;
                     capabilityServiceBuilder.addDependency(localTransportProviderServiceName, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
                 } else {

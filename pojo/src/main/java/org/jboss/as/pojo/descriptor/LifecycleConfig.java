@@ -51,7 +51,7 @@ public class LifecycleConfig extends AbstractConfigVisitorNode implements Serial
 
     @Override
     public Class<?> getType(ConfigVisitor visitor, ConfigVisitorNode previous) {
-        if (previous instanceof ValueConfig == false)
+        if (!(previous instanceof ValueConfig))
             throw PojoLogger.ROOT_LOGGER.notValueConfig(previous);
 
         ValueConfig vc = (ValueConfig) previous;

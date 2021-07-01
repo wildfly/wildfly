@@ -122,7 +122,7 @@ abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAc
         final EJBSecurityMetaData ejbSecurityMD = this.getEjbSecurityMetaData(endpoint);
         final boolean hasEjbSecurityMD = ejbSecurityMD != null;
 
-        return hasEjbSecurityMD ? ejbSecurityMD.getSecureWSDLAccess() : false;
+        return hasEjbSecurityMD && ejbSecurityMD.getSecureWSDLAccess();
     }
 
     /**

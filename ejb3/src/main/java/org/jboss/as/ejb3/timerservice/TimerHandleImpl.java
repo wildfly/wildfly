@@ -118,7 +118,7 @@ public class TimerHandleImpl implements TimerHandle {
         if (obj == null) {
             return false;
         }
-        if (obj instanceof TimerHandleImpl == false) {
+        if (!(obj instanceof TimerHandleImpl)) {
             return false;
         }
         TimerHandleImpl other = (TimerHandleImpl) obj;

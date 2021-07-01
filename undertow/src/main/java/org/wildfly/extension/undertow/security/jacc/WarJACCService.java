@@ -776,7 +776,7 @@ public class WarJACCService extends JaccService<WarMetaData> {
          * @param info - a url pattern that should qualify this pattern
          */
         void addQualifier(PatternInfo info) {
-            if (qualifiers.contains(info) == false) {
+            if (!qualifiers.contains(info)) {
                 // See if this pattern is matched by the qualifier
                 if (info.type == PREFIX && info.matches(this))
                     isOverridden = true;

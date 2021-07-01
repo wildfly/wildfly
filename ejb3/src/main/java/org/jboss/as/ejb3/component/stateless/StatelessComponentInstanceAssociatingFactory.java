@@ -47,7 +47,7 @@ public class StatelessComponentInstanceAssociatingFactory extends ComponentInter
 
     @Override
     protected Interceptor create(Component component, InterceptorFactoryContext context) {
-        if (component instanceof StatelessSessionComponent == false) {
+        if (!(component instanceof StatelessSessionComponent)) {
             throw EjbLogger.ROOT_LOGGER.unexpectedComponent(component, StatelessSessionComponent.class);
         }
         final StatelessSessionComponent statelessSessionComponent = (StatelessSessionComponent) component;

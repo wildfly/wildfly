@@ -98,7 +98,7 @@ public class ValueAnalysis extends ContainerAnalysis {
 
         // Checked for boxedIDL 1.3.9
         Class clazz = getCls();
-        if (IDLEntity.class.isAssignableFrom(clazz) && ValueBase.class.isAssignableFrom(clazz) == false)
+        if (!(IDLEntity.class.isAssignableFrom(clazz) && ValueBase.class.isAssignableFrom(clazz)))
             result = "::org::omg::boxedIDL" + result;
         return result;
     }

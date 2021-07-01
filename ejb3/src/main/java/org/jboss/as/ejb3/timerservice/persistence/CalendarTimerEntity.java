@@ -173,7 +173,7 @@ public class CalendarTimerEntity extends TimerEntity {
         if (obj == null) {
             return false;
         }
-        if (obj instanceof CalendarTimerEntity == false) {
+        if (!(obj instanceof CalendarTimerEntity)) {
             return false;
         }
         CalendarTimerEntity other = (CalendarTimerEntity) obj;

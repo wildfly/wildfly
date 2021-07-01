@@ -70,7 +70,7 @@ public class TrustedIdentityTokenLoginModule extends AbstractServerLoginModule {
     @SuppressWarnings("unchecked")
     public boolean login() throws LoginException {
         // See if shared credentials exist
-        if (super.login() == true) {
+        if (super.login()) {
             // Setup our view of the user
             Object username = sharedState.get("javax.security.auth.login.name");
             if (username instanceof Principal)
@@ -133,7 +133,7 @@ public class TrustedIdentityTokenLoginModule extends AbstractServerLoginModule {
             }
         }
 
-        if (getUseFirstPass() == true) {    // Add the principal to the shared state map
+        if (getUseFirstPass()) {    // Add the principal to the shared state map
             sharedState.put("javax.security.auth.login.name", identity);
             sharedState.put("javax.security.auth.login.password", credential);
         }

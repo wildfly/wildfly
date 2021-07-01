@@ -139,7 +139,7 @@ public class JPAService implements Service<Void> {
             final Statistics statistics = managementAdaptor.getStatistics();
 
 
-            if (false == existingResourceDescriptionResolver.contains(managementAdaptor.getVersion())) {
+            if (!existingResourceDescriptionResolver.contains(managementAdaptor.getVersion())) {
 
                 // setup statistics (this used to be part of Jakarta Persistence subsystem startup)
                 ResourceDescriptionResolver resourceDescriptionResolver = new StandardResourceDescriptionResolver(

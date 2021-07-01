@@ -153,7 +153,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
                     sessionBeanDescription = new StatefulComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit, beanMetaData);
                     // If passivation is disabled for the SFSB, either via annotation or via DD, then setup the component
                     // description appropriately
-                    final boolean passivationCapableAnnotationValue = sessionBeanAnnotation.value("passivationCapable") == null ? true : sessionBeanAnnotation.value("passivationCapable").asBoolean();
+                    final boolean passivationCapableAnnotationValue = (sessionBeanAnnotation.value("passivationCapable") == null) || sessionBeanAnnotation.value("passivationCapable").asBoolean();
                     final Boolean passivationCapableDeploymentDescriptorValue;
                     if ((beanMetaData instanceof SessionBean32MetaData)) {
                         passivationCapableDeploymentDescriptorValue = ((SessionBean32MetaData) beanMetaData).isPassivationCapable();

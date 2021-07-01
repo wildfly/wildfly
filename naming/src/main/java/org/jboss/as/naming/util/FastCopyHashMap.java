@@ -519,7 +519,7 @@ public class FastCopyHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V
         Entry<K, V>[] table = FastCopyHashMap.this.table;
 
         public boolean hasNext() {
-            if (hasNext == true)
+            if (hasNext)
                 return true;
 
             Entry<K, V>[] table = this.table;

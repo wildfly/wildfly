@@ -260,13 +260,13 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
                 final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
 
                 Boolean excludeDefaultInterceptors = methodLevelExcludeDefaultInterceptors.get(method);
-                excludeDefaultInterceptors = excludeDefaultInterceptors == null ? false : excludeDefaultInterceptors;
+                excludeDefaultInterceptors = (excludeDefaultInterceptors != null) && excludeDefaultInterceptors;
                 if (!excludeDefaultInterceptors) {
                     excludeDefaultInterceptors = ejbComponentDescription.isExcludeDefaultContainerInterceptors() || ejbComponentDescription.isExcludeDefaultContainerInterceptors(methodIdentifier);
                 }
 
                 Boolean excludeClassInterceptors = methodLevelExcludeClassInterceptors.get(method);
-                excludeClassInterceptors = excludeClassInterceptors == null ? false : excludeClassInterceptors;
+                excludeClassInterceptors = (excludeClassInterceptors != null) && excludeClassInterceptors;
                 if (!excludeClassInterceptors) {
                     excludeClassInterceptors = ejbComponentDescription.isExcludeClassLevelContainerInterceptors(methodIdentifier);
                 }

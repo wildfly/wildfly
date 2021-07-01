@@ -259,7 +259,7 @@ public class PersistenceUnitServiceHandler {
 
                     // only start the persistence unit if JPA_CONTAINER_MANAGED is true
                     String jpaContainerManaged = pu.getProperties().getProperty(Configuration.JPA_CONTAINER_MANAGED);
-                    boolean deployPU = (jpaContainerManaged == null? true : Boolean.parseBoolean(jpaContainerManaged));
+                    boolean deployPU = ((jpaContainerManaged == null) || Boolean.parseBoolean(jpaContainerManaged));
 
                     if (deployPU) {
                         final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder = getPersistenceProviderDeploymentHolder(deploymentUnit);
@@ -271,7 +271,7 @@ public class PersistenceUnitServiceHandler {
                             if (twoPhaseBootStrapCapable) {
                                 deployPersistenceUnitPhaseOne(deploymentUnit, eeModuleDescription, serviceTarget, classLoader, pu, adaptor);
                             }
-                            else if (false == Configuration.needClassFileTransformer(pu)) {
+                            else if (!Configuration.needClassFileTransformer(pu)) {
                                 // will start later when startEarly == false
                                 ROOT_LOGGER.tracef("persistence unit %s in deployment %s is configured to not need class transformer to be set, no class rewriting will be allowed",
                                     pu.getPersistenceUnitName(), deploymentUnit.getName());
@@ -286,7 +286,7 @@ public class PersistenceUnitServiceHandler {
                         else { // !startEarly
                             if (twoPhaseBootStrapCapable) {
                                 deployPersistenceUnitPhaseTwo(deploymentUnit, eeModuleDescription, serviceTarget, classLoader, pu, provider, adaptor);
-                            } else if (false == Configuration.needClassFileTransformer(pu)) {
+                            } else if (!Configuration.needClassFileTransformer(pu)) {
                                 final boolean allowCdiBeanManagerAccess = true;
                                 // PUs that have Configuration.JPA_CONTAINER_CLASS_TRANSFORMER = false will start during INSTALL phase
                                 deployPersistenceUnit(deploymentUnit, eeModuleDescription, serviceTarget, classLoader, pu, provider, adaptor, allowCdiBeanManagerAccess);
@@ -1036,7 +1036,7 @@ public class PersistenceUnitServiceHandler {
         for(final PersistenceUnitMetadataHolder holder: persistenceUnitsInApplication.getPersistenceUnitHolders()) {
             for (final PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
                 String jpaContainerManaged = pu.getProperties().getProperty(Configuration.JPA_CONTAINER_MANAGED);
-                boolean deployPU = (jpaContainerManaged == null? true : Boolean.parseBoolean(jpaContainerManaged));
+                boolean deployPU = ((jpaContainerManaged == null) || Boolean.parseBoolean(jpaContainerManaged));
 
                 if (deployPU) {
 

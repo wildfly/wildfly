@@ -309,7 +309,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         handleUnknownConfigurationAttribute(reader, element, operation);
                     }
             }
-        } while (reader.hasNext() && localName.equals(elementName) == false);
+        } while (!(reader.hasNext() && localName.equals(elementName)));
     }
 
     protected void handleComplexConfigurationAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation) throws XMLStreamException {

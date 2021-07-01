@@ -54,7 +54,7 @@ public abstract class AbstractJMSRuntimeHandler<T> extends AbstractRuntimeOnlyHa
         PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
         final T dataSource = getResourceConfig(address);
 
-        boolean includeDefault = operation.hasDefined(INCLUDE_DEFAULTS) ? operation.get(INCLUDE_DEFAULTS).asBoolean() : false;
+        boolean includeDefault = operation.hasDefined(INCLUDE_DEFAULTS) && operation.get(INCLUDE_DEFAULTS).asBoolean();
 
         if (ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION.equals(opName)) {
             final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();

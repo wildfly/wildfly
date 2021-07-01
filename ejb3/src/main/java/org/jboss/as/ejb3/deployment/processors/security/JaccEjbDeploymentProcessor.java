@@ -62,7 +62,7 @@ public class JaccEjbDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (deploymentContainsEjbs(deploymentUnit) == false) {
+        if (!deploymentContainsEjbs(deploymentUnit)) {
             return;
         }
 

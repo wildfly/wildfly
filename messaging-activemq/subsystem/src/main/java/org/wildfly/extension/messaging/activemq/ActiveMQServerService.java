@@ -159,7 +159,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         JournalType jtype = configuration.getJournalType();
         if (jtype == JournalType.ASYNCIO) {
             boolean supportsAIO = AIOSequentialFileFactory.isSupported();
-            if (supportsAIO == false) {
+            if (!supportsAIO) {
                 String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
                 if (osName.contains("nux")){
                     ROOT_LOGGER.aioInfoLinux();

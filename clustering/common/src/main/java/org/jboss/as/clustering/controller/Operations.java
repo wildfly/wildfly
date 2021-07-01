@@ -96,7 +96,7 @@ public final class Operations {
      * @return true, if default values are expected, false otherwise.
      */
     public static boolean isIncludeDefaults(ModelNode operation) {
-        return operation.hasDefined(ModelDescriptionConstants.INCLUDE_DEFAULTS) ? operation.get(ModelDescriptionConstants.INCLUDE_DEFAULTS).asBoolean() : true;
+        return !operation.hasDefined(ModelDescriptionConstants.INCLUDE_DEFAULTS) || operation.get(ModelDescriptionConstants.INCLUDE_DEFAULTS).asBoolean();
     }
 
     /**

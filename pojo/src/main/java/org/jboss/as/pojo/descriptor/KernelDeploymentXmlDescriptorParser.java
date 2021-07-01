@@ -217,7 +217,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     throw unexpectedAttribute(reader, i);
             }
         }
-        if (required.isEmpty() == false) {
+        if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
 
@@ -380,7 +380,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     throw unexpectedAttribute(reader, i);
             }
         }
-        if (required.isEmpty() == false) {
+        if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
         return moduleConfig;
@@ -406,7 +406,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     throw unexpectedAttribute(reader, i);
             }
         }
-        if (required.isEmpty() == false) {
+        if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
 
@@ -468,7 +468,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     throw unexpectedAttribute(reader, i);
             }
         }
-        if (required.isEmpty() == false) {
+        if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
 
@@ -519,7 +519,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     throw unexpectedAttribute(reader, i);
             }
         }
-        if (required.isEmpty() == false) {
+        if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
         while (reader.hasNext()) {
@@ -713,7 +713,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     throw unexpectedAttribute(reader, i);
             }
         }
-        if (required.isEmpty() == false) {
+        if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
         while (reader.hasNext()) {
@@ -908,7 +908,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     throw unexpectedAttribute(reader, i);
             }
         }
-        if (required.isEmpty() == false) {
+        if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
 

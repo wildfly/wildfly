@@ -49,7 +49,7 @@ public class RunAsPrincipalInterceptor implements Interceptor {
 
     public Object processInvocation(final InterceptorContext context) throws Exception {
         final Component component = context.getPrivateData(Component.class);
-        if (component instanceof EJBComponent == false) {
+        if (!(component instanceof EJBComponent)) {
             throw EjbLogger.ROOT_LOGGER.unexpectedComponent(component, EJBComponent.class);
         }
         final EJBComponent ejbComponent = (EJBComponent) component;

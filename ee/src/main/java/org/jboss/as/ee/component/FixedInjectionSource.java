@@ -59,7 +59,7 @@ public final class FixedInjectionSource extends InjectionSource {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof FixedInjectionSource == false) {
+        if (!(obj instanceof FixedInjectionSource)) {
             return false;
         }
         FixedInjectionSource other = (FixedInjectionSource) obj;

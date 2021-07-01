@@ -173,7 +173,7 @@ public class TransactionUtil {
          * the Jakarta Transactions transaction.
          */
         private void safeCloseEntityManager() {
-            if ( afterCompletionCalled == true && associationCounter == 0) {
+            if ( afterCompletionCalled && associationCounter == 0) {
                 if (manager != null) {
                     try {
                         if (ROOT_LOGGER.isDebugEnabled())

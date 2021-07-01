@@ -59,6 +59,6 @@ public interface ImmutableBeanEntry<G> {
         if ((timeout == null) || timeout.isNegative()) return false;
         if (timeout.isZero()) return true;
         Instant lastAccessedTime = this.getLastAccessedTime();
-        return (lastAccessedTime != null) ? !lastAccessedTime.plus(timeout).isAfter(Instant.now()) : false;
+        return (lastAccessedTime != null) && !lastAccessedTime.plus(timeout).isAfter(Instant.now());
     }
 }

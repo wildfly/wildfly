@@ -89,7 +89,7 @@ public class Callback {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Callback == false)
+        if (!(obj instanceof Callback))
             return false;
 
         Callback callback = (Callback) obj;

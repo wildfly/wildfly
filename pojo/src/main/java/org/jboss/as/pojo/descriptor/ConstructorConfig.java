@@ -57,7 +57,7 @@ public class ConstructorConfig extends AbstractConfigVisitorNode implements Seri
     public Class<?> getType(ConfigVisitor visitor, ConfigVisitorNode previous) {
         if (factory != null)
             throw PojoLogger.ROOT_LOGGER.tooDynamicFromFactory();
-        if (previous instanceof ValueConfig == false)
+        if (!(previous instanceof ValueConfig))
             throw PojoLogger.ROOT_LOGGER.notValueConfig(previous);
 
         ValueConfig vc = (ValueConfig) previous;

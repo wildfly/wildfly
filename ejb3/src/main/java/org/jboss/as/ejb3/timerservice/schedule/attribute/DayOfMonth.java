@@ -197,7 +197,7 @@ public class DayOfMonth extends IntegerBasedExpression {
     }
 
     private SortedSet<Integer> getEligibleDaysOfMonth(Calendar cal) {
-        if (this.hasRelativeDayOfMonth() == false) {
+        if (!this.hasRelativeDayOfMonth()) {
             return this.absoluteValues;
         }
         SortedSet<Integer> eligibleDaysOfMonth = new TreeSet<Integer>(this.absoluteValues);
@@ -330,11 +330,11 @@ public class DayOfMonth extends IntegerBasedExpression {
             return false;
         }
         String lowerCaseOrdinal = ordinal.toLowerCase(Locale.ENGLISH);
-        if (ORDINALS.contains(lowerCaseOrdinal) == false) {
+        if (!ORDINALS.contains(lowerCaseOrdinal)) {
             return false;
         }
         String lowerCaseDayOfWeek = dayOfWeek.toLowerCase(Locale.ENGLISH);
-        if (DAY_OF_MONTH_ALIAS.containsKey(lowerCaseDayOfWeek) == false) {
+        if (!DAY_OF_MONTH_ALIAS.containsKey(lowerCaseDayOfWeek)) {
             return false;
         }
         return true;

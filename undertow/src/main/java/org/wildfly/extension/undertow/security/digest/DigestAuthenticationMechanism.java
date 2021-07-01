@@ -375,7 +375,7 @@ public class DigestAuthenticationMechanism implements AuthenticationMechanism {
     @Override
     public ChallengeResult sendChallenge(final HttpServerExchange exchange, final SecurityContext securityContext) {
         DigestContext context = exchange.getAttachment(DigestContext.ATTACHMENT_KEY);
-        boolean stale = context == null ? false : context.isStale();
+        boolean stale = (context != null) && context.isStale();
 
         StringBuilder rb = new StringBuilder(DIGEST_PREFIX);
         rb.append(Headers.REALM.toString()).append("=\"").append(realmName).append("\",");

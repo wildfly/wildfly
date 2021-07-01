@@ -51,7 +51,7 @@ public class SecurityContextInterceptor implements Interceptor {
             public Void run() {
                 holder.securityManager.push(holder.securityDomain);
                 try {
-                    if (holder.skipAuthentication == false) {
+                    if (!holder.skipAuthentication) {
                         holder.securityManager.authenticate(holder.runAs, holder.runAsPrincipal, holder.extraRoles);
                     }
                     if (holder.principalVsRolesMap != null) {

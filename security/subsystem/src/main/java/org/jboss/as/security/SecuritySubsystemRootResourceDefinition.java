@@ -143,7 +143,7 @@ public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefin
                 // As the PolicyConfigurationFactory is a singleton, once it's initialized any changes will require a restart
                 CapabilityServiceSupport capabilitySupport = context.getCapabilityServiceSupport();
                 final boolean elytronJacc = capabilitySupport.hasCapability("org.wildfly.security.jacc-policy");
-                if (resolvedValue.asBoolean() == true && elytronJacc) {
+                if (resolvedValue.asBoolean() && elytronJacc) {
                     throw SecurityLogger.ROOT_LOGGER.unableToEnableJaccSupport();
                 }
                 return super.applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, voidHandback);

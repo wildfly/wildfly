@@ -44,7 +44,7 @@ public interface ImmutableSessionMetaData {
      */
     default boolean isExpired() {
         Duration maxInactiveInterval = this.getMaxInactiveInterval();
-        return !maxInactiveInterval.isZero() ? this.getLastAccessEndTime().plus(maxInactiveInterval).isBefore(Instant.now()) : false;
+        return !maxInactiveInterval.isZero() && this.getLastAccessEndTime().plus(maxInactiveInterval).isBefore(Instant.now());
     }
 
     /**

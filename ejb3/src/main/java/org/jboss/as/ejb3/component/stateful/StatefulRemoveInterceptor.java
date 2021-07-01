@@ -70,7 +70,7 @@ public class StatefulRemoveInterceptor implements Interceptor {
             }
         }
         // just log a WARN and throw back the original exception
-        if (component instanceof StatefulSessionComponent == false) {
+        if (!(component instanceof StatefulSessionComponent)) {
             throw EjbLogger.ROOT_LOGGER.unexpectedComponent(component, StatefulSessionComponent.class);
         }
         final StatefulSessionComponent statefulComponent = (StatefulSessionComponent) component;

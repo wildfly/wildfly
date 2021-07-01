@@ -64,7 +64,7 @@ public class PersistenceCompleteInstallProcessor implements DeploymentUnitProces
     private static boolean deploymentHasPersistenceProvider(DeploymentUnit deploymentUnit) {
         deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
         PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder =  deploymentUnit.getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
-        return (persistenceProviderDeploymentHolder != null && persistenceProviderDeploymentHolder.getProviders() != null ? persistenceProviderDeploymentHolder.getProviders().size() > 0: false);
+        return ((persistenceProviderDeploymentHolder != null && persistenceProviderDeploymentHolder.getProviders() != null) && persistenceProviderDeploymentHolder.getProviders().size() > 0);
     }
 
 }

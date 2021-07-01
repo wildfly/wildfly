@@ -276,7 +276,7 @@ public class SecuritySubsystemPersister implements XMLElementWriter<SubsystemMar
     private boolean writeSecurityRealms(final XMLExtendedStreamWriter writer, final ModelNode modelNode,
                                        final boolean integrationStarted) throws XMLStreamException {
         if (modelNode.hasDefined(ELYTRON_REALM)) {
-            if (integrationStarted == false) {
+            if (!integrationStarted) {
                 writer.writeStartElement(ELYTRON_INTEGRATION);
             }
             writer.writeStartElement(SECURITY_REALMS);
@@ -298,7 +298,7 @@ public class SecuritySubsystemPersister implements XMLElementWriter<SubsystemMar
                                             final boolean integrationStarted) throws XMLStreamException {
         if (modelNode.hasDefined(ELYTRON_KEY_STORE) || modelNode.hasDefined(ELYTRON_TRUST_STORE) ||
                 modelNode.hasDefined(ELYTRON_KEY_MANAGER) || modelNode.hasDefined(ELYTRON_TRUST_MANAGER)) {
-            if (integrationStarted == false) {
+            if (!integrationStarted) {
                 writer.writeStartElement(ELYTRON_INTEGRATION);
             }
             writer.writeStartElement(TLS);

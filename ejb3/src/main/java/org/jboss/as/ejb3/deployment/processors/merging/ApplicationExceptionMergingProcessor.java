@@ -89,7 +89,7 @@ public class ApplicationExceptionMergingProcessor implements DeploymentUnitProce
                             final Class<?> index = ClassLoadingUtils.loadClass(exceptionClassName, module);
                             boolean rollback = applicationException.isRollback();
                             // by default inherited is true
-                            boolean inherited = applicationException.isInherited() == null ? true : applicationException.isInherited();
+                            boolean inherited = (applicationException.isInherited() == null) || applicationException.isInherited();
                             // add the application exception to the ejb jar description
                             applicationExceptions.addApplicationException(index, new ApplicationExceptionDetails(exceptionClassName, inherited, rollback));
                         } catch (ClassNotFoundException e) {

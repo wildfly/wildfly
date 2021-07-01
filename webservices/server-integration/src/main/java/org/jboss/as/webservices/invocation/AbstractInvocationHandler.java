@@ -137,7 +137,7 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
         final ComponentView componentView = getComponentView();
         Component component = componentView.getComponent();
         final boolean forceTargetBean = (wsInvocation.getInvocationContext().getProperty("forceTargetBean") != null);
-        boolean isWeldDeployment =  endpoint.getProperty(WELD_DEPLOYMENT) == null ? false : (Boolean) endpoint.getProperty(WELD_DEPLOYMENT);
+        boolean isWeldDeployment =  (endpoint.getProperty(WELD_DEPLOYMENT) != null) && (Boolean) endpoint.getProperty(WELD_DEPLOYMENT);
         if (forceTargetBean || !isWeldDeployment && endpoint.getType() == EndpointType.JAXWS_JSE) {
                 this.reference = new ManagedReference() {
                     public void release() {

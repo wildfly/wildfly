@@ -43,7 +43,7 @@ class TypeBeanStateKey {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof TypeBeanStateKey == false)
+        if (!(obj instanceof TypeBeanStateKey))
             return false;
 
         TypeBeanStateKey tbsk = (TypeBeanStateKey) obj;

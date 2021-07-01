@@ -60,6 +60,6 @@ public class PrimaryOwnerLocator<K> implements Function<K, Node>, Predicate<K> {
 
     @Override
     public boolean test(K key) {
-        return (this.distribution != null) ? this.distribution.getCacheTopology().getDistribution(key).isPrimary() : true;
+        return (this.distribution == null) || this.distribution.getCacheTopology().getDistribution(key).isPrimary();
     }
 }

@@ -199,8 +199,8 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
     protected boolean deferEntityDetachUntilClose() {
         if (deferDetach == null)
             deferDetach =
-                    (true == Configuration.deferEntityDetachUntilClose(emf.getProperties())? Boolean.TRUE : Boolean.FALSE);
-        return deferDetach.booleanValue();
+                    Configuration.deferEntityDetachUntilClose(emf.getProperties());
+        return deferDetach;
     }
 
     /**
@@ -211,8 +211,8 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
     protected boolean skipQueryDetach() {
         if (skipQueryDetach == null)
             skipQueryDetach =
-                    (true == Configuration.skipQueryDetach(emf.getProperties())? Boolean.TRUE : Boolean.FALSE);
-        return skipQueryDetach.booleanValue();
+                    Configuration.skipQueryDetach(emf.getProperties());
+        return skipQueryDetach;
     }
 
 

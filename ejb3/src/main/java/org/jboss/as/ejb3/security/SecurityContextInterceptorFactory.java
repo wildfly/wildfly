@@ -59,7 +59,7 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
 
     @Override
     protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
-        if (component instanceof EJBComponent == false) {
+        if (!(component instanceof EJBComponent)) {
             throw EjbLogger.ROOT_LOGGER.unexpectedComponent(component, EJBComponent.class);
         }
         final EJBComponent ejbComponent = (EJBComponent) component;
@@ -92,7 +92,7 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
         holder.setSecurityManager(securityManager).setSecurityDomain(securityDomainName)
         .setRunAs(runAs).setRunAsPrincipal(runAsPrincipal).setPolicyContextID(this.policyContextID)
         .setExtraRoles(extraRoles).setPrincipalVsRolesMap(principalVsRolesMap)
-        .setSkipAuthentication(securityRequired == false);
+        .setSkipAuthentication(!securityRequired);
 
         return new SecurityContextInterceptor(holder);
     }

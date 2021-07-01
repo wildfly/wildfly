@@ -260,7 +260,7 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
                 @Override
                 public ModelNode transformOperation(ModelNode operation) {
                     ModelNode mode = Operations.getAttributeValue(operation);
-                    boolean batching = (mode.isDefined() && (mode.getType() == ModelType.STRING)) ? (TransactionMode.valueOf(mode.asString()) == TransactionMode.BATCH) : false;
+                    boolean batching = ((mode.isDefined() && (mode.getType() == ModelType.STRING))) && (TransactionMode.valueOf(mode.asString()) == TransactionMode.BATCH);
                     if (batching) {
                         mode.set(TransactionMode.NONE.name());
                     }

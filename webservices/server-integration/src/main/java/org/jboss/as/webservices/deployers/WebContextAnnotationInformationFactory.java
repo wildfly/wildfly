@@ -38,6 +38,6 @@ public class WebContextAnnotationInformationFactory extends
 
     private boolean asBoolean(final AnnotationInstance annotation, String property) {
         AnnotationValue value = annotation.value(property);
-        return value == null ? false : Boolean.getBoolean(value.asString());
+        return (value != null) && Boolean.getBoolean(value.asString());
     }
 }

@@ -69,7 +69,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
 
     @Override
     public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription viewDescription, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
-        if (componentConfiguration.getComponentDescription() instanceof EJBComponentDescription == false) {
+        if (!(componentConfiguration.getComponentDescription() instanceof EJBComponentDescription)) {
             throw EjbLogger.ROOT_LOGGER.invalidEjbComponent(componentConfiguration.getComponentName(), componentConfiguration.getComponentClass());
         }
 
@@ -104,7 +104,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         // for the bean nor there's any default security domain that's configured at EJB3 subsystem level.
         // In such cases, we do *not* apply any security interceptors
         String resolvedSecurityDomain = ejbComponentDescription.getResolvedSecurityDomain();
-        if (elytronSecurityDomain == false && (resolvedSecurityDomain == null || resolvedSecurityDomain.isEmpty())) {
+        if (!elytronSecurityDomain && (resolvedSecurityDomain == null || resolvedSecurityDomain.isEmpty())) {
             if (ROOT_LOGGER.isDebugEnabled()) {
                 ROOT_LOGGER
                         .debug("Security is *not* enabled on EJB: "

@@ -96,7 +96,7 @@ public class GlobalDirectoryService implements Service {
 
                     @Override
                     public void pathModelEvent(PathManager.PathEventContext eventContext, String name) {
-                        if (eventContext.isResourceServiceRestartAllowed() == false) {
+                        if (!eventContext.isResourceServiceRestartAllowed()) {
                             eventContext.reloadRequired();
                         }
                     }

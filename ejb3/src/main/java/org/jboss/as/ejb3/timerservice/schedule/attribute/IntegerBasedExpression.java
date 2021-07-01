@@ -66,7 +66,7 @@ public abstract class IntegerBasedExpression {
         this.origValue = value;
         // check the type of value
         this.scheduleExpressionType = ScheduleExpressionTypeUtil.getType(value);
-        if (this.accepts(scheduleExpressionType) == false) {
+        if (!this.accepts(scheduleExpressionType)) {
             throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleExpressionType(value, this.getClass().getName(), this.scheduleExpressionType.toString());
         }
         switch (this.scheduleExpressionType) {

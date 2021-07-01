@@ -96,7 +96,7 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
      *          for any error
      */
     protected void parseDescriptors(DeploymentUnit unit, VirtualFile root) throws DeploymentUnitProcessingException {
-        if (root == null || root.exists() == false)
+        if (root == null || !root.exists())
             return;
 
         Collection<VirtualFile> beans;
@@ -139,7 +139,7 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
      *          for any error
      */
     protected void parseDescriptor(DeploymentUnit unit, VirtualFile beansXmlFile) throws DeploymentUnitProcessingException {
-        if (beansXmlFile == null || beansXmlFile.exists() == false)
+        if (beansXmlFile == null || !beansXmlFile.exists())
             return;
 
         InputStream xmlStream = null;

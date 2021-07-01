@@ -122,7 +122,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
                         if (selectedElytronDomainName == null) {
                             selectedElytronDomainName = definedSecurityDomain;
                             selectedElytronDomainConfig = definedDomainMapping;
-                        } else if (selectedElytronDomainName.equals(definedSecurityDomain) == false) {
+                        } else if (!selectedElytronDomainName.equals(definedSecurityDomain)) {
                             throw EjbLogger.ROOT_LOGGER.multipleSecurityDomainsDetected();
                         }
                     } else if (definedSecurityDomain != null) {

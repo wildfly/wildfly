@@ -204,7 +204,7 @@ public class Configurator {
             for (Method method : methods) {
                 if (name.equals(method.getName()) &&
                         equals(paramTypes, method.getParameterTypes()) &&
-                        (strict == false || (Modifier.isStatic(method.getModifiers()) == isStatic && Modifier.isPublic(method.getModifiers()) == isPublic)))
+                        (!strict || (Modifier.isStatic(method.getModifiers()) == isStatic && Modifier.isPublic(method.getModifiers()) == isPublic)))
                     return method;
             }
         }
@@ -219,11 +219,11 @@ public class Configurator {
      * @return true when they are equal
      */
     public static boolean equals(String[] typeNames, Class<?>[] typeInfos) {
-        if (simpleCheck(typeNames, typeInfos) == false)
+        if (!simpleCheck(typeNames, typeInfos))
             return false;
 
         for (int i = 0; i < typeNames.length; ++i) {
-            if (typeNames[i] != null && typeNames[i].equals(typeInfos[i].getName()) == false)
+            if (typeNames[i] != null && !(typeNames[i].equals(typeInfos[i].getName())))
                 return false;
         }
         return true;

@@ -126,7 +126,7 @@ public abstract class ResourceDefinitionAnnotationProcessor implements Deploymen
 
         public static boolean asOptionalBoolean(final AnnotationInstance annotation, String property) {
             AnnotationValue value = annotation.value(property);
-            return value == null ? true : value.asBoolean();
+            return (value == null) || value.asBoolean();
         }
 
         public static int asOptionalInt(AnnotationInstance annotation, String string) {

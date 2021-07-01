@@ -138,7 +138,7 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
         try {
             final ModelNode jtsNode = context.readResourceFromRoot(PathAddress.pathAddress("subsystem", "transactions"), false)
                     .getModel().get("jts");
-            return jtsNode.isDefined() ? jtsNode.asBoolean() : false;
+            return jtsNode.isDefined() && jtsNode.asBoolean();
         } catch (NoSuchResourceException ex) {
             return false;
         }

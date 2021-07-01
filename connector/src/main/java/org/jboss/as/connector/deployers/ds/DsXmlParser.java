@@ -130,7 +130,7 @@ public class DsXmlParser extends DsParser {
                         }
                         case ELYTRON_ENABLED: {
                             Boolean value = elementAsBoolean(reader);
-                            elytronEnabled = value == null? true : value;
+                            elytronEnabled = (value == null) || value;
                             break;
                         }
                         case AUTHENTICATION_CONTEXT: {
@@ -206,7 +206,7 @@ public class DsXmlParser extends DsParser {
                         }
                         case ELYTRON_ENABLED: {
                             Boolean value = elementAsBoolean(reader);
-                            elytronEnabled = value == null? true : value;
+                            elytronEnabled = (value == null) || value;
                             break;
                         }
                         case AUTHENTICATION_CONTEXT: {

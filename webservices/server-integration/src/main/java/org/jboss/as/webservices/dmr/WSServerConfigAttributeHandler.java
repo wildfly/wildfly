@@ -129,7 +129,7 @@ final class WSServerConfigAttributeHandler extends AbstractWriteAttributeHandler
                     throw new IllegalArgumentException(attributeName + " = " + value);
                 }
             } else if (STATISTICS_ENABLED.equals(attributeName)) {
-                final boolean enabled = value != null ? Boolean.parseBoolean(value) : false;
+                final boolean enabled = (value != null) && Boolean.parseBoolean(value);
                 config.setStatisticsEnabled(enabled);
             } else {
                 throw new IllegalArgumentException(attributeName);

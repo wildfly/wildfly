@@ -119,7 +119,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         String container = properties.getProperty(CONTAINER);
         for (String cache : properties.getProperty(CACHES).split("\\s+")) {
             // Workaround for legacy default configuration, where the pending-puts cache configuration is missing
-            if (cache.equals(PENDING_PUTS) ? support.hasCapability(InfinispanCacheRequirement.CACHE.resolve(container, cache)) : true) {
+            if (!cache.equals(PENDING_PUTS) || support.hasCapability(InfinispanCacheRequirement.CACHE.resolve(container, cache))) {
                 builder.requires(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, cache));
             }
         }

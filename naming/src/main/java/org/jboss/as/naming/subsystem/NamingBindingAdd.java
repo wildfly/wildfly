@@ -200,7 +200,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         final String moduleID = NamingBindingResourceDefinition.MODULE.resolveModelAttribute(context, model).asString();
         final String className = NamingBindingResourceDefinition.CLASS.resolveModelAttribute(context, model).asString();
         final ModelNode cacheNode = NamingBindingResourceDefinition.CACHE.resolveModelAttribute(context, model);
-        boolean cache = cacheNode.isDefined() ? cacheNode.asBoolean() : false;
+        boolean cache = cacheNode.isDefined() && cacheNode.asBoolean();
 
         final ObjectFactory objectFactoryClassInstance = new ExternalContextObjectFactory();
 

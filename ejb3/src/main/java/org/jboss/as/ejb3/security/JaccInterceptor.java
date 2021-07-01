@@ -75,7 +75,7 @@ public class JaccInterceptor implements Interceptor {
         Assert.checkNotNullParam("securityDomain", securityDomain);
         final SecurityIdentity currentIdentity = securityDomain.getCurrentSecurityIdentity();
 
-        if (component instanceof EJBComponent == false) {
+        if (!(component instanceof EJBComponent)) {
             throw EjbLogger.ROOT_LOGGER.unexpectedComponent(component, EJBComponent.class);
         }
 

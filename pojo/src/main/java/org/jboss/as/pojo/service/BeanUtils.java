@@ -123,7 +123,7 @@ public final class BeanUtils {
                     configure(beanInfo, module, bean, pc, nullify);
                     used.add(pc);
                 } catch (Throwable t) {
-                    if (nullify == false) {
+                    if (!nullify) {
                         for (PropertyConfig upc : used) {
                             try {
                                 configure(beanInfo, module, bean,upc, true);
@@ -192,7 +192,7 @@ public final class BeanUtils {
 
         Method setter = beanInfo.getSetter(pc.getPropertyName(), clazz);
         MethodJoinpoint joinpoint = new MethodJoinpoint(setter);
-        ValueConfig param = (nullify == false) ? value : null;
+        ValueConfig param = (!nullify) ? value : null;
         joinpoint.setParameters(new ValueConfig[]{param});
         joinpoint.setTarget(new ImmediateValue<Object>(bean));
         joinpoint.dispatch();

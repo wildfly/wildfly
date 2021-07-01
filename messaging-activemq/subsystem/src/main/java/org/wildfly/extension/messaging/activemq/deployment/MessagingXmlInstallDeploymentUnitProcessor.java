@@ -106,7 +106,7 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
                     jndiBindings = JMSServices.getJndiBindings(entries);
                 }
                 final String selector = destination.hasDefined(SELECTOR.getName()) ? destination.get(SELECTOR.getName()).resolve().asString() : null;
-                final boolean durable = destination.hasDefined(DURABLE.getName()) ? destination.get(DURABLE.getName()).resolve().asBoolean() : false;
+                final boolean durable = destination.hasDefined(DURABLE.getName()) && destination.get(DURABLE.getName()).resolve().asBoolean();
 
                 Service<Queue> queueService = JMSQueueService.installService(queue.getName(), phaseContext.getServiceTarget(), serverServiceName, selector, durable);
                 final ServiceName queueServiceName = JMSServices.getJmsQueueBaseServiceName(serverServiceName).append(queue.getName());

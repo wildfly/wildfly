@@ -198,7 +198,7 @@ public class TimerImpl implements Timer {
         this.assertTimerState();
 
         // for non-persistent timers throws an exception (mandated by Enterprise Beans 3 spec)
-        if (this.persistent == false) {
+        if (!this.persistent) {
             throw EjbLogger.EJB3_TIMER_LOGGER.invalidTimerHandlersForPersistentTimers("Enterprise Beans 3.1 Spec 18.2.6");
         }
         return this.handle;
@@ -567,7 +567,7 @@ public class TimerImpl implements Timer {
         if (this.handle == null) {
             return false;
         }
-        if (obj instanceof TimerImpl == false) {
+        if (!(obj instanceof TimerImpl)) {
             return false;
         }
         TimerImpl otherTimer = (TimerImpl) obj;

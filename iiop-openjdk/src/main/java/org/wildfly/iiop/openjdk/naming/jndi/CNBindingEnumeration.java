@@ -126,7 +126,7 @@ final class CNBindingEnumeration implements NamingEnumeration {
         // If there's more, check whether current bindingList has been exhausted,
         // and if so, try to get more.
         // If no more, just say so.
-        return more ? (counter < _bindingList.value.length || getMore()) : false;
+        return more && (counter < _bindingList.value.length || getMore());
     }
 
     /**

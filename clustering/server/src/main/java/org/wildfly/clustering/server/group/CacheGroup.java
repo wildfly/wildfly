@@ -183,7 +183,7 @@ public class CacheGroup implements Group<Address>, AutoCloseable, Function<Group
             Membership previousMembership = new CacheMembership(localAddress, event.getWriteConsistentHashAtStart(), this);
             Membership membership = new CacheMembership(localAddress, event.getWriteConsistentHashAtEnd(), this);
             Boolean status = this.views.get(viewId);
-            boolean merged = (status != null) ? status.booleanValue() : false;
+            boolean merged = (status != null) && status.booleanValue();
             for (Map.Entry<GroupListener, ExecutorService> entry : this.listeners.entrySet()) {
                 GroupListener listener = entry.getKey();
                 ExecutorService executor = entry.getValue();

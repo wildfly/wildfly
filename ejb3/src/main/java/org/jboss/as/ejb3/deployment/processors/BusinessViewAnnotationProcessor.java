@@ -83,7 +83,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         final ClassLoader moduleClassLoader = module.getClassLoader();
         if (componentDescriptions != null) {
             for (ComponentDescription componentDescription : componentDescriptions) {
-                if (componentDescription instanceof SessionBeanComponentDescription == false) {
+                if (!(componentDescription instanceof SessionBeanComponentDescription)) {
                     continue;
                 }
                 final Class<?> ejbClass = this.getEjbClass(componentDescription.getComponentClassName(), moduleClassLoader);
@@ -96,7 +96,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         }
         if (appclient) {
             for (ComponentDescription componentDescription : deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS)) {
-                if (componentDescription instanceof SessionBeanComponentDescription == false) {
+                if (!(componentDescription instanceof SessionBeanComponentDescription)) {
                     continue;
                 }
                 final Class<?> ejbClass = this.getEjbClass(componentDescription.getComponentClassName(), moduleClassLoader);

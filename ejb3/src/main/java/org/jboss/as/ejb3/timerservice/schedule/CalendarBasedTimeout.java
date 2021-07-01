@@ -478,7 +478,7 @@ public class CalendarBasedTimeout {
         resetTimeToFirstValues(cal);
 
         // make sure the month can handle the date
-        while (monthHasDate(cal, date) == false) {
+        while (!monthHasDate(cal, date)) {
             if (cal.get(Calendar.YEAR) > Year.MAX_YEAR) {
                 return null;
             }

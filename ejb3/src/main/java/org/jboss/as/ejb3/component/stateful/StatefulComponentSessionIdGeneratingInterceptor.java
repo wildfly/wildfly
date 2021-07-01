@@ -44,7 +44,7 @@ public class StatefulComponentSessionIdGeneratingInterceptor implements Intercep
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
         final Component component = context.getPrivateData(Component.class);
-        if (component instanceof StatefulSessionComponent == false) {
+        if (!(component instanceof StatefulSessionComponent)) {
             throw EjbLogger.ROOT_LOGGER.unexpectedComponent(component, StatefulSessionComponent.class);
         }
         ComponentClientInstance clientInstance = context.getPrivateData(ComponentClientInstance.class);

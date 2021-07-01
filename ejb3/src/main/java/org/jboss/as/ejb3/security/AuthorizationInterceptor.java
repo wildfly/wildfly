@@ -95,7 +95,7 @@ public class AuthorizationInterceptor implements Interceptor {
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
         final Component component = context.getPrivateData(Component.class);
-        if (component instanceof EJBComponent == false) {
+        if (!(component instanceof EJBComponent)) {
             throw EjbLogger.ROOT_LOGGER.unexpectedComponent(component, EJBComponent.class);
         }
         final Method invokedMethod = context.getMethod();

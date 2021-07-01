@@ -1034,7 +1034,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     private boolean doesTimeoutMethodMatch(final Method timeoutMethod, final String timeoutMethodName, final String[] methodParams) {
-        if (timeoutMethod.getName().equals(timeoutMethodName) == false) {
+        if (!timeoutMethod.getName().equals(timeoutMethodName)) {
             return false;
         }
         final Class<?>[] timeoutMethodParams = timeoutMethod.getParameterTypes();

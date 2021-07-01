@@ -191,7 +191,7 @@ final class InstancesService implements Service<Set<Object>> {
             service.instances.add(bean);
 
             TypeBeanStateKey key = new TypeBeanStateKey(clazz, state);
-            if (beans.containsKey(key) == false)
+            if (!beans.containsKey(key))
                 beans.put(key, service.instances);
 
             invokeCallbacks(incallbacks, state, clazz, bean);

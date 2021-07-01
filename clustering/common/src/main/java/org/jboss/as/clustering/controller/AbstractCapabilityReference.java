@@ -61,6 +61,6 @@ public abstract class AbstractCapabilityReference implements CapabilityReference
 
     @Override
     public boolean equals(Object object) {
-        return (object instanceof AbstractCapabilityReference) ? this.capability.getName().equals(((AbstractCapabilityReference) object).capability.getName()) : false;
+        return (object instanceof AbstractCapabilityReference) && this.capability.getName().equals(((AbstractCapabilityReference) object).capability.getName());
     }
 }

@@ -351,7 +351,7 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         if (STARTED.getName().equals(name)) {
-            boolean started = server != null ? server.isStarted() : false;
+            boolean started = (server != null) && server.isStarted();
             context.getResult().set(started);
         } else if (VERSION.getName().equals(name)) {
             if (server != null) {
@@ -359,7 +359,7 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 context.getResult().set(version);
             }
         } else if (ACTIVE.getName().equals(name)) {
-            boolean active = server != null ? server.isActive() : false;
+            boolean active = (server != null) && server.isActive();
             context.getResult().set(active);
         } else if (RUNTIME_JOURNAL_TYPE.getName().equals(name)) {
             if (server != null) {

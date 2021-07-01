@@ -323,7 +323,7 @@ public class SimpleSecurityManager implements ServerSecurityManager, Supplier<Se
         RunAs currentRunAs = current.getIncomingRunAs();
         boolean trusted = currentRunAs != null && currentRunAs instanceof RunAsIdentity;
 
-        if (trusted == false) {
+        if (!trusted) {
             /*
              * We should only be switching to a context based on an identity from the Remoting connection if we don't already
              * have a trusted identity - this allows for beans to reauthenticate as a different identity.
@@ -369,7 +369,7 @@ public class SimpleSecurityManager implements ServerSecurityManager, Supplier<Se
         RunAs currentRunAs = current.getIncomingRunAs();
         boolean trusted = currentRunAs != null && currentRunAs instanceof RunAsIdentity;
 
-        if (trusted == false) {
+        if (!trusted) {
             SecurityContextUtil util = current.getUtil();
             util.createSubjectInfo(new SimplePrincipal(userName), new String(password), subject);
         }
@@ -418,7 +418,7 @@ public class SimpleSecurityManager implements ServerSecurityManager, Supplier<Se
                 subject = ((RemotingConnectionCredential) credential).getSubject();
             }
 
-            if (authenticate(current, subject) == false) {
+            if (!authenticate(current, subject)) {
                 throw SecurityLogger.ROOT_LOGGER.invalidUserException();
             }
         }
@@ -455,11 +455,11 @@ public class SimpleSecurityManager implements ServerSecurityManager, Supplier<Se
             subject.getPrincipals().add(principal);
         }
 
-        if (authenticated == false) {
+        if (!authenticated) {
             AuthenticationManager authenticationManager = context.getAuthenticationManager();
             authenticated = authenticationManager.isValid(principal, credential, subject);
         }
-        if (authenticated == true) {
+        if (authenticated) {
             subjectInfo.setAuthenticatedSubject(subject);
         }
 

@@ -67,7 +67,7 @@ public class AddressableNode implements Node, Comparable<AddressableNode>, Seria
 
     @Override
     public boolean equals(Object object) {
-        return (object instanceof AddressableNode) ? this.address.equals(((AddressableNode) object).address) : false;
+        return (object instanceof AddressableNode) && this.address.equals(((AddressableNode) object).address);
     }
 
     @Override

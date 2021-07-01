@@ -288,13 +288,13 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                 final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
 
                 Boolean excludeDefaultInterceptors = methodLevelExcludeDefaultInterceptors.get(method);
-                excludeDefaultInterceptors = excludeDefaultInterceptors == null ? false : excludeDefaultInterceptors;
+                excludeDefaultInterceptors = (excludeDefaultInterceptors != null) && excludeDefaultInterceptors;
                 if (!excludeDefaultInterceptors) {
                     excludeDefaultInterceptors = componentDescription.isExcludeDefaultInterceptors() || componentDescription.isExcludeDefaultInterceptors(methodIdentifier);
                 }
 
                 Boolean excludeClassInterceptors = methodLevelExcludeClassInterceptors.get(method);
-                excludeClassInterceptors = excludeClassInterceptors == null ? false : excludeClassInterceptors;
+                excludeClassInterceptors = (excludeClassInterceptors != null) && excludeClassInterceptors;
                 if (!excludeClassInterceptors) {
                     excludeClassInterceptors = componentDescription.isExcludeClassInterceptors(methodIdentifier);
                 }
