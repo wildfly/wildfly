@@ -38,20 +38,22 @@ public class PrimaryOwnerRouteLocator implements RouteLocator {
 
     private final Function<GroupedKey<String>, Node> primaryOwnerLocator;
     private final Registry<String, Void> registry;
-    private final boolean preferPrimary;
     private final String localRoute;
 
     public PrimaryOwnerRouteLocator(PrimaryOwnerRouteLocatorConfiguration config) {
-        this.registry = config.getRegistry();
-        this.primaryOwnerLocator = new PrimaryOwnerLocator<>(config.getCache(), config.getMemberFactory());
-        this.preferPrimary = config.getCache().getCacheConfiguration().clustering().cacheMode().isClustered();
+        this(new PrimaryOwnerLocator<>(config.getCache(), config.getMemberFactory()), config.getRegistry());
+    }
+
+    PrimaryOwnerRouteLocator(Function<GroupedKey<String>, Node> primaryOwnerLocator, Registry<String, Void> registry) {
+        this.primaryOwnerLocator = primaryOwnerLocator;
+        this.registry = registry;
         this.localRoute = this.registry.getEntry(this.registry.getGroup().getLocalMember()).getKey();
     }
 
     @Override
     public String locate(String sessionId) {
-        Node primaryMember = this.preferPrimary ? this.primaryOwnerLocator.apply(new GroupedKey<>(sessionId)) : null;
-        Map.Entry<String, Void> entry = (primaryMember != null) ? this.registry.getEntry(primaryMember) : null;
+        Node primaryMember = this.primaryOwnerLocator.apply(new GroupedKey<>(sessionId));
+        Map.Entry<String, Void> entry = this.registry.getEntry(primaryMember);
         return (entry != null) ? entry.getKey() : this.localRoute;
     }
 }
