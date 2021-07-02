@@ -133,7 +133,13 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
         // Convert org.jboss.as.server.deployment.annotation.CompositeIndex to org.jboss.jandex.CompositeIndex
         Collection<Index> indexes = new ArrayList<>(unit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX).getIndexes());
         if (unit.getParent() != null) {
+            // load all composite indexes of the parent deployment unit
             indexes.addAll(unit.getParent().getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX).getIndexes());
+            // load all composite indexes of the parent's accessible sub deployments
+            unit.getParent()
+                .getAttachment(Attachments.ACCESSIBLE_SUB_DEPLOYMENTS)
+                .forEach(subdeployment -> indexes.addAll(
+                        subdeployment.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX).getIndexes()));
         }
         this.index = CompositeIndex.create(indexes.stream().map(IndexView.class::cast).collect(Collectors.toList()));
         this.module = unit.getAttachment(Attachments.MODULE);
