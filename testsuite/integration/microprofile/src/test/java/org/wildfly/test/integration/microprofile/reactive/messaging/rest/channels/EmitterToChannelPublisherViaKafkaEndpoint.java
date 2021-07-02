@@ -32,13 +32,13 @@ import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
+import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
 import org.jboss.resteasy.annotations.Stream;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
-import io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata;
 import io.smallrye.reactive.messaging.kafka.api.KafkaMetadataUtil;
 
 /**
@@ -54,14 +54,15 @@ public class EmitterToChannelPublisherViaKafkaEndpoint {
     Emitter<String> emitter;
 
     List<String> values = new ArrayList<>();
+    List<Integer> partitions = new ArrayList();
 
     public EmitterToChannelPublisherViaKafkaEndpoint() {
     }
 
     @Inject
-    public EmitterToChannelPublisherViaKafkaEndpoint(@Channel("from-kafka") Publisher<String> publisher) {
+    public EmitterToChannelPublisherViaKafkaEndpoint(@Channel("from-kafka") Publisher<Message<String>> publisher) {
         AtomicReference<Subscription> ref = new AtomicReference<>();
-        publisher.subscribe(new Subscriber<String>() {
+        publisher.subscribe(new Subscriber<Message<String>>() {
             @Override
             public void onSubscribe(Subscription subscription) {
                 subscription.request(1);
@@ -69,9 +70,10 @@ public class EmitterToChannelPublisherViaKafkaEndpoint {
             }
 
             @Override
-            public void onNext(String s) {
+            public void onNext(Message<String> msg) {
+                values.add(msg.getPayload());
+                partitions.add(KafkaMetadataUtil.readIncomingKafkaMetadata(msg).get().getPartition());
                 ref.get().request(1);
-                values.add(s);
             }
 
             @Override
@@ -85,7 +87,7 @@ public class EmitterToChannelPublisherViaKafkaEndpoint {
             }
         });
     }
-    
+
     @POST
     @Path("/publish")
     @Produces("text/plain")
@@ -100,5 +102,12 @@ public class EmitterToChannelPublisherViaKafkaEndpoint {
     @Stream
     public Publisher<String> poll() {
         return ReactiveStreams.of(values.toArray(new String[values.size()])).buildRs();
+    }
+
+    @GET
+    @Path("/partitions")
+    @Produces("text/plain")
+    public List<Integer> getPartitions() {
+        return partitions;
     }
 }

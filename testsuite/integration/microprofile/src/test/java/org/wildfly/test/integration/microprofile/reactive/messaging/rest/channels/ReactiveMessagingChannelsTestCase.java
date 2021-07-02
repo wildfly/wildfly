@@ -29,11 +29,9 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-<<<<<<< HEAD
-import java.util.HashSet;
-=======
->>>>>>> e8a0fb08a7 (tmp)
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -120,7 +118,7 @@ public class ReactiveMessagingChannelsTestCase {
             // Kafka is slower than the other in-memory examples, so do some retrying here
             long end = System.currentTimeMillis() + TimeoutUtil.adjust(5000);
             AssertionError error = null;
-            HashSet<String> expected = new HashSet<>(Arrays.asList("Welcome", "to", "Kafka"));
+            List<String> expected = Arrays.asList("Welcome", "to", "Kafka");
             List<String> list = null;
             while (System.currentTimeMillis() < end) {
                 Thread.sleep(200);
@@ -138,10 +136,55 @@ public class ReactiveMessagingChannelsTestCase {
                 throw error;
             }
 
+            List<Integer> partitions = getPartitions(client);
+
+            // The data may come on different Kafka partitions and ordering is only per partition so do some extra
+            // massaging of the data
+
+            Assert.assertEquals(expected.size(), list.size());
+            // Kafka messages only have order per partition, so do some massaging of the data
+            Map<Integer, List<String>> map = new HashMap<>();
+            for (int i = 0; i < list.size(); i++) {
+                List<String> values = map.computeIfAbsent(partitions.get(i), ind -> new ArrayList<>());
+                values.add(list.get(i));
+            }
+
             for (String s : expected) {
-                Assert.assertTrue(list.contains("data: " + s));
+                assertValueNextOnAPartition(map, s);
             }
         }
+    }
+
+
+    private void assertValueNextOnAPartition(Map<Integer, List<String>> map, String value) {
+        String found = null;
+        int remove = -1;
+        for (Map.Entry<Integer, List<String>> entry : map.entrySet()) {
+            List<String> persons = entry.getValue();
+            String s = persons.get(0);
+            if (s.equals("data: " + value)) {
+                found = s;
+                persons.remove(0);
+                if (persons.size() == 0) {
+                    remove = entry.getKey();
+                }
+            }
+        }
+        map.remove(remove);
+        Assert.assertNotNull("Could not find " + value, found);
+    }
+
+    private List<Integer> getPartitions(CloseableHttpClient client) throws Exception {
+        List<String> data = getData(client, "emitter-to-subscribed-channel-publisher-via-kafka/partitions");
+        String value = data.get(0);
+        // The list will be of the format '[0,0,1]'
+        value = value.substring(1, value.length() - 1);
+        List<Integer> list = new ArrayList<>();
+        String[] values = value.split(",");
+        for (int i = 0; i < values.length; i++) {
+            list.add(Integer.valueOf( values[i].trim()));
+        }
+        return list;
     }
 
     private void postData(CloseableHttpClient client, String path, String value) throws Exception {
