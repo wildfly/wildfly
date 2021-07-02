@@ -192,11 +192,12 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
                 QueueControl coreQueueControl = (QueueControl) managementService.getResource(ResourceNames.QUEUE + queue);
 
                 // Ignore the "special" subscription
-                if (coreQueueControl != null && !coreQueueControl.getName().equals(addressControl.getAddress())) {
-                    if (durability == DurabilityType.ALL || durability == DurabilityType.DURABLE && coreQueueControl.isDurable() ||
-                          durability == DurabilityType.NON_DURABLE && !coreQueueControl.isDurable()) {
-                        matchingQueues.add(coreQueueControl);
-                    }
+                if (coreQueueControl != null
+                        && !coreQueueControl.getName().equals(addressControl.getAddress())
+                        && (durability == DurabilityType.ALL
+                                || durability == DurabilityType.DURABLE && coreQueueControl.isDurable()
+                                || durability == DurabilityType.NON_DURABLE && !coreQueueControl.isDurable())) {
+                    matchingQueues.add(coreQueueControl);
                 }
             }
             return matchingQueues;

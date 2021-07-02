@@ -701,10 +701,9 @@ public interface ConnectionFactoryAttributes {
 
         @Override
         public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-            if (value.isDefined()) {
-                if (!getAllowedValues().contains(value)) {
-                    MessagingLogger.ROOT_LOGGER.invalidTransactionNameValue(value.asString(), parameterName, getAllowedValues());
-                }
+            if (value.isDefined()
+                    && !getAllowedValues().contains(value)) {
+                MessagingLogger.ROOT_LOGGER.invalidTransactionNameValue(value.asString(), parameterName, getAllowedValues());
             }
         }
     }
