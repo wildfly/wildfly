@@ -223,10 +223,8 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                     if (!servletContainerInitializerClassName.isEmpty()) {
                         // Instantiate the ServletContainerInitializer
                         ServletContainerInitializer service = (ServletContainerInitializer) classLoader.loadClass(servletContainerInitializerClassName).newInstance();
-                        if (service != null) {
-                            if(sciClasses.add(service.getClass())) {
-                                scis.add(service);
-                            }
+                        if (service != null && sciClasses.add(service.getClass())) {
+                            scis.add(service);
                         }
                     }
                     servletContainerInitializerClassName = reader.readLine();
