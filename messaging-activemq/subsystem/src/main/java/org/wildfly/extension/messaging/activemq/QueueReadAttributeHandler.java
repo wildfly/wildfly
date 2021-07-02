@@ -36,6 +36,7 @@ import static org.wildfly.extension.messaging.activemq.QueueDefinition.ADDRESS;
 import static org.wildfly.extension.messaging.activemq.QueueDefinition.DEAD_LETTER_ADDRESS;
 import static org.wildfly.extension.messaging.activemq.QueueDefinition.EXPIRY_ADDRESS;
 import static org.wildfly.extension.messaging.activemq.QueueDefinition.ID;
+import static org.wildfly.extension.messaging.activemq.QueueDefinition.ROUTING_TYPE;
 import static org.wildfly.extension.messaging.activemq.QueueDefinition.forwardToRuntimeQueue;
 
 import java.util.ArrayList;
@@ -111,6 +112,8 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
             context.getResult().set(control.getMessageCount());
         } else if (SCHEDULED_COUNT.getName().equals(attributeName)) {
             context.getResult().set(control.getScheduledCount());
+        } else if (ROUTING_TYPE.getName().equals(attributeName)) {
+            context.getResult().set(control.getRoutingType());
         } else if (CONSUMER_COUNT.getName().equals(attributeName)) {
             context.getResult().set(control.getConsumerCount());
         } else if (DELIVERING_COUNT.getName().equals(attributeName)) {
