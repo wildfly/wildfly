@@ -92,6 +92,10 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     }
 
     private static void registerTransformers_WF_25(ResourceTransformationDescriptionBuilder subsystem) {
+        ResourceTransformationDescriptionBuilder externaljmsqueue = subsystem.addChildResource(MessagingExtension.EXTERNAL_JMS_QUEUE_PATH);
+        rejectDefinedAttributeWithDefaultValue(externaljmsqueue,ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
+        ResourceTransformationDescriptionBuilder externaljmstopic = subsystem.addChildResource(MessagingExtension.EXTERNAL_JMS_TOPIC_PATH);
+        rejectDefinedAttributeWithDefaultValue(externaljmstopic,ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
     }
 
     private static void registerTransformers_WF_23(ResourceTransformationDescriptionBuilder subsystem) {

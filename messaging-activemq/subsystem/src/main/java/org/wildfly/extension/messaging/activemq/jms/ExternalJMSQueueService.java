@@ -25,9 +25,9 @@ import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ClusterTopologyListener;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.apache.activemq.artemis.api.core.client.TopologyMember;
-import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.activemq.artemis.core.client.impl.TopologyMemberImpl;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+import org.apache.activemq.artemis.jms.client.ActiveMQDestination;
 import org.apache.activemq.artemis.ra.ActiveMQRAConnectionFactory;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.naming.NamingContext;
@@ -59,13 +59,13 @@ public class ExternalJMSQueueService implements Service<Queue> {
     private Queue queue;
     private ClientSessionFactory sessionFactory;
 
-    private ExternalJMSQueueService(final String queueName) {
-        this.queueName = JMS_QUEUE_PREFIX + queueName;
+    private ExternalJMSQueueService(final String queueName, final boolean enabledAMQ1Prefix) {
+        this.queueName = enabledAMQ1Prefix ? JMS_QUEUE_PREFIX + queueName : queueName;
         this.config = null;
     }
 
-    private ExternalJMSQueueService(final DestinationConfiguration config) {
-        this.queueName = JMS_QUEUE_PREFIX + config.getName();
+    private ExternalJMSQueueService(final DestinationConfiguration config, final boolean enabledAMQ1Prefix) {
+        this.queueName = enabledAMQ1Prefix ? JMS_QUEUE_PREFIX + config.getName() : config.getName();
         this.config = config;
     }
 
@@ -123,7 +123,7 @@ public class ExternalJMSQueueService implements Service<Queue> {
                 }
             }
         }
-        queue = ActiveMQJMSClient.createQueue(queueName);
+        queue = ActiveMQDestination.createQueue(queueName);
     }
 
 
@@ -139,15 +139,15 @@ public class ExternalJMSQueueService implements Service<Queue> {
         return queue;
     }
 
-    public static Service<Queue> installService(final String name, final ServiceTarget serviceTarget, final ServiceName serviceName) {
-        final ExternalJMSQueueService service = new ExternalJMSQueueService(name);
+    public static Service<Queue> installService(final String name, final ServiceTarget serviceTarget, final ServiceName serviceName, final boolean enabledAMQ1Prefix) {
+        final ExternalJMSQueueService service = new ExternalJMSQueueService(name, enabledAMQ1Prefix);
         final ServiceBuilder<Queue> serviceBuilder = serviceTarget.addService(serviceName, service);
         serviceBuilder.install();
         return service;
     }
 
-    public static Service<Queue> installRuntimeQueueService(final DestinationConfiguration config, final ServiceTarget serviceTarget, final ServiceName pcf) {
-        final ExternalJMSQueueService service = new ExternalJMSQueueService(config);
+    public static Service<Queue> installRuntimeQueueService(final DestinationConfiguration config, final ServiceTarget serviceTarget, final ServiceName pcf, final boolean enabledAMQ1Prefix) {
+        final ExternalJMSQueueService service = new ExternalJMSQueueService(config, enabledAMQ1Prefix);
         final ServiceBuilder<Queue> serviceBuilder = serviceTarget.addService(config.getDestinationServiceName(), service);
         serviceBuilder.addDependency(NamingService.SERVICE_NAME, NamingStore.class, service.namingStoreInjector);
         serviceBuilder.addDependency(pcf, ExternalPooledConnectionFactoryService.class, service.pcfInjector);
