@@ -107,7 +107,7 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
 
 
     private static void processWSFeatures(final DeploymentUnit unit, final Set<ResourceInjectionTargetMetaData> injectionTargets, final UnifiedServiceRefMetaData serviceRefUMDM) throws DeploymentUnitProcessingException {
-        if (injectionTargets == null || injectionTargets.size() == 0) return;
+        if (injectionTargets == null || injectionTargets.isEmpty()) return;
         if (injectionTargets.size() > 1) {
            // TODO: We should validate all the injection targets whether they're compatible.
            // This means all the injection targets must be assignable or equivalent.
