@@ -82,7 +82,9 @@ public class ReactiveMessagingKafkaTestCase {
     public void test() throws InterruptedException {
         boolean wait = bean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
         Assert.assertTrue("Timed out", wait);
-        // TODO check ordering once we have kafka API
+        // KK: Initially I thought we could do something similar here to in ReactiveMessagingKafkaSerializerTestCase
+        // to check that messages are received in order on a partition but it is a bit complicated due to the
+        // asynchronous storing of entries to a database
         Set<String> expected = new HashSet<>(Arrays.asList("hello", "reactive", "messaging"));
         Assert.assertEquals(expected.size(), bean.getWords().size());
         Assert.assertTrue("Expected " + bean.getWords() + " to contain all of " + expected, bean.getWords().containsAll(expected));

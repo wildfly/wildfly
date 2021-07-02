@@ -24,6 +24,7 @@ package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.seria
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,9 +33,12 @@ import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 
 import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import org.eclipse.microprofile.reactive.streams.operators.PublisherBuilder;
 import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
+
+import io.smallrye.reactive.messaging.kafka.api.KafkaMetadataUtil;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
@@ -43,6 +47,7 @@ import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
 public class Bean {
     private final CountDownLatch latch = new CountDownLatch(3);
     private List<Person> received = new ArrayList<>();
+    private List<Integer> partitionReceived = new ArrayList<>();
 
 
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -67,12 +72,18 @@ public class Bean {
     }
 
     @Incoming("from-kafka")
-    public void sink(Person p) {
-        received.add(p);
+    public CompletionStage<Void> sink(Message<Person> msg) {
+        received.add(msg.getPayload());
+        partitionReceived.add(KafkaMetadataUtil.readIncomingKafkaMetadata(msg).get().getPartition());
         latch.countDown();
+        return msg.ack();
     }
 
     public List<Person> getReceived() {
         return received;
+    }
+
+    public List<Integer> getPartitionReceived() {
+        return partitionReceived;
     }
 }
