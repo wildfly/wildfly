@@ -62,12 +62,11 @@ public class ManagedBeanSubDeploymentMarkingProcessor implements DeploymentUnitP
                 continue;
             }
             final Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
-            if (index != null) {
-                if (!index.getAnnotations(MANAGED_BEAN).isEmpty()) {
-                    //this is a managed bean deployment
-                    SubDeploymentMarker.mark(resourceRoot);
-                    ModuleRootMarker.mark(resourceRoot);
-                }
+            if (index != null
+                    && !index.getAnnotations(MANAGED_BEAN).isEmpty()) {
+                // this is a managed bean deployment
+                SubDeploymentMarker.mark(resourceRoot);
+                ModuleRootMarker.mark(resourceRoot);
             }
         }
     }

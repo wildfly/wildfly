@@ -286,39 +286,41 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                 queueLength = model.get(QUEUE_LENGTH);
             }
 
-            if (coreThreads.getType() == ModelType.EXPRESSION || maxThreads.getType() == ModelType.EXPRESSION ||
-                    queueLength.getType() == ModelType.EXPRESSION) {
+            if (coreThreads.getType() == ModelType.EXPRESSION
+                    || maxThreads.getType() == ModelType.EXPRESSION
+                    || queueLength.getType() == ModelType.EXPRESSION) {
                 context.addStep(new ExecutorQueueValidationStepHandler(true), OperationContext.Stage.RUNTIME, true);
                 return;
             }
 
             // Validate an unbounded queue
-            if (!queueLength.isDefined() || queueLength.asInt() == Integer.MAX_VALUE) {
-                if (coreThreads.isDefined() && coreThreads.asInt() <= 0) {
-                    throw EeLogger.ROOT_LOGGER.invalidCoreThreadsSize(queueLength.asString());
-                }
-
+            if ((!queueLength.isDefined() || queueLength.asInt() == Integer.MAX_VALUE)
+                    && coreThreads.isDefined()
+                    && coreThreads.asInt() <= 0) {
+                throw EeLogger.ROOT_LOGGER.invalidCoreThreadsSize(queueLength.asString());
             }
 
             // Validate a hand-off queue
-            if (queueLength.isDefined() && queueLength.asInt() == 0) {
-                if (coreThreads.isDefined() && coreThreads.asInt() <= 0) {
-                    throw EeLogger.ROOT_LOGGER.invalidCoreThreadsSize(queueLength.asString());
-                }
+            if (queueLength.isDefined()
+                    && queueLength.asInt() == 0
+                    && coreThreads.isDefined()
+                    && coreThreads.asInt() <= 0) {
+                throw EeLogger.ROOT_LOGGER.invalidCoreThreadsSize(queueLength.asString());
             }
 
             // max-threads must be defined and greater than 0 if core-threads is 0
-            if (coreThreads.isDefined() && coreThreads.asInt() == 0) {
-                if (!maxThreads.isDefined() || maxThreads.asInt() <= 0) {
-                    throw EeLogger.ROOT_LOGGER.invalidMaxThreads(maxThreads.isDefined() ? maxThreads.asInt() : 0, coreThreads.asInt());
-                }
+            if (coreThreads.isDefined()
+                    && coreThreads.asInt() == 0
+                    && (!maxThreads.isDefined() || maxThreads.asInt() <= 0)) {
+                throw EeLogger.ROOT_LOGGER.invalidMaxThreads(maxThreads.isDefined() ? maxThreads.asInt() : 0,
+                        coreThreads.asInt());
             }
 
             // max-threads must be greater than or equal to core-threads
-            if (coreThreads.isDefined() && maxThreads.isDefined()) {
-                if (maxThreads.asInt() < coreThreads.asInt()) {
-                    throw EeLogger.ROOT_LOGGER.invalidMaxThreads(maxThreads.asInt(), coreThreads.asInt());
-                }
+            if (coreThreads.isDefined()
+                    && maxThreads.isDefined()
+                    && maxThreads.asInt() < coreThreads.asInt()) {
+                throw EeLogger.ROOT_LOGGER.invalidMaxThreads(maxThreads.asInt(), coreThreads.asInt());
             }
         }
     }
