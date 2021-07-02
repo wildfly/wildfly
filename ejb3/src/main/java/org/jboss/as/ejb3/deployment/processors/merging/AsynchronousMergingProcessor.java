@@ -98,16 +98,15 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
     protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription description) throws DeploymentUnitProcessingException {
         final SessionBeanMetaData data = description.getDescriptorData();
         final boolean elytronSecurityDomain = description.getSecurityDomainServiceName() != null;
-        if (data != null) {
-            if (data instanceof SessionBean31MetaData) {
-                final SessionBean31MetaData sessionBeanData = (SessionBean31MetaData) data;
-                final AsyncMethodsMetaData async = sessionBeanData.getAsyncMethods();
-                if (async != null) {
-                    for (AsyncMethodMetaData method : async) {
-                        final Collection<Method> methods = MethodResolutionUtils.resolveMethods(method.getMethodName(), method.getMethodParams(), componentClass, deploymentReflectionIndex);
-                        for(final Method m : methods ) {
-                            description.addAsynchronousMethod(MethodIdentifier.getIdentifierForMethod(m));
-                        }
+        if (data instanceof SessionBean31MetaData) {
+            final SessionBean31MetaData sessionBeanData = (SessionBean31MetaData) data;
+            final AsyncMethodsMetaData async = sessionBeanData.getAsyncMethods();
+            if (async != null) {
+                for (AsyncMethodMetaData method : async) {
+                    final Collection<Method> methods = MethodResolutionUtils.resolveMethods(method.getMethodName(),
+                            method.getMethodParams(), componentClass, deploymentReflectionIndex);
+                    for (final Method m : methods) {
+                        description.addAsynchronousMethod(MethodIdentifier.getIdentifierForMethod(m));
                     }
                 }
             }

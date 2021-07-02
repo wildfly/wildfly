@@ -211,14 +211,12 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         allAttributes.addAll(permissions.getAllAttributes(MethodIntf.BEAN, viewMethod));
 
         final Method classMethod = ClassReflectionIndexUtil.findMethod(deploymentReflectionIndex, componentConfiguration.getComponentClass(), viewMethod);
-        if (ejbMethodSecurityMetaData == null) {
-            //if this is null we try with the corresponding bean method
-            if (classMethod != null) {
-                ejbMethodSecurityMetaData = permissions.getAttribute(ejbViewDescription.getMethodIntf(), classMethod);
-                if (ejbMethodSecurityMetaData == null) {
-                    ejbMethodSecurityMetaData = permissions.getAttribute(MethodIntf.BEAN, classMethod);
-
-                }
+        if (ejbMethodSecurityMetaData == null
+                && classMethod != null) {
+            // if this is null we try with the corresponding bean method
+            ejbMethodSecurityMetaData = permissions.getAttribute(ejbViewDescription.getMethodIntf(), classMethod);
+            if (ejbMethodSecurityMetaData == null) {
+                ejbMethodSecurityMetaData = permissions.getAttribute(MethodIntf.BEAN, classMethod);
             }
         }
         if (classMethod != null) {

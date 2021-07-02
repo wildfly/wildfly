@@ -143,10 +143,8 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
             try (Batch batch = value.getCacheContext()) {
                 try {
                     Bean<K, V> bean = this.manager.findBean(value.getId());
-                    if (bean != null) {
-                        if (bean.release()) {
-                            bean.close();
-                        }
+                    if (bean != null && bean.release()) {
+                        bean.close();
                     }
                 } catch (RuntimeException | Error e) {
                     batch.discard();

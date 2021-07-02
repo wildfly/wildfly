@@ -52,10 +52,10 @@ public class AllowedChannelOptionTypesValidator extends ModelTypeValidator imple
     @Override
     public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
         super.validateParameter(parameterName, value);
-        if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
-            if (!this.allowedChannelOptTypes.contains(value)) {
-                throw EjbLogger.ROOT_LOGGER.unknownChannelCreationOptionType(value.asString());
-            }
+        if (value.isDefined()
+                && value.getType() != ModelType.EXPRESSION
+                && !this.allowedChannelOptTypes.contains(value)) {
+            throw EjbLogger.ROOT_LOGGER.unknownChannelCreationOptionType(value.asString());
         }
     }
 }
