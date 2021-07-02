@@ -171,10 +171,10 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
         if (!rootModuleSpec.isSubDeploymentModulesIsolated()) {
             for (DeploymentUnit siblingUnit : unit.getParent().getAttachment(Attachments.SUB_DEPLOYMENTS)) {
                 // look only at JAR dependencies, WARs are always isolated
-                if (siblingUnit.getName().endsWith(".jar") && !siblingUnit.equals(unit)) {
-                    if (hasExportedCxfModuleDependency(siblingUnit)) {
-                        return true;
-                    }
+                if (siblingUnit.getName().endsWith(".jar")
+                        && !siblingUnit.equals(unit)
+                        && hasExportedCxfModuleDependency(siblingUnit)) {
+                    return true;
                 }
             }
         }
