@@ -147,7 +147,7 @@ public final class IronJacamarActivationResourceService implements Service<Manag
                         StatisticsPlugin extendStats = mcf == null ? null : mcf.getStatistics();
                         if (extendStats != null) {
                             extendStats.setEnabled(statsEnabled);
-                            if (extendStats.getNames().size() != 0) {
+                            if (!extendStats.getNames().isEmpty()) {
 
                                 ManagementResourceRegistration cdRegistration = raRegistration.getSubModel(CON_DEF_ADDR);
                                 ManagementResourceRegistration overrideCdRegistration =
@@ -169,7 +169,7 @@ public final class IronJacamarActivationResourceService implements Service<Manag
                             StatisticsPlugin poolStats = cm.getPool().getStatistics();
                             poolStats.setEnabled(statsEnabled);
 
-                            if (poolStats.getNames().size() != 0) {
+                            if (!poolStats.getNames().isEmpty()) {
                                 ManagementResourceRegistration cdRegistration = raRegistration.getSubModel(CON_DEF_ADDR);
                                 ManagementResourceRegistration overrideCdRegistration =
                                         cdRegistration.registerOverrideModel(cm.getJndiName(), OD_PROVIDER);
@@ -188,7 +188,7 @@ public final class IronJacamarActivationResourceService implements Service<Manag
                         StatisticsPlugin extendStats = ao.getStatistics();
                         if (extendStats != null) {
                             extendStats.setEnabled(statsEnabled);
-                            if (extendStats.getNames().size() != 0) {
+                            if (!extendStats.getNames().isEmpty()) {
 
                                 ManagementResourceRegistration cdRegistration = raRegistration.getSubModel(AO_ADDR);
                                 ManagementResourceRegistration overrideCdRegistration =

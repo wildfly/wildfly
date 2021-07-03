@@ -137,7 +137,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         ModelNode node = context.getModelNode();
-        boolean hasChildren = node.hasDefined(RESOURCEADAPTER_NAME) && node.get(RESOURCEADAPTER_NAME).asPropertyList().size() > 0;
+        boolean hasChildren = node.hasDefined(RESOURCEADAPTER_NAME) && !node.get(RESOURCEADAPTER_NAME).asPropertyList().isEmpty();
 
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), !hasChildren);
 
