@@ -342,7 +342,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             // pick the first connector available if pickAnyConnectors is true
             if (discoveryGroupName == null && connectors.isEmpty() && pickAnyConnectors) {
                 Set<String> connectorNames = activeMQServer.getValue().getConfiguration().getConnectorConfigurations().keySet();
-                if (connectorNames.size() > 0) {
+                if (!connectorNames.isEmpty()) {
                     String connectorName = connectorNames.iterator().next();
                     MessagingLogger.ROOT_LOGGER.connectorForPooledConnectionFactory(name, connectorName);
                     connectors.add(connectorName);
