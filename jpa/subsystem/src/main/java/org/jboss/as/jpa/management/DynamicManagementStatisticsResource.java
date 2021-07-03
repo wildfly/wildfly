@@ -141,7 +141,7 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
             Statistics statistics = getStatistics();
             if (statistics.getChildrenNames().contains(childType)) {
                 Statistics childStatistics = statistics.getChild(childType);
-                return childStatistics != null && childStatistics.getNames().size() > 0;
+                return childStatistics != null && !childStatistics.getNames().isEmpty();
             } else {
                 return super.hasChildren(childType);
             }

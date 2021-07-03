@@ -49,7 +49,7 @@ public class PlatformImpl implements Platform {
             includedClassifications.add(eachClassification);
         }
 
-        this.cacheClassfications = includedClassifications.size() > 0 ?
+        this.cacheClassfications = !includedClassifications.isEmpty() ?
                 EnumSet.copyOf(includedClassifications):
                 Collections.<Classification>emptySet();
     }
