@@ -202,7 +202,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                 order.addAll(otherPos, jarsSet);
                 jarsSet.clear();
             }
-        } else if (orderings.size() > 0) {
+        } else if (!orderings.isEmpty()) {
             // Resolve relative ordering
             try {
                 resolveOrder(orderings, order);
