@@ -383,7 +383,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
             if (!fileStore.isDefined()) {//happens where default is not file-store
                 rejectIncompatibleDataStores(context, address);
             } else if ((untransformedModel.hasDefined(EJB3SubsystemModel.DATABASE_DATA_STORE)
-                    && untransformedModel.get(EJB3SubsystemModel.DATABASE_DATA_STORE).keys().size() > 0)
+                    && !untransformedModel.get(EJB3SubsystemModel.DATABASE_DATA_STORE).keys().isEmpty())
                     || untransformedModel.get(EJB3SubsystemModel.FILE_DATA_STORE).keys().size() > 1) {
                 rejectIncompatibleDataStores(context, address);
             }
