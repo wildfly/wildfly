@@ -99,10 +99,6 @@ public class IDMSubsystemWriter implements XMLStreamConstants, XMLElementWriter<
         writers.put(element.getName(), new ModelXMLElementWriter(element, writers));
     }
 
-    private static void registerWriter(final ModelElement element, final XMLElement parent) {
-        writers.put(element.getName(), new ModelXMLElementWriter(element, parent, writers));
-    }
-
     private static void registerWriter(final ModelElement element, final ModelElement keyAttribute, final XMLElement parent) {
         writers.put(element.getName(), new ModelXMLElementWriter(element, keyAttribute.getName(), parent, writers));
     }

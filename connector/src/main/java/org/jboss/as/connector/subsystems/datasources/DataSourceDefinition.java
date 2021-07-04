@@ -40,12 +40,10 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_C
 import static org.jboss.as.connector.subsystems.datasources.Constants.TEST_CONNECTION;
 
 import java.util.List;
-import java.util.Map;
 
 import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -55,22 +53,15 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.dmr.ModelNode;
 
 /**
  * @author Stefano Maestri
  */
 public class DataSourceDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_DATASOURCE = PathElement.pathElement(DATA_SOURCE);
-
-    // The ManagedConnectionPool implementation used by default by versions < 4.0.0 (WildFly 10)
-    private static final String LEGACY_MCP = "org.jboss.jca.core.connectionmanager.pool.mcp.SemaphoreArrayListManagedConnectionPool";
 
     private final boolean registerRuntimeOnly;
     private final boolean deployed;
@@ -169,28 +160,5 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
         return accessConstraints;
-    }
-
-    private static RejectAttributeChecker createConnURLRejectChecker() {
-        return new RejectAttributeChecker.DefaultRejectAttributeChecker() {
-
-            @Override
-            public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                return RejectAttributeChecker.UNDEFINED.getRejectionLogMessage(attributes);
-            }
-
-            @Override
-            public boolean rejectOperationParameter(PathAddress address, String attributeName,
-                    ModelNode attributeValue, ModelNode operation, TransformationContext context) {
-                return operation.get(ModelDescriptionConstants.OP).asString().equals(ModelDescriptionConstants.ADD)
-                        && !attributeValue.isDefined();
-            }
-
-            @Override
-            protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
-                    TransformationContext context) {
-                return !attributeValue.isDefined();
-            }
-        };
     }
 }

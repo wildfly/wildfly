@@ -572,17 +572,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         }
     }
 
-    /*
-    This is to address WFLY-1894 but should probably be moved to some other place.
-     */
-    private String resolveContextPath() {
-        if (deploymentName.equals(host.get().getDefaultWebModule())) {
-            return "/";
-        } else {
-            return contextPath;
-        }
-    }
-
     private DeploymentInfo createServletConfig() throws StartException {
         final ComponentRegistry componentRegistry = this.componentRegistry.get();
         try {
