@@ -119,15 +119,12 @@ public abstract class AbstractResourceDefinition extends SimpleResourceDefinitio
             childResourceDefinitions.put(resourceDefinitionKey, childResources);
         }
 
-        if (!childResources.contains(resourceDefinitionKey)) {
-            for (ResourceDefinition childResource : childResources) {
-                if (childResource.getPathElement().getKey().equals(resourceDefinition.getPathElement().getKey())) {
-                    return;
-                }
+        for (ResourceDefinition childResource : childResources) {
+            if (childResource.getPathElement().getKey().equals(resourceDefinition.getPathElement().getKey())) {
+                return;
             }
-
-            childResources.add(resourceDefinition);
         }
+        childResources.add(resourceDefinition);
     }
 
     @Override
