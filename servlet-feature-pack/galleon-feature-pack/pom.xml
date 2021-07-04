@@ -116,15 +116,12 @@
         </dependency>
 
         <!-- Deprecated (and thus non-shared) deps -->
+
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-security</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>wildfly-servlet-feature-pack-pruned</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
             <scope>provided</scope>
         </dependency>
 
@@ -192,6 +189,21 @@
                     <overwrite>true</overwrite>
                 </configuration>
                 <executions>
+                    <execution>
+                        <id>copy-pruned-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${pruned.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>copy-common-feature-pack-resources</id>
                         <phase>process-resources</phase>
@@ -286,11 +298,12 @@
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-ee-8-api-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/servlet-feature-pack-common-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/servlet-feature-pack-legacy-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/servlet-feature-pack-ee-8-api-licenses.xml</licensesConfigFile>
                             </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/servlet-feature-pack-licenses.xml</licensesOutputFile>
                             <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                            <excludedArtifacts>wildfly-jar-boot|wildfly-core-feature-pack-galleon-pruned|wildfly-core-feature-pack-common|wildfly-core-feature-pack-ee-8-api|wildfly-core-feature-pack-galleon-common|wildfly-servlet-feature-pack-common|wildfly-servlet-feature-pack-ee-8-api|wildfly-servlet-feature-pack-galleon-common|wildfly-servlet-feature-pack-galleon-legacy|wildfly-elytron\z</excludedArtifacts>
+                            <excludedArtifacts>wildfly-jar-boot|wildfly-core-feature-pack-galleon-pruned|wildfly-core-feature-pack-common|wildfly-core-feature-pack-ee-8-api|wildfly-core-feature-pack-galleon-common|wildfly-servlet-feature-pack-common|wildfly-servlet-feature-pack-ee-8-api|wildfly-servlet-feature-pack-galleon-common|wildfly-servlet-feature-pack-galleon-legacy|wildfly-servlet-feature-pack-common|wildfly-elytron\z</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>
