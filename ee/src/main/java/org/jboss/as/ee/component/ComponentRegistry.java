@@ -62,7 +62,7 @@ public class ComponentRegistry {
 
     public void addComponent(final ComponentConfiguration componentConfiguration) {
         if(componentConfiguration.getViews().size() < 2) {
-            if(componentConfiguration.getViews().size() == 0) {
+            if(componentConfiguration.getViews().isEmpty()) {
                 componentsByClass.put(componentConfiguration.getComponentClass(), new ComponentManagedReferenceFactory(componentConfiguration.getComponentDescription().getStartServiceName(), null));
             } else {
                 componentsByClass.put(componentConfiguration.getComponentClass(), new ComponentManagedReferenceFactory(componentConfiguration.getComponentDescription().getStartServiceName(), componentConfiguration.getViews().get(0).getViewServiceName()));
