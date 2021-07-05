@@ -1,4 +1,0 @@
-[[Jakarta_Persistence_API]]
-= Jakarta Persistence API
-
-
