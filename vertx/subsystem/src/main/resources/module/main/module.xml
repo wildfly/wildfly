@@ -31,5 +31,6 @@
         <module name="io.netty" />
         <module name="com.fasterxml.jackson.core.jackson-databind" />
         <module name="org.infinispan" />
+        <module name="org.jgroups" />
     </dependencies>
 </module>

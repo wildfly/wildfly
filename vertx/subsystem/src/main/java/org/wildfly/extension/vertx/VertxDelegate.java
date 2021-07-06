@@ -55,6 +55,20 @@ public class VertxDelegate implements Vertx {
         this.vertx = vertx;
     }
 
+    Future<Void> closeInternal() {
+        return this.vertx.close();
+    }
+
+    @Override
+    public Future<Void> close() {
+        throw new UnsupportedOperationException("close() method not supported");
+    }
+
+    @Override
+    public void close(Handler<AsyncResult<Void>> completionHandler) {
+        throw new UnsupportedOperationException("close(completionHandler) method not supported");
+    }
+
     @Override
     public Context getOrCreateContext() {
         return this.vertx.getOrCreateContext();
@@ -168,20 +182,6 @@ public class VertxDelegate implements Vertx {
     @Override
     public void runOnContext(Handler<Void> action) {
         this.vertx.runOnContext(action);
-    }
-
-    void closeInternal() {
-        this.vertx.close();
-    }
-
-    @Override
-    public Future<Void> close() {
-        throw new UnsupportedOperationException("close() method not supported");
-    }
-
-    @Override
-    public void close(Handler<AsyncResult<Void>> completionHandler) {
-        throw new UnsupportedOperationException("close(completionHandler) method not supported");
     }
 
     @Override

@@ -24,6 +24,7 @@ public class VertxProxy {
     private String name;
     private String jndiName;
     private String vertxOptionsFile;
+    private VertxOptions vertxOptions;
 
     public VertxOptions getOptions() {
         return options;
