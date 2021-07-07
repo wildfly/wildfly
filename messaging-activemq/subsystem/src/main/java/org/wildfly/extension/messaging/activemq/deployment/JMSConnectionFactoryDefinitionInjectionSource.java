@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import javax.resource.spi.TransactionSupport;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
@@ -72,6 +73,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -420,6 +423,27 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
             ServiceController binder = deploymentUnit.getServiceRegistry().getService(bindInfo.getBinderServiceName());
             if (binder != null) {
                 Object pcf = binder.getService().getValue();
+                ServiceController.State currentState = binder.getState();
+                CountDownLatch latch = new CountDownLatch(1);
+                if(currentState != ServiceController.State.UP) {
+                    LifecycleListener lifecycleListener = new LifecycleListener() {
+                        @Override
+                        public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
+                            latch.countDown();
+                        }
+                    };
+                    try {
+                        binder.addListener(lifecycleListener);
+                        latch.await();
+                    } catch (InterruptedException ex) {
+                        return null;
+                    } finally {
+                        binder.removeListener(lifecycleListener);
+                    }
+                }
+                if(currentState != ServiceController.State.UP) {
+                    return null;
+                }
                 //In case of multiple JNDI entries only the 1st is properly bound
                 if (pcf != null && pcf instanceof ContextListAndJndiViewManagedReferenceFactory) {
                     ManagedReference ref = ((ContextListAndJndiViewManagedReferenceFactory) pcf).getReference();
