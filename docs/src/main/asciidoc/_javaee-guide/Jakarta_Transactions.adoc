@@ -1,8 +1,0 @@
-[[Jakarta_Transactions]]
-= Jakarta Transactions
-
-Coming Soon
-
-[IMPORTANT]
-
-This guide is still under development, check back soon!

@@ -1,4 +1,0 @@
-[[Jakarta_Contexts_and_Dependency_Injection]]
-= Jakarta Contexts and Dependency Injection
-
-
