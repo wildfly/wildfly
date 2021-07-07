@@ -45,7 +45,7 @@ public class DataSourcesSubsystemProviders {
     public static final String RESOURCE_NAME = DataSourcesSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
 
-    public static OverrideDescriptionProvider OVERRIDE_DS_DESC = new OverrideDescriptionProvider() {
+    public static final OverrideDescriptionProvider OVERRIDE_DS_DESC = new OverrideDescriptionProvider() {
 
         @Override
         public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {

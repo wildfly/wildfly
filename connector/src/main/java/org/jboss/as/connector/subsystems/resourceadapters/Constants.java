@@ -725,45 +725,45 @@ public class Constants {
             .build();
 
 
-    public static SimpleAttributeDefinition[] WORKMANAGER_METRICS = new SimpleAttributeDefinition[]{WORK_ACTIVE, WORK_SUCCESSFUL, WORK_FAILED, DO_WORK_ACCEPTED,
+    public static final SimpleAttributeDefinition[] WORKMANAGER_METRICS = new SimpleAttributeDefinition[]{WORK_ACTIVE, WORK_SUCCESSFUL, WORK_FAILED, DO_WORK_ACCEPTED,
             DO_WORK_REJECTED, SCHEDULED_WORK_ACCEPTED, SCHEDULED_WORK_REJECTED, START_WORK_ACCEPTED, START_WORK_REJECTED};
 
     public static final String WORKMANAGER_STATISTICS_ENABLED_NAME = "workmanager-statistics-enabled";
-    public static SimpleAttributeDefinition WORKMANAGER_STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
+    public static final SimpleAttributeDefinition WORKMANAGER_STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
             .setStorageRuntime()
             .build();
-    public static SimpleAttributeDefinition WORKMANAGER_STATISTICS_ENABLED_DEPRECATED = new SimpleAttributeDefinitionBuilder(WORKMANAGER_STATISTICS_ENABLED_NAME, ModelType.BOOLEAN)
+    public static final SimpleAttributeDefinition WORKMANAGER_STATISTICS_ENABLED_DEPRECATED = new SimpleAttributeDefinitionBuilder(WORKMANAGER_STATISTICS_ENABLED_NAME, ModelType.BOOLEAN)
             .setStorageRuntime()
             .setDeprecated(ModelVersion.create(2))
             .build();
 
     public static final String DISTRIBUTED_STATISTICS_ENABLED_NAME = "distributed-workmanager-statistics-enabled";
-    public static SimpleAttributeDefinition DISTRIBUTED_STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
+    public static final SimpleAttributeDefinition DISTRIBUTED_STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
             .setStorageRuntime()
             .build();
-    public static SimpleAttributeDefinition DISTRIBUTED_STATISTICS_ENABLED_DEPRECATED = new SimpleAttributeDefinitionBuilder(DISTRIBUTED_STATISTICS_ENABLED_NAME, ModelType.BOOLEAN)
+    public static final SimpleAttributeDefinition DISTRIBUTED_STATISTICS_ENABLED_DEPRECATED = new SimpleAttributeDefinitionBuilder(DISTRIBUTED_STATISTICS_ENABLED_NAME, ModelType.BOOLEAN)
             .setStorageRuntime()
             .setDeprecated(ModelVersion.create(2))
             .build();
 
     public static final String DOWORK_DISTRIBUTION_ENABLED_NAME = "dowork-distribution-enabled";
-    public static SimpleAttributeDefinition DOWORK_DISTRIBUTION_ENABLED = new SimpleAttributeDefinitionBuilder(DOWORK_DISTRIBUTION_ENABLED_NAME, ModelType.BOOLEAN)
+    public static final SimpleAttributeDefinition DOWORK_DISTRIBUTION_ENABLED = new SimpleAttributeDefinitionBuilder(DOWORK_DISTRIBUTION_ENABLED_NAME, ModelType.BOOLEAN)
             .setStorageRuntime()
             .build();
     public static final String SCHEDULEWORK_DISTRIBUTION_ENABLED_NAME = "schedulework-distribution-enabled";
-    public static SimpleAttributeDefinition SCHEDULEWORK_DISTRIBUTION_ENABLED = new SimpleAttributeDefinitionBuilder(SCHEDULEWORK_DISTRIBUTION_ENABLED_NAME, ModelType.BOOLEAN)
+    public static final SimpleAttributeDefinition SCHEDULEWORK_DISTRIBUTION_ENABLED = new SimpleAttributeDefinitionBuilder(SCHEDULEWORK_DISTRIBUTION_ENABLED_NAME, ModelType.BOOLEAN)
             .setStorageRuntime()
             .build();
     public static final String STARTWORK_DISTRIBUTION_ENABLED_NAME = "startwork-distribution-enabled";
-    public static SimpleAttributeDefinition STARTWORK_DISTRIBUTION_ENABLED = new SimpleAttributeDefinitionBuilder(STARTWORK_DISTRIBUTION_ENABLED_NAME, ModelType.BOOLEAN)
+    public static final SimpleAttributeDefinition STARTWORK_DISTRIBUTION_ENABLED = new SimpleAttributeDefinitionBuilder(STARTWORK_DISTRIBUTION_ENABLED_NAME, ModelType.BOOLEAN)
             .setStorageRuntime()
             .build();
-    public static SimpleAttributeDefinition[] WORKMANAGER_RW_ATTRIBUTES = new SimpleAttributeDefinition[]{
+    public static final SimpleAttributeDefinition[] WORKMANAGER_RW_ATTRIBUTES = new SimpleAttributeDefinition[]{
             WORKMANAGER_STATISTICS_ENABLED,
             WORKMANAGER_STATISTICS_ENABLED_DEPRECATED
     };
 
-    public static SimpleAttributeDefinition[] DISTRIBUTED_WORKMANAGER_RW_ATTRIBUTES = new SimpleAttributeDefinition[]{
+    public static final SimpleAttributeDefinition[] DISTRIBUTED_WORKMANAGER_RW_ATTRIBUTES = new SimpleAttributeDefinition[]{
             DISTRIBUTED_STATISTICS_ENABLED,
             DISTRIBUTED_STATISTICS_ENABLED_DEPRECATED,
             DOWORK_DISTRIBUTION_ENABLED,

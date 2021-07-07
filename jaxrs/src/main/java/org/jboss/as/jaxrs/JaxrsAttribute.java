@@ -265,7 +265,7 @@ public abstract class JaxrsAttribute {
             RESTEASY_JNDI_RESOURCES
     };
 
-    public static AttributeDefinition[] mapAttributeArray = new AttributeDefinition[] {
+    public static final AttributeDefinition[] mapAttributeArray = new AttributeDefinition[] {
             RESTEASY_LANGUAGE_MAPPINGS,
             RESTEASY_MEDIA_TYPE_MAPPINGS
     };

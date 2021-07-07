@@ -33,7 +33,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 public class AllowedChannelOptionTypesValidator extends ModelTypeValidator implements AllowedValuesValidator {
-    public static AllowedChannelOptionTypesValidator INSTANCE = new AllowedChannelOptionTypesValidator();
+    public static final AllowedChannelOptionTypesValidator INSTANCE = new AllowedChannelOptionTypesValidator();
 
     private final List<ModelNode> allowedChannelOptTypes;
 

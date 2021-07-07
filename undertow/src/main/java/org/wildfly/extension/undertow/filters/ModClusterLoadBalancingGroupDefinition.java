@@ -43,7 +43,7 @@ import org.wildfly.extension.undertow.UndertowExtension;
  */
 public class ModClusterLoadBalancingGroupDefinition extends SimpleResourceDefinition {
 
-    public static ModClusterLoadBalancingGroupDefinition INSTANCE = new ModClusterLoadBalancingGroupDefinition();
+    public static final ModClusterLoadBalancingGroupDefinition INSTANCE = new ModClusterLoadBalancingGroupDefinition();
 
 
     public final OperationDefinition ENABLE_NODES = new SimpleOperationDefinition(Constants.ENABLE_NODES, getResourceDescriptionResolver());

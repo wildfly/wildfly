@@ -49,7 +49,7 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  */
 public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
-    public static ModClusterNodeDefinition INSTANCE = new ModClusterNodeDefinition();
+    public static final ModClusterNodeDefinition INSTANCE = new ModClusterNodeDefinition();
 
 
     public static final AttributeDefinition LOAD = new SimpleAttributeDefinitionBuilder(Constants.LOAD, ModelType.INT)

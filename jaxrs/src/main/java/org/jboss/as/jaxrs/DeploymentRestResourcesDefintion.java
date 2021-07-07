@@ -91,7 +91,7 @@ import org.wildfly.extension.undertow.deployment.UndertowDeploymentService;
 @SuppressWarnings("deprecation")
 public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
 
-    public static DeploymentRestResourcesDefintion INSTANCE = new DeploymentRestResourcesDefintion();
+    public static final DeploymentRestResourcesDefintion INSTANCE = new DeploymentRestResourcesDefintion();
 
     public static final String REST_RESOURCE_NAME = "rest-resource";
 
