@@ -176,6 +176,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition FILTER = create("filter", ModelType.STRING)
             .setRequired(false)
+            .setValidator(new StringLengthValidator(0))
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
