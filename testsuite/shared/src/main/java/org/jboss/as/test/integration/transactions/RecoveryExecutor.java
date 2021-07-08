@@ -131,18 +131,20 @@ public class RecoveryExecutor {
 
     private RecoveryDriver getRecoveryDriver() {
         if(recoveryDriverReference.get() != null) return recoveryDriverReference.get();
+        String host = "";
+        int port = 0;
 
         try {
             String transactionSocketBinding = readAttribute(managementClient, ADDRESS_TRANSACTIONS, "socket-binding").asString();
             final ModelNode addressSocketBinding = ADDRESS_SOCKET_BINDING.clone();
             addressSocketBinding.add(ClientConstants.SOCKET_BINDING, transactionSocketBinding);
-            String host = readAttribute(managementClient, addressSocketBinding, "bound-address").asString();
-            int port = readAttribute(managementClient, addressSocketBinding, "bound-port").asInt();
+            host = readAttribute(managementClient, addressSocketBinding, "bound-address").asString();
+            port = readAttribute(managementClient, addressSocketBinding, "bound-port").asInt();
             recoveryDriverReference.compareAndSet(null, new RecoveryDriver(port, host));
             return recoveryDriverReference.get();
         } catch (MgmtOperationException | IOException e) {
-            throw new IllegalStateException("Cannot obtain host:port for transaction recovery listener regarding" +
-                    " the management client "  + managementClient);
+            throw new IllegalStateException("Cannot obtain RecoveryDriver for host:port (" + host + ":" + port +") " +
+                    "to contact the transaction recovery listener", e);
         }
     }
 
