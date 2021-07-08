@@ -22,15 +22,10 @@
 
 package org.jboss.as.test.integration.messaging.jms.context;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.shared.TimeoutUtil.adjust;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
@@ -56,7 +51,6 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.integration.messaging.jms.context.auxiliary.VaultedMessageProducer;
-import org.jboss.as.test.integration.security.common.VaultHandler;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -72,59 +66,19 @@ import org.junit.runner.RunWith;
 @ServerSetup(VaultedInjectedJMSContextTestCase.StoreVaultedPropertyTask.class)
 public class VaultedInjectedJMSContextTestCase {
 
-    static final String VAULT_LOCATION = VaultedInjectedJMSContextTestCase.class.getResource("/").getPath() + "security/jms-vault/";
+    //String vaultedUserName = vaultHandler.addSecuredAttribute("messaging", "userName", "guest".toCharArray());
+    //String vaultedPassword = vaultHandler.addSecuredAttribute("messaging", "password", "guest".toCharArray());
 
     static class StoreVaultedPropertyTask implements ServerSetupTask {
 
-        private VaultHandler vaultHandler;
-
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-
-            VaultHandler.cleanFilesystem(VAULT_LOCATION, true);
-
-            // create new vault
-            vaultHandler = new VaultHandler(VAULT_LOCATION);
-            // store the destination lookup into the vault
-            String vaultedUserName = vaultHandler.addSecuredAttribute("messaging", "userName", "guest".toCharArray());
-            String vaultedPassword = vaultHandler.addSecuredAttribute("messaging", "password", "guest".toCharArray());
-
-            addVaultConfiguration(managementClient);
-
             updateAnnotationPropertyReplacement(managementClient, true);
         }
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-
-            removeVaultConfiguration(managementClient);
-            // remove temporary files
-            vaultHandler.cleanUp();
-
             updateAnnotationPropertyReplacement(managementClient, false);
-        }
-
-
-        private void addVaultConfiguration(ManagementClient managementClient) throws IOException {
-            ModelNode op;
-            op = new ModelNode();
-            op.get(OP_ADDR).add(CORE_SERVICE, VAULT);
-            op.get(OP).set(ADD);
-            ModelNode vaultOption = op.get(VAULT_OPTIONS);
-            vaultOption.get("KEYSTORE_URL").set(vaultHandler.getKeyStore());
-            vaultOption.get("KEYSTORE_PASSWORD").set(vaultHandler.getMaskedKeyStorePassword());
-            vaultOption.get("KEYSTORE_ALIAS").set(vaultHandler.getAlias());
-            vaultOption.get("SALT").set(vaultHandler.getSalt());
-            vaultOption.get("ITERATION_COUNT").set(vaultHandler.getIterationCountAsString());
-            vaultOption.get("ENC_FILE_DIR").set(vaultHandler.getEncodedVaultFileDirectory());
-            managementClient.getControllerClient().execute(new OperationBuilder(op).build());
-        }
-
-        private void removeVaultConfiguration(ManagementClient managementClient) throws IOException {
-            ModelNode op = new ModelNode();
-            op.get(OP_ADDR).add(CORE_SERVICE, VAULT);
-            op.get(OP).set(REMOVE);
-            managementClient.getControllerClient().execute(new OperationBuilder(op).build());
         }
 
         private void updateAnnotationPropertyReplacement(ManagementClient managementClient, boolean value) throws IOException {

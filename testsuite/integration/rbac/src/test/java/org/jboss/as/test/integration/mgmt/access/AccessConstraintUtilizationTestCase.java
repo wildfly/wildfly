@@ -90,7 +90,7 @@ public class AccessConstraintUtilizationTestCase extends AbstractRbacTestCase {
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF.getKey(), false, true, false),
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM.getKey(), true, false, false),
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF.getKey(), false, true, false),
-        new ExpectedDef(SensitiveTargetAccessConstraintDefinition.SECURITY_VAULT.getKey(), true, false, false),
+        //new ExpectedDef(SensitiveTargetAccessConstraintDefinition.SECURITY_VAULT.getKey(), true, false, false),
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.SERVICE_CONTAINER.getKey(), true, false, false),
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF.getKey(), false, true, false),
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.SOCKET_CONFIG.getKey(), true, true, true),
