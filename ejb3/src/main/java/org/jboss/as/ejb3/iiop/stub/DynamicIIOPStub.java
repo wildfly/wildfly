@@ -165,8 +165,8 @@ public abstract class DynamicIIOPStub
      * server, and returns a <code>boolean</code> result to the caller.
      */
     public boolean invokeBoolean(String operationName, StubStrategy stubStrategy, Object[] params) throws Throwable {
-        return ((Boolean) invoke(operationName,
-                stubStrategy, params)).booleanValue();
+        return (Boolean) invoke(operationName,
+                stubStrategy, params);
     }
 
     /**
@@ -174,8 +174,8 @@ public abstract class DynamicIIOPStub
      * server, and returns a <code>byte</code> result to the caller.
      */
     public byte invokeByte(String operationName, StubStrategy stubStrategy, Object[] params) throws Throwable {
-        return ((Number) invoke(operationName,
-                stubStrategy, params)).byteValue();
+        return (byte) invoke(operationName,
+                stubStrategy, params);
     }
 
     /**
@@ -183,8 +183,8 @@ public abstract class DynamicIIOPStub
      * server, and returns a <code>char</code> result to the caller.
      */
     public char invokeChar(String operationName, StubStrategy stubStrategy, Object[] params) throws Throwable {
-        return ((Character) invoke(operationName,
-                stubStrategy, params)).charValue();
+        return (char) invoke(operationName,
+                stubStrategy, params);
     }
 
     /**
@@ -192,8 +192,8 @@ public abstract class DynamicIIOPStub
      * server, and returns a <code>short</code> result to the caller.
      */
     public short invokeShort(String operationName, StubStrategy stubStrategy, Object[] params) throws Throwable {
-        return ((Number) invoke(operationName,
-                stubStrategy, params)).shortValue();
+        return (short) invoke(operationName,
+                stubStrategy, params);
     }
 
     /**
@@ -201,7 +201,7 @@ public abstract class DynamicIIOPStub
      * server, and returns an <code>int</code> result to the caller.
      */
     public int invokeInt(String operationName, StubStrategy stubStrategy, Object[] params) throws Throwable {
-        return ((Number) invoke(operationName, stubStrategy, params)).intValue();
+        return (int) invoke(operationName, stubStrategy, params);
     }
 
     /**
@@ -209,7 +209,7 @@ public abstract class DynamicIIOPStub
      * server, and returns a <code>long</code> result to the caller.
      */
     public long invokeLong(String operationName, StubStrategy stubStrategy, Object[] params) throws Throwable {
-        return ((Number) invoke(operationName, stubStrategy, params)).longValue();
+        return (long) invoke(operationName, stubStrategy, params);
     }
 
     /**
@@ -217,7 +217,7 @@ public abstract class DynamicIIOPStub
      * server, and returns a <code>float</code> result to the caller.
      */
     public float invokeFloat(String operationName, StubStrategy stubStrategy, Object[] params) throws Throwable {
-        return ((Number) invoke(operationName, stubStrategy, params)).floatValue();
+        return (float) invoke(operationName, stubStrategy, params);
     }
 
     /**
@@ -225,8 +225,8 @@ public abstract class DynamicIIOPStub
      * server, and returns a <code>double</code> result to the caller.
      */
     public double invokeDouble(String operationName, StubStrategy stubStrategy, Object[] params) throws Throwable {
-        return ((Number) invoke(operationName,
-                stubStrategy, params)).doubleValue();
+        return (double) invoke(operationName,
+                stubStrategy, params);
     }
 
     @Override

@@ -228,7 +228,7 @@ public class EJBReadWriteLock implements ReadWriteLock, Serializable {
     private void checkLoopback() {
         Integer current = readLockCount.get();
         if (current != null) {
-            assert current.intValue() > 0 : "readLockCount is set, but to 0";
+            assert current > 0 : "readLockCount is set, but to 0";
             throw EjbLogger.ROOT_LOGGER.failToUpgradeToWriteLock();
         }
     }
@@ -240,11 +240,11 @@ public class EJBReadWriteLock implements ReadWriteLock, Serializable {
         Integer current = readLockCount.get();
         int next;
         assert current != null : "can't decrease, readLockCount is not set";
-        next = current.intValue() - 1;
+        next = current - 1;
         if (next == 0)
             readLockCount.remove();
         else
-            readLockCount.set(new Integer(next));
+            readLockCount.set(next);
     }
 
     /**
@@ -256,8 +256,8 @@ public class EJBReadWriteLock implements ReadWriteLock, Serializable {
         if (current == null)
             next = 1;
         else
-            next = current.intValue() + 1;
-        readLockCount.set(new Integer(next));
+            next = current + 1;
+        readLockCount.set(next);
     }
 
     /**

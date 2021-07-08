@@ -175,7 +175,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .getAttributeBuilder()
                 .setValueConverter(AttributeConverter.Factory.createHardCoded(ModelNode.TRUE, true), EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE)
                 .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("default"), true), EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE)
-                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode().set((long) Integer.MAX_VALUE), true), EJB3SubsystemModel.IDLE_TIMEOUT)
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode().set((long)(Integer.MAX_VALUE)), true), EJB3SubsystemModel.IDLE_TIMEOUT)
                 .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode().set(TimeUnit.SECONDS.name()), true), EJB3SubsystemModel.IDLE_TIMEOUT_UNIT)
                 .end();
 
