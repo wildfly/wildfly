@@ -46,7 +46,7 @@ public class ConfigPropertyResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(Constants.CONFIG_PROPERTY_VALUE, null, new ReloadRequiredWriteAttributeHandler());
+        resourceRegistration.registerReadWriteAttribute(Constants.CONFIG_PROPERTY_VALUE, null, new ReloadRequiredWriteAttributeHandler(Constants.CONFIG_PROPERTY_VALUE));
     }
 
 
