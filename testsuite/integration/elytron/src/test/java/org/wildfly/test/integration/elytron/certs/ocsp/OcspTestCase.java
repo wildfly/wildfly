@@ -32,7 +32,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CliUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.elytron.util.WelcomeContent;
@@ -45,7 +45,6 @@ import org.wildfly.test.integration.elytron.util.WelcomeContent;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({OcspTestBase.OcspServerSetup.class, WelcomeContent.SetupTask.class})
-@Ignore("WFLY-14880 / WFCORE-5461 temporary disable for CI of WFCORE")
 public class OcspTestCase extends OcspTestBase {
 
     /**
