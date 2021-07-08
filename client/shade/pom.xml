@@ -279,6 +279,13 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Multi-Release>true</Multi-Release>
+                                        <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
+                                        <Bundle-SymbolicName>org.jboss.client</Bundle-SymbolicName>
+                                        <Bundle-Version>1.0</Bundle-Version>
+                                        <Bundle-Name>Jakarta Enterprise Beans and Jakarta Messaging client library</Bundle-Name>
+                                        <Fragment-Host>org.openjdk.jmc.rjmx</Fragment-Host>
+                                        <Export-Package>*</Export-Package>
+                                        <Automatic-Module-Name>org.jboss.client</Automatic-Module-Name>
                                     </manifestEntries>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
