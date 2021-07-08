@@ -83,19 +83,6 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         return "schema/wildfly-ejb3_9_0.xsd";
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/ejb3.xml"
-        };
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
-    }
-
     @Test
     public void test15() throws Exception {
         standardSubsystemTest("subsystem15.xml", false);

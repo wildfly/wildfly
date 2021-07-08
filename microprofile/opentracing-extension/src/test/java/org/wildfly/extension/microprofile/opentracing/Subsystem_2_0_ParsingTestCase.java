@@ -72,12 +72,6 @@ public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{
-            "/subsystem-templates/microprofile-opentracing-smallrye.xml",};
-    }
-
-    @Override
     protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
         return super.standardSubsystemTest(configId, false);
     }

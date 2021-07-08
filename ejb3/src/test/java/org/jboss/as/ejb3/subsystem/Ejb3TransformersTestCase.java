@@ -92,19 +92,6 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
         return "schema/wildfly-ejb3_9_0.xsd";
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{
-                "/subsystem-templates/ejb3.xml"
-        };
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
-    }
-
     /*
      * Transformer tests not involving rejection
      */

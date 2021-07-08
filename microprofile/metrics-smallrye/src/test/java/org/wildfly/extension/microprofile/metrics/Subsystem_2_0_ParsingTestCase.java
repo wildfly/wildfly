@@ -46,13 +46,6 @@ public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/microprofile-metrics-smallrye.xml"
-        };
-    }
-
-    @Override
     protected String getSubsystemXsdPath() throws IOException {
         return "schema/wildfly-microprofile-metrics-smallrye_2_0.xsd";
     }

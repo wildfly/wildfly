@@ -47,7 +47,6 @@
         <module>galleon-common</module>
         <module>galleon-content</module>
         <module>galleon-feature-pack</module>
-        <module>legacy-feature-pack</module>
         <module>pruned</module>
     </modules>
 

@@ -60,11 +60,6 @@ public class UndertowServiceTestCase extends AbstractUndertowSubsystemTestCase {
         return "schema/wildfly-undertow_12_0.xsd";
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() {
-        return new String[] { "/subsystem-templates/undertow.xml" };
-    }
-
     @Before
     public void setUp() {
         setProperty();

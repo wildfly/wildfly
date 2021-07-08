@@ -48,11 +48,6 @@ public class UndertowSubsystem110TestCase extends AbstractUndertowSubsystemTestC
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() {
-        return new String[] { "/subsystem-templates/undertow.xml" };
-    }
-
-    @Override
     protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
         return super.standardSubsystemTest(configId, false);
     }

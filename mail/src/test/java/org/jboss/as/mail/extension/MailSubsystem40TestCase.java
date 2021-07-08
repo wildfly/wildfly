@@ -56,19 +56,6 @@ public class MailSubsystem40TestCase extends MailSubsystemTestBase {
         return "schema/wildfly-mail_4_0.xsd";
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{
-                "/subsystem-templates/mail.xml"
-        };
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
-    }
-
     /**
      * Tests that runtime information is the expected one based on the subsystem_4_0.xml subsystem configuration.
      *

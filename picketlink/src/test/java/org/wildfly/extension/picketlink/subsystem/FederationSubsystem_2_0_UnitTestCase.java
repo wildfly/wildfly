@@ -54,19 +54,6 @@ public class FederationSubsystem_2_0_UnitTestCase extends AbstractSubsystemBaseT
         return "schema/wildfly-picketlink-federation_2_0.xsd";
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/picketlink-federation.xml"
-        };
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
-    }
-
     @Test
     public void testRuntime() throws Exception {
         System.setProperty("jboss.server.data.dir", System.getProperty("java.io.tmpdir"));

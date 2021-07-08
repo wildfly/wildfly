@@ -78,19 +78,6 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         return "schema/wildfly-datasources_6_0.xsd";
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{
-                "/subsystem-templates/datasources.xml"
-        };
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
-    }
-
     @Test
     public void testFullConfig() throws Exception {
         standardSubsystemTest("datasources-full.xml");
