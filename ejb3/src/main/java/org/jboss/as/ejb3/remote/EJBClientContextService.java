@@ -145,7 +145,7 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
                     // TODO: There's a type missmatch in the 'jboss-ejb-client' component.
                     //       The EJBClientContext class and his Builder uses 'int' whereas the
                     //       EJBClientCluster class and his Builder uses 'long'
-                    int maximumConnectedClusterNodes = Long.valueOf(clientCluster.getMaximumConnectedNodes()).intValue();
+                    int maximumConnectedClusterNodes = (int) clientCluster.getMaximumConnectedNodes();
                     builder.setMaximumConnectedClusterNodes(maximumConnectedClusterNodes);
 
                     firstSelector = false;

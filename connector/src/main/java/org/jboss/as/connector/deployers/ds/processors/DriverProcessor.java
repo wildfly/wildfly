@@ -73,11 +73,9 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                     final int minorVersion = driver.getMinorVersion();
                     final boolean compliant = driver.jdbcCompliant();
                     if (compliant) {
-                        DEPLOYER_JDBC_LOGGER.deployingCompliantJdbcDriver(driverClass, Integer.valueOf(majorVersion),
-                                Integer.valueOf(minorVersion));
+                        DEPLOYER_JDBC_LOGGER.deployingCompliantJdbcDriver(driverClass, majorVersion, minorVersion);
                     } else {
-                        DEPLOYER_JDBC_LOGGER.deployingNonCompliantJdbcDriver(driverClass, Integer.valueOf(majorVersion),
-                                Integer.valueOf(minorVersion));
+                        DEPLOYER_JDBC_LOGGER.deployingNonCompliantJdbcDriver(driverClass, majorVersion, minorVersion);
                     }
                     String driverName = deploymentUnit.getName();
                     if ((driverName.contains(".") && ! driverName.endsWith(".jar")) || driverNames.size() != 1) {
