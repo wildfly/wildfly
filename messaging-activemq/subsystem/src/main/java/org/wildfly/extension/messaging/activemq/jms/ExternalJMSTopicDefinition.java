@@ -15,6 +15,7 @@
  */
 package org.wildfly.extension.messaging.activemq.jms;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +27,7 @@ import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
+import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.External;
 
 /**
  * Jakarta Messaging Topic resource definition
@@ -35,7 +37,7 @@ import org.wildfly.extension.messaging.activemq.MessagingExtension;
 public class ExternalJMSTopicDefinition extends PersistentResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = {
-        CommonAttributes.DESTINATION_ENTRIES
+        CommonAttributes.DESTINATION_ENTRIES, External.ENABLE_AMQ1_PREFIX
     };
 
     private final boolean registerRuntimeOnly;
@@ -50,15 +52,18 @@ public class ExternalJMSTopicDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Collections.singletonList(CommonAttributes.DESTINATION_ENTRIES);
+        return Arrays.asList(CommonAttributes.DESTINATION_ENTRIES, External.ENABLE_AMQ1_PREFIX);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
         if (registerRuntimeOnly) {
             registry.registerReadOnlyAttribute(CommonAttributes.DESTINATION_ENTRIES, null);
+            // Should this be read only as entries ?
+            registry.registerReadOnlyAttribute(External.ENABLE_AMQ1_PREFIX, null);
         } else {
             registry.registerReadWriteAttribute(CommonAttributes.DESTINATION_ENTRIES, null, new ReloadRequiredWriteAttributeHandler(CommonAttributes.DESTINATION_ENTRIES));
+            registry.registerReadWriteAttribute(External.ENABLE_AMQ1_PREFIX, null, new ReloadRequiredWriteAttributeHandler(External.ENABLE_AMQ1_PREFIX));
         }
     }
 
