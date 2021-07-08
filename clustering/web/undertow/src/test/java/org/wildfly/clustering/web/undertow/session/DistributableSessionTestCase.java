@@ -531,7 +531,7 @@ public class DistributableSessionTestCase {
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.batch, this.closeTask);
 
         String name = "name";
-        Integer value = Integer.valueOf(1);
+        Integer value = 1;
 
         SessionManager<Map<String, Object>, Batch> manager = mock(SessionManager.class);
         Batcher<Batch> batcher = mock(Batcher.class);
@@ -580,7 +580,7 @@ public class DistributableSessionTestCase {
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.batch, this.closeTask);
 
         String name = "name";
-        Integer value = Integer.valueOf(1);
+        Integer value = 1;
 
         SessionManager<Map<String, Object>, Batch> manager = mock(SessionManager.class);
         Batcher<Batch> batcher = mock(Batcher.class);
@@ -652,7 +652,7 @@ public class DistributableSessionTestCase {
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.batch, this.closeTask);
 
         String name = "name";
-        Integer value = Integer.valueOf(1);
+        Integer value = 1;
 
         SessionManager<Map<String, Object>, Batch> manager = mock(SessionManager.class);
         Batcher<Batch> batcher = mock(Batcher.class);

@@ -38,7 +38,7 @@ public class SimpleNearCacheFactory<K, V> implements NearCacheFactory<K, V> {
     private final NearCacheConfiguration config;
 
     public SimpleNearCacheFactory(NearCacheMode mode) {
-        this(new NearCacheConfiguration(mode, RemoteCacheConfiguration.NEAR_CACHE_MAX_ENTRIES.getDefaultValue().intValue(), RemoteCacheConfiguration.NEAR_CACHE_BLOOM_FILTER.getDefaultValue().booleanValue()));
+        this(new NearCacheConfiguration(mode, RemoteCacheConfiguration.NEAR_CACHE_MAX_ENTRIES.getDefaultValue(), RemoteCacheConfiguration.NEAR_CACHE_BLOOM_FILTER.getDefaultValue()));
     }
 
     public SimpleNearCacheFactory(NearCacheConfiguration config) {

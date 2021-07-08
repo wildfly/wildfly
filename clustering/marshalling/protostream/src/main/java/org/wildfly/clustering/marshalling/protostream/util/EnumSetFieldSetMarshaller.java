@@ -181,7 +181,7 @@ public class EnumSetFieldSetMarshaller<E extends Enum<E>> implements FieldSetMar
                 }
             } else {
                 for (Integer element : this.elements) {
-                    set.add(values[element.intValue()]);
+                    set.add(values[element]);
                 }
             }
             return this.complement ? EnumSet.complementOf(set) : set;
