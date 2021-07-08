@@ -238,7 +238,7 @@
             versions, add the artifactId or other qualifier to the property name.
          -->
         <version.asciidoctor.plugin>1.5.6</version.asciidoctor.plugin>
-        <version.commons-io>2.5</version.commons-io>
+        <version.commons-io>2.10.0</version.commons-io>
         <version.help.plugin>2.2</version.help.plugin>
         <version.jacoco.plugin>0.8.2</version.jacoco.plugin><!-- TODO property does not follow verion.groupId format -->
         <version.org.jboss.galleon>4.2.8.Final</version.org.jboss.galleon>
