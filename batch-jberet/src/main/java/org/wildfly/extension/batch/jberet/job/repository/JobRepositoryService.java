@@ -199,6 +199,11 @@ abstract class JobRepositoryService implements JobRepository, Service<JobReposit
         return getAndCheckDelegate().savePersistentDataIfNotStopping(jobExecution, abstractStepExecution);
     }
 
+    @Override
+    public List<Long> getJobExecutionsByJob(final String jobName) {
+        return getAndCheckDelegate().getJobExecutionsByJob(jobName);
+    }
+
     protected abstract void startJobRepository(StartContext context) throws StartException;
 
     protected abstract void stopJobRepository(StopContext context);
