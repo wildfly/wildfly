@@ -106,7 +106,7 @@ public class CallAS7 extends JdrCommand {
         request.get("operation").set(this.operation);
 
         assert this.resource.size() % 2 == 0;
-        while (this.resource.size() > 0) {
+        while (!this.resource.isEmpty()) {
             request.get("address").add(this.resource.removeFirst(),
                     this.resource.removeFirst());
         }

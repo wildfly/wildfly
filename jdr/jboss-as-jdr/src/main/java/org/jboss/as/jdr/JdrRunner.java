@@ -115,7 +115,7 @@ public class JdrRunner implements JdrReportCollector {
             throw new OperationFailedException(ROOT_LOGGER.couldNotConfigureJDR());
         }
 
-        if (commands.size() < 1) {
+        if (commands.isEmpty()) {
             ROOT_LOGGER.error(JdrLogger.ROOT_LOGGER.noCommandsToRun());
             throw new OperationFailedException(JdrLogger.ROOT_LOGGER.noCommandsToRun());
         }
