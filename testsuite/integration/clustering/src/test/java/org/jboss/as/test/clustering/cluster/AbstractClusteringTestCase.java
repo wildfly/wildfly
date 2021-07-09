@@ -241,6 +241,21 @@ public abstract class AbstractClusteringTestCase {
         return NODE_TO_DEPLOYMENT.get(node);
     }
 
+    public static int getPortOffsetForNode(String node) {
+        switch (node) {
+            case NODE_1:
+                return 0;
+            case NODE_2:
+                return 100;
+            case NODE_3:
+                return 200;
+            case NODE_4:
+                return 300;
+            default:
+                throw new IllegalArgumentException();
+        }
+    }
+
     public interface Lifecycle {
         void start(String... nodes);
         void stop(String... nodes);
