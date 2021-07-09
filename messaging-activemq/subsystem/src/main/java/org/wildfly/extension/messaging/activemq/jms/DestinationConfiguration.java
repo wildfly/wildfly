@@ -102,6 +102,7 @@ public class DestinationConfiguration {
             }
             Message reply = requestor.request(m);
             ROOT_LOGGER.infof("Creating queue %s returned %s", queueName, reply);
+            requestor.close();
             if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
                 String body = reply.getBody(String.class);
                 if (!destinationAlreadyExist(body)) {
@@ -125,6 +126,7 @@ public class DestinationConfiguration {
             org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "destroyQueue", queueName, true, true);
             Message reply = requestor.request(m);
             ROOT_LOGGER.debugf("Deleting queue %s returned %s", queueName, reply);
+            requestor.close();
             if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
                 throw ROOT_LOGGER.remoteDestinationDeletionFailed(queueName, reply.getBody(String.class));
             }
@@ -141,6 +143,7 @@ public class DestinationConfiguration {
             org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "createAddress", topicName, RoutingType.MULTICAST.name());
             Message reply = requestor.request(m);
             ROOT_LOGGER.infof("Creating topic %s returned %s", topicName, reply);
+            requestor.close();
             if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
                 String body = reply.getBody(String.class);
                 if (!destinationAlreadyExist(body)) {
@@ -159,6 +162,7 @@ public class DestinationConfiguration {
             Message m = session.createMessage();
             org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "deleteAddress", topicName, true);
             Message reply = requestor.request(m);
+            requestor.close();
             ROOT_LOGGER.debugf("Deleting topic " + topicName + " returned " + reply);
             if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
                 throw ROOT_LOGGER.remoteDestinationDeletionFailed(topicName, reply.getBody(String.class));
