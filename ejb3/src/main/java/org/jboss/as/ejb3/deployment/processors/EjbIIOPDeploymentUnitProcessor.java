@@ -105,7 +105,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         final EjbJarMetaData ejbMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbMetaData != null && ejbMetaData.getAssemblyDescriptor() != null) {
             List<IIOPMetaData> iiopMetaDatas = ejbMetaData.getAssemblyDescriptor().getAny(IIOPMetaData.class);
-            if (iiopMetaDatas != null && iiopMetaDatas.size() > 0) {
+            if (iiopMetaDatas != null && !iiopMetaDatas.isEmpty()) {
                 for (IIOPMetaData metaData : iiopMetaDatas) {
                     iiopMetaDataMap.put(metaData.getEjbName(), metaData);
                 }
