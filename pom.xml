@@ -466,7 +466,7 @@
         <version.org.springframework.kafka>2.6.4</version.org.springframework.kafka>
         <version.org.testng>6.14.3</version.org.testng>
         <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>17.0.0.Beta1</version.org.wildfly.core>
+        <version.org.wildfly.core>17.0.0.Beta2</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.1.7.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.14.Final</version.org.wildfly.naming-client>
