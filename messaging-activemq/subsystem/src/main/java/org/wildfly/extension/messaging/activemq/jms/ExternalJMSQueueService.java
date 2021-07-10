@@ -78,13 +78,15 @@ public class ExternalJMSQueueService implements Service<Queue> {
             try {
                 ConnectionFactory cf = (ConnectionFactory) storeBaseContext.lookup(pcfInjector.getValue().getBindInfo().getAbsoluteJndiName());
                 if (cf instanceof ActiveMQRAConnectionFactory) {
-                    ActiveMQRAConnectionFactory raCf = (ActiveMQRAConnectionFactory) cf;
-                    ServerLocator locator = raCf.getDefaultFactory().getServerLocator();
+                    final ActiveMQRAConnectionFactory raCf = (ActiveMQRAConnectionFactory) cf;
+                    final ServerLocator locator = raCf.getDefaultFactory().getServerLocator();
+                    final String protocolManagerFactor = locator.getProtocolManagerFactory().getClass().getName();
                     sessionFactory = locator.createSessionFactory();
                     ClusterTopologyListener listener = new ClusterTopologyListener() {
                         @Override
                         public void nodeUP(TopologyMember member, boolean last) {
                             try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getLive())) {
+                                factory.setProtocolManagerFactoryStr(protocolManagerFactor);
                                 MessagingLogger.ROOT_LOGGER.infof("Creating queue %s on node UP %s - %s", queueName, member.getNodeId(), member.getLive().toJson());
                                 config.createQueue(factory, managementQueue, queueName);
                             } catch (JMSException | StartException ex) {
@@ -93,6 +95,7 @@ public class ExternalJMSQueueService implements Service<Queue> {
                             }
                             if (member.getBackup() != null) {
                                 try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getBackup())) {
+                                    factory.setProtocolManagerFactoryStr(protocolManagerFactor);
                                     MessagingLogger.ROOT_LOGGER.infof("Creating queue %s on backup node UP %s - %s", queueName, member.getNodeId(), member.getBackup().toJson());
                                     config.createQueue(factory, managementQueue, queueName);
                                 } catch (JMSException | StartException ex) {
