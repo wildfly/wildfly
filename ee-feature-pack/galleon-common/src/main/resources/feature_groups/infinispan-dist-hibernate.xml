@@ -21,6 +21,9 @@
             <feature spec="subsystem.infinispan.cache-container.replicated-cache">
                 <param name="replicated-cache" value="timestamps"/>
                 <param name="mode" value="ASYNC"/>
+                <feature spec="subsystem.infinispan.cache-container.replicated-cache.component.expiration">
+                    <param name="interval" value="0"/>
+                </feature>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.invalidation-cache">
                 <param name="invalidation-cache" value="entity"/>

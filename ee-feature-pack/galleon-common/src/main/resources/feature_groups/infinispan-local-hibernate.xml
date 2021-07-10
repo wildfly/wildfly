@@ -25,6 +25,9 @@
             </feature>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
                 <param name="local-cache" value="timestamps"/>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="interval" value="0"/>
+                </feature>
             </feature>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
                 <param name="local-cache" value="pending-puts"/>
