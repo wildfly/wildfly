@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.picketlink.federation.model;
 
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -31,10 +33,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.picketlink.common.model.AbstractResourceDefinition;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
 import org.wildfly.extension.picketlink.federation.FederationExtension;
-
-import java.util.List;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -53,16 +52,10 @@ public abstract class AbstractFederationResourceDefinition extends AbstractResou
     @Override
     protected OperationStepHandler createAttributeWriterHandler() {
         List<SimpleAttributeDefinition> attributes = getAttributes();
-        final List<AttributeDefinition> alternativeAttributes = getAlternativesAttributes();
 
         return new ReloadRequiredWriteAttributeHandler(attributes.toArray(new AttributeDefinition[attributes.size()])) {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                if (!alternativeAttributes.isEmpty()) {
-                    context.addStep(new AlternativeAttributeValidationStepHandler(alternativeAttributes
-                            .toArray(new AttributeDefinition[alternativeAttributes.size()])),
-                        OperationContext.Stage.MODEL);
-                }
 
                 doRegisterModelWriteAttributeHandler(context, operation);
 

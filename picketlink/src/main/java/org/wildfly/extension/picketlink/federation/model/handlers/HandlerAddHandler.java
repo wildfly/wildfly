@@ -34,7 +34,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.picketlink.config.federation.handler.Handler;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
 import org.wildfly.extension.picketlink.common.model.validator.UniqueTypeValidationStepHandler;
 import org.wildfly.extension.picketlink.federation.service.EntityProviderService;
 
@@ -51,9 +50,6 @@ public class HandlerAddHandler extends AbstractAddStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        context.addStep(new AlternativeAttributeValidationStepHandler(new SimpleAttributeDefinition[] {
-            HandlerResourceDefinition.CLASS_NAME, HandlerResourceDefinition.CODE
-        }), OperationContext.Stage.MODEL);
         context.addStep(new UniqueTypeValidationStepHandler(ModelElement.COMMON_HANDLER) {
             @Override
             protected String getType(OperationContext context, ModelNode model) throws OperationFailedException {

@@ -70,14 +70,6 @@ public abstract class AbstractResourceDefinition extends SimpleResourceDefinitio
 
     private void initializeAttributes(SimpleAttributeDefinition[] attributes) {
         Collections.addAll(this.attributes, attributes);
-
-        for (SimpleAttributeDefinition attribute : getAttributes()) {
-            boolean hasAlternatives = attribute.getAlternatives() != null && attribute.getAlternatives().length > 0;
-
-            if (hasAlternatives) {
-                alternativeAttributes.add(attribute);
-            }
-        }
     }
 
     public static List<SimpleAttributeDefinition> getAttributeDefinition(ModelElement modelElement) {
@@ -135,10 +127,6 @@ public abstract class AbstractResourceDefinition extends SimpleResourceDefinitio
     }
 
     protected abstract OperationStepHandler createAttributeWriterHandler();
-
-    protected List<AttributeDefinition> getAlternativesAttributes() {
-        return this.alternativeAttributes;
-    }
 
     public List<SimpleAttributeDefinition> getAttributes() {
         return Collections.unmodifiableList(this.attributes);

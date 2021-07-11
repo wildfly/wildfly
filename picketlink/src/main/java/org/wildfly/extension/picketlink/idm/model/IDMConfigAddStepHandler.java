@@ -31,7 +31,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
 import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 
@@ -60,18 +59,6 @@ public class IDMConfigAddStepHandler extends RestartParentResourceAddHandler {
     }
 
     private void configureModelValidators(ModelValidationStepHandler[] modelValidators) {
-        List<AttributeDefinition> alternativeAttributes = new ArrayList<AttributeDefinition>();
-
-        for (AttributeDefinition attribute : this.attributes) {
-            if (attribute.getAlternatives() != null && attribute.getAlternatives().length > 0) {
-                alternativeAttributes.add(attribute);
-            }
-        }
-
-        if (!alternativeAttributes.isEmpty()) {
-            this.modelValidators.add(new AlternativeAttributeValidationStepHandler(
-                alternativeAttributes.toArray(new AttributeDefinition[alternativeAttributes.size()]), isAlternativesRequired()));
-        }
 
         if (modelValidators != null) {
             this.modelValidators.addAll(Arrays.asList(modelValidators));
@@ -87,10 +74,6 @@ public class IDMConfigAddStepHandler extends RestartParentResourceAddHandler {
                 PartitionManagerAddHandler.INSTANCE.validateModel(context, address.getLastElement().getValue(), parentModel);
             }
         });
-    }
-
-    protected boolean isAlternativesRequired() {
-        return true;
     }
 
     @Override
