@@ -234,7 +234,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             }
         }
 
-        if (required.size() > 0) {
+        if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
         final PathAddress address = parentAddress.append(secDomainPath);
@@ -492,7 +492,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         }
 
         node.get(OP_ADDR).set(parentAddress.append(keyName, name).toModelNode());
-        if (required.size() > 0) {
+        if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
         parseProperties(Element.MODULE_OPTION.getLocalName(), reader, node, LoginModuleResourceDefinition.MODULE_OPTIONS);
@@ -559,7 +559,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             }
         }
 
-        if (required.size() > 0) {
+        if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
 

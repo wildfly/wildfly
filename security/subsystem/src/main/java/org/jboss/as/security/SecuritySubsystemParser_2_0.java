@@ -137,7 +137,7 @@ public class SecuritySubsystemParser_2_0 extends SecuritySubsystemParser {
             }
         }
 
-        if (required.size() > 0) {
+        if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
 
@@ -206,7 +206,7 @@ public class SecuritySubsystemParser_2_0 extends SecuritySubsystemParser {
             }
         }
 
-        if (required.size() > 0) {
+        if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
 
