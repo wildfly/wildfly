@@ -72,7 +72,6 @@
                 <module>clustering</module>
                 <module>multinode</module>
                 <module>manualmode</module>
-                <module>picketlink</module>
                 <module>secman</module>
                 <module>legacy</module>
                 <module>legacy-ejb-client</module>
@@ -98,7 +97,6 @@
                 <module>rbac</module>
                 <module>multinode</module>
                 <module>manualmode</module>
-                <module>picketlink</module>
                 <module>secman</module>
                 <module>legacy</module>
                 <module>legacy-ejb-client</module>
