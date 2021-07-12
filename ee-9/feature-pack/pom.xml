@@ -143,11 +143,6 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.wildfly.core</groupId>
-                                    <artifactId>wildfly-core-feature-pack-common</artifactId>
-                                    <type>zip</type>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.wildfly.core</groupId>
                                     <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
                                     <type>zip</type>
                                 </artifactItem>
@@ -272,7 +267,7 @@
                 <configuration>
                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                     <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                    <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-jar-boot|infinispan-hibernate-cache-v51|jboss-ejb-client-legacy|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-servlet-galleon-pack|wildfly-ee-feature-pack-common|wildfly-ee-feature-pack-galleon-common|wildfly-ee-feature-pack-pruned|wildfly-elytron\z</excludedArtifacts>
+                    <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-jar-boot|infinispan-hibernate-cache-v51|jboss-ejb-client-legacy|wildfly-core-feature-pack-galleon-common|wildfly-servlet-galleon-pack|wildfly-ee-feature-pack-common|wildfly-ee-feature-pack-galleon-common|wildfly-ee-feature-pack-pruned|wildfly-elytron\z</excludedArtifacts>
                 </configuration>
                 <executions>
                     <execution>
@@ -353,10 +348,9 @@
         <!-- module and copy artifact dependencies -->
 
         <!-- WildFly Core feature pack content -->
-
         <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-core-feature-pack-common</artifactId>
+            <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
             <type>pom</type>
             <scope>provided</scope>
             <exclusions>
@@ -365,13 +359,6 @@
                     <artifactId>jakarta.json</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
-            <type>pom</type>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -1443,7 +1430,7 @@
                                                 <exclude>sun.jdk:jconsole</exclude>
                                                 <!-- Ignore the shared resource poms as those we want their
                                                      transitives. Those poms ban transitives at their level -->
-                                                <exclude>org.wildfly.core:wildfly-core-feature-pack-common</exclude>
+                                                <exclude>org.wildfly.core:wildfly-core-feature-pack-galleon-common</exclude>
                                                 <exclude>${full.maven.groupId}:wildfly-mp-feature-pack-galleon-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-servlet-feature-pack-common</exclude>
