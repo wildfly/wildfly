@@ -1,7 +1,6 @@
-<application xmlns="http://java.sun.com/xml/ns/javaee"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_6.xsd"
-             version="6">
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/application_8.xsd"
+             version="8">
     <initialize-in-order>true</initialize-in-order>
     <module>
         <ejb>core.jar</ejb>
