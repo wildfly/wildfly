@@ -41,6 +41,7 @@ import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.web.DistributableTestCase;
 import org.jboss.as.test.clustering.cluster.web.EnableUndertowStatisticsSetupTask;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -436,7 +437,8 @@ public abstract class SessionExpirationTestCase extends AbstractClusteringTestCa
             }
 
             // Trigger timeout of sessionId
-            Thread.sleep(AbstractClusteringTestCase.GRACE_TIME_TO_REPLICATE);
+            // TODO See how we can safely lower this timeout and still consistently pass on CI.
+            Thread.sleep(TimeoutUtil.adjust(20_000));
 
             boolean destroyed = false;
             String newSessionId = null;
