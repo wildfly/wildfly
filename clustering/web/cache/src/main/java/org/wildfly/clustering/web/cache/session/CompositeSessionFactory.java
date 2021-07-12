@@ -86,20 +86,14 @@ public class CompositeSessionFactory<C, V, L> extends CompositeImmutableSessionF
 
     @Override
     public boolean remove(String id) {
-        if (this.metaDataFactory.remove(id)) {
-            this.attributesFactory.remove(id);
-            return true;
-        }
-        return false;
+        this.attributesFactory.remove(id);
+        return this.metaDataFactory.remove(id);
     }
 
     @Override
     public boolean purge(String id) {
-        if (this.metaDataFactory.purge(id)) {
-            this.attributesFactory.purge(id);
-            return true;
-        }
-        return false;
+        this.attributesFactory.purge(id);
+        return this.metaDataFactory.purge(id);
     }
 
     @Override

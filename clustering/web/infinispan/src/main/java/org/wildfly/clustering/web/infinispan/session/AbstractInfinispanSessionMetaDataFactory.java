@@ -154,8 +154,8 @@ public abstract class AbstractInfinispanSessionMetaDataFactory<L> implements Ses
     }
 
     private boolean delete(String id, Set<Flag> flags) {
-        this.creationMetaDataCache.getAdvancedCache().withFlags(flags).remove(new SessionCreationMetaDataKey(id));
         this.accessMetaDataCache.getAdvancedCache().withFlags(flags).remove(new SessionAccessMetaDataKey(id));
+        this.creationMetaDataCache.getAdvancedCache().withFlags(flags).remove(new SessionCreationMetaDataKey(id));
         return true;
     }
 
