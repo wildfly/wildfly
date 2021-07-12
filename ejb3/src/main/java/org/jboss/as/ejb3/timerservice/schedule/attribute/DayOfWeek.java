@@ -64,7 +64,7 @@ public class DayOfWeek extends IntegerBasedExpression {
         for (Integer dayOfWeek : this.absoluteValues) {
             if (dayOfWeek == 7) {
                 this.absoluteValues.remove(dayOfWeek);
-                this.absoluteValues.add(new Integer(0));
+                this.absoluteValues.add(0);
             }
         }
         if (OFFSET != 0) {
