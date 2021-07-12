@@ -34,3 +34,5 @@ ifdef::basebackend-html[toc::[]]
 
 include::_migration-guide/Introduction.adoc[]
 
+include::_migration-guide/Vault.adoc[]
+
