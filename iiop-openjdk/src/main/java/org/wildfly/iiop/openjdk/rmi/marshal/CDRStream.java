@@ -364,7 +364,7 @@ public class CDRStream {
         }
 
         public Object read(InputStream in) {
-            return new Boolean(in.read_boolean());
+            return in.read_boolean();
         }
     }
 
@@ -380,7 +380,7 @@ public class CDRStream {
         }
 
         public Object read(InputStream in) {
-            return new Byte(in.read_octet());
+            return in.read_octet();
         }
     }
 
@@ -396,7 +396,7 @@ public class CDRStream {
         }
 
         public Object read(InputStream in) {
-            return new Character(in.read_wchar());
+            return in.read_wchar();
         }
     }
 
@@ -412,7 +412,7 @@ public class CDRStream {
         }
 
         public Object read(InputStream in) {
-            return new Double(in.read_double());
+            return in.read_double();
         }
     }
 
@@ -428,7 +428,7 @@ public class CDRStream {
         }
 
         public Object read(InputStream in) {
-            return new Float(in.read_float());
+            return in.read_float();
         }
     }
 
@@ -444,7 +444,7 @@ public class CDRStream {
         }
 
         public Object read(InputStream in) {
-            return new Integer(in.read_long());
+            return in.read_long();
         }
     }
 
@@ -460,7 +460,7 @@ public class CDRStream {
         }
 
         public Object read(InputStream in) {
-            return new Long(in.read_longlong());
+            return in.read_longlong();
         }
     }
 
@@ -476,7 +476,7 @@ public class CDRStream {
         }
 
         public Object read(InputStream in) {
-            return new Short(in.read_short());
+            return in.read_short();
         }
     }
 
@@ -670,7 +670,7 @@ public class CDRStream {
         }
 
         public void write(OutputStream out, Object obj) {
-            out.write_boolean(((Boolean) obj).booleanValue());
+            out.write_boolean((Boolean) obj);
         }
     }
 
@@ -686,7 +686,7 @@ public class CDRStream {
         }
 
         public void write(OutputStream out, Object obj) {
-            out.write_octet(((Byte) obj).byteValue());
+            out.write_octet((Byte) obj);
         }
     }
 
@@ -703,7 +703,7 @@ public class CDRStream {
         }
 
         public void write(OutputStream out, Object obj) {
-            out.write_wchar(((Character) obj).charValue());
+            out.write_wchar((Character) obj);
         }
     }
 
@@ -719,7 +719,7 @@ public class CDRStream {
         }
 
         public void write(OutputStream out, Object obj) {
-            out.write_double(((Double) obj).doubleValue());
+            out.write_double((Double) obj);
         }
     }
 
@@ -735,7 +735,7 @@ public class CDRStream {
         }
 
         public void write(OutputStream out, Object obj) {
-            out.write_float(((Float) obj).floatValue());
+            out.write_float((Float) obj);
         }
     }
 
@@ -751,7 +751,7 @@ public class CDRStream {
         }
 
         public void write(OutputStream out, Object obj) {
-            out.write_long(((Integer) obj).intValue());
+            out.write_long((Integer) obj);
         }
     }
 
@@ -767,7 +767,7 @@ public class CDRStream {
         }
 
         public void write(OutputStream out, Object obj) {
-            out.write_longlong(((Long) obj).longValue());
+            out.write_longlong((Long) obj);
         }
     }
 
@@ -783,7 +783,7 @@ public class CDRStream {
         }
 
         public void write(OutputStream out, Object obj) {
-            out.write_short(((Short) obj).shortValue());
+            out.write_short((Short) obj);
         }
     }
 

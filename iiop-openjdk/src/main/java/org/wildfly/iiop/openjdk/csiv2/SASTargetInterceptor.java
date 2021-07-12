@@ -433,7 +433,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
         // accept (CompleteEstablishContext) reply together with an exception.
         //
         // The CSIv2 spec does not explicitly disallow an SAS accept in an IIOP exception reply.
-        boolean interopIONA = Boolean.valueOf(CorbaORBService.getORBProperty(Constants.INTEROP_IONA));
+        boolean interopIONA = Boolean.parseBoolean(CorbaORBService.getORBProperty(Constants.INTEROP_IONA));
         if (threadLocal.sasReply != null && !interopIONA) {
             try {
                 ServiceContext sc = new ServiceContext(sasContextId, codec.encode_value(threadLocal.sasReply));
