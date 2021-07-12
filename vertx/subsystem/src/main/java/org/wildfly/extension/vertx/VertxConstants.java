@@ -15,11 +15,11 @@
  */
 package org.wildfly.extension.vertx;
 
-public class VertxConstants {
+public interface VertxConstants {
 
-    public static final String NAME = "name";
-    public static final String JNDI_NAME = "jndi-name";
-    public static final String VERTX_OPTIONS_FILE = "vertx-options-file";
+    String NAME = "name";
+    String JNDI_NAME = "jndi-name";
+    String VERTX_OPTIONS_FILE = "vertx-options-file";
+    String VERTX_OPTIONS_URL = "org.wildfly.vertx.options.url";
 
-    public static final String VERTX_OPTIONS_URL = "org.wildfly.vertx.options.url";
 }

@@ -32,5 +32,6 @@
         <module name="com.fasterxml.jackson.core.jackson-databind" />
         <module name="org.infinispan" />
         <module name="org.jgroups" />
+        <module name="io.vertx.modules" optional="true" />
     </dependencies>
 </module>

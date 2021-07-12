@@ -17,7 +17,6 @@ package org.wildfly.extension.vertx.logging;
 
 import static org.jboss.logging.Logger.Level.INFO;
 
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -46,7 +45,7 @@ public interface VertxLogger extends BasicLogger {
     IllegalStateException illegalException(@Cause Exception e);
 
     @Message(id = 5, value = "Failed to start Vertx %s")
-    OperationFailedException failedToStartVertx(String name, @Cause Exception e);
+    IllegalStateException failedToStartVertx(String name, @Cause Exception e);
 
 
 

@@ -49,7 +49,7 @@ class VertxProxyService implements Service {
         VertxManagementReferenceFactory valueManagedReferenceFactory = new VertxManagementReferenceFactory(service);
         binderService.getManagedObjectInjector().inject(valueManagedReferenceFactory);
         final ServiceBuilder<?> builder = context.getServiceTarget().addService(bindInfo.getBinderServiceName());
-          builder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
+        builder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
         builder.setInstance(binderService)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(new LifecycleListener() {
@@ -79,8 +79,8 @@ class VertxProxyService implements Service {
                 .install();
     }
 
-    VertxProxy getValue() {
-        return this.vertxProxy;
+    VertxDelegate getValue() {
+        return this.vertxProxy.getVertx();
     }
 
     private VertxProxyService(VertxProxy vertxProxy) {
