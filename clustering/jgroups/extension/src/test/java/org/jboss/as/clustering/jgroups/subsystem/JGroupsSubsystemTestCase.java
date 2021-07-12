@@ -63,7 +63,7 @@ public class JGroupsSubsystemTestCase extends ClusteringSubsystemTest<JGroupsSch
     private final JGroupsSchema schema;
 
     public JGroupsSubsystemTestCase(JGroupsSchema schema) {
-        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), schema, JGroupsSchema.CURRENT, "subsystem-jgroups-%d_%d.xml", "schema/jboss-as-jgroups_%d_%d.xsd");
+        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), schema, "subsystem-jgroups-%d_%d.xml", "schema/jboss-as-jgroups_%d_%d.xsd");
         this.schema = schema;
     }
 
