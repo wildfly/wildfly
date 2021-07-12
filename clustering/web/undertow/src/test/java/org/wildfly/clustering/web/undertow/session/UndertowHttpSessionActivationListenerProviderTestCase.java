@@ -90,13 +90,13 @@ public class UndertowHttpSessionActivationListenerProviderTestCase {
         listener.sessionWillPassivate(event);
 
         verify(prePassivate).accept(session);
-        verifyZeroInteractions(postActivate);
+        verifyNoInteractions(postActivate);
 
         reset(prePassivate, postActivate);
 
         listener.sessionDidActivate(event);
 
-        verifyZeroInteractions(prePassivate);
+        verifyNoInteractions(prePassivate);
         verify(postActivate).accept(session);
     }
 }
