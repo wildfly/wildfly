@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,39 +19,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.infinispan.spi.distribution;
 
+import java.util.List;
+
 import org.infinispan.Cache;
-import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.ch.KeyPartitioner;
 import org.infinispan.remoting.transport.Address;
 
 /**
- * {@link Locality} implementation based on a {@link ConsistentHash}.
+ * Key distribution appropriate for any cache mode.
  * @author Paul Ferraro
  */
-public class ConsistentHashLocality implements Locality {
+public class CacheKeyDistribution implements KeyDistribution {
 
-    private final KeyDistribution distribution;
-    private final Address localAddress;
+    private final DistributionManager distribution;
+    private final KeyPartitioner partitioner;
 
     @SuppressWarnings("deprecation")
-    public ConsistentHashLocality(Cache<?, ?> cache, ConsistentHash hash) {
-        this(cache.getAdvancedCache().getComponentRegistry().getLocalComponent(KeyPartitioner.class), hash, cache.getAdvancedCache().getDistributionManager().getCacheTopology().getLocalAddress());
-    }
-
-    private ConsistentHashLocality(KeyPartitioner partitioner, ConsistentHash hash, Address localAddress) {
-        this(new ConsistentHashKeyDistribution(partitioner, hash), localAddress);
-    }
-
-    ConsistentHashLocality(KeyDistribution distribution, Address localAddress) {
-        this.distribution = distribution;
-        this.localAddress = localAddress;
+    public CacheKeyDistribution(Cache<?, ?> cache) {
+        this.distribution = cache.getAdvancedCache().getDistributionManager();
+        this.partitioner = cache.getAdvancedCache().getComponentRegistry().getLocalComponent(KeyPartitioner.class);
     }
 
     @Override
-    public boolean isLocal(Object key) {
-        Address primary = this.distribution.getPrimaryOwner(key);
-        return this.localAddress.equals(primary);
+    public Address getPrimaryOwner(Object key) {
+        return this.getCurrentKeyDistribution().getPrimaryOwner(key);
+    }
+
+    @Override
+    public List<Address> getOwners(Object key) {
+        return this.getCurrentKeyDistribution().getOwners(key);
+    }
+
+    private KeyDistribution getCurrentKeyDistribution() {
+        return (this.distribution != null) ? new ConsistentHashKeyDistribution(this.partitioner, this.distribution.getCacheTopology().getWriteConsistentHash()) : LocalKeyDistribution.INSTANCE;
     }
 }

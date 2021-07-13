@@ -22,33 +22,20 @@
 
 package org.wildfly.clustering.web.infinispan.routing;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.stream.Collectors;
+import java.util.Collections;
 
-import org.infinispan.AdvancedCache;
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.distribution.DistributionManager;
-import org.infinispan.distribution.LocalizedCacheTopology;
-import org.infinispan.distribution.ch.ConsistentHash;
-import org.infinispan.distribution.ch.KeyPartitioner;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.topology.CacheTopology;
-import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.infinispan.spi.distribution.KeyDistribution;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.routing.RouteLocator;
@@ -56,107 +43,82 @@ import org.wildfly.clustering.web.routing.RouteLocator;
 /**
  * @author Paul Ferraro
  */
-@RunWith(value = Parameterized.class)
 public class RankedRouteLocatorTestCase {
 
-    @Parameters
-    public static Iterable<CacheMode> cacheModes() {
-        return EnumSet.allOf(CacheMode.class).stream().filter(CacheMode::isSynchronous).collect(Collectors.toList());
-    }
-
-    private final Address[] addresses = new Address[] { mock(Address.class), mock(Address.class), mock(Address.class) };
-    private final Address localAddress = mock(Address.class);
-    private final Node[] members = new Node[] { mock(Node.class), mock(Node.class), mock(Node.class) };
-    private final Node localMember = mock(Node.class);
-    private final AdvancedCache<String, ?> cache = mock(AdvancedCache.class);
-    private final DistributionManager dist = mock(DistributionManager.class);
-    private final NodeFactory<Address> factory = mock(NodeFactory.class);
-    private final Registry<String, Void> registry = mock(Registry.class);
-    private final Group group = mock(Group.class);
-    private final KeyPartitioner partitioner = mock(KeyPartitioner.class);
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public RankedRouteLocatorTestCase(CacheMode mode) {
-        EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
-        Configuration config = new ConfigurationBuilder().clustering().cacheMode(mode).build();
-        when(this.cache.getCacheManager()).thenReturn(manager);
-        when(manager.getAddress()).thenReturn(this.localAddress);
-        when(this.cache.getCacheConfiguration()).thenReturn(config);
-        when(this.cache.getAdvancedCache()).thenReturn((AdvancedCache) this.cache);
-        when(this.cache.getDistributionManager()).thenReturn(this.dist);
-        ConsistentHash hash = mock(ConsistentHash.class);
-        when(hash.getMembers()).thenReturn(Arrays.asList(this.addresses));
-        when(hash.getNumSegments()).thenReturn(3);
-        when(hash.isReplicated()).thenReturn(mode.isReplicated());
-        // Segment 0, local is not an owner
-        when(hash.locatePrimaryOwnerForSegment(0)).thenReturn(this.addresses[0]);
-        when(hash.locateOwnersForSegment(0)).thenReturn(mode.isDistributed() || mode.isScattered() ? Arrays.asList(this.addresses).subList(0, 2) : Arrays.asList(this.addresses[0], this.addresses[1], this.addresses[2]));
-        // Segment 1, local is primary owner
-        when(hash.locatePrimaryOwnerForSegment(1)).thenReturn(this.addresses[1]);
-        when(hash.locateOwnersForSegment(1)).thenReturn(mode.isDistributed() || mode.isScattered() ? Arrays.asList(this.addresses).subList(1, 3) : Arrays.asList(this.addresses[1], this.addresses[2], this.addresses[0]));
-        // Segment 2, local is a backup owner
-        when(hash.locatePrimaryOwnerForSegment(2)).thenReturn(this.addresses[2]);
-        when(hash.locateOwnersForSegment(2)).thenReturn(mode.isDistributed() || mode.isScattered() ? Arrays.asList(this.addresses[2], this.addresses[0]) : Arrays.asList(this.addresses[2], this.addresses[0], this.addresses[1]));
-        CacheTopology topology = new CacheTopology(1, 1, hash, null, CacheTopology.Phase.NO_REBALANCE, hash.getMembers(), null);
-        LocalizedCacheTopology localizedTopology = new LocalizedCacheTopology(mode, topology, this.partitioner, manager.getAddress(), true);
-        when(this.dist.getCacheTopology()).thenReturn(localizedTopology);
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     public void test() {
-        RankedRouteLocatorConfiguration config = mock(RankedRouteLocatorConfiguration.class);
+        KeyDistribution distribution = mock(KeyDistribution.class);
+        NodeFactory<Address> factory = mock(NodeFactory.class);
+        Registry<String, Void> registry = mock(Registry.class);
+        Group group = mock(Group.class);
+        Address owner1 = mock(Address.class);
+        Address owner2 = mock(Address.class);
+        Address owner3 = mock(Address.class);
+        Address owner4 = mock(Address.class);
+        Address unregistered = mock(Address.class);
+        Address local = mock(Address.class);
+        Node member1 = mock(Node.class);
+        Node member2 = mock(Node.class);
+        Node member3 = mock(Node.class);
+        Node member4 = mock(Node.class);
+        Node unregisteredMember = mock(Node.class);
+        Node localMember = mock(Node.class);
 
-        when(config.getCache()).thenReturn((AdvancedCache) this.cache);
-        when(config.getMemberFactory()).thenReturn(this.factory);
-        when(config.getRegistry()).thenReturn(this.registry);
-        when(config.getDelimiter()).thenReturn(".");
-        when(config.getMaxRoutes()).thenReturn(3);
-        for (int i = 0; i < this.addresses.length; ++i) {
-            when(this.factory.createNode(this.addresses[i])).thenReturn(this.members[i]);
-            when(this.registry.getEntry(this.members[i])).thenReturn(new AbstractMap.SimpleImmutableEntry<>(String.valueOf(i), null));
-        }
-        when(this.registry.getGroup()).thenReturn(this.group);
-        when(this.group.getLocalMember()).thenReturn(this.localMember);
-        when(this.registry.getEntry(this.localMember)).thenReturn(new AbstractMap.SimpleImmutableEntry<>("local", null));
+        when(registry.getGroup()).thenReturn(group);
+        when(group.getLocalMember()).thenReturn(localMember);
+        when(registry.getEntry(member1)).thenReturn(new SimpleImmutableEntry<>("member1", null));
+        when(registry.getEntry(member2)).thenReturn(new SimpleImmutableEntry<>("member2", null));
+        when(registry.getEntry(member3)).thenReturn(new SimpleImmutableEntry<>("member3", null));
+        when(registry.getEntry(member4)).thenReturn(new SimpleImmutableEntry<>("member4", null));
+        when(registry.getEntry(localMember)).thenReturn(new SimpleImmutableEntry<>("local", null));
+        when(registry.getEntry(unregisteredMember)).thenReturn(null);
+        when(factory.createNode(owner1)).thenReturn(member1);
+        when(factory.createNode(owner2)).thenReturn(member2);
+        when(factory.createNode(owner3)).thenReturn(member3);
+        when(factory.createNode(owner4)).thenReturn(member4);
+        when(factory.createNode(local)).thenReturn(localMember);
+        when(factory.createNode(unregistered)).thenReturn(unregisteredMember);
 
-        RouteLocator locator = new RankedRouteLocator(config);
+        RouteLocator locator = new RankedRouteLocator(distribution, registry, factory, ".", 3);
 
-        switch (this.cache.getCacheConfiguration().clustering().cacheMode()) {
-            case SCATTERED_SYNC:
-            case DIST_SYNC: {
-                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(0);
-                String result = locator.locate("session");
-                Assert.assertEquals("0.1.local", result);
+        when(distribution.getOwners(new GroupedKey<>("key"))).thenReturn(Arrays.asList(owner1, owner2, owner3, owner4));
 
-                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(1);
-                result = locator.locate("session");
-                Assert.assertEquals("1.2.local", result);
+        assertEquals("member1.member2.member3", locator.locate("key"));
 
-                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(2);
-                result = locator.locate("session");
-                Assert.assertEquals("2.0.local", result);
-                break;
-            }
-            case INVALIDATION_SYNC:
-            case REPL_SYNC: {
-                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(0);
-                String result = locator.locate("session");
-                Assert.assertEquals("0.1.2", result);
+        when(distribution.getOwners(new GroupedKey<>("key"))).thenReturn(Arrays.asList(owner1, owner2, owner3, local));
 
-                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(1);
-                result = locator.locate("session");
-                Assert.assertEquals("1.2.0", result);
+        assertEquals("member1.member2.member3", locator.locate("key"));
 
-                when(this.partitioner.getSegment(new GroupedKey<>("session"))).thenReturn(2);
-                result = locator.locate("session");
-                Assert.assertEquals("2.0.1", result);
-                break;
-            }
-            default: {
-                String result = locator.locate("session");
-                Assert.assertEquals("local", result);
-            }
-        }
+        when(distribution.getOwners(new GroupedKey<>("key"))).thenReturn(Arrays.asList(owner1, owner2, unregistered, owner4));
+
+        assertEquals("member1.member2.member4", locator.locate("key"));
+
+        when(distribution.getOwners(new GroupedKey<>("key"))).thenReturn(Arrays.asList(owner1, local, owner3));
+
+        assertEquals("member1.local.member3", locator.locate("key"));
+
+        when(distribution.getOwners(new GroupedKey<>("key"))).thenReturn(Arrays.asList(owner1, owner2));
+
+        assertEquals("member1.member2.local", locator.locate("key"));
+
+        when(distribution.getOwners(new GroupedKey<>("key"))).thenReturn(Arrays.asList(local, owner2));
+
+        assertEquals("local.member2", locator.locate("key"));
+
+        when(distribution.getOwners(new GroupedKey<>("key"))).thenReturn(Arrays.asList(owner1));
+
+        assertEquals("member1.local", locator.locate("key"));
+
+        when(distribution.getOwners(new GroupedKey<>("key"))).thenReturn(Arrays.asList(local));
+
+        assertEquals("local", locator.locate("key"));
+
+        when(distribution.getOwners(new GroupedKey<>("key"))).thenReturn(Arrays.asList(unregistered));
+
+        assertEquals("local", locator.locate("key"));
+
+        when(distribution.getOwners(new GroupedKey<>("key"))).thenReturn(Collections.emptyList());
+
+        assertEquals("local", locator.locate("key"));
     }
 }

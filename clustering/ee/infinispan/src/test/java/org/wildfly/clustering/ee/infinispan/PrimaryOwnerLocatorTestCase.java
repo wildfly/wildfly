@@ -20,23 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.spi.affinity;
+package org.wildfly.clustering.ee.infinispan;
 
-import java.util.function.Predicate;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
-import org.infinispan.Cache;
-import org.infinispan.affinity.KeyAffinityService;
-import org.infinispan.affinity.KeyGenerator;
+import java.util.function.Function;
+
 import org.infinispan.remoting.transport.Address;
+import org.junit.Test;
+import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.infinispan.spi.distribution.KeyDistribution;
+import org.wildfly.clustering.spi.NodeFactory;
 
 /**
- * Factory for a {@link KeyAffinityService} whose implementation varies depending on cache mode.
  * @author Paul Ferraro
  */
-public class DefaultKeyAffinityServiceFactory implements KeyAffinityServiceFactory {
+public class PrimaryOwnerLocatorTestCase {
 
-    @Override
-    public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator, Predicate<Address> filter) {
-        return cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new DefaultKeyAffinityService<>(cache, generator, filter) : new SimpleKeyAffinityService<>(generator);
+    @Test
+    public void test() {
+        KeyDistribution distribution = mock(KeyDistribution.class);
+        NodeFactory<Address> memberFactory = mock(NodeFactory.class);
+        Address address = mock(Address.class);
+        Node member = mock(Node.class);
+        Object key = new Object();
+
+        Function<Object, Node> locator = new PrimaryOwnerLocator<>(distribution, memberFactory);
+
+        when(distribution.getPrimaryOwner(key)).thenReturn(address);
+        when(memberFactory.createNode(address)).thenReturn(member);
+
+        Node result = locator.apply(key);
+
+        assertSame(member, result);
     }
 }

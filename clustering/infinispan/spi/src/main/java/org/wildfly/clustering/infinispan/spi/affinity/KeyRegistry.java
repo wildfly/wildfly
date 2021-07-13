@@ -22,21 +22,27 @@
 
 package org.wildfly.clustering.infinispan.spi.affinity;
 
-import java.util.function.Predicate;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 
-import org.infinispan.Cache;
-import org.infinispan.affinity.KeyAffinityService;
-import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.remoting.transport.Address;
 
 /**
- * Factory for a {@link KeyAffinityService} whose implementation varies depending on cache mode.
+ * A registry of keys with affinity to a given address.
  * @author Paul Ferraro
  */
-public class DefaultKeyAffinityServiceFactory implements KeyAffinityServiceFactory {
+public interface KeyRegistry<K> {
 
-    @Override
-    public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator, Predicate<Address> filter) {
-        return cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new DefaultKeyAffinityService<>(cache, generator, filter) : new SimpleKeyAffinityService<>(generator);
-    }
+    /**
+     * Returns the addresses for which pre-generated keys are available.
+     * @return a set of cluster members
+     */
+    Set<Address> getAddresses();
+
+    /**
+     * Returns a queue of pre-generated keys with affinity for the specified address.
+     * @param address the address of a cluster member.
+     * @return a queue of pre-generated keys
+     */
+    BlockingQueue<K> getKeys(Address address);
 }

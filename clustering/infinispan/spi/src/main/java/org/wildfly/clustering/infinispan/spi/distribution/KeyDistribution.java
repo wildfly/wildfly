@@ -20,23 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.spi.affinity;
+package org.wildfly.clustering.infinispan.spi.distribution;
 
-import java.util.function.Predicate;
+import java.util.List;
 
-import org.infinispan.Cache;
-import org.infinispan.affinity.KeyAffinityService;
-import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.remoting.transport.Address;
 
 /**
- * Factory for a {@link KeyAffinityService} whose implementation varies depending on cache mode.
+ * Provides key distribution functions.
  * @author Paul Ferraro
  */
-public class DefaultKeyAffinityServiceFactory implements KeyAffinityServiceFactory {
+public interface KeyDistribution {
 
-    @Override
-    public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator, Predicate<Address> filter) {
-        return cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new DefaultKeyAffinityService<>(cache, generator, filter) : new SimpleKeyAffinityService<>(generator);
-    }
+    /**
+     * Returns the primary owner of the specified key.
+     * @param key a cache key
+     * @return the address of the primary owner
+     */
+    Address getPrimaryOwner(Object key);
+
+    /**
+     * Returns the owners of the specified key.
+     * @param key a cache key
+     * @return a list of addresses for each owner
+     */
+    List<Address> getOwners(Object key);
 }

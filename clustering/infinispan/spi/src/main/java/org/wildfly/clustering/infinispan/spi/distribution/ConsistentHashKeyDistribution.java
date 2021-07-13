@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,39 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.infinispan.spi.distribution;
 
-import org.infinispan.Cache;
+import java.util.List;
+
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.KeyPartitioner;
 import org.infinispan.remoting.transport.Address;
 
 /**
- * {@link Locality} implementation based on a {@link ConsistentHash}.
+ * Key distribution functions for a specific {@link ConsistentHash}.
  * @author Paul Ferraro
  */
-public class ConsistentHashLocality implements Locality {
+public class ConsistentHashKeyDistribution implements KeyDistribution {
 
-    private final KeyDistribution distribution;
-    private final Address localAddress;
+    private final KeyPartitioner partitioner;
+    private final ConsistentHash hash;
 
-    @SuppressWarnings("deprecation")
-    public ConsistentHashLocality(Cache<?, ?> cache, ConsistentHash hash) {
-        this(cache.getAdvancedCache().getComponentRegistry().getLocalComponent(KeyPartitioner.class), hash, cache.getAdvancedCache().getDistributionManager().getCacheTopology().getLocalAddress());
-    }
-
-    private ConsistentHashLocality(KeyPartitioner partitioner, ConsistentHash hash, Address localAddress) {
-        this(new ConsistentHashKeyDistribution(partitioner, hash), localAddress);
-    }
-
-    ConsistentHashLocality(KeyDistribution distribution, Address localAddress) {
-        this.distribution = distribution;
-        this.localAddress = localAddress;
+    public ConsistentHashKeyDistribution(KeyPartitioner partitioner, ConsistentHash hash) {
+        this.partitioner = partitioner;
+        this.hash = hash;
     }
 
     @Override
-    public boolean isLocal(Object key) {
-        Address primary = this.distribution.getPrimaryOwner(key);
-        return this.localAddress.equals(primary);
+    public Address getPrimaryOwner(Object key) {
+        int segment = this.partitioner.getSegment(key);
+        return this.hash.locatePrimaryOwnerForSegment(segment);
+    }
+
+    @Override
+    public List<Address> getOwners(Object key) {
+        int segment = this.partitioner.getSegment(key);
+        return this.hash.locateOwnersForSegment(segment);
     }
 }

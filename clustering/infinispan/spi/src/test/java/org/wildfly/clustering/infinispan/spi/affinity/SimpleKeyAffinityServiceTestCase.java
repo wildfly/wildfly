@@ -22,21 +22,45 @@
 
 package org.wildfly.clustering.infinispan.spi.affinity;
 
-import java.util.function.Predicate;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import org.infinispan.Cache;
+import java.util.UUID;
+
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.remoting.transport.Address;
+import org.junit.Test;
 
 /**
- * Factory for a {@link KeyAffinityService} whose implementation varies depending on cache mode.
  * @author Paul Ferraro
  */
-public class DefaultKeyAffinityServiceFactory implements KeyAffinityServiceFactory {
+public class SimpleKeyAffinityServiceTestCase {
 
-    @Override
-    public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator, Predicate<Address> filter) {
-        return cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new DefaultKeyAffinityService<>(cache, generator, filter) : new SimpleKeyAffinityService<>(generator);
+    private final KeyGenerator<UUID> generator = mock(KeyGenerator.class);
+    private final KeyAffinityService<UUID> service = new SimpleKeyAffinityService<>(this.generator);
+
+    @Test
+    public void getKeyForAddress() {
+        Address address = mock(Address.class);
+        UUID key = UUID.randomUUID();
+
+        when(this.generator.getKey()).thenReturn(key);
+
+        UUID result = this.service.getKeyForAddress(address);
+
+        assertSame(key, result);
+    }
+
+    @Test
+    public void getCollocatedKey() {
+        UUID key = UUID.randomUUID();
+
+        when(this.generator.getKey()).thenReturn(key);
+
+        UUID result = this.service.getCollocatedKey(UUID.randomUUID());
+
+        assertSame(key, result);
     }
 }

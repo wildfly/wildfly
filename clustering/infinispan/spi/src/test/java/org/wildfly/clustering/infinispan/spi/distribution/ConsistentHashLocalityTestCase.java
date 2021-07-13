@@ -20,23 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.spi.affinity;
+package org.wildfly.clustering.infinispan.spi.distribution;
 
-import java.util.function.Predicate;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import org.infinispan.Cache;
-import org.infinispan.affinity.KeyAffinityService;
-import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.remoting.transport.Address;
+import org.junit.Test;
 
 /**
- * Factory for a {@link KeyAffinityService} whose implementation varies depending on cache mode.
  * @author Paul Ferraro
  */
-public class DefaultKeyAffinityServiceFactory implements KeyAffinityServiceFactory {
+public class ConsistentHashLocalityTestCase {
 
-    @Override
-    public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator, Predicate<Address> filter) {
-        return cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new DefaultKeyAffinityService<>(cache, generator, filter) : new SimpleKeyAffinityService<>(generator);
+    @Test
+    public void test() {
+        KeyDistribution distribution = mock(KeyDistribution.class);
+        Address localAddress = mock(Address.class);
+        Address remoteAddress = mock(Address.class);
+        Object localKey = new Object();
+        Object remoteKey = new Object();
+
+        Locality locality = new ConsistentHashLocality(distribution, localAddress);
+
+        when(distribution.getPrimaryOwner(localKey)).thenReturn(localAddress);
+        when(distribution.getPrimaryOwner(remoteKey)).thenReturn(remoteAddress);
+
+        assertTrue(locality.isLocal(localKey));
+        assertFalse(locality.isLocal(remoteKey));
     }
 }
