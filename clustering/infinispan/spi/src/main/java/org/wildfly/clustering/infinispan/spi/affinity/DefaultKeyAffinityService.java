@@ -214,7 +214,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
     }
 
     @TopologyChanged
-    public CompletionStage<Void> viewChanged(TopologyChangedEvent<?, ?> event) {
+    public CompletionStage<Void> topologyChanged(TopologyChangedEvent<?, ?> event) {
         if (!event.isPre() && !this.getSegments(event.getWriteConsistentHashAtStart()).equals(this.getSegments(event.getWriteConsistentHashAtEnd()))) {
             LOGGER.debugf("Restarting key generation based on new consistent hash for topology %d", event.getNewTopologyId());
             this.accept(event.getWriteConsistentHashAtEnd());
