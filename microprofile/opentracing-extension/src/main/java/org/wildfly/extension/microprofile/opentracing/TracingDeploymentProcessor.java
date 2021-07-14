@@ -281,11 +281,13 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
         Tracer tracer = deploymentUnit.getAttachment(ATTACHMENT_KEY);
-        try {
-            tracer.close();
-        } catch (Exception ex) {
-            TracingLogger.ROOT_LOGGER.error(ex.getMessage(), ex);
+        if (tracer != null) {
+            try {
+                tracer.close();
+            } catch (Exception ex) {
+                TracingLogger.ROOT_LOGGER.error(ex.getMessage(), ex);
+            }
+            deploymentUnit.removeAttachment(ATTACHMENT_KEY);
         }
-        deploymentUnit.removeAttachment(ATTACHMENT_KEY);
     }
 }
