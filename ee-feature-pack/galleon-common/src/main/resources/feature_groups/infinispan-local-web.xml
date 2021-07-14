@@ -9,6 +9,9 @@
             <param name="default-cache" value="passivation"/>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
                 <param name="local-cache" value="passivation"/>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="interval" value="0"/>
+                </feature>
                 <feature spec="subsystem.infinispan.cache-container.local-cache.store.file">
                     <param name="passivation" value="true"/>
                     <param name="purge" value="false"/>
@@ -17,6 +20,9 @@
             </feature>
             <feature spec="subsystem.infinispan.cache-container.local-cache">
                 <param name="local-cache" value="sso"/>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="interval" value="0"/>
+                </feature>
             </feature>
         </feature>
     </feature>
