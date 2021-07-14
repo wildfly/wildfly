@@ -323,37 +323,37 @@ public class SimpleSecurityManager implements ServerSecurityManager, Supplier<Se
         RunAs currentRunAs = current.getIncomingRunAs();
         boolean trusted = currentRunAs != null && currentRunAs instanceof RunAsIdentity;
 
-        if (trusted == false) {
+        if (!trusted && SecurityActions.remotingContextIsSet()) {
             /*
              * We should only be switching to a context based on an identity from the Remoting connection if we don't already
              * have a trusted identity - this allows for beans to reauthenticate as a different identity.
              */
-            if (SecurityActions.remotingContextIsSet()) {
-                // In this case the principal and credential will not have been set to set some random values.
-                SecurityContextUtil util = current.getUtil();
+            // In this case the principal and credential will not have been set to set some random values.
+            SecurityContextUtil util = current.getUtil();
 
-                RemoteConnection connection = SecurityActions.remotingContextGetConnection();
-                Principal p = null;
-                Object credential = null;
+            RemoteConnection connection = SecurityActions.remotingContextGetConnection();
+            Principal p = null;
+            Object credential = null;
 
-                SecurityIdentity localIdentity = SecurityDomain.forIdentity(connection.getSecurityIdentity()).getCurrentSecurityIdentity();
-                if (localIdentity != null) {
-                    p = new SimplePrincipal(localIdentity.getPrincipal().getName());
-                    IdentityCredentials privateCredentials = localIdentity.getPrivateCredentials();
-                    PasswordCredential passwordCredential = privateCredentials.getCredential(PasswordCredential.class, ClearPassword.ALGORITHM_CLEAR);
-                    if (passwordCredential != null) {
-                        credential = new String(passwordCredential.getPassword(ClearPassword.class).getPassword());
-                    } else {
-                        credential = new RemotingConnectionCredential(connection, localIdentity);
-                    }
+            SecurityIdentity localIdentity = SecurityDomain.forIdentity(connection.getSecurityIdentity())
+                    .getCurrentSecurityIdentity();
+            if (localIdentity != null) {
+                p = new SimplePrincipal(localIdentity.getPrincipal().getName());
+                IdentityCredentials privateCredentials = localIdentity.getPrivateCredentials();
+                PasswordCredential passwordCredential = privateCredentials.getCredential(PasswordCredential.class,
+                        ClearPassword.ALGORITHM_CLEAR);
+                if (passwordCredential != null) {
+                    credential = new String(passwordCredential.getPassword(ClearPassword.class).getPassword());
                 } else {
-                    throw SecurityLogger.ROOT_LOGGER.noUserPrincipalFound();
+                    credential = new RemotingConnectionCredential(connection, localIdentity);
                 }
-
-                SecurityActions.remotingContextClear();
-
-                util.createSubjectInfo(p, credential, null);
+            } else {
+                throw SecurityLogger.ROOT_LOGGER.noUserPrincipalFound();
             }
+
+            SecurityActions.remotingContextClear();
+
+            util.createSubjectInfo(p, credential, null);
         }
     }
 
