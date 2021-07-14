@@ -47,10 +47,9 @@
         <servlet.galleon-common.resources.directory>${basedir}/../../servlet-feature-pack/galleon-common/src/main/resources</servlet.galleon-common.resources.directory>
         <full.ee-9-api.license.directory>${basedir}/src/license</full.ee-9-api.license.directory>
 
-
         <version.com.sun.faces>3.0.0.SP04</version.com.sun.faces>
-        <version.com.sun.activation.jakarta.activation>2.0.0</version.com.sun.activation.jakarta.activation>
         <version.jakarta.annotation.jakarta-annotation-api>2.0.0</version.jakarta.annotation.jakarta-annotation-api>
+        <version.com.sun.activation.jakarta.activation>2.0.0</version.com.sun.activation.jakarta.activation>
         <version.jakarta.authentication.jakarta-authentication-api>2.0.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>2.0.0</version.jakarta.authorization.jakarta-authorization-api>
         <version.jakarta.batch.jakarta.batch-api>2.0.0</version.jakarta.batch.jakarta.batch-api>
@@ -63,7 +62,6 @@
         <version.jakarta.jms.jakarta-jms-api>3.0.0</version.jakarta.jms.jakarta-jms-api>
         <version.jakarta.json.bind.api>2.0.0</version.jakarta.json.bind.api>
         <version.jakarta.json.jakarta-json-api>2.0.0</version.jakarta.json.jakarta-json-api>
-        <version.jakarta.mail>2.0.0</version.jakarta.mail>
         <version.jakarta.persistence>3.0.0</version.jakarta.persistence>
         <version.jakarta.resource.jakarta-resource-api>2.0.0</version.jakarta.resource.jakarta-resource-api>
         <version.jakarta.security.enterprise>2.0.0</version.jakarta.security.enterprise>
@@ -76,14 +74,14 @@
         <version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.0</version.jakarta.xml.bind.jakarta-xml-bind-api>
         <version.org.bouncycastle>1.69</version.org.bouncycastle>
         <version.org.eclipse.yasson>2.0.1</version.org.eclipse.yasson>
-        <version.org.glassfish.jakarta.el>4.0.0</version.org.glassfish.jakarta.el>
-        <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
-		<!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
+        <!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
 		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version --> 
         <version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</version.org.glassfish.jaxb.jaxb-xjc>
         <version.org.apache.activemq.artemis>2.17.0</version.org.apache.activemq.artemis>
         <version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>3.0.0</version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>
         <version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>
+        <version.org.glassfish.jakarta.el>4.0.0</version.org.glassfish.jakarta.el>
+        <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
         <version.org.hibernate.validator>7.0.1.Final</version.org.hibernate.validator>
         <version.org.jboss.activemq.artemis.integration>1.0.4</version.org.jboss.activemq.artemis.integration>
@@ -440,6 +438,10 @@
                     <groupId>org.glassfish.jaxb</groupId>
                     <artifactId>jaxb-xjc</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-mail</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -722,14 +724,7 @@
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
-            <version>${version.jakarta.mail}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -978,6 +973,7 @@
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.enterprise.concurrent</artifactId>
             <version>${version.org.glassfish.jakarta.enterprise.concurrent}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>jakarta.enterprise.concurrent</groupId>
@@ -1477,6 +1473,12 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-mail-jakarta</artifactId>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

@@ -35,6 +35,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.List;
 
+import javax.mail.Session;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -47,6 +49,8 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -56,6 +60,13 @@ public class MailTransformersTestCase extends AbstractSubsystemBaseTest {
 
     public MailTransformersTestCase() {
         super(MailExtension.SUBSYSTEM_NAME, new MailExtension());
+    }
+
+    @BeforeClass
+    public static void assumeJavaxNamespace() {
+        //noinspection ConstantConditions
+        Assume.assumeTrue("Ignoring test when run using the jakarta.* namespace Mail API",
+                Session.class.getName().startsWith("javax."));
     }
 
     @Override
