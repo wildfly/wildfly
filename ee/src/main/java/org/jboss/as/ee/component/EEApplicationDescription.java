@@ -178,11 +178,10 @@ public class EEApplicationDescription {
             final String name = parts[1];
             final Set<ViewDescription> ret = new HashSet<ViewDescription>();
             for (ViewInformation i : info) {
-                if (i.beanName.equals(name)) {
-                    //now we need to check the path
-                    if (virtualPath.equals(i.deploymentRoot)) {
-                        ret.add(i.viewDescription);
-                    }
+                if (i.beanName.equals(name)
+                        // now we need to check the path
+                        && virtualPath.equals(i.deploymentRoot)) {
+                    ret.add(i.viewDescription);
                 }
             }
             return ret;

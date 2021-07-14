@@ -232,19 +232,19 @@ public class ViewDescription {
             final ClassReflectionIndex classIndex = reflectionIndex.getClassIndex(componentMethod.getDeclaringClass()); //the non-bridge method will be on the same class as the bridge method
             final Collection<Method> methods = classIndex.getAllMethods(componentMethod.getName(), componentMethod.getParameterTypes().length);
             for(final Method method : methods) {
-                if ((BRIDGE & method.getModifiers()) == 0) {
-                    if(componentMethod.getReturnType().isAssignableFrom(method.getReturnType())) {
-                        boolean ok = true;
-                        for(int i = 0; i < method.getParameterTypes().length; ++i) {
-                            if(!componentMethod.getParameterTypes()[i].isAssignableFrom(method.getParameterTypes()[i])) {
-                                ok = false;
-                                break;
-                            }
-                        }
-                        if(ok) {
-                            return method;
+                if (((BRIDGE & method.getModifiers()) == 0)
+                        && componentMethod.getReturnType().isAssignableFrom(method.getReturnType())) {
+                    boolean ok = true;
+                    for (int i = 0; i < method.getParameterTypes().length; ++i) {
+                        if (!componentMethod.getParameterTypes()[i].isAssignableFrom(method.getParameterTypes()[i])) {
+                            ok = false;
+                            break;
                         }
                     }
+                    if (ok) {
+                        return method;
+                    }
+
                 }
             }
             return null;

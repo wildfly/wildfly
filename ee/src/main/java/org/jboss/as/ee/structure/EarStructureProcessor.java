@@ -189,10 +189,9 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
 
                     if (libDir != null) {
                         VirtualFile moduleParentFile = moduleFile.getParent();
-                        if (moduleParentFile != null) {
-                            if (libDir.equals(moduleParentFile)) {
-                                throw EeLogger.ROOT_LOGGER.earModuleChildOfLibraryDirectory(libDirName, module.getFileName());
-                            }
+                        if (moduleParentFile != null && libDir.equals(moduleParentFile)) {
+                            throw EeLogger.ROOT_LOGGER.earModuleChildOfLibraryDirectory(libDirName, module.getFileName());
+
                         }
                     }
 
