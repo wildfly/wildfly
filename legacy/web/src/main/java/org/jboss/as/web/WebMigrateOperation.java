@@ -759,13 +759,11 @@ public class WebMigrateOperation implements OperationStepHandler {
         for (int i = 0; i < a1.size(); ++i) {
             PathElement p1 = a1.getElement(i);
             PathElement p2 = a2.getElement(i);
-            if (!p1.getKey().equals(p2.getKey())) {
+            if (!p1.getKey().equals(p2.getKey())
+                || !p1.isWildcard()
+                    && !p2.isWildcard()
+                    && !p1.getValue().equals(p2.getValue())) {
                 return false;
-            }
-            if (!p1.isWildcard() && !p2.isWildcard()) {
-                if (!p1.getValue().equals(p2.getValue())) {
-                    return false;
-                }
             }
         }
         return true;
