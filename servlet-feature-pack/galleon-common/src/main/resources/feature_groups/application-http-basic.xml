@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="application-http-basic" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <!-- A Temporary feature-group-spec to add a http-authentication-factory -->
+    <!-- that can be referenced by the Undertow http-invoker. -->
+    <feature spec="subsystem.elytron.http-authentication-factory">
+        <param name="http-authentication-factory" value="application-http-authentication"/>
+        <param name="http-server-mechanism-factory" value="global"/>
+        <param name="security-domain" value="ApplicationDomain"/>
+        <param name="mechanism-configurations" value="[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=ApplicationRealm}]}]"/>
+    </feature>
+</feature-group-spec>
