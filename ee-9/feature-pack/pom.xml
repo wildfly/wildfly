@@ -72,7 +72,6 @@
         <version.jakarta.websocket.jakarta-websocket-api>2.0.0</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>3.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
         <version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.0</version.jakarta.xml.bind.jakarta-xml-bind-api>
-        <version.org.bouncycastle>1.69</version.org.bouncycastle>
         <version.org.eclipse.yasson>2.0.1</version.org.eclipse.yasson>
         <!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
 		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version --> 
@@ -932,7 +931,6 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcjmail-jdk15on</artifactId>
-            <version>${version.org.bouncycastle}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
