@@ -85,26 +85,29 @@ public class StatisticsExecutorImpl implements StatisticsExecutor {
     @Override
     public long getNumberOfFreeThreads() {
         if (realExecutor instanceof JBossThreadPoolExecutor) {
-            return ((JBossThreadPoolExecutor) realExecutor).getMaximumPoolSize() -
-                    ((JBossThreadPoolExecutor) realExecutor).getActiveCount();
-        } else if (realExecutor instanceof ThreadPoolExecutorMBean) {
-            return ((ThreadPoolExecutorMBean) realExecutor).getMaxThreads() -
-                    ((ThreadPoolExecutorMBean) realExecutor).getCurrentThreadCount();
-        } else if (realExecutor instanceof ManagedQueueExecutorService) {
-            return ((ManagedQueueExecutorService) realExecutor).getMaxThreads() -
-                    ((ManagedQueueExecutorService) realExecutor).getCurrentThreadCount();
-        } else if (realExecutor instanceof ManagedJBossThreadPoolExecutorService) {
-            return ((ManagedJBossThreadPoolExecutorService) realExecutor).getMaxThreads() -
-                    ((ManagedJBossThreadPoolExecutorService) realExecutor).getCurrentThreadCount();
-        } else if (realExecutor instanceof ManagedQueuelessExecutorService) {
-            return ((ManagedQueuelessExecutorService) realExecutor).getMaxThreads() -
-                    ((ManagedQueuelessExecutorService) realExecutor).getCurrentThreadCount();
-        } else if (realExecutor instanceof ManagedScheduledExecutorService) {
-            return ((ManagedScheduledExecutorService) realExecutor).getLargestPoolSize() -
-                    ((ManagedScheduledExecutorService) realExecutor).getActiveCount();
-        } else {
-            return 0;
+            return (long) ((JBossThreadPoolExecutor) realExecutor).getMaximumPoolSize()
+                    - ((JBossThreadPoolExecutor) realExecutor).getActiveCount();
         }
-
+        if (realExecutor instanceof ThreadPoolExecutorMBean) {
+            return (long) ((ThreadPoolExecutorMBean) realExecutor).getMaxThreads()
+                    - ((ThreadPoolExecutorMBean) realExecutor).getCurrentThreadCount();
+        }
+        if (realExecutor instanceof ManagedQueueExecutorService) {
+            return (long) ((ManagedQueueExecutorService) realExecutor).getMaxThreads()
+                    - ((ManagedQueueExecutorService) realExecutor).getCurrentThreadCount();
+        }
+        if (realExecutor instanceof ManagedJBossThreadPoolExecutorService) {
+            return (long) ((ManagedJBossThreadPoolExecutorService) realExecutor).getMaxThreads()
+                    - ((ManagedJBossThreadPoolExecutorService) realExecutor).getCurrentThreadCount();
+        }
+        if (realExecutor instanceof ManagedQueuelessExecutorService) {
+            return (long) ((ManagedQueuelessExecutorService) realExecutor).getMaxThreads()
+                    - ((ManagedQueuelessExecutorService) realExecutor).getCurrentThreadCount();
+        }
+        if (realExecutor instanceof ManagedScheduledExecutorService) {
+            return (long) ((ManagedScheduledExecutorService) realExecutor).getLargestPoolSize()
+                    - ((ManagedScheduledExecutorService) realExecutor).getActiveCount();
+        }
+        return 0L;
     }
 }

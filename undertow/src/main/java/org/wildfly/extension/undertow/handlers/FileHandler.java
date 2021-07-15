@@ -110,8 +110,8 @@ public class FileHandler extends Handler {
         final boolean directoryListing = DIRECTORY_LISTING.resolveModelAttribute(context, model).asBoolean();
         final boolean followSymlink = FOLLOW_SYMLINK.resolveModelAttribute(context, model).asBoolean();
         final boolean caseSensitive = CASE_SENSITIVE.resolveModelAttribute(context, model).asBoolean();
-        final int cacheBufferSize = CACHE_BUFFER_SIZE.resolveModelAttribute(context, model).asInt();
-        final int cacheBuffers = CACHE_BUFFERS.resolveModelAttribute(context, model).asInt();
+        final long cacheBufferSize = CACHE_BUFFER_SIZE.resolveModelAttribute(context, model).asLong();
+        final long cacheBuffers = CACHE_BUFFERS.resolveModelAttribute(context, model).asLong();
         final List<String> safePaths = SAFE_SYMLINK_PATHS.unwrap(context, model);
         final String[] paths = safePaths.toArray(new String[safePaths.size()]);
 
