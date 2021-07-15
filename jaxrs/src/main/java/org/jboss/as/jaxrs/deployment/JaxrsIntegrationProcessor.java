@@ -357,19 +357,18 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if (mappings != null) {
             boolean mappingSet = false;
             for (final ServletMappingMetaData mapping : mappings) {
-                if (mapping.getServletName().equals(servletName)) {
-                    if (mapping.getUrlPatterns() != null) {
-                        for (String pattern : mapping.getUrlPatterns()) {
-                            if (mappingSet) {
-                                JAXRS_LOGGER.moreThanOneServletMapping(servletName, pattern);
-                            } else {
-                                mappingSet = true;
-                                String realPattern = pattern;
-                                if (realPattern.endsWith("*")) {
-                                    realPattern = realPattern.substring(0, realPattern.length() - 1);
-                                }
-                                setServletInitParam(servlet, "resteasy.servlet.mapping.prefix", realPattern);
+                if (mapping.getServletName().equals(servletName)
+                        && mapping.getUrlPatterns() != null) {
+                    for (String pattern : mapping.getUrlPatterns()) {
+                        if (mappingSet) {
+                            JAXRS_LOGGER.moreThanOneServletMapping(servletName, pattern);
+                        } else {
+                            mappingSet = true;
+                            String realPattern = pattern;
+                            if (realPattern.endsWith("*")) {
+                                realPattern = realPattern.substring(0, realPattern.length() - 1);
                             }
+                            setServletInitParam(servlet, "resteasy.servlet.mapping.prefix", realPattern);
                         }
                     }
                 }
