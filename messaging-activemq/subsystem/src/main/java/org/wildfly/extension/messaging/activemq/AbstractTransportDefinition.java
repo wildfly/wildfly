@@ -60,7 +60,7 @@ public abstract class AbstractTransportDefinition extends PersistentResourceDefi
 
     private static class TransportCapabilityNameMapper implements Function<PathAddress,String[]> {
         private static final TransportCapabilityNameMapper INSTANCE = new TransportCapabilityNameMapper();
-        private TransportCapabilityNameMapper(){};
+        private TransportCapabilityNameMapper(){}
         @Override
         public String[] apply(PathAddress address) {
             String[] result = new String[2];

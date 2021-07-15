@@ -60,7 +60,7 @@ public interface TimerPersistence {
      * Signals that the timer is being deployed and any internal structured required should be added.
      * @param timedObjectId
      */
-    default void timerDeployed(String timedObjectId) {};
+    default void timerDeployed(String timedObjectId) {}
 
     /**
      * Signals that a timer is being undeployed, and all cached data relating to this object should

@@ -53,7 +53,7 @@ public class ServiceContributorImpl implements ServiceContributor {
 
         final Object regionFactoryInitiatorEnabled = serviceRegistryBuilder.getSettings().getOrDefault(CONTROL2LCINTEGRATION, true);
         final Object regionFactory = serviceRegistryBuilder.getSettings().get(HIBERNATE_REGION_FACTORY_CLASS);
-        if ((regionFactory instanceof String) && (((String) regionFactory)).contains(EHCACHE)) {
+        if ((regionFactory instanceof String) && ((String) regionFactory).contains(EHCACHE)) {
             JPA_LOGGER.tracef("ServiceContributorImpl#contribute application is using Ehcache via regionFactory=%s",
                     regionFactory);
         } else if (regionFactoryInitiatorEnabled == null ||

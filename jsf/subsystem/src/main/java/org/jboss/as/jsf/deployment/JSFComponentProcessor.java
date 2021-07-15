@@ -118,7 +118,7 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
         public String getTagName() {
             return tagName;
         }
-    };
+    }
 
     /**
      * Helper tree class to save the XML tree structure of elements

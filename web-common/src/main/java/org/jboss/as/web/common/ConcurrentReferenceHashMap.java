@@ -165,14 +165,14 @@ final class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
         WEAK,
         /** Indicates a {@link SoftReference} should be used */
         SOFT
-    };
+    }
 
 
     public static enum Option {
         /** Indicates that referential-equality (== instead of .equals()) should
          * be used when locating keys. This offers similar behavior to {@link java.util.IdentityHashMap} */
         IDENTITY_COMPARISONS
-    };
+    }
 
     /* ---------------- Constants -------------- */
 
