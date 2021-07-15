@@ -64,10 +64,9 @@ public class ResourceInjectionUtilities {
             //and if so just return it
             int firstSlash = name.indexOf("/");
             int colon = name.indexOf(":");
-            if(colon != -1) {
-                if(firstSlash == -1 || colon < firstSlash) {
+            if (colon != -1
+                    && (firstSlash == -1 || colon < firstSlash)) {
                     return name;
-                }
             }
 
             return RESOURCE_LOOKUP_PREFIX + "/" + name;
