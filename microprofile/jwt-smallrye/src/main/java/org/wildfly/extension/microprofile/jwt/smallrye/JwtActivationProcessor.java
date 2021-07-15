@@ -74,23 +74,22 @@ class JwtActivationProcessor implements DeploymentUnitProcessor {
             for (AnnotationInstance annotation : annotations) {
                 // First we must be sure the annotation is on an Application class.
                 AnnotationTarget target = annotation.target();
-                if (target.kind() == Kind.CLASS) {
-                    if (extendsApplication(target.asClass(), index)) {
-                        loginConfig = new LoginConfigMetaData();
-                        AnnotationValue authMethodValue = annotation.value(AUTH_METHOD);
-                        if (authMethodValue == null) {
-                            throw ROOT_LOGGER.noAuthMethodSpecified();
-                        }
-                        loginConfig.setAuthMethod(authMethodValue.asString());
-                        AnnotationValue realmNameValue = annotation.value(REALM_NAME);
-                        if (realmNameValue != null) {
-                            loginConfig.setRealmName(realmNameValue.asString());
-                        }
-
-                        mergedMetaData.setLoginConfig(loginConfig);
-
-                        break;
+                if (target.kind() == Kind.CLASS
+                        && extendsApplication(target.asClass(), index)) {
+                    loginConfig = new LoginConfigMetaData();
+                    AnnotationValue authMethodValue = annotation.value(AUTH_METHOD);
+                    if (authMethodValue == null) {
+                        throw ROOT_LOGGER.noAuthMethodSpecified();
                     }
+                    loginConfig.setAuthMethod(authMethodValue.asString());
+                    AnnotationValue realmNameValue = annotation.value(REALM_NAME);
+                    if (realmNameValue != null) {
+                        loginConfig.setRealmName(realmNameValue.asString());
+                    }
+
+                    mergedMetaData.setLoginConfig(loginConfig);
+
+                    break;
                 }
                 ROOT_LOGGER.loginConfigInvalidTarget(target.toString());
             }

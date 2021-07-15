@@ -499,7 +499,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                 @Override
                 public void execute(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
                     ModelNode node = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-                    if (node.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()) && node.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).asBoolean()) {
+                    if (node.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName())
+                            && node.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).asBoolean()) {
                         if (node.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.getName())) {
                             throw TransactionLogger.ROOT_LOGGER.mustBeUndefinedIfTrue(TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.getName(), TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName());
                         } else if (node.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS.getName())) {
@@ -523,24 +524,24 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         protected void finishModelStage(final OperationContext context, final ModelNode operation, String attributeName,
                                         ModelNode newValue, ModelNode oldValue, final Resource model) {
 
-            if (attributeName.equals(PROCESS_ID_SOCKET_BINDING.getName())) {
-                if (newValue.isDefined()) {
+            if (attributeName.equals(PROCESS_ID_SOCKET_BINDING.getName())
+                    && newValue.isDefined()) {
 
-                    ModelNode resourceModel = model.getModel();
-                    if (resourceModel.hasDefined(PROCESS_ID_UUID.getName()) && resourceModel.get(PROCESS_ID_UUID.getName()).asBoolean()) {
-                        resourceModel.get(PROCESS_ID_UUID.getName()).set(ModelNode.FALSE);
-                    }
+                ModelNode resourceModel = model.getModel();
+                if (resourceModel.hasDefined(PROCESS_ID_UUID.getName())
+                        && resourceModel.get(PROCESS_ID_UUID.getName()).asBoolean()) {
+                    resourceModel.get(PROCESS_ID_UUID.getName()).set(ModelNode.FALSE);
                 }
+
             }
 
-            if (attributeName.equals(PROCESS_ID_UUID.getName())) {
-                if (newValue.asBoolean(false)) {
+            if (attributeName.equals(PROCESS_ID_UUID.getName())
+                    && newValue.asBoolean(false)) {
 
-                    ModelNode resourceModel = model.getModel();
-                    resourceModel.get(PROCESS_ID_SOCKET_BINDING.getName()).clear();
-                    resourceModel.get(PROCESS_ID_SOCKET_MAX_PORTS.getName()).clear();
+                ModelNode resourceModel = model.getModel();
+                resourceModel.get(PROCESS_ID_SOCKET_BINDING.getName()).clear();
+                resourceModel.get(PROCESS_ID_SOCKET_MAX_PORTS.getName()).clear();
 
-                }
             }
 
             validateUpdatedModel(context, model);
