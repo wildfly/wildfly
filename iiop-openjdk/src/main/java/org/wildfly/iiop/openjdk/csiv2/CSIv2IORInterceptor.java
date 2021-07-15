@@ -107,7 +107,7 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
             IIOPLogger.ROOT_LOGGER.failedToFetchCSIv2Policy(e);
         }
 
-        boolean interopIONA = Boolean.valueOf(CorbaORBService.getORBProperty(Constants.INTEROP_IONA));
+        boolean interopIONA = Boolean.parseBoolean(CorbaORBService.getORBProperty(Constants.INTEROP_IONA));
         if (csiv2Policy != null) {
             // if csiv2Policy effective, stuff a copy of the TaggedComponents already created by the CSIv2Policy into the IOR's IIOP profile.
             TaggedComponent sslComponent = csiv2Policy.getSSLTaggedComponent();

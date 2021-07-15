@@ -50,7 +50,7 @@ public abstract class SocketFactoryBase implements ORBSocketFactory {
                         String value =
                                 System.getProperty("com.sun.CORBA.transport.enableTcpKeepAlive");
                         if (value != null)
-                            return new Boolean(!"false".equalsIgnoreCase(value));
+                            return !"false".equalsIgnoreCase(value);
 
                         return Boolean.FALSE;
                     }
