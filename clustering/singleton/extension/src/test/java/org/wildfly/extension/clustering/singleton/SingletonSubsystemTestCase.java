@@ -44,7 +44,7 @@ public class SingletonSubsystemTestCase extends ClusteringSubsystemTest<Singleto
     }
 
     public SingletonSubsystemTestCase(SingletonSchema schema) {
-        super(SingletonExtension.SUBSYSTEM_NAME, new SingletonExtension(), schema, SingletonSchema.CURRENT, "subsystem-singleton-%d_%d.xml", "schema/wildfly-singleton_%d_%d.xsd");
+        super(SingletonExtension.SUBSYSTEM_NAME, new SingletonExtension(), schema, "subsystem-singleton-%d_%d.xml", "schema/wildfly-singleton_%d_%d.xsd");
     }
 
     @Override

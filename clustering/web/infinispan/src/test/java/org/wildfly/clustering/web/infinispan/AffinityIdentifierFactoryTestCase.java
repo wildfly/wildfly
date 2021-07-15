@@ -47,7 +47,7 @@ import org.wildfly.clustering.web.IdentifierFactory;
  *
  * @author Paul Ferraro
  */
-public class AffinityIdentityFactoryTestCase {
+public class AffinityIdentifierFactoryTestCase {
 
     private final IdentifierFactory<String> factory = mock(IdentifierFactory.class);
     private final KeyAffinityServiceFactory affinityFactory = mock(KeyAffinityServiceFactory.class);
@@ -61,25 +61,25 @@ public class AffinityIdentityFactoryTestCase {
     private ArgumentCaptor<KeyGenerator<Key<String>>> capturedGenerator;
 
     @Before
-    public void init() {
-        MockitoAnnotations.initMocks(this);
+    public void init() throws Exception {
+        try (AutoCloseable test = MockitoAnnotations.openMocks(this)) {
+            when(this.affinityFactory.createService(same(this.cache), this.capturedGenerator.capture())).thenReturn(this.affinity);
+            when(this.cache.getCacheManager()).thenReturn(this.manager);
 
-        when(this.affinityFactory.createService(same(this.cache), this.capturedGenerator.capture())).thenReturn(this.affinity);
-        when(this.cache.getCacheManager()).thenReturn(this.manager);
+            this.subject = new AffinityIdentifierFactory<>(this.factory, this.cache, this.affinityFactory);
 
-        this.subject = new AffinityIdentifierFactory<>(this.factory, this.cache, this.affinityFactory);
+            KeyGenerator<Key<String>> generator = this.capturedGenerator.getValue();
 
-        KeyGenerator<Key<String>> generator = this.capturedGenerator.getValue();
+            assertSame(generator, this.subject);
 
-        assertSame(generator, this.subject);
+            String expected = "id";
 
-        String expected = "id";
+            when(this.factory.createIdentifier()).thenReturn(expected);
 
-        when(this.factory.createIdentifier()).thenReturn(expected);
+            Key<String> result = generator.getKey();
 
-        Key<String> result = generator.getKey();
-
-        assertSame(expected, result.getId());
+            assertSame(expected, result.getId());
+        }
     }
 
     @Test

@@ -40,14 +40,12 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
  */
 public abstract class ClusteringSubsystemTest<S extends Schema<S>> extends AbstractSubsystemBaseTest {
     private final Schema<S> testSchema;
-    private final Schema<S> currentSchema;
     private final String xmlPattern;
     private final String xsdPattern;
 
-    protected ClusteringSubsystemTest(String name, Extension extension, Schema<S> testSchema, Schema<S> currentSchema, String xmlPattern, String xsdPattern) {
+    protected ClusteringSubsystemTest(String name, Extension extension, Schema<S> testSchema, String xmlPattern, String xsdPattern) {
         super(name, extension);
         this.testSchema = testSchema;
-        this.currentSchema = currentSchema;
         this.xmlPattern = xmlPattern;
         this.xsdPattern = xsdPattern;
     }

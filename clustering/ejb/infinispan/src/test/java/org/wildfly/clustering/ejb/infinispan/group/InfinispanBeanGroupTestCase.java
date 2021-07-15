@@ -25,7 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -109,7 +109,7 @@ public class InfinispanBeanGroupTestCase {
 
         Assert.assertSame(bean, result);
 
-        verifyZeroInteractions(listener);
+        verifyNoInteractions(listener);
 
         when(this.entry.incrementUsage(id)).thenReturn(0);
 
@@ -134,7 +134,7 @@ public class InfinispanBeanGroupTestCase {
 
         Assert.assertFalse(result);
 
-        verifyZeroInteractions(listener);
+        verifyNoInteractions(listener);
         verify(this.entry, never()).getBeans();
 
         when(this.entry.decrementUsage(id)).thenReturn(0);
@@ -178,7 +178,7 @@ public class InfinispanBeanGroupTestCase {
 
         this.group.prePassivate(id, null);
 
-        verifyZeroInteractions(this.entry);
+        verifyNoInteractions(this.entry);
 
         when(this.entry.getBeans()).thenReturn(value);
         when(value.get(this.context)).thenReturn(beans);
@@ -199,7 +199,7 @@ public class InfinispanBeanGroupTestCase {
 
         this.group.postActivate(id, null);
 
-        verifyZeroInteractions(this.entry);
+        verifyNoInteractions(this.entry);
 
         when(this.entry.getBeans()).thenReturn(value);
         when(value.get(this.context)).thenReturn(beans);

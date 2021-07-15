@@ -33,7 +33,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -75,7 +75,7 @@ public class DistributableSingleSignOnTestCase {
 
         assertSame(id, result);
 
-        verifyZeroInteractions(this.batch);
+        verifyNoInteractions(this.batch);
     }
 
     @Test
@@ -92,7 +92,7 @@ public class DistributableSingleSignOnTestCase {
 
         assertSame(account, result);
 
-        verifyZeroInteractions(this.batch);
+        verifyNoInteractions(this.batch);
         verify(context).close();
     }
 
@@ -110,7 +110,7 @@ public class DistributableSingleSignOnTestCase {
 
         assertEquals(HttpServletRequest.CLIENT_CERT_AUTH, result);
 
-        verifyZeroInteractions(this.batch);
+        verifyNoInteractions(this.batch);
         verify(context).close();
     }
 
@@ -138,7 +138,7 @@ public class DistributableSingleSignOnTestCase {
         assertEquals(session.getId(), result.getId());
         assertFalse(results.hasNext());
 
-        verifyZeroInteractions(this.batch);
+        verifyNoInteractions(this.batch);
         verify(context).close();
 
         // Validate that returned sessions can be invalidated
@@ -151,7 +151,7 @@ public class DistributableSingleSignOnTestCase {
         result.invalidate(exchange);
 
         verify(mutableSession).invalidate(same(exchange));
-        verifyZeroInteractions(this.batch);
+        verifyNoInteractions(this.batch);
         verifyNoMoreInteractions(context);
     }
 
@@ -173,7 +173,7 @@ public class DistributableSingleSignOnTestCase {
 
         assertFalse(result);
 
-        verifyZeroInteractions(this.batch);
+        verifyNoInteractions(this.batch);
         verify(context).close();
         reset(context);
 
@@ -183,7 +183,7 @@ public class DistributableSingleSignOnTestCase {
 
         assertTrue(result);
 
-        verifyZeroInteractions(this.batch);
+        verifyNoInteractions(this.batch);
         verify(context).close();
     }
 
@@ -205,7 +205,7 @@ public class DistributableSingleSignOnTestCase {
         this.subject.add(session);
 
         verify(sessions).addSession(deployment, sessionId);
-        verifyZeroInteractions(this.batch);
+        verifyNoInteractions(this.batch);
         verify(context).close();
     }
 
@@ -225,7 +225,7 @@ public class DistributableSingleSignOnTestCase {
         this.subject.remove(session);
 
         verify(sessions).removeSession(deployment);
-        verifyZeroInteractions(this.batch);
+        verifyNoInteractions(this.batch);
         verify(context).close();
     }
 
@@ -247,7 +247,7 @@ public class DistributableSingleSignOnTestCase {
         assertSame(sessionId, result.getId());
         assertSame(manager, result.getSessionManager());
 
-        verifyZeroInteractions(this.batch);
+        verifyNoInteractions(this.batch);
         verify(context).close();
     }
 
