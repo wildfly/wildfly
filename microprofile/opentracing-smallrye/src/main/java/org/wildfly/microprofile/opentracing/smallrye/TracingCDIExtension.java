@@ -58,6 +58,10 @@ public class TracingCDIExtension implements Extension {
      * @param bs
      */
     public void beforeShutdown(@Observes final BeforeShutdown bs) {
+        Tracer tracer = TRACERS.get(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
+        if (tracer != null) {
+            tracer.close();
+        }
         TRACERS.remove(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
     }
 }
