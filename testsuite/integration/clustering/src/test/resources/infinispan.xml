@@ -38,9 +38,12 @@
             </authorization>
         </security>
 
-        <local-cache name="default"/>
+        <local-cache name="default">
+            <expiration interval="1000"/>
+        </local-cache>
         <local-cache name="transactional">
             <transaction mode="NON_XA" locking="PESSIMISTIC"/>
+            <expiration interval="1000"/>
         </local-cache>
     </cache-container>
 
