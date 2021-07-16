@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature-group-spec name="management-interfaces" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <!-- TODO Temporarily override to switch security.  -->
     <feature-group name="management-unsecure-interfaces"/>
-    <feature-group name="management-legacy-security"/>
+
+    <feature spec="core-service.management.management-interface.http-interface">
+        <param name="socket-binding" value="management-http"/>
+        <param name="http-authentication-factory" value="management-http-authentication"/>
+        <feature spec="core-service.management.management-interface.http-interface.http-upgrade">
+            <param name="sasl-authentication-factory" value="management-sasl-authentication"/>
+        </feature>
+    </feature>
+
 </feature-group-spec>

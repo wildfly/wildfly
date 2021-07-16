@@ -6,6 +6,4 @@
         <include name="logging"/>
         <include name="undertow-load-balancer"/>
     </layers>
-    <feature-group name="standalone-security-realms"/>
-    <feature-group name="management-legacy-security"/>
 </config>
