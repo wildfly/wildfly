@@ -1,7 +1,5 @@
 package org.wildfly.extension.opentelemetry.extension;
 
-import java.io.IOException;
-
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
 /**
@@ -18,7 +16,7 @@ public class SubsystemBaseParsingTestCase extends AbstractSubsystemBaseTest {
 
 
     @Override
-    protected String getSubsystemXml() throws IOException {
+    protected String getSubsystemXml() {
         return "<subsystem xmlns=\"" + OpenTelemetryParser_1_0.NAMESPACE + "\">" +
                 "</subsystem>";
     }

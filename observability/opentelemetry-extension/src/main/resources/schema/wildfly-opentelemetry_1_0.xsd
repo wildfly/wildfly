@@ -30,69 +30,37 @@
 
     <xs:element name="subsystem">
         <xs:complexType>
-            <xs:attribute name="exporter" default="jaeger" type="xs:string">
-                <xs:annotation>
-                    <xs:documentation>
-                        The name of the exporter to use
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="endpoint" type="xs:string">
-                <xs:annotation>
-                    <xs:documentation>
-                        The URL for the exporter endpoint.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="span-processor" type="xs:string">
-                <xs:annotation>
-                    <xs:documentation>
-                        The type of span processor. Acceptable values are 'batch' (default) and 'simple'.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="batch-delay" type="xs:long">
-                <xs:annotation>
-                    <xs:documentation>
-                        The interval, in milliseconds, between two consecutive exports. Default is 5000.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="max-queue-size" type="xs:integer">
-                <xs:annotation>
-                    <xs:documentation>
-                        The maximum size of the queue before it is exported.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="max-export-batch-size" type="xs:integer">
-                <xs:annotation>
-                    <xs:documentation>
-                        The maximum size of the export batch.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="export-timeout" type="xs:long">
-                <xs:annotation>
-                    <xs:documentation>
-                        The maximum allowed time, in milliseconds, to export data.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="sampler" type="xs:string">
-                <xs:annotation>
-                    <xs:documentation>
-                        The type of sampler to use
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="sampler_arg" type="xs:string">
-                <xs:annotation>
-                    <xs:documentation>
-                        The argument to configure the sampler
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
+            <xs:sequence >
+                <xs:element name="exporter" minOccurs="0" maxOccurs="1">
+                    <xs:complexType>
+                        <xs:attribute name="exporter" default="jaeger">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="jaeger"/>
+                                    <xs:enumeration value="otlp"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="endpoint" type="xs:string"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="span-processor" minOccurs="0" maxOccurs="1">
+                    <xs:complexType>
+                        <xs:attribute type="xs:string" name="span-processor" default="batch"/>
+                        <xs:attribute type="xs:integer" name="batch-delay" default="5000"/>
+                        <xs:attribute type="xs:integer" name="max-queue-size" default="2048"/>
+                        <xs:attribute type="xs:integer" name="max-export-batch-size" default="512"/>
+                        <xs:attribute type="xs:integer" name="export-timeout" default="30000"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="sampler" minOccurs="0" maxOccurs="1">
+                    <xs:complexType>
+                                <xs:attribute type="xs:string" name="sampler"/>
+                                <xs:attribute type="xs:integer" name="sampler-arg"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="service-name"/>
         </xs:complexType>
     </xs:element>
 </xs:schema>

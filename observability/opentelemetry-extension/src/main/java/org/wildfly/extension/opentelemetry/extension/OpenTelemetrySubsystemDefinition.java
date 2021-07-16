@@ -8,6 +8,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants;
@@ -17,6 +18,9 @@ import org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants;
  */
 
 public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
+
+    private static final String[] ALLOWED_EXPORTERS = {"jaeger", "otlp"};
+    private static final String[] ALLOWED_SPAN_PROCESSORS = {"batch", "simple"};
 
     public static final String[] MODULES = {
             "org.wildfly.extension.opentelemetry-extension"
@@ -39,7 +43,8 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
             .setAllowExpression(true)
             .setAttributeGroup("exporter")
             .setDefaultValue(new ModelNode("jaeger"))
-            .setAllowedValues("jaeger", "otlp")
+            .setAllowedValues(ALLOWED_EXPORTERS)
+            .setValidator(new StringAllowedValuesValidator(ALLOWED_EXPORTERS))
             .setRestartAllServices()
             .build();
 
@@ -57,7 +62,8 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
             .setAttributeGroup("span-processor")
             .setRestartAllServices()
             .setDefaultValue(new ModelNode("batch"))
-            .setAllowedValues("batch", "simple")
+            .setAllowedValues(ALLOWED_SPAN_PROCESSORS)
+            .setValidator(new StringAllowedValuesValidator(ALLOWED_SPAN_PROCESSORS))
             .build();
 
     public static final SimpleAttributeDefinition BATCH_DELAY = SimpleAttributeDefinitionBuilder

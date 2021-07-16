@@ -64,7 +64,11 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
         String subsystemXml =
                 "<subsystem xmlns=\"" + OpenTelemetryParser_1_0.NAMESPACE + "\">" +
                         "</subsystem>";
-        KernelServices services = super.createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices services = super.createKernelServicesBuilder(null)
+                .setSubsystemXml(subsystemXml)
+                .build();
+        System.out.println(services.getBootError());
+        Assert.assertTrue(services.isSuccessfulBoot());
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
