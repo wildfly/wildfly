@@ -686,12 +686,14 @@
             <artifactId>jackson-jaxrs-base</artifactId>
             <version>${version.com.fasterxml.jackson}</version>
             <classifier>jakarta</classifier>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
             <version>${version.com.fasterxml.jackson}</version>
             <classifier>jakarta</classifier>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.jaxrs</groupId>
@@ -709,6 +711,7 @@
             <artifactId>jackson-module-jaxb-annotations</artifactId>
             <version>${version.com.fasterxml.jackson}</version>
             <classifier>jakarta</classifier>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>jakarta.xml.bind</groupId>
@@ -930,6 +933,7 @@
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcjmail-jdk15on</artifactId>
             <version>${version.org.bouncycastle}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1437,12 +1441,14 @@
         <dependency>
             <groupId>org.jboss.spec.javax.xml.rpc</groupId>
             <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.wildfly.security.jakarta</groupId>
             <artifactId>jakarta-authentication</artifactId>
             <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1454,6 +1460,7 @@
             <groupId>org.wildfly.security.jakarta</groupId>
             <artifactId>jakarta-authorization</artifactId>
             <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
