@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition.CONNECTOR_CAPABILITY_NAME;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -41,10 +43,12 @@ import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemotingConnectorClientMappingsEntryProviderService;
 import org.jboss.as.network.ClientMapping;
+import org.jboss.as.network.ProtocolSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
 import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
@@ -123,14 +127,19 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
         // Install the Jakarta Enterprise Beans remoting connector service which will listen for client connections on the remoting channel
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
-        final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService(channelCreationOptions,
-                FilterSpecClassResolverFilter.getFilterForOperationContext(context));
+        final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService(channelCreationOptions, FilterSpecClassResolverFilter.getFilterForOperationContext(context));
         CapabilityServiceBuilder<?> builder = (CapabilityServiceBuilder<?>) context.getCapabilityServiceTarget()
                 .addCapability(EJB3RemoteResourceDefinition.EJB_REMOTE_CAPABILITY)
                 .setInstance(ejbRemoteConnectorService)
                 .addCapabilityRequirement(EJB3RemoteResourceDefinition.REMOTING_ENDPOINT_CAPABILITY_NAME, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector());
         if (!executeInWorker) {
             builder.addCapabilityRequirement(EJB3RemoteResourceDefinition.THREAD_POOL_CAPABILITY_NAME, ExecutorService.class, ejbRemoteConnectorService.getExecutorService(), threadPoolName);
+        }
+        // add injection points for connectors which have had client mapping registries created
+        for (ModelNode connectorNameNode : connectorNameNodes) {
+            String connectorName = connectorNameNode.asString();
+            InjectedValue<ProtocolSocketBinding> protocolSocketBindingInjector = ejbRemoteConnectorService.addConnectorInjector(connectorName);
+            builder.addCapabilityRequirement(CONNECTOR_CAPABILITY_NAME, ProtocolSocketBinding.class, protocolSocketBindingInjector, connectorName);
         }
         // add rest of the dependencies
         builder.addDependency(AssociationService.SERVICE_NAME, AssociationService.class, ejbRemoteConnectorService.getAssociationServiceInjector())
