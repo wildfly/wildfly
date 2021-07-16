@@ -378,6 +378,7 @@
                 <module>clustering</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
+                <module>secman</module>
             </modules>
         </profile>
 
