@@ -29,7 +29,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.MediaType;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -117,7 +116,7 @@ public class OpenAPIFormatTestCase {
             }
 
             // Ensure format parameter is still read when Accept header is not sufficiently specific
-            request.setHeader("Accept", MediaType.WILDCARD + ", " + new MediaType(MediaType.APPLICATION_JSON_TYPE.getType(), MediaType.MEDIA_TYPE_WILDCARD).toString());
+            request.setHeader("Accept", "*/*, application/*");
             try (CloseableHttpResponse response = client.execute(request)) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 List<String> urls = validateContent(response);
@@ -130,7 +129,7 @@ public class OpenAPIFormatTestCase {
                 }
             }
             // Test unacceptable accept header
-            request.setHeader("Accept", MediaType.APPLICATION_JSON_PATCH_JSON);
+            request.setHeader("Accept", "application/json-patch+json");
             try (CloseableHttpResponse response = client.execute(request)) {
                 Assert.assertEquals(HttpServletResponse.SC_NOT_ACCEPTABLE, response.getStatusLine().getStatusCode());
             }
@@ -138,7 +137,7 @@ public class OpenAPIFormatTestCase {
     }
 
     private static List<String> validateContent(HttpResponse response) throws IOException {
-        Assert.assertEquals(MediaType.APPLICATION_JSON, response.getEntity().getContentType().getValue());
+        Assert.assertEquals("application/json", response.getEntity().getContentType().getValue());
 
         JsonNode node = new ObjectMapper().reader().readTree(response.getEntity().getContent());
         JsonNode info = node.get("info");

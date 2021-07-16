@@ -29,16 +29,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
-import org.jboss.resteasy.spi.ResteasyProviderFactory;
-
 @Path("attribute")
 public class ResteasyAttributeResource {
 
     @Path("{param}")
     @GET
     @Produces("text/plain")
-    public String getParameter(@PathParam("param") String param, @Context UriInfo info) throws NamingException {
-        ServletContext context = ResteasyProviderFactory.getContextData(ServletContext.class);
+    public String getParameter(@PathParam("param") String param, @Context UriInfo info, @Context ServletContext context) throws NamingException {
         return context.getInitParameter(param);
     }
 }

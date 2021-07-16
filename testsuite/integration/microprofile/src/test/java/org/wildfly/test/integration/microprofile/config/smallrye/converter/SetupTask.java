@@ -54,10 +54,8 @@ public class SetupTask implements ServerSetupTask {
         archiveDir.mkdirs();
         File moduleFile = new File(archiveDir, "config-converters.jar");
         JavaArchive configSourceServiceLoad = ShrinkWrap.create(JavaArchive.class, "config-converters.jar")
-                .addClasses(Return101Converter.class, Return102Converter.class, HighPriorityStringConverter1.class,
-                        HighPriorityStringConverter2.class)
-                .addAsServiceProvider(Converter.class, Return101Converter.class, Return102Converter.class,
-                        HighPriorityStringConverter1.class, HighPriorityStringConverter2.class);
+                .addClasses(Return101Converter.class, Return102Converter.class)
+                .addAsServiceProvider(Converter.class, Return101Converter.class, Return102Converter.class);
         URL url = MicroProfileConfigConvertersTestCase.class.getResource("module.xml");
         File moduleXmlFile = new File(url.toURI());
         if (Boolean.getBoolean("ts.ee9") || Boolean.getBoolean("ts.bootable.ee9")) {

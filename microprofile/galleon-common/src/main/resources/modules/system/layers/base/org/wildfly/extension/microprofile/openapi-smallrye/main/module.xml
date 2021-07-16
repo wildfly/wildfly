@@ -59,7 +59,8 @@
         <module name="org.jboss.metadata.web"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
-        <module name="org.jboss.resteasy.resteasy-jaxrs"/>
+        <module name="org.jboss.resteasy.resteasy-client"/>
+        <module name="org.jboss.resteasy.resteasy-core"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
 

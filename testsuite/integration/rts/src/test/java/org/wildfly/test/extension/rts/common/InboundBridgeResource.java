@@ -21,6 +21,7 @@
  */
 package org.wildfly.test.extension.rts.common;
 
+import javax.json.Json;
 import javax.transaction.Transaction;
 import javax.transaction.Transactional;
 import javax.ws.rs.GET;
@@ -31,8 +32,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import org.codehaus.jettison.json.JSONArray;
 
 import com.arjuna.ats.jta.TransactionManager;
 import org.jboss.logging.Logger;
@@ -63,7 +62,7 @@ public class InboundBridgeResource {
             throw new WebApplicationException(409);
         }
 
-        return new JSONArray(loggingXAResource.getInvocations()).toString();
+        return Json.createArrayBuilder(loggingXAResource.getInvocations()).build().toString();
     }
 
     @POST

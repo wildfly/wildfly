@@ -50,6 +50,7 @@ import org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(SetupTask.class)
+// TODO (jrp) talk to Jeff about this. A generic String converter will override values in RESTEasy
 public class MicroProfileConfigConvertersTestCase extends AbstractMicroProfileConfigTestCase {
 
     @Deployment

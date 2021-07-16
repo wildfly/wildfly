@@ -21,7 +21,8 @@
 */
 package org.wildfly.test.extension.rts;
 
-import org.codehaus.jettison.json.JSONArray;
+import javax.json.JsonArray;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -39,7 +40,7 @@ import org.wildfly.test.extension.rts.common.LoggingXAResource;
 @RunAsClient
 @RunWith(Arquillian.class)
 public final class InboundBridgeEjbTestCase extends AbstractTestCase {
-    private static final String DEPENDENCIES = "Dependencies: org.jboss.narayana.rts, org.jboss.jts, org.codehaus.jettison\n";
+    private static final String DEPENDENCIES = "Dependencies: org.jboss.narayana.rts, org.jboss.jts\n";
 
     private InboundBridgeUtilities utils;
 
@@ -70,7 +71,7 @@ public final class InboundBridgeEjbTestCase extends AbstractTestCase {
         utils.enlistInboundBridgeResource();
         txSupport.commitTx();
 
-        final JSONArray jsonArray = utils.getInboundBridgeResourceInvocations();
+        final JsonArray jsonArray = utils.getInboundBridgeResourceInvocations();
 
         utils.assertJsonArray(jsonArray, "LoggingXAResource.start", 1);
         utils.assertJsonArray(jsonArray, "LoggingXAResource.end", 1);
@@ -85,7 +86,7 @@ public final class InboundBridgeEjbTestCase extends AbstractTestCase {
         utils.enlistInboundBridgeResource();
         txSupport.rollbackTx();
 
-        JSONArray jsonArray = utils.getInboundBridgeResourceInvocations();
+        JsonArray jsonArray = utils.getInboundBridgeResourceInvocations();
 
         utils.assertJsonArray(jsonArray, "LoggingXAResource.start", 1);
         utils.assertJsonArray(jsonArray, "LoggingXAResource.end", 1);

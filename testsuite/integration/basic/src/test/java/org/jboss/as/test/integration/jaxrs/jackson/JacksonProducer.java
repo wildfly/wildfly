@@ -43,6 +43,7 @@ public class JacksonProducer implements ContextResolver<ObjectMapper> {
         this.json = new ObjectMapper()
                 .findAndRegisterModules()
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     }

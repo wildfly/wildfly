@@ -56,7 +56,8 @@
         <module name="io.undertow.servlet"/>
         <module name="org.wildfly.extension.undertow"/>
         <module name="javax.ws.rs.api"/>
-        <module name="org.jboss.resteasy.resteasy-jaxrs" services="export"/>
+        <module name="org.jboss.resteasy.resteasy-core" services="export"/>
+        <module name="org.jboss.resteasy.resteasy-core-spi" services="export"/>
         <module name="org.jboss.resteasy.resteasy-jaxb-provider" services="export"/>
         <module name="org.hibernate.validator" services="export"/>
         <module name="org.jboss.narayana.rts"/>
