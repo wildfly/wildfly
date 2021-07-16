@@ -48,5 +48,9 @@ public class TracingDeploymentDefinition extends SimpleResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadOnlyAttribute(TRACER_CONFIGURATION_NAME, null);
         resourceRegistration.registerReadOnlyAttribute(TRACER_CONFIGURATION, null);
+
+        for (JaegerClientMetricsHandler.JaegerClientMetric stat : JaegerClientMetricsHandler.JaegerClientMetric.values()) {
+            resourceRegistration.registerMetric(stat.definition, JaegerClientMetricsHandler.INSTANCE);
+        }
     }
 }

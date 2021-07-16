@@ -43,6 +43,7 @@ import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.microprofile.opentracing.WildflyJaegerMetricsFactory;
 import org.wildfly.microprofile.opentracing.smallrye.TracerConfiguration;
 
 /**
@@ -102,6 +103,7 @@ public class JaegerTracerConfiguration implements TracerConfiguration {
     public Tracer createTracer(String serviceName) {
         return createConfiguration(serviceName)
                 .getTracerBuilder()
+                    .withMetricsFactory(new WildflyJaegerMetricsFactory())
                     .withManualShutdown()
                     .build();
     }

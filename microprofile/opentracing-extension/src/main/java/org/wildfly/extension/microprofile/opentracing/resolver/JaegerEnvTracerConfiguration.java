@@ -22,6 +22,7 @@ import io.opentracing.Tracer;
 import java.util.Map;
 import java.util.Properties;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.microprofile.opentracing.WildflyJaegerMetricsFactory;
 import org.wildfly.microprofile.opentracing.smallrye.TracerConfiguration;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -36,7 +37,11 @@ public class JaegerEnvTracerConfiguration implements TracerConfiguration {
 
     @Override
     public Tracer createTracer(String serviceName) {
-        return Configuration.fromEnv(serviceName).getTracerBuilder().withManualShutdown().build();
+        return Configuration.fromEnv(serviceName)
+                .getTracerBuilder()
+                    .withMetricsFactory(new WildflyJaegerMetricsFactory())
+                    .withManualShutdown()
+                    .build();
     }
 
     @Override

@@ -68,4 +68,10 @@ public interface TracingExtensionLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 8, value = "Error using tracer resolver to resolve the tracer.")
     void errorResolvingTracer(@Cause Exception ex);
+
+    @Message(id = 9, value = "Unknown metric %s")
+    String unknownMetric(Object metric);
+
+    @Message(id = 10, value = "Tracer is not a managed Jaeger tracer")
+    String notManagedJaegerTracer();
 }
