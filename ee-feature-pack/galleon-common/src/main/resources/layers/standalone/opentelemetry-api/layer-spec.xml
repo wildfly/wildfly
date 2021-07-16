@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="opentelemetry-api">
+    <dependencies>
+        <layer name="cdi"/>
+        <layer name="opentelemetry-extension"/>
+    </dependencies>
+</layer-spec>

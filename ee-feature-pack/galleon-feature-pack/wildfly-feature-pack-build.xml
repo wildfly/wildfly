@@ -93,6 +93,7 @@
                 <extension>org.wildfly.extension.io</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>
                 <extension>org.wildfly.extension.metrics</extension>
+                <extension>org.wildfly.extension.opentelemetry-extension</extension>
                 <extension>org.wildfly.extension.picketlink</extension>
                 <extension>org.wildfly.extension.request-controller</extension>
                 <extension>org.wildfly.extension.rts</extension>
@@ -134,6 +135,7 @@
                 <extension>org.wildfly.extension.elytron</extension>
                 <extension>org.wildfly.extension.io</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>
+                <extension>org.wildfly.extension.opentelemetry-extension</extension>
                 <extension>org.wildfly.extension.picketlink</extension>
                 <extension>org.wildfly.extension.request-controller</extension>
                 <extension>org.wildfly.extension.rts</extension>
