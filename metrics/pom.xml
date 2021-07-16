@@ -131,11 +131,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>

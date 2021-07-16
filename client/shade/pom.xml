@@ -119,11 +119,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.wildfly.discovery</groupId>
             <artifactId>wildfly-discovery-client</artifactId>
             <exclusions>

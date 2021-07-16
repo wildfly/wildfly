@@ -74,10 +74,6 @@
             <artifactId>wildfly-clustering-web-container</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-annotations</artifactId>
             <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
@@ -130,6 +126,10 @@
             <version>${project.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-security-manager</artifactId>
         </dependency>
     </dependencies>
 

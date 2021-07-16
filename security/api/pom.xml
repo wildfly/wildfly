@@ -48,5 +48,9 @@
             <artifactId>wildfly-security-plugins</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-auth-server</artifactId>
+        </dependency>
     </dependencies>
 </project>

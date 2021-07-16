@@ -63,7 +63,22 @@
 
         <dependency>
             <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron</artifactId>
+            <artifactId>wildfly-elytron-auth</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-auth-server</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-credential</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-security-manager</artifactId>
         </dependency>
 
         <dependency>

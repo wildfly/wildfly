@@ -78,5 +78,9 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-security-manager</artifactId>
+        </dependency>
     </dependencies>
 </project>
