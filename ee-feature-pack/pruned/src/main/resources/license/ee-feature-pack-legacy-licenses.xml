@@ -198,7 +198,7 @@
           <distribution>repo</distribution>
         </license>
         <license>
-          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <name>GNU General Public License v2.0 only, with Classpath exception</name>
           <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
           <distribution>repo</distribution>
         </license>
@@ -214,7 +214,7 @@
           <distribution>repo</distribution>
         </license>
         <license>
-          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <name>GNU General Public License v2.0 only, with Classpath exception</name>
           <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
           <distribution>repo</distribution>
         </license>
