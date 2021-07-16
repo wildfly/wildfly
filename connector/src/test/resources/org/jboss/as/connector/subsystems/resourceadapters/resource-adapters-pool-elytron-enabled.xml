@@ -12,15 +12,15 @@
         <bean-validation-group>group</bean-validation-group>
       </bean-validation-groups>
       <!--Optional:-->
+      <!--Zero or more repetitions:-->
       <transaction-support>NoTransaction</transaction-support>
+      <config-property name="config1">value</config-property>
         <workmanager>
             <security>
                 <mapping-required>true</mapping-required>
                 <elytron-security-domain>ApplicationDomain</elytron-security-domain>
             </security>
         </workmanager>
-        <!--Zero or more repetitions:-->
-      <config-property name="config1">value</config-property>
       <!--Optional:-->
       <connection-definitions>
         <!--1 or more repetitions:-->

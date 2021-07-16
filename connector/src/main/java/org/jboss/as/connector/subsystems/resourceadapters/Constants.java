@@ -493,6 +493,7 @@ public class Constants {
             .setRestartAllServices()
             .build();
 
+    @Deprecated
     static SimpleAttributeDefinition USETRYLOCK = new SimpleAttributeDefinitionBuilder(USETRYLOCK_NAME, ModelType.LONG, true)
             .setXmlName(TimeOut.Tag.USE_TRY_LOCK.getLocalName())
             .setAllowExpression(true)

@@ -34,9 +34,18 @@
                 <min-pool-size>${test.expr:1}</min-pool-size>
                 <max-pool-size>${test.expr:5}</max-pool-size>
                 <prefill>${test.expr:true}</prefill>
+                <fair>${test.expr:false}</fair>
                 <use-strict-min>${test.expr:true}</use-strict-min>
                 <flush-strategy>${test.expr:EntirePool}</flush-strategy>
                 <allow-multiple-users>${test.expr:true}</allow-multiple-users>
+                <capacity>
+                    <incrementer class-name="${test.expr:token}">
+                        <config-property name="token">${test.expr:token}</config-property>
+                    </incrementer>
+                    <decrementer class-name="${test.expr:token}">
+                        <config-property name="token">${test.expr:token}</config-property>
+                    </decrementer>
+                </capacity>
             </pool>
             <security>
                 <user-name>

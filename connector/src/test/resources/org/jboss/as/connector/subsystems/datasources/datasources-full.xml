@@ -33,9 +33,18 @@
                 <min-pool-size>1</min-pool-size>
                 <max-pool-size>5</max-pool-size>
                 <prefill>true</prefill>
+                <fair>false</fair>
                 <use-strict-min>true</use-strict-min>
                 <flush-strategy>EntirePool</flush-strategy>
                 <allow-multiple-users>true</allow-multiple-users>
+                <capacity>
+                    <incrementer class-name="token">
+                        <config-property name="token">token</config-property>
+                    </incrementer>
+                    <decrementer class-name="token">
+                        <config-property name="token">token</config-property>
+                    </decrementer>
+                </capacity>
             </pool>
             <security>
                 <user-name>
