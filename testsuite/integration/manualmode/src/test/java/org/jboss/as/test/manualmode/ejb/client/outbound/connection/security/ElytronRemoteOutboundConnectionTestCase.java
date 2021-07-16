@@ -108,6 +108,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
     private static final String OUTBOUND_SOCKET_BINDING = RESOURCE_PREFIX + "-outbound-socket-binding";
     private static final String DEFAULT_AUTH_CONFIG = RESOURCE_PREFIX + "-default-auth-config";
     private static final String DEFAULT_AUTH_CONTEXT = RESOURCE_PREFIX + "-default-auth-context";
+    private static final String DYNAMIC_CLIENT_AUTH_CONTEXT = RESOURCE_PREFIX + "-dynamic-client-auth-context";
     private static final String OVERRIDING_AUTH_CONFIG = RESOURCE_PREFIX + "-overriding-auth-config";
     private static final String OVERRIDING_AUTH_CONTEXT = RESOURCE_PREFIX + "-overriding-auth-context";
     private static final String REMOTE_OUTBOUND_CONNECTION = RESOURCE_PREFIX + "-remote-outbound-connection";
@@ -121,6 +122,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
     private static final String DEFAULT_TRUST_STORE = RESOURCE_PREFIX + "-default-trust-store";
     private static final String DEFAULT_TRUST_MANAGER = RESOURCE_PREFIX + "-default-trust-manager";
     private static final String DEFAULT_SERVER_SSL_CONTEXT = RESOURCE_PREFIX + "-default-server-ssl-context";
+    private static final String DYNAMIC_CLIENT_SSL_CONTEXT = RESOURCE_PREFIX + "-dynamic-client-ssl-context";
     private static final String OVERRIDING_KEY_STORE = RESOURCE_PREFIX + "-overriding-key-store";
     private static final String OVERRIDING_KEY_MANAGER = RESOURCE_PREFIX + "-overriding-key-manager";
     private static final String OVERRIDING_TRUST_STORE = RESOURCE_PREFIX + "-overriding-trust-store";
@@ -241,8 +243,10 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getEjbConnectorOp("list-remove", CONNECTOR));
         executeBlockingReloadClientServer(clientSideMCC);
 
-        removeIfExists(clientSideMCC, getConnectionAddress(REMOTE_OUTBOUND_CONNECTION), !clientReloadRequired);
         removeIfExists(clientSideMCC, getAuthenticationContextAddress(DEFAULT_AUTH_CONTEXT), !clientReloadRequired);
+        removeIfExists(clientSideMCC, addDynamicClientSSLContext(DYNAMIC_CLIENT_SSL_CONTEXT), !clientReloadRequired);
+        removeIfExists(clientSideMCC, getServerAuthenticationContext(DYNAMIC_CLIENT_AUTH_CONTEXT), !clientReloadRequired);
+        removeIfExists(clientSideMCC, getConnectionAddress(REMOTE_OUTBOUND_CONNECTION), !clientReloadRequired);
         removeIfExists(clientSideMCC, getServerSSLContextAddress(DEFAULT_SERVER_SSL_CONTEXT), !clientReloadRequired);
         removeIfExists(clientSideMCC, getTrustManagerAddress(DEFAULT_TRUST_MANAGER), !clientReloadRequired);
         removeIfExists(clientSideMCC, getKeyStoreAddress(DEFAULT_TRUST_STORE), !clientReloadRequired);
@@ -740,6 +744,36 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(clientSideMCC, getAddTrustManagerOp(DEFAULT_TRUST_MANAGER, DEFAULT_TRUST_STORE));
         applyUpdate(clientSideMCC, getAddServerSSLContextOp(DEFAULT_SERVER_SSL_CONTEXT, DEFAULT_KEY_MANAGER, DEFAULT_TRUST_MANAGER));
         applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG, DEFAULT_SERVER_SSL_CONTEXT));
+        applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
+        applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
+        executeBlockingReloadClientServer(clientSideMCC);
+
+        deployer.deploy(EJB_SERVER_DEPLOYMENT);
+        deployer.deploy(EJB_CLIENT_DEPLOYMENT);
+        Assert.assertEquals(DEFAULT_USERNAME, callIntermediateWhoAmI());
+    }
+
+    @Test
+    public void testAuthenticationHostConfigUsingDynamicClientSSLContextWithHttpsRemoting() {
+        //==================================
+        // Server-side server setup
+        //==================================
+        configureServerSideForInboundHttpsRemoting(serverSideMCC);
+        //==================================
+        // Client-side server setup
+        //==================================
+        applyUpdate(clientSideMCC, getAddOutboundSocketBindingOp(OUTBOUND_SOCKET_BINDING, TestSuiteEnvironment.getServerAddressNode1(),
+                54321));
+        applyUpdate(clientSideMCC, getAddAuthenticationConfigurationOp(DEFAULT_AUTH_CONFIG, HTTPS_REMOTING_PROTOCOL, PROPERTIES_REALM,
+                DEFAULT_USERNAME, DEFAULT_PASSWORD, TestSuiteEnvironment.getServerAddress(), HTTPS_REMOTING_PORT));
+        applyUpdate(clientSideMCC, getAddKeyStoreOp(DEFAULT_KEY_STORE, CLIENT_KEY_STORE_PATH, KEY_STORE_KEYPASS));
+        applyUpdate(clientSideMCC, getAddKeyManagerOp(DEFAULT_KEY_MANAGER, DEFAULT_KEY_STORE, KEY_STORE_KEYPASS));
+        applyUpdate(clientSideMCC, getAddKeyStoreOp(DEFAULT_TRUST_STORE, CLIENT_TRUST_STORE_PATH, KEY_STORE_KEYPASS));
+        applyUpdate(clientSideMCC, getAddTrustManagerOp(DEFAULT_TRUST_MANAGER, DEFAULT_TRUST_STORE));
+        applyUpdate(clientSideMCC, getAddServerSSLContextOp(DEFAULT_SERVER_SSL_CONTEXT, DEFAULT_KEY_MANAGER, DEFAULT_TRUST_MANAGER));
+        applyUpdate(clientSideMCC, getAddClientAuthenticationContextOp(DYNAMIC_CLIENT_AUTH_CONTEXT));
+        applyUpdate(clientSideMCC, getAddDynamicClientSSLContextOp(DYNAMIC_CLIENT_SSL_CONTEXT));
+        applyUpdate(clientSideMCC, getAddAuthenticationContextOp(DEFAULT_AUTH_CONTEXT, DEFAULT_AUTH_CONFIG, DYNAMIC_CLIENT_SSL_CONTEXT));
         applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, ""));
         applyUpdate(clientSideMCC, getWriteElytronDefaultAuthenticationContextOp(DEFAULT_AUTH_CONTEXT));
         executeBlockingReloadClientServer(clientSideMCC);
@@ -1344,12 +1378,44 @@ public class ElytronRemoteOutboundConnectionTestCase {
                 .append("server-ssl-context", serverSSLContextName);
     }
 
+    private static PathAddress addDynamicClientSSLContext(String dynamicClientSSLContextName) {
+        return PathAddress.pathAddress()
+                .append(SUBSYSTEM, "elytron")
+                .append("dynamic-client-ssl-context", dynamicClientSSLContextName);
+    }
+
+    private static PathAddress getServerAuthenticationContext(String serverSSLContextName) {
+        return PathAddress.pathAddress()
+                .append(SUBSYSTEM, "elytron")
+                .append("authentication-context", serverSSLContextName);
+    }
+
     private static ModelNode getAddServerSSLContextOp(String serverSSLContextName, String keyManagerName, String trustManagerName) {
         ModelNode addServerSSLContextOp = Util.createAddOperation(getServerSSLContextAddress(serverSSLContextName));
         addServerSSLContextOp.get("trust-manager").set(trustManagerName);
         addServerSSLContextOp.get("need-client-auth").set(true);
         addServerSSLContextOp.get("key-manager").set(keyManagerName);
         return addServerSSLContextOp;
+    }
+
+    private static ModelNode getAddClientAuthenticationContextOp(String dsslname) {
+        ModelNode addAuthenticationContext = Util.createAddOperation(getServerAuthenticationContext(dsslname));
+
+        ModelNode matchRule = new ModelNode();
+        matchRule.get("ssl-context").set(DEFAULT_SERVER_SSL_CONTEXT);
+        matchRule.get("match-host").set(TestSuiteEnvironment.getServerAddress());
+
+        ModelNode matchRulesList = new ModelNode().addEmptyList();
+        matchRulesList.add(matchRule);
+        addAuthenticationContext.get("match-rules").set(matchRulesList);
+
+        return addAuthenticationContext;
+    }
+
+    private static ModelNode getAddDynamicClientSSLContextOp(String dynamicClientSSLContextName) {
+        ModelNode addDynamicClientSSLContext = Util.createAddOperation(addDynamicClientSSLContext(dynamicClientSSLContextName));
+        addDynamicClientSSLContext.get("authentication-context").set(DYNAMIC_CLIENT_AUTH_CONTEXT);
+        return addDynamicClientSSLContext;
     }
 
     private static PathAddress getDefaultHttpsListenerAddress() {
