@@ -64,7 +64,7 @@ public final class DeploymentTransformer implements org.jboss.as.server.deployme
     }
 
     private boolean isEnabled() {
-        final String value = WildFlySecurityManager.getPropertyPrivileged("org.wildfly.unsupported.skip.jakarta.transformer", "");
-        return !(value.isEmpty() || Boolean.parseBoolean(value));
+        final String value = WildFlySecurityManager.getPropertyPrivileged("org.wildfly.unsupported.skip.jakarta.transformer", "false");
+        return !Boolean.parseBoolean(value);
     }
 }
