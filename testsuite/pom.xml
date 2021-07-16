@@ -96,19 +96,25 @@
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <xslt.scripts.dir>${jbossas.ts.integ.dir}/src/test/xslt</xslt.scripts.dir>
 
-        <!-- IP address defaults. -->
+        <!-- IP address defaults (clustering tests support modelling clusters from 1-4 nodes) -->
         <node0>127.0.0.1</node0>
         <node1>127.0.0.1</node1>
-        <mcast>230.0.0.4</mcast> <!-- Default multicast address. -->
-        <mcast.ttl>0</mcast.ttl> <!-- Multicast TTL. -->
-        <node0.escaped>${node0}</node0.escaped>
-
-        <!-- additional IP address defaults for xsite clustering tests -->
         <node2>127.0.0.1</node2>
         <node3>127.0.0.1</node3>
+
+        <!-- escaped IP addresses for use in configuration files which handle IPv4/IPv6 URL formation -->
+        <node0.escaped>${node0}</node0.escaped>
+        <node1.escaped>${node1}</node1.escaped>
+        <node2.escaped>${node2}</node2.escaped>
+        <node3.escaped>${node3}</node3.escaped>
+
+        <!-- multicast addresses -->
+        <mcast>230.0.0.4</mcast> <!-- Default multicast address. -->
         <mcast1>230.0.0.5</mcast1>
         <mcast2>230.0.0.6</mcast2>
         <mcast3>230.0.0.7</mcast3>
+        <mcast.ttl>0</mcast.ttl> <!-- Multicast TTL. -->
+
         <port-offset>0</port-offset>
 
         <!-- IP stack configs. -->
@@ -579,14 +585,19 @@
                 <!-- Override IPv4 defaults from the top. -->
                 <node0>::1</node0>
                 <node1>::1</node1>
-                <!-- Allow loopback to multicast -->
-                <!-- ip -6 route add table local local ff13::/16 dev lo metric 5 -->
-                <mcast>ff13::1</mcast>
-                <node0.escaped>[${node0}]</node0.escaped>
-
-                <!-- Override xsite IPv4 defaults from the top.  -->
                 <node2>::1</node2>
                 <node3>::1</node3>
+
+                <!-- Override escaped IPv4 addresses from the top. -->
+                <node0.escaped>[${node0}]</node0.escaped>
+                <node1.escaped>[${node1}]</node1.escaped>
+                <node2.escaped>[${node2}]</node2.escaped>
+                <node3.escaped>[${node3}]</node3.escaped>
+
+                <!-- Allow loopback to multicast -->
+                <!-- ip -6 route add table local local ff13::/16 dev lo metric 5 -->
+                <!-- Override IPv4 multicast addresses from the top. -->
+                <mcast>ff13::1</mcast>
                 <mcast1>ff13::2</mcast1>
                 <mcast2>ff13::3</mcast2>
                 <mcast3>ff13::4</mcast3>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <jboss-ejb-client xmlns="urn:jboss:wildfly-client-ejb:3.0">
+        <connections>
+            <!-- node0 of clusterA -->
+            <connection uri="remote+http://${node0.escaped:localhost}:8080"/>
+            <!-- node3 of clusterB -->
+            <connection uri="remote+http://${node3.escaped:localhost}:8280"/>
+        </connections>
+    </jboss-ejb-client>
+</configuration>

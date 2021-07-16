@@ -565,9 +565,10 @@
                                         <exclude>${test-group}/**/ejb/stateful/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/group/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/jms/*TestCase.java</exclude>
-                                        <!-- These are run by ts.clustering.cluster.ha-infinispan-server.profile -->
+                                        <!-- These are run by ts.clustering.cluster.ha-no-reuse-forks.profile -->
                                         <exclude>${test-group}/**/web/remote/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/sso/remote/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/ejb/remote/RemoteEJBClientTwoClustersTestCase.java</exclude>
                                         <!-- These are run by ts.clustering.cluster.byteman.profile -->
                                         <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
                                         <exclude>%regex[${test-group}/(${ts.surefire.clustering.ha.additionalExcludes})/.*TestCase.class]</exclude>
@@ -604,9 +605,9 @@
             </build>
         </profile>
 
-        <!-- Run cluster tests with standalone-ha.xml profile with Infinispan Server provisioned -->
+        <!-- Run cluster tests with standalone-ha.xml profile with reuseForks == false -->
         <profile>
-            <id>ts.clustering.cluster.ha-infinispan-server.profile</id>
+            <id>ts.clustering.cluster.ha-no-reuse-forks.profile</id>
             <activation>
                 <property>
                     <name>!ts.noClustering</name>
@@ -621,7 +622,7 @@
                         <executions combine.children="append">
                             <!-- Multi-node clustering tests -->
                             <execution>
-                                <id>ts.surefire.clustering.ha-infinispan-server</id>
+                                <id>ts.surefire.clustering.ha-no-reuse-forks</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
@@ -635,6 +636,7 @@
                                     <includes>
                                         <include>${test-group}/**/web/remote/*TestCase.java</include>
                                         <include>${test-group}/**/sso/remote/*TestCase.java</include>
+                                        <include>${test-group}/**/ejb/remote/RemoteEJBClientTwoClustersTestCase.java</include>
                                     </includes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
@@ -1570,7 +1572,7 @@
                                 <phase>none</phase>
                             </execution>
                             <execution>
-                                <id>ts.surefire.clustering.ha-infinispan-server</id>
+                                <id>ts.surefire.clustering.ha-no-reuse-forks</id>
                                 <phase>none</phase>
                             </execution>
                             <execution>
@@ -1647,6 +1649,7 @@
                                              They might require legacy security but why isn't obvious -->
                                         <exclude>${test-group}/ejb/remote/GlobalAuthContextRemoteStatelessEJBFailoverTestCase.java</exclude>
                                         <exclude>${test-group}/ejb/remote/ThreadAuthContextRemoteStatelessEJBFailoverTestCase.java</exclude>
+                                        <exclude>${test-group}/ejb/remote/RemoteEJBClientTwoClustersTestCase.java</exclude>
                                     </excludes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
@@ -1794,7 +1797,7 @@
                                 <phase>none</phase>
                             </execution>
                             <execution>
-                                <id>ts.surefire.clustering.ha-infinispan-server</id>
+                                <id>ts.surefire.clustering.ha-no-reuse-forks</id>
                                 <phase>none</phase>
                             </execution>
                             <execution>
@@ -1947,7 +1950,7 @@
                                 <phase>none</phase>
                             </execution>
                             <execution>
-                                <id>ts.surefire.clustering.ha-infinispan-server</id>
+                                <id>ts.surefire.clustering.ha-no-reuse-forks</id>
                                 <phase>none</phase>
                             </execution>
                             <execution>
@@ -2176,7 +2179,7 @@
                                 <phase>none</phase>
                             </execution>
                             <execution>
-                                <id>ts.surefire.clustering.ha-infinispan-server</id>
+                                <id>ts.surefire.clustering.ha-no-reuse-forks</id>
                                 <phase>none</phase>
                             </execution>
                             <execution>
@@ -2306,7 +2309,7 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>ts.surefire.clustering.ha-infinispan-server</id>
+                                <id>ts.surefire.clustering.ha-no-reuse-forks</id>
                                 <!--<phase>none</phase>-->
                                 <configuration>
                                     <excludes>
