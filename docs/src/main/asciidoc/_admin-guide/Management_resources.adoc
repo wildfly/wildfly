@@ -285,6 +285,47 @@ See <<descriptions,Descriptions>>
 below for how to learn more about the attributes a particular resource
 exposes.
 
+[[overridden-attribute-value]]
+=== Override Attribute Value with an Environment Variable
+
+It is possible to override the value of any attribute by providing an Environment Variable with a name
+that maps to the attribute (and its resource).
+If there is an environment variable with such as name, the management resource will use the value of this environment variable
+when the management resource validate and set the attribute value.
+This takes place before the attribute value is resolved (if it contains an expression) or corrected.
+
+==== Mapping between the resource address and attribute and the environment variable
+
+The name of the environment variable is based on the address of the resource and the name of the attribute:
+
+1. take the address of the resource (e.g. `/subsystem=undertow/server=default-server/http-listener=default`)
+** `/subsystem=undertow/server=default-server/http-listener=default`
+2. remove the leading slash (`/`)
+** `subsystem=undertow/server=default-server/http-listener=default`
+3. append *two underscores* (`__`) and the name of the attribute (e.g. `proxy-address-forwarding`)
+** `subsystem=undertow/server=default-server/http-listener=default__proxy-address-forwarding`
+4. Replace all non-alphanumeric characters with an underscore (`_`) and put it in upper case
+** `SUBSYSTEM_UNDERTOW_SERVER_DEFAULT_SERVER_HTTP_LISTENER_DEFAULT__PROXY_ADDRESS_FORWARDING`
+
+If WildFly is started with that environment variable, the value of the `proxy-address-forwarding` attribute on the
+`/subsystem=undertow/server=default-server/http-listener=default` will be set to the value of the environment variable:
+
+[source,nowrap]
+----
+$ export SUBSYSTEM_UNDERTOW_SERVER_DEFAULT_SERVER_HTTP_LISTENER_DEFAULT__PROXY_ADDRESS_FORWARDING=false
+$ ./bin/standalone.sh
+$ ./bin/jboss-cli.sh -c --command="/subsystem=undertow/server=default-server/http-listener=default:read-attribute(name=proxy-address-forwarding)"
+{
+    "outcome" => "success",
+    "result" => "false"
+----
+
+[NOTE]
+====
+The value from the environment variable is used to persist the server configuration.
+Any restart of the server will use that value even if the environment variable is no longer present
+====
+
 [[children]]
 == Children
 
