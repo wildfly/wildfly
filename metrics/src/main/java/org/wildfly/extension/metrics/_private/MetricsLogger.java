@@ -24,6 +24,7 @@ package org.wildfly.extension.metrics._private;
 
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
+import static org.jboss.logging.Logger.Level.ERROR;
 
 import java.io.IOException;
 
@@ -63,4 +64,8 @@ public interface MetricsLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 4, value = "Unable to convert attribute %s on %s to Double value.")
     void unableToConvertAttribute(String attributeName, PathAddress address, @Cause Exception exception);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 5, value = "Malformed name.")
+    void malformedName(@Cause Exception exception);
 }
