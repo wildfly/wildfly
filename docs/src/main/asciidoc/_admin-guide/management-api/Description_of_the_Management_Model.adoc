@@ -108,11 +108,14 @@ values described.
 attribute may be of type `ModelType.EXPRESSION`, instead of its standard
 type (see `type` and `value-type` above for discussion of an attribute's
 standard type.) A value of ModelType.EXPRESSION contains a
-system-property substitution expression that the server will resolve
+system-property or environment variable
+substitution expression that the server will resolve
 against the server-side system property map before using the value. For
 example, an attribute named max-threads may have an expression value of
 `${example.pool.max-threads:10`} instead of just 10. Default value if
 not present is false.
+See the <<Expression_Resolution, Expression Resolution>> subsection
+for a more thorough description.
 * `required` – boolean – true if the attribute must have a defined value
 in a representation of its portion of the model unless another attribute
 included in a list of `alternatives` is defined; false if it may be
@@ -255,11 +258,14 @@ values described.
 the parameter or return value may be of type `ModelType.EXPRESSION`,
 instead its standard type (see type and value-type above for discussion
 of the standard type.) A value of ModelType.EXPRESSION contains a
-system-property substitution expression that the server will resolve
+system-property or environment variable
+substitution expression that the server will resolve
 against the server-side system property map before using the value. For
 example, a parameter named max-threads may have an expression value of
 `${example.pool.max-threads:10`} instead of just 10. Default value if
 not present is false.
+See the <<Expression_Resolution, Expression Resolution>> subsection
+for a more thorough description.
 * `required` – boolean – true if the parameter or return value must have
 a defined value in the operation or response unless another item
 included in a list of `alternatives` is defined; false if it may be
@@ -516,3 +522,27 @@ operation will go ahead and restart the runtime service. Otherwise
 executing the operation will put the server into a `reload-required`
 state. (See the discussion of `all-services` above for more on the
 `reload-required` state.)
+
+[[Expression_Resolution]]
+== Expression Resolution
+When resolving an expression in the model the following locations are checked.
+For this example we will use the expression `${my.example-expr}`.
+
+* First we check if there is a system property with the name
+`my.example-expr`.
+If there is, we use its value as the result of the resolution.
+If not, we continue checking the next locations.
+* We convert the name `my.example-expr` to upper case, and replace all
+non-alphanumeric characters with underscores, ending up with
+`MY_EXAMPLE_EXPR`. We check if there is an environment variable with that
+name. If there is, we use its value as the result of the resolution.
+If not, we continue checking the next location.
+* We append `env.` onto the original name, i,e, `env.my.example-expr`
+and check if there is an environment variable with that
+name. If there is, we use its value as the result of the resolution.
+If not, we continue checking the next location.
+* All attempts at resolution failed. Since our example provided no
+default, the expression could not be resolved. If we had specified
+a default in the expression, for example`${my.example-expr:hello}`,
+the value `hello` is returned.
+

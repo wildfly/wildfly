@@ -700,6 +700,10 @@ bsh % print(basic.asInt());
 10
 ----
 
+In addition to system properties, in the above examples, we also support substituting
+from environment variables. See the <<Expression_Resolution, Expression Resolution>>
+subsection for a more thorough description of how this works in practice.
+
 [[modeltype.type]]
 === ModelType.TYPE
 
