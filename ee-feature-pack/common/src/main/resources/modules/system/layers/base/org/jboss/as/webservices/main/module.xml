@@ -68,7 +68,7 @@
         <module name="org.jboss.ws.api" />
         <module name="org.jboss.ws.common" services="import" />
         <module name="org.jboss.ws.spi" />
-        <module name="org.picketbox" />
+        <module name="org.picketbox" optional="true"/>
         <module name="org.wildfly.extension.undertow" />
         <module name="io.undertow.core" />
         <module name="io.undertow.servlet"/>
