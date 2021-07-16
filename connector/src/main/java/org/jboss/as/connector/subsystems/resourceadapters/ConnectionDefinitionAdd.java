@@ -172,13 +172,10 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
                 }
             }
 
-            if (elytronRecoveryEnabled) {
-                if (resourceModel.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName())) {
-                    cdServiceBuilder.requires(context.getCapabilityServiceName(
-                            Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
-                            RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, resourceModel).asString(),
-                            AuthenticationContext.class));
-                }
+            if (elytronRecoveryEnabled && resourceModel.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName())) {
+                cdServiceBuilder.requires(context.getCapabilityServiceName(Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
+                        RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, resourceModel).asString(),
+                        AuthenticationContext.class));
             }
 
             if (!elytronEnabled || !elytronRecoveryEnabled) {

@@ -103,12 +103,10 @@ public class ConnectionDefinitionStatisticsService implements Service<Management
                     if (cf.getManagedConnectionFactory() != null && cf.getManagedConnectionFactory().getStatistics() != null) {
                         StatisticsPlugin extendStats = cf.getManagedConnectionFactory().getStatistics();
                         extendStats.setEnabled(statsEnabled);
-                        if (extendStats.getNames().size() != 0) {
-
-                            if (extendStats.getNames().size() != 0 && overrideRegistration.getSubModel(PathAddress.pathAddress(peExtendedStats)) == null) {
-                                overrideRegistration.registerSubModel(new StatisticsResourceDefinition(peExtendedStats, CommonAttributes.RESOURCE_NAME, extendStats));
-                            }
-
+                        if ((extendStats.getNames().size() != 0) && ((extendStats.getNames().size() != 0)
+                                && (overrideRegistration.getSubModel(PathAddress.pathAddress(peExtendedStats)) == null))) {
+                            overrideRegistration.registerSubModel(new StatisticsResourceDefinition(peExtendedStats,
+                                    CommonAttributes.RESOURCE_NAME, extendStats));
                         }
                     }
                 }
@@ -120,12 +118,10 @@ public class ConnectionDefinitionStatisticsService implements Service<Management
                         StatisticsPlugin poolStats = cm.getPool().getStatistics();
                         poolStats.setEnabled(statsEnabled);
 
-                        if (poolStats.getNames().size() != 0) {
-
-                            if (poolStats.getNames().size() != 0 && overrideRegistration.getSubModel(PathAddress.pathAddress(pePoolStats)) == null) {
-                                overrideRegistration.registerSubModel(new StatisticsResourceDefinition(pePoolStats, CommonAttributes.RESOURCE_NAME, poolStats));
-                            }
-
+                        if ((poolStats.getNames().size() != 0) && ((poolStats.getNames().size() != 0)
+                                && (overrideRegistration.getSubModel(PathAddress.pathAddress(pePoolStats)) == null))) {
+                            overrideRegistration.registerSubModel(
+                                    new StatisticsResourceDefinition(pePoolStats, CommonAttributes.RESOURCE_NAME, poolStats));
                         }
                     }
                 }
