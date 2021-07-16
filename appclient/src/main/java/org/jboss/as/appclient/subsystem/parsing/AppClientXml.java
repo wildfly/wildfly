@@ -89,6 +89,36 @@ public class AppClientXml extends CommonXml {
             case DOMAIN_1_0:
                 readServerElement_1_0(reader, address, operationList);
                 break;
+            case DOMAIN_1_1:
+            case DOMAIN_1_2:
+            case DOMAIN_1_3:
+            case DOMAIN_1_4:
+            case DOMAIN_1_5:
+            case DOMAIN_1_6:
+            case DOMAIN_1_7:
+            case DOMAIN_1_8:
+            case DOMAIN_2_0:
+            case DOMAIN_2_1:
+            case DOMAIN_2_2:
+            case DOMAIN_3_0:
+            case DOMAIN_4_0:
+            case DOMAIN_4_1:
+            case DOMAIN_4_2:
+            case DOMAIN_5_0:
+            case DOMAIN_6_0:
+            case DOMAIN_7_0:
+            case DOMAIN_8_0:
+            case DOMAIN_9_0:
+            case DOMAIN_10_0:
+            case DOMAIN_11_0:
+            case DOMAIN_12_0:
+            case DOMAIN_13_0:
+            case DOMAIN_14_0:
+            case DOMAIN_15_0:
+            case DOMAIN_16_0:
+            case DOMAIN_17_0:
+                readServerElement_1_1(readerNS, reader, address, operationList);
+                break;
             default:
                 // Instead of having to list the remaining versions we just check it is actually a valid version.
                 for (Namespace current : Namespace.domainValues()) {
@@ -271,6 +301,101 @@ public class AppClientXml extends CommonXml {
             parseVault(reader, address, namespace, list);
             element = nextElement(reader, namespace);
         }
+        // Single profile
+        if (element == Element.PROFILE) {
+            parseServerProfile(reader, address, list);
+            element = nextElement(reader, namespace);
+        }
+
+        // Interfaces
+        final Set<String> interfaceNames = new HashSet<String>();
+        if (element == Element.INTERFACES) {
+            parseInterfaces(reader, interfaceNames, address, namespace, list, true);
+            element = nextElement(reader, namespace);
+        }
+        // Single socket binding group
+        if (element == Element.SOCKET_BINDING_GROUP) {
+            parseSocketBindingGroup(reader, interfaceNames, address, namespace, list);
+            element = nextElement(reader, namespace);
+        }
+
+        if (element != null) {
+            throw unexpectedElement(reader);
+        }
+    }
+
+    /**
+     * Read the <server/> element based on version 18 of the schema.
+     *
+     * @param reader  the xml stream reader
+     * @param address address of the parent resource of any resources this method will add
+     * @param list the list of boot operations to which any new operations should be added
+     * @throws XMLStreamException if a parsing error occurs
+     */
+    private void readServerElement_18(final Namespace namespace, final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+            throws XMLStreamException {
+
+        parseNamespaces(reader, address, list);
+
+        String serverName = null;
+
+        // attributes
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            switch (Namespace.forUri(reader.getAttributeNamespace(i))) {
+                case NONE: {
+                    final String value = reader.getAttributeValue(i);
+                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    switch (attribute) {
+                        case NAME: {
+                            serverName = value;
+                            break;
+                        }
+                        default:
+                            throw unexpectedAttribute(reader, i);
+                    }
+                    break;
+                }
+                case XML_SCHEMA_INSTANCE: {
+                    switch (Attribute.forName(reader.getAttributeLocalName(i))) {
+                        case SCHEMA_LOCATION: {
+                            parseSchemaLocations(reader, address, list, i);
+                            break;
+                        }
+                        case NO_NAMESPACE_SCHEMA_LOCATION: {
+                            // todo, jeez
+                            break;
+                        }
+                        default: {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                    }
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        setServerName(address, list, serverName);
+
+        // elements - sequence
+
+        Element element = nextElement(reader, namespace);
+        if (element == Element.EXTENSIONS) {
+            extensionXml.parseExtensions(reader, address, namespace, list);
+            element = nextElement(reader, namespace);
+        }
+        // System properties
+        if (element == Element.SYSTEM_PROPERTIES) {
+            parseSystemProperties(reader, address, namespace, list, true);
+            element = nextElement(reader, namespace);
+        }
+        if (element == Element.PATHS) {
+            parsePaths(reader, address, namespace, list, true);
+            element = nextElement(reader, namespace);
+        }
+
         // Single profile
         if (element == Element.PROFILE) {
             parseServerProfile(reader, address, list);

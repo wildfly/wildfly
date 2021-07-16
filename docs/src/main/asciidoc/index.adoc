@@ -18,6 +18,8 @@ and configure the server.
 * _Developer Guides_ for those wanting to understand how to develop
 applications for the server.
 
+* _Migration Guide_ for information related to migrating away from removed features.
+
 * _Model Reference_ for those wanting information about all
 of configuration options available via the WildFly management model.
 
@@ -83,6 +85,11 @@ functionality to WildFly, and shows how to test it before plugging it
 into WildFly.
 
 * The link:Testsuite{outfilesuffix}[WildFly Testsuite] guide walks you through testing WildFly
+
+== Migration Guide
+
+* The link:Migration_Guide{outfilesuffix}[Migration Guide] describes alternative options for
+features which have been removed from WildFly.
 
 == Model Reference
 

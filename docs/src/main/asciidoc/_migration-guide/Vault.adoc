@@ -1,0 +1,271 @@
+[[Migration_PicketBox_Vault]]
+= PicketBox Vault
+
+WildFly Elytron has made available a new credential store which replaces the PicketBox vault.  The
+credential store can be used for credentials to be directly looked up for use by resources or it
+can be used to store a `SecretKey` which can be used by an expression resolver to decrypt
+previously encrypted expressions in the management model.
+
+== Credential Store Creation
+
+Before credentials can be added a new credential store needs to be created.
+
+=== From the command line
+
+The first option is to use the Elytron command line utility to create a new store.
+
+[source]
+----
+bin/elytron-tool.sh credential-store --create \
+    --location=standalone/configuration/credentials.store
+Credential store password: 
+Confirm credential store password: 
+Credential Store has been successfully created
+----
+
+The creation process prompts for a password for the store twice and automatically creates the
+store.
+
+=== Defining the credential store in the management model
+
+This newly created credential store can be added to the management model of a running server.
+
+[source]
+----
+/subsystem=elytron/credential-store=mystore:add( \
+    relative-to=jboss.server.config.dir, \
+    location=credentials.store, \
+    credential-reference={clear-text=cs_password})
+{"outcome" => "success"}
+----
+
+Instead of using the clear text password it is also possible to obfuscate the password using the
+mask command in the command line tool.
+
+[source]
+----
+bin/elytron-tool.sh mask --secret=cs_password --salt=12345678 --iteration=256
+MASK-0BjKFw41KSAGZr/OtiZNI1;12345678;256
+----
+
+The credential store resource can then be defined as.
+
+[source]
+----
+/subsystem=elytron/credential-store=mystore:add( \
+    relative-to=jboss.server.config.dir, \
+    location=credentials.store, \
+    credential-reference={clear-text=MASK-0BjKFw41KSAGZr/OtiZNI1;12345678;256})
+{"outcome" => "success"}
+----
+
+=== Automatically creating the store
+
+If the credential store file did not already exist, with a small change to the add operation
+the store will be automatically created for you.
+
+[source]
+----
+/subsystem=elytron/credential-store=mystore:add( \
+    relative-to=jboss.server.config.dir, 
+    location=credentials.store, 
+    credential-reference={clear-text=cs_password}, \
+    create=true)
+{"outcome" => "success"}
+----
+
+== Adding Credentials
+
+However the store was created credentials can be added using either the command line utility or a
+management operation.  If using the command line utility it is recommended that this is performed
+when no running server is using the store to prevent accidental overwrites.
+
+=== From the command line
+
+The following command will add a new entry to the store under the alias `example`.
+
+[source]
+----
+bin/elytron-tool.sh credential-store --add=example \
+    --location=standalone/configuration/credentials.store
+Credential store password: 
+Secret to store: 
+Confirm secret to store: 
+Alias "example" has been successfully stored
+----
+
+This command prompts for the credential store password once followed by promting for the secret to
+store twice.
+
+=== Using a management operation
+
+The following management operation can add an entry to the credential store:
+
+[source]
+----
+history --disable
+/subsystem=elytron/credential-store=mystore:add-alias(alias=example, \
+    secret-value=example_password)
+{"outcome" => "success"}
+history --enable
+----
+
+In this example the CLI history is temporarily disabled to prevent the password being stored in the
+history file.
+
+== Listing credential store contents
+
+The command line tool and management operations can both be used to list the contents of the
+credential store.
+
+=== From the command line
+
+The aliases in the credential store can be listed with the following command:
+
+[source]
+----
+bin/elytron-tool.sh credential-store --aliases \
+    --location=standalone/configuration/credentials.store
+Credential store password: 
+Credential store contains following aliases: example 
+----
+
+=== Using a management operation
+
+The `read-aliases` management operation can be used with a credential store to list the aliases
+it contains.
+
+[source]
+----
+/subsystem=elytron/credential-store=mystore:read-aliases
+{
+    "outcome" => "success",
+    "result" => ["example"]
+}
+----
+
+== Vault Conversion
+
+The WildFly Elytron tool can also be used to convert an existing vault to a credential store.
+
+[source]
+----
+bin/elytron-tool.sh vault --enc-dir standalone/configuration/vault \
+    --keystore standalone/configuration/vault.keystore \
+    --location standalone/configuration/converted.store
+Vault password: 
+Confirm vault password: 
+Vault (enc-dir="standalone/configuration/vault";keystore="standalone/configuration/vault.keystore") \
+    converted to credential store "standalone/configuration/converted.store"
+----
+
+This will convert all of the contents of the vault to a new credential store.  Vault entries were
+identified using a BLOCK and a NAME, the resulting alias in the credential store will be in the
+format `BLOCK::NAME`.
+
+== Referencing a credential store credential
+
+Resources in the management model which can reference credentials from the credential store use a
+`credential-reference` attribute, in defining the credential store previously this was used with
+a `clear-password` but it can also be used to reference an alias stored within a credential store.
+
+The following managment operation demonstrates defining a new `key-store` resource using a
+credential store entry for the password.
+
+[source]
+----
+/subsystem=elytron/key-store=test-store:add( \
+    relative-to=jboss.server.config.dir, \
+    path=test.keystore, required=false, \
+    credential-reference={store=mystore, alias=example})
+{"outcome" => "success"}
+----
+
+== Encrypted Expressions
+
+In addition to using direct references to credentials it is also possible to use a `SecretKey` to
+handle previously encrypted expressions directly within the management model.
+
+=== Adding a `SecretKey` to a credential store
+
+Before encrypted expressions can be used an `AES` `SecretKey` is required.  The previous vault
+password making made use of a well known password for obfuscating, by using a `SecretKey` instead
+users can manage their own key.
+
+==== From the command line
+
+A `SecretKey` can be added to the credential store with the following command:
+
+[source]
+----
+bin/elytron-tool.sh credential-store --generate-secret-key=key \
+    --location standalone/configuration/credentials.store
+Credential store password: 
+Alias "key" has been successfully stored
+----
+
+==== Using a management operation
+
+The following management operation can also add a dynamically generated `SecretKey`:
+
+[source]
+----
+/subsystem=elytron/credential-store=mystore:generate-secret-key(alias=key)
+{"outcome" => "success"}
+----
+
+=== Using a `secret-key-credential-store`
+
+Alternatively it may be desirable to manage a `SecretKey` which is not itself password
+protected.  An alternative resource is available for this:
+
+[source]
+----
+/subsystem=elytron/secret-key-credential-store=secret-key-store:add( \
+    relative-to=jboss.server.config.dir, path=secret-key.store)
+{"outcome" => "success"}
+----
+
+This command will have also populated the new store with a `SecretKey` under the alias `key`.
+
+=== Adding the expression resolver resource
+
+A new resource can be added to the `elytron` subsystem which is responsible for handling encrypted
+expressions.
+
+[source]
+----
+/subsystem=elytron/expression=encryption:add( \
+    resolvers=[{name=default, \
+                credential-store=secret-key-store, \
+                secret-key=key}], \
+    default-resolver=default)
+{"outcome" => "success"}
+----
+
+=== Creating an expression
+
+The easiest way to create an encrupted expression is using a management operation as the result
+takes into account the configured `expression=encryption` resource.
+
+[source]
+----
+history --disable
+/subsystem=elytron/expression=encryption:create-expression(clear-text=my_password)
+{
+    "outcome" => "success",
+    "result" => {"expression" => "${ENC::RUxZAUMQ5Z7mXbyrCtv2kZlwHHpyJ//ma49gMAUnbmTfv2pGs30=}"}
+}
+
+history --enable
+----
+
+The resulting expression `${ENC::RUxZAUMQ5Z7mXbyrCtv2kZlwHHpyJ//ma49gMAUnbmTfv2pGs30=}` can now be
+used as the value for any other attribute in the management model which supports expressions.
+
+== Further Reading
+
+The WildFly Elytron Security guide contains further information regarding <<WildFly_Elytron_Security.adoc#CredentialStore, Credential Stores>> and <<WildFly_Elytron_Security.adoc#EncryptedExpressions, Encrypted Expressions>>.
+
+
+

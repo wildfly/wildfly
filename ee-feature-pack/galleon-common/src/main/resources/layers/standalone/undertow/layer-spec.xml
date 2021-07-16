@@ -2,9 +2,6 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="undertow">
     <dependencies>
         <layer name="io"/>
-        <!-- security-negociation already brings picketbox
-        package but not picketbox optional deps (javax.stream.api -->
-        <layer name="vault"/>
     </dependencies>
     <feature spec="socket-binding-group">
         <param name="socket-binding-group" value="standard-sockets" />

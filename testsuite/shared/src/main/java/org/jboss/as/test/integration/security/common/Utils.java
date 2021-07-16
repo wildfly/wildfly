@@ -1006,12 +1006,6 @@ public class Utils extends CoreUtils {
                 keystorePassword, null);
     }
 
-    public static String propertiesReplacer(String originalFile, File keystoreFile, File trustStoreFile,
-            String keystorePassword, String vaultConfig) {
-        return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(),
-                keystorePassword, vaultConfig);
-    }
-
     /**
      * Replace keystore paths and passwords variables in original configuration file with given values and set ${hostname}
      * variable from system property: node0
@@ -1020,11 +1014,10 @@ public class Utils extends CoreUtils {
      * @param keystoreFile File
      * @param trustStoreFile File
      * @param keystorePassword String
-     * @param vaultConfig - path to vault settings
      * @return String content
      */
     public static String propertiesReplacer(String originalFile, String keystoreFile, String trustStoreFile,
-            String keystorePassword, String vaultConfig) {
+            String keystorePassword) {
         String hostname = getDefaultHost(false);
 
         // expand possible IPv6 address
@@ -1038,11 +1031,6 @@ public class Utils extends CoreUtils {
 
         final Map<String, String> map = new HashMap<String, String>();
         String content = "";
-        if (vaultConfig == null) {
-            map.put("vaultConfig", "");
-        } else {
-            map.put("vaultConfig", vaultConfig);
-        }
         map.put("hostname", hostname);
         map.put("keystore", keystoreFile);
         map.put("truststore", trustStoreFile);
