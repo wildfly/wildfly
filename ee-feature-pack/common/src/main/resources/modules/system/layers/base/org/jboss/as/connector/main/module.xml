@@ -73,7 +73,7 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.vfs"/>
-        <module name="org.picketbox"/>
+        <module name="org.picketbox" optional="true"/>
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.service"/>

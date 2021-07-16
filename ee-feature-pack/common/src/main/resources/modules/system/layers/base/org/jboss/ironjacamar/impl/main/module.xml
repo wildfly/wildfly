@@ -52,7 +52,7 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.threads"/>
         <!-- org.jboss.security -->
-        <module name="org.picketbox"/>
+        <module name="org.picketbox" optional="true"/>
         <module name="javax.xml.stream.api"/>
         <module name="org.wildfly.transaction.client"/>
         <module name="java.xml"/>
