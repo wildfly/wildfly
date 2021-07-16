@@ -26,24 +26,14 @@
     <feature spec="host">
         <param name="host" value="master"/>
 
-        <feature spec="core-service.management.security-realm">
-            <param name="security-realm" value="ApplicationRealm"/>
-            <feature spec="core-service.management.security-realm.server-identity.ssl">
-                <param name="keystore-path" value="application.keystore"/>
-                <param name="keystore-relative-to" value="jboss.domain.config.dir"/>
-                <param name="keystore-password" value="password"/>
-                <param name="key-password" value="password"/>
-                <param name="alias" value="server"/>
-                <param name="generate-self-signed-certificate-host" value="localhost"/>
-            </feature>
-        </feature>
-
+        <!-- TODO Track back and check why this override is needed. --> 
         <feature spec="host.core-service.management.management-interface.http-interface">
-            <param name="security-realm" value="ManagementRealm"/>
+            <param name="http-authentication-factory" value="management-http-authentication"/>
             <param name="interface" value="management"/>
             <param name="port" value="${jboss.management.http.port:9990}"/>
             <feature spec="host.core-service.management.management-interface.http-interface.http-upgrade">
                 <param name="enabled" value="true"/>
+                <param name="sasl-authentication-factory" value="management-sasl-authentication"/>
             </feature>
         </feature>
 
