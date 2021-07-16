@@ -75,7 +75,7 @@
         <module name="org.wildfly.extension.elytron" optional="true" />
         <module name="org.wildfly.security.elytron-private" services="import"/>
         <module name="org.jboss.as.version"/>
-        <module name="org.picketbox"/>
+        <module name="org.picketbox" optional="true"/>
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.metadata.appclient"/>
         <module name="org.wildfly.common"/>
