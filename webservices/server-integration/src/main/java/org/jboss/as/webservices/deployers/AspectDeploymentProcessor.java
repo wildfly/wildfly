@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.deployers;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -28,10 +30,14 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
+import org.wildfly.extension.undertow.Server;
+import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -68,6 +74,8 @@ public final class AspectDeploymentProcessor implements DeploymentUnitProcessor 
             WSLogger.ROOT_LOGGER.tracef("%s start: %s", aspect, unit.getName());
             ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             try {
+                dep.setProperty("isHttpsOnly", isHttpsOnly(phaseContext, unit));
+
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(aspect.getLoader());
                 dep.addAttachment(ServiceTarget.class, phaseContext.getServiceTarget());
                 aspect.start(dep);
@@ -112,4 +120,20 @@ public final class AspectDeploymentProcessor implements DeploymentUnitProcessor 
         return unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY) != null;
     }
 
+
+    // Fix for WFLY-12135. We need to let JBossWS know that there's the only listeners available are HTTPS ones.
+    private boolean isHttpsOnly(final DeploymentPhaseContext phaseContext, final DeploymentUnit unit) {
+        CapabilityServiceSupport serviceSupport = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        ServiceName undertowServiceName = serviceSupport.getCapabilityServiceName("org.wildfly.undertow");
+        ServiceController<?> undertowServiceController = phaseContext.getServiceRegistry().getService(undertowServiceName);
+        UndertowService undertowService = (UndertowService) undertowServiceController.getValue();
+
+        for (Server server : undertowService.getServers()) {
+            if (server.getName().equals(undertowService.getDefaultServer())) {
+                if ("https".equals(server.getListeners().get(0).getProtocol())) return true;
+            }
+        }
+
+        return false;
+    }
 }
