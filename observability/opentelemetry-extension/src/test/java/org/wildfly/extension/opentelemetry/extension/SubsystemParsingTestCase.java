@@ -10,7 +10,13 @@ import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -64,7 +70,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
         String subsystemXml =
                 "<subsystem xmlns=\"" + OpenTelemetryParser_1_0.NAMESPACE + "\">" +
                         "</subsystem>";
-        KernelServices services = super.createKernelServicesBuilder(null)
+        KernelServices services = super.createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml)
                 .build();
         System.out.println(services.getBootError());
@@ -85,13 +91,17 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
         String subsystemXml =
                 "<subsystem xmlns=\"" + OpenTelemetryParser_1_0.NAMESPACE + "\">" +
                         "</subsystem>";
-        KernelServices servicesA = super.createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices servicesA = super.createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(subsystemXml)
+                .build();
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         String marshalled = servicesA.getPersistedSubsystemXml();
 
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.createKernelServicesBuilder(null).setSubsystemXml(marshalled).build();
+        KernelServices servicesB = super.createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(marshalled)
+                .build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
@@ -107,10 +117,31 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
         String subsystemXml =
                 "<subsystem xmlns=\"" + OpenTelemetryParser_1_0.NAMESPACE + "\">" +
                         "</subsystem>";
-        KernelServices services = super.createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices services = super.createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(subsystemXml)
+                .build();
         //Checks that the subsystem was removed from the model
         super.assertRemoveSubsystemResources(services);
 
         //TODO Chek that any services that were installed were removed here
+    }
+
+    protected AdditionalInitialization createAdditionalInitialization() {
+
+        return new AdditionalInitialization() {
+
+            @Override
+            protected RunningMode getRunningMode() {
+                return RunningMode.ADMIN_ONLY;
+            }
+
+            @Override
+            protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry,
+                                                            Resource rootResource,
+                                                            ManagementResourceRegistration rootRegistration,
+                                                            RuntimeCapabilityRegistry capabilityRegistry) {
+            }
+        };
+
     }
 }
