@@ -191,7 +191,7 @@ public class JcaExtension implements Extension {
         }
 
         private void writeDistributedWorkManagers(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
-            if (parentNode.hasDefined(DISTRIBUTED_WORKMANAGER) && parentNode.get(DISTRIBUTED_WORKMANAGER).asList().size() != 0) {
+            if (parentNode.hasDefined(DISTRIBUTED_WORKMANAGER) && !parentNode.get(DISTRIBUTED_WORKMANAGER).asList().isEmpty()) {
                 ModelNode workManagers = parentNode.get(DISTRIBUTED_WORKMANAGER);
                 for (String name : workManagers.keys()) {
                     ModelNode workManager = workManagers.get(name);
@@ -201,10 +201,10 @@ public class JcaExtension implements Extension {
                     JcaDistributedWorkManagerDefinition.DWmParameters.ELYTRON_ENABLED.getAttribute().marshallAsElement(workManager, writer);
 
                     for (Property prop : workManager.asPropertyList()) {
-                        if (WORKMANAGER_LONG_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && prop.getValue().asPropertyList().size() != 0) {
+                        if (WORKMANAGER_LONG_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && !prop.getValue().asPropertyList().isEmpty()) {
                             ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.LONG_RUNNING_THREADS.getLocalName(), false, true);
                         }
-                        if (WORKMANAGER_SHORT_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && prop.getValue().asPropertyList().size() != 0) {
+                        if (WORKMANAGER_SHORT_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && !prop.getValue().asPropertyList().isEmpty()) {
                             ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.SHORT_RUNNING_THREADS.getLocalName(), false, true);
                         }
 
@@ -246,7 +246,7 @@ public class JcaExtension implements Extension {
 
         private void writeWorkManagers(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
             List<Property> workManagers;
-            if (parentNode.hasDefined(WORKMANAGER) && (workManagers = parentNode.get(WORKMANAGER).asPropertyList()).size() != 0) {
+            if (parentNode.hasDefined(WORKMANAGER) && !(workManagers = parentNode.get(WORKMANAGER).asPropertyList()).isEmpty()) {
                 List<ModelNode> defaultFirst = new ArrayList<>();
                 for (Property prop : workManagers) {
                     ModelNode workManager = prop.getValue();
@@ -280,7 +280,7 @@ public class JcaExtension implements Extension {
 
 
         private void writeBootstrapContexts(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
-            if (parentNode.hasDefined(BOOTSTRAP_CONTEXT) && parentNode.get(BOOTSTRAP_CONTEXT).asList().size() != 0) {
+            if (parentNode.hasDefined(BOOTSTRAP_CONTEXT) && !parentNode.get(BOOTSTRAP_CONTEXT).asList().isEmpty()) {
 
                 boolean started = false;
 

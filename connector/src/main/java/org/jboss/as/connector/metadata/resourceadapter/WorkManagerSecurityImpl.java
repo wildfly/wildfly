@@ -122,7 +122,7 @@ public class WorkManagerSecurityImpl extends org.jboss.jca.common.metadata.resou
             sb.append("</").append(WorkManagerSecurity.Tag.DEFAULT_PRINCIPAL).append(">");
         }
 
-        if (getDefaultGroups() != null && getDefaultGroups().size() > 0)
+        if (getDefaultGroups() != null && !getDefaultGroups().isEmpty())
         {
             sb.append("<").append(WorkManagerSecurity.Tag.DEFAULT_GROUPS).append(">");
             for (String group : getDefaultGroups())

@@ -132,13 +132,13 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
         final boolean legacySecurityPresent = support.hasCapability("org.wildfly.legacy-security");
 
         for(DataSources dataSources : dataSourcesList) {
-            if (dataSources.getDrivers() != null && dataSources.getDrivers().size() > 0) {
+            if (dataSources.getDrivers() != null && !dataSources.getDrivers().isEmpty()) {
                 ConnectorLogger.DS_DEPLOYER_LOGGER.driversElementNotSupported(deploymentUnit.getName());
             }
 
             ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
-            if (dataSources.getDataSource() != null && dataSources.getDataSource().size() > 0) {
+            if (dataSources.getDataSource() != null && !dataSources.getDataSource().isEmpty()) {
                 for (int i = 0; i < dataSources.getDataSource().size(); i++) {
                     DataSource ds = (DataSource)dataSources.getDataSource().get(i);
                     if (ds.isEnabled() && ds.getDriver() != null) {
@@ -162,7 +162,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 }
             }
 
-            if (dataSources.getXaDataSource() != null && dataSources.getXaDataSource().size() > 0) {
+            if (dataSources.getXaDataSource() != null && !dataSources.getXaDataSource().isEmpty()) {
                for (int i = 0; i < dataSources.getXaDataSource().size(); i++) {
                     XaDataSource xads = (XaDataSource)dataSources.getXaDataSource().get(i);
                     if (xads.isEnabled() && xads.getDriver() != null) {

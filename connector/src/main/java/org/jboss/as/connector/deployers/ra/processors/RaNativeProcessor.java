@@ -75,7 +75,7 @@ public class RaNativeProcessor implements DeploymentUnitProcessor {
         try {
             List<VirtualFile> libs = deploymentRoot.getChildrenRecursively(new LibraryFilter());
 
-            if (libs != null && libs.size() > 0) {
+            if (libs != null && !libs.isEmpty()) {
                 for (VirtualFile vf : libs) {
                     String fileName = vf.getName().toLowerCase(Locale.ENGLISH);
                     ROOT_LOGGER.tracef("Processing library: %s", fileName);
