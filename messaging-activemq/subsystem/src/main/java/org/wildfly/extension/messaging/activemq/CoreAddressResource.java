@@ -89,7 +89,7 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public boolean hasChildren(String childType) {
-        return getChildrenNames(childType).size() > 0;
+        return !getChildrenNames(childType).isEmpty();
     }
 
     @Override

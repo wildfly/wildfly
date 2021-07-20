@@ -126,9 +126,9 @@ public class ActiveMQServerResource implements Resource {
     @Override
     public boolean hasChildren(String childType) {
         if (CORE_ADDRESS.equals(childType)) {
-            return getChildrenNames(CORE_ADDRESS).size() > 0;
+            return !getChildrenNames(CORE_ADDRESS).isEmpty();
         } else if (RUNTIME_QUEUE.equals(childType)) {
-            return getChildrenNames(RUNTIME_QUEUE).size() > 0;
+            return !getChildrenNames(RUNTIME_QUEUE).isEmpty();
         } else {
             return delegate.hasChildren(childType);
         }
