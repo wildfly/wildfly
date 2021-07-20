@@ -62,10 +62,8 @@ public class PersistenceUnitSearch {
             return pu;
         } else {
             PersistenceUnitMetadata name = findPersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
-            if (traceEnabled) {
-                if (name != null) {
-                    ROOT_LOGGER.tracef("pu search found %s", name.getScopedPersistenceUnitName());
-                }
+            if (traceEnabled && name != null) {
+                ROOT_LOGGER.tracef("pu search found %s", name.getScopedPersistenceUnitName());
             }
             return name;
         }

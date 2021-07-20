@@ -81,12 +81,10 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
                         }
                         // remove this check when we revert WFLY-10520
                         String provider = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
-                        if (provider != null) {
-                            if (provider.equals(Configuration.PROVIDER_MODULE_APPLICATION_SUPPLIED)) {
-                                appContainsPersistenceProviderJars = true;
-                            }
+                        if (provider != null
+                                && provider.equals(Configuration.PROVIDER_MODULE_APPLICATION_SUPPLIED)) {
+                            appContainsPersistenceProviderJars = true;
                         }
-
                     }
                 }
             }

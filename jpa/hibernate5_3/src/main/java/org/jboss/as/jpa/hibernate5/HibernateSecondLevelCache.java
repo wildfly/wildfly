@@ -55,12 +55,10 @@ public class HibernateSecondLevelCache {
 
     public static void addSecondLevelCacheDependencies(Properties mutableProperties, String scopedPersistenceUnitName) {
 
-        if (mutableProperties.getProperty(AvailableSettings.CACHE_REGION_PREFIX) == null) {
+        if (mutableProperties.getProperty(AvailableSettings.CACHE_REGION_PREFIX) == null
+                && scopedPersistenceUnitName != null) {
             // cache entries for this PU will be identified by scoped pu name + Entity class name
-
-            if (scopedPersistenceUnitName != null) {
-                mutableProperties.setProperty(AvailableSettings.CACHE_REGION_PREFIX, scopedPersistenceUnitName);
-            }
+            mutableProperties.setProperty(AvailableSettings.CACHE_REGION_PREFIX, scopedPersistenceUnitName);
         }
         String regionFactory = mutableProperties.getProperty(AvailableSettings.CACHE_REGION_FACTORY);
         if (regionFactory == null) {
