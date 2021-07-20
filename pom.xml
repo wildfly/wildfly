@@ -544,46 +544,6 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>jipijapa-hibernate4-1</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-entitymanager</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-infinispan</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>jipijapa-hibernate4-3</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-entitymanager</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-infinispan</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>jipijapa-hibernate5-3</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
@@ -10375,7 +10335,6 @@
                                                         <exclude name="**/openjdk-orb*.jar"></exclude>
                                                         <exclude name="**/jboss-marshalling*.jar"></exclude>
                                                         <exclude name="**/hornetq-core-client*.jar"></exclude>
-                                                        <exclude name="**/jipijapa-hibernate4-3*.jar"></exclude>
                                                         <exclude name="**/jipijapa-hibernate5*.jar"></exclude>
                                                         <exclude name="**/infinispan-commons*.jar"></exclude>
                                                         <exclude name="**/jboss-logmanager*.jar"></exclude>

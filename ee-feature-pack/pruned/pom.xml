@@ -93,28 +93,6 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>jipijapa-hibernate4-1</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>jipijapa-hibernate4-3</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-hibernate5</artifactId>
             <exclusions>
                 <exclusion>
