@@ -62,7 +62,7 @@ import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
+@ServerSetup({ReactiveMessagingChannelsTestCase.ChannelsRunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 public class ReactiveMessagingChannelsTestCase {
     @ArquillianResource
     URL url;
@@ -75,6 +75,7 @@ public class ReactiveMessagingChannelsTestCase {
                 .addAsWebInfResource(ReactiveMessagingChannelsTestCase.class.getPackage(), "microprofile-config.properties", "classes/META-INF/microprofile-config.properties")
                 .addClasses(EnableReactiveExtensionsSetupTask.class, CLIServerSetupTask.class, RunKafkaSetupTask.class)
                 .addClasses(
+                        ReactiveMessagingChannelsTestCase.ChannelsRunKafkaSetupTask.class,
                         PublisherToChannelPublisherEndpoint.class,
                         EmitterToSubscriberEndpoint.class,
                         EmitterToSubscribedChannelPublisherBuilderEndpoint.class,
@@ -227,4 +228,10 @@ public class ReactiveMessagingChannelsTestCase {
         return lines;
     }
 
+    public static class ChannelsRunKafkaSetupTask extends RunKafkaSetupTask {
+        @Override
+        protected String[] getTopics() {
+            return new String[]{"testing-rest-channels"};
+        }
+    }
 }

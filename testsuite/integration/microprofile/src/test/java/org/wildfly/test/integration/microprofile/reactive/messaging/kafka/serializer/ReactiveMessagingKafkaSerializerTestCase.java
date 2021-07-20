@@ -51,7 +51,7 @@ import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
+@ServerSetup({ReactiveMessagingKafkaSerializerTestCase.SerializerRunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 public class ReactiveMessagingKafkaSerializerTestCase {
 
     private static final long TIMEOUT = TimeoutUtil.adjust(15000);
@@ -119,4 +119,10 @@ public class ReactiveMessagingKafkaSerializerTestCase {
         return found;
     }
 
+    public static class SerializerRunKafkaSetupTask extends RunKafkaSetupTask {
+        @Override
+        protected String[] getTopics() {
+            return new String[] {"testing-serializer"};
+        }
+    }
 }

@@ -51,7 +51,7 @@ import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
+@ServerSetup({ReactiveMessagingKafkaTestCase.TxRunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 public class ReactiveMessagingKafkaTestCase {
 
     private static final long TIMEOUT = TimeoutUtil.adjust(15000);
@@ -92,4 +92,12 @@ public class ReactiveMessagingKafkaTestCase {
         // Check the data was stored
         txBean.checkValues(Collections.singleton("reactive"));
     }
+
+    public static class TxRunKafkaSetupTask extends RunKafkaSetupTask {
+        @Override
+        protected String[] getTopics() {
+            return new String[]{"testing-tx"};
+        }
+    }
+
 }

@@ -37,7 +37,7 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker;
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class RunKafkaSetupTask implements ServerSetupTask {
+public abstract class RunKafkaSetupTask implements ServerSetupTask {
     EmbeddedKafkaBroker broker;
     Path kafkaDir;
     @Override
@@ -57,9 +57,7 @@ public class RunKafkaSetupTask implements ServerSetupTask {
         broker.afterPropertiesSet();
     }
 
-    protected String[] getTopics() {
-        return new String[]{"testing"};
-    }
+    protected abstract String[] getTopics();
 
     protected int getPartitions() {
         return 1;
