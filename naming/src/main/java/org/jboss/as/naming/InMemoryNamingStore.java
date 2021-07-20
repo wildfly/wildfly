@@ -277,10 +277,9 @@ public class InMemoryNamingStore implements WritableNamingStore {
     }
 
     private void checkReferenceForContinuation(final Name name, final Object object) throws CannotProceedException {
-        if (object instanceof Reference) {
-            if (((Reference) object).get("nns") != null) {
-                throw cannotProceedException(object, name);
-            }
+        if (object instanceof Reference
+                && ((Reference) object).get("nns") != null) {
+            throw cannotProceedException(object, name);
         }
     }
 
