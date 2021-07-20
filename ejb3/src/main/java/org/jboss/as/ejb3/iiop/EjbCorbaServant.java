@@ -400,11 +400,9 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
     }
 
     private void prepareInterceptorContext(final SkeletonStrategy op, final Object[] params, final InterceptorContext interceptorContext) throws IOException, ClassNotFoundException {
-        if (!home) {
-            if (componentView.getComponent() instanceof StatefulSessionComponent) {
-                final SessionID sessionID = (SessionID) unmarshalIdentifier();
-                interceptorContext.putPrivateData(SessionID.class, sessionID);
-            }
+        if (!home && componentView.getComponent() instanceof StatefulSessionComponent) {
+            final SessionID sessionID = (SessionID) unmarshalIdentifier();
+            interceptorContext.putPrivateData(SessionID.class, sessionID);
         }
         interceptorContext.setContextData(new HashMap<>());
         interceptorContext.setParameters(params);
@@ -462,10 +460,9 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
             prepareInterceptorContext(op, arguments, interceptorContext);
             return componentView.invoke(interceptorContext);
         } finally {
-            if (tx != null) {
-                if (transactionManager.getStatus() != Status.STATUS_NO_TRANSACTION) {
-                    transactionManager.suspend();
-                }
+            if (tx != null
+                    && transactionManager.getStatus() != Status.STATUS_NO_TRANSACTION) {
+                transactionManager.suspend();
             }
         }
 

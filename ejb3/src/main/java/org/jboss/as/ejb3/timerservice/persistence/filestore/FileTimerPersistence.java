@@ -417,10 +417,8 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         if (dirName == null) {
             dirName = baseDir.getAbsolutePath() + File.separator + timedObjectId.replace(File.separator, "-");
             File file = new File(dirName);
-            if (!file.exists()) {
-                if (!file.mkdirs()) {
-                    EJB3_TIMER_LOGGER.failToCreateDirectoryForPersistTimers(file);
-                }
+            if (!file.exists() && !file.mkdirs()) {
+                EJB3_TIMER_LOGGER.failToCreateDirectoryForPersistTimers(file);
             }
             directories.put(timedObjectId, dirName);
         }
