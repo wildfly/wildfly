@@ -62,8 +62,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.credential.PasswordCredential;
@@ -107,7 +107,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     // mapping between the {broadcast|discovery}-groups and the cluster names they use
     private final Map<String, String> clusterNames;
     // mapping between the {broadcast|discovery}-groups and the command dispatcher factory they use
-    private final Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories;
+    private final Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories;
     // Supplier for Elytron SecurityDomain
     private final Optional<Supplier<SecurityDomain>> elytronSecurityDomain;
     // Supplier for legacy SecurityDomainContext
@@ -125,7 +125,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                                  Map<String, Supplier<SocketBinding>> socketBindings,
                                  Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings,
                                  Map<String, Supplier<SocketBinding>> groupBindings,
-                                 Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories,
+                                 Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories,
                                  Map<String, String> clusterNames,
                                  Optional<Supplier<SecurityDomain>> elytronSecurityDomain,
                                  Optional<Supplier<SecurityDomainContext>> securityDomainContext,
@@ -209,7 +209,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                     final String name = config.getName();
                     final String key = "broadcast" + name;
                     if (commandDispatcherFactories.containsKey(key)) {
-                        CommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key).get();
+                        BroadcastCommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key).get();
                         String clusterName = clusterNames.get(key);
                         newConfigs.add(JGroupsBroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, commandDispatcherFactory, clusterName));
                     } else {
@@ -232,7 +232,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                     final String key = "discovery" + name;
                     final DiscoveryGroupConfiguration config;
                     if (commandDispatcherFactories.containsKey(key)) {
-                        CommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key).get();
+                        BroadcastCommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key).get();
                         String clusterName = clusterNames.get(key);
                         config = JGroupsDiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), commandDispatcherFactory, clusterName);
                     } else {
@@ -329,7 +329,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     }
 
 
-    CommandDispatcherFactory getCommandDispatcherFactory(String key) {
+    BroadcastCommandDispatcherFactory getCommandDispatcherFactory(String key) {
         return commandDispatcherFactories.get(key).get();
     }
 
