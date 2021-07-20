@@ -383,14 +383,14 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
 
         final UndertowDeploymentService deploymentService;
         final ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.deploymentServiceName(server, host, path));
-        if (controller != null && controller.getState() != ServiceController.State.UP) {//check if deployment is active at all
+        if (controller == null || controller.getState() != ServiceController.State.UP) {//check if deployment is active at all
             throw UndertowLogger.ROOT_LOGGER.sessionManagerNotAvailable();
-        } else {
-            deploymentService = (UndertowDeploymentService) controller.getService();
-            if (deploymentService == null || deploymentService.getDeployment() == null) { //we might be in shutdown and it is possible
-                throw UndertowLogger.ROOT_LOGGER.sessionManagerNotAvailable();
-            }
         }
+        deploymentService = (UndertowDeploymentService) controller.getService();
+        if (deploymentService == null || deploymentService.getDeployment() == null) { // we might be in shutdown and it is possible
+            throw UndertowLogger.ROOT_LOGGER.sessionManagerNotAvailable();
+        }
+
         Deployment deployment = deploymentService.getDeployment();
         return deployment.getSessionManager();
     }
