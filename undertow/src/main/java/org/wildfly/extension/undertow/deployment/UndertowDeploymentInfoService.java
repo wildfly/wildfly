@@ -499,7 +499,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         if (applicationPolicy != null && JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
             String authMethod = null;
             LoginConfig loginConfig = deploymentInfo.getLoginConfig();
-            if (loginConfig != null && loginConfig.getAuthMethods().size() > 0) {
+            if (loginConfig != null && !loginConfig.getAuthMethods().isEmpty()) {
                 authMethod = loginConfig.getAuthMethods().get(0).getName();
             }
             deploymentInfo.setJaspiAuthenticationMechanism(new JASPICAuthenticationMechanism(securityDomain, authMethod));
