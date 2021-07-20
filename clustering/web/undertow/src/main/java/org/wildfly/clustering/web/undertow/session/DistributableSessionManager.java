@@ -48,6 +48,7 @@ import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.server.session.SessionManagerStatistics;
+import io.undertow.servlet.UndertowServletMessages;
 import io.undertow.util.AttachmentKey;
 
 /**
@@ -64,15 +65,17 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
     private final SessionManager<Map<String, Object>, Batch> manager;
     private final RecordableSessionManagerStatistics statistics;
     private final StampedLock lifecycleLock = new StampedLock();
+    private final boolean allowOrphanSession;
 
     // Guarded by this
     private OptionalLong lifecycleStamp = OptionalLong.empty();
 
-    public DistributableSessionManager(String deploymentName, SessionManager<Map<String, Object>, Batch> manager, SessionListeners listeners, RecordableSessionManagerStatistics statistics) {
-        this.deploymentName = deploymentName;
-        this.manager = manager;
-        this.listeners = listeners;
-        this.statistics = statistics;
+    public DistributableSessionManager(DistributableSessionManagerConfiguration config) {
+        this.deploymentName = config.getDeploymentName();
+        this.manager = config.getSessionManager();
+        this.listeners = config.getSessionListeners();
+        this.statistics = config.getStatistics();
+        this.allowOrphanSession = config.isOrphanSessionAllowed();
     }
 
     @Override
@@ -146,6 +149,17 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
     public io.undertow.server.session.Session createSession(HttpServerExchange exchange, SessionConfig config) {
         if (config == null) {
             throw UndertowMessages.MESSAGES.couldNotFindSessionCookieConfig();
+        }
+        // Workaround for UNDERTOW-1902
+        if (exchange.isResponseStarted()) { // Should match the condition in io.undertow.servlet.spec.HttpServletResponseImpl#isCommitted()
+            // The servlet specification mandates that an ISE be thrown here
+            if (this.allowOrphanSession) {
+                // Return a single use session to be garbage collected at the end of the request
+                io.undertow.server.session.Session session = new OrphanSession(this, this.manager.createIdentifier());
+                session.setMaxInactiveInterval((int) this.manager.getDefaultMaxInactiveInterval().getSeconds());
+                return session;
+            }
+            throw UndertowServletMessages.MESSAGES.responseAlreadyCommited();
         }
 
         String requestedId = config.findSessionId(exchange);

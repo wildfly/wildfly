@@ -45,14 +45,19 @@ import java.util.function.Consumer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionActivationListener;
 
+import io.undertow.UndertowOptions;
+import io.undertow.connector.ByteBufferPool;
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.security.idm.Account;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.protocol.http.HttpServerConnection;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListener.SessionDestroyedReason;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
+import io.undertow.util.Protocols;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -64,6 +69,13 @@ import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionMetaData;
+import org.xnio.OptionMap;
+import org.xnio.StreamConnection;
+import org.xnio.channels.Configurable;
+import org.xnio.conduits.ConduitStreamSinkChannel;
+import org.xnio.conduits.ConduitStreamSourceChannel;
+import org.xnio.conduits.StreamSinkConduit;
+import org.xnio.conduits.StreamSourceConduit;
 
 /**
  * Unit test for {@link DistributableSession}.
@@ -1108,6 +1120,36 @@ public class DistributableSessionTestCase {
         verify(newSession, never()).invalidate();
         verify(listener).sessionIdChanged(session, oldSessionId);
         verify(context).close();
+    }
+
+    public void changeSessionIdResponseCommitted() {
+        when(this.session.getMetaData()).thenReturn(this.metaData);
+        when(this.metaData.isNew()).thenReturn(false);
+        when(this.session.isValid()).thenReturn(true);
+
+        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.batch, this.closeTask);
+
+        // Ugh - all this, just to get HttpServerExchange.isResponseStarted() to return true
+        Configurable configurable = mock(Configurable.class);
+        StreamSourceConduit sourceConduit = mock(StreamSourceConduit.class);
+        ConduitStreamSourceChannel sourceChannel = new ConduitStreamSourceChannel(configurable, sourceConduit);
+        StreamSinkConduit sinkConduit = mock(StreamSinkConduit.class);
+        ConduitStreamSinkChannel sinkChannel = new ConduitStreamSinkChannel(configurable, sinkConduit);
+        StreamConnection stream = mock(StreamConnection.class);
+
+        when(stream.getSourceChannel()).thenReturn(sourceChannel);
+        when(stream.getSinkChannel()).thenReturn(sinkChannel);
+
+        ByteBufferPool bufferPool = mock(ByteBufferPool.class);
+        HttpHandler handler = mock(HttpHandler.class);
+        HttpServerConnection connection = new HttpServerConnection(stream, bufferPool, handler, OptionMap.create(UndertowOptions.ALWAYS_SET_DATE, false), 0, null);
+        HttpServerExchange exchange = new HttpServerExchange(connection);
+        exchange.setProtocol(Protocols.HTTP_1_1);
+        exchange.getResponseChannel();
+
+        SessionConfig config = mock(SessionConfig.class);
+
+        Assert.assertThrows(IllegalStateException.class, () -> session.changeSessionId(exchange, config));
     }
 
     @Test

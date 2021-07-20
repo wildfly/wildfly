@@ -23,7 +23,6 @@
 package org.wildfly.clustering.web.undertow.session;
 
 import java.util.Map;
-import java.util.concurrent.locks.StampedLock;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.session.SessionManager;
@@ -38,5 +37,5 @@ public interface DistributableSessionManagerConfiguration {
     SessionManager<Map<String, Object>, Batch> getSessionManager();
     SessionListeners getSessionListeners();
     RecordableSessionManagerStatistics getStatistics();
-    StampedLock getLifecycleLock();
+    boolean isOrphanSessionAllowed();
 }
