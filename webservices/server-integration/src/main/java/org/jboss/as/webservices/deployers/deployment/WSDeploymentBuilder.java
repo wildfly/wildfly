@@ -67,17 +67,17 @@ public final class WSDeploymentBuilder {
     }
 
     private static boolean isJaxwsPojoDeployment(final DeploymentUnit unit) {
-        return getJaxwsPojos(unit).size() > 0;
+        return !getJaxwsPojos(unit).isEmpty();
     }
 
     private static boolean isJaxwsEjbDeployment(final DeploymentUnit unit) {
-        return getJaxwsEjbs(unit).size() > 0;
+        return !getJaxwsEjbs(unit).isEmpty();
     }
 
     private static boolean isJaxwsJmsDeployment(final DeploymentUnit unit) {
         final JMSEndpointsMetaData jmsEndpointsMD = getOptionalAttachment(unit, JMS_ENDPOINT_METADATA_KEY);
         if (jmsEndpointsMD != null) {
-            return jmsEndpointsMD.getEndpointsMetaData().size() > 0;
+            return !jmsEndpointsMD.getEndpointsMetaData().isEmpty();
         }
         return false;
     }
