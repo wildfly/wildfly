@@ -31,7 +31,17 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
-
+/**
+ * The participant is a runtime resource which is created by {@link LogStoreProbeHandler}
+ * and loaded with data from Narayana object store.
+ * There is no way in Narayana API and no reason from processing perspective
+ * to directly write to the participant record. The participant can be managed
+ * by operations like {@code :delete}, {@code :recover} but not with direct write access
+ * to attributes.
+ *
+ * This handler can be deleted in future.
+ */
+@Deprecated
 public class ParticipantWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
     public ParticipantWriteAttributeHandler(final AttributeDefinition... definitions) {
