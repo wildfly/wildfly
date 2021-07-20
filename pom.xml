@@ -7174,6 +7174,12 @@
                 <groupId>org.jboss.ironjacamar</groupId>
                 <artifactId>ironjacamar-common-api</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -9523,17 +9529,6 @@
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ormtransformer</artifactId>
                 <version>${ee.maven.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ironjacamar</groupId>
-                <artifactId>ironjacamar-common-api</artifactId>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
         </dependencies>
