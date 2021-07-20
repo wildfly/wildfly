@@ -174,7 +174,7 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
             } else {
                 WSLogger.ROOT_LOGGER.invalidHandlerChainFile(handlerChainConfigFile);
             }
-        } catch (final IOException e) {
+        } catch (final IOException|URISyntaxException e) {
             throw new DeploymentUnitProcessingException(e);
         } finally {
             if (is != null) {
@@ -183,14 +183,11 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
         }
     }
 
-    private static InputStream getInputStream(final ResourceRoot currentResourceRoot, final List<ResourceRoot> resourceRoots, final String handlerChainConfigFile, final String annotatedClassName) throws IOException {
+    private static InputStream getInputStream(final ResourceRoot currentResourceRoot, final List<ResourceRoot> resourceRoots, final String handlerChainConfigFile, final String annotatedClassName) throws IOException, URISyntaxException {
         if (handlerChainConfigFile.startsWith("file://") || handlerChainConfigFile.startsWith("http://")) {
             return new URL(handlerChainConfigFile).openStream();
         } else {
-            URI classURI = null;
-            try {
-                classURI = new URI(annotatedClassName.replace('.', '/'));
-            } catch (final URISyntaxException ignore) {}
+            URI classURI = new URI(annotatedClassName.replace('.', '/'));
             final String handlerChainConfigFileResourcePath = classURI.resolve(handlerChainConfigFile).toString();
             VirtualFile config = currentResourceRoot.getRoot().getChild(handlerChainConfigFileResourcePath);
             if (config.exists() && config.isFile()) {

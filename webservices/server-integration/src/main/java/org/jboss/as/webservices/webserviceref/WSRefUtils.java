@@ -288,8 +288,9 @@ final class WSRefUtils {
                   new URL(handlerChain);
                } catch (MalformedURLException ignored) {
                   final Class<?> declaringClass = getDeclaringClass(anElement);
-
-                  handlerChain = declaringClass.getPackage().getName().replace('.', '/') + "/" + handlerChain;
+                  if (declaringClass != null) {
+                      handlerChain = declaringClass.getPackage().getName().replace('.', '/') + "/" + handlerChain;
+                  }
                }
 
                serviceRefUMDM.setHandlerChain(handlerChain);
