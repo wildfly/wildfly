@@ -9,6 +9,7 @@ import org.jboss.marshalling.InputStreamByteInput;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.Unmarshaller;
+import org.jboss.vfs.VFSUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,6 +40,7 @@ public class LegacyFileStore {
 
     static Map<String, TimerImpl> loadTimersFromFile(final String timedObjectId, final TimerServiceImpl timerService, String directory, MarshallerFactory factory, MarshallingConfiguration configuration) {
         final Map<String, TimerImpl> timers = new HashMap<String, TimerImpl>();
+        Unmarshaller unmarshaller = null;
         try {
             final File file = new File(directory);
             if (!file.exists()) {
@@ -52,7 +54,7 @@ public class LegacyFileStore {
             if (marker.exists()) {
                 return timers;
             }
-            Unmarshaller unmarshaller = factory.createUnmarshaller(configuration);
+            unmarshaller = factory.createUnmarshaller(configuration);
             for (File timerFile : file.listFiles()) {
                 if(timerFile.getName().endsWith(".xml")) {
                     continue;
@@ -116,6 +118,8 @@ public class LegacyFileStore {
             }
         } catch (Exception e) {
             EJB3_TIMER_LOGGER.failToRestoreTimersForObjectId(timedObjectId, e);
+        } finally {
+            VFSUtils.safeClose(unmarshaller);
         }
         return timers;
     }
