@@ -161,7 +161,7 @@ public class ExternalContextObjectFactory implements ObjectFactory {
     private static boolean useStringLookup(Hashtable<?, ?> environment) {
         Object val = environment.get(LOOKUP_BY_STRING);
         if (val instanceof String) {
-            return Boolean.valueOf((String) val);
+            return Boolean.parseBoolean((String) val);
         }
         return false;
     }
