@@ -39,9 +39,6 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
-import org.wildfly.clustering.spi.ClusteringRequirement;
-import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.extension.messaging.activemq.BinderServiceUtil;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.DiscoveryGroupDefinition;
@@ -49,6 +46,7 @@ import org.wildfly.extension.messaging.activemq.GroupBindingService;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
+import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
@@ -90,7 +88,7 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
             Map<String, String> clusterNames = new HashMap<>();
             Map<String, Supplier<SocketBinding>> groupBindings = new HashMap<>();
             // mapping between the {discovery}-groups and the command dispatcher factory they use
-            Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories = new HashMap<>();
+            Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories = new HashMap<>();
             final String dgname = discoveryGroupName.asString();
             final String key = "discovery" + dgname;
             ModelNode discoveryGroupModel;
@@ -101,10 +99,10 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
             }
             if (discoveryGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
                 ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
-                ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
-                String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
-                Supplier<CommandDispatcherFactory> commandDispatcherFactorySupplier = builder.requires(commandDispatcherFactoryServiceName);
+                ServiceName commandDispatcherFactoryServiceName = MessagingServices.getBroadcastCommandDispatcherFactoryServiceName(name, channel.asStringOrNull());
+                Supplier<BroadcastCommandDispatcherFactory> commandDispatcherFactorySupplier = builder.requires(commandDispatcherFactoryServiceName);
                 commandDispatcherFactories.put(key, commandDispatcherFactorySupplier);
+                String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
                 clusterNames.put(key, clusterName);
             } else {
                 final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);

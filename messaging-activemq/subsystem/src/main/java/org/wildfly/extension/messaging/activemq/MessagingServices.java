@@ -42,6 +42,7 @@ public class MessagingServices {
      */
     static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
     public static final ServiceName ACTIVEMQ_CLIENT_THREAD_POOL = JBOSS_MESSAGING_ACTIVEMQ.append("client-thread-pool");
+    private static final ServiceName COMMAND_DISPATCHER_FACTORY = JBOSS_MESSAGING_ACTIVEMQ.append("command-dispatcher-factory");
 
     // Cached by MessagingSubsystemAdd at the beginning of runtime processing
     static volatile CapabilityServiceSupport capabilityServiceSupport;
@@ -92,6 +93,11 @@ public class MessagingServices {
 
     public static ServiceName getJMSBridgeServiceName(String bridgeName) {
        return JBOSS_MESSAGING_ACTIVEMQ.append(JMS_BRIDGE).append(bridgeName);
+    }
+
+    public static ServiceName getBroadcastCommandDispatcherFactoryServiceName(String serverName, String channelName) {
+        ServiceName result = COMMAND_DISPATCHER_FACTORY.append(serverName);
+        return (channelName != null) ? result.append(channelName) : result;
     }
 
     /**

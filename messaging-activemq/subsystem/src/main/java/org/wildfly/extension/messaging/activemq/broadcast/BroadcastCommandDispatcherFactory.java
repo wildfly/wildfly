@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,27 +22,12 @@
 
 package org.wildfly.extension.messaging.activemq.broadcast;
 
-import org.apache.activemq.artemis.api.core.BroadcastEndpoint;
-import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 
 /**
- * A {@link BroadcastEndpointFactory} based on a {@link CommandDispatcherFactory}.
+ * A {@link CommandDispatcherFactory} that is also a registry of {@link BroadcastReceiver}s.
  * @author Paul Ferraro
  */
-@SuppressWarnings("serial")
-public class CommandDispatcherBroadcastEndpointFactory implements BroadcastEndpointFactory {
+public interface BroadcastCommandDispatcherFactory extends CommandDispatcherFactory, BroadcastReceiverRegistrar {
 
-    private final BroadcastCommandDispatcherFactory factory;
-    private final String name;
-
-    public CommandDispatcherBroadcastEndpointFactory(BroadcastCommandDispatcherFactory factory, String name) {
-        this.factory = factory;
-        this.name = name;
-    }
-
-    @Override
-    public BroadcastEndpoint createBroadcastEndpoint() throws Exception {
-        return new CommandDispatcherBroadcastEndpoint(this.factory, this.name, this.factory, QueueBroadcastManager::new);
-    }
 }
