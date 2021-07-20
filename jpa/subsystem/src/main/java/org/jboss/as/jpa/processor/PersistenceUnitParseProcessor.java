@@ -394,7 +394,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     }
 
     private void markDU(PersistenceUnitMetadataHolder holder, DeploymentUnit deploymentUnit) {
-        if (holder.getPersistenceUnits() != null && holder.getPersistenceUnits().size() > 0) {
+        if (holder.getPersistenceUnits() != null && !holder.getPersistenceUnits().isEmpty()) {
             JPADeploymentMarker.mark(deploymentUnit);
         }
     }

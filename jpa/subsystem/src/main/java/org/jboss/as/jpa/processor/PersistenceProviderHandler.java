@@ -81,7 +81,7 @@ public class PersistenceProviderHandler {
                 }
             }
 
-            if (providerList.size() > 0) {
+            if (!providerList.isEmpty()) {
                 final String adapterClass = deploymentUnit.getAttachment(JpaAttachments.ADAPTOR_CLASS_NAME);
                 PersistenceProviderAdaptor adaptor;
                 if (adapterClass != null) {

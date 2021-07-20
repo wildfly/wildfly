@@ -110,7 +110,7 @@ public class HibernateSearchProcessor implements DeploymentUnitProcessor {
             // add Hibernate Search module dependency if application is using the Hibernate Search Indexed annotation
             final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
             List<AnnotationInstance> annotations = index.getAnnotations(SEARCH_INDEXED_ANNOTATION_NAME);
-            if (annotations != null && annotations.size() > 0) {
+            if (annotations != null && !annotations.isEmpty()) {
                 moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, defaultSearchModule, false, true, true, false));
                 ROOT_LOGGER.debugf("deployment %s contains %s annotation, added %s dependency", deploymentUnit.getName(), SEARCH_INDEXED_ANNOTATION_NAME, defaultSearchModule);
             }
