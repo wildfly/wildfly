@@ -39,7 +39,7 @@ public class LinkedHashMapExternalizer extends MapExternalizer<LinkedHashMap<Obj
     public static final Function<Map.Entry<Boolean, Integer>, LinkedHashMap<Object, Object>> FACTORY = new Function<Map.Entry<Boolean, Integer>, LinkedHashMap<Object, Object>>() {
         @Override
         public LinkedHashMap<Object, Object> apply(Map.Entry<Boolean, Integer> entry) {
-            int size = entry.getValue().intValue();
+            int size = entry.getValue();
             int capacity = HashSetExternalizer.CAPACITY.applyAsInt(size);
             return new LinkedHashMap<>(capacity, DEFAULT_LOAD_FACTOR, entry.getKey());
         }

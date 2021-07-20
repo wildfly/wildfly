@@ -48,7 +48,7 @@ public class MarshallingTester<T> implements Tester<T> {
 
         if (subject != null) {
             // Uncomment to report payload size
-            // System.out.println(String.format("%s\t%s\t%s", (subject instanceof Enum) ? ((Enum<?>) subject).getDeclaringClass().getCanonicalName() : subject.getClass().getCanonicalName(), (subject instanceof Character) ? (int) ((Character) subject).charValue() : subject, size));
+            // System.out.println(String.format("%s\t%s\t%s", (subject instanceof Enum) ? ((Enum<?>) subject).getDeclaringClass().getCanonicalName() : subject.getClass().getCanonicalName(), (subject instanceof Character) ? (int) (Character) subject : subject, size));
         }
 
         T result = this.marshaller.read(buffer);

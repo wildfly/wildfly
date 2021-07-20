@@ -141,7 +141,7 @@ public class AddStepHandler extends AbstractAddStepHandler implements Registrati
         if (index == null) {
             context.addResource(PathAddress.EMPTY_ADDRESS, resource);
         } else {
-            context.addResource(PathAddress.EMPTY_ADDRESS, index.intValue(), resource);
+            context.addResource(PathAddress.EMPTY_ADDRESS, index, resource);
         }
         return resource;
     }

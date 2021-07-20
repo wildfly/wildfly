@@ -44,7 +44,7 @@ public class ConcurrentManager<K, V> implements Manager<K, V> {
     private final BiFunction<K, Map.Entry<Integer, AtomicReference<V>>, Map.Entry<Integer, AtomicReference<V>>> addFunction = new BiFunction<K, Map.Entry<Integer, AtomicReference<V>>, Map.Entry<Integer, AtomicReference<V>>>() {
         @Override
         public Map.Entry<Integer, AtomicReference<V>> apply(K id, Map.Entry<Integer, AtomicReference<V>> entry) {
-            Integer count = Integer.valueOf((entry != null) ? entry.getKey().intValue() + 1 : 0);
+            int count = (entry != null) ? entry.getKey() + 1 : 0;
             AtomicReference<V> reference = (entry != null) ? entry.getValue() : new AtomicReference<>();
             return new AbstractMap.SimpleImmutableEntry<>(count, reference);
         }
@@ -58,7 +58,7 @@ public class ConcurrentManager<K, V> implements Manager<K, V> {
             @Override
             public Map.Entry<Integer, AtomicReference<V>> apply(K key, Map.Entry<Integer, AtomicReference<V>> entry) {
                 // Entry can be null if entry was already removed, i.e. managed object was already closed
-                int count = (entry != null) ? entry.getKey().intValue() : 0;
+                int count = (entry != null) ? entry.getKey() : 0;
                 AtomicReference<V> reference = (entry != null) ? entry.getValue() : null;
                 if (count == 0) {
                     V value = (reference != null) ? reference.get() : null;
@@ -68,7 +68,7 @@ public class ConcurrentManager<K, V> implements Manager<K, V> {
                     // Returning null will remove the map entry
                     return null;
                 }
-                return new AbstractMap.SimpleImmutableEntry<>(Integer.valueOf(count - 1), reference);
+                return new AbstractMap.SimpleImmutableEntry<>(count - 1, reference);
             }
         };
     }
