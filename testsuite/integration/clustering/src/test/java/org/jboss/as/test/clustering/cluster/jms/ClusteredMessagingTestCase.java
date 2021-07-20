@@ -22,13 +22,18 @@
 
 package org.jboss.as.test.clustering.cluster.jms;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.PropertyPermission;
 import java.util.UUID;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -38,14 +43,25 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.clustering.ClusterHttpClientUtil;
+import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
+import org.jboss.as.test.clustering.single.web.Mutable;
+import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.api.Authentication;
@@ -67,8 +83,31 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
     private static final String jmsTopicName = ClusteredMessagingTestCase.class.getSimpleName() + "-Topic";
     private static final String jmsTopicLookup = "jms/" + jmsTopicName;
 
+    private static final String DEPLOYMENT_NAME = ClusteredMessagingTestCase.class.getSimpleName() + ".war";
+
+    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
+    @TargetsContainer(NODE_1)
+    public static Archive<?> deployment1() {
+        return deployment();
+    }
+
+    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
+    @TargetsContainer(NODE_2)
+    public static Archive<?> deployment2() {
+        return deployment();
+    }
+
+    private static Archive<?> deployment() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
+                .addClasses(SimpleServlet.class, Mutable.class)
+                .setWebXML(SimpleServlet.class.getPackage(), "web.xml");
+        ClusterTestUtil.addTopologyListenerDependencies(war);
+        war.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read")), "permissions.xml");
+        return war;
+    }
+
     public ClusteredMessagingTestCase() {
-        super(TWO_NODES, new String[] {});
+        super(TWO_NODES);
     }
 
     protected static ModelControllerClient createClient1() {
@@ -104,7 +143,9 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
     }
 
     @Test
-    public void testClusteredQueue() throws Exception {
+    public void testClusteredQueue(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL) throws Exception {
+        establishTopology(baseURL);
+
         InitialContext contextFromServer1 = createJNDIContext(NODE_1);
         InitialContext contextFromServer2 = createJNDIContext(NODE_2);
 
@@ -131,7 +172,9 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
     }
 
     @Test
-    public void testClusteredTopic() throws Exception {
+    public void testClusteredTopic(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL) throws Exception {
+        establishTopology(baseURL);
+
         InitialContext contextFromServer1 = createJNDIContext(NODE_1);
         InitialContext contextFromServer2 = createJNDIContext(NODE_2);
 
@@ -206,4 +249,9 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
             receiveMessage(consumer, expectedText);
         }
     }
+
+    private static void establishTopology(URL baseURL) throws URISyntaxException, IOException {
+        ClusterHttpClientUtil.establishTopology(baseURL, "web", DEPLOYMENT_NAME, TWO_NODES);
+    }
+
 }
