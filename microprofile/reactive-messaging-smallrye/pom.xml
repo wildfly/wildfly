@@ -41,7 +41,9 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>common</module>
         <module>extension</module>
         <module>config</module>
+        <module>kafka</module>
     </modules>
 </project>

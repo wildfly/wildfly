@@ -24,8 +24,11 @@ package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.tx;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.PropertyPermission;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -48,10 +51,10 @@ import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
+@ServerSetup({ReactiveMessagingKafkaTestCase.TxRunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 public class ReactiveMessagingKafkaTestCase {
 
-    private static final long TIMEOUT = TimeoutUtil.adjust(15000);
+    private static final long TIMEOUT = TimeoutUtil.adjust(60000);
 
     @Inject
     Bean bean;
@@ -79,9 +82,22 @@ public class ReactiveMessagingKafkaTestCase {
     public void test() throws InterruptedException {
         boolean wait = bean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
         Assert.assertTrue("Timed out", wait);
-        Assert.assertEquals("hello reactive messaging", bean.getPhrase());
+        // KK: Initially I thought we could do something similar here to in ReactiveMessagingKafkaSerializerTestCase
+        // to check that messages are received in order on a partition but it is a bit complicated due to the
+        // asynchronous storing of entries to a database
+        Set<String> expected = new HashSet<>(Arrays.asList("hello", "reactive", "messaging"));
+        Assert.assertEquals(expected.size(), bean.getWords().size());
+        Assert.assertTrue("Expected " + bean.getWords() + " to contain all of " + expected, bean.getWords().containsAll(expected));
 
         // Check the data was stored
         txBean.checkValues(Collections.singleton("reactive"));
     }
+
+    public static class TxRunKafkaSetupTask extends RunKafkaSetupTask {
+        @Override
+        protected String[] getTopics() {
+            return new String[]{"testing-tx"};
+        }
+    }
+
 }
