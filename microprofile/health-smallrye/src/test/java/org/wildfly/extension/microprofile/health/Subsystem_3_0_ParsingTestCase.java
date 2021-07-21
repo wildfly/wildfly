@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,16 +22,6 @@
 
 package org.wildfly.extension.microprofile.health;
 
-import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
-import static org.junit.Assert.assertTrue;
-import static org.wildfly.extension.microprofile.health.MicroProfileHealthExtension.VERSION_1_0_0;
-import static org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition.HEALTH_HTTP_CONTEXT_CAPABILITY;
-import static org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition.HEALTH_SERVER_PROBE_CAPABILITY;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
@@ -44,28 +34,40 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
-/**
- * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2019 Red Hat inc.
- */
-public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
 
-    public Subsystem_2_0_ParsingTestCase() {
+import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+import static org.junit.Assert.assertTrue;
+import static org.wildfly.extension.microprofile.health.MicroProfileHealthExtension.VERSION_2_0_0;
+import static org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition.HEALTH_HTTP_CONTEXT_CAPABILITY;
+import static org.wildfly.extension.microprofile.health.MicroProfileHealthSubsystemDefinition.HEALTH_SERVER_PROBE_CAPABILITY;
+
+/**
+ * @author <a href="http://xstefank.io/">Martin Stefanko</a> (c) 2021 Red Hat inc.
+ */
+public class Subsystem_3_0_ParsingTestCase extends AbstractSubsystemBaseTest {
+
+    public Subsystem_3_0_ParsingTestCase() {
         super(MicroProfileHealthExtension.SUBSYSTEM_NAME, new MicroProfileHealthExtension());
     }
 
     @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
+    protected String getSubsystemXml() throws IOException {
+        return readResource("subsystem_3_0.xml");
     }
 
     @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_2_0.xml");
+    protected String[] getSubsystemTemplatePaths() {
+        return new String[] {
+                "/subsystem-templates/microprofile-health-smallrye.xml"
+        };
     }
 
     @Override
     protected String getSubsystemXsdPath() {
-        return "schema/wildfly-microprofile-health-smallrye_2_0.xsd";
+        return "schema/wildfly-microprofile-health-smallrye_3_0.xsd";
     }
 
     protected Properties getResolvedProperties() {
@@ -73,14 +75,14 @@ public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersWildfly17() throws Exception {
-        testTransformers(ModelTestControllerVersion.MASTER, VERSION_1_0_0);
+    public void testTransformersWildfly24() throws Exception {
+        testTransformers(ModelTestControllerVersion.MASTER, VERSION_2_0_0);
     }
 
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion healthExtensionVersion) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXmlResource("subsystem_2_0_transform.xml");
+                .setSubsystemXmlResource("subsystem_3_0.xml");
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, healthExtensionVersion)
                 .skipReverseControllerCheck()
                 .dontPersistXml();
@@ -93,8 +95,8 @@ public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testRejectingTransformersEAP_7_2_0() throws Exception {
-        testRejectingTransformers(ModelTestControllerVersion.EAP_7_2_0, VERSION_1_0_0);
+    public void testRejectingTransformersEAP_7_3_0() throws Exception {
+        testRejectingTransformers(ModelTestControllerVersion.EAP_7_3_0, VERSION_2_0_0);
     }
 
     private static String getMicroProfileSmallryeHeatlhGAV(ModelTestControllerVersion version) {
@@ -126,15 +128,14 @@ public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
         assertTrue(mainServices.isSuccessfulBoot());
         assertTrue(mainServices.getLegacyServices(healthVersion).isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXmlResource("subsystem_2_0_reject_transform.xml");
+        List<ModelNode> ops = builder.parseXmlResource("subsystem_3_0_reject_transform.xml");
         PathAddress subsystemAddress = PathAddress.pathAddress(MicroProfileHealthExtension.SUBSYSTEM_PATH);
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
-        if (healthVersion.equals(MicroProfileHealthExtension.VERSION_1_0_0)) {
+        if (healthVersion.equals(VERSION_2_0_0)) {
             config.addFailedAttribute(subsystemAddress,
-                    new FailedOperationTransformationConfig.NewAttributesConfig(
-                            MicroProfileHealthSubsystemDefinition.EMPTY_LIVENESS_CHECKS_STATUS,
-                            MicroProfileHealthSubsystemDefinition.EMPTY_READINESS_CHECKS_STATUS));
+                new FailedOperationTransformationConfig.NewAttributesConfig(
+                    MicroProfileHealthSubsystemDefinition.EMPTY_STARTUP_CHECKS_STATUS));
         }
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, healthVersion, ops, config);
     }

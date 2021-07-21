@@ -54,9 +54,10 @@ public class MicroProfileHealthExtension implements Extension {
 
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
     protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_2_0_0;
+    protected static final ModelVersion VERSION_3_0_0 = ModelVersion.create(3, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_3_0_0;
 
-    private static final MicroProfileHealthParser_2_0 CURRENT_PARSER = new MicroProfileHealthParser_2_0();
+    private static final MicroProfileHealthParser_3_0 CURRENT_PARSER = new MicroProfileHealthParser_3_0();
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         return getResourceDescriptionResolver(true, keyPrefix);
@@ -86,6 +87,7 @@ public class MicroProfileHealthExtension implements Extension {
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MicroProfileHealthParser_1_0.NAMESPACE, MicroProfileHealthParser_1_0::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MicroProfileHealthParser_2_0.NAMESPACE, CURRENT_PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MicroProfileHealthParser_2_0.NAMESPACE, MicroProfileHealthParser_2_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MicroProfileHealthParser_3_0.NAMESPACE, CURRENT_PARSER);
     }
 }

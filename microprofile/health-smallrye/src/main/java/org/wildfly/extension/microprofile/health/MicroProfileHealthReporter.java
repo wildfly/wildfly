@@ -47,10 +47,12 @@ public class MicroProfileHealthReporter {
     private Map<HealthCheck, ClassLoader> healthChecks = new HashMap<>();
     private Map<HealthCheck, ClassLoader> livenessChecks = new HashMap<>();
     private Map<HealthCheck, ClassLoader> readinessChecks = new HashMap<>();
+    private Map<HealthCheck, ClassLoader> startupChecks = new HashMap<>();
     private Map<HealthCheck, ClassLoader> serverReadinessChecks = new HashMap<>();
 
     private final HealthCheck emptyDeploymentLivenessCheck;
     private final HealthCheck emptyDeploymentReadinessCheck;
+    private final HealthCheck emptyDeploymentStartupCheck;
 
     private static class EmptyDeploymentCheckStatus implements HealthCheck {
         private final String name;
@@ -70,9 +72,11 @@ public class MicroProfileHealthReporter {
     }
 
 
-    public MicroProfileHealthReporter(String emptyLivenessChecksStatus, String emptyReadinessChecksStatus, boolean defaultServerProceduresDisabled) {
+    public MicroProfileHealthReporter(String emptyLivenessChecksStatus, String emptyReadinessChecksStatus,
+                                      String emptyStartupChecksStatus, boolean defaultServerProceduresDisabled) {
         this.emptyDeploymentLivenessCheck  = new EmptyDeploymentCheckStatus("empty-liveness-checks", emptyLivenessChecksStatus);
         this.emptyDeploymentReadinessCheck  = new EmptyDeploymentCheckStatus("empty-readiness-checks", emptyReadinessChecksStatus);
+        this.emptyDeploymentStartupCheck  = new EmptyDeploymentCheckStatus("empty-startup-checks", emptyStartupChecksStatus);
         this.defaultServerProceduresDisabled = defaultServerProceduresDisabled;
     }
 
@@ -81,12 +85,14 @@ public class MicroProfileHealthReporter {
         deploymentChecks.putAll(healthChecks);
         deploymentChecks.putAll(livenessChecks);
         deploymentChecks.putAll(readinessChecks);
+        deploymentChecks.putAll(startupChecks);
 
         HashMap<HealthCheck, ClassLoader> serverChecks= new HashMap<>();
         serverChecks.putAll(serverReadinessChecks);
         if (deploymentChecks.size() == 0 && !defaultServerProceduresDisabled) {
             serverChecks.put(emptyDeploymentLivenessCheck, Thread.currentThread().getContextClassLoader());
             serverChecks.put(emptyDeploymentReadinessCheck, Thread.currentThread().getContextClassLoader());
+            serverChecks.put(emptyDeploymentStartupCheck, Thread.currentThread().getContextClassLoader());
         }
 
         return getHealth(serverChecks, deploymentChecks);
@@ -109,6 +115,16 @@ public class MicroProfileHealthReporter {
             serverChecks.put(emptyDeploymentReadinessCheck, Thread.currentThread().getContextClassLoader());
         }
         return getHealth(serverChecks, readinessChecks);
+    }
+
+    public SmallRyeHealth getStartup() {
+        final Map<HealthCheck, ClassLoader> serverChecks;
+        if (startupChecks.size() == 0 && !defaultServerProceduresDisabled) {
+            serverChecks = Collections.singletonMap(emptyDeploymentStartupCheck, Thread.currentThread().getContextClassLoader());
+        } else {
+            serverChecks = Collections.emptyMap();
+        }
+        return getHealth(serverChecks, startupChecks);
     }
 
     private final SmallRyeHealth getHealth(Map<HealthCheck, ClassLoader> serverChecks, Map<HealthCheck, ClassLoader> deploymentChecks) {
@@ -229,5 +245,15 @@ public class MicroProfileHealthReporter {
 
     public void removeLivenessCheck(HealthCheck check) {
         livenessChecks.remove(check);
+    }
+
+    public void addStartupCheck(HealthCheck check, ClassLoader moduleClassLoader) {
+        if (check != null) {
+            startupChecks.put(check, moduleClassLoader);
+        }
+    }
+
+    public void removeStartupCheck(HealthCheck check) {
+        startupChecks.remove(check);
     }
 }

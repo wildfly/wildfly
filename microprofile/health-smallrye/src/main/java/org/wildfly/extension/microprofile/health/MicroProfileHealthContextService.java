@@ -79,6 +79,8 @@ public class MicroProfileHealthContextService implements Service {
 
         public static final String HEALTH_READY = HEALTH + "/ready";
 
+        public static final String HEALTH_STARTED = HEALTH + "/started";
+
 
         public HealthCheckHandler(MicroProfileHealthReporter healthReporter) {
             this.healthReporter = healthReporter;
@@ -93,6 +95,8 @@ public class MicroProfileHealthContextService implements Service {
                 health = healthReporter.getLiveness();
             } else if (HEALTH_READY.equals(exchange.getRequestPath())) {
                 health = healthReporter.getReadiness();
+            } else if (HEALTH_STARTED.equals(exchange.getRequestPath())) {
+                health = healthReporter.getStartup();
             } else {
                 exchange.setStatusCode(404);
                 return;
