@@ -150,6 +150,7 @@ public enum XMLAttribute {
     MAX_RETRIES(RemoteCacheContainerResourceDefinition.Attribute.MAX_RETRIES),
     PROTOCOL_VERSION(RemoteCacheContainerResourceDefinition.Attribute.PROTOCOL_VERSION),
     SOCKET_TIMEOUT(RemoteCacheContainerResourceDefinition.Attribute.SOCKET_TIMEOUT),
+    CONNECT_TIMEOUT(RemoteCacheContainerResourceDefinition.Attribute.CONNECT_TIMEOUT),
     TCP_NO_DELAY(RemoteCacheContainerResourceDefinition.Attribute.TCP_NO_DELAY),
     TCP_KEEP_ALIVE(RemoteCacheContainerResourceDefinition.Attribute.TCP_KEEP_ALIVE),
     TRANSACTION_TIMEOUT(RemoteCacheContainerResourceDefinition.Attribute.TRANSACTION_TIMEOUT),

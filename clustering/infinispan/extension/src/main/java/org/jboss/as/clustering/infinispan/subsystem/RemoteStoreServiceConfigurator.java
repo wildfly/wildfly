@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.RemoteStoreResourceDefinition.Attribute.CACHE;
+import static org.jboss.as.clustering.infinispan.subsystem.RemoteStoreResourceDefinition.Attribute.CONNECT_TIMEOUT;
 import static org.jboss.as.clustering.infinispan.subsystem.RemoteStoreResourceDefinition.Attribute.SOCKET_BINDINGS;
 import static org.jboss.as.clustering.infinispan.subsystem.RemoteStoreResourceDefinition.Attribute.SOCKET_TIMEOUT;
 import static org.jboss.as.clustering.infinispan.subsystem.RemoteStoreResourceDefinition.Attribute.TCP_NO_DELAY;
@@ -55,6 +56,7 @@ public class RemoteStoreServiceConfigurator extends StoreServiceConfigurator<Rem
     private volatile List<SupplierDependency<OutboundSocketBinding>> bindings;
     private volatile String remoteCacheName;
     private volatile long socketTimeout;
+    private volatile long connectTimeout;
     private volatile boolean tcpNoDelay;
 
     public RemoteStoreServiceConfigurator(PathAddress address) {
@@ -73,6 +75,7 @@ public class RemoteStoreServiceConfigurator extends StoreServiceConfigurator<Rem
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.remoteCacheName = CACHE.resolveModelAttribute(context, model).asString();
         this.socketTimeout = SOCKET_TIMEOUT.resolveModelAttribute(context, model).asLong();
+        this.connectTimeout = CONNECT_TIMEOUT.resolveModelAttribute(context, model).asLong();
         this.tcpNoDelay = TCP_NO_DELAY.resolveModelAttribute(context, model).asBoolean();
         List<String> bindings = StringListAttributeDefinition.unwrapValue(context, SOCKET_BINDINGS.resolveModelAttribute(context, model));
         this.bindings = new ArrayList<>(bindings.size());
@@ -87,6 +90,7 @@ public class RemoteStoreServiceConfigurator extends StoreServiceConfigurator<Rem
         builder.segmented(false)
                 .remoteCacheName(this.remoteCacheName)
                 .socketTimeout(this.socketTimeout)
+                .connectionTimeout(this.connectTimeout)
                 .tcpNoDelay(this.tcpNoDelay)
                 ;
         for (Supplier<OutboundSocketBinding> bindingDependency : this.bindings) {

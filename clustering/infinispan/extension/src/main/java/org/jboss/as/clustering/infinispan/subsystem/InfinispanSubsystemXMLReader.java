@@ -1327,6 +1327,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     readAttribute(reader, i, operation, RemoteStoreResourceDefinition.Attribute.SOCKET_TIMEOUT);
                     break;
                 }
+                case CONNECT_TIMEOUT: {
+                    readAttribute(reader, i, operation, RemoteStoreResourceDefinition.Attribute.CONNECT_TIMEOUT);
+                    break;
+                }
                 case TCP_NO_DELAY: {
                     readAttribute(reader, i, operation, RemoteStoreResourceDefinition.Attribute.TCP_NO_DELAY);
                     break;

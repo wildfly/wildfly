@@ -61,6 +61,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         CACHE("cache", ModelType.STRING, null),
         SOCKET_TIMEOUT("socket-timeout", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(1))),
+        CONNECT_TIMEOUT("connect-timeout", ModelType.LONG, new ModelNode(TimeUnit.MINUTES.toMillis(1))),
         TCP_NO_DELAY("tcp-no-delay", ModelType.BOOLEAN, ModelNode.TRUE),
         SOCKET_BINDINGS("remote-servers")
         ;

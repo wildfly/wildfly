@@ -133,6 +133,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
             }
         },
         SOCKET_TIMEOUT("socket-timeout", ModelType.INT, new ModelNode(60000)),
+        CONNECT_TIMEOUT("connect-timeout", ModelType.INT, new ModelNode(60000)),
         STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN, ModelNode.FALSE),
         TCP_NO_DELAY("tcp-no-delay", ModelType.BOOLEAN, ModelNode.TRUE),
         TCP_KEEP_ALIVE("tcp-keep-alive", ModelType.BOOLEAN, ModelNode.FALSE),
