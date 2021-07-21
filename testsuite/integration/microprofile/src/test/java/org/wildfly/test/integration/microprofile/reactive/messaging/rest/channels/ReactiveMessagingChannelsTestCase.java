@@ -117,7 +117,7 @@ public class ReactiveMessagingChannelsTestCase {
             postData(client,"emitter-to-subscribed-channel-publisher-via-kafka/publish", "Kafka");
 
             // Kafka is slower than the other in-memory examples, so do some retrying here
-            long end = System.currentTimeMillis() + TimeoutUtil.adjust(5000);
+            long end = System.currentTimeMillis() + TimeoutUtil.adjust(60000);
             AssertionError error = null;
             List<String> expected = Arrays.asList("Welcome", "to", "Kafka");
             List<String> list = null;

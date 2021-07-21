@@ -54,7 +54,7 @@ import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 @ServerSetup({ReactiveMessagingKafkaTestCase.TxRunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 public class ReactiveMessagingKafkaTestCase {
 
-    private static final long TIMEOUT = TimeoutUtil.adjust(15000);
+    private static final long TIMEOUT = TimeoutUtil.adjust(60000);
 
     @Inject
     Bean bean;

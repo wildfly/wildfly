@@ -45,6 +45,8 @@ public abstract class RunKafkaSetupTask implements ServerSetupTask {
         Path target = Paths.get("target").toAbsolutePath().normalize();
         kafkaDir = Files.createTempDirectory(target, "kafka");
 
+        System.out.println("=======> KAFKA DIR " + kafkaDir.toAbsolutePath());
+
         Files.createDirectories(kafkaDir);
 
         broker = new EmbeddedKafkaBroker(1, true, getTopics())

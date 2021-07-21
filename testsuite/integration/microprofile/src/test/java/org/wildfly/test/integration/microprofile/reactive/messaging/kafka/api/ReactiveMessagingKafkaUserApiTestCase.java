@@ -61,7 +61,7 @@ import io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata;
 @ServerSetup({ReactiveMessagingKafkaUserApiTestCase.CustomRunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 public class ReactiveMessagingKafkaUserApiTestCase {
 
-    private static final long TIMEOUT = TimeoutUtil.adjust(15000);
+    private static final long TIMEOUT = TimeoutUtil.adjust(60000);
 
     @Inject
     InDepthMetadataBean inDepthMetadataBean;
