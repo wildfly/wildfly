@@ -75,6 +75,7 @@ interface CommonAttributes {
     /** The process-id/uuid element */
     String UUID = "uuid";
     // TxStats
+    String STATISTICS = "statistics";
     String NUMBER_OF_TRANSACTIONS = "number-of-transactions";
     String NUMBER_OF_NESTED_TRANSACTIONS = "number-of-nested-transactions";
     String NUMBER_OF_HEURISTICS = "number-of-heuristics";
