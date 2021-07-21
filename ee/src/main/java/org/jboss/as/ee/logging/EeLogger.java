@@ -1207,4 +1207,7 @@ public interface EeLogger extends BasicLogger {
 
     @Message(id = 131, value = "The attribute %s is no longer supported.")
     XMLStreamException attributeNoLongerSupported(final String attribute);
+
+    @Message(id = 132, value = "ManagedReference was null and injection is not optional for injection into method %s")
+    RuntimeException managedReferenceMethodWasNull(Method method);
 }

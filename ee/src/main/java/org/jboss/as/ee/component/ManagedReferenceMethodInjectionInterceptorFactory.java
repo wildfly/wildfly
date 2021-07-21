@@ -99,6 +99,10 @@ final class ManagedReferenceMethodInjectionInterceptorFactory implements Interce
             if (reference == null && optional) {
                 return context.proceed();
             }
+            if (reference == null) {
+                throw EeLogger.ROOT_LOGGER.managedReferenceMethodWasNull(method);
+            }
+
             boolean ok = false;
             try {
                 componentInstance.setInstanceData(valueKey, reference);

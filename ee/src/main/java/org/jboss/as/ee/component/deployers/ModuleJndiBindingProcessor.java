@@ -276,6 +276,9 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     if (registered == null)
                         throw e;
                     BinderService service = (BinderService) registered.getService();
+                    if (service == null || service.getSource() == null) {
+                        throw e;
+                    }
                     if (!service.getSource().equals(bindingConfiguration.getSource()))
                         throw EeLogger.ROOT_LOGGER.conflictingBinding(bindingName, bindingConfiguration.getSource());
                 } catch (CircularDependencyException e) {
