@@ -92,6 +92,7 @@ public class InDepthMetadataBean {
     public CompletionStage<Void> receiveFromKafka(Message<Integer> msg) {
         IncomingKafkaRecordMetadata<String, Integer> metadata = KafkaMetadataUtil.readIncomingKafkaMetadata(msg).get();
         metadatas.put(msg.getPayload(), metadata);
+        System.out.println("-----> Received message:" + msg.getPayload() + "; Timestamp: " + metadata.getTimestamp());
         latch.countDown();
         return msg.ack();
     }
