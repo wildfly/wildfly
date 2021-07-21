@@ -292,6 +292,19 @@ The individual match elements are: -
 * <match-domain-name name="..."/>:: Matches where the protocol of the URI is 'domain' and the scheme specific part of the URI is the name specified within this match element.
  <match-abstract-type name="..." authority="..." />:: Matches the abstract type and/or authority against the values specified within this match element.
 
+=== Elytron client SSL context security provider
+
+You can register `org.wildfly.security.auth.client.ClientSSLContextProvider` security provider. This java security provider loads elytron client configuration and provides initialized ssl context for all clients requesting SSL context by using `SSLContext.getDefault()`.
+
+The provider loads the ssl context from either current authentication context obtained from classpath, or from authentication context obtained from file whose path is passed into the security provider either programmatically or as an argument in `java.security` file.
+
+The SSL context configured to match all rules is the one that will be initialized and returned by this provider:
+
+[source,xml,options="nowrap"]
+----
+<rule use-ssl-context="ssl-context-for-client-provider" />
+----
+
 == <authentication-configurations />
 
 The <authentication-configurations /> element contains named configurations that can then be matched from the <authentication-rules />
