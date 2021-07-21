@@ -56,8 +56,10 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.microprofile.metrics.MetricsHelper;
 import org.wildfly.test.integration.microprofile.metrics.TestApplication;
 import org.wildfly.test.integration.microprofile.metrics.application.resource.ResourceSimple;
 
@@ -118,6 +120,13 @@ public class MicroProfileMetricsApplicationTestCase {
     private Deployer deployer;
 
     private static int requestCalled = 0;
+
+    private static String vendorMetricsPrefix;
+
+    @Before
+    public void setup() throws IOException {
+        vendorMetricsPrefix = MetricsHelper.getExpectedVendorMetricPrefix(managementClient);
+    }
 
     @Test
     @InSequence(1)
@@ -223,7 +232,7 @@ public class MicroProfileMetricsApplicationTestCase {
     }
 
     private void checkRequestCount(int expectedCount, String deploymentName, boolean deploymentMetricMustExist) throws IOException {
-        String prometheusMetricName = "wildfly_undertow_request_count_total";
+        String prometheusMetricName = vendorMetricsPrefix + "undertow_request_count_total";
         String metrics = getPrometheusMetrics(managementClient, "", true);
         for (String line : metrics.split("\\R")) {
             if (line.startsWith(prometheusMetricName)) {

@@ -17,6 +17,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 
 public class MetricsHelper {
@@ -94,5 +97,14 @@ public class MetricsHelper {
             JsonNumber count = payload.getJsonNumber(counterName);
             return count.doubleValue();
         }
+    }
+
+    public static String getExpectedVendorMetricPrefix(ManagementClient managementClient) throws IOException {
+        ModelNode op = Operations.createReadAttributeOperation(PathAddress.EMPTY_ADDRESS.toModelNode(), "product-name");
+        ModelNode response = managementClient.getControllerClient().execute(op);
+        if (!Operations.isSuccessfulOutcome(response)) {
+            Assert.fail(Operations.getFailureDescription(response).asString());
+        }
+        return response.get("result").asString().contains("EAP") ? "jboss_" : "wildfly_";
     }
 }
