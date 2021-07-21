@@ -100,8 +100,7 @@ public class EjbTimerXmlPersister implements XMLElementWriter<List<TimerImpl>> {
         String info = null;
         String primaryKey = null;
         if (timer.getInfo() != null) {
-            try {
-                Marshaller marshaller = factory.createMarshaller(configuration);
+            try (final Marshaller marshaller = factory.createMarshaller(configuration)) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 marshaller.start(new OutputStreamByteOutput(out));
                 marshaller.writeObject(timer.getInfo());
@@ -114,8 +113,7 @@ public class EjbTimerXmlPersister implements XMLElementWriter<List<TimerImpl>> {
             }
         }
         if (timer.getPrimaryKey() != null) {
-            try {
-                Marshaller marshaller = factory.createMarshaller(configuration);
+            try (final Marshaller marshaller = factory.createMarshaller(configuration)) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 marshaller.start(new OutputStreamByteOutput(out));
                 marshaller.writeObject(timer.getPrimaryKey());
@@ -183,8 +181,7 @@ public class EjbTimerXmlPersister implements XMLElementWriter<List<TimerImpl>> {
         String info = null;
         String primaryKey = null;
         if (timer.getInfo() != null) {
-            try {
-                Marshaller marshaller = factory.createMarshaller(configuration);
+            try (final Marshaller marshaller = factory.createMarshaller(configuration)) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 marshaller.start(new OutputStreamByteOutput(out));
                 marshaller.writeObject(timer.getInfo());
@@ -197,8 +194,7 @@ public class EjbTimerXmlPersister implements XMLElementWriter<List<TimerImpl>> {
             }
         }
         if (timer.getPrimaryKey() != null) {
-            try {
-                Marshaller marshaller = factory.createMarshaller(configuration);
+            try (final Marshaller marshaller = factory.createMarshaller(configuration)) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 marshaller.start(new OutputStreamByteOutput(out));
                 marshaller.writeObject(timer.getPrimaryKey());
