@@ -61,7 +61,6 @@ public class MethodResolutionUtils {
     }
 
     public static Collection<Method> resolveMethods(final String methodName, final MethodParametersMetaData parameters, final Class<?> componentClass, final DeploymentReflectionIndex reflectionIndex) throws DeploymentUnitProcessingException {
-
         Class<?> clazz = componentClass;
         while (clazz != Object.class && clazz != null) {
             final ClassReflectionIndex classIndex = reflectionIndex.getClassIndex(clazz);
@@ -87,7 +86,7 @@ public class MethodResolutionUtils {
             }
             clazz = clazz.getSuperclass();
         }
-        throw EjbLogger.ROOT_LOGGER.failToFindMethodInEjbJarXml(componentClass.getName(), methodName);
+        throw EjbLogger.ROOT_LOGGER.failToFindMethodInEjbJarXml(componentClass != null ? componentClass.getName() : "null", methodName);
 
     }
 }

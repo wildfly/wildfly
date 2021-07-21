@@ -224,7 +224,8 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     private String searchActiveResourceAdapterName(String configuredResourceAdapterName) {
         // Use the configured value unless it doesn't match and some variant of it does
         String result = configuredResourceAdapterName;
-        if (ConnectorServices.getRegisteredResourceAdapterIdentifier(configuredResourceAdapterName) == null) {
+        if (configuredResourceAdapterName != null
+                && ConnectorServices.getRegisteredResourceAdapterIdentifier(configuredResourceAdapterName) == null) {
             // No direct match. See if we have a match with .rar removed or appended
             String amended = stripDotRarSuffix(configuredResourceAdapterName);
             if (configuredResourceAdapterName.equals(amended)) {
