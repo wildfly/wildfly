@@ -354,7 +354,7 @@
 
         <!-- module and copy artifact dependencies -->
 
-        <!-- WildFly Core feature pack content -->
+        <!-- Deps from the source modules we copy in -->
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -362,9 +362,19 @@
             <type>pom</type>
             <scope>provided</scope>
             <exclusions>
+                <!-- Exclude deps that have been replaced with different artifacts in this FP.
+                     TODO perhaps put these in a different maven module that we don't pull in -->
                 <exclusion>
                     <groupId>org.glassfish</groupId>
                     <artifactId>jakarta.json</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.security</groupId>
+                    <artifactId>wildfly-elytron-jacc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.security</groupId>
+                    <artifactId>wildfly-elytron-jaspi</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -391,13 +401,43 @@
             <type>pom</type>
             <scope>provided</scope>
             <exclusions>
+                <!-- Exclude deps that have been replaced with different artifacts in this FP
+                     TODO perhaps put these in a different maven module that we don't pull in -->
                 <exclusion>
-                    <groupId>org.glassfish.jaxb</groupId>
-                    <artifactId>jaxb-xjc</artifactId>
+                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                    <artifactId>jackson-jaxrs-base</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                    <artifactId>jackson-jaxrs-json-provider</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-jaxb-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.activemq</groupId>
+                    <artifactId>artemis-jms-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.activemq</groupId>
+                    <artifactId>artemis-jms-server</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.activemq</groupId>
+                    <artifactId>artemis-ra</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.activemq</groupId>
+                    <artifactId>artemis-service-extensions</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.bouncycastle</groupId>
                     <artifactId>bcmail-jdk15on</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.glassfish.jaxb</groupId>
+                    <artifactId>jaxb-xjc</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -649,6 +689,16 @@
             <artifactId>jackson-jaxrs-json-provider</artifactId>
             <version>${version.com.fasterxml.jackson}</version>
             <classifier>jakarta</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                    <artifactId>jackson-jaxrs-base</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-jaxb-annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- also need JAXB annotation support -->
         <dependency>
