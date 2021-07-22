@@ -9,6 +9,6 @@
 
     <feature-group name="undertow-http-invoker"/>
 
-    <feature-group name="servlet-picketbox-security"/>
+    <feature-group name="servlet-picketbox-security-domain"/>
 
 </feature-group-spec>
