@@ -2898,6 +2898,7 @@
                                         -->
                                         <exclude>org/jboss/as/test/integration/ejb/container/**/SwitchIdentityTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/security/**/LdapLegacyTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/PicketboxCacheTestCase</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/security/**/RunAsPrincipalCustomDomainTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/security/**/GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/security/**/EJBContextMultipleSDTestCase.java</exclude>
@@ -3647,6 +3648,7 @@
                                         <exclude>org/jboss/as/test/integration/ejb/security/RunAsPrincipalCustomDomainTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/security/securitydomain/EJBContextMultipleSDTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/security/callerprincipal/GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/cache/PicketboxCacheTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jca/security/DsWithMixedSecurityTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jca/security/DsWithSecurityDomainTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jca/security/IronJacamarActivationRaWithSecurityDomainTestCase.java</exclude>

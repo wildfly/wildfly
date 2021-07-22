@@ -23,6 +23,7 @@
 package org.jboss.as.security.remoting;
 
 import java.security.Permission;
+import java.util.Objects;
 
 import javax.net.ssl.SSLSession;
 
@@ -116,6 +117,19 @@ public class RemotingContext {
         @Override
         public SecurityIdentity getSecurityIdentity() {
             return connection.getLocalIdentity();
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.connection);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof RemotingRemoteConnection) {
+                return Objects.equals(this.connection, ((RemotingRemoteConnection) obj).connection);
+            }
+            return false;
         }
     }
 
