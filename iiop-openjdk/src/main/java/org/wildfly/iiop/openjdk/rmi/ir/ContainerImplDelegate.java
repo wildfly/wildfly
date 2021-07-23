@@ -109,9 +109,9 @@ class ContainerImplDelegate
             for (int i = 0; i < cont.size(); ++i) {
                 LocalContained val = (LocalContained) cont.get(i);
 
-                if (target == val.def_kind().value()) {
-                    if (!exclude_inherited || val.defined_in() == delegateFor)
-                        found.add(val);
+                if (target == val.def_kind().value()
+                        && (!exclude_inherited || val.defined_in() == delegateFor)) {
+                    found.add(val);
                 }
             }
         }

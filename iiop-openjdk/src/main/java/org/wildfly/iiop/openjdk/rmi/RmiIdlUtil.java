@@ -390,10 +390,11 @@ public class RmiIdlUtil {
         *
         * Spec 2.8.4 (3)
         */
-        if (type.getDeclaringClass() != null && isStatic(type))
-            if (!isRMIIDLValueType(type.getDeclaringClass()))
-                return false;
-
+        if (type.getDeclaringClass() != null
+                && isStatic(type)
+                && !isRMIIDLValueType(type.getDeclaringClass())) {
+            return false;
+        }
         return true;
     }
 

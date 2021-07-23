@@ -116,13 +116,12 @@ public class Util {
         }
 
         // exception?
-        if (Throwable.class.isAssignableFrom(cls)) {
-            if (Exception.class.isAssignableFrom(cls) &&
-                    !RuntimeException.class.isAssignableFrom(cls)) {
-                ExceptionAnalysis ea = ExceptionAnalysis.getExceptionAnalysis(cls);
+        if (Throwable.class.isAssignableFrom(cls)
+                && Exception.class.isAssignableFrom(cls)
+                && !RuntimeException.class.isAssignableFrom(cls)) {
+            ExceptionAnalysis ea = ExceptionAnalysis.getExceptionAnalysis(cls);
 
-                return ea.getIDLModuleName() + "::" + ea.getIDLName();
-            }
+            return ea.getIDLModuleName() + "::" + ea.getIDLName();
         }
 
         // got to be value
