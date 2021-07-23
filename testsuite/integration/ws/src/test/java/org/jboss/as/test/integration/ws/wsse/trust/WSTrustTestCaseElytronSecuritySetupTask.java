@@ -55,7 +55,6 @@ public class WSTrustTestCaseElytronSecuritySetupTask implements ServerSetupTask 
         addHttpsListener(operations);
         addElytronSecurityDomain(operations);
         ModelNode updateOp = Operations.createCompositeOperation(operations);
-        updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());
         ServerReload.reloadIfRequired(managementClient);
@@ -126,14 +125,14 @@ public class WSTrustTestCaseElytronSecuritySetupTask implements ServerSetupTask 
 
     private void addElytronSecurityDomain(List<ModelNode> operations) throws Exception {
         final ModelNode elytronHttpAuthOp = ModelUtil.createOpNode(
-                "subsystem=elytron/http-authentication-factory=application-http-authentication", ADD);
+                "subsystem=elytron/http-authentication-factory=ws-http-authentication", ADD);
         elytronHttpAuthOp.get("http-server-mechanism-factory").set("global");
         elytronHttpAuthOp.get("security-domain").set(SECURITY_DOMAIN_NAME);
         operations.add(elytronHttpAuthOp);
 
         final ModelNode addUndertowDomainOp = ModelUtil.createOpNode("subsystem=undertow/application-security-domain="
                 + SECURITY_DOMAIN_NAME, ADD);
-        addUndertowDomainOp.get("http-authentication-factory").set("application-http-authentication");
+        addUndertowDomainOp.get("http-authentication-factory").set("ws-http-authentication");
         operations.add(addUndertowDomainOp);
 
         final ModelNode addEJbDomainOp = ModelUtil.createOpNode("subsystem=ejb3/application-security-domain="
@@ -145,7 +144,7 @@ public class WSTrustTestCaseElytronSecuritySetupTask implements ServerSetupTask 
 
     private void removeElytronSecurityDomain(List<ModelNode> operations) throws Exception {
         final ModelNode removeElytronHttpAuthOp = ModelUtil.createOpNode(
-                "subsystem=elytron/http-authentication-factory=application-http-authentication", REMOVE);
+                "subsystem=elytron/http-authentication-factory=ws-http-authentication", REMOVE);
         operations.add(removeElytronHttpAuthOp);
         final ModelNode removeUndertowDomainOp = ModelUtil.createOpNode(
                 "subsystem=undertow/application-security-domain=" + SECURITY_DOMAIN_NAME, REMOVE);

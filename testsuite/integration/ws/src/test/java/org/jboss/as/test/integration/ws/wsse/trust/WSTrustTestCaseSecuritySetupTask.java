@@ -40,7 +40,6 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
         addSecurityRealm(operations);
         addHttpsListener(operations);
         ModelNode updateOp = Operations.createCompositeOperation(operations);
-        updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());
         securityDomainsSubtask.setup(managementClient, containerId);
