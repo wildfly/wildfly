@@ -219,6 +219,20 @@
              still being easily disabled in profiles where it is not wanted. -->
         <surefire.default-test.phase>test</surefire.default-test.phase>
 
+        <!-- WildFly Preview vs standard WildFly GAV expression properties.
+             Used to drive maven-resource-plugin filtering for module.xml files
+             where WildFly Preview and standard WildFly use different artifacts but
+             otherwise identical module.xml files. The expression encapsulates the part
+             of a groupId/artifactId/classifier that differs in the two dists.
+             Values here are the ones used by standard WildFly; WildFly Preview child
+             modules will override. Often the standard value will be an empty string
+             and WildFly Preview will change it to additional text a project uses to
+             identify its jakarta.* namespace artifacts.
+             -->
+        <!-- Props that will differ start here-->
+        <module.jakarta.classifier></module.jakarta.classifier>
+        <module.jakarta.suffix></module.jakarta.suffix>
+
         <!--
             *Plugin* Dependency versions. Please keep alphabetical.
 
