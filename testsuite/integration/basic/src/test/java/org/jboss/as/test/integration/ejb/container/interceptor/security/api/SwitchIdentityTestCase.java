@@ -55,6 +55,7 @@ import org.jboss.security.SecurityContextAssociation;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
@@ -143,7 +144,15 @@ public class SwitchIdentityTestCase {
      * @throws Exception
      */
     @Test
+    @Ignore("[WFLY-15001] Not working with new default authentication.")
     public void testSecurityContextAssociation() throws Exception {
+        /*
+         * This test was relying on being able to specify an arbitrary username with the local
+         * authentication mechanism, we could spend time converting to also specify the password
+         * and authenticate correctly but this relies on PicketBox APIs which are being removed.
+         *
+         * An Elytron specific variant testClientLoginModule already exists to set the username and password.
+         */
         callUsingSecurityContextAssociation("guest", false, false);
         callUsingSecurityContextAssociation("user1", true, false);
         callUsingSecurityContextAssociation("user2", false, true);
@@ -322,11 +331,17 @@ public class SwitchIdentityTestCase {
         protected SecurityDomain[] getSecurityDomains() {
             final SecurityModule.Builder loginModuleBuilder = new SecurityModule.Builder().flag("optional").putOption(
                     "password-stacking", "useFirstPass");
+            Map<String, String> realmUsersRolesOptions = new HashMap<>();
+            realmUsersRolesOptions.put("password-stacking", "useFirstPass");
+            realmUsersRolesOptions.put("usersProperties", "${jboss.server.config.dir}/application-users.properties");
+            realmUsersRolesOptions.put("rolesProperties", "${jboss.server.config.dir}/application-roles.properties");
             final SecurityDomain sd = new SecurityDomain.Builder()
                     .name(SECURITY_DOMAIN_NAME)
                     .loginModules(loginModuleBuilder.name(GuestDelegationLoginModule.class.getName()).build(),
                             loginModuleBuilder.name("Remoting").build(), //
-                            loginModuleBuilder.name("RealmDirect").build()) //
+                            loginModuleBuilder.name("RealmUsersRoles")
+                                .options(realmUsersRolesOptions)
+                                .build()) //
                     .build();
             return new SecurityDomain[] { sd };
         }
