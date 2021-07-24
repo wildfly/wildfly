@@ -83,11 +83,7 @@ public class ClientCompatibilityUnitTestCase {
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
             op.get(ModelDescriptionConstants.SOCKET_BINDING).set("management-native");
 
-            if (System.getProperty("elytron") == null) { // legacy security
-                op.get(ModelDescriptionConstants.SECURITY_REALM).set("ManagementRealm");
-            } else { // elytron
-                op.get(ModelDescriptionConstants.SASL_AUTHENTICATION_FACTORY).set("management-sasl-authentication");
-            }
+            op.get(ModelDescriptionConstants.SASL_AUTHENTICATION_FACTORY).set("management-sasl-authentication");
 
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
         }
