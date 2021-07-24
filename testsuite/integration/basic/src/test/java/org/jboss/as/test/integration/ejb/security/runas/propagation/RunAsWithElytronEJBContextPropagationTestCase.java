@@ -136,6 +136,7 @@ public class RunAsWithElytronEJBContextPropagationTestCase extends AbstractCliTe
                         "/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory,value=application-sasl-authentication)");
             } else {
                 removeRealmProperties = true;
+                cli.sendLine("/core-service=management/security-realm=ApplicationRealm:add");
                 cli.sendLine(String.format(
                         "/core-service=management/security-realm=ApplicationRealm/authentication=properties:add(path=\"%s\",plain-text=true)",
                         USERS_PATH));
@@ -152,8 +153,7 @@ public class RunAsWithElytronEJBContextPropagationTestCase extends AbstractCliTe
     @AfterClass
     public static void after() throws Exception {
         if (removeRealmProperties) {
-            cli.sendLine("/core-service=management/security-realm=ApplicationRealm/authentication=properties:remove");
-            cli.sendLine("/core-service=management/security-realm=ApplicationRealm/authorization=properties:remove");
+            cli.sendLine("/core-service=management/security-realm=ApplicationRealm:remove");
         } else {
             cli.sendLine(String.format(
                     "/core-service=management/security-realm=ApplicationRealm/authentication=properties:write-attribute(name=path,value=\"%s\")",

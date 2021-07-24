@@ -213,19 +213,19 @@ public class LdapLegacyTestCase {
      */
     static class LdapRealmSetup implements ServerSetupTask {
 
-        private String previousSecurityRealm = null;
+        private String previousSaslAuthenticationFactory = null;
 
         @Override
         public void setup(ManagementClient mc, String string) throws Exception {
             // save the previous realm used at remoting
             ModelNode op = Util.createOperation(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION,
                     PathAddress.pathAddress().append("subsystem", "remoting").append("http-connector", "http-remoting-connector"));
-            op.get("name").set("security-realm");
+            op.get("name").set("sasl-authentication-factory");
             ModelNode result = mc.getControllerClient().execute(op);
             Assert.assertEquals("The read-attribute to get the current security-realm in remoting is a success",
                     "success", result.get("outcome").asString());
             if (result.get("result").isDefined()) {
-                previousSecurityRealm = result.get("result").asString();
+                previousSaslAuthenticationFactory = result.get("result").asString();
 
                 // create the ldap realm and assign it to the remoting endpoint
                 try (CLIWrapper cli = new CLIWrapper(true)) {
@@ -241,6 +241,7 @@ public class LdapLegacyTestCase {
                     cli.sendLine(String.format("/core-service=management/security-realm=\"%s\"/authorization=ldap/group-search=group-to-principal:add( "
                             + "group-name=SIMPLE, group-name-attribute=cn, base-dn=\"ou=Roles,dc=jboss,dc=org\", principal-attribute=member, search-by=DISTINGUISHED_NAME)",
                             LDAP_REALM));
+                    cli.sendLine("/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=sasl-authentication-factory)");
                     cli.sendLine(String.format("/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=security-realm, value=\"%s\")",
                             LDAP_REALM));
                     cli.sendLine("run-batch");
@@ -253,10 +254,11 @@ public class LdapLegacyTestCase {
         @Override
         public void tearDown(ManagementClient mc, String string) throws Exception {
             // set back the original security realm at remoting and remove the new ldap realm
-            if (previousSecurityRealm != null) {
+            if (previousSaslAuthenticationFactory != null) {
                 try (CLIWrapper cli = new CLIWrapper(true)) {
                     cli.sendLine("batch");
-                    cli.sendLine(String.format("/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=security-realm, value=\"%s\")", previousSecurityRealm));
+                    cli.sendLine("/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)");
+                    cli.sendLine(String.format("/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=\"%s\")", previousSaslAuthenticationFactory));
                     cli.sendLine(String.format("/core-service=management/security-realm=\"%s\":remove", LDAP_REALM));
                     cli.sendLine(String.format("/core-service=management/ldap-connection=\"%s\":remove", LDAP_CONNECTION));
                     cli.sendLine("run-batch");

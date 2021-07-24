@@ -226,6 +226,7 @@ public class EJBContextMultipleSDTestCase {
 
             PathAddress httpConnectorAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, "remoting"),
                     PathElement.pathElement("http-connector", "http-remoting-connector"));
+            updates.add(Util.getUndefineAttributeOperation(httpConnectorAddress, "sasl-authentication-factory"));
             updates.add(Util.getWriteAttributeOperation(httpConnectorAddress, "security-realm", "MyRealm"));
 
             return compositeOp;
