@@ -117,18 +117,17 @@ abstract class AbstractMetaDataBuilderPOJO {
      * @param jbossWebMD jboss web meta data
      */
     private void setConfigNameAndFile(final JSEArchiveMetaData.Builder builder, final JBossWebMetaData jbossWebMD, final JBossWebservicesMetaData jbossWebservicesMD) {
-        if (jbossWebservicesMD != null) {
-           if (jbossWebservicesMD.getConfigName() != null) {
-              final String configName = jbossWebservicesMD.getConfigName();
-              builder.setConfigName(configName);
-              WSLogger.ROOT_LOGGER.tracef("Setting config name: %s", configName);
-              final String configFile = jbossWebservicesMD.getConfigFile();
-              builder.setConfigFile(configFile);
-               WSLogger.ROOT_LOGGER.tracef("Setting config file: %s", configFile);
+        if (jbossWebservicesMD != null
+                && jbossWebservicesMD.getConfigName() != null) {
+            final String configName = jbossWebservicesMD.getConfigName();
+            builder.setConfigName(configName);
+            WSLogger.ROOT_LOGGER.tracef("Setting config name: %s", configName);
+            final String configFile = jbossWebservicesMD.getConfigFile();
+            builder.setConfigFile(configFile);
+            WSLogger.ROOT_LOGGER.tracef("Setting config file: %s", configFile);
 
-              // ensure higher priority against web.xml context parameters
-              return;
-           }
+            // ensure higher priority against web.xml context parameters
+            return;
         }
 
         final List<ParamValueMetaData> contextParams = jbossWebMD.getContextParams();
