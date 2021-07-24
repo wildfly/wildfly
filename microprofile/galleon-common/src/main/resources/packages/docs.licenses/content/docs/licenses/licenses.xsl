@@ -7,7 +7,7 @@
     <xsl:param name="product.release.name"/>
     <xsl:variable name="lowercase" select="'abcdefghijklmnopqrstuvwxyz '" />
     <xsl:variable name="uppercase" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ!'" />
-    
+
     <xsl:template match="/">
         <html>
             <head>
@@ -80,12 +80,6 @@
             <xsl:when test="$name = 'FSF All Permissive License'">
                 <xsl:text>fsf all permissive license.html</xsl:text>
             </xsl:when>
-            <xsl:when test="$name = 'GNU General Public License v2.0 only'">
-                <xsl:text>gnu general public license v2.0 only.html</xsl:text>
-            </xsl:when>
-            <xsl:when test="$name = 'ICU License'">
-                <xsl:text>icu license.html</xsl:text>
-            </xsl:when>
             <xsl:when test="$name = 'Indiana University Extreme! Lab Software License 1.1.1'">
                 <xsl:text>indiana university extreme lab software license 1.1.1.html</xsl:text>
             </xsl:when>
@@ -95,17 +89,8 @@
             <xsl:when test="$name = 'Plexus Classworlds License'">
                 <xsl:text>plexus classworlds license.html</xsl:text>
             </xsl:when>
-            <xsl:when test="$name = 'Sax Public Domain Notice'">
-                <xsl:text>sax public domain notice.html</xsl:text>
-            </xsl:when>
             <xsl:when test="$name = 'The JSoup MIT License'">
                 <xsl:text>the jsoup mit license.html</xsl:text>
-            </xsl:when>
-            <xsl:when test="$name = 'W3C Document License'">
-                <xsl:text>w3c document license.html</xsl:text>
-            </xsl:when>
-            <xsl:when test="$name = 'W3C Software Notice and Document License (2002-12-31)'">
-                <xsl:text>w3c software notice and document license (2002-12-31).html</xsl:text>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:value-of select="concat(translate($name, $uppercase, $lowercase), '.txt')"/>
