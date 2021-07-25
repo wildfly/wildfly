@@ -41,8 +41,6 @@ public class UndertowSslContext extends AbstractConfigurableElement {
     @Override
     public void create(CLIWrapper cli) throws Exception {
         cli.sendLine("batch");
-        cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:undefine-attribute" +
-                "(name=security-realm)", httpsListener));
         cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:write-attribute" +
                 "(name=ssl-context,value=%s)", httpsListener, name));
         cli.sendLine("run-batch");
@@ -51,10 +49,8 @@ public class UndertowSslContext extends AbstractConfigurableElement {
     @Override
     public void remove(CLIWrapper cli) throws Exception {
         cli.sendLine("batch");
-        cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:undefine-attribute" +
-                "(name=ssl-context)", httpsListener));
         cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:write-attribute" +
-                "(name=security-realm,value=ApplicationRealm)", httpsListener));
+                "(name=ssl-context,value=%s)", httpsListener, "applicationSSC"));
         cli.sendLine("run-batch");
     }
 
