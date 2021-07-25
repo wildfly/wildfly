@@ -30,7 +30,6 @@ end-if
 
 echo INFO: Removing security subsystem and ManagementRealm.
 
-/core-service=management/security-realm=ManagementRealm:remove
 /subsystem=security:remove
 /extension=org.jboss.as.security:remove
 
