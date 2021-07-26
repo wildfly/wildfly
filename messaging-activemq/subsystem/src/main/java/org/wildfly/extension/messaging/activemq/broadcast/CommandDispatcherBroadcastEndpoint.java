@@ -22,14 +22,16 @@
 
 package org.wildfly.extension.messaging.activemq.broadcast;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpoint;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
  * A {@link BroadcastEndpoint} based on a {@link CommandDispatcher}.
@@ -44,14 +46,14 @@ public class CommandDispatcherBroadcastEndpoint implements BroadcastEndpoint {
     private final CommandDispatcherFactory factory;
     private final String name;
     private final BroadcastReceiverRegistrar registrar;
-    private final Supplier<BroadcastManager> managerFactory;
+    private final Function<String, BroadcastManager> managerFactory;
     private final AtomicReference<Mode> mode = new AtomicReference<>(Mode.CLOSED);
 
     private volatile BroadcastManager manager = null;
     private volatile Registration registration = null;
     private volatile CommandDispatcher<BroadcastReceiver> dispatcher;
 
-    public CommandDispatcherBroadcastEndpoint(CommandDispatcherFactory factory, String name, BroadcastReceiverRegistrar registrar, Supplier<BroadcastManager> managerFactory) {
+    public CommandDispatcherBroadcastEndpoint(CommandDispatcherFactory factory, String name, BroadcastReceiverRegistrar registrar, Function<String, BroadcastManager> managerFactory) {
         this.factory = factory;
         this.name = name;
         this.registrar = registrar;
@@ -61,7 +63,7 @@ public class CommandDispatcherBroadcastEndpoint implements BroadcastEndpoint {
     @Override
     public void openClient() throws Exception {
         if (this.mode.compareAndSet(Mode.CLOSED, Mode.RECEIVER)) {
-            this.manager = this.managerFactory.get();
+            this.manager = this.managerFactory.apply(this.name);
             this.registration = this.registrar.register(this.manager);
             this.open();
         }
@@ -96,6 +98,9 @@ public class CommandDispatcherBroadcastEndpoint implements BroadcastEndpoint {
     @Override
     public void broadcast(byte[] data) throws Exception {
         if (this.mode.get() == Mode.BROADCASTER) {
+            if (MessagingLogger.ROOT_LOGGER.isDebugEnabled()) {
+                MessagingLogger.ROOT_LOGGER.debugf("Broadcasting to group %s: %s", this.name, Arrays.toString(data));
+            }
             this.dispatcher.executeOnGroup(new BroadcastCommand(data));
         }
     }
