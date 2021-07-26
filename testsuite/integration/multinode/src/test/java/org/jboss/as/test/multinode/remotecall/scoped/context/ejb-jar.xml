@@ -40,7 +40,7 @@
                     authentication. If at all we need to be able to control this more, then we can later
                     have this value as a system property expression. For now, relying on
                     this value is fine IMO -->
-                <env-entry-value>cGFzc3dvcmQx</env-entry-value>
+                <env-entry-value>password1</env-entry-value>
             </env-entry>
         </session>
     </enterprise-beans>
