@@ -44,8 +44,8 @@
           <distribution>repo</distribution>
         </license>
         <license>
-          <name>Eclipse Public License 1.0</name>
-          <url>http://repository.jboss.org/licenses/epl-1.0.txt</url>
+          <name>Eclipse Public License 2.0</name>
+          <url>http://repository.jboss.org/licenses/epl-2.0.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
