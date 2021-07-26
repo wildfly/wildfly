@@ -568,4 +568,14 @@
         <cve>CVE-2021-30129</cve>
     </suppress>
 
+    <!-- False positive xjcplugins are not using org.apache.cxf:cxf-rt-rs-json-basic (https://bugzilla.redhat.com/show_bug.cgi?id=1973392),
+    the version of apache.cxf was updated to fixed 3.3.11: https://github.com/PSI-Polska/wildfly/commit/334aee15ec46821f5674bfa33aadabb06966049e -->
+    <suppress>
+        <notes><![CDATA[
+   file name: cxf-xjc-dv-3.3.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.cxf\.xjcplugins.*$</packageUrl>
+        <cve>CVE-2021-30468</cve>
+    </suppress>
+
 </suppressions>

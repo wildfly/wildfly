@@ -322,7 +322,7 @@
         <version.org.apache.activemq.artemis>2.16.0</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>1.0.2</version.org.apache.activemq.artemis.native>
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
-        <version.org.apache.cxf>3.3.7</version.org.apache.cxf>
+        <version.org.apache.cxf>3.3.11</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.3.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M24</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.4</version.org.apache.httpcomponents.httpasyncclient>
