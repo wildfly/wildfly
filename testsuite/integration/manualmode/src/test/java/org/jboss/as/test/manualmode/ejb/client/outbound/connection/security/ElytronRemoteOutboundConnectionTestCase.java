@@ -278,7 +278,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
             compositeBuilder.addStep(update);
         }
 
-        ModelNode update = Util.getWriteAttributeOperation(getDefaultHttpsListenerAddress(), SECURITY_REALM, "ApplicationRealm");
+        ModelNode update = Util.getWriteAttributeOperation(getDefaultHttpsListenerAddress(), "ssl-context", "applicationSSC");
         update.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         compositeBuilder.addStep(update);
 
