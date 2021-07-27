@@ -2551,6 +2551,7 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+                            <!-- [WFLY-15001] Legacy security is being incrementally removed.
                             <execution>
                                 <id>legacy-remoting-provisioning</id>
                                 <goals>
@@ -2580,6 +2581,7 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+                            -->
                         </executions>
                     </plugin>
 
