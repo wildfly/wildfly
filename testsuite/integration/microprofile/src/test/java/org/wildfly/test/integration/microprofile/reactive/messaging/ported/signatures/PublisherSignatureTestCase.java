@@ -26,6 +26,7 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
 import static org.wildfly.test.integration.microprofile.reactive.messaging.ported.utils.ReactiveMessagingTestUtils.await;
 import static org.wildfly.test.integration.microprofile.reactive.messaging.ported.utils.ReactiveMessagingTestUtils.checkList;
 
+import java.io.FilePermission;
 import java.util.List;
 import java.util.PropertyPermission;
 import java.util.concurrent.CompletableFuture;
@@ -85,7 +86,10 @@ public class PublisherSignatureTestCase {
                         Spy.class)
                 .addClasses(ReactiveMessagingTestUtils.class, TimeoutUtil.class, EnableReactiveExtensionsSetupTask.class, CLIServerSetupTask.class)
                 .addAsManifestResource(createPermissionsXmlAsset(
-                        new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")
+                        new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read"),
+                        // It complains about files in the local maven repo, which may vary across environments
+                        new FilePermission("<<ALL FILES>>", "read"),
+                        new RuntimePermission("modifyThread")
                 ), "permissions.xml");
         return webArchive;
     }
@@ -350,6 +354,5 @@ public class PublisherSignatureTestCase {
         public void close() {
             executor.shutdown();
         }
-
     }
 }

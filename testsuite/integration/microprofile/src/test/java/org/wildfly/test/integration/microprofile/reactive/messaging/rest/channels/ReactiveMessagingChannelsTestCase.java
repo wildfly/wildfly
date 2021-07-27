@@ -22,15 +22,22 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.rest.channels;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
+import java.io.FilePermission;
 import java.io.InputStreamReader;
+import java.net.SocketPermission;
 import java.net.URL;
+import java.security.SecurityPermission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+
+import javax.management.MBeanPermission;
+import javax.management.MBeanServerPermission;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -77,7 +84,29 @@ public class ReactiveMessagingChannelsTestCase {
                         PublisherToChannelPublisherEndpoint.class,
                         EmitterToSubscriberEndpoint.class,
                         EmitterToSubscribedChannelPublisherBuilderEndpoint.class,
-                        EmitterToChannelPublisherViaKafkaEndpoint.class);
+                        EmitterToChannelPublisherViaKafkaEndpoint.class)
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        // These are tracked in https://issues.redhat.com/browse/WFLY-15071 and can be reduced
+                        // eventually.
+                        // This one seems valid
+                        new SocketPermission("*", "connect, resolve"),
+                        // Really this is only /Users/kabir/.m2/repository/org/jboss/resteasy/resteasy-jaxrs/3.15.1.Final/resteasy-jaxrs-3.15.1.Final.jar
+                        // I am doing <<ALL FILES>> simply to not have to figure out the maven repository location and version
+                        // The real fix will be in javax.ws.rs.ext.FactoryFinder.find() which should use a privileged
+                        // block when loading the services. When it cannot find the RestEasy implementation, it
+                        // ends up throwing a ClassNotFoundException since it defaults to the GlassFish implementation
+                        // which should not be used. Behind the scenes (which gets swallowed, it throws an
+                        // AccessControlException due to the missing file.
+                        new FilePermission("<<ALL FILES>>", "read"),
+                        // This needs fixing in RestEasy probably
+                        new SecurityPermission("insertProvider"),
+                        // These can be removed once https://github.com/smallrye/smallrye-reactive-messaging/pull/1334
+                        // has been merged and released.
+                        new MBeanServerPermission("createMBeanServer"),
+                        new MBeanPermission("*", "registerMBean, unregisterMBean"),
+                        new RuntimePermission("getClassLoader"),
+                        new RuntimePermission("modifyThread"),
+                        new RuntimePermission("setContextClassLoader")), "permissions.xml");
         return webArchive;
     }
 
