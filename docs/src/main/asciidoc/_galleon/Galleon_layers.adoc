@@ -486,6 +486,12 @@ link:#gal.base-server[base-server] +
 link:#gal.io[io] +
 link:#gal.vault[vault] +
 
+|[[gal.undertow-https]]undertow-https
+|Support for the Undertow HTTPS server secured using the applicationSSC SSLContext.
+|
+link:#gal.elytron[elytron] +
+link:#gal.undertow[undertow] +
+
 |[[gal.undertow-legacy-https]]undertow-legacy-https
 |Support for the Undertow HTTPS server secured using the legacy security ApplicationRealm.
 |

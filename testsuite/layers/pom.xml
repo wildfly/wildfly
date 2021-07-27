@@ -804,6 +804,34 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>undertow-https-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${servlet.layers.install.dir}/undertow-https</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${servlet.feature.pack.groupId}</groupId>
+                                            <artifactId>${servlet.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>undertow-https</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>undertow-load-balancer-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
