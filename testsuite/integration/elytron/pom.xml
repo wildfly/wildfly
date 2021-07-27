@@ -567,7 +567,7 @@
                                             <name>standalone-full.xml</name>
                                             <layers>
                                                 <layer>cloud-server</layer>
-                                                <layer>undertow-legacy-https</layer>
+                                                <layer>undertow-https</layer>
                                                 <layer>h2-default-datasource</layer>
                                             </layers>
                                         </config>
@@ -736,7 +736,7 @@
                                     </feature-packs>
                                     <layers>
                                         <layer>cloud-server</layer>
-                                        <layer>undertow-legacy-https</layer>
+                                        <layer>undertow-https</layer>
                                         <layer>h2-default-datasource</layer>
                                     </layers>
                                 </configuration>
