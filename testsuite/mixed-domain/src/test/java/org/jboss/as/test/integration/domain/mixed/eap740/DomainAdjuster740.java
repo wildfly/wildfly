@@ -46,10 +46,21 @@ public class DomainAdjuster740 extends DomainAdjuster {
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) throws Exception {
         final List<ModelNode> ops = new ArrayList<>();
 
+        adjustRemoting(ops, profileAddress.append(SUBSYSTEM, "remoting"));
         adjustUndertow(ops, profileAddress.append(SUBSYSTEM, "undertow"));
         adjustInfinispan(ops, profileAddress.append(SUBSYSTEM, "infinispan"));
 
         return ops;
+    }
+
+    private static void adjustRemoting(final List<ModelNode> ops, final PathAddress subsystem) {
+        // This adjusts the configuration to reflect the configuration that was used in EAP 7.4,
+        // this could equally be moved all the way back and only adjusted for EAP 7.0.0 as we remove
+        // the Elytron subsystem.
+        final PathAddress httpRemotingConnector = subsystem
+                .append("http-connector", "http-remoting-connector");
+        ops.add(Util.getUndefineAttributeOperation(httpRemotingConnector, "sasl-authentication-factory"));
+        ops.add(Util.getWriteAttributeOperation(httpRemotingConnector, "security-realm", "ApplicationRealm"));
     }
 
     private static void adjustUndertow(final List<ModelNode> ops, final PathAddress subsystem) {
@@ -62,6 +73,16 @@ public class DomainAdjuster740 extends DomainAdjuster {
                 .append("server", "default-server")
                 .append("https-listener", "https");
         ops.add(Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, httpsListener.toModelNode()));
+
+        // This adjusts the configuration to reflect the configuration that was used in EAP 7.4,
+        // this could equally be moved all the way back and only adjusted for EAP 7.0.0 as we remove
+        // the Elytron subsystem.
+        final PathAddress httpInvoker = subsystem
+                .append("server", "default-server")
+                .append("host", "default-host")
+                .append("setting", "http-invoker");
+        ops.add(Util.getUndefineAttributeOperation(httpInvoker, "http-authentication-factory"));
+        ops.add(Util.getWriteAttributeOperation(httpInvoker, "security-realm", "ApplicationRealm"));
     }
 
     private static void adjustInfinispan(List<ModelNode> ops, PathAddress address) {
