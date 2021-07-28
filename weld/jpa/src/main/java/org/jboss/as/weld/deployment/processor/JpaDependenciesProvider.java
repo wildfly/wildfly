@@ -22,21 +22,24 @@
 package org.jboss.as.weld.deployment.processor;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.weld.spi.DeploymentUnitDependenciesProvider;
+import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.msc.service.ServiceName;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
- *
  * @author Martin Kouba
  */
 public class JpaDependenciesProvider implements DeploymentUnitDependenciesProvider {
@@ -44,21 +47,47 @@ public class JpaDependenciesProvider implements DeploymentUnitDependenciesProvid
     @Override
     public Set<ServiceName> getDependencies(DeploymentUnit deploymentUnit) {
         Set<ServiceName> dependencies = new HashSet<>();
-        for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
-            final PersistenceUnitMetadataHolder persistenceUnits = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
-            if (persistenceUnits != null && persistenceUnits.getPersistenceUnits() != null) {
-                for (final PersistenceUnitMetadata pu : persistenceUnits.getPersistenceUnits()) {
-                    final Properties properties = pu.getProperties();
-                    final String jpaContainerManaged = properties.getProperty(Configuration.JPA_CONTAINER_MANAGED);
-                    final boolean deployPU = (jpaContainerManaged == null || Boolean.parseBoolean(jpaContainerManaged));
-                    if (deployPU) {
-                        final ServiceName serviceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
-                        dependencies.add(serviceName);
+        EarMetaData earConfig = DeploymentUtils.getTopDeploymentUnit(deploymentUnit).getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
+        // WFLY-14923 handle initialize-in-order by only adding (top level deployment) persistence units dependencies to WeldStartService.
+        // with initialize-in-order enabled WeldStartService cannot depend on persistence units contained in sub-deployments as that
+        // may violate the initialize-in-order ordering and lead to deployment failures.
+        if (earConfig != null && earConfig.getInitializeInOrder() && earConfig.getModules().size() > 1) {
+            if (deploymentUnit.getParent() == null) {
+                // WFLY-14923
+                // add Jakarta EE component dependencies on all persistence units in top level deployment unit.
+                List<ResourceRoot> resourceRoots = DeploymentUtils.getTopDeploymentUnit(deploymentUnit).getAttachmentList(Attachments.RESOURCE_ROOTS);
+                for (ResourceRoot resourceRoot : resourceRoots) {
+                    // look at resources that aren't subdeployments
+                    if (!SubDeploymentMarker.isSubDeployment(resourceRoot)) {
+                        final PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
+                        for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
+                            String jpaContainerManaged = pu.getProperties().getProperty(Configuration.JPA_CONTAINER_MANAGED);
+                            boolean deployPU = (jpaContainerManaged == null ? true : Boolean.parseBoolean(jpaContainerManaged));
+                            if (deployPU) {
+                                final ServiceName serviceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
+                                dependencies.add(serviceName);
+                            }
+                        }
                     }
                 }
             }
+        } else {
+            for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
+                final PersistenceUnitMetadataHolder persistenceUnits = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
+                if (persistenceUnits != null && persistenceUnits.getPersistenceUnits() != null) {
+                    for (final PersistenceUnitMetadata pu : persistenceUnits.getPersistenceUnits()) {
+                        final Properties properties = pu.getProperties();
+                        final String jpaContainerManaged = properties.getProperty(Configuration.JPA_CONTAINER_MANAGED);
+                        final boolean deployPU = (jpaContainerManaged == null || Boolean.parseBoolean(jpaContainerManaged));
+                        if (deployPU) {
+                            final ServiceName serviceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
+                            dependencies.add(serviceName);
+                        }
+                    }
+                }
+            }
+
         }
         return dependencies;
     }
-
 }

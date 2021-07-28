@@ -41,6 +41,7 @@
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.ee"/>
+	<module name="org.jboss.metadata.ear"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="javax.enterprise.api"/>
