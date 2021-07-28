@@ -24,8 +24,7 @@ package org.jboss.as.test.integration.domain.mixed.eap730;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.operations.common.Util.createEmptyOperation;
-import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
+import static org.jboss.as.controller.operations.common.Util.createAddOperation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,22 +45,21 @@ public class DomainAdjuster730 extends DomainAdjuster740 {
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) throws Exception {
         final List<ModelNode> ops = new ArrayList<>(super.adjustForVersion(client, profileAddress, withMasterServers));
 
-        removeMicroProfileJWT(ops, profileAddress.append(SUBSYSTEM, "microprofile-jwt-smallrye"));
-        adjustOpenTracing(ops, profileAddress.append(SUBSYSTEM, "microprofile-opentracing-smallrye"));
+        // add microprofile-config-smallrye and microprofile-opentracing-smallrye.
+        // They are removed on 7.4.0 but they are configured by default on 7.3.0
+        addMPConfig(ops, profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye"));
+        addMPOpenTracing(ops, profileAddress.append(SUBSYSTEM, "microprofile-opentracing-smallrye"));
 
         return ops;
     }
 
-    private void removeMicroProfileJWT(final List<ModelNode> ops, final PathAddress subsystem) {
-        ops.add(createRemoveOperation(subsystem));
-        ops.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.jwt-smallrye")));
+    private void addMPConfig(List<ModelNode> ops, final PathAddress subsystem) {
+        ops.add(createAddOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.config-smallrye")));
+        ops.add(createAddOperation(subsystem));
     }
 
-    private void adjustOpenTracing(final List<ModelNode> ops, final PathAddress subsystem) {
-        // jaeger resource does not exist
-        ModelNode undefineAttr = createEmptyOperation("undefine-attribute", subsystem);
-        undefineAttr.get("name").set("default-tracer");
-        ops.add(undefineAttr);
-        ops.add(createRemoveOperation(subsystem.append("jaeger-tracer", "jaeger")));
+    private void addMPOpenTracing(List<ModelNode> ops, final PathAddress subsystem) {
+        ops.add(createAddOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.opentracing-smallrye")));
+        ops.add(createAddOperation(subsystem));
     }
 }

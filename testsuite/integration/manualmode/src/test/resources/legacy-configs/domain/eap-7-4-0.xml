@@ -34,9 +34,6 @@
         <extension module="org.wildfly.extension.elytron"/>
         <extension module="org.wildfly.extension.io"/>
         <extension module="org.wildfly.extension.messaging-activemq"/>
-        <extension module="org.wildfly.extension.microprofile.config-smallrye"/>
-        <extension module="org.wildfly.extension.microprofile.jwt-smallrye"/>
-        <extension module="org.wildfly.extension.microprofile.opentracing-smallrye"/>
         <extension module="org.wildfly.extension.request-controller"/>
         <extension module="org.wildfly.extension.security.manager"/>
         <extension module="org.wildfly.extension.undertow"/>
@@ -352,13 +349,6 @@
                 <mail-session name="default" jndi-name="java:jboss/mail/Default">
                     <smtp-server outbound-socket-binding-ref="mail-smtp"/>
                 </mail-session>
-            </subsystem>
-            <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0"/>
-            <subsystem xmlns="urn:wildfly:microprofile-jwt-smallrye:1.0"/>
-            <subsystem xmlns="urn:wildfly:microprofile-opentracing-smallrye:3.0" default-tracer="jaeger">
-                <jaeger-tracer name="jaeger">
-                    <sampler-configuration sampler-type="const" sampler-param="1.0"/>
-                </jaeger-tracer>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:2.0">
                 <remote-naming/>
@@ -794,13 +784,6 @@
                 <mail-session name="default" jndi-name="java:jboss/mail/Default">
                     <smtp-server outbound-socket-binding-ref="mail-smtp"/>
                 </mail-session>
-            </subsystem>
-            <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0"/>
-            <subsystem xmlns="urn:wildfly:microprofile-jwt-smallrye:1.0"/>
-            <subsystem xmlns="urn:wildfly:microprofile-opentracing-smallrye:3.0" default-tracer="jaeger">
-                <jaeger-tracer name="jaeger">
-                    <sampler-configuration sampler-type="const" sampler-param="1.0"/>
-                </jaeger-tracer>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:modcluster:5.0">
                 <proxy name="default" advertise-socket="modcluster" listener="ajp">
@@ -1241,13 +1224,6 @@
                     <connection-factory name="RemoteConnectionFactory" entries="java:jboss/exported/jms/RemoteConnectionFactory" connectors="http-connector"/>
                     <pooled-connection-factory name="activemq-ra" entries="java:/JmsXA java:jboss/DefaultJMSConnectionFactory" connectors="in-vm" transaction="xa"/>
                 </server>
-            </subsystem>
-            <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0"/>
-            <subsystem xmlns="urn:wildfly:microprofile-jwt-smallrye:1.0"/>
-            <subsystem xmlns="urn:wildfly:microprofile-opentracing-smallrye:3.0" default-tracer="jaeger">
-                <jaeger-tracer name="jaeger">
-                    <sampler-configuration sampler-type="const" sampler-param="1.0"/>
-                </jaeger-tracer>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:2.0">
                 <remote-naming/>
@@ -1728,13 +1704,6 @@
                     <pooled-connection-factory name="activemq-ra" entries="java:/JmsXA java:jboss/DefaultJMSConnectionFactory" connectors="in-vm" transaction="xa"/>
                 </server>
             </subsystem>
-            <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0"/>
-            <subsystem xmlns="urn:wildfly:microprofile-jwt-smallrye:1.0"/>
-            <subsystem xmlns="urn:wildfly:microprofile-opentracing-smallrye:3.0" default-tracer="jaeger">
-                <jaeger-tracer name="jaeger">
-                    <sampler-configuration sampler-type="const" sampler-param="1.0"/>
-                </jaeger-tracer>
-            </subsystem>
             <subsystem xmlns="urn:jboss:domain:modcluster:5.0">
                 <proxy name="default" advertise-socket="modcluster" listener="ajp">
                     <dynamic-load-provider>
@@ -1973,20 +1942,129 @@
     <server-groups>
         <server-group name="main-server-group" profile="full">
             <jvm name="default">
-                <heap size="64m" max-size="512m"/>
+                <heap size="1000m" max-size="1000m"/>
             </jvm>
             <socket-binding-group ref="full-sockets"/>
         </server-group>
         <server-group name="other-server-group" profile="full-ha">
             <jvm name="default">
-                <heap size="64m" max-size="512m"/>
+                <heap size="1000m" max-size="1000m"/>
             </jvm>
             <socket-binding-group ref="full-ha-sockets"/>
         </server-group>
     </server-groups>
     <host-excludes>
-        <host-exclude name="WildFly10.0">
-            <host-release id="WildFly10.0"/>
+        <host-exclude name="EAP62">
+            <host-release id="EAP6.2"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.batch.jberet"/>
+                <extension module="org.wildfly.extension.bean-validation"/>
+                <extension module="org.wildfly.extension.clustering.singleton"/>
+                <extension module="org.wildfly.extension.clustering.web"/>
+                <extension module="org.wildfly.extension.core-management"/>
+                <extension module="org.wildfly.extension.datasources-agroal"/>
+                <extension module="org.wildfly.extension.discovery"/>
+                <extension module="org.wildfly.extension.ee-security"/>
+                <extension module="org.wildfly.extension.elytron"/>
+                <extension module="org.wildfly.extension.io"/>
+                <extension module="org.wildfly.extension.messaging-activemq"/>
+                <extension module="org.wildfly.extension.microprofile.config-smallrye"/>
+                <extension module="org.wildfly.extension.microprofile.health-smallrye"/>
+                <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
+                <extension module="org.wildfly.extension.microprofile.opentracing-smallrye"/>
+                <extension module="org.wildfly.extension.picketlink"/>
+                <extension module="org.wildfly.extension.request-controller"/>
+                <extension module="org.wildfly.extension.rts"/>
+                <extension module="org.wildfly.extension.security.manager"/>
+                <extension module="org.wildfly.extension.undertow"/>
+                <extension module="org.wildfly.iiop-openjdk"/>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
+            </excluded-extensions>
+        </host-exclude>
+        <host-exclude name="EAP63">
+            <host-release id="EAP6.3"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.batch.jberet"/>
+                <extension module="org.wildfly.extension.bean-validation"/>
+                <extension module="org.wildfly.extension.clustering.singleton"/>
+                <extension module="org.wildfly.extension.clustering.web"/>
+                <extension module="org.wildfly.extension.core-management"/>
+                <extension module="org.wildfly.extension.datasources-agroal"/>
+                <extension module="org.wildfly.extension.discovery"/>
+                <extension module="org.wildfly.extension.ee-security"/>
+                <extension module="org.wildfly.extension.elytron"/>
+                <extension module="org.wildfly.extension.io"/>
+                <extension module="org.wildfly.extension.messaging-activemq"/>
+                <extension module="org.wildfly.extension.microprofile.config-smallrye"/>
+                <extension module="org.wildfly.extension.microprofile.health-smallrye"/>
+                <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
+                <extension module="org.wildfly.extension.microprofile.opentracing-smallrye"/>
+                <extension module="org.wildfly.extension.request-controller"/>
+                <extension module="org.wildfly.extension.rts"/>
+                <extension module="org.wildfly.extension.security.manager"/>
+                <extension module="org.wildfly.extension.undertow"/>
+                <extension module="org.wildfly.iiop-openjdk"/>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
+            </excluded-extensions>
+        </host-exclude>
+        <host-exclude name="EAP64">
+            <host-release id="EAP6.4"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.batch.jberet"/>
+                <extension module="org.wildfly.extension.bean-validation"/>
+                <extension module="org.wildfly.extension.clustering.singleton"/>
+                <extension module="org.wildfly.extension.clustering.web"/>
+                <extension module="org.wildfly.extension.core-management"/>
+                <extension module="org.wildfly.extension.datasources-agroal"/>
+                <extension module="org.wildfly.extension.discovery"/>
+                <extension module="org.wildfly.extension.ee-security"/>
+                <extension module="org.wildfly.extension.elytron"/>
+                <extension module="org.wildfly.extension.io"/>
+                <extension module="org.wildfly.extension.messaging-activemq"/>
+                <extension module="org.wildfly.extension.microprofile.config-smallrye"/>
+                <extension module="org.wildfly.extension.microprofile.health-smallrye"/>
+                <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
+                <extension module="org.wildfly.extension.microprofile.opentracing-smallrye"/>
+                <extension module="org.wildfly.extension.request-controller"/>
+                <extension module="org.wildfly.extension.rts"/>
+                <extension module="org.wildfly.extension.security.manager"/>
+                <extension module="org.wildfly.extension.undertow"/>
+                <extension module="org.wildfly.iiop-openjdk"/>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
+            </excluded-extensions>
+        </host-exclude>
+        <host-exclude name="EAP64z">
+            <host-api-version major-version="1" minor-version="8"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.batch.jberet"/>
+                <extension module="org.wildfly.extension.bean-validation"/>
+                <extension module="org.wildfly.extension.clustering.singleton"/>
+                <extension module="org.wildfly.extension.clustering.web"/>
+                <extension module="org.wildfly.extension.core-management"/>
+                <extension module="org.wildfly.extension.datasources-agroal"/>
+                <extension module="org.wildfly.extension.discovery"/>
+                <extension module="org.wildfly.extension.ee-security"/>
+                <extension module="org.wildfly.extension.elytron"/>
+                <extension module="org.wildfly.extension.io"/>
+                <extension module="org.wildfly.extension.messaging-activemq"/>
+                <extension module="org.wildfly.extension.microprofile.config-smallrye"/>
+                <extension module="org.wildfly.extension.microprofile.health-smallrye"/>
+                <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
+                <extension module="org.wildfly.extension.microprofile.opentracing-smallrye"/>
+                <extension module="org.wildfly.extension.request-controller"/>
+                <extension module="org.wildfly.extension.rts"/>
+                <extension module="org.wildfly.extension.security.manager"/>
+                <extension module="org.wildfly.extension.undertow"/>
+                <extension module="org.wildfly.iiop-openjdk"/>
+                <extension module="org.wildfly.extension.health"/>
+                <extension module="org.wildfly.extension.metrics"/>
+            </excluded-extensions>
+        </host-exclude>
+        <host-exclude name="EAP70">
+            <host-release id="EAP7.0"/>
             <excluded-extensions>
                 <extension module="org.wildfly.extension.clustering.web"/>
                 <extension module="org.wildfly.extension.core-management"/>
@@ -1994,185 +2072,42 @@
                 <extension module="org.wildfly.extension.discovery"/>
                 <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.elytron"/>
+                <extension module="org.wildfly.extension.microprofile.config-smallrye"/>
+                <extension module="org.wildfly.extension.microprofile.health-smallrye"/>
+                <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
+                <extension module="org.wildfly.extension.microprofile.opentracing-smallrye"/>
                 <extension module="org.wildfly.extension.health"/>
                 <extension module="org.wildfly.extension.metrics"/>
-                <extension module="org.wildfly.extension.microprofile.config-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.fault-tolerance-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.health-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.jwt-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.openapi-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.opentracing-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-messaging-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"/>
             </excluded-extensions>
         </host-exclude>
-        <host-exclude name="WildFly10.1">
-            <host-release id="WildFly10.1"/>
-            <excluded-extensions>
-                <extension module="org.wildfly.extension.clustering.web"/>
-                <extension module="org.wildfly.extension.core-management"/>
-                <extension module="org.wildfly.extension.datasources-agroal"/>
-                <extension module="org.wildfly.extension.discovery"/>
-                <extension module="org.wildfly.extension.ee-security"/>
-                <extension module="org.wildfly.extension.elytron"/>
-                <extension module="org.wildfly.extension.health"/>
-                <extension module="org.wildfly.extension.metrics"/>
-                <extension module="org.wildfly.extension.microprofile.config-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.fault-tolerance-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.health-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.jwt-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.openapi-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.opentracing-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-messaging-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"/>
-            </excluded-extensions>
-        </host-exclude>
-        <host-exclude name="WildFly11.0">
-            <host-release id="WildFly11.0"/>
+        <host-exclude name="EAP71">
+            <host-release id="EAP7.1"/>
             <excluded-extensions>
                 <extension module="org.wildfly.extension.clustering.web"/>
                 <extension module="org.wildfly.extension.datasources-agroal"/>
                 <extension module="org.wildfly.extension.ee-security"/>
-                <extension module="org.wildfly.extension.health"/>
-                <extension module="org.wildfly.extension.metrics"/>
                 <extension module="org.wildfly.extension.microprofile.config-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.fault-tolerance-smallrye"/>
                 <extension module="org.wildfly.extension.microprofile.health-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.jwt-smallrye"/>
                 <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.openapi-smallrye"/>
                 <extension module="org.wildfly.extension.microprofile.opentracing-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-messaging-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"/>
-            </excluded-extensions>
-        </host-exclude>
-        <host-exclude name="WildFly12.0">
-            <host-release id="WildFly12.0"/>
-            <excluded-extensions>
-                <extension module="org.wildfly.extension.clustering.web"/>
-                <extension module="org.wildfly.extension.datasources-agroal"/>
-                <extension module="org.wildfly.extension.ee-security"/>
                 <extension module="org.wildfly.extension.health"/>
                 <extension module="org.wildfly.extension.metrics"/>
-                <extension module="org.wildfly.extension.microprofile.config-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.fault-tolerance-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.health-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.jwt-smallrye"/>
+            </excluded-extensions>
+        </host-exclude>
+        <host-exclude name="EAP72">
+            <host-release id="EAP7.2"/>
+            <excluded-extensions>
+                <extension module="org.wildfly.extension.clustering.web"/>
                 <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.openapi-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.opentracing-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-messaging-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"/>
-            </excluded-extensions>
-        </host-exclude>
-        <host-exclude name="WildFly13.0">
-            <host-release id="WildFly13.0"/>
-            <excluded-extensions>
-                <extension module="org.wildfly.extension.clustering.web"/>
-                <extension module="org.wildfly.extension.datasources-agroal"/>
                 <extension module="org.wildfly.extension.health"/>
                 <extension module="org.wildfly.extension.metrics"/>
-                <extension module="org.wildfly.extension.microprofile.config-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.fault-tolerance-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.health-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.jwt-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.openapi-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.opentracing-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-messaging-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"/>
             </excluded-extensions>
         </host-exclude>
-        <host-exclude name="WildFly14.0">
-            <host-release id="WildFly14.0"/>
-            <excluded-extensions>
-                <extension module="org.wildfly.extension.clustering.web"/>
-                <extension module="org.wildfly.extension.health"/>
-                <extension module="org.wildfly.extension.metrics"/>
-                <extension module="org.wildfly.extension.microprofile.fault-tolerance-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.jwt-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.openapi-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-messaging-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"/>
-            </excluded-extensions>
-        </host-exclude>
-        <host-exclude name="WildFly15.0">
-            <host-release id="WildFly15.0"/>
-            <excluded-extensions>
-                <extension module="org.wildfly.extension.clustering.web"/>
-                <extension module="org.wildfly.extension.health"/>
-                <extension module="org.wildfly.extension.metrics"/>
-                <extension module="org.wildfly.extension.microprofile.fault-tolerance-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.jwt-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.openapi-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-messaging-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"/>
-            </excluded-extensions>
-        </host-exclude>
-        <host-exclude name="WildFly16.0">
-            <host-release id="WildFly16.0"/>
+        <host-exclude name="EAP73">
+            <host-release id="EAP7.3"/>
             <excluded-extensions>
                 <extension module="org.wildfly.extension.health"/>
                 <extension module="org.wildfly.extension.metrics"/>
-                <extension module="org.wildfly.extension.microprofile.fault-tolerance-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.jwt-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.openapi-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-messaging-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"/>
-            </excluded-extensions>
-        </host-exclude>
-        <host-exclude name="WildFly17.0">
-            <host-release id="WildFly17.0"/>
-            <excluded-extensions>
-                <extension module="org.wildfly.extension.health"/>
-                <extension module="org.wildfly.extension.metrics"/>
-                <extension module="org.wildfly.extension.microprofile.fault-tolerance-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.jwt-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.openapi-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-messaging-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"/>
-            </excluded-extensions>
-        </host-exclude>
-        <host-exclude name="WildFly18.0">
-            <host-release id="WildFly18.0"/>
-            <excluded-extensions>
-                <extension module="org.wildfly.extension.health"/>
-                <extension module="org.wildfly.extension.metrics"/>
-                <extension module="org.wildfly.extension.microprofile.fault-tolerance-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.jwt-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.openapi-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-messaging-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"/>
-            </excluded-extensions>
-        </host-exclude>
-        <host-exclude name="WildFly19.0">
-            <host-release id="WildFly19.0"/>
-            <excluded-extensions>
-                <extension module="org.wildfly.extension.health"/>
-                <extension module="org.wildfly.extension.metrics"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-messaging-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"/>
-            </excluded-extensions>
-        </host-exclude>
-        <host-exclude name="WildFly20.0">
-            <host-release id="WildFly20.0"/>
-            <excluded-extensions>
-                <extension module="org.wildfly.extension.health"/>
-                <extension module="org.wildfly.extension.metrics"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-messaging-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"/>
-            </excluded-extensions>
-        </host-exclude>
-        <host-exclude name="WildFly21.0">
-            <host-release id="WildFly21.0"/>
-            <excluded-extensions>
-                <extension module="org.wildfly.extension.health"/>
-                <extension module="org.wildfly.extension.metrics"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-messaging-smallrye"/>
-                <extension module="org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"/>
             </excluded-extensions>
         </host-exclude>
     </host-excludes>
