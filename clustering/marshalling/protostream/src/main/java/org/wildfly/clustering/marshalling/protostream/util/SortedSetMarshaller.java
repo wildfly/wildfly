@@ -28,7 +28,6 @@ import java.util.SortedSet;
 import java.util.function.Function;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
@@ -59,7 +58,7 @@ public class SortedSetMarshaller<T extends SortedSet<Object>> extends AbstractCo
             int tag = reader.readTag();
             int index = WireType.getTagFieldNumber(tag);
             if (index == 1) {
-                set.add(reader.readObject(Any.class).get());
+                set.add(reader.readAny());
             } else if ((index >= COMPARATOR_INDEX) && (index < COMPARATOR_INDEX + ComparatorMarshaller.INSTANCE.getFields())) {
                 T existing = set;
                 comparator = (Comparator<Object>) ComparatorMarshaller.INSTANCE.readField(reader, index - COMPARATOR_INDEX, comparator);

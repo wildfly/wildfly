@@ -31,7 +31,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import javax.servlet.http.HttpServletRequest;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -73,7 +72,7 @@ public class AuthenticatedSessionMarshaller implements ProtoStreamMarshaller<Aut
                     roles.add(reader.readString());
                     break;
                 case CREDENTIAL_INDEX:
-                    credential = reader.readObject(Any.class).get();
+                    credential = reader.readAny();
                     break;
                 case ORIGINAL_INDEX:
                     original = new AccountImpl(reader.readString()).getPrincipal();
@@ -102,7 +101,7 @@ public class AuthenticatedSessionMarshaller implements ProtoStreamMarshaller<Aut
         }
         Object credential = account.getCredential();
         if (credential != null) {
-            writer.writeObject(CREDENTIAL_INDEX, new Any(credential));
+            writer.writeAny(CREDENTIAL_INDEX, credential);
         }
         Principal original = account.getOriginalPrincipal();
         if (original != null) {

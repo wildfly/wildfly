@@ -37,7 +37,7 @@ public enum Scalar implements ScalarMarshallerProvider {
     ANY(new ScalarMarshaller<Object>() {
         @Override
         public Object readFrom(ProtoStreamReader reader) throws IOException {
-            return reader.readObject(Any.class).get();
+            return reader.readAny();
         }
 
         @Override

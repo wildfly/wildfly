@@ -29,7 +29,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 import org.wildfly.clustering.marshalling.spi.util.LinkedHashMapExternalizer;
@@ -57,10 +56,10 @@ public class LinkedHashMapMarshaller extends AbstractMapMarshaller<LinkedHashMap
             int index = WireType.getTagFieldNumber(tag);
             switch (index) {
                 case KEY_INDEX:
-                    keys.add(reader.readObject(Any.class).get());
+                    keys.add(reader.readAny());
                     break;
                 case VALUE_INDEX:
-                    values.add(reader.readObject(Any.class).get());
+                    values.add(reader.readAny());
                     break;
                 case ACCESS_ORDER_INDEX:
                     map = new LinkedHashMap<>(16, 0.75f, reader.readBool());
