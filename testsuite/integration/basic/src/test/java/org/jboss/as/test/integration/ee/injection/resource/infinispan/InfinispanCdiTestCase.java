@@ -22,21 +22,13 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.infinispan;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-
-import java.lang.reflect.ReflectPermission;
-
 import javax.inject.Inject;
-import javax.management.MBeanPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.descriptor.api.Descriptors;
-import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,19 +43,6 @@ public class InfinispanCdiTestCase {
     public static Archive<?> deployment() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "infinispan-cdi.jar");
         jar.addClasses(InfinispanCdiBean.class, InfinispanCdiTestCase.class);
-        jar.setManifest(new StringAsset(
-                Descriptors.create(ManifestDescriptor.class)
-                        .attribute("Dependencies", "org.infinispan export")
-                        .exportAsString()));
-
-        jar.addAsManifestResource(createPermissionsXmlAsset(
-                new MBeanPermission("-#-[-]", "queryNames"),
-                new MBeanPermission("org.infinispan.*[jboss.infinispan:*,type=Cache]", "registerMBean"),
-                new ReflectPermission("suppressAccessChecks"),
-                new RuntimePermission("accessDeclaredMembers"),
-                new RuntimePermission("getClassLoader")
-        ), "permissions.xml");
-
         return jar;
     }
 

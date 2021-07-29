@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.infinispan;
 
+import java.util.Map;
+
 import javax.annotation.Resource;
 import javax.enterprise.context.ApplicationScoped;
-
-import org.infinispan.Cache;
 
 /**
  * @author Paul Ferraro
@@ -34,7 +34,7 @@ import org.infinispan.Cache;
 public class InfinispanCdiBean {
 
     @Resource(lookup = "java:jboss/infinispan/cache/server/default")
-    private Cache<Integer, Object> cache;
+    private Map<Integer, Object> cache;
 
     public void test() {
         try {
