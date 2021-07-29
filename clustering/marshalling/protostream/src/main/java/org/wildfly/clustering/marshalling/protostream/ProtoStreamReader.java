@@ -33,6 +33,25 @@ import org.infinispan.protostream.TagReader;
 public interface ProtoStreamReader extends ProtoStreamOperation, TagReader {
 
     /**
+     * Reads an object of an arbitrary type from this reader.
+     * @return a supplier of the unmarshalled object
+     * @throws IOException if the object could not be read with the associated marshaller.
+     */
+    default Object readAny() throws IOException {
+        return this.readObject(Any.class).get();
+    }
+
+    /**
+     * Reads an object of an arbitrary type from this reader, cast to the specified type.
+     * @param the expected type
+     * @return a supplier of the unmarshalled object
+     * @throws IOException if the object could not be read with the associated marshaller.
+     */
+    default <T> T readAny(Class<T> targetClass) throws IOException {
+        return targetClass.cast(this.readAny());
+    }
+
+    /**
      * Reads an object of the specified type from this reader.
      * @param <T> the type of the associated marshaller
      * @param targetClass the class of the associated marshaller
