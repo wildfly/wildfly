@@ -29,10 +29,11 @@ import org.eclipse.microprofile.config.spi.Converter;
  * @author <a href="mailto:mjurc@redhat.com">Michal Jurc</a> (c) 2018 Red Hat, Inc.
  */
 @Priority(101)
-public class HighPriorityStringConverter2 implements Converter<String> {
+public class HighPriorityMyStringConverter1 implements Converter<MyString> {
 
     @Override
-    public String convert(String value) {
-        return !value.isEmpty() ? "Property converted by HighPriorityStringConverter2" : null;
+    public MyString convert(String value) {
+        return !value.isEmpty() ? MyString.from("Property converted by HighPriorityStringConverter1") : null;
     }
+
 }

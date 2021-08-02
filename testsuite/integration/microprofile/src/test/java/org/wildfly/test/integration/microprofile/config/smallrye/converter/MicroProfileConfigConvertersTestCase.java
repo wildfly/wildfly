@@ -55,7 +55,8 @@ public class MicroProfileConfigConvertersTestCase extends AbstractMicroProfileCo
     @Deployment
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileConfigConvertersTestCase.war")
-                .addClasses(TestApplication.class, TestApplication.Resource.class, AbstractMicroProfileConfigTestCase.class)
+                .addClasses(TestApplication.class, TestApplication.Resource.class,
+                    AbstractMicroProfileConfigTestCase.class, MyString.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsWebInfResource(TestApplication.class.getPackage(), "jboss-deployment-structure.xml",
                         "jboss-deployment-structure.xml")
