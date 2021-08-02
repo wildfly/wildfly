@@ -22,7 +22,9 @@
 
 package org.jboss.as.test.integration.domain.mixed.eap740;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,8 +50,18 @@ public class DomainAdjuster740 extends DomainAdjuster {
 
         adjustUndertow(ops, profileAddress.append(SUBSYSTEM, "undertow"));
         adjustInfinispan(ops, profileAddress.append(SUBSYSTEM, "infinispan"));
+        // Mixed Domain tests always uses the complete build instead of alternating with ee-dist. We need to remove here
+        // the pre-configured microprofile extensions to adjust the current domain to work with a node running EAP 7.4.0
+        removeSubsystemExtension(ops, profileAddress.append(SUBSYSTEM, "microprofile-opentracing-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.opentracing-smallrye"));
+        removeSubsystemExtension(ops, profileAddress.append(SUBSYSTEM, "microprofile-jwt-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.jwt-smallrye"));
+        removeSubsystemExtension(ops, profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.config-smallrye"));
 
         return ops;
+    }
+
+    private void removeSubsystemExtension(List<ModelNode> ops, PathAddress subsystem, PathAddress extension) {
+        ops.add(createRemoveOperation(subsystem));
+        ops.add(createRemoveOperation(extension));
     }
 
     private static void adjustUndertow(final List<ModelNode> ops, final PathAddress subsystem) {
