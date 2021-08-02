@@ -92,7 +92,7 @@ public class EntityListenersTestCase {
     public void testSFSBCMT() throws Exception {
         MyListener.setInvocationCount(0);
         SFSBCMT cmt = lookup("SFSBCMT", SFSBCMT.class);
-        this.doCMTTest(cmt, 2);
+        doCMTTest(cmt, 2);
 
     }
 

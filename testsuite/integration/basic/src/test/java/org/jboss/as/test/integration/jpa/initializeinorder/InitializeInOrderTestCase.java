@@ -21,14 +21,17 @@
  */
 package org.jboss.as.test.integration.jpa.initializeinorder;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.jpa.basic.multiplepersistenceunittest.MultiplePuTestCase;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -47,30 +50,38 @@ import org.junit.runner.RunWith;
 public class InitializeInOrderTestCase {
 
     public static final List<String> initOrder = new ArrayList<String>();
+    private static final String ARCHIVE_NAME = "InitializeInOrderTestCase";
 
     @Deployment
     public static Archive<?> deployment() {
-        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "init.ear");
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
         ear.addAsResource(InitializeInOrderTestCase.class.getPackage(), "application.xml", "application.xml");
 
         final JavaArchive sharedJar = ShrinkWrap.create(JavaArchive.class, "shared.jar");
-        sharedJar.addClass(InitializeInOrderTestCase.class);
+        sharedJar.addClasses(InitializeInOrderTestCase.class,
+                Employee.class,
+                MyListener.class,
+                SingletonCMT.class
+                );
         ear.addAsLibraries(sharedJar);
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb.jar");
         jar.addClasses(MyEjb.class);
-        jar.addAsManifestResource(MultiplePuTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        jar.addAsManifestResource(InitializeInOrderTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         ear.addAsModule(jar);
 
         final JavaArchive jar2 = ShrinkWrap.create(JavaArchive.class, "ejb2.jar");
         jar2.addClasses(MyEjb2.class);
-        jar2.addAsManifestResource(MultiplePuTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        jar2.addClass(SFSBCMT.class);
+        jar2.addClass(AbstractCMTBean.class);
+        jar2.addClass(Employee.class);
+        jar2.addAsManifestResource(InitializeInOrderTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         ear.addAsModule(jar2);
 
 
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "web.war");
         war.addClass(MyServlet.class);
-        war.addAsResource( MultiplePuTestCase.class.getPackage(), "persistence.xml", "META-INF/persistence.xml");
+        war.addAsResource( InitializeInOrderTestCase.class.getPackage(), "persistence.xml", "META-INF/persistence.xml");
         ear.addAsModule(war);
 
         return ear;
@@ -83,8 +94,48 @@ public class InitializeInOrderTestCase {
         Assert.assertEquals("MyEjb", initOrder.get(1));
     }
 
+    /**
+     * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
+     * when an entity is persisted via a stateful CMT bean
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSFSBCMT() throws Exception {
+        MyListener.setInvocationCount(0);
+        // java:global/InitializeInOrderTestCase/ejb2/SFSBCMT
+        SFSBCMT cmt = lookup("ejb2/SFSBCMT", SFSBCMT.class);
+        doCMTTest(cmt, 2);
+    }
+
+    /**
+     * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
+     * when an entity is persisted via a CMT bean
+     *
+     * @param cmtBean The CMT bean
+     * @throws Exception
+     */
+    private void doCMTTest(final AbstractCMTBean cmtBean, final int empId) throws Exception {
+        cmtBean.createEmployee("Alfred E. Neuman", "101010 Mad Street", empId);
+        Employee emp = cmtBean.getEmployeeNoTX(empId);
+        cmtBean.updateEmployee(emp);
+        assertTrue("could not load added employee", emp != null);
+        assertTrue("EntityListener wasn't invoked twice as expected, instead " + MyListener.getInvocationCount(), 2 == MyListener.getInvocationCount());
+    }
+
     public static void recordInit(final String clazz) {
         initOrder.add(clazz);
+    }
+
+    @ArquillianResource
+    private static InitialContext iniCtx;
+
+    protected <T> T lookup(String beanName, Class<T> interfaceType) throws NamingException {
+        return interfaceType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanName + "!" + interfaceType.getName()));
+    }
+
+    protected <T> T rawLookup(String name, Class<T> interfaceType) throws NamingException {
+        return interfaceType.cast(iniCtx.lookup(name));
     }
 
 }
