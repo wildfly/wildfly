@@ -3,6 +3,7 @@ package org.jboss.as.test.integration.jpa.initializeinorder;
 import java.io.IOException;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -16,6 +17,8 @@ import javax.servlet.annotation.WebServlet;
 @WebServlet(name = "MyServlet", urlPatterns = {"/test"}, loadOnStartup = 1)
 public class MyServlet implements Servlet {
 
+    @Inject CdiJpaInjectingBean bean;
+
     @PostConstruct
     public void postConstruct() {
         //we wait a second, to make sure that the EJB is actually waiting for us to start, and it is not just
@@ -26,6 +29,12 @@ public class MyServlet implements Servlet {
             throw new RuntimeException(e);
         }
         InitializeInOrderTestCase.recordInit(MyServlet.class.getSimpleName());
+        if (bean != null) {
+            InitializeInOrderTestCase.gotJpaInjectingBean();
+            if (bean.entityManagerFactory() != null) {
+                InitializeInOrderTestCase.gotEntityManagerFactory();
+            }
+        }
     }
 
     @Override

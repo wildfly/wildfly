@@ -34,6 +34,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -51,12 +52,13 @@ public class InitializeInOrderTestCase {
 
     public static final List<String> initOrder = new ArrayList<String>();
     private static final String ARCHIVE_NAME = "InitializeInOrderTestCase";
+    private static boolean gotJpaInjectingBean;
+    private static boolean gotEntityManagerFactory;
 
     @Deployment
     public static Archive<?> deployment() {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
         ear.addAsResource(InitializeInOrderTestCase.class.getPackage(), "application.xml", "application.xml");
-
         final JavaArchive sharedJar = ShrinkWrap.create(JavaArchive.class, "shared.jar");
         sharedJar.addClasses(InitializeInOrderTestCase.class,
                 Employee.class,
@@ -80,8 +82,9 @@ public class InitializeInOrderTestCase {
 
 
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "web.war");
-        war.addClass(MyServlet.class);
+        war.addClasses(MyServlet.class, CdiJpaInjectingBean.class, QualifyEntityManagerFactory.class, CdiJpaInjectingBean.class);
         war.addAsResource( InitializeInOrderTestCase.class.getPackage(), "persistence.xml", "META-INF/persistence.xml");
+        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         ear.addAsModule(war);
 
         return ear;
@@ -126,6 +129,24 @@ public class InitializeInOrderTestCase {
     public static void recordInit(final String clazz) {
         initOrder.add(clazz);
     }
+
+    public static void gotJpaInjectingBean() {
+        gotJpaInjectingBean = true;
+    }
+
+    public static void gotEntityManagerFactory() {
+        gotEntityManagerFactory = true;
+    }
+
+    @Test
+    public void testInjectedPersistenceContext() throws Exception {
+        Assert.assertTrue("CdiJpaInjectingBean should be true but is",
+                gotJpaInjectingBean);
+
+        Assert.assertTrue("WFLY-6485 regression, injected EntityManagerFactory should not be null but is",
+                gotEntityManagerFactory);
+    }
+
 
     @ArquillianResource
     private static InitialContext iniCtx;
