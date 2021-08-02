@@ -44,6 +44,7 @@ public class PersonMarshaller implements ProtoStreamMarshaller<Person> {
     @Override
     public Person readFrom(ProtoStreamReader reader) throws IOException {
         Person person = new Person();
+        reader.getContext().addReference(person);
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             switch (WireType.getTagFieldNumber(tag)) {
@@ -66,6 +67,7 @@ public class PersonMarshaller implements ProtoStreamMarshaller<Person> {
 
     @Override
     public void writeTo(ProtoStreamWriter writer, Person person) throws IOException {
+        writer.getContext().addReference(person);
         String name = person.getName();
         if (name != null) {
             writer.writeString(NAME_INDEX, person.getName());

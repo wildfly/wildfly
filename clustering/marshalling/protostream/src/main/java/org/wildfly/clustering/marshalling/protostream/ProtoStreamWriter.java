@@ -35,6 +35,10 @@ import org.infinispan.protostream.descriptors.WireType;
  */
 public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 
+    default Context getContext() {
+        return ProtoStreamWriterContext.FACTORY.get().apply(this);
+    }
+
     /**
      * Writes the specified object of an abitrary type using the specified index.
      * Object will be read via {@link ProtoStreamReader#readAny()}.

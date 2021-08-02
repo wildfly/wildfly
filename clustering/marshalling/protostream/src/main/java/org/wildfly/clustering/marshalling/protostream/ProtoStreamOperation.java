@@ -29,6 +29,16 @@ import org.infinispan.protostream.ImmutableSerializationContext;
  * @author Paul Ferraro
  */
 public interface ProtoStreamOperation {
+
+    interface Context {
+        /**
+         * Records a the specified object reference, in case it is referenced again within a stream.
+         * This method is idempotent.
+         * @param object an object reference
+         */
+        void addReference(Object object);
+    }
+
     /**
      * Returns the serialization context of the associated marshaller.
      * @return an immutable serialization context
