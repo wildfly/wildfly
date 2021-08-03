@@ -390,7 +390,7 @@
         <version.org.hibernate.validator>6.0.22.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
         <!-- n.b. Infinispan Server version used for integration testing is defined separately in testsuite/integration/clustering/pom.xml -->
-        <version.org.infinispan>12.1.6.Final</version.org.infinispan>
+        <version.org.infinispan>12.1.7.Final</version.org.infinispan>
         <version.org.infinispan.protostream>4.4.1.Final</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.javassist>3.23.2-GA</version.org.javassist>
