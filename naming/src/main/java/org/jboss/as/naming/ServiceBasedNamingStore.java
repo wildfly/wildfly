@@ -183,18 +183,19 @@ public class ServiceBasedNamingStore implements NamingStore {
                 childContexts.add(childParts[lookupParts.length]);
             } else {
                 final Object binding = lookup(name.toString(), child, false);
-                final String bindingType;
-                if (binding instanceof ContextListManagedReferenceFactory) {
-                    bindingType = ContextListManagedReferenceFactory.class.cast(binding)
-                            .getInstanceClassName();
-                } else {
-                    if (binding instanceof ManagedReferenceFactory) {
-                        bindingType = ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+                if (binding != null) {
+                    final String bindingType;
+                    if (binding instanceof ContextListManagedReferenceFactory) {
+                        bindingType = ContextListManagedReferenceFactory.class.cast(binding).getInstanceClassName();
                     } else {
-                        bindingType = binding.getClass().getName();
+                        if (binding instanceof ManagedReferenceFactory) {
+                            bindingType = ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+                        } else {
+                            bindingType = binding.getClass().getName();
+                        }
                     }
+                    results.add(new NameClassPair(childParts[childParts.length - 1], bindingType));
                 }
-                results.add(new NameClassPair(childParts[childParts.length - 1],bindingType));
             }
         }
         for (String contextName : childContexts) {
