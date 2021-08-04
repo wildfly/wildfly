@@ -307,7 +307,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
         result.put(ALL_KNOWN_CLASSES, allKnownClasses);
         result.put(BEAN_CLASSES, discoveredBeanClasses);
         UrlScanner scanner = new UrlScanner(beansXmlUrl, consumer);
-        return scanner.scan() ? result : null;
+        return scanner.scan() ? result : Collections.emptyMap();
     }
 
     private Index tryLoadIndex(URL indexUrl) {
