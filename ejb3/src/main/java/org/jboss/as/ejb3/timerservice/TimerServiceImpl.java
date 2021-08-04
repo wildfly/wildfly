@@ -408,20 +408,18 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         synchronized (this.timers) {
             for (final TimerImpl timer : this.timers.values()) {
                 // Less disruptive way to get WFLY-8457 fixed.
-                if (timer.isActive() || (!timer.isActive() && timer.getState() == TimerState.ACTIVE)) {
-                    if (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk)) {
-                        activeTimers.add(timer);
-                    }
+                if ((timer.isActive() || timer.getState() == TimerState.ACTIVE)
+                        && (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk))) {
+                    activeTimers.add(timer);
                 }
             }
         }
         // get all active timers which are persistent, but haven't yet been
         // persisted (waiting for tx to complete) that are in the current transaction
         for (final TimerImpl timer : getWaitingOnTxCompletionTimers().values()) {
-            if (timer.isActive()) {
-                if (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk)) {
-                    activeTimers.add(timer);
-                }
+            if (timer.isActive()
+                    && (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk))) {
+                activeTimers.add(timer);
             }
         }
         return activeTimers;

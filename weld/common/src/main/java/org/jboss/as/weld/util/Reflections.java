@@ -74,10 +74,9 @@ public class Reflections {
     public static boolean containsAnnotation(Class<?> javaClass, Class<? extends Annotation> requiredAnnotation) {
         for (Class<?> clazz = javaClass; clazz != null && clazz != Object.class; clazz = clazz.getSuperclass()) {
             // class level annotations
-            if (clazz == javaClass || requiredAnnotation.isAnnotationPresent(Inherited.class)) {
-                if (containsAnnotations(clazz.getAnnotations(), requiredAnnotation)) {
+            if ((clazz == javaClass || requiredAnnotation.isAnnotationPresent(Inherited.class))
+                    && containsAnnotations(clazz.getAnnotations(), requiredAnnotation)) {
                     return true;
-                }
             }
             // fields
             for (Field field : clazz.getDeclaredFields()) {

@@ -69,6 +69,9 @@ public class ElytronSecurityManager implements ActiveMQSecurityManager {
             return true;
 
         final SecurityIdentity identity = this.authenticate(username, password);
+        if (identity == null) {
+            return false;
+        }
         final Set<String> filteredRoles = new HashSet<>();
         for (Role role : roles) {
             if (checkType.hasRole(role)) {

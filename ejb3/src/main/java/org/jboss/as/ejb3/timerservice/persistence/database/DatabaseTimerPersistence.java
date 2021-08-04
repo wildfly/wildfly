@@ -605,10 +605,11 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         builder.setPersistent(true);
 
         TimerImpl ret =  builder.build(timerService);
-        if(nodeName != null && (nodeName.equals(this.nodeName))) {
-            if(ret.getState() == TimerState.IN_TIMEOUT || ret.getState() == TimerState.RETRY_TIMEOUT) {
-                requiresReset = true;
-            }
+        if (nodeName != null
+                && nodeName.equals(this.nodeName)
+                && (ret.getState() == TimerState.IN_TIMEOUT ||
+                    ret.getState() == TimerState.RETRY_TIMEOUT)) {
+            requiresReset = true;
         }
         return new Holder(ret, requiresReset);
     }

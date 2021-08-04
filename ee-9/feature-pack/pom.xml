@@ -83,13 +83,14 @@
         <version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</version.org.glassfish.jaxb.jaxb-xjc>
         <version.org.apache.activemq.artemis>2.17.0</version.org.apache.activemq.artemis>
         <version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>3.0.0</version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>
-        <version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>
+        <version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>
         <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
         <version.org.hibernate.validator>7.0.1.Final</version.org.hibernate.validator>
         <version.org.jboss.activemq.artemis.integration>1.0.4</version.org.jboss.activemq.artemis.integration>
         <version.org.jboss.metadata>14.0.0.Beta1</version.org.jboss.metadata>
-        <version.org.jboss.weld.weld>4.0.1.SP1</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld>4.0.2.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>4.0.SP1</version.org.jboss.weld.weld-api>
+        <version.org.jberet>2.0.0.Final</version.org.jberet>
         <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta1</version.org.wildfly.security.jakarta.elytron-ee>
 
         <!-- TODO Glassfish uses org.glassfish:jakarta-el for this, which we use for the impl
@@ -353,7 +354,7 @@
 
         <!-- module and copy artifact dependencies -->
 
-        <!-- WildFly Core feature pack content -->
+        <!-- Deps from the source modules we copy in -->
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -361,9 +362,19 @@
             <type>pom</type>
             <scope>provided</scope>
             <exclusions>
+                <!-- Exclude deps that have been replaced with different artifacts in this FP.
+                     TODO perhaps put these in a different maven module that we don't pull in -->
                 <exclusion>
                     <groupId>org.glassfish</groupId>
                     <artifactId>jakarta.json</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.security</groupId>
+                    <artifactId>wildfly-elytron-jacc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.security</groupId>
+                    <artifactId>wildfly-elytron-jaspi</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -390,13 +401,43 @@
             <type>pom</type>
             <scope>provided</scope>
             <exclusions>
+                <!-- Exclude deps that have been replaced with different artifacts in this FP
+                     TODO perhaps put these in a different maven module that we don't pull in -->
                 <exclusion>
-                    <groupId>org.glassfish.jaxb</groupId>
-                    <artifactId>jaxb-xjc</artifactId>
+                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                    <artifactId>jackson-jaxrs-base</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                    <artifactId>jackson-jaxrs-json-provider</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-jaxb-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.activemq</groupId>
+                    <artifactId>artemis-jms-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.activemq</groupId>
+                    <artifactId>artemis-jms-server</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.activemq</groupId>
+                    <artifactId>artemis-ra</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.activemq</groupId>
+                    <artifactId>artemis-service-extensions</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.bouncycastle</groupId>
                     <artifactId>bcmail-jdk15on</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.glassfish.jaxb</groupId>
+                    <artifactId>jaxb-xjc</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -648,6 +689,16 @@
             <artifactId>jackson-jaxrs-json-provider</artifactId>
             <version>${version.com.fasterxml.jackson}</version>
             <classifier>jakarta</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                    <artifactId>jackson-jaxrs-base</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-jaxb-annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- also need JAXB annotation support -->
         <dependency>
@@ -766,6 +817,23 @@
             <artifactId>jakarta.faces-api</artifactId>
             <version>${version.jakarta.faces.jakarta-faces-api}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jberet</groupId>
+            <artifactId>jberet-core</artifactId>
+            <version>${version.org.jberet}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.logging</groupId>
+                    <artifactId>jboss-logging-processor</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.marshalling</groupId>
+                    <artifactId>jboss-marshalling</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!--<dependency>

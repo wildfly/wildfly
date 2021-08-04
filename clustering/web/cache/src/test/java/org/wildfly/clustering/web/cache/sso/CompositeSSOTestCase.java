@@ -78,7 +78,7 @@ public class CompositeSSOTestCase {
 
         result = this.sso.getLocalContext();
 
-        verifyZeroInteractions(this.localContextFactory);
+        verifyNoInteractions(this.localContextFactory);
 
         assertSame(expected, result);
     }

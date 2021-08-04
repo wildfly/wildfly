@@ -41,6 +41,7 @@ import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -90,19 +91,20 @@ class MailSessionAdd extends AbstractAddStepHandler {
         installRuntimeServices(context, address, fullTree);
     }
 
-    private static void addCredentialStoreReference(ServerConfig serverConfig, OperationContext context, ModelNode model, ServiceBuilder serviceBuilder, String... modelFilter) throws OperationFailedException {
+    private static void addCredentialStoreReference(ServerConfig serverConfig, OperationContext context, ModelNode model, ServiceBuilder serviceBuilder, final PathElement credRefParentAddress) throws OperationFailedException {
         if (serverConfig != null) {
+            final String servertype = credRefParentAddress.getKey();
+            final String serverprotocol = credRefParentAddress.getValue();
             ModelNode filteredModelNode = model;
-            if (modelFilter != null && modelFilter.length > 0) {
-                for (String path : modelFilter) {
-                    if (filteredModelNode.get(path).isDefined())
-                        filteredModelNode = filteredModelNode.get(path);
-                    else
-                        break;
-                }
+
+            if (filteredModelNode.hasDefined(servertype, serverprotocol)) {
+                filteredModelNode = filteredModelNode.get(servertype, serverprotocol);
+            } else {
+                return;
             }
+
+            String keySuffix = servertype + KEY_DELIMITER + serverprotocol;
             ModelNode value = MailServerDefinition.CREDENTIAL_REFERENCE.resolveModelAttribute(context, filteredModelNode);
-            String keySuffix = modelFilter[0] + KEY_DELIMITER + modelFilter[1];
             if (value.isDefined()) {
                 serverConfig.getCredentialSourceSupplierInjector()
                         .inject(
@@ -120,16 +122,16 @@ class MailSessionAdd extends AbstractAddStepHandler {
 
         final CapabilityServiceBuilder mailSessionBuilder = serviceTarget.addCapability(SESSION_CAPABILITY.fromBaseCapability(address.getLastElement().getValue())).setInstance(service);
         addOutboundSocketDependency(service, mailSessionBuilder, config.getImapServer());
-        addCredentialStoreReference(config.getImapServer(), context, fullModel, mailSessionBuilder, MailSubsystemModel.IMAP_SERVER_PATH.getKey(), MailSubsystemModel.IMAP_SERVER_PATH.getValue());
+        addCredentialStoreReference(config.getImapServer(), context, fullModel, mailSessionBuilder, MailSubsystemModel.IMAP_SERVER_PATH);
         addOutboundSocketDependency(service, mailSessionBuilder, config.getPop3Server());
-        addCredentialStoreReference(config.getPop3Server(), context, fullModel, mailSessionBuilder, MailSubsystemModel.POP3_SERVER_PATH.getKey(), MailSubsystemModel.POP3_SERVER_PATH.getValue());
+        addCredentialStoreReference(config.getPop3Server(), context, fullModel, mailSessionBuilder, MailSubsystemModel.POP3_SERVER_PATH);
         addOutboundSocketDependency(service, mailSessionBuilder, config.getSmtpServer());
-        addCredentialStoreReference(config.getSmtpServer(), context, fullModel, mailSessionBuilder, MailSubsystemModel.SMTP_SERVER_PATH.getKey(), MailSubsystemModel.SMTP_SERVER_PATH.getValue());
+        addCredentialStoreReference(config.getSmtpServer(), context, fullModel, mailSessionBuilder, MailSubsystemModel.SMTP_SERVER_PATH);
         for (CustomServerConfig server : config.getCustomServers()) {
             if (server.getOutgoingSocketBinding() != null) {
                 addOutboundSocketDependency(service, mailSessionBuilder, server);
             }
-            addCredentialStoreReference(server, context, fullModel, mailSessionBuilder, MailSubsystemModel.CUSTOM_SERVER_PATH.getKey(), server.getProtocol());
+            addCredentialStoreReference(server, context, fullModel, mailSessionBuilder, PathElement.pathElement(MailSubsystemModel.CUSTOM_SERVER_PATH.getKey(), server.getProtocol()));
         }
         mailSessionBuilder.addAliases(MAIL_SESSION_SERVICE_NAME.append(address.getLastElement().getValue()));
 

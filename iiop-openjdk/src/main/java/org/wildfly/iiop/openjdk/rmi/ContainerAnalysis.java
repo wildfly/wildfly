@@ -293,9 +293,9 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
         Class returnType = m.getReturnType();
         // JBAS-4473, look for get<name>()
         String name = m.getName();
-        if (!(name.startsWith("get") && name.length() > "get".length()))
-            if (!(name.startsWith("is") && name.length() > "is".length())
-                    || !(returnType == Boolean.TYPE))
+        if (!(name.startsWith("get") && name.length() > "get".length())
+            && (!(name.startsWith("is") && name.length() > "is".length())
+                    || !(returnType == Boolean.TYPE)))
                 return false;
         if (returnType == Void.TYPE)
             return false;

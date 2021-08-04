@@ -96,7 +96,7 @@ public class JandexAnnotationRepositoryImpl implements AnnotationRepository {
             }
         }
         annotations.trimToSize();
-        if (annotations.size() == 0) {
+        if (annotations.isEmpty()) {
             return null;
         } else {
             return Collections.unmodifiableList(annotations);

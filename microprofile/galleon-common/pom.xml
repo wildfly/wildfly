@@ -150,6 +150,16 @@
         </dependency>
         <dependency>
             <groupId>io.smallrye</groupId>
+            <artifactId>smallrye-fault-tolerance-autoconfig-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye</groupId>
             <artifactId>smallrye-fault-tolerance-core</artifactId>
             <exclusions>
                 <exclusion>
@@ -865,6 +875,26 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>        </dependency>
+
+        <dependency>
+            <groupId>com.squareup.okio</groupId>
+            <artifactId>okio</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>        </dependency>
 
         <dependency>
             <groupId>io.jaegertracing</groupId>

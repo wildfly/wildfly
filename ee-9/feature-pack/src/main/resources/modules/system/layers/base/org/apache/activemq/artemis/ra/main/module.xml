@@ -34,11 +34,11 @@
         <module name="java.desktop"/>
         <module name="java.management"/>
         <module name="java.naming"/>
-        <module name="jakarta.transaction.api"/>
+        <module name="javax.transaction.api"/>
         <module name="io.netty"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
-        <module name="jakarta.jms.api"/>
-        <module name="jakarta.resource.api"/>
+        <module name="javax.jms.api"/>
+        <module name="javax.resource.api"/>
         <module name="org.apache.activemq.artemis"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.jts"/>

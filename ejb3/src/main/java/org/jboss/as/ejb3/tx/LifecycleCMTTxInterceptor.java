@@ -130,14 +130,14 @@ public class LifecycleCMTTxInterceptor extends CMTTxInterceptor {
             if (treatRequiredAsRequiresNew && txAttr == TransactionAttributeType.REQUIRED) {
                 txAttr = TransactionAttributeType.REQUIRES_NEW;
             }
-            if(!treatRequiredAsRequiresNew ) {
-                if(txAttr != TransactionAttributeType.NOT_SUPPORTED &&
-                        txAttr != TransactionAttributeType.REQUIRES_NEW) {
-                    if(ejb.isTransactionAttributeTypeExplicit(MethodIntf.BEAN, methodIdentifier)) {
-                        EjbLogger.ROOT_LOGGER.invalidTransactionTypeForSfsbLifecycleMethod(txAttr, methodIdentifier, ejb.getComponentClass());
-                    }
-                    txAttr = TransactionAttributeType.NOT_SUPPORTED;
+            if (!treatRequiredAsRequiresNew
+                    && txAttr != TransactionAttributeType.NOT_SUPPORTED
+                    && txAttr != TransactionAttributeType.REQUIRES_NEW) {
+                if (ejb.isTransactionAttributeTypeExplicit(MethodIntf.BEAN, methodIdentifier)) {
+                    EjbLogger.ROOT_LOGGER.invalidTransactionTypeForSfsbLifecycleMethod(txAttr, methodIdentifier,
+                            ejb.getComponentClass());
                 }
+                txAttr = TransactionAttributeType.NOT_SUPPORTED;
             }
             final LifecycleCMTTxInterceptor interceptor = new LifecycleCMTTxInterceptor(txAttr, txTimeout);
             return interceptor;

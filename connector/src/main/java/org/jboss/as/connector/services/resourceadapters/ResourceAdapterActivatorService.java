@@ -202,7 +202,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
                 if (ra != null && ra.getOutboundResourceadapter() != null
                         && ra.getOutboundResourceadapter().getConnectionDefinitions() != null) {
                     List<org.jboss.jca.common.api.metadata.spec.ConnectionDefinition> cdMetas = ra.getOutboundResourceadapter().getConnectionDefinitions();
-                    if (cdMetas.size() > 0) {
+                    if (!cdMetas.isEmpty()) {
                         for (org.jboss.jca.common.api.metadata.spec.ConnectionDefinition cdMeta : cdMetas) {
                             raMcfClasses.add(cdMeta.getManagedConnectionFactoryClass().getValue());
                         }
@@ -211,7 +211,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
 
                 if (ra != null && ra.getAdminObjects() != null) {
                     List<org.jboss.jca.common.api.metadata.spec.AdminObject> aoMetas = ra.getAdminObjects();
-                    if (aoMetas.size() > 0) {
+                    if (!aoMetas.isEmpty()) {
                         for (org.jboss.jca.common.api.metadata.spec.AdminObject aoMeta : aoMetas) {
                             raAoClasses.add(aoMeta.getAdminobjectClass().getValue());
                         }
@@ -219,7 +219,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
                 }
 
                 // Pure inflow
-                if (raMcfClasses.size() == 0 && raAoClasses.size() == 0)
+                if (raMcfClasses.isEmpty() && raAoClasses.isEmpty())
                     return true;
 
 

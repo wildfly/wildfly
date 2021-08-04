@@ -167,7 +167,7 @@ public class MessagingTransformers {
         @Override
         protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
             double value = attributeValue.asDouble(RETRY_INTERVAL_MULTIPLIER.getDefaultValue().asDouble());
-            attributeValue.set(new BigDecimal(value));
+            attributeValue.set(BigDecimal.valueOf(value));
         }
     }
 

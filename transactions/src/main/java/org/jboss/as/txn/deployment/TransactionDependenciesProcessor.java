@@ -71,7 +71,7 @@ public class TransactionDependenciesProcessor implements DeploymentUnitProcessor
         final List<AnnotationInstance> transactionalAnnotations = compositeIndex.getAnnotations(DotName.createSimple(Transactional.class.getName()));
         final List<AnnotationInstance> transactionScopedAnnotations = compositeIndex.getAnnotations(DotName.createSimple(TransactionScoped.class.getName()));
 
-        if (transactionalAnnotations.size() > 0 || transactionScopedAnnotations.size() > 0) {
+        if (!transactionalAnnotations.isEmpty() || !transactionScopedAnnotations.isEmpty()) {
             addJTSModuleDependencyToDeployment(unit);
         }
     }

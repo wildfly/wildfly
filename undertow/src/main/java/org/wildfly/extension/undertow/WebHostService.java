@@ -71,7 +71,7 @@ final class WebHostService implements Service<WebHost>, WebHost {
         d.setDeploymentName(webDeploymentBuilder.getContextRoot());
         d.setContextPath(webDeploymentBuilder.getContextRoot());
         d.setClassLoader(webDeploymentBuilder.getClassLoader());
-        d.setResourceManager(new PathResourceManager(webDeploymentBuilder.getDocumentRoot().toPath().toAbsolutePath(), 1024 * 1024));
+        d.setResourceManager(new PathResourceManager(webDeploymentBuilder.getDocumentRoot().toPath().toAbsolutePath(), 1024L * 1024L));
         d.setIgnoreFlush(false);
         for (ServletBuilder servlet : webDeploymentBuilder.getServlets()) {
             ServletInfo s;

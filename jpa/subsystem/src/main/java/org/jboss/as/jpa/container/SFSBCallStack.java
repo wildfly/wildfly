@@ -112,7 +112,7 @@ public class SFSBCallStack {
      */
     public static Map<String, ExtendedEntityManager> currentSFSBCallStackInvocation() {
         ArrayList<Map<String, ExtendedEntityManager>> stack = CURRENT.get().invocationStack;
-        if ( stack != null && stack.size() > 0) {
+        if ( stack != null && !stack.isEmpty()) {
             return stack.get(stack.size() - 1);
         }
         return null;

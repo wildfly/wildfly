@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.test.integration.microprofile.config.smallrye.converter;
 
-import javax.annotation.Priority;
+package org.jboss.as.test.integration.ee.injection.resource.infinispan;
 
-import org.eclipse.microprofile.config.spi.Converter;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
- * @author <a href="mailto:mjurc@redhat.com">Michal Jurc</a> (c) 2018 Red Hat, Inc.
+ * @author Paul Ferraro
  */
-@Priority(101)
-public class HighPriorityStringConverter1 implements Converter<String> {
+@ApplicationScoped
+public class InfinispanCdiBean {
 
-    @Override
-    public String convert(String value) {
-        return !value.isEmpty() ? "Property converted by HighPriorityStringConverter1" : null;
+    @Resource(lookup = "java:jboss/infinispan/cache/server/default")
+    private Map<Integer, Object> cache;
+
+    public void test() {
+        try {
+            // Test simple value
+            this.cache.put(1, "test");
+            // Test custom type
+            this.cache.put(2, new Bean());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    public static class Bean implements java.io.Serializable {
+        private static final long serialVersionUID = -7265704761812104791L;
+    }
 }

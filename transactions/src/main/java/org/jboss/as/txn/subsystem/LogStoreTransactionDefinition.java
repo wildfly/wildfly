@@ -22,7 +22,6 @@
 
 package org.jboss.as.txn.subsystem;
 
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -56,7 +55,7 @@ class LogStoreTransactionDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         for (SimpleAttributeDefinition def : TRANSACTION_ATTRIBUTE) {
-            resourceRegistration.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
+            resourceRegistration.registerReadOnlyAttribute(def, null);
         }
     }
 }

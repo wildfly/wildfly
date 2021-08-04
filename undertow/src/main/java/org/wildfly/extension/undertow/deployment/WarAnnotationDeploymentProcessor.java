@@ -153,7 +153,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         WebMetaData metaData = new WebMetaData();
         // @WebServlet
         final List<AnnotationInstance> webServletAnnotations = index.getAnnotations(webServlet);
-        if (webServletAnnotations != null && webServletAnnotations.size() > 0) {
+        if (webServletAnnotations != null && !webServletAnnotations.isEmpty()) {
             ServletsMetaData servlets = new ServletsMetaData();
             List<ServletMappingMetaData> servletMappings = new ArrayList<ServletMappingMetaData>();
             for (final AnnotationInstance annotation : webServletAnnotations) {
@@ -231,7 +231,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                         urlPatterns.add(urlPattern);
                     }
                 }
-                if (urlPatterns.size() > 0) {
+                if (!urlPatterns.isEmpty()) {
                     servletMapping.setUrlPatterns(urlPatterns);
                     servletMappings.add(servletMapping);
                 }
@@ -242,7 +242,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         }
         // @WebFilter
         final List<AnnotationInstance> webFilterAnnotations = index.getAnnotations(webFilter);
-        if (webFilterAnnotations != null && webFilterAnnotations.size() > 0) {
+        if (webFilterAnnotations != null && !webFilterAnnotations.isEmpty()) {
             FiltersMetaData filters = new FiltersMetaData();
             List<FilterMappingMetaData> filterMappings = new ArrayList<FilterMappingMetaData>();
             for (final AnnotationInstance annotation : webFilterAnnotations) {
@@ -319,7 +319,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                         urlPatterns.add(urlPattern);
                     }
                 }
-                if (urlPatterns.size() > 0) {
+                if (!urlPatterns.isEmpty()) {
                     filterMapping.setUrlPatterns(urlPatterns);
                 }
                 AnnotationValue servletNamesValue = annotation.value("servletNames");
@@ -328,7 +328,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                         servletNames.add(servletName);
                     }
                 }
-                if (servletNames.size() > 0) {
+                if (!servletNames.isEmpty()) {
                     filterMapping.setServletNames(servletNames);
                 }
                 AnnotationValue dispatcherTypesValue = annotation.value("dispatcherTypes");
@@ -337,10 +337,10 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                         dispatchers.add(DispatcherType.valueOf(dispatcherValue));
                     }
                 }
-                if (dispatchers.size() > 0) {
+                if (!dispatchers.isEmpty()) {
                     filterMapping.setDispatchers(dispatchers);
                 }
-                if (urlPatterns.size() > 0 || servletNames.size() > 0) {
+                if (!urlPatterns.isEmpty() || !servletNames.isEmpty()) {
                     filterMappings.add(filterMapping);
                 }
             }
@@ -349,7 +349,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         }
         // @WebListener
         final List<AnnotationInstance> webListenerAnnotations = index.getAnnotations(webListener);
-        if (webListenerAnnotations != null && webListenerAnnotations.size() > 0) {
+        if (webListenerAnnotations != null && !webListenerAnnotations.isEmpty()) {
             List<ListenerMetaData> listeners = new ArrayList<ListenerMetaData>();
             for (final AnnotationInstance annotation : webListenerAnnotations) {
                 ListenerMetaData listener = new ListenerMetaData();
@@ -372,7 +372,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         }
         // @RunAs
         final List<AnnotationInstance> runAsAnnotations = index.getAnnotations(runAs);
-        if (runAsAnnotations != null && runAsAnnotations.size() > 0) {
+        if (runAsAnnotations != null && !runAsAnnotations.isEmpty()) {
             AnnotationsMetaData annotations = metaData.getAnnotations();
             if (annotations == null) {
                annotations = new AnnotationsMetaData();
@@ -400,7 +400,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         }
         // @DeclareRoles
         final List<AnnotationInstance> declareRolesAnnotations = index.getAnnotations(declareRoles);
-        if (declareRolesAnnotations != null && declareRolesAnnotations.size() > 0) {
+        if (declareRolesAnnotations != null && !declareRolesAnnotations.isEmpty()) {
             SecurityRolesMetaData securityRoles = metaData.getSecurityRoles();
             if (securityRoles == null) {
                securityRoles = new SecurityRolesMetaData();
@@ -419,7 +419,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         }
         // @MultipartConfig
         final List<AnnotationInstance> multipartConfigAnnotations = index.getAnnotations(multipartConfig);
-        if (multipartConfigAnnotations != null && multipartConfigAnnotations.size() > 0) {
+        if (multipartConfigAnnotations != null && !multipartConfigAnnotations.isEmpty()) {
             AnnotationsMetaData annotations = metaData.getAnnotations();
             if (annotations == null) {
                annotations = new AnnotationsMetaData();
@@ -459,7 +459,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         }
         // @ServletSecurity
         final List<AnnotationInstance> servletSecurityAnnotations = index.getAnnotations(servletSecurity);
-        if (servletSecurityAnnotations != null && servletSecurityAnnotations.size() > 0) {
+        if (servletSecurityAnnotations != null && !servletSecurityAnnotations.isEmpty()) {
             AnnotationsMetaData annotations = metaData.getAnnotations();
             if (annotations == null) {
                annotations = new AnnotationsMetaData();

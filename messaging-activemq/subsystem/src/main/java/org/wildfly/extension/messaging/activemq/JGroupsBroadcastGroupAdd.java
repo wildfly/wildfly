@@ -69,18 +69,19 @@ public class JGroupsBroadcastGroupAdd extends AbstractAddStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         CommonAttributes.renameChannelToCluster(operation);
-        if (operation.hasDefined(JGROUPS_CLUSTER.getName())) {
-            if (operation.hasDefined(JGROUPS_CHANNEL_FACTORY.getName()) && !operation.hasDefined(JGROUPS_CHANNEL.getName())) {
-                // Handle legacy behavior
-                String channel = operation.get(JGROUPS_CLUSTER.getName()).asString();
-                operation.get(JGROUPS_CHANNEL.getName()).set(channel);
+        if (operation.hasDefined(JGROUPS_CLUSTER.getName())
+                && operation.hasDefined(JGROUPS_CHANNEL_FACTORY.getName())
+                && !operation.hasDefined(JGROUPS_CHANNEL.getName())) {
+            // Handle legacy behavior
+            String channel = operation.get(JGROUPS_CLUSTER.getName()).asString();
+            operation.get(JGROUPS_CHANNEL.getName()).set(channel);
 
-                PathAddress channelAddress = context.getCurrentAddress().getParent().getParent().getParent().append(ModelDescriptionConstants.SUBSYSTEM, "jgroups").append("channel", channel);
-                ModelNode addChannelOperation = Util.createAddOperation(channelAddress);
-                addChannelOperation.get("stack").set(operation.get(JGROUPS_CHANNEL_FACTORY.getName()));
-                // Fabricate a channel resource if it is missing
-                context.addStep(addChannelOperation, AddIfAbsentStepHandler.INSTANCE, OperationContext.Stage.MODEL);
-            }
+            PathAddress channelAddress = context.getCurrentAddress().getParent().getParent().getParent()
+                    .append(ModelDescriptionConstants.SUBSYSTEM, "jgroups").append("channel", channel);
+            ModelNode addChannelOperation = Util.createAddOperation(channelAddress);
+            addChannelOperation.get("stack").set(operation.get(JGROUPS_CHANNEL_FACTORY.getName()));
+            // Fabricate a channel resource if it is missing
+            context.addStep(addChannelOperation, AddIfAbsentStepHandler.INSTANCE, OperationContext.Stage.MODEL);
         }
         if(needLegacyCall) {
             PathAddress target = context.getCurrentAddress().getParent().append(CommonAttributes.BROADCAST_GROUP, context.getCurrentAddressValue());

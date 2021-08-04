@@ -60,7 +60,7 @@ public class TransactionalBatcherTestCase {
         TransactionBatch result = this.batcher.createBatch();
 
         verify(existingBatch).interpose();
-        verifyZeroInteractions(this.tm);
+        verifyNoInteractions(this.tm);
 
         assertSame(existingBatch, result);
     }
@@ -289,10 +289,10 @@ public class TransactionalBatcherTestCase {
         TransactionalBatcher.setCurrentBatch(batch);
 
         try (BatchContext context = this.batcher.resumeBatch(null)) {
-            verifyZeroInteractions(this.tm);
+            verifyNoInteractions(this.tm);
             assertNull(TransactionalBatcher.getCurrentBatch());
         }
-        verifyZeroInteractions(this.tm);
+        verifyNoInteractions(this.tm);
         assertSame(batch, TransactionalBatcher.getCurrentBatch());
     }
 
@@ -303,10 +303,10 @@ public class TransactionalBatcherTestCase {
         TransactionBatch batch = mock(TransactionBatch.class);
 
         try (BatchContext context = this.batcher.resumeBatch(batch)) {
-            verifyZeroInteractions(this.tm);
+            verifyNoInteractions(this.tm);
             assertSame(batch, TransactionalBatcher.getCurrentBatch());
         }
-        verifyZeroInteractions(this.tm);
+        verifyNoInteractions(this.tm);
         assertSame(existingBatch, TransactionalBatcher.getCurrentBatch());
     }
 

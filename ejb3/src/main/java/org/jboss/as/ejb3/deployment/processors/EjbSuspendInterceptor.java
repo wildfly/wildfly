@@ -48,10 +48,10 @@ public class EjbSuspendInterceptor extends AbstractEJBInterceptor {
         EJBComponent component = getComponent(context, EJBComponent.class);
         ControlPoint entryPoint = component.getControlPoint();
         RunResult result = entryPoint.beginRequest();
-        if (result == RunResult.REJECTED) {
+        if (result == RunResult.REJECTED
+                && !component.getEjbSuspendHandlerService().acceptInvocation(context)) {
             // if control point rejected, check with suspend handler
-            if (!component.getEjbSuspendHandlerService().acceptInvocation(context))
-                throw EjbLogger.ROOT_LOGGER.containerSuspended();
+            throw EjbLogger.ROOT_LOGGER.containerSuspended();
         }
         try {
             return context.proceed();

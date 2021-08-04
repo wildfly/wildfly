@@ -82,17 +82,14 @@ public class J2EEDeployedObjectHandlers extends Handler {
             }
             addMatchingObjectName(names, name, objName);
 
-            if (deploymentName.endsWith(".ear")) {
-                if (deployment.hasDefined(SUBDEPLOYMENT)) {
-                    for (Property prop : deployment.get(SUBDEPLOYMENT).asPropertyList()) {
-                        final ModelNode subDep = prop.getValue();
-                        final String subObjName = createObjectName(
-                                deploymentName,
-                                prop.getName(),
-                                subDep.hasDefined(SUBSYSTEM) ? subDep.get(SUBSYSTEM).asString() : null);
+            if (deploymentName.endsWith(".ear")
+                    && deployment.hasDefined(SUBDEPLOYMENT)) {
+                for (Property prop : deployment.get(SUBDEPLOYMENT).asPropertyList()) {
+                    final ModelNode subDep = prop.getValue();
+                    final String subObjName = createObjectName(deploymentName, prop.getName(),
+                            subDep.hasDefined(SUBSYSTEM) ? subDep.get(SUBSYSTEM).asString() : null);
 
-                        addMatchingObjectName(names, name, subObjName);
-                    }
+                    addMatchingObjectName(names, name, subObjName);
                 }
             }
         }

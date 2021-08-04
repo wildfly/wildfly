@@ -86,19 +86,18 @@ public class AgroalTransformers implements ExtensionTransformerRegistration {
 
         @Override
         protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            if (attributeValue.isDefined()) {
-                if (attributeValue.hasDefined(CREDENTIAL_REFERENCE.getName())) {
-                    ModelNode credentialReference = attributeValue.get(CREDENTIAL_REFERENCE.getName());
-                    String store = null;
-                    String secret = null;
-                    if (credentialReference.hasDefined(STORE)) {
-                        store = credentialReference.get(STORE).asString();
-                    }
-                    if (credentialReference.hasDefined(CLEAR_TEXT)) {
-                        secret = credentialReference.get(CLEAR_TEXT).asString();
-                    }
-                    return store != null && secret != null;
+            if (attributeValue.isDefined()
+                    && attributeValue.hasDefined(CREDENTIAL_REFERENCE.getName())) {
+                ModelNode credentialReference = attributeValue.get(CREDENTIAL_REFERENCE.getName());
+                String store = null;
+                String secret = null;
+                if (credentialReference.hasDefined(STORE)) {
+                    store = credentialReference.get(STORE).asString();
                 }
+                if (credentialReference.hasDefined(CLEAR_TEXT)) {
+                    secret = credentialReference.get(CLEAR_TEXT).asString();
+                }
+                return store != null && secret != null;
             }
             return false;
         }

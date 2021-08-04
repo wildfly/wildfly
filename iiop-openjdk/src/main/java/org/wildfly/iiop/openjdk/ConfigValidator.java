@@ -158,11 +158,12 @@ public class ConfigValidator {
         // validate the elytron initializer configuration: it requires an authentication-context name.
         final ModelNode securityInitializerNode = IIOPRootDefinition.SECURITY.resolveModelAttribute(context, resourceModel);
         final ModelNode authContextNode = IIOPRootDefinition.AUTHENTICATION_CONTEXT.resolveModelAttribute(context, resourceModel);
-        if (!securityInitializerNode.isDefined() || !securityInitializerNode.asString().equalsIgnoreCase(Constants.ELYTRON)) {
-            if (authContextNode.isDefined()) {
-                // authentication-context has been specified but is ineffective because the security initializer is not set to 'elytron'.
-                throw IIOPLogger.ROOT_LOGGER.ineffectiveAuthenticationContextConfiguration();
-            }
+        if ((!securityInitializerNode.isDefined()
+                || !securityInitializerNode.asString().equalsIgnoreCase(Constants.ELYTRON))
+                && authContextNode.isDefined()) {
+            // authentication-context has been specified but is ineffective because the security initializer is not set to
+            // 'elytron'.
+            throw IIOPLogger.ROOT_LOGGER.ineffectiveAuthenticationContextConfiguration();
         }
     }
 }

@@ -85,7 +85,7 @@ public class XTSDependenciesDeploymentProcessor implements DeploymentUnitProcess
 
     private boolean isCompensationAnnotationPresent(final CompositeIndex compositeIndex) {
         for (Class annotation : COMPENSATABLE_ANNOTATIONS) {
-            if (compositeIndex.getAnnotations(DotName.createSimple(annotation.getName())).size() > 0) {
+            if (!compositeIndex.getAnnotations(DotName.createSimple(annotation.getName())).isEmpty()) {
                 return true;
             }
         }

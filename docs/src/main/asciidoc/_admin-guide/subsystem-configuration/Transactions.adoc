@@ -1,0 +1,444 @@
+[[Transactions_Subsystem]]
+= Transactions subsystem configuration
+
+*Required extension:*
+
+[source,xml,options="nowrap"]
+----
+<extension module="org.jboss.as.transactions"/>
+----
+
+*Basic subsystem configuration example:*
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:jboss:domain:transactions:6.0">
+  <core-environment node-identifier="${jboss.tx.node.id:1}">
+    <process-id>
+      <uuid/>
+    </process-id>
+  </core-environment>
+  <recovery-environment socket-binding="txn-recovery-environment"
+                        status-socket-binding="txn-status-manager"/>
+   <coordinator-environment statistics-enabled="${wildfly.transactions.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
+  <object-store path="tx-object-store"
+                relative-to="jboss.server.data.dir"/>
+</subsystem>
+----
+
+== Transaction subsystem configuration
+
+Transaction subsystem configures the behaviour of the transaction manager.
+https://narayana.io/[Narayana] is the transaction manager used in WildFly.
+The second component configured within the subsystem is
+https://github.com/wildfly/wildfly-transaction-client[WildFly Transaction Client]
+(the WFTC serves as an abstract layer to work with the transactional context).
+
+=== Configuration of Narayana component
+
+The structure of the transaction subsystem follows the structure of Narayana component.
+Narayana defines a separate configuration bean for every
+https://jbossts.blogspot.com/2018/01/narayana-periodic-recovery-of-xa.html#configuration[internal module].
+For example any configuration related to Narayana core is available through beans
+https://github.com/jbosstm/narayana/blob/master.Final/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/common/CoordinatorEnvironmentBean.java[CoordinatorEnvironmentBean] and
+https://github.com/jbosstm/narayana/blob/master.Final/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/common/CoreEnvironmentBean.java[CoreEnvironmentBean],
+for JTA processing it is
+https://github.com/jbosstm/narayana/blob/master.Final/ArjunaJTA/jta/classes/com/arjuna/ats/jta/common/JTAEnvironmentBean.java[JTAEnvironmentBean],
+for the transaction recovery setup it's
+https://github.com/jbosstm/narayana/blob/master.Final/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/common/RecoveryEnvironmentBean.java[RecoveryEnvironmentBean].
+
+The transaction subsystem provides only a sub-set of the configuration available via Narayana beans.
+Any other configuration option provided by Narayana is still possible to be configured via
+link:./#system-properties[system properties] and JVM restart is usually required.
+
+Narayana defines unified naming for the system properties which are used for configuration.
+The system property is in form `[bean name].[property name]`. For example, the system property with name
+https://github.com/jbosstm/narayana/blob/master.Final/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/common/RecoveryEnvironmentBean.java#L47[`RecoveryEnvironmentBean.periodicRecoveryInitilizationOffset`]
+configures a waiting time for first time execution of the periodic recovery after application server starts.
+
+=== Configuration in model and in XML
+
+The transaction subsystem separates the configuration into sections in XML configuration file.
+Every section belongs to some Narayana module.
+The configuration for model consists, on the other hand, of a flat structure of attributes
+(most of them at top level).
+
+For example, the subsystem defines the `node` identifier under `core-environment` XML element in XML
+configuration, while the `node-identifer` attribute is defined directly under `/subsystem=transactions`
+resource in the model.
+
+The description of individual attributes and their meaning can be found in the
+link:wildscribe{outfilesuffix/}subsystem/transactions[Model Reference Guide].
+
+==== jts
+
+`jts` model attribute is configured as `jts` XML element
+
+.XML configuration enabling jts
+[source,xml]
+----
+<subsystem xmlns="urn:jboss:domain:transactions:6.0">
+  ...
+  <jts />
+  ...
+</subsystem>
+----
+
+==== core-environment
+
+`node-identifier`, `process-id-uuid`, `process-id-socket-binding`, `process-id-socket-max-ports` model
+  attributes are configured under `core-environment` XML element
+
+.XML configuration example for core-environment
+[source,xml]
+----
+<subsystem xmlns="urn:jboss:domain:transactions:6.0">
+  ...
+  <core-environment node-identifier="1">
+    <process-id>
+      <socket socket-binding="txn-socket-id"
+              socket-process-id-max-ports="10"/>
+      </process-id>
+  </core-environment>
+  ...
+</subsystem>
+----
+
+==== recovery-environment
+
+`recovery-period`, `socket-binding`, `recovery-listener`, `status-socket-binding` model attributes are configured under `recovery-environment` XML element
+
+.XML configuration example for recovery-environment
+[source,xml]
+----
+<subsystem xmlns="urn:jboss:domain:transactions:6.0">
+  ...
+  <recovery-environment socket-binding="txn-recovery-environment"
+                        status-socket-binding="txn-status-manager"
+                        recovery-listener="false" />
+  ...
+</subsystem>
+----
+
+If you configure the `recovery-listener` then Narayana binds the linked socket, and a user may request
+an explicit launch of
+https://github.com/jbosstm/narayana/blob/master/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/recovery/RecoveryDriver.java#L47[the recovery scan].
+We can see an example of the socket communication in the following example.
+
+.telnet communication with recovery listener
+[source,bash,options="nowrap"]
+----
+telnet localhost 4712
+# command to start the recovery scan
+SCAN[enter]
+# at this time the transaction recovery has been started
+^]
+close
+----
+
+
+==== coordinator-environment
+
+`enable-tsm-status`, `statistics-enabled`, `default-timeout`, `maximum-timeout`
+model attributes are configured under `coordinator-environment` XML element
+
+.XML configuration example for coordinator-environment
+[source,xml]
+----
+<subsystem xmlns="urn:jboss:domain:transactions:6.0">
+  ...
+  <coordinator-environment enable-tsm-status="true" statistics-enabled="true"
+                           default-timeout="300" maximum-timeout="31536000" />
+  ...
+</subsystem>
+----
+
+===== transaction statistics
+
+When subsystem defines the `statistics-enabled` to true Narayana starts gathering
+statistics about transaction processing. User can view a single attribute
+or list all statistics attributes as a group.
+Transaction statistics attributes are read-only runtime attributes.
+
+.observing all transaction statistics attributes
+[source,sh]
+----
+# connect to a running application server
+./bin/jboss-cli.sh -c
+
+# enable transaction statistics
+/subsystem=transactions:write-attribute(name=statistics-enabled, value=true)
+# list all statistics attributes
+/subsystem=transactions:read-attribute-group(name=statistics, include-runtime=true)
+----
+
+[#object-store]
+=== object-store
+
+Narayana needs to persist data about transaction processing to a transaction log.
+This persistent storage is called object store in context of Narayana.
+Narayana requires to persist a log for an XA transactions that are processed
+with the two-phase commit protocol. Otherwise, the transaction is held only in memory
+without storing anything to the object store.
+
+Narayana provides three object stores implementations.
+
+* ShadowNoFileLock store persists records in directory structure on the file system.
+  A separate file represents an record, log of a prepared transaction. +
+  Used when attributes `use-jdbc-store` and `use-journal-store` are both `false`.
+
+* Journal store persists records in a journal file on the file system.
+  Records are stored in append only log implemented within https://github.com/apache/activemq-artemis/tree/main/artemis-journal[ActiveMQ Artemis]
+  project. +
+  Used when attribute `use-journal-store` is `true` and `use-jdbc-store` is `false`.
+
+* JDBC stores persists records in a database. The records are accessible via JDBC connection.
+  This store requires a linked `datasource` from the `datasources` subsystem.
+  Used when attribute `use-jdbc-store` is `true` and `use-journal-store` is `false`.
+
+==== journal object-store
+
+An XML configuration of `object-store` XML element configuring the journal store with model attributes
+`object-store-path`, `object-store-relative-to`, `journal-store-enable-async-io` is
+
+.XML configuration example for object-store
+[source,xml]
+----
+<subsystem xmlns="urn:jboss:domain:transactions:6.0">
+  ...
+    <object-store path="tx-object-store" relative-to="jboss.server.data.dir"/>
+    <use-journal-store enable-async-io="true"/>
+  ...
+</subsystem>
+----
+
+==== JDBC object-store
+
+JDBC implementation makes the transaction log to be persisted into a database.
+Transaction subsystem accesses the database via linked (via JNDI) non-transactional (`jta=false`) datasource.
+When the transaction subsystem configures the JDBC store implementation then
+the Transaction Manager creates one or few database tables (if they do not exist) to persist transaction data
+when WildFly starts. Narayana creates a separate table for each store type.
+Narayana uses the store type to grouping transaction records of the same type.
+
+Narayana uses the following store types in WildFly
+
+* _action store_ stores data for JTA transactions
+* _state store_ stores data for TXOJ objects
+* _communications store_ stores data for monitoring remote JTS transactions and storing CORBA IOR's
+
+Attributes configuration may define a prefix for each store type.
+When we configure no prefix, or the same prefix for all store types
+then Narayana saves the transaction data into the same database table.
+By default, Narayana persists transaction log in database table named `JBossTSTxTable`.
+
+.jboss cli example to setup JDBC object store
+[source,sh,subs="+quotes,attributes+",options="nowrap"]
+----
+# PostgreSQL driver module
+./bin/jboss-cli.sh "embed-server, module add --name=org.postgresql --resources=/tmp/postgresql.jar \
+  --dependencies=javax.api\,javax.transaction.api"
+
+# non-jta PostgreSQL datasource creation
+./bin/jboss-cli.sh "embed-server --server-config=standalone.xml,data-source add --name=JDBCStore \
+  --jndi-name=java:jboss/datasources/jdbcstore_postgresql --jta=false \
+  --connection-url=jdbc:postgresql://localhost:5432/test --user-name=test --password=test \
+  --driver-name=postgresql"
+
+# transaction subsystem configuration
+./bin/jboss-cli.sh "embed-server --server-config=standalone.xml, \
+  /subsystem=transactions:write-attribute(name=jdbc-store-datasource, \
+  value=java:jboss/datasources/jdbcstore_postgresql), \
+  /subsystem=transactions:write-attribute(name=use-jdbc-store,value=true)"
+./bin/jboss-cli.sh "embed-server --server-config=standalone.xml, \
+  /subsystem=transactions:write-attribute(name=jdbc-state-store-table-prefix,value=state), \
+  /subsystem=transactions:write-attribute(name=jdbc-state-store-drop-table,value=false),
+  /subsystem=transactions:write-attribute(name=jdbc-communication-store-table-prefix,value=communication), \
+  /subsystem=transactions:write-attribute(name=jdbc-communication-store-drop-table,value=false),
+  /subsystem=transactions:write-attribute(name=jdbc-action-store-table-prefix,value=action), \
+  /subsystem=transactions:write-attribute(name=jdbc-action-store-drop-table,value=false)"
+----
+
+.XML configuration example for JDBC object-store
+[source,xml]
+----
+<subsystem xmlns="urn:jboss:domain:transactions:6.0">
+  ...
+    <jdbc-store datasource-jndi-name="java:jboss/datasources/jdbcstore_postgresql">
+        <action table-prefix="action" drop-table="false"/>
+        <communication table-prefix="communication" drop-table="false"/>
+        <state table-prefix="state" drop-table="false"/>
+    </jdbc-store>
+  ...
+</subsystem>
+----
+
+=== commit-markable-resources
+
+Makes possible for a database non-XA datasource (i.e., a local resource) to reliably
+participate in an XA transaction
+in the http://jbossts.blogspot.com/2018/06/narayana-commit-markable-resource.html[two-phase commit] processing.
+The datasource has to be configured with `connectable` attribute of value `true` and linked to transaction
+subsystem as a commit markable resource (CMR).
+
+As a prerequisite the database *must* contain a table named `xids`
+(the database table name can be configured with attribute name under commit-markable-resource)
+where Narayana persists additional metadata when _two-phase commit_ prepares the non-XA datasource.
+
+The SQL select that has to be working for `xids` table can be found
+https://github.com/jbosstm/narayana/blob/master/ArjunaJTA/jta/classes/com/arjuna/ats/internal/jta/recovery/arjunacore/CommitMarkableResourceRecordRecoveryModule.java[in the Narayana code].
+
+.example of SQL statement to create the `xids` table to store CMR metadata
+[source,sql,subs="+quotes,attributes+",options="nowrap"]
+----
+-- PostgreSQL
+CREATE TABLE xids (
+  xid bytea, transactionManagerID varchar(64), actionuid bytea
+);
+CREATE UNIQUE INDEX index_xid ON xids (xid);
+
+-- Oracle
+CREATE TABLE xids (
+  xid RAW(144), transactionManagerID VARCHAR(64), actionuid RAW(28)
+);
+CREATE UNIQUE INDEX index_xid ON xids (xid);
+
+-- H2
+CREATE TABLE xids (
+  xid VARBINARY(144), transactionManagerID VARCHAR(64), actionuid VARBINARY(28)
+);
+CREATE UNIQUE INDEX index_xid ON xids (xid);
+----
+
+.example of CMR datasource configuration in subsystem
+[source,sh,subs="+quotes,attributes+",options="nowrap"]
+----
+# parameter 'connectable' is true for datasource
+./bin/jboss-cli.sh "embed-server --server-config=standalone.xml,\
+  /subsystem=datasources/data-source=ConnectableCMRDs:add(enabled=true, \
+  jndi-name=java:jboss/datasources/ConnectableCMRDs, jta=true, use-java-context=true, \
+  use-ccm=true, connectable=true, connection-url=\"jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE\", \
+  driver-name=h2)"
+
+# linking the datasource into the transaction subsystem
+./bin/jboss-cli.sh "embed-server --server-config=standalone.xml,\
+  /subsystem=transactions/commit-markable-resource=\"java:jboss/datasources/ConnectableCMRDs\":add"
+./bin/jboss-cli.sh "embed-server --server-config=standalone.xml, \
+  /subsystem=transactions/commit-markable-resource=\"java:jboss/datasources/ConnectableCMRDs\":write-attribute(name=name, value=xids), \
+  /subsystem=transactions/commit-markable-resource=\"java:jboss/datasources/ConnectableCMRDs\":write-attribute(name=batch-size, value=10), \  /subsystem=transactions/commit-markable-resource=\"java:jboss/datasources/ConnectableCMRDs\":write-attribute(name=immediate-cleanup, value=false)"
+----
+
+.XML configuration example for commit-markable-resources
+[source,xml,subs="+attributes+",options="nowrap"]
+----
+<subsystem xmlns="urn:jboss:domain:transactions:6.0">
+  ...
+  <commit-markable-resources>
+    <commit-markable-resource jndi-name="java:jboss/datasources/ConnectableCMRDs">
+      <xid-location name="xids" batch-size="10"/>
+    </commit-markable-resource>
+  </commit-markable-resources>
+  ...
+</subsystem>
+----
+
+=== log-store
+
+`log-store` is a runtime only resource
+that can be loaded with a snapshot of the content of the Narayana object store.
+The operation `/subsystem=transactions/log-store=log-store:probe` loads
+persisted transaction records from object store and that can be viewed in the model.
+Another `:probe` operation flushes the old data and loads up-to-date records.
+
+.explore the snapshot of the Narayana object store
+[source,bash,options="nowrap"]
+----
+/subsystem=transactions/log-store=log-store:probe
+/subsystem=transactions/log-store=log-store:read-resource(recursive=true, include-runtime=true)
+----
+
+The resulted listing will be similar to the following one.
+In this case we can see one transaction with one participant with status `PREPARED`.
+
+[options="nowrap"]
+----
+{
+  "outcome" => "success",
+  "result" => {
+    "expose-all-logs" => false,
+    "type" => "default",
+    "transactions" => {"0:ffffc0a80065:-22769d16:60c87436:1a" => {
+      "age-in-seconds" => "48",
+      "id" => "0:ffffc0a80065:-22769d16:60c87436:1a",
+      "jmx-name" => undefined,
+      "type" => "StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction",
+      "participants" => {"1" => {
+        "eis-product-name" => undefined,
+        "eis-product-version" => undefined,
+        "jmx-name" => undefined,
+        "jndi-name" => "1",
+        "status" => "PREPARED",
+        "type" => "/StateManager/AbstractRecord/XAResourceRecord"
+      }}
+    }}
+  }
+}
+----
+
+The same content listed as a directory structure when we configure ShadowNoFileLock store
+
+[options="nowrap"]
+----
+tree standalone/data/tx-object-store/
+standalone/data/tx-object-store/
+└── ShadowNoFileLockStore
+    └── defaultStore
+        ├── EISNAME
+        │   └── 0_ffffc0a80065_-22769d16_60c87436_14
+        └── StateManager
+            └── BasicAction
+                └── TwoPhaseCoordinator
+                    └── AtomicAction
+                        └── 0_ffffc0a80065_-22769d16_60c87436_1a
+----
+
+==== log-store transactions and participant operations
+
+The `transactions` and `participant` resources contains several operations
+that can be used to work with the content of the object store.
+
+* `delete` Removes the transaction record from the object store
+  and calls the `XAResource.forget` call at all participants.
+* `refresh` Reloads information from the Narayana object store about the participant
+  and updates the information from object store to model.
+* `recover` This operation switches the participant status to `PREPARED`.
+  This is useful mostly for `HEURISTIC` participant records as `HEURISTIC` state is
+  skipped by period recovery processing. Switching the `HEURISTIC` to `PREPARED`
+  means that the periodic recovery will try to finish the record.
+
+.operations at log-store transactions structure
+[options="nowrap"]
+----
+# delete of the transaction that subsequently deletes all participants
+/subsystem=transactions/log-store=log-store/transactions=0\:ffffc0a80065\:-22769d16\:60c87436\:1a:delete
+# delete of the particular participant
+/subsystem=transactions/log-store=log-store/transactions=0\:ffffc0a80065\:-22769d16\:60c87436\:1a/participants=1:delete
+# refresh and recover
+/subsystem=transactions/log-store=log-store/transactions=0\:ffffc0a80065\:-22769d16\:60c87436\:1a/participants=1:refresh
+/subsystem=transactions/log-store=log-store/transactions=0\:ffffc0a80065\:-22769d16\:60c87436\:1a/participants=1:recover
+----
+
+=== client
+
+Configuration related to the
+https://github.com/wildfly/wildfly-transaction-client[WildFly Transaction Client].
+
+.XML configuration example for client
+[source,xml]
+----
+<subsystem xmlns="urn:jboss:domain:transactions:6.0">
+  ...
+  <client stale-transaction-time="600"/>
+  ...
+</subsystem>
+----

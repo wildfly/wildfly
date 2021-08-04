@@ -73,12 +73,11 @@ public class WildflyTransactionClientTxBridgeIntegrationHandler implements Handl
         final Boolean isOutbound = (Boolean) messageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
         try {
-            if (isOutbound != null && isOutbound) {
-                // suspending context before returning to the client
-                if(ContextTransactionManager.getInstance() != null &&
-                        ContextTransactionManager.getInstance().getStatus() != Status.STATUS_NO_TRANSACTION) {
-                    ContextTransactionManager.getInstance().suspend();
-                }
+            if (isOutbound != null && isOutbound
+                    // suspending context before returning to the client
+                    && ContextTransactionManager.getInstance() != null
+                    && ContextTransactionManager.getInstance().getStatus() != Status.STATUS_NO_TRANSACTION) {
+                ContextTransactionManager.getInstance().suspend();
             }
         } catch (SystemException se) {
             XtsAsLogger.ROOT_LOGGER.cannotGetTransactionStatus(messageContext, se);

@@ -170,11 +170,10 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                 DotName componentClassName = DotName.createSimple(component.getComponentClassName());
                 for (Entry<ResourceRoot, Index> entry : indexes.entrySet()) {
                     final Index index = entry.getValue();
-                    if (index != null) {
-                        if (index.getClassByName(componentClassName) != null) {
+                    if (index != null
+                            && index.getClassByName(componentClassName) != null) {
                             resourceRoot = entry.getKey();
                             break;
-                        }
                     }
                 }
                 if (resourceRoot == null) {

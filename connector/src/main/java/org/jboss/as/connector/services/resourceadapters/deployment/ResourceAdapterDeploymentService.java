@@ -245,7 +245,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                 if (ra != null && ra.getOutboundResourceadapter() != null &&
                         ra.getOutboundResourceadapter().getConnectionDefinitions() != null) {
                     List<ConnectionDefinition> cdMetas = ra.getOutboundResourceadapter().getConnectionDefinitions();
-                    if (cdMetas.size() > 0) {
+                    if (!cdMetas.isEmpty()) {
                         for (ConnectionDefinition cdMeta : cdMetas) {
                             raMcfClasses.add(cdMeta.getManagedConnectionFactoryClass().getValue());
                         }
@@ -254,7 +254,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
                 if (ra != null && ra.getAdminObjects() != null) {
                     List<AdminObject> aoMetas = ra.getAdminObjects();
-                    if (aoMetas.size() > 0) {
+                    if (!aoMetas.isEmpty()) {
                         for (AdminObject aoMeta : aoMetas) {
                             raAoClasses.add(aoMeta.getAdminobjectClass().getValue());
                         }
@@ -262,7 +262,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                 }
 
                 // Pure inflow always active except in case it is deployed as module
-                if (raMcfClasses.size() == 0 && raAoClasses.size() == 0 && !fromModule)
+                if (raMcfClasses.isEmpty() && raAoClasses.isEmpty() && !fromModule)
                     return true;
 
 

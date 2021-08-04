@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<server xmlns="urn:jboss:domain:16.0">
+    <extensions>
+        <extension module="org.jboss.as.logging"/>
+        <extension module="org.wildfly.extension.io"/>
+        <extension module="org.wildfly.extension.undertow"/>
+    </extensions>
+    <management>
+        <security-realms>
+            <security-realm name="ManagementRealm">
+                <authentication>
+                    <local default-user="$local" skip-group-loading="true"/>
+                    <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
+                </authentication>
+                <authorization map-groups-to-roles="false">
+                    <properties path="mgmt-groups.properties" relative-to="jboss.server.config.dir"/>
+                </authorization>
+            </security-realm>
+            <security-realm name="ApplicationRealm">
+                <server-identities>
+                    <ssl>
+                        <keystore path="application.keystore" relative-to="jboss.server.config.dir" keystore-password="password" alias="server" key-password="password" generate-self-signed-certificate-host="localhost"/>
+                    </ssl>
+                </server-identities>
+                <authentication>
+                    <local default-user="$local" allowed-users="*" skip-group-loading="true"/>
+                    <properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
+                </authentication>
+                <authorization>
+                    <properties path="application-roles.properties" relative-to="jboss.server.config.dir"/>
+                </authorization>
+            </security-realm>
+        </security-realms>
+        <audit-log>
+            <formatters>
+                <json-formatter name="json-formatter"/>
+            </formatters>
+            <handlers>
+                <file-handler name="file" formatter="json-formatter" path="audit-log.log" relative-to="jboss.server.data.dir"/>
+            </handlers>
+            <logger log-boot="true" log-read-only="false" enabled="false">
+                <handlers>
+                    <handler name="file"/>
+                </handlers>
+            </logger>
+        </audit-log>
+        <management-interfaces>
+            <http-interface security-realm="ManagementRealm">
+                <http-upgrade enabled="true"/>
+                <socket-binding http="management-http"/>
+            </http-interface>
+        </management-interfaces>
+        <access-control provider="simple">
+            <role-mapping>
+                <role name="SuperUser">
+                    <include>
+                        <user name="$local"/>
+                    </include>
+                </role>
+            </role-mapping>
+        </access-control>
+    </management>
+    <profile>
+        <subsystem xmlns="urn:jboss:domain:logging:8.0">
+            <console-handler name="CONSOLE">
+                <level name="INFO"/>
+                <formatter>
+                    <named-formatter name="COLOR-PATTERN"/>
+                </formatter>
+            </console-handler>
+            <periodic-rotating-file-handler name="FILE" autoflush="true">
+                <formatter>
+                    <named-formatter name="PATTERN"/>
+                </formatter>
+                <file relative-to="jboss.server.log.dir" path="server.log"/>
+                <suffix value=".yyyy-MM-dd"/>
+                <append value="true"/>
+            </periodic-rotating-file-handler>
+            <logger category="com.arjuna">
+                <level name="WARN"/>
+            </logger>
+            <logger category="io.jaegertracing.Configuration">
+                <level name="WARN"/>
+            </logger>
+            <logger category="org.jboss.as.config">
+                <level name="DEBUG"/>
+            </logger>
+            <logger category="sun.rmi">
+                <level name="WARN"/>
+            </logger>
+            <root-logger>
+                <level name="INFO"/>
+                <handlers>
+                    <handler name="CONSOLE"/>
+                    <handler name="FILE"/>
+                </handlers>
+            </root-logger>
+            <formatter name="PATTERN">
+                <pattern-formatter pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
+            </formatter>
+            <formatter name="COLOR-PATTERN">
+                <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
+            </formatter>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:io:3.0">
+            <worker name="default"/>
+            <buffer-pool name="default"/>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:undertow:12.0" default-server="default-server" default-virtual-host="default-host" default-servlet-container="default" statistics-enabled="${wildfly.undertow.statistics-enabled:${wildfly.statistics-enabled:false}}">
+            <buffer-cache name="default"/>
+            <server name="default-server">
+                <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
+                <http-listener name="management" socket-binding="mcmp-management" enable-http2="true"/>
+                <host name="default-host" alias="localhost">
+                    <filter-ref name="load-balancer"/>
+                </host>
+            </server>
+            <servlet-container name="default"/>
+            <filters>
+                <mod-cluster name="load-balancer" management-socket-binding="mcmp-management" advertise-socket-binding="modcluster" enable-http2="true" max-retries="3">
+                    <single-affinity/>
+                </mod-cluster>
+            </filters>
+        </subsystem>
+    </profile>
+    <interfaces>
+        <interface name="management">
+            <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
+        </interface>
+        <interface name="private">
+            <inet-address value="${jboss.bind.address.private:127.0.0.1}"/>
+        </interface>
+        <interface name="public">
+            <inet-address value="${jboss.bind.address:127.0.0.1}"/>
+        </interface>
+    </interfaces>
+    <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
+        <socket-binding name="http" port="${jboss.http.port:8080}"/>
+        <socket-binding name="https" port="${jboss.https.port:8443}"/>
+        <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
+        <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
+        <socket-binding name="mcmp-management" interface="private" port="${jboss.mcmp.port:8090}"/>
+        <socket-binding name="modcluster" interface="private" multicast-address="${jboss.modcluster.multicast.address:224.0.1.105}" multicast-port="23364"/>
+    </socket-binding-group>
+</server>

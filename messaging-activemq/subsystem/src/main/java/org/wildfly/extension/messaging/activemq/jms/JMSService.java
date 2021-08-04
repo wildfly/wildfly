@@ -182,29 +182,28 @@ public class JMSService implements Service<JMSServerManager> {
                 public void deActivate() {
                     // passivate the activation service only if the ActiveMQ server is deactivated when it fails back
                     // and *not* during AS7 service container shutdown or reload (AS7-6840 / AS7-6881)
-                    if (activeMQActivationController != null) {
-                        if (!activeMQActivationController.getState().in(STOPPING, REMOVED)) {
-                            // [WFLY-4597] When Artemis is deactivated during failover, we block until its
-                            // activation controller is REMOVED before giving back control to Artemis.
-                            // This allow to properly stop any service depending on the activation controller
-                            // and avoid spurious warning messages because the resources used by the services
-                            // are stopped outside the control of the services.
-                            final CountDownLatch latch = new CountDownLatch(1);
-                            activeMQActivationController.compareAndSetMode(ACTIVE, REMOVE);
-                            activeMQActivationController.addListener(new LifecycleListener() {
-                                @Override
-                                public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
-                                    if (event == LifecycleEvent.REMOVED) {
-                                        latch.countDown();
-                                    }
+                    if (activeMQActivationController != null
+                            && !activeMQActivationController.getState().in(STOPPING, REMOVED)) {
+                        // [WFLY-4597] When Artemis is deactivated during failover, we block until its
+                        // activation controller is REMOVED before giving back control to Artemis.
+                        // This allow to properly stop any service depending on the activation controller
+                        // and avoid spurious warning messages because the resources used by the services
+                        // are stopped outside the control of the services.
+                        final CountDownLatch latch = new CountDownLatch(1);
+                        activeMQActivationController.compareAndSetMode(ACTIVE, REMOVE);
+                        activeMQActivationController.addListener(new LifecycleListener() {
+                            @Override
+                            public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
+                                if (event == LifecycleEvent.REMOVED) {
+                                    latch.countDown();
                                 }
-                            });
-                            try {
-                                latch.await(5, TimeUnit.SECONDS);
-                            } catch (InterruptedException e) {
                             }
-                            activeMQActivationController = null;
+                        });
+                        try {
+                            latch.await(5, TimeUnit.SECONDS);
+                        } catch (InterruptedException e) {
                         }
+                        activeMQActivationController = null;
                     }
                 }
             });

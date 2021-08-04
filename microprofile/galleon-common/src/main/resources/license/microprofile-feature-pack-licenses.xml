@@ -13,6 +13,28 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okio</groupId>
+      <artifactId>okio</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>io.jaegertracing</groupId>
       <artifactId>jaeger-core</artifactId>
       <licenses>
@@ -158,6 +180,17 @@
     <dependency>
       <groupId>io.smallrye</groupId>
       <artifactId>smallrye-fault-tolerance-api</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye</groupId>
+      <artifactId>smallrye-fault-tolerance-autoconfig-core</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
