@@ -86,10 +86,4 @@ public class LinkedHashMapMarshaller extends AbstractMapMarshaller<LinkedHashMap
             }
         }
     }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Class<? extends LinkedHashMap<Object, Object>> getJavaClass() {
-        return (Class<LinkedHashMap<Object, Object>>) (Class<?>) LinkedHashMap.class;
-    }
 }
