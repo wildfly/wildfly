@@ -221,6 +221,10 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
                     public void handleEvent(StreamConnection connection) {
                         MessagingLogger.ROOT_LOGGER.debugf("Switching to %s protocol for %s http-acceptor", protocolName, acceptorName);
                         ActiveMQServer server = selectServer(exchange, activemqServer);
+                        if (server == null) {
+                            IoUtils.safeClose(connection);
+                            return;
+                        }
                         RemotingService remotingService = server.getRemotingService();
                         if (!server.isActive() || !remotingService.isStarted()) {
                             // ActiveMQ does not accept connection
