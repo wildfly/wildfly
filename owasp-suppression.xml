@@ -550,24 +550,6 @@
         <cve>CVE-2021-22696</cve>
     </suppress>
 
-    <!-- False positive - mina-core has nothing to do with mina-sshd where bug was spotted and fixed https://bugzilla.redhat.com/show_bug.cgi?id=1981527 -->
-    <suppress>
-        <notes><![CDATA[
-   file name: apacheds-all-2.0.0-M24.jar (shaded: org.apache.mina:mina-core:2.0.16)
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.mina/mina\-core@.*$</packageUrl>
-        <cve>CVE-2021-30129</cve>
-    </suppress>
-
-    <!-- Apache sshd was updated in org.wildfly.core:wildfly-cli 13.0.x to 2.7 where the bug was fixed https://github.com/PSI-Polska/wildfly-core/commit/13063b6c65c5bc3c857689ca8f3b37878a90aff6 -->
-    <suppress>
-        <notes><![CDATA[
-   file name: wildfly-cli-13.0.3-5-PSI-SNAPSHOT-client.jar (shaded: org.apache.sshd:sshd-common:2.3.0)
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.sshd/sshd\-common@.*$</packageUrl>
-        <cve>CVE-2021-30129</cve>
-    </suppress>
-
     <!-- False positive xjcplugins are not using org.apache.cxf:cxf-rt-rs-json-basic (https://bugzilla.redhat.com/show_bug.cgi?id=1973392),
     the version of apache.cxf was updated to fixed 3.3.11: https://github.com/PSI-Polska/wildfly/commit/334aee15ec46821f5674bfa33aadabb06966049e -->
     <suppress>
