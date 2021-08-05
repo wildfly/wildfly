@@ -51,6 +51,7 @@
         <module>ee</module>
         <module>ejb</module>
         <module>el</module>
+        <module>faces</module>
         <module>infinispan</module>
         <module>jgroups</module>
         <module>marshalling</module>

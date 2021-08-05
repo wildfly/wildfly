@@ -24,6 +24,7 @@ package org.wildfly.extension.clustering.web.deployment;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.capability.CapabilityServiceSupport.NoSuchCapabilityException;
+import org.jboss.as.jsf.deployment.JsfVersionMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -50,6 +51,7 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
     private static final String WELD_CORE = "org.wildfly.clustering.weld.core";
     private static final String WELD_EJB = "org.wildfly.clustering.weld.ejb";
     private static final String WELD_WEB = "org.wildfly.clustering.weld.web";
+    private static final String FACES_MOJARRA = "org.wildfly.clustering.faces.mojarra";
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
@@ -76,6 +78,11 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
                     } catch (NoSuchCapabilityException e) {
                         throw new IllegalStateException(e);
                     }
+                }
+
+                if (JsfVersionMarker.getVersion(unit).equals(JsfVersionMarker.JSF_2_0)) {
+                    specification.addSystemDependency(new ModuleDependency(loader, EL_GLASSFISH, false, false, true, false));
+                    specification.addSystemDependency(new ModuleDependency(loader, FACES_MOJARRA, false, false, true, false));
                 }
             }
         }

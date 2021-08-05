@@ -859,6 +859,17 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-clustering-faces-api</artifactId>
+                <version>${ee.maven.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-clustering-faces-mojarra</artifactId>
+                <version>${ee.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-infinispan-client-api</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
