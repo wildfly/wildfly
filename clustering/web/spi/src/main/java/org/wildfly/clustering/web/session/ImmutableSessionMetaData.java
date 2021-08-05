@@ -67,7 +67,6 @@ public interface ImmutableSessionMetaData {
 
     /**
      * Returns the time interval, using the specified unit, after which this session will expire.
-     * @param unit a time unit
      * @return a time interval
      */
     Duration getMaxInactiveInterval();
