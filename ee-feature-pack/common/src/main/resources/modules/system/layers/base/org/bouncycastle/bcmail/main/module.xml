@@ -37,5 +37,6 @@
         <module name="javax.activation.api" optional="true"/>
         <module name="org.bouncycastle.bcpkix"/>
         <module name="org.bouncycastle.bcprov"/>
+        <module name="org.bouncycastle.bcutil"/>
     </dependencies>
 </module>

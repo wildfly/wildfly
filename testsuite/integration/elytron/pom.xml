@@ -162,6 +162,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcutil-jdk15on</artifactId>
+            <version>${version.org.bouncycastle}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.xipki.pki</groupId>
             <artifactId>ocsp-server</artifactId>
             <version>${version.org.xipki.pki.ocsp-server}</version>
