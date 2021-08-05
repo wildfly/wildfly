@@ -54,6 +54,7 @@ public class SessionOperationServlet extends HttpServlet {
     private static final String VALUE = "value";
     public static final String RESULT = "result";
     public static final String SESSION_ID = "jsessionid";
+    public static final String TARGET_SESSION_ID = "target-session-id";
     public static final String CREATED_SESSIONS = "created";
     public static final String DESTROYED_SESSIONS = "destroyed";
     public static final String ADDED_ATTRIBUTES = "added";
@@ -66,10 +67,13 @@ public class SessionOperationServlet extends HttpServlet {
         return createGetURI(baseURL, name, null);
     }
 
-    public static URI createGetURI(URL baseURL, String name, String sessionId) throws URISyntaxException {
+    /**
+     * @param targetSessionId session for which to query added/replaced/removed attributes though response headers
+     */
+    public static URI createGetURI(URL baseURL, String name, String targetSessionId) throws URISyntaxException {
         StringBuilder builder = appendParameter(buildURI(GET), NAME, name);
-        if (sessionId != null) {
-            appendParameter(builder, SESSION_ID, sessionId);
+        if (targetSessionId != null) {
+            appendParameter(builder, TARGET_SESSION_ID, targetSessionId);
         }
         return baseURL.toURI().resolve(builder.toString());
     }
@@ -112,48 +116,56 @@ public class SessionOperationServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
-        req.getServletContext().log(req.getRequestURL().append('?').append(req.getQueryString()).toString());
         String operation = getRequiredParameter(req, OPERATION);
         HttpSession session = req.getSession(true);
         resp.addHeader(SESSION_ID, session.getId());
 
         req.getServletContext().log(String.format("%s?%s;jsessionid=%s", req.getRequestURL(), req.getQueryString(), session.getId()));
 
-        if (operation.equals(SET)) {
-            String name = getRequiredParameter(req, NAME);
-            String[] values = req.getParameterValues(VALUE);
-            if (values != null) {
-                SessionAttributeValue value = new SessionAttributeValue(values[0]);
-                session.setAttribute(name, value);
-                for (int i = 1; i < values.length; ++i) {
-                    value.setValue(values[i]);
+        switch (operation) {
+            case SET: {
+                String name = getRequiredParameter(req, NAME);
+                String[] values = req.getParameterValues(VALUE);
+                if (values != null) {
+                    SessionAttributeValue value = new SessionAttributeValue(values[0]);
+                    session.setAttribute(name, value);
+                    for (int i = 1; i < values.length; ++i) {
+                        value.setValue(values[i]);
+                    }
+                } else {
+                    session.setAttribute(name, null);
                 }
-            } else {
-                session.setAttribute(name, null);
+                break;
             }
-        } else if (operation.equals(REMOVE)) {
-            String name = getRequiredParameter(req, NAME);
-            session.removeAttribute(name);
-        } else if (operation.equals(INVALIDATE)) {
-            session.invalidate();
-        } else if (operation.equals(GET)) {
-            String name = getRequiredParameter(req, NAME);
-            SessionAttributeValue value = (SessionAttributeValue) session.getAttribute(name);
-            if (value != null) {
-                resp.setHeader(RESULT, value.getValue());
-                String newValue = req.getParameter(VALUE);
-                if (newValue != null) {
-                    value.setValue(newValue);
+            case REMOVE: {
+                String name = getRequiredParameter(req, NAME);
+                session.removeAttribute(name);
+                break;
+            }
+            case INVALIDATE:
+                session.invalidate();
+                break;
+            case GET: {
+                String name = getRequiredParameter(req, NAME);
+                SessionAttributeValue value = (SessionAttributeValue) session.getAttribute(name);
+                if (value != null) {
+                    resp.setHeader(RESULT, value.getValue());
+                    String newValue = req.getParameter(VALUE);
+                    if (newValue != null) {
+                        value.setValue(newValue);
+                    }
                 }
+                break;
             }
-        } else if (operation.equals(TIMEOUT)) {
-            String timeout = getRequiredParameter(req, TIMEOUT);
-            session.setMaxInactiveInterval(Integer.parseInt(timeout));
-        } else {
-            throw new ServletException("Unrecognized operation: " + operation);
+            case TIMEOUT:
+                String timeout = getRequiredParameter(req, TIMEOUT);
+                session.setMaxInactiveInterval(Integer.parseInt(timeout));
+                break;
+            default:
+                throw new ServletException("Unrecognized operation: " + operation);
         }
 
-        String targetSessionId = req.getParameter(SESSION_ID);
+        String targetSessionId = req.getParameter(TARGET_SESSION_ID);
         if (targetSessionId == null) {
             targetSessionId = req.getRequestedSessionId();
         }
