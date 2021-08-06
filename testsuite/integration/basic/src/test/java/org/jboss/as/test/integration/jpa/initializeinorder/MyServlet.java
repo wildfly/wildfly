@@ -12,7 +12,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebServlet;
 
 /**
- * @author Stuart Douglas
+ * @author Scott Marlow
  */
 @WebServlet(name = "MyServlet", urlPatterns = {"/test"}, loadOnStartup = 1)
 public class MyServlet implements Servlet {
@@ -33,6 +33,9 @@ public class MyServlet implements Servlet {
             InitializeInOrderTestCase.gotJpaInjectingBean();
             if (bean.entityManagerFactory() != null) {
                 InitializeInOrderTestCase.gotEntityManagerFactory();
+            }
+            if (bean.entityManager() != null) {
+                InitializeInOrderTestCase.gotEntityManager();
             }
         }
     }

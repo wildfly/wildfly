@@ -54,6 +54,7 @@ public class InitializeInOrderTestCase {
     private static final String ARCHIVE_NAME = "InitializeInOrderTestCase";
     private static boolean gotJpaInjectingBean;
     private static boolean gotEntityManagerFactory;
+    private static boolean gotEntityManager;
 
     @Deployment
     public static Archive<?> deployment() {
@@ -138,13 +139,21 @@ public class InitializeInOrderTestCase {
         gotEntityManagerFactory = true;
     }
 
+    public static void gotEntityManager() {
+        gotEntityManager = true;
+    }
+
     @Test
     public void testInjectedPersistenceContext() throws Exception {
         Assert.assertTrue("CdiJpaInjectingBean should be true but is",
                 gotJpaInjectingBean);
 
-        Assert.assertTrue("WFLY-6485 regression, injected EntityManagerFactory should not be null but is",
+        Assert.assertTrue("injected EntityManagerFactory should not be null but is",
                 gotEntityManagerFactory);
+
+        Assert.assertTrue("injected EntityManager should not be null but is",
+                gotEntityManager);
+
     }
 
 

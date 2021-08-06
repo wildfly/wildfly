@@ -5,7 +5,7 @@ import javax.ejb.Singleton;
 import javax.ejb.Startup;
 
 /**
- * @author Stuart Douglas
+ * @author Scott Marlow
  */
 @Singleton
 @Startup

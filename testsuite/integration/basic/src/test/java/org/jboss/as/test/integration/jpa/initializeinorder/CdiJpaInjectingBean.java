@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,7 +23,9 @@
 package org.jboss.as.test.integration.jpa.initializeinorder;
 
 import javax.enterprise.inject.Produces;
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnit;
 
 public class CdiJpaInjectingBean {
@@ -33,9 +35,17 @@ public class CdiJpaInjectingBean {
     @PersistenceUnit(unitName = "pu1")
     EntityManagerFactory emf;
 
+    @Produces
+    @QualifyEntityManager
+    @PersistenceContext(unitName = "pu1")
+    EntityManager em;
+
     public EntityManagerFactory entityManagerFactory() {
         return emf;
     }
 
 
+    public EntityManager entityManager() {
+        return em;
+    }
 }

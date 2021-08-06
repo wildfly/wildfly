@@ -22,40 +22,24 @@
 
 package org.jboss.as.test.integration.jpa.initializeinorder;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.persistence.PersistenceContext;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import javax.inject.Qualifier;
 
 /**
+ * QualifyEntityManager
+ *
  * @author Scott Marlow
  */
-public abstract class AbstractCMTBean {
-    @PersistenceContext(unitName = "pu1")
-    EntityManager em;
-
-    @Resource
-    SessionContext sessionContext;
-
-    public void createEmployee(String name, String address, int id) {
-        Employee emp = new Employee();
-        emp.setId(id);
-        emp.setAddress(address);
-        emp.setName(name);
-        em.joinTransaction();
-        em.persist(emp);
-        //em.flush();
-    }
-
-    public void updateEmployee(Employee emp) {
-        emp.setName("hacked " + emp.getName());
-        em.merge(emp);
-        //em.flush();
-    }
-
-
-    public Employee getEmployeeNoTX(int id) {
-        return em.find(Employee.class, id, LockModeType.NONE);
-    }
+@Qualifier
+@Retention(RUNTIME)
+@Target({TYPE, METHOD, FIELD, PARAMETER})
+public @interface QualifyEntityManager {
 }
