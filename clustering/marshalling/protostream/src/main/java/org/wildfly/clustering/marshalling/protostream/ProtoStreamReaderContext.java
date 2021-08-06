@@ -22,37 +22,39 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author Paul Ferraro
  */
-public interface ProtoStreamReaderContext extends AutoCloseable {
+interface ProtoStreamReaderContext extends ProtoStreamOperation.Context, AutoCloseable {
 
     ThreadLocal<ProtoStreamReaderContext> INSTANCE = new ThreadLocal<ProtoStreamReaderContext>() {
         @Override
         protected ProtoStreamReaderContext initialValue() {
             return new ProtoStreamReaderContext() {
-                private final Map<Integer, Object> objects = new HashMap<>();
-                private int index = 0;
+                private final Map<Object, Boolean> objects = new IdentityHashMap<>(64);
+                private final List<Object> references = new ArrayList<>();
 
                 @Override
-                public void setReference(Object object) {
-                    this.objects.put(this.index++, object);
+                public void addReference(Object object) {
+                    if (this.objects.putIfAbsent(object, Boolean.TRUE) == null) {
+                        this.references.add(object);
+                    }
                 }
 
                 @Override
-                public Object findByReference(Integer id) {
-                    return this.objects.get(id);
+                public Object fromReference(int referenceId) {
+                    return this.references.get(referenceId);
                 }
             };
         }
     };
 
-    void setReference(Object object);
-
-    Object findByReference(Integer referenceId);
+    Object fromReference(int referenceId);
 
     @Override
     default void close() {

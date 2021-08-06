@@ -22,26 +22,14 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
+import org.wildfly.clustering.marshalling.AbstractCircularReferenceTestCase;
 
 /**
- * Common interface of {@link ProtoStreamReader} and {@link ProtoStreamWriter}.
  * @author Paul Ferraro
  */
-public interface ProtoStreamOperation {
+public class ProtoStreamCircularReferenceTestCase extends AbstractCircularReferenceTestCase {
 
-    interface Context {
-        /**
-         * Records a the specified object reference, in case it is referenced again within a stream.
-         * This method is idempotent.
-         * @param object an object reference
-         */
-        void addReference(Object object);
+    public ProtoStreamCircularReferenceTestCase() {
+        super(ProtoStreamTesterFactory.INSTANCE);
     }
-
-    /**
-     * Returns the serialization context of the associated marshaller.
-     * @return an immutable serialization context
-     */
-    ImmutableSerializationContext getSerializationContext();
 }

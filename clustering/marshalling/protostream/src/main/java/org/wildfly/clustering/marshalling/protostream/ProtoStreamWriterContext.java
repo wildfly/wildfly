@@ -24,38 +24,56 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author Paul Ferraro
  */
-public interface ProtoStreamWriterContext extends AutoCloseable {
+interface ProtoStreamWriterContext extends ProtoStreamOperation.Context {
 
-    ThreadLocal<ProtoStreamWriterContext> INSTANCE = new ThreadLocal<ProtoStreamWriterContext>() {
+    interface Factory extends Function<ProtoStreamWriter, ProtoStreamWriterContext>, AutoCloseable {
         @Override
-        protected ProtoStreamWriterContext initialValue() {
-            return new ProtoStreamWriterContext() {
-                private final Map<Object, Integer> references = new IdentityHashMap<>();
-                private int index = 0;
+        default void close() {
+            FACTORY.remove();
+        }
+    }
+
+    ThreadLocal<Factory> FACTORY = new ThreadLocal<Factory>() {
+        @Override
+        protected Factory initialValue() {
+            return new Factory() {
+                private final Map<Class<?>, ProtoStreamWriterContext> contexts = new IdentityHashMap<>(2);
 
                 @Override
-                public Integer getReferenceId(Object object) {
-                    return this.references.get(object);
+                public ProtoStreamWriterContext apply(ProtoStreamWriter writer) {
+                    return this.contexts.computeIfAbsent(writer.getClass(), Context::new);
                 }
 
-                @Override
-                public void setReference(Object object) {
-                    this.references.put(object, this.index++);
+                class Context implements ProtoStreamWriterContext, Function<Object, Integer> {
+                    private Map<Object, Integer> references = new IdentityHashMap<>(64);
+                    private int index = 0;
+
+                    Context(Class<?> targetClass) {
+                    }
+
+                    @Override
+                    public Integer getReference(Object object) {
+                        return this.references.get(object);
+                    }
+
+                    @Override
+                    public void addReference(Object object) {
+                        this.references.computeIfAbsent(object, this);
+                    }
+
+                    @Override
+                    public Integer apply(Object key) {
+                        return this.index++;
+                    }
                 }
             };
         }
     };
 
-    Integer getReferenceId(Object object);
-
-    void setReference(Object object);
-
-    @Override
-    default void close() {
-        INSTANCE.remove();
-    }
+    Integer getReference(Object object);
 }

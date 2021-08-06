@@ -32,7 +32,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
@@ -74,7 +73,7 @@ public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
             if ((index >= ENUM_SET_INDEX) && (index < ENUM_SET_INDEX + this.marshaller.getFields())) {
                 builder = this.marshaller.readField(reader, index - ENUM_SET_INDEX, builder);
             } else if (index == this.valueIndex) {
-                values.add(reader.readObject(Any.class).get());
+                values.add(reader.readAny());
             } else {
                 reader.skipField(tag);
             }
@@ -95,7 +94,7 @@ public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
         this.marshaller.writeFields(writer, ENUM_SET_INDEX, set);
 
         for (Object value : map.values()) {
-            writer.writeObject(this.valueIndex, new Any(value));
+            writer.writeAny(this.valueIndex, value);
         }
     }
 

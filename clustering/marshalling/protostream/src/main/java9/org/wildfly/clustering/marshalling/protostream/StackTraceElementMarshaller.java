@@ -53,13 +53,13 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
             int tag = reader.readTag();
             switch (WireType.getTagFieldNumber(tag)) {
                 case CLASS_NAME_INDEX:
-                    className = (String) reader.readObject(Any.class).get();
+                    className = reader.readAny(String.class);
                     break;
                 case METHOD_NAME_INDEX:
-                    methodName = (String) reader.readObject(Any.class).get();
+                    methodName = reader.readAny(String.class);
                     break;
                 case FILE_NAME_INDEX:
-                    fileName = (String) reader.readObject(Any.class).get();
+                    fileName = reader.readAny(String.class);
                     break;
                 case LINE_NUMBER_INDEX:
                     line = reader.readUInt32();
@@ -69,13 +69,13 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
                     }
                     break;
                 case CLASS_LOADER_NAME_INDEX:
-                    classLoaderName = (String) reader.readObject(Any.class).get();
+                    classLoaderName = reader.readAny(String.class);
                     break;
                 case MODULE_NAME_INDEX:
-                    moduleName = (String) reader.readObject(Any.class).get();
+                    moduleName = reader.readAny(String.class);
                     break;
                 case MODULE_VERSION_INDEX:
-                    moduleVersion = (String) reader.readObject(Any.class).get();
+                    moduleVersion = reader.readAny(String.class);
                     break;
                 default:
                     reader.skipField(tag);
@@ -86,11 +86,11 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
 
     @Override
     public void writeTo(ProtoStreamWriter writer, StackTraceElement element) throws IOException {
-        writer.writeObject(CLASS_NAME_INDEX, new Any(element.getClassName()));
-        writer.writeObject(METHOD_NAME_INDEX, new Any(element.getMethodName()));
+        writer.writeAny(CLASS_NAME_INDEX, element.getClassName());
+        writer.writeAny(METHOD_NAME_INDEX, element.getMethodName());
         String fileName = element.getFileName();
         if (fileName != null) {
-            writer.writeObject(FILE_NAME_INDEX, new Any(fileName));
+            writer.writeAny(FILE_NAME_INDEX, fileName);
         }
         int line = element.getLineNumber();
         boolean nativeMethod = element.isNativeMethod();
@@ -99,15 +99,15 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
         }
         String classLoaderName = element.getClassLoaderName();
         if (classLoaderName != null) {
-            writer.writeObject(CLASS_LOADER_NAME_INDEX, new Any(classLoaderName));
+            writer.writeAny(CLASS_LOADER_NAME_INDEX, classLoaderName);
         }
         String moduleName = element.getModuleName();
         if (moduleName != null) {
-            writer.writeObject(MODULE_NAME_INDEX, new Any(moduleName));
+            writer.writeAny(MODULE_NAME_INDEX, moduleName);
         }
         String moduleVersion = element.getModuleVersion();
         if (moduleVersion != null) {
-            writer.writeObject(MODULE_VERSION_INDEX, new Any(moduleVersion));
+            writer.writeAny(MODULE_VERSION_INDEX, moduleVersion);
         }
     }
 

@@ -25,7 +25,6 @@ package org.wildfly.clustering.marshalling.protostream.util;
 import java.io.IOException;
 import java.util.Comparator;
 
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -57,7 +56,7 @@ public enum ComparatorMarshaller implements FieldSetMarshaller<Comparator<?>, Co
             case REVERSE_INDEX:
                 return reader.readBool() ? Comparator.reverseOrder() : Comparator.naturalOrder();
             case COMPARATOR_INDEX:
-                return (Comparator<?>) reader.readObject(Any.class).get();
+                return reader.readAny(Comparator.class);
             default:
                 throw new IllegalArgumentException(Integer.toString(index));
         }
@@ -70,7 +69,7 @@ public enum ComparatorMarshaller implements FieldSetMarshaller<Comparator<?>, Co
         if (natural || reverse) {
             writer.writeBool(startIndex + REVERSE_INDEX, reverse);
         } else {
-            writer.writeObject(startIndex + COMPARATOR_INDEX, new Any(comparator));
+            writer.writeAny(startIndex + COMPARATOR_INDEX, comparator);
         }
     }
 }

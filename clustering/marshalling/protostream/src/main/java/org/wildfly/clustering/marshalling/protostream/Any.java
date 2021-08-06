@@ -33,7 +33,7 @@ public class Any implements Supplier<Object> {
 
     private final Object value;
 
-    public Any(Object value) {
+    Any(Object value) {
         this.value = value;
     }
 

@@ -44,5 +44,6 @@ public class TestSerializationContextInitializer extends AbstractSerializationCo
         context.registerMarshaller(new ValueMarshaller<>(new TestComparator<>()));
         context.registerMarshaller(new EnumMarshaller<>(Empty.class));
         context.registerMarshaller(new FunctionalScalarMarshaller<>(TestInvocationHandler.class, Scalar.ANY, TestInvocationHandler::getValue, TestInvocationHandler::new));
+        context.registerMarshaller(new PersonMarshaller());
     }
 }
