@@ -35,6 +35,10 @@ public abstract class AbstractCMTBean {
     @PersistenceContext(unitName = "pu1")
     EntityManager em;
 
+    @PersistenceContext(unitName = "pu2")
+    EntityManager em2;
+
+
     @Resource
     SessionContext sessionContext;
 
@@ -50,7 +54,7 @@ public abstract class AbstractCMTBean {
 
     public void updateEmployee(Employee emp) {
         emp.setName("hacked " + emp.getName());
-        em.merge(emp);
+        em2.merge(emp);
         //em.flush();
     }
 

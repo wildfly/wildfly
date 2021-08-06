@@ -113,6 +113,21 @@ public class InitializeInOrderTestCase {
     }
 
     /**
+     * Tests that both MyEJB + MyEJB2 have access to the persistence context defined in the other EJB
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSubDeploymentsHaveAllPersistenceUnits() throws Exception {
+        // java:global/InitializeInOrderTestCase/ejb2/SFSBCMT
+        MyEjb myEjb = lookup("ejb/MyEjb", MyEjb.class);
+        MyEjb2 myEjb2 = lookup("ejb2/MyEjb2", MyEjb2.class);
+        assertTrue(myEjb.hasPersistenceContext());
+        assertTrue(myEjb2.hasPersistenceContext());
+
+    }
+
+    /**
      * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
      * when an entity is persisted via a CMT bean
      *

@@ -72,6 +72,7 @@ public class JpaDependenciesProvider implements DeploymentUnitDependenciesProvid
                 }
             }
         } else {
+            // handle when the `initialize-in-order` feature is not enabled.
             for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
                 final PersistenceUnitMetadataHolder persistenceUnits = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
                 if (persistenceUnits != null && persistenceUnits.getPersistenceUnits() != null) {
