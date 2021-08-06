@@ -153,4 +153,8 @@ public class EJBViewDescription extends ViewDescription {
         return ejb2xView;
     }
 
+    @Override
+    public boolean requiresSuperclassInProxy() {
+        return !(isEjb2xView() || methodIntf == MethodIntf.HOME);
+    }
 }
