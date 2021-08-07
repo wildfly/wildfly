@@ -34,10 +34,7 @@
     <dependencies>
         <module name="java.xml"/>
         <module name="org.jboss.metadata.common"/>
-        <module name="javax.annotation.api"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
-        <module name="javax.servlet.api" optional="true"/>
-        <module name="javax.servlet.jsp.api" optional="true"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.logging"/>
     </dependencies>
