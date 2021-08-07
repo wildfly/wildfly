@@ -76,4 +76,9 @@ public class DefaultBatchEnvironment implements BatchEnvironment {
     public Properties getBatchConfigurationProperties() {
         throw BatchLogger.LOGGER.noBatchEnvironmentFound(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
     }
+
+    @Override
+    public String getApplicationName() {
+        throw BatchLogger.LOGGER.noBatchEnvironmentFound(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
+    }
 }
