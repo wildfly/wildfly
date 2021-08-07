@@ -25,7 +25,7 @@ package org.wildfly.extension.microprofile.config.smallrye;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Service Names for Eclipse MicroProfile Config objects.
+ * Service Names for MicroProfile Config objects.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
