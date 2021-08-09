@@ -24,7 +24,11 @@ package org.jboss.as.weld.services.bootstrap;
 import static org.jboss.as.weld.util.ResourceInjectionUtilities.getResourceAnnotated;
 
 import java.lang.reflect.Member;
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
+import java.util.concurrent.CountDownLatch;
 
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.persistence.EntityManager;
@@ -41,6 +45,8 @@ import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.util.ImmediateResourceReferenceFactory;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
@@ -48,6 +54,8 @@ import org.jboss.weld.injection.spi.ResourceReference;
 import org.jboss.weld.injection.spi.ResourceReferenceFactory;
 import org.jboss.weld.injection.spi.helpers.SimpleResourceReference;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
+import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 public class WeldJpaInjectionServices implements JpaInjectionServices {
@@ -72,7 +80,11 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         //now we have the service controller, as this method is only called at runtime the service should
         //always be up
         final PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl) serviceController.getValue();
-        return new EntityManagerResourceReferenceFactory(scopedPuName, persistenceUnitService.getEntityManagerFactory(), context, deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY), ContextTransactionManager.getInstance());
+        if (persistenceUnitService.getEntityManagerFactory() != null) {
+            return new EntityManagerResourceReferenceFactory(scopedPuName, persistenceUnitService.getEntityManagerFactory(), context, deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY), ContextTransactionManager.getInstance());
+        } else {
+            return new LazyEntityManager(persistenceUnitService, serviceController, scopedPuName, context, deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY), ContextTransactionManager.getInstance());
+        }
     }
 
     @Override
@@ -89,8 +101,12 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         //now we have the service controller, as this method is only called at runtime the service should
         //always be up
         final PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl) serviceController.getValue();
+        if (persistenceUnitService.getEntityManagerFactory() != null) {
+            return new ImmediateResourceReferenceFactory<EntityManagerFactory>(persistenceUnitService.getEntityManagerFactory());
+        } else {
+            return new LazyEntityManagerFactory<EntityManagerFactory>(persistenceUnitService, serviceController);
+        }
 
-        return new ImmediateResourceReferenceFactory<EntityManagerFactory>(persistenceUnitService.getEntityManagerFactory());
     }
 
     @Override
@@ -126,6 +142,145 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         public ResourceReference<EntityManager> createResource() {
             final TransactionScopedEntityManager result = new TransactionScopedEntityManager(scopedPuName, new HashMap<>(), entityManagerFactory, context.synchronization(), transactionSynchronizationRegistry, transactionManager);
             return new SimpleResourceReference<EntityManager>(result);
+        }
+    }
+
+    private static class LazyEntityManagerFactory<T> implements ResourceReferenceFactory<EntityManagerFactory> {
+        private final PersistenceUnitServiceImpl persistenceUnitService;
+        private final ServiceController<?> serviceController;
+        public LazyEntityManagerFactory(PersistenceUnitServiceImpl persistenceUnitService, ServiceController<?> serviceController) {
+            this.persistenceUnitService = persistenceUnitService;
+            this.serviceController = serviceController;
+        }
+
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        @Override
+        public ResourceReference<EntityManagerFactory> createResource() {
+            serviceController.addListener(
+                    new LifecycleListener() {
+
+                        @Override
+                        public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                            if (event == LifecycleEvent.UP) {
+                                latch.countDown();
+                                controller.removeListener(this);
+                            }
+                        }
+                    }
+            );
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                // Thread was interrupted, which we will preserve in case a higher level operation needs to see it.
+                Thread.currentThread().interrupt();
+                // rather than just returning the current EntityManagerFactory (might be null or not null),
+                // fail with a runtime exception.
+                throw new RuntimeException(e);
+            }
+            return new ResourceReference<EntityManagerFactory>() {
+                final AccessControlContext accessControlContext =
+                        AccessController.doPrivileged(GetAccessControlContextAction.getInstance());
+                EntityManagerFactory entityManagerFactory;
+
+                @Override
+                public EntityManagerFactory getInstance() {
+                    PrivilegedAction<Void> privilegedAction =
+                            new PrivilegedAction<Void>() {
+                                // run as security privileged action
+                                @Override
+                                public Void run() {
+                                    entityManagerFactory = persistenceUnitService.getEntityManagerFactory();
+                                    return null;
+                                }
+                            };
+                    WildFlySecurityManager.doChecked(privilegedAction, accessControlContext);
+                    return entityManagerFactory;
+                }
+
+                @Override
+                public void release() {
+                }
+            };
+        }
+    }
+
+    private static class LazyEntityManager<T> implements ResourceReferenceFactory<EntityManager> {
+        private final PersistenceUnitServiceImpl persistenceUnitService;
+        private final ServiceController<?> serviceController;
+        private final String scopedPuName;
+        private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+        private final TransactionManager transactionManager;
+        private final PersistenceContext context;
+
+        public LazyEntityManager(PersistenceUnitServiceImpl persistenceUnitService,
+                                 ServiceController<?> serviceController,
+                                 String scopedPuName,
+                                 PersistenceContext context,
+                                 TransactionSynchronizationRegistry transactionSynchronizationRegistry,
+                                 TransactionManager transactionManager) {
+            this.persistenceUnitService = persistenceUnitService;
+            this.serviceController = serviceController;
+            this.scopedPuName = scopedPuName;
+            this.context = context;
+            this.transactionSynchronizationRegistry = transactionSynchronizationRegistry;
+            this.transactionManager = transactionManager;
+        }
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        @Override
+        public ResourceReference<EntityManager> createResource() {
+            serviceController.addListener(
+                    new LifecycleListener() {
+
+                        @Override
+                        public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+                            if (event == LifecycleEvent.UP) {
+                                latch.countDown();
+                                controller.removeListener(this);
+                            }
+                        }
+                    }
+            );
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                // Thread was interrupted, which we will preserve in case a higher level operation needs to see it.
+                Thread.currentThread().interrupt();
+                // rather than just returning the current EntityManagerFactory (might be null or not null),
+                // fail with a runtime exception.
+                throw new RuntimeException(e);
+            }
+            return new ResourceReference<EntityManager>() {
+                EntityManager entityManager;
+                final AccessControlContext accessControlContext =
+                        AccessController.doPrivileged(GetAccessControlContextAction.getInstance());
+                @Override
+                public EntityManager getInstance() {
+
+                        PrivilegedAction<Void> privilegedAction =
+                                new PrivilegedAction<Void>() {
+                                    // run as security privileged action
+                                    @Override
+                                    public Void run() {
+                                        entityManager = new TransactionScopedEntityManager(
+                                                scopedPuName,
+                                                new HashMap<>(),
+                                                persistenceUnitService.getEntityManagerFactory(),
+                                                context.synchronization(),
+                                                transactionSynchronizationRegistry,
+                                                transactionManager);
+                                        return null;
+                                    }
+                                };
+                    WildFlySecurityManager.doChecked(privilegedAction, accessControlContext);
+                    return entityManager;
+                }
+
+                @Override
+                public void release() {
+                }
+            };
         }
     }
 }
