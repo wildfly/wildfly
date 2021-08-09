@@ -23,8 +23,6 @@ package org.jboss.as.test.integration.jpa.initializeinorder;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -50,7 +48,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class InitializeInOrderTestCase {
 
-    public static final List<String> initOrder = new ArrayList<String>();
     private static final String ARCHIVE_NAME = "InitializeInOrderTestCase";
     private static boolean gotJpaInjectingBean;
     private static boolean gotEntityManagerFactory;
@@ -62,6 +59,7 @@ public class InitializeInOrderTestCase {
         ear.addAsResource(InitializeInOrderTestCase.class.getPackage(), "application.xml", "application.xml");
         final JavaArchive sharedJar = ShrinkWrap.create(JavaArchive.class, "shared.jar");
         sharedJar.addClasses(InitializeInOrderTestCase.class,
+                TestState.class,
                 Employee.class,
                 MyListener.class,
                 SingletonCMT.class
@@ -93,9 +91,9 @@ public class InitializeInOrderTestCase {
 
     @Test
     public void testPostConstruct() throws NamingException {
-        Assert.assertEquals("check of initOrder (" + initOrder.toString() + ") size is expected to be 3 but was " + initOrder.size(), 3, initOrder.size());
-        Assert.assertEquals("MyServlet", initOrder.get(0));
-        Assert.assertEquals("MyEjb", initOrder.get(1));
+        Assert.assertEquals("check of initOrder (" + TestState.initOrder.toString() + ") size is expected to be 3 but was " + TestState.initOrder.size(), 3, TestState.initOrder.size());
+        Assert.assertEquals("MyServlet", TestState.initOrder.get(0));
+        Assert.assertEquals("MyEjb", TestState.initOrder.get(1));
     }
 
     /**
@@ -140,10 +138,6 @@ public class InitializeInOrderTestCase {
         cmtBean.updateEmployee(emp);
         assertTrue("could not load added employee", emp != null);
         assertTrue("EntityListener wasn't invoked twice as expected, instead " + MyListener.getInvocationCount(), 2 == MyListener.getInvocationCount());
-    }
-
-    public static void recordInit(final String clazz) {
-        initOrder.add(clazz);
     }
 
     public static void gotJpaInjectingBean() {

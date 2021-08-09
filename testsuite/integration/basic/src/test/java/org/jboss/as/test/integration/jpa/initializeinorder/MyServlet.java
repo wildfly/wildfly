@@ -28,7 +28,7 @@ public class MyServlet implements Servlet {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        InitializeInOrderTestCase.recordInit(MyServlet.class.getSimpleName());
+        TestState.initOrder.add(MyServlet.class.getSimpleName());
         if (bean != null) {
             InitializeInOrderTestCase.gotJpaInjectingBean();
             if (bean.entityManagerFactory() != null) {

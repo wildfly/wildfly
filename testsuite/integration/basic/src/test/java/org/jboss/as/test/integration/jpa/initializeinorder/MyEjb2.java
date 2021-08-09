@@ -21,8 +21,8 @@ public class MyEjb2 {
 
     @PostConstruct
     public void postConstruct() {
-        InitializeInOrderTestCase.recordInit(MyEjb2.class.getSimpleName());
-        System.out.println("xxx MyEjb2 postConstruct called, InitializeInOrderTestCase initOrder=" + InitializeInOrderTestCase.initOrder.toString());
+        TestState.initOrder.add(MyEjb2.class.getSimpleName());
+        System.out.println("xxx MyEjb2 postConstruct called, InitializeInOrderTestCase initOrder=" + TestState.initOrder.toString());
     }
 
     public boolean hasPersistenceContext() {
