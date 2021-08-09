@@ -24,6 +24,9 @@ package org.jboss.as.weld.services.bootstrap;
 import static org.jboss.as.weld.util.ResourceInjectionUtilities.getResourceAnnotated;
 
 import java.lang.reflect.Member;
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 
@@ -51,6 +54,8 @@ import org.jboss.weld.injection.spi.ResourceReference;
 import org.jboss.weld.injection.spi.ResourceReferenceFactory;
 import org.jboss.weld.injection.spi.helpers.SimpleResourceReference;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
+import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 public class WeldJpaInjectionServices implements JpaInjectionServices {
@@ -174,10 +179,23 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
                 throw new RuntimeException(e);
             }
             return new ResourceReference<EntityManagerFactory>() {
+                final AccessControlContext accessControlContext =
+                        AccessController.doPrivileged(GetAccessControlContextAction.getInstance());
+                EntityManagerFactory entityManagerFactory;
 
                 @Override
                 public EntityManagerFactory getInstance() {
-                    return persistenceUnitService.getEntityManagerFactory();
+                    PrivilegedAction<Void> privilegedAction =
+                            new PrivilegedAction<Void>() {
+                                // run as security privileged action
+                                @Override
+                                public Void run() {
+                                    entityManagerFactory = persistenceUnitService.getEntityManagerFactory();
+                                    return null;
+                                }
+                            };
+                    WildFlySecurityManager.doChecked(privilegedAction, accessControlContext);
+                    return entityManagerFactory;
                 }
 
                 @Override
@@ -234,10 +252,29 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
                 throw new RuntimeException(e);
             }
             return new ResourceReference<EntityManager>() {
-
+                EntityManager entityManager;
+                final AccessControlContext accessControlContext =
+                        AccessController.doPrivileged(GetAccessControlContextAction.getInstance());
                 @Override
                 public EntityManager getInstance() {
-                    return new TransactionScopedEntityManager(scopedPuName, new HashMap<>(), persistenceUnitService.getEntityManagerFactory(), context.synchronization(), transactionSynchronizationRegistry, transactionManager);
+
+                        PrivilegedAction<Void> privilegedAction =
+                                new PrivilegedAction<Void>() {
+                                    // run as security privileged action
+                                    @Override
+                                    public Void run() {
+                                        entityManager = new TransactionScopedEntityManager(
+                                                scopedPuName,
+                                                new HashMap<>(),
+                                                persistenceUnitService.getEntityManagerFactory(),
+                                                context.synchronization(),
+                                                transactionSynchronizationRegistry,
+                                                transactionManager);
+                                        return null;
+                                    }
+                                };
+                    WildFlySecurityManager.doChecked(privilegedAction, accessControlContext);
+                    return entityManager;
                 }
 
                 @Override
