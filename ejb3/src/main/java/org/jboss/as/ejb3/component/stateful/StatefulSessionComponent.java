@@ -404,18 +404,13 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     public boolean shouldDiscard(Exception ex, Method method) {
 
         // Detect app exception
-        if (getApplicationException(ex.getClass(), method) != null) {
-            // it's an application exception, just throw it back.
+        if (getApplicationException(ex.getClass(), method) != null // it's an application exception, just throw it back.
+            || ex instanceof ConcurrentAccessTimeoutException
+            || ex instanceof ConcurrentAccessException) {
             return false;
         }
-        if (ex instanceof ConcurrentAccessTimeoutException || ex instanceof ConcurrentAccessException) {
-            return false;
-        }
-        if (!(ex instanceof RemoveException)) {
-            if (ex instanceof RuntimeException || ex instanceof RemoteException) {
-                return true;
-            }
-        }
-        return false;
+
+        return (!(ex instanceof RemoveException)
+                && (ex instanceof RuntimeException || ex instanceof RemoteException));
     }
 }

@@ -76,16 +76,16 @@ public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
                 ModuleRootMarker.mark(resourceRoot);
             } else {
                 final Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
-                if (index != null) {
-                    if (!index.getAnnotations(STATEFUL).isEmpty() ||
+                if (index != null
+                        && (!index.getAnnotations(STATEFUL).isEmpty() ||
                             !index.getAnnotations(STATELESS).isEmpty() ||
                             !index.getAnnotations(MESSAGE_DRIVEN).isEmpty() ||
-                            !index.getAnnotations(SINGLETON).isEmpty()) {
-                        //this is an Jakarta Enterprise Beans deployment
-                        //TODO: we need to mark Jakarta Enterprise Beans sub deployments so the sub deployers know they are Jakarta Enterprise Beans deployments
-                        SubDeploymentMarker.mark(resourceRoot);
-                        ModuleRootMarker.mark(resourceRoot);
-                    }
+                            !index.getAnnotations(SINGLETON).isEmpty())) {
+                    // this is an Jakarta Enterprise Beans deployment
+                    // TODO: we need to mark Jakarta Enterprise Beans sub deployments so the sub deployers know they are Jakarta
+                    // Enterprise Beans deployments
+                    SubDeploymentMarker.mark(resourceRoot);
+                    ModuleRootMarker.mark(resourceRoot);
                 }
             }
         }

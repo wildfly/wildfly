@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.function.Supplier;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 
 /**
@@ -53,7 +52,7 @@ public class CollectionMarshaller<T extends Collection<Object>> extends Abstract
             int index = WireType.getTagFieldNumber(tag);
             switch (index) {
                 case ELEMENT_INDEX:
-                    collection.add(reader.readObject(Any.class).get());
+                    collection.add(reader.readAny());
                     break;
                 default:
                     reader.skipField(tag);

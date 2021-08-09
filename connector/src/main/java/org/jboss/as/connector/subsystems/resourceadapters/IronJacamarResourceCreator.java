@@ -92,7 +92,6 @@ import org.jboss.jca.common.api.metadata.common.XaPool;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
 import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
-import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 
 /**
  * Handler for exposing transaction logs
@@ -398,16 +397,6 @@ public class IronJacamarResourceCreator {
         PathElement ijPe = PathElement.pathElement(Constants.IRONJACAMAR_NAME, Constants.IRONJACAMAR_NAME);
         if (parentResource.getChild(ijPe) == null) {
             parentResource.registerChild(ijPe, ironJacamarResource);
-        }
-    }
-
-    private void setStatsModelValue(ModelNode result, String attributeName, StatisticsPlugin stats) {
-        if (stats.getType(attributeName) == int.class) {
-            result.set((Integer) stats.getValue(attributeName));
-        } else if (stats.getType(attributeName) == long.class) {
-            result.set((Long) stats.getValue(attributeName));
-        } else {
-            result.set("" + stats.getValue(attributeName));
         }
     }
 

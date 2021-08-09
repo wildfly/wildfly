@@ -285,7 +285,7 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
             }
         }
 
-        if (required.size() > 0) { throw missingRequired(reader, required); }
+        if (!required.isEmpty()) { throw missingRequired(reader, required); }
 
         requireNoContent(reader);
 

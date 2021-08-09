@@ -116,13 +116,12 @@ public class Util {
         }
 
         // exception?
-        if (Throwable.class.isAssignableFrom(cls)) {
-            if (Exception.class.isAssignableFrom(cls) &&
-                    !RuntimeException.class.isAssignableFrom(cls)) {
-                ExceptionAnalysis ea = ExceptionAnalysis.getExceptionAnalysis(cls);
+        if (Throwable.class.isAssignableFrom(cls)
+                && Exception.class.isAssignableFrom(cls)
+                && !RuntimeException.class.isAssignableFrom(cls)) {
+            ExceptionAnalysis ea = ExceptionAnalysis.getExceptionAnalysis(cls);
 
-                return ea.getIDLModuleName() + "::" + ea.getIDLName();
-            }
+            return ea.getIDLModuleName() + "::" + ea.getIDLName();
         }
 
         // got to be value
@@ -180,21 +179,21 @@ public class Util {
         Class type = primitive.getClass();
 
         if (type == Boolean.class)
-            any.insert_boolean(((Boolean) primitive).booleanValue());
+            any.insert_boolean((Boolean) primitive);
         else if (type == Character.class)
-            any.insert_wchar(((Character) primitive).charValue());
+            any.insert_wchar((Character) primitive);
         else if (type == Byte.class)
-            any.insert_octet(((Byte) primitive).byteValue());
+            any.insert_octet((Byte) primitive);
         else if (type == Short.class)
-            any.insert_short(((Short) primitive).shortValue());
+            any.insert_short((Short) primitive);
         else if (type == Integer.class)
-            any.insert_long(((Integer) primitive).intValue());
+            any.insert_long((Integer) primitive);
         else if (type == Long.class)
-            any.insert_longlong(((Long) primitive).longValue());
+            any.insert_longlong((Long) primitive);
         else if (type == Float.class)
-            any.insert_float(((Float) primitive).floatValue());
+            any.insert_float((Float) primitive);
         else if (type == Double.class)
-            any.insert_double(((Double) primitive).doubleValue());
+            any.insert_double((Double) primitive);
         else
             throw IIOPLogger.ROOT_LOGGER.notAPrimitive(type.getName());
     }
@@ -410,19 +409,6 @@ public class Util {
     }
 
     /**
-     * Determine if a <code>char</code> is legal start of an IDL identifier.
-     */
-    private static boolean isLegalIDLStartIdentifierChar(char c) {
-        if (c >= 0x61 && c <= 0x7a)
-            return true; // lower case letter
-
-        if (c >= 0x41 && c <= 0x5a)
-            return true; // upper case letter
-
-        return false;
-    }
-
-    /**
      * Return the class hash code, as specified in "The Common Object
      * Request Broker: Architecture and Specification" (01-02-33),
      * section 10.6.2.
@@ -439,7 +425,7 @@ public class Util {
         // Try cache
         Long l = (Long) classHashCodeCache.get(cls);
         if (l != null)
-            return l.longValue();
+            return l;
 
         // Has to calculate the hash.
 
@@ -524,7 +510,7 @@ public class Util {
         }
 
         // Save in cache
-        classHashCodeCache.put(cls, new Long(hash));
+        classHashCodeCache.put(cls, hash);
 
         return hash;
     }
@@ -558,22 +544,6 @@ public class Util {
         }
 
         return "L" + cls.getName().replace('.', '/') + ";";
-    }
-
-    /**
-     * Calculate the signature of a method, according to the Java VM
-     * specification, section 4.3.3.
-     */
-    private static String getSignature(Method method) {
-        StringBuffer b = new StringBuffer("(");
-        Class[] parameterTypes = method.getParameterTypes();
-
-        for (int i = 0; i < parameterTypes.length; ++i)
-            b.append(getSignature(parameterTypes[i]));
-
-        b.append(')').append(getSignature(method.getReturnType()));
-
-        return b.toString();
     }
 
     /**

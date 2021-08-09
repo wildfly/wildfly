@@ -63,10 +63,9 @@ public class MdbDeliveryMergingProcessor extends AbstractMergingProcessor<Messag
 
         final ClassAnnotationInformation<DeliveryActive, Boolean> deliveryActive = clazz.getAnnotationInformation(DeliveryActive.class);
 
-        if (deliveryActive != null) {
-            if (!deliveryActive.getClassLevelAnnotations().isEmpty()) {
-                componentConfiguration.setDeliveryActive(deliveryActive.getClassLevelAnnotations().get(0));
-            }
+        if (deliveryActive != null
+                && !deliveryActive.getClassLevelAnnotations().isEmpty()) {
+            componentConfiguration.setDeliveryActive(deliveryActive.getClassLevelAnnotations().get(0));
         }
 
         final ClassAnnotationInformation<DeliveryGroup, String> deliveryGroup = clazz.getAnnotationInformation(DeliveryGroup.class);

@@ -81,13 +81,15 @@ public class ExternalJMSTopicService implements Service<Topic> {
             try {
                 ConnectionFactory cf = (ConnectionFactory) storeBaseContext.lookup(pcfInjector.getValue().getBindInfo().getAbsoluteJndiName());
                 if (cf instanceof ActiveMQRAConnectionFactory) {
-                    ActiveMQRAConnectionFactory raCf = (ActiveMQRAConnectionFactory) cf;
-                    ServerLocator locator = raCf.getDefaultFactory().getServerLocator();
+                    final ActiveMQRAConnectionFactory raCf = (ActiveMQRAConnectionFactory) cf;
+                    final ServerLocator locator = raCf.getDefaultFactory().getServerLocator();
+                    final String protocolManagerFactor = locator.getProtocolManagerFactory().getClass().getName();
                     sessionFactory = locator.createSessionFactory();
                     ClusterTopologyListener listener = new ClusterTopologyListener() {
                         @Override
                         public void nodeUP(TopologyMember member, boolean last) {
                             try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getLive())) {
+                                factory.setProtocolManagerFactoryStr(protocolManagerFactor);
                                 MessagingLogger.ROOT_LOGGER.infof("Creating topic %s on node UP %s - %s", topicName, member.getNodeId(), member.getLive().toJson());
                                 config.createTopic(factory, managementQueue, topicName);
                             } catch (JMSException | StartException ex) {
@@ -96,6 +98,7 @@ public class ExternalJMSTopicService implements Service<Topic> {
                             }
                             if (member.getBackup() != null) {
                                 try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getBackup())) {
+                                    factory.setProtocolManagerFactoryStr(protocolManagerFactor);
                                     MessagingLogger.ROOT_LOGGER.infof("Creating topic %s on backup node UP %s - %s", topicName, member.getNodeId(), member.getBackup().toJson());
                                     config.createTopic(factory, managementQueue, topicName);
                                 } catch (JMSException | StartException ex) {

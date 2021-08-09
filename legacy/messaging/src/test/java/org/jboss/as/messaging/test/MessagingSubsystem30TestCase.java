@@ -63,20 +63,6 @@ public class MessagingSubsystem30TestCase extends AbstractLegacySubsystemBaseTes
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-            "/subsystem-templates/messaging.xml",
-            "/subsystem-templates/messaging-hornetq-colocated.xml"
-        };
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
-    }
-
-    @Override
     protected Properties getResolvedProperties() {
         Properties properties = new Properties();
         properties.put("messaging.cluster.user.name", "myClusterUser");

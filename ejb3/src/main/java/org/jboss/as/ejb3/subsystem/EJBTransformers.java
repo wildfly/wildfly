@@ -175,7 +175,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .getAttributeBuilder()
                 .setValueConverter(AttributeConverter.Factory.createHardCoded(ModelNode.TRUE, true), EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE)
                 .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("default"), true), EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE)
-                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode().set(Long.valueOf(Integer.MAX_VALUE)), true), EJB3SubsystemModel.IDLE_TIMEOUT)
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode().set((long)(Integer.MAX_VALUE)), true), EJB3SubsystemModel.IDLE_TIMEOUT)
                 .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode().set(TimeUnit.SECONDS.name()), true), EJB3SubsystemModel.IDLE_TIMEOUT_UNIT)
                 .end();
 
@@ -383,7 +383,7 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
             if (!fileStore.isDefined()) {//happens where default is not file-store
                 rejectIncompatibleDataStores(context, address);
             } else if ((untransformedModel.hasDefined(EJB3SubsystemModel.DATABASE_DATA_STORE)
-                    && untransformedModel.get(EJB3SubsystemModel.DATABASE_DATA_STORE).keys().size() > 0)
+                    && !untransformedModel.get(EJB3SubsystemModel.DATABASE_DATA_STORE).keys().isEmpty())
                     || untransformedModel.get(EJB3SubsystemModel.FILE_DATA_STORE).keys().size() > 1) {
                 rejectIncompatibleDataStores(context, address);
             }

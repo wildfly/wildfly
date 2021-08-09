@@ -24,7 +24,6 @@ package org.jboss.as.jaxrs;
 import java.io.IOException;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.junit.Test;
 import org.wildfly.extension.eesecurity.EESecurityExtension;
 
 /**
@@ -44,19 +43,6 @@ public class JavaEESecuritySubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXsdPath() throws Exception {
         return "schema/wildfly-ee-security_1_0.xsd";
-    }
-
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[]{
-                "/subsystem-templates/ee-security.xml"
-        };
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
     }
 
     //no point in testing 1.0.0 (current) --> 1.0.0 (all previous) for transformers

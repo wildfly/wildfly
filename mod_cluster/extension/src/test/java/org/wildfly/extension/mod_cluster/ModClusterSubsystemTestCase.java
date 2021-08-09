@@ -43,12 +43,6 @@ public class ModClusterSubsystemTestCase extends ClusteringSubsystemTest<ModClus
     }
 
     public ModClusterSubsystemTestCase(ModClusterSchema schema) {
-        super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension(), schema, ModClusterSchema.CURRENT, "subsystem_%d_%d.xml", "schema/jboss-as-mod-cluster_%d_%d.xsd");
-    }
-
-    @Override
-    protected String[] getSubsystemTemplatePaths() {
-        // Need to override since template file name != subsystem name
-        return new String[] { "/subsystem-templates/mod_cluster.xml" };
+        super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension(), schema, "subsystem_%d_%d.xml", "schema/jboss-as-mod-cluster_%d_%d.xsd");
     }
 }

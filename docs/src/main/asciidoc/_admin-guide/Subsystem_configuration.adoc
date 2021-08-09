@@ -36,6 +36,8 @@ include::subsystem-configuration/Undertow.adoc[]
 
 include::subsystem-configuration/Messaging.adoc[]
 
+include::subsystem-configuration/Transactions.adoc[]
+
 include::subsystem-configuration/Metrics.adoc[]
 
 include::subsystem-configuration/Health.adoc[]

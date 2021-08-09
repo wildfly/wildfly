@@ -24,6 +24,7 @@ package org.wildfly.extension.microprofile.reactive.streams.operators;
 
 import static org.jboss.as.controller.OperationContext.Stage.RUNTIME;
 import static org.jboss.as.server.deployment.Phase.DEPENDENCIES;
+import static org.jboss.as.server.deployment.Phase.DEPENDENCIES_MICROPROFILE_REACTIVE_STREAMS_OPERATORS;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -96,10 +97,6 @@ public class MicroProfileReactiveStreamsOperatorsSubsystemDefinition extends Per
 
             context.addStep(new AbstractDeploymentChainStep() {
                 public void execute(DeploymentProcessorTarget processorTarget) {
-
-                    // TODO Put these into Phase.java https://issues.redhat.com/browse/WFCORE-5217
-                    final int DEPENDENCIES_MICROPROFILE_REACTIVE_STREAMS_OPERATORS = 6320;
-
                     processorTarget.addDeploymentProcessor(MicroProfileReactiveStreamsOperatorsExtension.SUBSYSTEM_NAME, DEPENDENCIES, DEPENDENCIES_MICROPROFILE_REACTIVE_STREAMS_OPERATORS, new ReactiveStreamsOperatorsDependencyProcessor());
                 }
             }, RUNTIME);

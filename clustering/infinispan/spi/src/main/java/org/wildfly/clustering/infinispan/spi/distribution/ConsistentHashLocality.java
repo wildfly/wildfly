@@ -21,15 +21,10 @@
  */
 package org.wildfly.clustering.infinispan.spi.distribution;
 
-import java.util.Collections;
-
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.distribution.LocalizedCacheTopology;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.KeyPartitioner;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.topology.CacheTopology;
 
 /**
  * {@link Locality} implementation based on a {@link ConsistentHash}.
@@ -37,21 +32,26 @@ import org.infinispan.topology.CacheTopology;
  */
 public class ConsistentHashLocality implements Locality {
 
-    private final LocalizedCacheTopology topology;
+    private final KeyDistribution distribution;
+    private final Address localAddress;
 
+    @SuppressWarnings("deprecation")
     public ConsistentHashLocality(Cache<?, ?> cache, ConsistentHash hash) {
-        CacheMode mode = cache.getCacheConfiguration().clustering().cacheMode();
-        KeyPartitioner partitioner = cache.getAdvancedCache().getComponentRegistry().getLocalComponent(KeyPartitioner.class);
-        Address localAddress = cache.getAdvancedCache().getDistributionManager().getCacheTopology().getLocalAddress();
-        this.topology = new LocalizedCacheTopology(mode, new CacheTopology(0, 0, hash, null, CacheTopology.Phase.NO_REBALANCE, Collections.emptyList(), Collections.emptyList()), partitioner, localAddress, true);
+        this(cache.getAdvancedCache().getComponentRegistry().getLocalComponent(KeyPartitioner.class), hash, cache.getAdvancedCache().getDistributionManager().getCacheTopology().getLocalAddress());
     }
 
-    public ConsistentHashLocality(LocalizedCacheTopology topology) {
-        this.topology = topology;
+    private ConsistentHashLocality(KeyPartitioner partitioner, ConsistentHash hash, Address localAddress) {
+        this(new ConsistentHashKeyDistribution(partitioner, hash), localAddress);
+    }
+
+    ConsistentHashLocality(KeyDistribution distribution, Address localAddress) {
+        this.distribution = distribution;
+        this.localAddress = localAddress;
     }
 
     @Override
     public boolean isLocal(Object key) {
-        return this.topology.getDistribution(key).isPrimary();
+        Address primary = this.distribution.getPrimaryOwner(key);
+        return this.localAddress.equals(primary);
     }
 }

@@ -177,9 +177,15 @@ public class TransactionPropagationFailureTestCase {
             log.debugf(expected,"Exception expected as the client server '%s' should be crashed", CLIENT_SERVER_NAME);
         }
 
-        // container was JVM crashed by the test, this call let the arquillian know that the container is not running
-        container.kill(CLIENT_SERVER_NAME);
-        // starting the container (as it was JVM crashed) for running transaction recovery
+        try {
+            // container was JVM crashed by the test, this call let the arquillian know that the container is not running
+            container.kill(CLIENT_SERVER_NAME);
+        } catch (Exception ignore) {
+            // ignoring the kill issue as the server process will be killed at the end (Arquillian uses Process.destroyForcibly)
+            // at this time the Arquillian container inner state could be 'KILLED_FAILED' which is still fine to restart the app server
+            log.debugf("Arquillian kill of " + CLIENT_SERVER_NAME + " failed, but the process is killed and we can ignore it", ignore);
+        }
+        // starting the container (JVM crashed by call Runtime.getRuntime().halt), test will be running transaction recovery on restarted server
         container.start(CLIENT_SERVER_NAME);
 
         RecoveryExecutor recoveryExecutor = new RecoveryExecutor(managementClientClient);
@@ -264,6 +270,7 @@ public class TransactionPropagationFailureTestCase {
         try {
             // ClientBean#onePhaseIntermittentCommitFailureOnServer -> TransactionalBean#intermittentCommitFailureTwoPhase
             bean.onePhaseIntermittentCommitFailureOnServer(SERVER_DEPLOYMENT);
+            Assert.fail("Test expects the method call to fail with EJBException but no exception was thrown.");
         } catch (EJBException ejbe) {
             if (!(ejbe.getCausedByException() instanceof HeuristicMixedException)) {
                 log.errorf(ejbe,"Wrong exception type was obtained on 1PC remote Jakarta Enterprise Beans call. Expected %s to be caught..",

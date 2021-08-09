@@ -45,11 +45,9 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
                 jsf = servlet;
             }
         }
-        if(jsf != null) {
-            if(jsf.getMultipartConfig() == null) {
-                //WFLY-2329 File upload doesn't work
-                jsf.setMultipartConfig(new MultipartConfigMetaData());
-            }
+        if (jsf != null && jsf.getMultipartConfig() == null) {
+            // WFLY-2329 File upload doesn't work
+            jsf.setMultipartConfig(new MultipartConfigMetaData());
         }
         if (disallowDoctypeDecl != null) {
             // Add the disallowDoctypeDecl context param if it's not already present

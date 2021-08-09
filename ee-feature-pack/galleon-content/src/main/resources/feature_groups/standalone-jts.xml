@@ -24,5 +24,5 @@
         <feature-group name="iiop-sockets"/>
     </feature>
 
-    <feature-group name="iiop-openjdk"/>
+    <feature-group name="iiop-openjdk-legacy"/>
 </feature-group-spec>

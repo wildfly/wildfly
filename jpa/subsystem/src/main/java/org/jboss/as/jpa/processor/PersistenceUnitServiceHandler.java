@@ -158,7 +158,7 @@ public class PersistenceUnitServiceHandler {
             PersistenceUnitMetadataHolder holder;
             if (deploymentRoot != null &&
                 (holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
-                holder.getPersistenceUnits().size() > 0) {
+                !holder.getPersistenceUnits().isEmpty()) {
                 ArrayList<PersistenceUnitMetadataHolder> puList = new ArrayList<PersistenceUnitMetadataHolder>(1);
                 puList.add(holder);
                 ROOT_LOGGER.tracef("install persistence unit definition for jar %s", deploymentRoot.getRootName());
@@ -179,7 +179,7 @@ public class PersistenceUnitServiceHandler {
             // handle persistence.xml definition in the root of the war
             if (deploymentRoot != null &&
                 (holder = deploymentRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
-                holder.getPersistenceUnits().size() > 0) {
+                !holder.getPersistenceUnits().isEmpty()) {
                 // assemble and install the PU service
                 puList.add(holder);
                 deploymentRootName = deploymentRoot.getRootName();
@@ -188,13 +188,12 @@ public class PersistenceUnitServiceHandler {
             // look for persistence.xml in war files in the META-INF/persistence.xml directory
             List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
             for (ResourceRoot resourceRoot : resourceRoots) {
-                if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
-                    if ((holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null
-                        && holder.getPersistenceUnits().size() > 0) {
+                if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")
+                        && (((holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null)
+                                && !holder.getPersistenceUnits().isEmpty())) {
 
-                        // assemble and install the PU service
-                        puList.add(holder);
-                    }
+                    // assemble and install the PU service
+                    puList.add(holder);
                 }
             }
 
@@ -219,7 +218,7 @@ public class PersistenceUnitServiceHandler {
 
                     if (root != null &&
                         (holder = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null &&
-                        holder.getPersistenceUnits().size() > 0) {
+                        !holder.getPersistenceUnits().isEmpty()) {
                         // assemble and install the PU service
                         puList.add(holder);
                     }
@@ -246,7 +245,7 @@ public class PersistenceUnitServiceHandler {
                                      final boolean startEarly, final Platform platform)
         throws DeploymentUnitProcessingException {
 
-        if (puList.size() > 0) {
+        if (!puList.isEmpty()) {
             final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
             final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
             final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
@@ -334,11 +333,10 @@ public class PersistenceUnitServiceHandler {
             final HashMap<String, ValidatorFactory> properties = new HashMap<>();
 
             CapabilityServiceSupport css = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-            if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
-                if (css.hasCapability("org.wildfly.bean-validation")) {
-                    // Get the Jakarta Contexts and Dependency Injection enabled ValidatorFactory
-                    validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
-                }
+            if (!ValidationMode.NONE.equals(pu.getValidationMode())
+                    && css.hasCapability("org.wildfly.bean-validation")) {
+                // Get the Jakarta Contexts and Dependency Injection enabled ValidatorFactory
+                validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit, capabilitySupport);
 
@@ -577,11 +575,10 @@ public class PersistenceUnitServiceHandler {
         try {
             ValidatorFactory validatorFactory = null;
             final HashMap<String, ValidatorFactory> properties = new HashMap<>();
-            if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
-                if (capabilitySupport.hasCapability("org.wildfly.bean-validation")) {
-                    // Get the Jakarta Contexts and Dependency Injection enabled ValidatorFactory
-                    validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
-                }
+            if (!ValidationMode.NONE.equals(pu.getValidationMode())
+                    && capabilitySupport.hasCapability("org.wildfly.bean-validation")) {
+                // Get the Jakarta Contexts and Dependency Injection enabled ValidatorFactory
+                validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit, capabilitySupport);
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval =  new PersistenceAdaptorRemoval(pu, adaptor);

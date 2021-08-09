@@ -41,8 +41,7 @@ public class TestXAResource implements XAResource {
     public enum TestAction {
         NONE,
         PREPARE_THROW_XAER_RMERR, PREPARE_THROW_XAER_RMFAIL, PREPARE_THROW_UNKNOWN_XA_EXCEPTION, PREPARE_CRASH_VM,
-        COMMIT_THROW_XAER_RMERR, COMMIT_THROW_XAER_RMFAIL, COMMIT_THROW_UNKNOWN_XA_EXCEPTION, COMMIT_CRASH_VM,
-
+        COMMIT_THROW_XAER_RMERR, COMMIT_THROW_XAER_RMFAIL, COMMIT_THROW_XA_RBROLLBACK, COMMIT_THROW_UNKNOWN_XA_EXCEPTION, COMMIT_CRASH_VM,
     }
 
     // prepared xids are shared over all the TestXAResource instances in the JVM
@@ -106,6 +105,8 @@ public class TestXAResource implements XAResource {
                 throw new XAException(XAException.XAER_RMERR);
             case COMMIT_THROW_XAER_RMFAIL:
                 throw new XAException(XAException.XAER_RMFAIL);
+            case COMMIT_THROW_XA_RBROLLBACK:
+                throw new XAException(XAException.XA_RBROLLBACK);
             case COMMIT_THROW_UNKNOWN_XA_EXCEPTION:
                 throw new XAException(null);
             case COMMIT_CRASH_VM:

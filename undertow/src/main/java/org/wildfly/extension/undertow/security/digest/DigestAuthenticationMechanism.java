@@ -215,7 +215,7 @@ public class DigestAuthenticationMechanism implements AuthenticationMechanism {
 
         // Check all mandatory tokens are present.
         mandatoryTokens.removeAll(parsedHeader.keySet());
-        if (mandatoryTokens.size() > 0) {
+        if (!mandatoryTokens.isEmpty()) {
             for (DigestAuthorizationToken currentToken : mandatoryTokens) {
                 // TODO - Need a better check and possible concatenate the list of tokens - however
                 // even having one missing token is not something we should routinely expect.
@@ -388,7 +388,7 @@ public class DigestAuthenticationMechanism implements AuthenticationMechanism {
         if (stale) {
             rb.append(",stale=true");
         }
-        if (supportedAlgorithms.size() > 0) {
+        if (!supportedAlgorithms.isEmpty()) {
             // This header will need to be repeated once for each algorithm.
             rb.append(",").append(Headers.ALGORITHM.toString()).append("=%s");
         }

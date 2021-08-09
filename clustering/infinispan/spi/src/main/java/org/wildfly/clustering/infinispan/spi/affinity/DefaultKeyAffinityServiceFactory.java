@@ -22,13 +22,12 @@
 
 package org.wildfly.clustering.infinispan.spi.affinity;
 
-import java.util.Collections;
-import java.util.concurrent.ExecutorService;
+import java.util.function.Predicate;
 
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
-import org.infinispan.affinity.impl.KeyAffinityServiceImpl;
+import org.infinispan.remoting.transport.Address;
 
 /**
  * Factory for a {@link KeyAffinityService} whose implementation varies depending on cache mode.
@@ -36,16 +35,8 @@ import org.infinispan.affinity.impl.KeyAffinityServiceImpl;
  */
 public class DefaultKeyAffinityServiceFactory implements KeyAffinityServiceFactory {
 
-    private final ExecutorService executor;
-    private final int bufferSize;
-
-    public DefaultKeyAffinityServiceFactory(ExecutorService executor, int bufferSize) {
-        this.executor = executor;
-        this.bufferSize = bufferSize;
-    }
-
     @Override
-    public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator) {
-        return cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new KeyAffinityServiceImpl<>(this.executor, cache, generator, this.bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
+    public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator, Predicate<Address> filter) {
+        return cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new DefaultKeyAffinityService<>(cache, generator, filter) : new SimpleKeyAffinityService<>(generator);
     }
 }

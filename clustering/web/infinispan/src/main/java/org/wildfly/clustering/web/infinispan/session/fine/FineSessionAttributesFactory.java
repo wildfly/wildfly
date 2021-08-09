@@ -170,11 +170,13 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     }
 
     private boolean delete(String id, Flag... flags) {
-        Map<String, UUID> names = this.namesCache.getAdvancedCache().withFlags(EnumSet.of(Flag.FORCE_SYNCHRONOUS, flags)).remove(new SessionAttributeNamesKey(id));
+        SessionAttributeNamesKey key = new SessionAttributeNamesKey(id);
+        Map<String, UUID> names = this.namesCache.get(key);
         if (names != null) {
             for (UUID attributeId : names.values()) {
                 this.attributeCache.getAdvancedCache().withFlags(EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags)).remove(new SessionAttributeKey(id, attributeId));
             }
+            this.namesCache.getAdvancedCache().withFlags(EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags)).remove(key);
         }
         return true;
     }

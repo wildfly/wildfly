@@ -47,14 +47,14 @@ public class TestApplication extends Application {
 
         @Inject
         @ConfigProperty(name = "string_converted_by_priority_of_custom_converter", defaultValue = "I should not be here")
-        String convertedString;
+        MyString convertedString;
 
         @GET
         @Produces("text/plain")
         public Response doGet() {
             StringBuilder sb = new StringBuilder();
             sb.append("int_converted_to_102_by_priority_of_custom_converter = " + convertedTo102 + "\n");
-            sb.append("string_converted_by_priority_of_custom_converter = " + convertedString + "\n");
+            sb.append("string_converted_by_priority_of_custom_converter = " + convertedString.value + "\n");
             return Response.ok(sb).build();
         }
     }

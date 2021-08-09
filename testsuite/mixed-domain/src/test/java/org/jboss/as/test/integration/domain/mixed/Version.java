@@ -49,8 +49,7 @@ public @interface Version {
         EAP_7_1_0(EAP, 7, 1, 0, 8, 8, "EAP7.1", ModelVersion.create(5, 0)),
         EAP_7_2_0(EAP, 7, 2, 0, 11, 8, "EAP7.2", ModelVersion.create(8, 0)),
         EAP_7_3_0(EAP, 7, 3, 0, 11, 8, "EAP7.3", ModelVersion.create(10, 0)),
-        // Replace by 7.4.0 metadata once we have released it. See https://issues.redhat.com/browse/WFLY-14406
-        EAP_7_4_0(WILDFLY, 23, 0, 0, 11, 8, "WildFly23.0", ModelVersion.create(16, 0)),
+        EAP_7_4_0(EAP, 7, 4, 0, 11, 8, "EAP7.4", ModelVersion.create(16, 0)),
         ;
 
 

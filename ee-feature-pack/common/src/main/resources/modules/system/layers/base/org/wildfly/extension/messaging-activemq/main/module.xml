@@ -93,7 +93,7 @@
         <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.transaction.client"/>
         <!-- Use the HornetQ client module to create the legacy connection factory and destination resources -->
-        <module name="org.hornetq.client" />
+        <module name="org.hornetq.client" optional="true"/>
 
         <module name="java.xml"/>
     </dependencies>

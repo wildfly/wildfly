@@ -19,9 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.messaging.activemq.jms.legacy;
 
+import static org.hornetq.api.jms.JMSFactoryType.CF;
+import static org.hornetq.api.jms.JMSFactoryType.QUEUE_CF;
+import static org.hornetq.api.jms.JMSFactoryType.QUEUE_XA_CF;
+import static org.hornetq.api.jms.JMSFactoryType.TOPIC_CF;
+import static org.hornetq.api.jms.JMSFactoryType.TOPIC_XA_CF;
+import static org.hornetq.api.jms.JMSFactoryType.XA_CF;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CALL_TIMEOUT;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CLIENT_ID;
@@ -67,6 +72,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.messaging.activemq.BinderServiceUtil;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.jms.legacy.LegacyConnectionFactoryDefinition.HornetQConnectionFactoryType;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
@@ -78,7 +84,6 @@ public class LegacyConnectionFactoryAdd extends AbstractAddStepHandler {
     public LegacyConnectionFactoryAdd() {
         super(LegacyConnectionFactoryDefinition.ATTRIBUTES);
     }
-
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -99,7 +104,7 @@ public class LegacyConnectionFactoryAdd extends AbstractAddStepHandler {
 
         boolean ha = LegacyConnectionFactoryDefinition.HA.resolveModelAttribute(context, model).asBoolean();
         String factoryTypeStr = LegacyConnectionFactoryDefinition.FACTORY_TYPE.resolveModelAttribute(context, model).asString();
-        JMSFactoryType factoryType = LegacyConnectionFactoryDefinition.HornetQConnectionFactoryType.valueOf(factoryTypeStr).getType();
+        JMSFactoryType factoryType = getType(LegacyConnectionFactoryDefinition.HornetQConnectionFactoryType.valueOf(factoryTypeStr));
 
         final HornetQConnectionFactory incompleteCF;
         if (ha) {
@@ -154,4 +159,23 @@ public class LegacyConnectionFactoryAdd extends AbstractAddStepHandler {
         incompleteCF.setUseGlobalPools(USE_GLOBAL_POOLS.resolveModelAttribute(context, model).asBoolean());
         return incompleteCF;
     }
+
+    private JMSFactoryType getType(HornetQConnectionFactoryType type) {
+        switch (type) {
+            case GENERIC:
+                return CF;
+            case TOPIC:
+                return TOPIC_CF;
+            case QUEUE:
+                return QUEUE_CF;
+            case XA_GENERIC:
+                return XA_CF;
+            case XA_QUEUE:
+                return QUEUE_XA_CF;
+            case XA_TOPIC:
+                return TOPIC_XA_CF;
+        }
+        return CF;
+    }
+
 }

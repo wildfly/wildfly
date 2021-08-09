@@ -16,7 +16,7 @@
     </feature>
 
     <feature-group name="jsr77"/>
-    <feature-group name="iiop-openjdk"/>
+    <feature-group name="iiop-openjdk-legacy"/>
     <feature-group name="messaging-activemq"/>
     <!-- uncomment to make it the match the legacy configs
     <feature spec="subsystem.ee">

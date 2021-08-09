@@ -29,6 +29,5 @@
 
     <dependencies>
         <module name="java.logging" />
-        <module name="javax.jms.api" />
     </dependencies>
 </module>

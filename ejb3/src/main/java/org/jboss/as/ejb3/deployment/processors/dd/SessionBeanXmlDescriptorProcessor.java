@@ -70,13 +70,12 @@ public class SessionBeanXmlDescriptorProcessor extends AbstractEjbXmlDescriptorP
         final String beanName = sessionBean.getName();
 
         ComponentDescription bean = moduleDescription.getComponentByName(beanName);
-        if (appclient) {
-            if (bean == null) {
-                for (final ComponentDescription component : deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS)) {
-                    if (component.getComponentName().equals(beanName)) {
-                        bean = component;
-                        break;
-                    }
+        if (appclient && bean == null) {
+            for (final ComponentDescription component : deploymentUnit
+                    .getAttachmentList(Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS)) {
+                if (component.getComponentName().equals(beanName)) {
+                    bean = component;
+                    break;
                 }
             }
         }

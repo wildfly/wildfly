@@ -79,11 +79,10 @@ public class ApplicationClientDependencyProcessor implements DeploymentUnitProce
         while (iterator.hasNext()) {
             final ModuleDependency dep = iterator.next();
             final ModuleIdentifier identifier = dep.getIdentifier();
-            if(identifier.getName().startsWith(ServiceModuleLoader.MODULE_PREFIX) &&
-                   !identifier.getName().startsWith(ExtensionIndexService.MODULE_PREFIX)) {
-                if(!moduleIdentifiers.contains(identifier)) {
-                    iterator.remove();
-                }
+            if (identifier.getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)
+                    && !identifier.getName().startsWith(ExtensionIndexService.MODULE_PREFIX)
+                    && !moduleIdentifiers.contains(identifier)) {
+                iterator.remove();
             }
         }
     }

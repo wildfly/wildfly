@@ -1,4 +1,0 @@
-[[Jakarta_Bean_Validation]]
-= Jakarta Bean Validation
-
-

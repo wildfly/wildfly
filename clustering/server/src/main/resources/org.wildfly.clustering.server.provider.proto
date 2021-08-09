@@ -6,12 +6,6 @@ import "org.jgroups.util.proto";
 // IDs: 140 -144
 
 /**
- * @TypeId(140)
- */
-message GetLocalServicesCommand {
-}
-
-/**
  * @TypeId(141)
  */
 message ConcurrentAddressSetAddFunction {

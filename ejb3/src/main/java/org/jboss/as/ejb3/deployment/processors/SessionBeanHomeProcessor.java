@@ -173,23 +173,20 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
         for (Map.Entry<Method, String> entry : description.getInitMethods().entrySet()) {
             String name = entry.getValue();
             Method init = entry.getKey();
-            if (name != null) {
-                if (Arrays.equals(init.getParameterTypes(), method.getParameterTypes())) {
-                    if (init.getName().equals(name)) {
-                        initMethod = init;
-                    }
-                }
+            if (name != null
+                    && Arrays.equals(init.getParameterTypes(), method.getParameterTypes())
+                    && init.getName().equals(name)) {
+                initMethod = init;
             }
         }
         //now try and resolve the init methods with no additional resolution data
         if (initMethod == null) {
             for (Map.Entry<Method, String> entry : description.getInitMethods().entrySet()) {
                 Method init = entry.getKey();
-                if (entry.getValue() == null) {
-                    if (Arrays.equals(init.getParameterTypes(), method.getParameterTypes())) {
-                        initMethod = init;
-                        break;
-                    }
+                if (entry.getValue() == null
+                        && Arrays.equals(init.getParameterTypes(), method.getParameterTypes())) {
+                    initMethod = init;
+                    break;
                 }
             }
         }

@@ -32,6 +32,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -672,7 +673,7 @@ public class CNCtx implements javax.naming.Context {
      */
     private void callUnbind(NameComponent[] path) throws NamingException {
         if (_nc == null)
-            throw IIOPLogger.ROOT_LOGGER.notANamingContext(path.toString());
+            throw IIOPLogger.ROOT_LOGGER.notANamingContext(Arrays.toString(path));
         try {
             _nc.unbind(path);
         } catch (NotFound e) {
@@ -932,7 +933,7 @@ public class CNCtx implements javax.naming.Context {
     private javax.naming.Context callBindNewContext(NameComponent[] path)
             throws NamingException {
         if (_nc == null)
-            throw IIOPLogger.ROOT_LOGGER.notANamingContext(path.toString());
+            throw IIOPLogger.ROOT_LOGGER.notANamingContext(Arrays.toString(path));
         try {
             NamingContext nctx = _nc.bind_new_context(path);
             return new CNCtx(_orb, nctx, _env, makeFullName(path));

@@ -224,7 +224,7 @@ public abstract class AbstractDistributedSingletonService<C extends SingletonCon
         try {
             for (Map.Entry<Node, CompletionStage<Boolean>> entry : this.dispatcher.executeOnGroup(new PrimaryProviderCommand()).entrySet()) {
                 try {
-                    if (entry.getValue().toCompletableFuture().join().booleanValue()) {
+                    if (entry.getValue().toCompletableFuture().join()) {
                         primaryMembers.add(entry.getKey());
                     }
                 } catch (CancellationException e) {

@@ -42,13 +42,6 @@ public class Subsystem_1_0_ParsingTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() {
-        return new String[] {
-                "/subsystem-templates/health.xml"
-        };
-    }
-
-    @Override
     protected String getSubsystemXsdPath() {
         return "schema/wildfly-health_1_0.xsd";
     }

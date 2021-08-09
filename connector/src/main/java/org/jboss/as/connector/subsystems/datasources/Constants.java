@@ -341,7 +341,7 @@ public class Constants {
             .setRestartAllServices()
             .build();
 
-    public static SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(ENABLED_NAME, ModelType.BOOLEAN)
+    public static final SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(ENABLED_NAME, ModelType.BOOLEAN)
             .setXmlName(DataSource.Attribute.ENABLED.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.ENABLED))
@@ -399,7 +399,7 @@ public class Constants {
             .setAllowExpression(true)
             .build();
 
-    public static SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinitionBuilder(USERNAME_NAME, ModelType.STRING, true)
+    public static final SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinitionBuilder(USERNAME_NAME, ModelType.STRING, true)
             .setXmlName(Credential.Tag.USER_NAME.getLocalName())
             .setAllowExpression(true)
             .addAlternatives(SECURITY_DOMAIN_NAME, AUTHENTICATION_CONTEXT_NAME)
@@ -408,7 +408,7 @@ public class Constants {
             .setRestartAllServices()
             .build();
 
-    public static SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinitionBuilder(PASSWORD_NAME, ModelType.STRING)
+    public static final SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinitionBuilder(PASSWORD_NAME, ModelType.STRING)
             .setXmlName(Credential.Tag.PASSWORD.getLocalName())
             .setAllowExpression(true)
             .setRequired(false)
@@ -436,7 +436,7 @@ public class Constants {
             .setRestartAllServices()
             .build();
 
-    public static SimpleAttributeDefinition ELYTRON_ENABLED = new SimpleAttributeDefinitionBuilder(ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
+    public static final SimpleAttributeDefinition ELYTRON_ENABLED = new SimpleAttributeDefinitionBuilder(ELYTRON_ENABLED_NAME, ModelType.BOOLEAN, true)
             .setXmlName(Security.Tag.ELYTRON_ENABLED.getLocalName())
             .setDefaultValue(new ModelNode(ELYTRON_MANAGED_SECURITY))
             .setAllowExpression(true)
@@ -444,7 +444,7 @@ public class Constants {
             .setNullSignificant(false)
             .setRestartAllServices()
             .build();
-    public static SimpleAttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
+    public static final SimpleAttributeDefinition AUTHENTICATION_CONTEXT = new SimpleAttributeDefinitionBuilder(AUTHENTICATION_CONTEXT_NAME, ModelType.STRING, true)
             .setXmlName(Security.Tag.AUTHENTICATION_CONTEXT.getLocalName())
             .setAllowExpression(false)
             .setRequires(ELYTRON_ENABLED_NAME)

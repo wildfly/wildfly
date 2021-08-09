@@ -125,7 +125,7 @@ public class AddressSettingsResolveHandler extends AbstractRuntimeOnlyHandler {
         result.get(MAX_SIZE_BYTES.getName()).set(settings.getMaxSizeBytes());
         result.get(MESSAGE_COUNTER_HISTORY_DAY_LIMIT.getName()).set(settings.getMessageCounterHistoryDayLimit());
         result.get(PAGE_MAX_CACHE_SIZE.getName()).set(settings.getPageCacheMaxSize());
-        result.get(PAGE_SIZE_BYTES.getName()).set(Long.valueOf(settings.getPageSizeBytes()).intValue());
+        result.get(PAGE_SIZE_BYTES.getName()).set(settings.getPageSizeBytes());
         result.get(REDELIVERY_DELAY.getName()).set(settings.getRedeliveryDelay());
         result.get(REDELIVERY_MULTIPLIER.getName()).set(settings.getRedeliveryMultiplier());
         result.get(REDISTRIBUTION_DELAY.getName()).set(settings.getRedistributionDelay());

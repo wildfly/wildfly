@@ -209,6 +209,18 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
     }
 
     @Override
+    public List<Long> getJobExecutionsByJob(final String jobName) {
+        checkState(jobName);
+        final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        try {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+            return super.getJobExecutionsByJob(jobName);
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+        }
+    }
+
+    @Override
     public Properties getParameters(final long executionId) throws NoSuchJobExecutionException, JobSecurityException {
         checkState();
         final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();

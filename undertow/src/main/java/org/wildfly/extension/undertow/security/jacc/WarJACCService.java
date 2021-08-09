@@ -309,7 +309,7 @@ public class WarJACCService extends JaccService<WarMetaData> {
             // JACC 1.1: create !(httpmethods) in unchecked perms
             if(jbossWebMetaData.getDenyUncoveredHttpMethods() == null) {
                 if (seenMethods.size() != NUMBER_OF_HTTP_METHODS) {
-                    WebResourcePermission wrpUnchecked = seenMethods.size() == 0 ? new WebResourcePermission(qurl, (String) null)
+                    WebResourcePermission wrpUnchecked = seenMethods.isEmpty() ? new WebResourcePermission(qurl, (String) null)
                             : new WebResourcePermission(qurl, "!" + getCommaSeparatedString(seenMethods.toArray(new String[seenMethods.size()])));
                     pc.addToUncheckedPolicy(wrpUnchecked);
                 }
@@ -662,7 +662,7 @@ public class WarJACCService extends JaccService<WarMetaData> {
          */
         void addExcludedMethods(List<String> httpMethods) {
             Collection<String> methods = httpMethods;
-            if (methods.size() == 0)
+            if (methods.isEmpty())
                 methods = WebResourceCollectionMetaData.ALL_HTTP_METHODS;
             if (excludedMethods == null)
                 excludedMethods = new HashSet<String>();
@@ -692,7 +692,7 @@ public class WarJACCService extends JaccService<WarMetaData> {
          */
         public void addRoles(HashSet<String> mappedRoles, List<String> httpMethods) {
             Collection<String> methods = httpMethods;
-            if (methods.size() == 0)
+            if (methods.isEmpty())
                 methods = WebResourceCollectionMetaData.ALL_HTTP_METHODS;
             allMethods.addAll(methods);
             if (roles == null)
@@ -728,7 +728,7 @@ public class WarJACCService extends JaccService<WarMetaData> {
          */
         void addTransport(String transport, List<String> httpMethods) {
             Collection<String> methods = httpMethods;
-            if (methods.size() == 0)
+            if (methods.isEmpty())
                 methods = WebResourceCollectionMetaData.ALL_HTTP_METHODS;
             if (transports == null)
                 transports = new HashMap<String, Set<String>>();
@@ -760,7 +760,7 @@ public class WarJACCService extends JaccService<WarMetaData> {
          */
         public String[] getMissingMethods() {
             String[] httpMethods = {};
-            if (allMethods.size() == 0) {
+            if (allMethods.isEmpty()) {
                 // There were no excluded or role based security-constraints
                 httpMethods = WebResourceCollectionMetaData.ALL_HTTP_METHOD_NAMES;
             } else {

@@ -464,19 +464,21 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 } else if (locator instanceof StatelessEJBLocator) {
                     return beanReferenceFactory.createReference(beanRepositoryIds[0]);
                 } else if (locator instanceof StatefulEJBLocator) {
-                    final Marshaller marshaller = factory.createMarshaller(configuration);
-                    final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    marshaller.start(new OutputStreamByteOutput(stream));
-                    marshaller.writeObject(((StatefulEJBLocator<?>) locator).getSessionId());
-                    marshaller.finish();
-                    return beanReferenceFactory.createReferenceWithId(stream.toByteArray(), beanRepositoryIds[0]);
+                    try (final Marshaller marshaller = factory.createMarshaller(configuration)) {
+                        final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        marshaller.start(new OutputStreamByteOutput(stream));
+                        marshaller.writeObject(((StatefulEJBLocator<?>) locator).getSessionId());
+                        marshaller.flush();
+                        return beanReferenceFactory.createReferenceWithId(stream.toByteArray(), beanRepositoryIds[0]);
+                    }
                 } else if (locator instanceof EntityEJBLocator) {
-                    final Marshaller marshaller = factory.createMarshaller(configuration);
-                    final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    marshaller.start(new OutputStreamByteOutput(stream));
-                    marshaller.writeObject(((EntityEJBLocator<?>) locator).getPrimaryKey());
-                    marshaller.finish();
-                    return beanReferenceFactory.createReferenceWithId(stream.toByteArray(), beanRepositoryIds[0]);
+                    try (final Marshaller marshaller = factory.createMarshaller(configuration)) {
+                        final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        marshaller.start(new OutputStreamByteOutput(stream));
+                        marshaller.writeObject(((EntityEJBLocator<?>) locator).getPrimaryKey());
+                        marshaller.flush();
+                        return beanReferenceFactory.createReferenceWithId(stream.toByteArray(), beanRepositoryIds[0]);
+                    }
                 }
                 throw EjbLogger.ROOT_LOGGER.unknownEJBLocatorType(locator);
             } else {

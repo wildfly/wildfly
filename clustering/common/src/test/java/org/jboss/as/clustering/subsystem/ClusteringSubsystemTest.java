@@ -33,7 +33,6 @@ import javax.xml.stream.XMLStreamReader;
 import org.jboss.as.clustering.controller.Schema;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.junit.Test;
 
 /**
  * Base class for clustering subsystem tests.
@@ -41,14 +40,12 @@ import org.junit.Test;
  */
 public abstract class ClusteringSubsystemTest<S extends Schema<S>> extends AbstractSubsystemBaseTest {
     private final Schema<S> testSchema;
-    private final Schema<S> currentSchema;
     private final String xmlPattern;
     private final String xsdPattern;
 
-    protected ClusteringSubsystemTest(String name, Extension extension, Schema<S> testSchema, Schema<S> currentSchema, String xmlPattern, String xsdPattern) {
+    protected ClusteringSubsystemTest(String name, Extension extension, Schema<S> testSchema, String xmlPattern, String xsdPattern) {
         super(name, extension);
         this.testSchema = testSchema;
-        this.currentSchema = currentSchema;
         this.xmlPattern = xmlPattern;
         this.xsdPattern = xsdPattern;
     }
@@ -89,19 +86,6 @@ public abstract class ClusteringSubsystemTest<S extends Schema<S>> extends Abstr
         // only compare if namespace URIs are the same
         if (originalNS.equals(marshalledNS)) {
             compareXml(configId, original, marshalled, true);
-        }
-    }
-
-    @Override
-    protected String[] getSubsystemTemplatePaths() {
-        return new String[] { String.format("/subsystem-templates/%s.xml", this.getMainSubsystemName()) };
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        if (this.testSchema == this.currentSchema) {
-            super.testSchemaOfSubsystemTemplates();
         }
     }
 }

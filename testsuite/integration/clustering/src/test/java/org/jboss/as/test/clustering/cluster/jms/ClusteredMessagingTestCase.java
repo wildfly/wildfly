@@ -22,14 +22,14 @@
 
 package org.jboss.as.test.clustering.cluster.jms;
 
-import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.UUID;
-
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
@@ -46,26 +46,29 @@ import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.api.Authentication;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
+ * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
 
-    protected final String jmsQueueName = "ClusteredMessagingTestCase-Queue";
-    protected final String jmsQueueLookup = "jms/" + jmsQueueName;
+    public static final String JMS_USERNAME = "guest";
+    public static final String JMS_PASSWORD = "guest";
 
-    protected final String jmsTopicName = "ClusteredMessagingTestCase-Topic";
-    protected final String jmsTopicLookup = "jms/" + jmsTopicName;
+    private static final String jmsQueueName = ClusteredMessagingTestCase.class.getSimpleName() + "-Queue";
+    private static final String jmsQueueLookup = "jms/" + jmsQueueName;
+
+    private static final String jmsTopicName = ClusteredMessagingTestCase.class.getSimpleName() + "-Topic";
+    private static final String jmsTopicLookup = "jms/" + jmsTopicName;
 
     public ClusteredMessagingTestCase() {
-        super(TWO_NODES, new String[]{});
+        super(TWO_NODES, new String[] {});
     }
 
     protected static ModelControllerClient createClient1() {
@@ -73,128 +76,110 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
     }
 
     protected static ModelControllerClient createClient2() throws UnknownHostException {
-        return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()),
-                TestSuiteEnvironment.getServerPort() + 100,
-                Authentication.getCallbackHandler());
-    }
-
-    @BeforeClass
-    public static void beforeClass() {
-        thisTestIsFailingIntermittently("WFLY-5390");
+        return ModelControllerClient.Factory.create(InetAddress.getByName(TestSuiteEnvironment.getServerAddress()), TestSuiteEnvironment.getServerPort() + getPortOffsetForNode(NODE_2), Authentication.getCallbackHandler());
     }
 
     @Override
     public void beforeTestMethod() throws Exception {
         super.beforeTestMethod();
 
-        try (ModelControllerClient client = createClient1()) {
+        // Create JMS Queue and Topic (the ServerSetupTask won't do the trick since there is no deployment in this test case...)
+        Arrays.stream(new ModelControllerClient[] { createClient1(), createClient2() }).forEach(client -> {
             JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
             jmsOperations.createJmsQueue(jmsQueueName, "java:jboss/exported/" + jmsQueueLookup);
             jmsOperations.createJmsTopic(jmsTopicName, "java:jboss/exported/" + jmsTopicLookup);
-        }
-        try (ModelControllerClient client = createClient2()) {
-            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
-            jmsOperations.createJmsQueue(jmsQueueName, "java:jboss/exported/" + jmsQueueLookup);
-            jmsOperations.createJmsTopic(jmsTopicName, "java:jboss/exported/" + jmsTopicLookup);
-        }
+        });
     }
 
     @Override
     public void afterTestMethod() throws Exception {
         super.afterTestMethod();
 
-        try (ModelControllerClient client = createClient1()) {
+        // Remove JMS Queue and Topic
+        Arrays.stream(new ModelControllerClient[] { createClient1(), createClient2() }).forEach(client -> {
             JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
             jmsOperations.removeJmsQueue(jmsQueueName);
             jmsOperations.removeJmsTopic(jmsTopicName);
-        }
-        try (ModelControllerClient client = createClient2()) {
-            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(client);
-            jmsOperations.removeJmsQueue(jmsQueueName);
-            jmsOperations.removeJmsTopic(jmsTopicName);
-        }
+        });
     }
 
     @Test
     public void testClusteredQueue() throws Exception {
-        InitialContext contextFromServer0 = createJNDIContextFromServer0();
-        InitialContext contextFromServer1 = createJNDIContextFromServer1();
+        InitialContext contextFromServer1 = createJNDIContext(NODE_1);
+        InitialContext contextFromServer2 = createJNDIContext(NODE_2);
 
-        String text = UUID.randomUUID().toString();
+        try {
+            String text = UUID.randomUUID().toString();
 
-        // WIP test if the problem is that the view is not yet propagated
-        Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+            Destination destination1 = (Destination) contextFromServer1.lookup(jmsQueueLookup);
+            Destination destination2 = (Destination) contextFromServer2.lookup(jmsQueueLookup);
 
-        // send to the queue on server 0
-        sendMessage(contextFromServer0, jmsQueueLookup, text);
-        // receive it from the queue on server 1
-        receiveMessage(contextFromServer1, jmsQueueLookup, text);
+            // send to the queue on server 1
+            sendMessage(contextFromServer1, destination1, text);
+            // receive it from the queue on server 2
+            receiveMessage(contextFromServer2, destination2, text);
 
-        String anotherText = UUID.randomUUID().toString();
-        // send to the queue on server 1
-        sendMessage(contextFromServer1, jmsQueueLookup, anotherText);
-        // receive it from the queue on server 0
-        receiveMessage(contextFromServer0, jmsQueueLookup, anotherText);
+            String anotherText = UUID.randomUUID().toString();
+            // send to the queue on server 2
+            sendMessage(contextFromServer2, destination2, anotherText);
+            // receive it from the queue on server 1
+            receiveMessage(contextFromServer1, destination1, anotherText);
+        } finally {
+            contextFromServer1.close();
+            contextFromServer2.close();
+        }
     }
 
     @Test
     public void testClusteredTopic() throws Exception {
-
-        InitialContext contextFromServer0 = createJNDIContextFromServer0();
-        InitialContext contextFromServer1 = createJNDIContextFromServer1();
+        InitialContext contextFromServer1 = createJNDIContext(NODE_1);
+        InitialContext contextFromServer2 = createJNDIContext(NODE_2);
 
         try (
-                JMSContext jmsContext0 = createJMSContext(createJNDIContextFromServer0());
-                JMSContext jmsContext1 = createJMSContext(createJNDIContextFromServer1())
+                JMSContext jmsContext1 = createJMSContext(createJNDIContext(NODE_1));
+                JMSConsumer consumer1 = jmsContext1.createConsumer((Destination) contextFromServer1.lookup(jmsTopicLookup));
+                JMSContext jmsContext2 = createJMSContext(createJNDIContext(NODE_2));
+                JMSConsumer consumer2 = jmsContext2.createConsumer((Destination) contextFromServer2.lookup(jmsTopicLookup))
         ) {
-            JMSConsumer consumer0 = jmsContext0.createConsumer((Destination) contextFromServer0.lookup(jmsTopicLookup));
-            JMSConsumer consumer1 = jmsContext1.createConsumer((Destination) contextFromServer1.lookup(jmsTopicLookup));
-
             String text = UUID.randomUUID().toString();
 
-            // WIP test if the problem is that the view is not yet propagated
-            Thread.sleep(GRACE_TIME_TO_MEMBERSHIP_CHANGE);
+            Destination destination1 = (Destination) contextFromServer1.lookup(jmsTopicLookup);
+            Destination destination2 = (Destination) contextFromServer2.lookup(jmsTopicLookup);
 
-            // send a message to the topic on server 0
-            sendMessage(contextFromServer0, jmsTopicLookup, text);
+            // send a message to the topic on server 1
+            sendMessage(contextFromServer1, destination1, text);
             // consumers receive it on both servers
-            receiveMessage(consumer0, text);
             receiveMessage(consumer1, text);
+            receiveMessage(consumer2, text);
 
             String anotherText = UUID.randomUUID().toString();
-            // send another message to topic on server 1
-            sendMessage(contextFromServer1, jmsTopicLookup, anotherText);
+            // send another message to topic on server 2
+            sendMessage(contextFromServer2, destination2, anotherText);
             // consumers receive it on both servers
-            receiveMessage(consumer0, anotherText);
             receiveMessage(consumer1, anotherText);
+            receiveMessage(consumer2, anotherText);
+        } finally {
+            contextFromServer1.close();
+            contextFromServer2.close();
         }
     }
 
-    protected static InitialContext createJNDIContextFromServer0() throws NamingException {
+    protected static InitialContext createJNDIContext(String node) throws NamingException {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-        env.put(Context.PROVIDER_URL, "remote+http://" + TestSuiteEnvironment.getServerAddress() + ":8080");
-        env.put(Context.SECURITY_PRINCIPAL, "guest");
-        env.put(Context.SECURITY_CREDENTIALS, "guest");
+        int port = 8080 + getPortOffsetForNode(node);
+        env.put(Context.PROVIDER_URL, "remote+http://" + TestSuiteEnvironment.getServerAddress() + ":" + port);
+        env.put(Context.SECURITY_PRINCIPAL, JMS_USERNAME);
+        env.put(Context.SECURITY_CREDENTIALS, JMS_PASSWORD);
         return new InitialContext(env);
     }
 
-    protected static InitialContext createJNDIContextFromServer1() throws NamingException {
-        final Properties env = new Properties();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
-        env.put(Context.PROVIDER_URL, "remote+http://" + TestSuiteEnvironment.getServerAddress() + ":8180");
-        env.put(Context.SECURITY_PRINCIPAL, "guest");
-        env.put(Context.SECURITY_CREDENTIALS, "guest");
-        return new InitialContext(env);
-    }
-
-    protected static void sendMessage(Context ctx, String destinationLookup, String text) throws NamingException {
+    protected static void sendMessage(Context ctx, Destination destination, String text) throws NamingException {
         ConnectionFactory cf = (ConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
         assertNotNull(cf);
-        Destination destination = (Destination) ctx.lookup(destinationLookup);
         assertNotNull(destination);
 
-        try (JMSContext context = cf.createContext("guest", "guest")) {
+        try (JMSContext context = cf.createContext(JMS_USERNAME, JMS_PASSWORD)) {
             context.createProducer().send(destination, text);
         }
     }
@@ -202,8 +187,7 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
     protected static JMSContext createJMSContext(Context ctx) throws NamingException {
         ConnectionFactory cf = (ConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
         assertNotNull(cf);
-        JMSContext context = cf.createContext("guest", "guest");
-        return context;
+        return cf.createContext(JMS_USERNAME, JMS_PASSWORD);
     }
 
     protected static void receiveMessage(JMSConsumer consumer, String expectedText) {
@@ -212,15 +196,12 @@ public class ClusteredMessagingTestCase extends AbstractClusteringTestCase {
         assertEquals(expectedText, text);
     }
 
-    protected static void receiveMessage(Context ctx, String destinationLookup, String expectedText) throws NamingException {
+    protected static void receiveMessage(Context ctx, Destination destination, String expectedText) throws NamingException {
         ConnectionFactory cf = (ConnectionFactory) ctx.lookup("jms/RemoteConnectionFactory");
         assertNotNull(cf);
-        Destination destination = (Destination) ctx.lookup(destinationLookup);
         assertNotNull(destination);
 
-        try (
-                JMSContext context = cf.createContext("guest", "guest");
-        ) {
+        try (JMSContext context = cf.createContext(JMS_USERNAME, JMS_PASSWORD)) {
             JMSConsumer consumer = context.createConsumer(destination);
             receiveMessage(consumer, expectedText);
         }

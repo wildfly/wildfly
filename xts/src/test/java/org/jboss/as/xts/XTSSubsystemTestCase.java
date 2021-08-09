@@ -66,19 +66,6 @@ public class XTSSubsystemTestCase extends AbstractSubsystemBaseTest {
         return "schema/jboss-as-xts_3_0.xsd";
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-            "/subsystem-templates/xts.xml"
-        };
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
-    }
-
     @Test
     public void testTransformersEAP_6_4_0() throws Exception {
         // EAP 6.4.0 still uses 1.0.0 XTS subsystem version

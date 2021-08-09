@@ -57,7 +57,7 @@ public class SingletonElectionCommandMarshaller implements ProtoStreamMarshaller
                     candidates.add(reader.readObject(LocalNode.class));
                     break;
                 case ELECTED_INDEX:
-                    elected = Integer.valueOf(reader.readUInt32());
+                    elected = reader.readUInt32();
                     break;
                 default:
                     reader.skipField(tag);
@@ -73,7 +73,7 @@ public class SingletonElectionCommandMarshaller implements ProtoStreamMarshaller
         }
         Integer elected = command.getIndex();
         if (elected != null) {
-            writer.writeUInt32(ELECTED_INDEX, elected.intValue());
+            writer.writeUInt32(ELECTED_INDEX, elected);
         }
     }
 

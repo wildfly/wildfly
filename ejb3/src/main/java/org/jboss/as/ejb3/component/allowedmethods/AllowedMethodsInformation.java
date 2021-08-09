@@ -120,21 +120,21 @@ public class AllowedMethodsInformation {
         //first we have to check the synchronization status
         //as the sync is not affected by the current invocation
         final CurrentSynchronizationCallback.CallbackType currentSync = CurrentSynchronizationCallback.get();
-        if (currentSync != null) {
-            if (deniedSyncMethods.contains(new DeniedSyncMethodKey(currentSync, methodType))) {
-                throwException(methodType, currentSync);
-            }
+        if (currentSync != null
+                && deniedSyncMethods.contains(new DeniedSyncMethodKey(currentSync, methodType))) {
+            throwException(methodType, currentSync);
         }
     }
 
     protected void realCheckPermission(MethodType methodType, InvocationType invocationType) {
         checkTransactionSync(methodType);
-        if (invocationType != null) {
-            if (denied.contains(new DeniedMethodKey(invocationType, methodType))) {
-                throwException(methodType, invocationType);
-            }
+        if (invocationType != null
+                && denied.contains(new DeniedMethodKey(invocationType, methodType))) {
+            throwException(methodType, invocationType);
         }
-        if (invocationType != InvocationType.CONCURRENT_CONTEXT && !beanManagedTransaction && methodType == MethodType.GET_USER_TRANSACTION) {
+        if (invocationType != InvocationType.CONCURRENT_CONTEXT
+                && !beanManagedTransaction
+                && methodType == MethodType.GET_USER_TRANSACTION) {
             throw EjbLogger.ROOT_LOGGER.unauthorizedAccessToUserTransaction();
         }
     }

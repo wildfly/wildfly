@@ -115,10 +115,8 @@ public class BridgeAdd extends AbstractAddStepHandler {
     static BridgeConfiguration createBridgeConfiguration(final ExpressionResolver expressionResolver, final String name, final ModelNode model) throws OperationFailedException {
 
         final String queueName = QUEUE_NAME.resolveModelAttribute(expressionResolver, model).asString();
-        final ModelNode forwardingNode = FORWARDING_ADDRESS.resolveModelAttribute(expressionResolver, model);
-        final String forwardingAddress = forwardingNode.isDefined() ? forwardingNode.asString() : null;
-        final ModelNode filterNode = CommonAttributes.FILTER.resolveModelAttribute(expressionResolver, model);
-        final String filterString = filterNode.isDefined() ? filterNode.asString() : null;
+        final String forwardingAddress = FORWARDING_ADDRESS.resolveModelAttribute(expressionResolver, model).asStringOrNull();
+        final String filterString = CommonAttributes.FILTER.resolveModelAttribute(expressionResolver, model).asStringOrNull();
         final int minLargeMessageSize = CommonAttributes.MIN_LARGE_MESSAGE_SIZE.resolveModelAttribute(expressionResolver, model).asInt();
         final long retryInterval = CommonAttributes.RETRY_INTERVAL.resolveModelAttribute(expressionResolver, model).asLong();
         final double retryIntervalMultiplier = CommonAttributes.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(expressionResolver, model).asDouble();

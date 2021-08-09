@@ -35,8 +35,24 @@ import org.infinispan.protostream.descriptors.WireType;
  */
 public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 
+    default Context getContext() {
+        return ProtoStreamWriterContext.FACTORY.get().apply(this);
+    }
+
     /**
-     * Writes the specified object field using the specified index.
+     * Writes the specified object of an abitrary type using the specified index.
+     * Object will be read via {@link ProtoStreamReader#readAny()}.
+     * @param index a field index
+     * @param value a value to be written
+     * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
+     */
+    default void writeAny(int index, Object value) throws IOException {
+        this.writeObject(index, new Any(value));
+    }
+
+    /**
+     * Writes the specified object of a specific type using the specified index.
+     * Object will be read via {@link ProtoStreamReader#readObject(Class)}.
      * @param index a field index
      * @param value a value to be written
      * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
@@ -55,6 +71,7 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 
     /**
      * Writes the specified enum field using the specified index.
+     * Object will be read via {@link ProtoStreamReader#readEnum(Class)}.
      * @param index a field index
      * @param value an enum to be written
      * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object

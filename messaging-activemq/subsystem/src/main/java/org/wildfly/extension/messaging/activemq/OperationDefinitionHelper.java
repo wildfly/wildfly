@@ -67,7 +67,6 @@ public class OperationDefinitionHelper {
     }
 
     public static String resolveFilter(OperationContext context, ModelNode operation) throws OperationFailedException {
-        ModelNode filter = FILTER.resolveModelAttribute(context, operation);
-        return filter.isDefined() ? filter.asString() : null;
+        return FILTER.resolveModelAttribute(context, operation).asStringOrNull();
     }
 }

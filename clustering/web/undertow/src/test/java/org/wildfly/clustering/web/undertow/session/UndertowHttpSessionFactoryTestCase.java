@@ -5,7 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
@@ -96,7 +96,7 @@ public class UndertowHttpSessionFactoryTestCase {
 
         this.factory.createHttpSession(session, context).setMaxInactiveInterval(10);
 
-        verifyZeroInteractions(session);
+        verifyNoInteractions(session);
     }
 
     @Test
@@ -147,7 +147,7 @@ public class UndertowHttpSessionFactoryTestCase {
 
         this.factory.createHttpSession(session, context).setAttribute("name", "value");
 
-        verifyZeroInteractions(session);
+        verifyNoInteractions(session);
     }
 
     @Test
@@ -157,7 +157,7 @@ public class UndertowHttpSessionFactoryTestCase {
 
         this.factory.createHttpSession(session, context).removeAttribute("name");
 
-        verifyZeroInteractions(session);
+        verifyNoInteractions(session);
     }
 
     @Test
@@ -167,7 +167,7 @@ public class UndertowHttpSessionFactoryTestCase {
 
         this.factory.createHttpSession(session, context).invalidate();
 
-        verifyZeroInteractions(session);
+        verifyNoInteractions(session);
     }
 
     @Test

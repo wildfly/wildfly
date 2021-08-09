@@ -91,7 +91,7 @@ import org.wildfly.extension.undertow.deployment.UndertowDeploymentService;
 @SuppressWarnings("deprecation")
 public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
 
-    public static DeploymentRestResourcesDefintion INSTANCE = new DeploymentRestResourcesDefintion();
+    public static final DeploymentRestResourcesDefintion INSTANCE = new DeploymentRestResourcesDefintion();
 
     public static final String REST_RESOURCE_NAME = "rest-resource";
 
@@ -224,7 +224,7 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
                                 resteasyServlets.add((HttpServletDispatcher) servletHandler.getValue().getManagedServlet().getServlet().getInstance());
                             }
                         }
-                        if (resteasyServlets.size() > 0) {
+                        if (!resteasyServlets.isEmpty()) {
                             context.addStep(new OperationStepHandler() {
                                 @Override
                                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -463,7 +463,7 @@ public class DeploymentRestResourcesDefintion extends SimpleResourceDefinition {
         }
 
         private boolean containsMethodResources() {
-            if (this.methodsDescriptions.size() > 0) {
+            if (!this.methodsDescriptions.isEmpty()) {
                 return true;
             }
             for (JaxrsResourceLocatorDescription p : this.subLocatorDescriptions) {

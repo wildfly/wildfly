@@ -379,7 +379,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
             TransportConfigOperationHandlers.processConnectorBindings(Arrays.asList(connectors), socketBindings, outboundSocketBindings);
             for (TransportConfiguration tc : connectors) {
                 if (tc == null) {
-                    throw MessagingLogger.ROOT_LOGGER.connectorNotDefined(tc.getName());
+                    throw MessagingLogger.ROOT_LOGGER.connectorNotDefined("null");
                 }
                 if (connectorClassname.length() > 0) {
                     connectorClassname.append(",");

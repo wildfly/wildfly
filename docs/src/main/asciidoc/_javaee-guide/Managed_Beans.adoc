@@ -1,4 +1,0 @@
-[[Managed_Beans]]
-= Managed Beans
-
-

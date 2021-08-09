@@ -224,6 +224,11 @@ public class BatchEnvironmentService implements Service<SecurityAwareBatchEnviro
         }
 
         @Override
+        public String getApplicationName() {
+            return deploymentName;
+        }
+
+        @Override
         public SecurityDomain getSecurityDomain() {
             return batchConfigurationInjector.getValue().getSecurityDomain();
         }

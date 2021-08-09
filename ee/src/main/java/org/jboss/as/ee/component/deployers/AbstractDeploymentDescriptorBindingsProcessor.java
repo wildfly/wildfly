@@ -143,10 +143,9 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                             if (BOXED_TYPES.get(classType).equals(injectionTargetType)) {
                                 ok = true;
                             }
-                        } else if (injectionTargetType.isPrimitive()) {
-                            if (BOXED_TYPES.get(injectionTargetType).equals(classType)) {
-                                ok = true;
-                            }
+                        } else if (injectionTargetType.isPrimitive()
+                                && BOXED_TYPES.get(injectionTargetType).equals(classType)) {
+                            ok = true;
                         }
                         if (!ok) {
                             throw EeLogger.ROOT_LOGGER.invalidInjectionTarget(injectionTarget.getInjectionTargetName(), injectionTarget.getInjectionTargetClass(), classType);

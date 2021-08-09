@@ -56,7 +56,7 @@ public class SingletonElectionCommand implements Command<Void, SingletonElection
 
     @Override
     public Void execute(SingletonElectionListener context) {
-        context.elected(this.candidates, (this.index != null) ? this.candidates.get(this.index.intValue()) : null);
+        context.elected(this.candidates, (this.index != null) ? this.candidates.get(this.index) : null);
         return null;
     }
 }

@@ -33,7 +33,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 public class AllowedChannelOptionTypesValidator extends ModelTypeValidator implements AllowedValuesValidator {
-    public static AllowedChannelOptionTypesValidator INSTANCE = new AllowedChannelOptionTypesValidator();
+    public static final AllowedChannelOptionTypesValidator INSTANCE = new AllowedChannelOptionTypesValidator();
 
     private final List<ModelNode> allowedChannelOptTypes;
 
@@ -52,10 +52,10 @@ public class AllowedChannelOptionTypesValidator extends ModelTypeValidator imple
     @Override
     public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
         super.validateParameter(parameterName, value);
-        if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
-            if (!this.allowedChannelOptTypes.contains(value)) {
-                throw EjbLogger.ROOT_LOGGER.unknownChannelCreationOptionType(value.asString());
-            }
+        if (value.isDefined()
+                && value.getType() != ModelType.EXPRESSION
+                && !this.allowedChannelOptTypes.contains(value)) {
+            throw EjbLogger.ROOT_LOGGER.unknownChannelCreationOptionType(value.asString());
         }
     }
 }

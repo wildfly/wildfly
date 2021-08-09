@@ -16,6 +16,9 @@
                 <feature spec="subsystem.infinispan.cache-container.replicated-cache.component.transaction">
                     <param name="mode" value="BATCH"/>
                 </feature>
+                <feature spec="subsystem.infinispan.cache-container.replicated-cache.component.expiration">
+                    <param name="interval" value="0"/>
+                </feature>
             </feature>
         </feature>
     </feature>

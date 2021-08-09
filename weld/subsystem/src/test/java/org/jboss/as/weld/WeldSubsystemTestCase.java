@@ -61,19 +61,6 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
         return "schema/jboss-as-weld_4_0.xsd";
     }
 
-    @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-            "/subsystem-templates/weld.xml"
-        };
-    }
-
-    @Test
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        super.testSchemaOfSubsystemTemplates();
-    }
-
     @Test
     public void testSubsystem10() throws Exception {
         standardSubsystemTest("subsystem_1_0.xml", false);

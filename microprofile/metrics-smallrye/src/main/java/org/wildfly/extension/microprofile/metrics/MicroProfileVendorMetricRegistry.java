@@ -74,7 +74,7 @@ public class MicroProfileVendorMetricRegistry implements MetricRegistry {
                         // RuntimeException, after logging at DEBUG. That's what we want.
                         throw LOGGER.metricUnavailable();
                     }
-                    return Double.valueOf(value.getAsDouble()).longValue();
+                    return (long) value.getAsDouble();
                 }
             };
         } else {

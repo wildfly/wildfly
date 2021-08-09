@@ -60,10 +60,9 @@ public final class EEModuleNameProcessor implements DeploymentUnitProcessor {
         }
         for(DeploymentUnit deployment : subDeployments) {
             final EEModuleDescription module = deployment.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-            if(module != null) {
-                if(moduleConflicts.contains(module.getModuleName())) {
-                    module.setModuleName(deployment.getName());
-                }
+            if (module != null
+                    && moduleConflicts.contains(module.getModuleName())) {
+                module.setModuleName(deployment.getName());
             }
         }
 

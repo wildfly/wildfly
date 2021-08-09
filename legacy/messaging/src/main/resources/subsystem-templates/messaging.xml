@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<!--  This legacy configuration template is used to allow testsuite/mixed-domain's DomainAdjuster640 to use it.
+      It can be removed if mixed-domain support for that release is dropped. -->
 <config>
    <extension-module>org.jboss.as.messaging</extension-module>
    <subsystem xmlns="urn:jboss:domain:messaging:3.0">

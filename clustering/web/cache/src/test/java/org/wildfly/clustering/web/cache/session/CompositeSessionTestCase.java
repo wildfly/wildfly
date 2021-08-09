@@ -123,7 +123,7 @@ public class CompositeSessionTestCase {
 
         result = this.session.getLocalContext();
 
-        verifyZeroInteractions(this.localContextFactory);
+        verifyNoInteractions(this.localContextFactory);
 
         assertSame(expected, result);
     }

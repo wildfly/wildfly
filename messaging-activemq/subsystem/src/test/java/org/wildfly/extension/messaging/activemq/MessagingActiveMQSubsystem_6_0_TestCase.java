@@ -87,14 +87,6 @@ public class MessagingActiveMQSubsystem_6_0_TestCase extends AbstractSubsystemBa
     }
 
     @Override
-    protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
-                "/subsystem-templates/messaging-activemq.xml",
-                "/subsystem-templates/messaging-activemq-colocated.xml",
-        };
-    }
-
-    @Override
     protected Properties getResolvedProperties() {
         Properties properties = new Properties();
         properties.put("messaging.cluster.user.name", "myClusterUser");

@@ -39,6 +39,7 @@ public class DecoratorMarshaller<T> implements ProtoStreamMarshaller<T>, Paramet
 
     static final int DECORATED_INDEX = 1;
 
+    private final Class<T> decoratedClass;
     private final Class<? extends T> decoratorClass;
     private final UnaryOperator<T> decorator;
     private final Field field;
@@ -52,6 +53,7 @@ public class DecoratorMarshaller<T> implements ProtoStreamMarshaller<T>, Paramet
     public DecoratorMarshaller(Class<T> decoratedClass, UnaryOperator<T> decorator, T sample) {
         this.decorator = decorator;
         Class<?> decoratorClass = decorator.apply(sample).getClass();
+        this.decoratedClass = decoratedClass;
         this.decoratorClass = decoratorClass.asSubclass(decoratedClass);
         this.field = WildFlySecurityManager.doUnchecked(new PrivilegedAction<Field>() {
             @Override
@@ -81,7 +83,6 @@ public class DecoratorMarshaller<T> implements ProtoStreamMarshaller<T>, Paramet
         return this.decoratorClass;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public T readFrom(ProtoStreamReader reader) throws IOException {
         T decorated = null;
@@ -89,7 +90,7 @@ public class DecoratorMarshaller<T> implements ProtoStreamMarshaller<T>, Paramet
             int tag = reader.readTag();
             switch (WireType.getTagFieldNumber(tag)) {
                 case DECORATED_INDEX:
-                    decorated = (T) reader.readObject(Any.class).get();
+                    decorated = reader.readAny(this.decoratedClass);
                     break;
                 default:
                     reader.skipField(tag);
@@ -102,15 +103,14 @@ public class DecoratorMarshaller<T> implements ProtoStreamMarshaller<T>, Paramet
     public void writeTo(ProtoStreamWriter writer, T value) throws IOException {
         T decorated = WildFlySecurityManager.doUnchecked(value, this);
         if (decorated != null) {
-            writer.writeObject(DECORATED_INDEX, new Any(decorated));
+            writer.writeAny(DECORATED_INDEX, decorated);
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public T run(T value) {
         try {
-            return (T) this.field.get(value);
+            return this.decoratedClass.cast(this.field.get(value));
         } catch (IllegalAccessException e) {
             throw new IllegalStateException(e);
         }

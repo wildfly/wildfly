@@ -461,44 +461,11 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
             for (final Map.Entry<String, String> entry : propertiesMap.entrySet()) {
                 context.getResult().asPropertyList().add(new ModelNode().set(entry.getKey(), entry.getValue()).asProperty());
             }
-        } else if (attributeName.equals(Constants.PREPARED_STATEMENTS_CACHE_SIZE.getName())) {
-            if (dataSource.getStatement() == null) {
-                return;
-            }
-            setLongIfNotNull(context, dataSource.getStatement().getPreparedStatementsCacheSize());
-        } else if (attributeName.equals(Constants.SHARE_PREPARED_STATEMENTS.getName())) {
-            if (dataSource.getStatement() == null) {
-                return;
-            }
-            setBooleanIfNotNull(context, dataSource.getStatement().isSharePreparedStatements());
-        } else if (attributeName.equals(Constants.TRACK_STATEMENTS.getName())) {
-            if (dataSource.getStatement() == null) {
-                return;
-            }
-            if (dataSource.getStatement().getTrackStatements() == null) {
-                return;
-            }
-            setStringIfNotNull(context, dataSource.getStatement().getTrackStatements().name());
         } else if (attributeName.equals(Constants.ALLOCATION_RETRY.getName())) {
             if (dataSource.getTimeOut() == null) {
                 return;
             }
             setIntIfNotNull(context, dataSource.getTimeOut().getAllocationRetry());
-        } else if (attributeName.equals(Constants.ALLOCATION_RETRY_WAIT_MILLIS.getName())) {
-            if (dataSource.getTimeOut() == null) {
-                return;
-            }
-            setLongIfNotNull(context, dataSource.getTimeOut().getAllocationRetryWaitMillis());
-        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS.getName())) {
-            if (dataSource.getTimeOut() == null) {
-                return;
-            }
-            setLongIfNotNull(context, dataSource.getTimeOut().getBlockingTimeoutMillis());
-        } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES.getName())) {
-            if (dataSource.getTimeOut() == null) {
-                return;
-            }
-            setLongIfNotNull(context, dataSource.getTimeOut().getIdleTimeoutMinutes());
         } else if (attributeName.equals(Constants.QUERY_TIMEOUT.getName())) {
             if (dataSource.getTimeOut() == null) {
                 return;

@@ -50,10 +50,11 @@ public enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
             if (field != null) {
                 value = field.getMarshaller().readFrom(reader);
 
+                ProtoStreamReaderContext context = ProtoStreamReaderContext.INSTANCE.get();
                 if (field == AnyField.REFERENCE) {
-                    value = ProtoStreamReaderContext.INSTANCE.get().findByReference((Integer) value);
+                    value = context.fromReference((Integer) value);
                 } else {
-                    ProtoStreamReaderContext.INSTANCE.get().setReference(value);
+                    context.addReference(value);
                 }
             } else {
                 reader.skipField(tag);
@@ -66,16 +67,16 @@ public enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
     public void writeTo(ProtoStreamWriter writer, Any value) throws IOException {
         Object object = value.get();
         if (object != null) {
-            // If we already wrote this object to the stream, write the object reference
-            Integer referenceId = ProtoStreamWriterContext.INSTANCE.get().getReferenceId(object);
+            ProtoStreamWriterContext context = ProtoStreamWriterContext.FACTORY.get().apply(writer);
+            Integer referenceId = context.getReference(object);
 
+            // If we already wrote this object to the stream, write the object reference intead
             AnyField field = (referenceId == null) ? getField(writer, object) : AnyField.REFERENCE;
             writer.writeTag(field.getIndex(), field.getMarshaller().getWireType());
             field.getMarshaller().writeTo(writer, (referenceId == null) ? object : referenceId);
 
-            // Skip reference recording if writeTo was execute via a size operation
-            if ((referenceId == null) && !(writer instanceof SizeComputingProtoStreamWriter)) {
-                ProtoStreamWriterContext.INSTANCE.get().setReference(object);
+            if (referenceId == null) {
+                context.addReference(object);
             }
         }
     }

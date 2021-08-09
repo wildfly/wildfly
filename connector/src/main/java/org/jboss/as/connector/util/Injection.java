@@ -187,15 +187,15 @@ public class Injection {
             Method[] methods = SecurityActions.getDeclaredMethods(clz);
             for (int i = 0; i < methods.length; i++) {
                 final Method method = methods[i];
-                if (methodName.equals(method.getName()) && method.getParameterTypes().length == 1) {
-                    if (propertyType == null || argumentMatches(propertyType, method.getParameterTypes()[0].getName())) {
-                        if (hits == null)
-                            hits = new ArrayList<Method>(1);
+                if (methodName.equals(method.getName())
+                        && method.getParameterTypes().length == 1
+                        && (propertyType == null || argumentMatches(propertyType, method.getParameterTypes()[0].getName()))) {
 
-                        SecurityActions.setAccessible(method);
+                    if (hits == null)
+                        hits = new ArrayList<Method>(1);
 
-                        hits.add(method);
-                    }
+                    SecurityActions.setAccessible(method);
+                    hits.add(method);
                 }
             }
 
@@ -235,15 +235,14 @@ public class Injection {
             Field[] fields = SecurityActions.getDeclaredFields(clz);
             for (int i = 0; i < fields.length; i++) {
                 final Field field = fields[i];
-                if (fieldName.equals(field.getName())) {
-                    if (fieldType == null || argumentMatches(fieldType, field.getType().getName())) {
-                        if (hits == null)
-                            hits = new ArrayList<Field>(1);
+                if (fieldName.equals(field.getName())
+                        && (fieldType == null || argumentMatches(fieldType, field.getType().getName()))) {
 
-                        SecurityActions.setAccessible(field);
+                    if (hits == null)
+                        hits = new ArrayList<Field>(1);
 
-                        hits.add(field);
-                    }
+                    SecurityActions.setAccessible(field);
+                    hits.add(field);
                 }
             }
 
@@ -371,9 +370,8 @@ public class Injection {
             int to = input.indexOf("}");
             int dv = input.indexOf(":", from + 2);
 
-            if (dv != -1) {
-                if (dv > to)
-                    dv = -1;
+            if (dv != -1 && dv > to) {
+                dv = -1;
             }
 
             String systemProperty = "";

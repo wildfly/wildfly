@@ -206,7 +206,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         }
 
         boolean managementAdded = false;
-        if (resteasy.getScannedApplicationClasses().size() > 0 || resteasy.hasBootClasses() || resteasy.isDispatcherCreated()) {
+        if (!resteasy.getScannedApplicationClasses().isEmpty() || resteasy.hasBootClasses() || resteasy.isDispatcherCreated()) {
             addManagement(deploymentUnit, resteasy);
             managementAdded = true;
         }
@@ -223,7 +223,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         }
 
         // add default servlet
-        if (applicationClassSet.size() == 0) {
+        if (applicationClassSet.isEmpty()) {
             JBossServletMetaData servlet = new JBossServletMetaData();
             servlet.setName(JAX_RS_SERVLET_NAME);
             servlet.setServletClass(HttpServlet30Dispatcher.class.getName());
@@ -357,19 +357,18 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if (mappings != null) {
             boolean mappingSet = false;
             for (final ServletMappingMetaData mapping : mappings) {
-                if (mapping.getServletName().equals(servletName)) {
-                    if (mapping.getUrlPatterns() != null) {
-                        for (String pattern : mapping.getUrlPatterns()) {
-                            if (mappingSet) {
-                                JAXRS_LOGGER.moreThanOneServletMapping(servletName, pattern);
-                            } else {
-                                mappingSet = true;
-                                String realPattern = pattern;
-                                if (realPattern.endsWith("*")) {
-                                    realPattern = realPattern.substring(0, realPattern.length() - 1);
-                                }
-                                setServletInitParam(servlet, "resteasy.servlet.mapping.prefix", realPattern);
+                if (mapping.getServletName().equals(servletName)
+                        && mapping.getUrlPatterns() != null) {
+                    for (String pattern : mapping.getUrlPatterns()) {
+                        if (mappingSet) {
+                            JAXRS_LOGGER.moreThanOneServletMapping(servletName, pattern);
+                        } else {
+                            mappingSet = true;
+                            String realPattern = pattern;
+                            if (realPattern.endsWith("*")) {
+                                realPattern = realPattern.substring(0, realPattern.length() - 1);
                             }
+                            setServletInitParam(servlet, "resteasy.servlet.mapping.prefix", realPattern);
                         }
                     }
                 }
@@ -571,7 +570,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if (modelNode == null || ModelType.UNDEFINED.equals(modelNode.getType())) {
             return false;
         }
-        return modelNode.asList().size() != 0;
+        return !modelNode.asList().isEmpty();
     }
 
     private String convertListToString(ModelNode modelNode) {

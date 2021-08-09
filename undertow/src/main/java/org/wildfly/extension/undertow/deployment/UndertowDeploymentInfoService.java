@@ -499,7 +499,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         if (applicationPolicy != null && JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
             String authMethod = null;
             LoginConfig loginConfig = deploymentInfo.getLoginConfig();
-            if (loginConfig != null && loginConfig.getAuthMethods().size() > 0) {
+            if (loginConfig != null && !loginConfig.getAuthMethods().isEmpty()) {
                 authMethod = loginConfig.getAuthMethods().get(0).getName();
             }
             deploymentInfo.setJaspiAuthenticationMechanism(new JASPICAuthenticationMechanism(securityDomain, authMethod));
@@ -569,17 +569,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         SessionIdentifierCodec codec = this.sessionIdentifierCodec != null ? this.sessionIdentifierCodec.get() : null;
         if (codec != null) {
             deploymentInfo.setSessionConfigWrapper(new CodecSessionConfigWrapper(codec));
-        }
-    }
-
-    /*
-    This is to address WFLY-1894 but should probably be moved to some other place.
-     */
-    private String resolveContextPath() {
-        if (deploymentName.equals(host.get().getDefaultWebModule())) {
-            return "/";
-        } else {
-            return contextPath;
         }
     }
 

@@ -528,12 +528,11 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
                     detail.parameter.getComponentType(),
                     detail.annotations);
 
-            if (obj != null) {
-                if (obj instanceof ParamConverter) {
-                    this.pc = (ParamConverter) obj;
-                    return pc.fromString(detail.defaultValue.value());
-                }
+            if (obj instanceof ParamConverter) {
+                this.pc = (ParamConverter) obj;
+                return pc.fromString(detail.defaultValue.value());
             }
+
             return obj;
         }
 

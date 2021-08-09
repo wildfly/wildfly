@@ -193,7 +193,7 @@ public final class IiopUrl {
             while (tokens.hasMoreTokens()) {
                 addresses.addElement(new Address(tokens.nextToken(), oldFormat));
             }
-            if (addresses.size() == 0) {
+            if (addresses.isEmpty()) {
                 addresses.addElement(new Address("", oldFormat));
             }
         }

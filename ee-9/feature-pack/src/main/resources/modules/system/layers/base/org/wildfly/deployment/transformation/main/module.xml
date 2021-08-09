@@ -30,8 +30,9 @@
     </resources>
 
     <dependencies>
+        <module name="java.xml"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.logging"/>
-        <module name="java.xml"/>
+        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

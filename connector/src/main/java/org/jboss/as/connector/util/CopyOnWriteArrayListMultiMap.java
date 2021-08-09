@@ -52,7 +52,7 @@ public class CopyOnWriteArrayListMultiMap<K, V> {
         }
     }
 
-    public synchronized boolean remove(K k, K v) {
+    public synchronized boolean remove(K k, V v) {
         List<V> list = cache.get(k);
         if (list == null) {
             return false;

@@ -100,12 +100,10 @@ public class AdminObjectStatisticsService implements Service<ManagementResourceR
                     if (ao.getStatistics() != null) {
                         StatisticsPlugin extendStats = ao.getStatistics();
                         extendStats.setEnabled(statsEnabled);
-                        if (extendStats.getNames().size() != 0) {
-
-                            if (extendStats.getNames().size() != 0 && overrideRegistration.getSubModel(PathAddress.pathAddress(peExtendedStats)) == null) {
-                                overrideRegistration.registerSubModel(new StatisticsResourceDefinition(peExtendedStats, CommonAttributes.RESOURCE_NAME, extendStats));
-                            }
-
+                        if (!extendStats.getNames().isEmpty()
+                                && overrideRegistration.getSubModel(PathAddress.pathAddress(peExtendedStats)) == null) {
+                            overrideRegistration.registerSubModel(new StatisticsResourceDefinition(peExtendedStats,
+                                    CommonAttributes.RESOURCE_NAME, extendStats));
                         }
                     }
                 }

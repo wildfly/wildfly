@@ -58,7 +58,7 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest<Infinis
     private final InfinispanSchema schema;
 
     public InfinispanSubsystemTestCase(InfinispanSchema schema) {
-        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), schema, InfinispanSchema.CURRENT, "subsystem-infinispan-%d_%d.xml", "schema/jboss-as-infinispan_%d_%d.xsd");
+        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), schema, "subsystem-infinispan-%d_%d.xml", "schema/jboss-as-infinispan_%d_%d.xsd");
         this.schema = schema;
     }
 

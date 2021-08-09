@@ -25,7 +25,6 @@ package org.wildfly.clustering.marshalling.protostream.util;
 import java.io.IOException;
 import java.util.Collection;
 
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
@@ -47,7 +46,7 @@ public abstract class AbstractCollectionMarshaller<T extends Collection<Object>>
     @Override
     public void writeTo(ProtoStreamWriter writer, T collection) throws IOException {
         for (Object element : collection) {
-            writer.writeObject(ELEMENT_INDEX, new Any(element));
+            writer.writeAny(ELEMENT_INDEX, element);
         }
     }
 

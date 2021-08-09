@@ -189,7 +189,7 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         final boolean durable = properties.containsKey(DURABLE.getName()) ? Boolean.valueOf(properties.get(DURABLE.getName())) : DURABLE.getDefaultValue().asBoolean();
         final String managementAddress =  properties.containsKey(MANAGEMENT_ADDRESS.getName()) ? properties.get(MANAGEMENT_ADDRESS.getName()) : MANAGEMENT_ADDRESS.getDefaultValue().asString();
         final String user =  properties.containsKey("management-user") ? properties.get("management-user") : null;
-        final String password =  properties.containsKey("management-password") ? properties.get("\"management-password") : null;
+        final String password =  properties.containsKey("management-password") ? properties.get("management-password") : null;
 
         ModelNode destination = new ModelNode();
         destination.get(NAME).set(queueName);
@@ -250,7 +250,7 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
                             final boolean external) {
         final String managementAddress =  properties.containsKey(MANAGEMENT_ADDRESS.getName()) ? properties.get(MANAGEMENT_ADDRESS.getName()) : MANAGEMENT_ADDRESS.getDefaultValue().asString();
         final String user =  properties.containsKey("management-user") ? properties.get("management-user") : null;
-        final String password =  properties.containsKey("management-password") ? properties.get("\"management-password") : null;
+        final String password =  properties.containsKey("management-password") ? properties.get("management-password") : null;
         ModelNode destination = new ModelNode();
         destination.get(NAME).set(topicName);
         destination.get(ENTRIES).add(jndiName);

@@ -48,11 +48,10 @@ public class StartupMergingProcessor extends AbstractMergingProcessor<SingletonC
         EEModuleClassDescription clazz = applicationClasses.getClassByName(componentClass.getName());
         if (clazz != null) {
             final ClassAnnotationInformation<Startup, Object> data = clazz.getAnnotationInformation(Startup.class);
-            if (data != null) {
-                if (!data.getClassLevelAnnotations().isEmpty()) {
-                    description.initOnStartup();
-                    description.getModuleDescription().registerStartupBean();
-                }
+            if (data != null
+                    && !data.getClassLevelAnnotations().isEmpty()) {
+                description.initOnStartup();
+                description.getModuleDescription().registerStartupBean();
             }
         }
     }

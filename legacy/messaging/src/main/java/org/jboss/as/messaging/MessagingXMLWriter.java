@@ -154,8 +154,8 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         if (node.hasDefined(CONNECTION_FACTORY) || node.hasDefined(POOLED_CONNECTION_FACTORY)) {
             ModelNode cf = node.get(CONNECTION_FACTORY);
             ModelNode pcf = node.get(POOLED_CONNECTION_FACTORY);
-            boolean hasCf = cf.isDefined() && cf.keys().size() > 0;
-            boolean hasPcf = pcf.isDefined() && pcf.keys().size() > 0;
+            boolean hasCf = cf.isDefined() && !cf.keys().isEmpty();
+            boolean hasPcf = pcf.isDefined() && !pcf.keys().isEmpty();
             if (hasCf || hasPcf) {
                 writer.writeStartElement(JMS_CONNECTION_FACTORIES);
                 writeConnectionFactories(writer, cf);
@@ -168,8 +168,8 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         if (node.hasDefined(JMS_QUEUE) || node.hasDefined(JMS_TOPIC)) {
             ModelNode queue = node.get(JMS_QUEUE);
             ModelNode topic = node.get(JMS_TOPIC);
-            boolean hasQueue = queue.isDefined() && queue.keys().size() > 0;
-            boolean hasTopic = topic.isDefined() && topic.keys().size() > 0;
+            boolean hasQueue = queue.isDefined() && !queue.keys().isEmpty();
+            boolean hasTopic = topic.isDefined() && !topic.keys().isEmpty();
             if (hasQueue || hasTopic) {
                 writer.writeStartElement(JMS_DESTINATIONS);
                 writeJmsQueues(writer, node.get(JMS_QUEUE));
@@ -544,7 +544,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writePermission(final XMLExtendedStreamWriter writer, final String type, final List<String> roles) throws XMLStreamException {
-        if (roles.size() == 0) {
+        if (roles.isEmpty()) {
             return;
         }
         writer.writeStartElement(Element.PERMISSION_ELEMENT_NAME.getLocalName());

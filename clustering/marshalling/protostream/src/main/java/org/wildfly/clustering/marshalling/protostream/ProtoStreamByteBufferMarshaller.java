@@ -87,7 +87,7 @@ public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
 
     @Override
     public void writeTo(OutputStream output, Object object) throws IOException {
-        try (ProtoStreamWriterContext context = ProtoStreamWriterContext.INSTANCE.get()) {
+        try (ProtoStreamWriterContext.Factory factory = ProtoStreamWriterContext.FACTORY.get()) {
             ProtobufUtil.writeTo(this.context, output, new Any(object));
         }
     }

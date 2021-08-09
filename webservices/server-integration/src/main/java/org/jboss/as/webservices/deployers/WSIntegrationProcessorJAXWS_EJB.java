@@ -146,7 +146,7 @@ public final class WSIntegrationProcessorJAXWS_EJB implements DeploymentUnitProc
                 }
             }
             final SecurityRolesMetaData securityRolesMD = ejbJarMD.getAssemblyDescriptor().getSecurityRoles();
-            if (securityRolesMD != null && securityRolesMD.size() > 0) {
+            if (securityRolesMD != null && !securityRolesMD.isEmpty()) {
                 for (final SecurityRoleMetaData securityRoleMD : securityRolesMD) {
                     securityRoles.add(securityRoleMD.getRoleName());
                 }

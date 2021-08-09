@@ -169,7 +169,7 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
         try {
             is = getInputStream(currentResourceRoot, resourceRoots, handlerChainConfigFile, endpointClass);
             final Set<String> endpointHandlers = getHandlers(is);
-            if (endpointHandlers.size() > 0) {
+            if (!endpointHandlers.isEmpty()) {
                 mapping.registerEndpointHandlers(endpointClass, endpointHandlers);
             } else {
                 WSLogger.ROOT_LOGGER.invalidHandlerChainFile(handlerChainConfigFile);

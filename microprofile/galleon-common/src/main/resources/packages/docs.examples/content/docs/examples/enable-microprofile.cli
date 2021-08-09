@@ -11,10 +11,13 @@ echo INFO: Updating configuration to use elytron
 /subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
 /subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
 
-# This applies to full configurations only.
+# These apply to full configurations only.
 if (outcome == success) of /subsystem=messaging-activemq/server=default:read-resource
   /subsystem=messaging-activemq/server=default:write-attribute(name=security-domain)
   /subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
+end-if
+if (outcome == success) of /subsystem=iiop-openjdk:read-resource
+    /subsystem=iiop-openjdk:write-attribute(name=security, value=elytron)
 end-if
 
 /subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)

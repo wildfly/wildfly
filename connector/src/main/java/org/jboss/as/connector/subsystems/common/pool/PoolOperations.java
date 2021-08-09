@@ -291,7 +291,7 @@ public abstract class PoolOperations implements OperationStepHandler {
             ArrayList<Pool> result = new ArrayList<Pool>(repository.getConnectors().size());
             if (repository.getConnectors() != null) {
                 for (Connector c : repository.getConnectors()) {
-                    if (c.getConnectionFactories() == null || c.getConnectionFactories().size() == 0)
+                    if (c.getConnectionFactories() == null || c.getConnectionFactories().isEmpty())
                         continue;
                     for (ConnectionFactory cf : c.getConnectionFactories()) {
                         if (cf != null && cf.getPool() != null &&

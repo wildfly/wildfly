@@ -100,15 +100,21 @@ public class CompositeSessionFactoryTestCase {
 
         when(this.metaDataFactory.remove(id)).thenReturn(false);
 
-        this.factory.remove(id);
+        boolean removed = this.factory.remove(id);
 
-        verify(this.attributesFactory, never()).remove(id);
+        verify(this.attributesFactory).remove(id);
+
+        assertFalse(removed);
+
+        reset(this.attributesFactory);
 
         when(this.metaDataFactory.remove(id)).thenReturn(true);
 
-        this.factory.remove(id);
+        removed = this.factory.remove(id);
 
         verify(this.attributesFactory).remove(id);
+
+        assertTrue(removed);
     }
 
     @Test

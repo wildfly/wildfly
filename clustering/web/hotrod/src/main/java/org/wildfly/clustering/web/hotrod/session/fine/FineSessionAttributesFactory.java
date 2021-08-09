@@ -30,7 +30,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.MutatorFactory;
@@ -125,11 +124,13 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 
     @Override
     public boolean remove(String id) {
-        Map<String, UUID> names = this.namesCache.withFlags(Flag.FORCE_RETURN_VALUE).remove(new SessionAttributeNamesKey(id));
+        SessionAttributeNamesKey key = new SessionAttributeNamesKey(id);
+        Map<String, UUID> names = this.namesCache.get(key);
         if (names != null) {
             for (UUID attributeId : names.values()) {
                 this.attributeCache.remove(new SessionAttributeKey(id, attributeId));
             }
+            this.namesCache.remove(key);
         }
         return true;
     }

@@ -168,7 +168,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
         BOOLEAN(ModelType.BOOLEAN, Boolean.TYPE, Boolean.class) {
             @Override
             void setValue(ModelNode node, Object value) {
-                node.set(((Boolean) value).booleanValue());
+                node.set((Boolean) value);
             }
         },
         INT(ModelType.INT, Integer.TYPE, Integer.class, Byte.TYPE, Byte.class, Short.TYPE, Short.class) {
@@ -180,7 +180,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
         LONG(ModelType.LONG, Long.TYPE, Long.class) {
             @Override
             void setValue(ModelNode node, Object value) {
-                node.set(((Number) value).longValue());
+                node.set((Long) value);
             }
         },
         DOUBLE(ModelType.DOUBLE, Double.TYPE, Double.class, Float.TYPE, Float.class) {

@@ -52,6 +52,6 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.jts" />
         <module name="org.jboss.jts.integration"/>
-        <module name="org.picketbox"/>
+        <module name="org.picketbox" optional="true"/>
     </dependencies>
 </module>
