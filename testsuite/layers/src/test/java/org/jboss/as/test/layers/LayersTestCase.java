@@ -48,6 +48,8 @@ public class LayersTestCase {
         // Un-used
         "javax.sql.api",
         // Un-used
+        "javax.xml.stream.api",
+        // Un-used
         "javax.validation.api",
         // Un-used
         "javax.activation.api",
