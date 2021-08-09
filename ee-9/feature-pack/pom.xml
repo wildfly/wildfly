@@ -442,6 +442,10 @@
                     <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-mail</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.transaction</groupId>
+                    <artifactId>wildfly-transaction-client</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
