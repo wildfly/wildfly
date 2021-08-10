@@ -57,7 +57,7 @@ public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<
             int tag = reader.readTag();
             int index = WireType.getTagFieldNumber(tag);
             if ((index >= this.loaderIndex) && (index < this.loaderIndex + this.loaderMarshaller.getFields())) {
-                loader = this.loaderMarshaller.readField(reader, index, loader);
+                loader = this.loaderMarshaller.readField(reader, index - this.loaderIndex, loader);
             } else {
                 reader.skipField(tag);
             }
