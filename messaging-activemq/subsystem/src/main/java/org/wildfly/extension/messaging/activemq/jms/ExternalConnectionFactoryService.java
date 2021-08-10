@@ -33,10 +33,10 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.extension.messaging.activemq.JGroupsDiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.SocketDiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
+import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
@@ -57,12 +57,12 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
     // mapping between the {discovery}-groups and the cluster names they use
     private final Map<String, String> clusterNames;
     // mapping between the {discovery}-groups and the command dispatcher factory they use
-    private final Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories;
+    private final Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories;
     private ActiveMQConnectionFactory factory;
     private final ConnectionFactoryConfiguration config;
 
     ExternalConnectionFactoryService(DiscoveryGroupConfiguration groupConfiguration,
-            Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories,
+            Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories,
             Map<String, Supplier<SocketBinding>> groupBindings, Map<String, String> clusterNames, JMSFactoryType type, boolean ha, boolean enable1Prefixes, ConnectionFactoryConfiguration config) {
         this(ha, enable1Prefixes, type, groupConfiguration, Collections.emptyMap(), Collections.emptyMap(),commandDispatcherFactories, groupBindings, clusterNames, null, config);
     }
@@ -78,7 +78,7 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
             DiscoveryGroupConfiguration groupConfiguration,
             Map<String, Supplier<SocketBinding>> socketBindings,
             Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings,
-            Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories,
+            Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories,
             Map<String, Supplier<SocketBinding>> groupBindings,
             Map<String, String> clusterNames,
             TransportConfiguration[] connectors,
@@ -112,7 +112,7 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
                 final String key = "discovery" + name;
                 final DiscoveryGroupConfiguration config;
                 if (commandDispatcherFactories.containsKey(key)) {
-                    CommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key).get();
+                    BroadcastCommandDispatcherFactory commandDispatcherFactory = commandDispatcherFactories.get(key).get();
                     String clusterName = clusterNames.get(key);
                     config = JGroupsDiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, groupConfiguration, commandDispatcherFactory, clusterName);
                 } else {

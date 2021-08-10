@@ -123,6 +123,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.management.MBeanServer;
@@ -162,16 +163,19 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
+import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
+import org.wildfly.extension.messaging.activemq.broadcast.ConcurrentBroadcastCommandDispatcherFactory;
 import org.wildfly.extension.messaging.activemq.ha.HAPolicyConfigurationBuilder;
 import org.wildfly.extension.messaging.activemq.jms.JMSService;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
@@ -395,9 +399,8 @@ class ServerAdd extends AbstractAddStepHandler {
             final List<BroadcastGroupConfiguration> broadcastGroupConfigurations = configuration.getBroadcastGroupConfigurations();
             final Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = configuration.getDiscoveryGroupConfigurations();
 
-            final Map<String, String> clusterNames = new HashMap<>();
-            final Map<String, Supplier<CommandDispatcherFactory>> commandDispatcherFactories = new HashMap<>();
-            final Map<ServiceName, Supplier<CommandDispatcherFactory>> commandDispatcherFactoryServices = new HashMap<>();
+            final Map<String, String> clusterNames = new HashMap<>(); // Maps key -> cluster name
+            final Map<String, String> channelNames = new HashMap<>(); // Maps key -> channel name
             final Map<String, Supplier<SocketBinding>> groupBindings = new HashMap<>();
             final Map<ServiceName, Supplier<SocketBinding>> groupBindingServices = new HashMap<>();
 
@@ -407,14 +410,9 @@ class ServerAdd extends AbstractAddStepHandler {
                     final String key = "broadcast" + name;
                     if (model.hasDefined(JGROUPS_BROADCAST_GROUP, name)) {
                         ModelNode broadcastGroupModel = model.get(JGROUPS_BROADCAST_GROUP, name);
-                        ModelNode channel = BroadcastGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel);
-                        ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
+                        ModelNode channel = JGroupsBroadcastGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel);
+                        channelNames.put(key, channel.asStringOrNull());
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, broadcastGroupModel).asString();
-                        if (!commandDispatcherFactoryServices.containsKey(commandDispatcherFactoryServiceName)) {
-                            Supplier<CommandDispatcherFactory> commandDispatcherFactory = serviceBuilder.requires(commandDispatcherFactoryServiceName);
-                            commandDispatcherFactoryServices.put(commandDispatcherFactoryServiceName, commandDispatcherFactory);
-                        }
-                        commandDispatcherFactories.put(key, commandDispatcherFactoryServices.get(commandDispatcherFactoryServiceName));
                         clusterNames.put(key, clusterName);
                     } else {
                         final ServiceName groupBindingServiceName = GroupBindingService.getBroadcastBaseServiceName(activeMQServiceName).append(name);
@@ -432,14 +430,9 @@ class ServerAdd extends AbstractAddStepHandler {
                     final String key = "discovery" + name;
                     if (model.hasDefined(JGROUPS_DISCOVERY_GROUP, name)) {
                         ModelNode discoveryGroupModel = model.get(JGROUPS_DISCOVERY_GROUP, name);
-                        ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
-                        ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
+                        ModelNode channel = JGroupsDiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
+                        channelNames.put(key, channel.asStringOrNull());
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
-                        if (!commandDispatcherFactoryServices.containsKey(commandDispatcherFactoryServiceName)) {
-                            Supplier<CommandDispatcherFactory> commandDispatcherFactory = serviceBuilder.requires(commandDispatcherFactoryServiceName);
-                            commandDispatcherFactoryServices.put(commandDispatcherFactoryServiceName, commandDispatcherFactory);
-                        }
-                        commandDispatcherFactories.put(key, commandDispatcherFactoryServices.get(commandDispatcherFactoryServiceName));
                         clusterNames.put(key, clusterName);
                     } else {
                         final ServiceName groupBindingServiceName = GroupBindingService.getDiscoveryBaseServiceName(activeMQServiceName).append(name);
@@ -450,6 +443,26 @@ class ServerAdd extends AbstractAddStepHandler {
                         groupBindings.put(key, groupBindingServices.get(groupBindingServiceName));
                     }
                 }
+            }
+
+            Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories = new HashMap<>();
+            Map<ServiceName, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactoryServiceNames = new HashMap<>();
+            for (Map.Entry<String, String> entry : channelNames.entrySet()) {
+                String channelName = entry.getValue();
+                ServiceName commandDispatcherFactoryServiceName = MessagingServices.getBroadcastCommandDispatcherFactoryServiceName(serverName, channelName);
+                Supplier<BroadcastCommandDispatcherFactory> supplier = commandDispatcherFactoryServiceNames.get(commandDispatcherFactoryServiceName);
+                if (supplier == null) {
+                    supplier = serviceBuilder.requires(commandDispatcherFactoryServiceName);
+                    commandDispatcherFactoryServiceNames.put(commandDispatcherFactoryServiceName, supplier);
+
+                    // Install broadcast command dispatcher factory service
+                    ServiceBuilder<?> builder = serviceTarget.addService(commandDispatcherFactoryServiceName);
+                    Supplier<CommandDispatcherFactory> factory = builder.requires(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channelName));
+                    Consumer<BroadcastCommandDispatcherFactory> consumer = builder.provides(commandDispatcherFactoryServiceName);
+                    Service service = new FunctionalService<>(consumer, ConcurrentBroadcastCommandDispatcherFactory::new, factory);
+                    builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+                }
+                commandDispatcherFactories.put(entry.getKey(), supplier);
             }
 
             // Create the ActiveMQ Service
