@@ -40,12 +40,7 @@ Depending on the strategy being used, Spring applications can be:
 
 Applications that use the Hibernate API directly with Spring (i.e.
 through either one of LocalSessionFactoryBean or
-AnnotationSessionFactoryBean) may use a version of Hibernate 3 packaged
-inside the application. Hibernate 4 (which is provided through the
-'org.hibernate' module of WildFly {wildflyVersion}) is not supported by Spring 3.0 and
-Spring 3.1 (and may be supported by Spring 3.2 as described in
-https://jira.springsource.org/browse/SPR-8096[SPR-8096]), so adding this
-module as a dependency is not a solution.
+AnnotationSessionFactoryBean) may need to use a different version of Hibernate than is provided by WildFly.
 
 [[Jakarta-Persistence-based-applications]]
 == Jakarta Persistence based applications
@@ -151,15 +146,8 @@ META-INF/jpa-persistence.xml, the corresponding definition can be:
 [[managing-dependencies]]
 === Managing dependencies
 
-Since the LocalContainerEntityManagerFactoryBean and the corresponding
-HibernateJpaVendorAdapter are based on Hibernate 3, it is required to
-use that version with the application. Therefore, the Hibernate 3 jars
-must be included in the deployment. At the same time, due the presence
-of @PersistenceUnit or @PersistenceContext annotations on the
-application classes, the application server will automatically add the
-'org.hibernate' module as a dependency.
-
-This can be avoided by instructing the server to exclude the module from
+To ensure that Spring applications can use a specific version of Hibernate ORM, exclude the WildFly provided Hibernate ORM version, 
+instruct the server to exclude the module from
 the deployment's list of dependencies. In order to do so, include a
 META-INF/jboss-deployment-structure.xml or, for web applications,
 WEB-INF/jboss-deployment-structure.xml with the following content:
