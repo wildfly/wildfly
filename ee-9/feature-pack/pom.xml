@@ -47,6 +47,11 @@
         <servlet.galleon-common.resources.directory>${basedir}/../../servlet-feature-pack/galleon-common/src/main/resources</servlet.galleon-common.resources.directory>
         <full.ee-9-api.license.directory>${basedir}/src/license</full.ee-9-api.license.directory>
 
+
+        <!-- WildFly Preview vs standard WildFly GAV expression properties. -->
+        <module.jakarta.classifier>::jakarta</module.jakarta.classifier>
+        <module.jakarta.suffix>-jakarta</module.jakarta.suffix>
+
         <version.com.sun.faces>3.0.0.SP04</version.com.sun.faces>
         <version.jakarta.annotation.jakarta-annotation-api>2.0.0</version.jakarta.annotation.jakarta-annotation-api>
         <version.com.sun.activation.jakarta.activation>2.0.0</version.com.sun.activation.jakarta.activation>
@@ -205,9 +210,11 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <escapeString>\</escapeString>
                             <resources>
                                 <resource>
                                     <directory>${full.common.resources.directory}</directory>
+                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
