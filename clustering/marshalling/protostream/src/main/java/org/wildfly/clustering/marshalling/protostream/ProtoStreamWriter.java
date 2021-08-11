@@ -25,7 +25,6 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.ProtobufTagMarshaller;
 import org.infinispan.protostream.TagWriter;
 import org.infinispan.protostream.descriptors.WireType;
 
@@ -90,13 +89,13 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
      * @throws IllegalArgumentException if no suitable marshaller exists
      */
     @SuppressWarnings("unchecked")
-    default <T, V extends T> ProtobufTagMarshaller<T> findMarshaller(Class<V> javaClass) {
+    default <T, V extends T> ProtoStreamMarshaller<T> findMarshaller(Class<V> javaClass) {
         ImmutableSerializationContext context = this.getSerializationContext();
         Class<?> targetClass = javaClass;
         IllegalArgumentException exception = null;
         while (targetClass != null) {
             try {
-                return (ProtobufTagMarshaller<T>) context.getMarshaller((Class<T>) targetClass);
+                return (ProtoStreamMarshaller<T>) context.getMarshaller((Class<T>) targetClass);
             } catch (IllegalArgumentException e) {
                 // If no marshaller was found, check super class
                 if (exception == null) {

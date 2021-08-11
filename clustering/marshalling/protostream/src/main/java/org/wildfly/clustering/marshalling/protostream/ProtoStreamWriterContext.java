@@ -29,7 +29,7 @@ import java.util.function.Function;
 /**
  * @author Paul Ferraro
  */
-interface ProtoStreamWriterContext extends ProtoStreamOperation.Context {
+interface ProtoStreamWriterContext extends ProtoStreamOperation.Context, AutoCloseable {
 
     interface Factory extends Function<ProtoStreamWriter, ProtoStreamWriterContext>, AutoCloseable {
         @Override
@@ -41,39 +41,51 @@ interface ProtoStreamWriterContext extends ProtoStreamOperation.Context {
     ThreadLocal<Factory> FACTORY = new ThreadLocal<Factory>() {
         @Override
         protected Factory initialValue() {
-            return new Factory() {
-                private final Map<Class<?>, ProtoStreamWriterContext> contexts = new IdentityHashMap<>(2);
+            return new DefaultFactory();
+        }
+
+        class DefaultFactory implements Factory {
+            final Map<Class<?>, ProtoStreamWriterContext> contexts = new IdentityHashMap<>(2);
+
+            @Override
+            public ProtoStreamWriterContext apply(ProtoStreamWriter writer) {
+                return this.contexts.computeIfAbsent(writer.getClass(), DefaultProtoStreamWriterContext::new);
+            }
+
+            class DefaultProtoStreamWriterContext implements ProtoStreamWriterContext, Function<Object, Integer> {
+                private final Class<?> writerClass;
+                private final Map<Object, Integer> references = new IdentityHashMap<>(64);
+                private int index = 0;
+
+                DefaultProtoStreamWriterContext(Class<?> targetClass) {
+                    this.writerClass = targetClass;
+                }
 
                 @Override
-                public ProtoStreamWriterContext apply(ProtoStreamWriter writer) {
-                    return this.contexts.computeIfAbsent(writer.getClass(), Context::new);
+                public Integer getReference(Object object) {
+                    return this.references.get(object);
                 }
 
-                class Context implements ProtoStreamWriterContext, Function<Object, Integer> {
-                    private Map<Object, Integer> references = new IdentityHashMap<>(64);
-                    private int index = 0;
-
-                    Context(Class<?> targetClass) {
-                    }
-
-                    @Override
-                    public Integer getReference(Object object) {
-                        return this.references.get(object);
-                    }
-
-                    @Override
-                    public void addReference(Object object) {
-                        this.references.computeIfAbsent(object, this);
-                    }
-
-                    @Override
-                    public Integer apply(Object key) {
-                        return this.index++;
-                    }
+                @Override
+                public void addReference(Object object) {
+                    this.references.computeIfAbsent(object, this);
                 }
-            };
+
+                @Override
+                public Integer apply(Object key) {
+                    return this.index++;
+                }
+
+                @Override
+                public void close() {
+                    DefaultFactory.this.contexts.remove(this.writerClass);
+                }
+            }
         }
     };
 
     Integer getReference(Object object);
+
+    @Override
+    void close();
 }
