@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.jboss;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.OptionalInt;
 
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
@@ -59,6 +60,11 @@ public enum TestJBossByteBufferMarshaller implements MarshallingConfigurationRep
     @Override
     public void writeTo(OutputStream output, Object object) throws IOException {
         this.marshaller.writeTo(output, object);
+    }
+
+    @Override
+    public OptionalInt size(Object object) {
+        return this.marshaller.size(object);
     }
 
     @Override
