@@ -31,10 +31,7 @@ import java.util.NoSuchElementException;
 import java.util.ServiceLoader;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
-import org.infinispan.protostream.config.Configuration;
-import org.infinispan.protostream.impl.SerializationContextImpl;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -44,10 +41,10 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class SerializationContextBuilder {
     private static final String PROTOSTREAM_BASE_PACKAGE_NAME = org.infinispan.protostream.BaseMarshaller.class.getPackage().getName();
 
-    private final SerializationContext context = new SerializationContextImpl(Configuration.builder().build());
+    private final DefaultSerializationContext context = new DefaultSerializationContext();
 
     /**
-     * Constructs a builder for a {@link SerializationContext} using a default set of initializers.
+     * Constructs a builder for a {@link org.infinispan.protostream.SerializationContext} using a default set of initializers.
      * @param marshaller a class loader marshaller
      */
     public SerializationContextBuilder(ClassLoaderMarshaller marshaller) {
@@ -57,16 +54,16 @@ public class SerializationContextBuilder {
     }
 
     /**
-     * Returns an immutable {@link SerializationContext}.
+     * Returns an immutable {@link org.infinispan.protostream.SerializationContext}.
      * @return the completed and immutable serialization context
      */
     public ImmutableSerializationContext build() {
-        return this.context;
+        return this.context.get();
     }
 
     /**
-     * Registers an initializer with the {@link SerializationContext}.
-     * @param initializer an initializer for the {@link SerializationContext}.
+     * Registers an initializer with the {@link org.infinispan.protostream.SerializationContext}.
+     * @param initializer an initializer for the {@link org.infinispan.protostream.SerializationContext}.
      * @return this builder
      */
     public SerializationContextBuilder register(SerializationContextInitializer initializer) {
@@ -75,8 +72,8 @@ public class SerializationContextBuilder {
     }
 
     /**
-     * Registers a number of initializers with the {@link SerializationContext}.
-     * @param initializers one or more initializers for the {@link SerializationContext}.
+     * Registers a number of initializers with the {@link org.infinispan.protostream.SerializationContext}.
+     * @param initializers one or more initializers for the {@link org.infinispan.protostream.SerializationContext}.
      * @return this builder
      */
     public SerializationContextBuilder register(SerializationContextInitializer... initializers) {
@@ -84,8 +81,8 @@ public class SerializationContextBuilder {
     }
 
     /**
-     * Registers a number of initializers with the {@link SerializationContext}.
-     * @param initializers one or more initializers for the {@link SerializationContext}.
+     * Registers a number of initializers with the {@link org.infinispan.protostream.SerializationContext}.
+     * @param initializers one or more initializers for the {@link org.infinispan.protostream.SerializationContext}.
      * @return this builder
      */
     public SerializationContextBuilder register(Iterable<? extends SerializationContextInitializer> initializers) {
@@ -96,7 +93,7 @@ public class SerializationContextBuilder {
     }
 
     /**
-     * Loads {@link SerializationContextInitializer} instances from the specified {@link ClassLoader} and registers then with the {@link SerializationContext}.
+     * Loads {@link SerializationContextInitializer} instances from the specified {@link ClassLoader} and registers then with the {@link org.infinispan.protostream.SerializationContext}.
      * @param loader a class loader
      * @return this builder
      */
