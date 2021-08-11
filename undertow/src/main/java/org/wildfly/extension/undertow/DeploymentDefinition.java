@@ -298,7 +298,7 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
             } else {
                 ModelNode result = new ModelNode();
                 final ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.deploymentServiceName(server, host, path));
-                if (controller != null && controller.getState() != ServiceController.State.UP) {//check if deployment is active at all
+                if (controller == null || controller.getState() != ServiceController.State.UP) {//check if deployment is active at all
                     return;
                 }
                 final UndertowDeploymentService deploymentService = (UndertowDeploymentService) controller.getService();
