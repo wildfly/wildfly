@@ -74,14 +74,14 @@ final class AccessLogService implements Service<AccessLogService> {
     AccessLogService(final Consumer<AccessLogService> serviceConsumer, final Supplier<Host> host,
                      final Supplier<XnioWorker> worker, final Supplier<PathManager> pathManager,
                      final String pattern, final boolean extended, final Predicate predicate) {
-        this(serviceConsumer, host, worker, pathManager, pattern, null, null, null, null, false, extended, predicate);
+        this(serviceConsumer, host, worker, pathManager, pattern, null, null, null, null, false, extended, true, predicate);
     }
 
     AccessLogService(final Consumer<AccessLogService> serviceConsumer, final Supplier<Host> host,
                      final Supplier<XnioWorker> worker, final Supplier<PathManager> pathManager,
                      final String pattern, final String path, final String pathRelativeTo,
                      final String filePrefix, final String fileSuffix, final boolean rotate,
-                     final boolean extended, final Predicate predicate) {
+                     final boolean extended, final boolean useServerLog, final Predicate predicate) {
         this.serviceConsumer = serviceConsumer;
         this.host = host;
         this.worker = worker;
@@ -93,7 +93,7 @@ final class AccessLogService implements Service<AccessLogService> {
         this.fileSuffix = fileSuffix;
         this.rotate = rotate;
         this.extended = extended;
-        this.useServerLog = false;
+        this.useServerLog = useServerLog;
         this.predicate = predicate == null ? Predicates.truePredicate() : predicate;
     }
 

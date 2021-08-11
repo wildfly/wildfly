@@ -83,7 +83,7 @@ final class AccessLogAdd extends AbstractAddStepHandler {
         if (useServerLog) {
             service = new AccessLogService(sConsumer, hSupplier, wSupplier, pmSupplier, pattern, extended, predicate);
         } else {
-            service = new AccessLogService(sConsumer, hSupplier, wSupplier, pmSupplier, pattern, directory, relativeTo, filePrefix, fileSuffix, rotate, extended, predicate);
+            service = new AccessLogService(sConsumer, hSupplier, wSupplier, pmSupplier, pattern, directory, relativeTo, filePrefix, fileSuffix, rotate, extended, false, predicate);
         }
         sb.setInstance(service);
         sb.install();
