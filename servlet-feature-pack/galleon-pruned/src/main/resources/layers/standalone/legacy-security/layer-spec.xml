@@ -1,8 +1,6 @@
 <?xml version="1.0" ?>
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="legacy-security">
     <dependencies>
-        <!-- security already brings picketbox but not picketbox optionals -->
-        <layer name="vault"/>
         <layer name="naming"/>
     </dependencies>
     <feature-group name="servlet-picketbox-security"/>

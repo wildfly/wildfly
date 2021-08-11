@@ -31,14 +31,13 @@
     
     <!-- Whether to filter out commands and attributes based on user's permissions -->
     <access-control>false</access-control>
-    
-    <ssl>	
-      ${vaultConfig}  
-	  <key-store>${keystore}</key-store>
-	  <key-store-password>${password}</key-store-password>
-	  <trust-store>${truststore}</trust-store>
-	  <trust-store-password>${password}</trust-store-password>
-	  <modify-trust-store>true</modify-trust-store>
-	</ssl>    
-       
+
+    <ssl>
+      <key-store>${keystore}</key-store>
+      <key-store-password>${password}</key-store-password>
+      <trust-store>${truststore}</trust-store>
+      <trust-store-password>${password}</trust-store-password>
+      <modify-trust-store>true</modify-trust-store>
+    </ssl>
+
 </jboss-cli>

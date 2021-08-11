@@ -116,7 +116,7 @@ public class ScopedInjectedJMSContextTestCase {
                     .setDeliveryMode(NON_PERSISTENT)
                     .send(queueForRequestScope, text);
             JMSConsumer consumer = context.createConsumer(tempQueue);
-            String reply = consumer.receiveBody(String.class, TimeoutUtil.adjust(1000));
+            String reply = consumer.receiveBody(String.class, TimeoutUtil.adjust(5000));
             assertNotNull(reply);
 
             JMSConsumer consumerInMDB = RequestScopedMDB.consumer;
