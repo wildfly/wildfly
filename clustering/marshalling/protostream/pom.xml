@@ -90,11 +90,6 @@
             <artifactId>jboss-annotations-api_1.3_spec</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.kohsuke.metainf-services</groupId>
-            <artifactId>metainf-services</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
 </project>
