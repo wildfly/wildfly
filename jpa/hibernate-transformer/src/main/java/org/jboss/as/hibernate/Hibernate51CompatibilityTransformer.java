@@ -217,7 +217,7 @@ public class Hibernate51CompatibilityTransformer implements ClassFileTransformer
     }
 
     private void collectClassesAndInterfaces(Set<String> classesAndInterfaces, ClassLoader classLoader, String className) {
-        if (className == null || "java/lang/Object".equals(className)) {
+        if (className == null || "java/lang/Object".equals(className) || classLoader == null) {
             return;
         }
 

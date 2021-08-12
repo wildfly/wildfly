@@ -223,7 +223,8 @@ public class PersistenceUnitServiceHandler {
                         puList.add(holder);
                     }
 
-                    ROOT_LOGGER.tracef("install persistence unit definitions for ear %s", root.getRootName());
+                    ROOT_LOGGER.tracef("install persistence unit definitions for ear %s",
+                            root != null ? root.getRootName() : "null");
                     addPuService(phaseContext, puList, startEarly, platform);
                 }
             }
