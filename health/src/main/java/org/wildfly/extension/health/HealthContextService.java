@@ -106,6 +106,7 @@ public class HealthContextService implements Service {
         public static final String HEALTH = "/" + CONTEXT_NAME;
         public static final String HEALTH_LIVE = HEALTH + "/live";
         public static final String HEALTH_READY = HEALTH + "/ready";
+        public static final String HEALTH_STARTED = HEALTH + "/started";
         private ServerProbesService serverProbes;
 
         public HealthCheckHandler(ServerProbesService serverProbesService) {
@@ -120,7 +121,8 @@ public class HealthContextService implements Service {
             }
 
             String requestPath = exchange.getRequestPath();
-            if (!HEALTH.equals(requestPath) && !HEALTH_LIVE.equals(requestPath) && !HEALTH_READY.equals(requestPath)) {
+            if (!HEALTH.equals(requestPath) && !HEALTH_LIVE.equals(requestPath) &&
+                !HEALTH_READY.equals(requestPath) && !HEALTH_STARTED.equals(requestPath)) {
                 exchange.setStatusCode(404);
                 return;
             }
@@ -147,6 +149,13 @@ public class HealthContextService implements Service {
                 // always respond to the /health/live positively
                 ModelNode probeOutcome = new ModelNode();
                 probeOutcome.get(NAME).set("live-server");
+                probeOutcome.get(OUTCOME).set(true);
+                response.add(probeOutcome);
+            }
+            if (HEALTH.equals(requestPath) || HEALTH_STARTED.equals(requestPath)) {
+                // always respond to the /health/started positively
+                ModelNode probeOutcome = new ModelNode();
+                probeOutcome.get(NAME).set("started-server");
                 probeOutcome.get(OUTCOME).set(true);
                 response.add(probeOutcome);
             }

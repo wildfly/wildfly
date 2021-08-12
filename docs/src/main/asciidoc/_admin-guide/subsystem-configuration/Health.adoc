@@ -40,6 +40,7 @@ The `health` subsystem registers three HTTP endpoints:
 * `/health` to test both the liveness and readiness of the application server.
 * `/health/live` to test the liveness of the application server
 * `/health/ready` to test the readiness of the application server.
+* `/health/started` to test the startup of the application server.
 
 The Health HTTP endpoints are accessible on the WildFly HTTP management interface (e.g. http://localhost:9990/health[http://localhost:9990/health]).
 

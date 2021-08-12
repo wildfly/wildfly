@@ -85,7 +85,16 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
             .setAllowedValues("UP", "DOWN")
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = { SECURITY_ENABLED, EMPTY_LIVENESS_CHECKS_STATUS, EMPTY_READINESS_CHECKS_STATUS};
+    static final AttributeDefinition EMPTY_STARTUP_CHECKS_STATUS = SimpleAttributeDefinitionBuilder.create("empty-startup-checks-status", ModelType.STRING)
+        .setDefaultValue(new ModelNode("UP"))
+        .setRequired(false)
+        .setRestartAllServices()
+        .setAllowExpression(true)
+        .setAllowedValues("UP", "DOWN")
+        .build();
+
+
+    static final AttributeDefinition[] ATTRIBUTES = { SECURITY_ENABLED, EMPTY_LIVENESS_CHECKS_STATUS, EMPTY_READINESS_CHECKS_STATUS, EMPTY_STARTUP_CHECKS_STATUS};
     private boolean registerRuntimeOperations;
 
     protected MicroProfileHealthSubsystemDefinition(boolean registerRuntimeOperations) {
