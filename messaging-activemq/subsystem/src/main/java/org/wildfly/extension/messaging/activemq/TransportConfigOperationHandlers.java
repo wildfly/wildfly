@@ -87,11 +87,13 @@ public class TransportConfigOperationHandlers {
     private static final String KEY_STORE_PASSWORD = "key-store-password";
     private static final String KEY_STORE_PATH = "key-store-path";
     private static final String KEY_STORE_PROVIDER = "key-store-provider";
+    private static final String KEY_STORE_TYPE = "key-store-type";
     private static final String TCP_RECEIVE_BUFFER_SIZE = "tcp-receive-buffer-size";
     private static final String TCP_SEND_BUFFER_SIZE = "tcp-send-buffer-size";
     private static final String TRUST_STORE_PASSWORD = "trust-store-password";
     private static final String TRUST_STORE_PATH = "trust-store-path";
     private static final String TRUST_STORE_PROVIDER = "trust-store-provider";
+    private static final String TRUST_STORE_TYPE = "trust-store-type";
     private static final String ENABLED_PROTOCOLS = "enabled-protocols";
     private static final String ENABLED_CIPHER_SUITES = "enabled-cipher-suites";
     private static final String HOST = "host";
@@ -99,6 +101,7 @@ public class TransportConfigOperationHandlers {
     public static final String SSL_ENABLED = "ssl-enabled";
     public static final String USE_NIO = "use-nio";
     public static final String TCP_NO_DELAY = "tcp-no-delay";
+    public static final String VERIFY_HOST = "verify-host";
 
     /**
      * The name of the SocketBinding reference to use for HOST/PORT
@@ -146,12 +149,14 @@ public class TransportConfigOperationHandlers {
                 TransportConstants.KEYSTORE_PATH_PROP_NAME);
         CONNECTORS_KEYS_MAP.put(KEY_STORE_PASSWORD,
                 TransportConstants.KEYSTORE_PASSWORD_PROP_NAME);
+        CONNECTORS_KEYS_MAP.put(KEY_STORE_TYPE, "keyStoreType"); // todo use KEYSTORE_TYPE_PROP_NAME once Artemis is upgraded
         CONNECTORS_KEYS_MAP.put(TRUST_STORE_PROVIDER,
                 TransportConstants.TRUSTSTORE_PROVIDER_PROP_NAME);
         CONNECTORS_KEYS_MAP.put(TRUST_STORE_PATH,
                 TransportConstants.TRUSTSTORE_PATH_PROP_NAME);
         CONNECTORS_KEYS_MAP.put(TRUST_STORE_PASSWORD,
                 TransportConstants.TRUSTSTORE_PASSWORD_PROP_NAME);
+        CONNECTORS_KEYS_MAP.put(TRUST_STORE_TYPE, "trustStoreType"); // todo use TRUSTSTORE_TYPE_PROP_NAME once Artemis is upgraded
         CONNECTORS_KEYS_MAP.put(ENABLED_CIPHER_SUITES,
                 TransportConstants.ENABLED_CIPHER_SUITES_PROP_NAME);
         CONNECTORS_KEYS_MAP.put(ENABLED_PROTOCOLS,
@@ -164,12 +169,15 @@ public class TransportConfigOperationHandlers {
                 TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME);
         CONNECTORS_KEYS_MAP.put("nio-remoting-threads",
                 TransportConstants.NIO_REMOTING_THREADS_PROPNAME);
+        CONNECTORS_KEYS_MAP.put("remoting-threads",
+                TransportConstants.REMOTING_THREADS_PROPNAME);
         CONNECTORS_KEYS_MAP.put(BATCH_DELAY,
                 TransportConstants.BATCH_DELAY);
         CONNECTORS_KEYS_MAP.put("connect-timeout-millis",
                 TransportConstants.NETTY_CONNECT_TIMEOUT);
         CONNECTORS_KEYS_MAP.put("anycast-prefix", "anycastPrefix");
         CONNECTORS_KEYS_MAP.put("multicast-prefix", "multicastPrefix");
+        CONNECTORS_KEYS_MAP.put(VERIFY_HOST, TransportConstants.VERIFY_HOST_PROP_NAME);
 
         ACCEPTOR_KEYS_MAP.put(InVMTransportDefinition.SERVER_ID.getName(),
                 org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME);
@@ -202,10 +210,14 @@ public class TransportConfigOperationHandlers {
                 TransportConstants.KEYSTORE_PATH_PROP_NAME);
         ACCEPTOR_KEYS_MAP.put(KEY_STORE_PROVIDER,
                 TransportConstants.KEYSTORE_PROVIDER_PROP_NAME);
+        ACCEPTOR_KEYS_MAP.put(KEY_STORE_TYPE,
+                "keyStoreType"); // todo use KEYSTORE_TYPE_PROP_NAME once Artemis is upgraded
         ACCEPTOR_KEYS_MAP.put("needs-client-auth",
                 TransportConstants.NEED_CLIENT_AUTH_PROP_NAME);
         ACCEPTOR_KEYS_MAP.put("nio-remoting-threads",
                 TransportConstants.NIO_REMOTING_THREADS_PROPNAME);
+        ACCEPTOR_KEYS_MAP.put("remoting-threads",
+                TransportConstants.REMOTING_THREADS_PROPNAME);
         ACCEPTOR_KEYS_MAP.put(PORT,
                 TransportConstants.PORT_PROP_NAME);
         ACCEPTOR_KEYS_MAP.put("protocols",
@@ -230,10 +242,13 @@ public class TransportConfigOperationHandlers {
                 TransportConstants.TRUSTSTORE_PATH_PROP_NAME);
         ACCEPTOR_KEYS_MAP.put(TRUST_STORE_PROVIDER,
                 TransportConstants.TRUSTSTORE_PROVIDER_PROP_NAME);
+        ACCEPTOR_KEYS_MAP.put(TRUST_STORE_TYPE,
+                "trustStoreType"); // todo use TRUSTSTORE_TYPE_PROP_NAME once Artemis is upgraded
         ACCEPTOR_KEYS_MAP.put("use-invm",
                 TransportConstants.USE_INVM_PROP_NAME);
         ACCEPTOR_KEYS_MAP.put(USE_NIO,
                 TransportConstants.USE_NIO_PROP_NAME);
+        ACCEPTOR_KEYS_MAP.put(VERIFY_HOST, TransportConstants.VERIFY_HOST_PROP_NAME);
 
         Set<String>  allowable = new HashSet<>(3);
         allowable.add(org.apache.activemq.artemis.core.remoting.impl.invm.TransportConstants.BUFFER_POOLING);
