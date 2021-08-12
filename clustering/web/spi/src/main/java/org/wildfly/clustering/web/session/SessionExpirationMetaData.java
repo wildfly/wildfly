@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,33 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.web.session;
 
+import java.time.Duration;
 import java.time.Instant;
 
 /**
- * Abstraction for immutable meta information about a web session.
+ * Session meta data that governs expiration.
  * @author Paul Ferraro
  */
-public interface ImmutableSessionMetaData extends SessionExpirationMetaData {
+public interface SessionExpirationMetaData {
 
     /**
-     * Indicates whether or not this session was created by the current thread.
-     * @return true, if this session is new, false otherwise
+     * Indicates whether or not this session was previously idle for longer than the maximum inactive interval.
+     * @return true, if this session is expired, false otherwise
      */
-    default boolean isNew() {
-        return this.getCreationTime().equals(this.getLastAccessStartTime());
+    default boolean isExpired() {
+        Duration maxInactiveInterval = this.getMaxInactiveInterval();
+        return !maxInactiveInterval.isZero() ? this.getLastAccessEndTime().plus(maxInactiveInterval).isBefore(Instant.now()) : false;
     }
 
     /**
-     * Returns the time this session was created.
-     * @return the time this session was created
+     * Returns the end time of the last request to access this session.
+     * @return the end time of the last request to access this session.
      */
-    Instant getCreationTime();
+    Instant getLastAccessEndTime();
 
     /**
-     * Returns the start time of the last request to access this session.
-     * @return the start time of the last request to access this session.
+     * Returns the time interval since {@link #getLastAccessEndTime()} after which this session will expire.
+     * @return a time interval
      */
-    Instant getLastAccessStartTime();
+    Duration getMaxInactiveInterval();
 }
