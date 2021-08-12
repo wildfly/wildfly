@@ -193,13 +193,6 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
         String jbossDomainServerArgsValue = null;
         try {
-            if (version.isEAP6Version()) {
-                jbossDomainServerArgsValue = System.getProperty(JBOSS_DOMAIN_SERVER_ARGS);
-                if (jbossDomainServerArgsValue != null) {
-                    System.setProperty(JBOSS_DOMAIN_SERVER_ARGS, "-DnotUsed");
-                }
-            }
-
             //Start the master in admin only  and reconfigure the domain with what
             //we want to test in the mixed domain and have the DomainAdjuster
             //strip down the domain model to something more workable. The domain
@@ -229,10 +222,6 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
         } catch (Exception e) {
             throw new RuntimeException(e);
-        } finally {
-            if (version.isEAP6Version() && jbossDomainServerArgsValue != null) {
-                System.setProperty(JBOSS_DOMAIN_SERVER_ARGS, jbossDomainServerArgsValue);
-            }
         }
     }
 
@@ -258,9 +247,6 @@ public class MixedDomainTestSupport extends DomainTestSupport {
         String number = version.getVersion().replace('.', '-');
         final String fileName;
         switch (version.basename) {
-            case Version.AS:
-                fileName = number + ".xml";
-                break;
             case Version.EAP:
                 fileName = "eap-" + number + ".xml";
                 break;
@@ -273,7 +259,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     private static Path loadFile(String first, String... parts) {
         final Path p = Paths.get(first, parts);
-        Assert.assertTrue(p.toAbsolutePath().toString() + " does not exist", Files.exists(p));
+        Assert.assertTrue(p.toAbsolutePath() + " does not exist", Files.exists(p));
         return p;
     }
 

@@ -21,13 +21,13 @@
 */
 package org.jboss.as.test.integration.domain.mixed;
 
-import org.jboss.as.controller.ModelVersion;
-import org.junit.Assume;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import org.jboss.as.controller.ModelVersion;
+import org.junit.Assume;
 
 /**
  *
@@ -39,16 +39,10 @@ public @interface Version {
 
     AsVersion value();
 
-    String AS = "jboss-as-";
     String WILDFLY = "wildfly-";
     String EAP = "jboss-eap-";
 
     enum AsVersion {
-        EAP_6_4_0(EAP, 6, 4, 0, 8, 8, "EAP6.4", ModelVersion.create(1, 7)),
-        EAP_7_0_0(EAP, 7, 0, 0, 8, 8, "EAP7.0", ModelVersion.create(4, 1)),
-        EAP_7_1_0(EAP, 7, 1, 0, 8, 8, "EAP7.1", ModelVersion.create(5, 0)),
-        EAP_7_2_0(EAP, 7, 2, 0, 11, 8, "EAP7.2", ModelVersion.create(8, 0)),
-        EAP_7_3_0(EAP, 7, 3, 0, 11, 8, "EAP7.3", ModelVersion.create(10, 0)),
         EAP_7_4_0(EAP, 7, 4, 0, 11, 8, "EAP7.4", ModelVersion.create(16, 0)),
         ;
 
@@ -105,10 +99,6 @@ public @interface Version {
             } else {
                 return  getFullVersionName() + ".Final.zip";
             }
-        }
-
-        public boolean isEAP6Version() {
-            return (this == EAP_6_4_0);
         }
 
         public int getMajor() {

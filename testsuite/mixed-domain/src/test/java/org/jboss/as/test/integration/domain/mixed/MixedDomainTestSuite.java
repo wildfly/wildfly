@@ -32,10 +32,10 @@ import org.junit.AfterClass;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class MixedDomainTestSuite {
-    public static enum Profile {
+    public enum Profile {
         FULL("full"), FULL_HA("full-ha"), DEFAULT("default");
         private final String profileName;
-        private Profile(String profileName) {
+        Profile(String profileName) {
             this.profileName = profileName;
         }
 
@@ -153,7 +153,7 @@ public class MixedDomainTestSuite {
                 throw (e instanceof RuntimeException ? (RuntimeException) e : new RuntimeException(e));
             }
             try {
-                //Start the the domain with adjustments to domain.xml
+                //Start the domain with adjustments to domain.xml
                 testSupport.start();
                 support = testSupport;
             } catch (Exception e) {
