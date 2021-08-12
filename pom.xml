@@ -9458,6 +9458,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.wildfly.security</groupId>
+                <artifactId>wildfly-elytron-jose-jwk</artifactId>
+                <version>${version.org.wildfly.security.elytron}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security</groupId>
+                <artifactId>wildfly-elytron-jose-util</artifactId>
+                <version>${version.org.wildfly.security.elytron}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.wildfly.transaction</groupId>
                 <artifactId>wildfly-transaction-client</artifactId>
                 <version>${version.org.wildfly.transaction.client}</version>
