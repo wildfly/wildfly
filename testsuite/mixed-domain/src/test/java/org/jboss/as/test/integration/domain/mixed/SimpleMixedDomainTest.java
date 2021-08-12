@@ -116,13 +116,6 @@ public abstract class SimpleMixedDomainTest  {
 
     @Test
     public void test00002_Versioning() throws Exception {
-        if (version == Version.AsVersion.EAP_7_0_0) {
-            //7.0.0 (https://issues.jboss.org/browse/WFCORE-401)
-            // have the slave report back its own version, rather than the one from the DC,
-            //which is what should happen
-            return;
-        }
-
         DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
         ModelNode masterModel;
         try {

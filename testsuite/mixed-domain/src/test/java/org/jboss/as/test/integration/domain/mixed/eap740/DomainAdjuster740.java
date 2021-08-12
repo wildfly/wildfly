@@ -30,10 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.dmr.ModelNode;
 
@@ -48,10 +45,9 @@ public class DomainAdjuster740 extends DomainAdjuster {
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) throws Exception {
         final List<ModelNode> ops = new ArrayList<>();
 
-        adjustUndertow(ops, profileAddress.append(SUBSYSTEM, "undertow"));
-        adjustInfinispan(ops, profileAddress.append(SUBSYSTEM, "infinispan"));
-        // Mixed Domain tests always uses the complete build instead of alternating with ee-dist. We need to remove here
+        // Mixed Domain tests always uses the full build instead of alternating with ee-dist. We need to remove here
         // the pre-configured microprofile extensions to adjust the current domain to work with a node running EAP 7.4.0
+        // which only uses the ee-dist
         removeSubsystemExtension(ops, profileAddress.append(SUBSYSTEM, "microprofile-opentracing-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.opentracing-smallrye"));
         removeSubsystemExtension(ops, profileAddress.append(SUBSYSTEM, "microprofile-jwt-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.jwt-smallrye"));
         removeSubsystemExtension(ops, profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.config-smallrye"));
@@ -62,26 +58,5 @@ public class DomainAdjuster740 extends DomainAdjuster {
     private void removeSubsystemExtension(List<ModelNode> ops, PathAddress subsystem, PathAddress extension) {
         ops.add(createRemoveOperation(subsystem));
         ops.add(createRemoveOperation(extension));
-    }
-
-    private static void adjustUndertow(final List<ModelNode> ops, final PathAddress subsystem) {
-        // EAP 7.0 and earlier required explicit SSL configuration. Wildfly 10.1 added support
-        // for SSL by default, which automatically generates certs.
-        // This could be removed if all hosts were configured to contain a security domain with SSL enabled.
-        // However, for the mixed domain tests, we are using a reduced host slave configuration file (see slave-config resource dir)
-        // these configurations do not configure a SSL on ApplicationRealm, hence this removal to make it compatible across all domains.
-        final PathAddress httpsListener = subsystem
-                .append("server", "default-server")
-                .append("https-listener", "https");
-        ops.add(Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, httpsListener.toModelNode()));
-    }
-
-    private static void adjustInfinispan(List<ModelNode> ops, PathAddress address) {
-        // Default configs now use specific marshaller attributes
-        // For compatibility with older versions, we need to use the LEGACY marshaller
-        ops.add(Util.getUndefineAttributeOperation(address.append(PathElement.pathElement("cache-container", "server")), "marshaller"));
-        ops.add(Util.getUndefineAttributeOperation(address.append(PathElement.pathElement("cache-container", "web")), "marshaller"));
-        ops.add(Util.getUndefineAttributeOperation(address.append(PathElement.pathElement("cache-container", "ejb")), "marshaller"));
-        ops.add(Util.getUndefineAttributeOperation(address.append(PathElement.pathElement("cache-container", "hibernate")), "marshaller"));
     }
 }
