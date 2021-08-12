@@ -23,9 +23,6 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.util.OptionalInt;
-
-import org.infinispan.protostream.ImmutableSerializationContext;
 
 /**
  * Interface inherited by marshallable components.
@@ -49,22 +46,6 @@ public interface Marshallable<T> {
      * @throws IOException if the object could not be written
      */
     void writeTo(ProtoStreamWriter writer, T value) throws IOException;
-
-    /**
-     * Predicts the size of the specified object that would be written via the {@link #writeTo(ProtoStreamWriter, Object)} method.
-     * @param context a serialization context
-     * @param value the object whose size is to be determined
-     * @return the computed size of the specified object, or empty if the size could not be determined.
-     */
-    default OptionalInt size(ImmutableSerializationContext context, T value) {
-        SizeComputingProtoStreamWriter writer = new SizeComputingProtoStreamWriter(context);
-        try {
-            this.writeTo(writer, value);
-            return writer.get();
-        } catch (IOException e) {
-            return OptionalInt.empty();
-        }
-    }
 
     /**
      * Returns the type of object handled by this marshallable instance.

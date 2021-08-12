@@ -23,9 +23,7 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.util.OptionalInt;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufTagMarshaller;
 import org.infinispan.protostream.impl.TagWriterImpl;
 
@@ -69,16 +67,5 @@ public class ProtoStreamMarshallerAdapter<T> implements ProtoStreamMarshaller<T>
     @Override
     public void write(WriteContext context, T value) throws IOException {
         this.marshaller.write(context, value);
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, T value) {
-        TagWriterImpl writer = TagWriterImpl.newInstance(context);
-        try {
-            this.marshaller.write(writer, value);
-            return OptionalInt.of(writer.getWrittenBytes());
-        } catch (IOException e) {
-            return OptionalInt.empty();
-        }
     }
 }

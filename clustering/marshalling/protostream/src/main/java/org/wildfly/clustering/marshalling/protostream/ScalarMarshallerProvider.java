@@ -23,9 +23,7 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.util.OptionalInt;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.descriptors.WireType;
 
 /**
@@ -53,11 +51,6 @@ public interface ScalarMarshallerProvider extends ScalarMarshaller<Object> {
     @Override
     default void writeTo(ProtoStreamWriter writer, Object value) throws IOException {
         this.cast(Object.class).writeTo(writer, value);
-    }
-
-    @Override
-    default OptionalInt size(ImmutableSerializationContext context, Object value) {
-        return this.cast(Object.class).size(context, value);
     }
 
     @SuppressWarnings("unchecked")
