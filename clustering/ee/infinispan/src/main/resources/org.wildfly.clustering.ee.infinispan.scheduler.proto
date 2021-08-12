@@ -6,12 +6,20 @@ package org.wildfly.clustering.ee.infinispan.scheduler;
  * @TypeId(180)
  */
 message CancelCommand {
-	required	bytes	id	= 1;
+	optional	bytes	id	 = 1;
 }
 
 /**
  * @TypeId(181)
  */
-message ScheduleCommand {
-	required	bytes	id	= 1;
+message ScheduleWithTransientMetaDataCommand {
+	optional	bytes	id	 = 1;
+}
+
+/**
+ * @TypeId(182)
+ */
+message ScheduleWithMetaDataCommand {
+	optional	bytes	id	 = 1;
+	optional	bytes	metaData	 = 2;
 }

@@ -20,37 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ee.infinispan.scheduler;
+package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.dispatcher.Command;
+import java.time.Duration;
+import java.time.Instant;
+
+import org.wildfly.clustering.web.session.SessionExpirationMetaData;
 
 /**
- * Command that scheduled an element.
+ * Immutable view of the expiration metadata for a session.
  * @author Paul Ferraro
  */
-public interface ScheduleCommand<I, M> extends Command<Void, Scheduler<I, M>> {
+public class SimpleSessionExpirationMetaData implements SessionExpirationMetaData {
 
-    /**
-     * Returns the identifier of the element to be scheduled.
-     * @return the identifier of the element to be scheduled.
-     */
-    I getId();
+    private final Instant lastAccessEndTime;
+    private final Duration maxInactiveInterval;
 
-    /**
-     * Returns the meta data of the element to be scheduled.
-     * @return the meta data of the element to be scheduled.
-     */
-    M getMetaData();
+    public SimpleSessionExpirationMetaData(SessionExpirationMetaData metaData) {
+        this(metaData.getMaxInactiveInterval(), metaData.getLastAccessEndTime());
+    }
+
+    SimpleSessionExpirationMetaData(Duration maxInactiveInterval, Instant lastAccessEndTime) {
+        this.maxInactiveInterval = maxInactiveInterval;
+        this.lastAccessEndTime = lastAccessEndTime;
+    }
 
     @Override
-    default Void execute(Scheduler<I, M> scheduler) throws Exception {
-        I id = this.getId();
-        M metaData = this.getMetaData();
-        if (metaData != null) {
-            scheduler.schedule(id, metaData);
-        } else {
-            scheduler.schedule(id);
-        }
-        return null;
+    public Instant getLastAccessEndTime() {
+        return this.lastAccessEndTime;
+    }
+
+    @Override
+    public Duration getMaxInactiveInterval() {
+        return this.maxInactiveInterval;
     }
 }

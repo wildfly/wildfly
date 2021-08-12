@@ -22,35 +22,28 @@
 
 package org.wildfly.clustering.ee.infinispan.scheduler;
 
-import org.wildfly.clustering.dispatcher.Command;
-
 /**
- * Command that scheduled an element.
+ * Command that schedules an item, where its meta data is persisted.
  * @author Paul Ferraro
  */
-public interface ScheduleCommand<I, M> extends Command<Void, Scheduler<I, M>> {
+public class ScheduleWithMetaDataCommand<I, M> implements ScheduleCommand<I, M> {
+    private static final long serialVersionUID = 2116021502509126945L;
 
-    /**
-     * Returns the identifier of the element to be scheduled.
-     * @return the identifier of the element to be scheduled.
-     */
-    I getId();
+    private final I id;
+    private final M metaData;
 
-    /**
-     * Returns the meta data of the element to be scheduled.
-     * @return the meta data of the element to be scheduled.
-     */
-    M getMetaData();
+    public ScheduleWithMetaDataCommand(I id, M metaData) {
+        this.id = id;
+        this.metaData = metaData;
+    }
 
     @Override
-    default Void execute(Scheduler<I, M> scheduler) throws Exception {
-        I id = this.getId();
-        M metaData = this.getMetaData();
-        if (metaData != null) {
-            scheduler.schedule(id, metaData);
-        } else {
-            scheduler.schedule(id);
-        }
-        return null;
+    public I getId() {
+        return this.id;
+    }
+
+    @Override
+    public M getMetaData() {
+        return this.metaData;
     }
 }
