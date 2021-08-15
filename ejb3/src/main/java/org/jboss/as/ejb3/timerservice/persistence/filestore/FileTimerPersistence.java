@@ -44,7 +44,6 @@ import org.wildfly.transaction.client.ContextTransactionManager;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
@@ -195,7 +194,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     }
 
     @Override
-    public boolean shouldRun(TimerImpl timer, TransactionManager tm) {
+    public boolean shouldRun(TimerImpl timer) {
         return true;
     }
 
