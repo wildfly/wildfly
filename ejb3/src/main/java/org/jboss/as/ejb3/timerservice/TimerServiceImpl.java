@@ -924,27 +924,34 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             // create the timer task
             final TimerTask<?> timerTask = timer.getTimerTask();
             // find out how long is it away from now
-            long delay = nextExpiration.getTime() - System.currentTimeMillis();
-            // if in past, then trigger immediately
-            if (delay < 0) {
-                delay = 0;
-            }
+            final long currentTime = System.currentTimeMillis();
+            long delay = nextExpiration.getTime() - currentTime;
             long intervalDuration = timer.getInterval();
             final Task task = new Task(timerTask, ejbComponentInjectedValue.getValue().getControlPoint());
             if (intervalDuration > 0) {
                 EJB3_TIMER_LOGGER.debugv("Scheduling timer {0} at fixed rate, starting at {1} milliseconds from now with repeated interval={2}",
                         timer, delay, intervalDuration);
+                // if in past, then trigger immediately
+                if (delay < 0) {
+                    delay = 0;
+                }
                 // schedule the task
                 this.timerInjectedValue.getValue().scheduleAtFixedRate(task, delay, intervalDuration);
                 // maintain it in timerservice for future use (like cancellation)
                 this.scheduledTimerFutures.put(timer.getId(), task);
             } else {
                 EJB3_TIMER_LOGGER.debugv("Scheduling a single action timer {0} starting at {1} milliseconds from now", timer, delay);
+                // if in past, then trigger immediately; if overdue by 5 minutes, set next expiration to current time
+                if (delay < 0) {
+                    if (delay < -300000) {
+                        timer.nextExpiration = new Date(currentTime);
+                    }
+                    delay = 0;
+                }
                 // schedule the task
                 this.timerInjectedValue.getValue().schedule(task, delay);
                 // maintain it in timerservice for future use (like cancellation)
                 this.scheduledTimerFutures.put(timer.getId(), task);
-
             }
         }
     }
