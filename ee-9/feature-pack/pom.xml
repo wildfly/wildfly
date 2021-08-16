@@ -90,7 +90,7 @@
         <version.org.hibernate.validator>7.0.1.Final</version.org.hibernate.validator>
         <version.org.jberet>2.0.1.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>1.0.4</version.org.jboss.activemq.artemis.integration>
-        <version.org.jboss.metadata>14.0.0.Beta1</version.org.jboss.metadata>
+        <version.org.jboss.metadata>14.0.0.Beta2</version.org.jboss.metadata>
         <version.org.jboss.weld.weld>4.0.2.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>4.0.SP1</version.org.jboss.weld.weld-api>
         <version.org.wildfly.transaction.client>2.0.0.Final</version.org.wildfly.transaction.client>
@@ -174,12 +174,14 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <escapeString>\</escapeString>
                             <resources>
                                 <resource>
                                     <directory>${servlet.common.resources.directory}</directory>
                                     <excludes>
                                         <exclude>**/org/jboss/as/security/main/module.xml</exclude>
                                     </excludes>
+                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -445,6 +447,10 @@
                     <artifactId>jaxb-xjc</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.jboss.metadata</groupId>
+                    <artifactId>jboss-metadata-ejb</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-mail</artifactId>
                 </exclusion>
@@ -465,6 +471,12 @@
             <version>${ee.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.metadata</groupId>
+                    <artifactId>jboss-metadata-common</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -1055,22 +1067,22 @@
                     <groupId>org.jboss.logging</groupId>
                     <artifactId>jboss-logging</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.metadata</groupId>
+                    <artifactId>jboss-metadata-common</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common</artifactId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
             <version>${version.org.jboss.metadata}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>org.jboss</groupId>
-                    <artifactId>jboss-common-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.logging</groupId>
-                    <artifactId>jboss-logging</artifactId>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -1085,18 +1097,22 @@
                     <groupId>org.jboss.logging</groupId>
                     <artifactId>jboss-logging</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.metadata</groupId>
+                    <artifactId>jboss-metadata-common</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-ejb</artifactId>
+            <artifactId>jboss-metadata-ejb-jakarta</artifactId>
             <version>${version.org.jboss.metadata}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>org.jboss.logging</groupId>
-                    <artifactId>jboss-logging</artifactId>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -1110,6 +1126,10 @@
                 <exclusion>
                     <groupId>org.jboss.logging</groupId>
                     <artifactId>jboss-logging</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.metadata</groupId>
+                    <artifactId>jboss-metadata-common</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

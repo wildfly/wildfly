@@ -191,6 +191,28 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.jboss.metadata</groupId>
+      <artifactId>jboss-metadata-common-jakarta</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 only</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.metadata</groupId>
+      <artifactId>jboss-metadata-ejb-jakarta</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 only</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.spec.javax.annotation</groupId>
       <artifactId>jboss-annotations-api_1.3_spec</artifactId>
       <licenses>

@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.jboss.metadata:jboss-metadata-ejb}"/>
+        <artifact name="\${org.jboss.metadata:jboss-metadata-ejb@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
