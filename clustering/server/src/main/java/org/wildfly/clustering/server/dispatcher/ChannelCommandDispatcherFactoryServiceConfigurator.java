@@ -109,7 +109,7 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
 
     @Override
     public AutoCloseableCommandDispatcherFactory get() {
-        return new ManagedCommandDispatcherFactory(new ChannelCommandDispatcherFactory(this));
+        return new ChannelCommandDispatcherFactory(this);
     }
 
     @Override
