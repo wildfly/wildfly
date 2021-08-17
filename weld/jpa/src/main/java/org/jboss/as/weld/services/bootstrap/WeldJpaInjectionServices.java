@@ -189,10 +189,22 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
                         }
                     }
             );
+            final AccessControlContext accessControlContext =
+                    AccessController.doPrivileged(GetAccessControlContextAction.getInstance());
+
             try {
                 // ensure that Injection of persistence unit doesn't cause MSC service thread to block.
-                assert !Thread.currentThread().getName().startsWith(MSC_SERVICE_THREAD) :
-                        INJECTION_CANNOT_BE_PERFORMED_WITHIN_MSC_SERVICE_THREAD;
+                PrivilegedAction<Void> threadNameCheck =
+                        new PrivilegedAction<Void>() {
+                            // run as security privileged action
+                            @Override
+                            public Void run() {
+                                assert !Thread.currentThread().getName().startsWith(MSC_SERVICE_THREAD) :
+                                                        INJECTION_CANNOT_BE_PERFORMED_WITHIN_MSC_SERVICE_THREAD;
+                                return null;
+                            }
+                        };
+                WildFlySecurityManager.doChecked(threadNameCheck, accessControlContext);
                 latch.await();
             } catch (InterruptedException e) {
                 // Thread was interrupted, which we will preserve in case a higher level operation needs to see it.
@@ -203,8 +215,6 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
             }
             return new ResourceReference<T>() {
                 T persistenceUnitTarget;
-                final AccessControlContext accessControlContext =
-                        AccessController.doPrivileged(GetAccessControlContextAction.getInstance());
 
                 @Override
                 public T getInstance() {
