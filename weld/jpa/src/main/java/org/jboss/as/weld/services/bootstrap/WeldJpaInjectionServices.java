@@ -163,6 +163,8 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
     }
 
     private static class LazyFactory<T> implements ResourceReferenceFactory<T> {
+        public static final String MSC_SERVICE_THREAD = "MSC service thread";
+        public static final String INJECTION_CANNOT_BE_PERFORMED_WITHIN_MSC_SERVICE_THREAD = "injection cannot be performed from JBoss Modular Service Container (MSC) service thread";
         private final Callable<T> callable;
         private final ServiceController<?> serviceController;
 
@@ -188,6 +190,9 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
                     }
             );
             try {
+                // ensure that Injection of persistence unit doesn't cause MSC service thread to block.
+                assert !Thread.currentThread().getName().startsWith(MSC_SERVICE_THREAD) :
+                        INJECTION_CANNOT_BE_PERFORMED_WITHIN_MSC_SERVICE_THREAD;
                 latch.await();
             } catch (InterruptedException e) {
                 // Thread was interrupted, which we will preserve in case a higher level operation needs to see it.
