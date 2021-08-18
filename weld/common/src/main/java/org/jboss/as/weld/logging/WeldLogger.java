@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -261,4 +261,9 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 56, value = "Weld is not initialized yet")
     IllegalStateException weldNotInitialized();
 
+    @Message(id = 57, value = "Persistence unit '%s' failed.")
+    IllegalStateException persistenceUnitFailed(String scopedPuName);
+
+    @Message(id = 58, value = "Persistence unit '%s' removed.")
+    IllegalStateException persistenceUnitRemoved(String scopedPuName);
 }

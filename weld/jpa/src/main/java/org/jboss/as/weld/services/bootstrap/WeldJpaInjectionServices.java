@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2021, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -84,7 +84,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         if (persistenceUnitService.getEntityManagerFactory() != null) {
             return new EntityManagerResourceReferenceFactory(scopedPuName, persistenceUnitService.getEntityManagerFactory(), context, deploymentUnit.getAttachment(JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY), ContextTransactionManager.getInstance());
         } else {
-            return new LazyFactory<EntityManager>(serviceController, new Callable<EntityManager>() {
+            return new LazyFactory<EntityManager>(serviceController, scopedPuName, new Callable<EntityManager>() {
                 @Override
                 public EntityManager call() throws Exception {
                     return new TransactionScopedEntityManager(
@@ -116,7 +116,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         if (persistenceUnitService.getEntityManagerFactory() != null) {
             return new ImmediateResourceReferenceFactory<EntityManagerFactory>(persistenceUnitService.getEntityManagerFactory());
         } else {
-            return new LazyFactory<EntityManagerFactory>(serviceController, new Callable<EntityManagerFactory>() {
+            return new LazyFactory<EntityManagerFactory>(serviceController, scopedPuName, new Callable<EntityManagerFactory>() {
                 @Override
                 public EntityManagerFactory call() throws Exception {
                     return persistenceUnitService.getEntityManagerFactory();
@@ -167,13 +167,16 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         public static final String INJECTION_CANNOT_BE_PERFORMED_WITHIN_MSC_SERVICE_THREAD = "injection cannot be performed from JBoss Modular Service Container (MSC) service thread";
         private final Callable<T> callable;
         private final ServiceController<?> serviceController;
+        private final String scopedPuName;
 
-        public LazyFactory(ServiceController<?> serviceController, Callable<T> callable) {
+        public LazyFactory(ServiceController<?> serviceController, String scopedPuName, Callable<T> callable) {
             this.callable = callable;
             this.serviceController = serviceController;
+            this.scopedPuName = scopedPuName;
         }
 
         final CountDownLatch latch = new CountDownLatch(1);
+        boolean failed = false, removed = false;
 
         @Override
         public ResourceReference<T> createResource() {
@@ -185,6 +188,12 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
                             if (event == LifecycleEvent.UP) {
                                 latch.countDown();
                                 controller.removeListener(this);
+                            } else if (event == LifecycleEvent.FAILED) {
+                                failed = true;
+                                latch.countDown();
+                            } else if (event == LifecycleEvent.REMOVED) {
+                                removed = true;
+                                latch.countDown();
                             }
                         }
                     }
@@ -206,6 +215,11 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
                         };
                 WildFlySecurityManager.doChecked(threadNameCheck, accessControlContext);
                 latch.await();
+                if (failed) {
+                    throw WeldLogger.ROOT_LOGGER.persistenceUnitFailed(scopedPuName);
+                } else if(removed) {
+                    throw WeldLogger.ROOT_LOGGER.persistenceUnitRemoved(scopedPuName);
+                }
             } catch (InterruptedException e) {
                 // Thread was interrupted, which we will preserve in case a higher level operation needs to see it.
                 Thread.currentThread().interrupt();
