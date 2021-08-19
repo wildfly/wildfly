@@ -2306,6 +2306,16 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>ts.surefire.clustering.fullha</id>
+                                <!--<phase>none</phase>-->
+                                <configuration>
+                                    <excludes>
+                                        <!-- Requires the /subsystem=messaging-activemq/server=default to exist for it's setup tasks -->
+                                        <exclude>${test-group}/jms/ClusteredMessagingTestCase.java</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>ts.surefire.clustering.ha-infinispan-server</id>
                                 <!--<phase>none</phase>-->
                                 <configuration>
