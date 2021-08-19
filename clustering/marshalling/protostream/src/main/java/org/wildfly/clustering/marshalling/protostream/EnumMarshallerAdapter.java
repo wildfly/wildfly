@@ -22,34 +22,22 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.IOException;
-
 /**
- * Interface inherited by marshallable components.
+ * Adapts a {@link org.infinispan.protostream.EnumMarshaller} to a {@link ProtoStreamMarshaller}.
  * @author Paul Ferraro
- * @param <T> the type of this marshaller
  */
-public interface Marshallable<T> {
+public class EnumMarshallerAdapter<E extends Enum<E>> extends EnumMarshaller<E> {
 
-    /**
-     * Reads an object from the specified reader.
-     * @param reader a ProtoStream reader
-     * @return the read object
-     * @throws IOException if the object could not be read
-     */
-    T readFrom(ProtoStreamReader reader) throws IOException;
+    private final String typeName;
 
-    /**
-     * Writes the specified object to the specified writer.
-     * @param writer a ProtoStream writer
-     * @param value the object to be written
-     * @throws IOException if the object could not be written
-     */
-    void writeTo(ProtoStreamWriter writer, T value) throws IOException;
+    @SuppressWarnings("unchecked")
+    public EnumMarshallerAdapter(org.infinispan.protostream.EnumMarshaller<E> marshaller) {
+        super((Class<E>) marshaller.getJavaClass());
+        this.typeName = marshaller.getTypeName();
+    }
 
-    /**
-     * Returns the type of object handled by this marshallable instance.
-     * @return the type of object handled by this marshallable instance.
-     */
-    Class<? extends T> getJavaClass();
+    @Override
+    public String getTypeName() {
+        return this.typeName;
+    }
 }

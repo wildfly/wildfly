@@ -23,9 +23,7 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.util.OptionalInt;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.descriptors.WireType;
 
 /**
@@ -54,11 +52,6 @@ public class ScalarFieldMarshaller<T> implements FieldMarshaller<T> {
     @Override
     public void writeTo(ProtoStreamWriter writer, T value) throws IOException {
         this.marshaller.writeTo(writer, value);
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, T value) {
-        return this.marshaller.size(context, value);
     }
 
     @Override

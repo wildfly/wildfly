@@ -26,58 +26,38 @@ import java.io.IOException;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 
-import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.ProtobufTagMarshaller.WriteContext;
-import org.infinispan.protostream.TagWriter;
 import org.infinispan.protostream.impl.TagWriterImpl;
 
 /**
- * {@link ProtoStreamWriter} implementation that does not write to any stream, but instead computes the number of bytes that would be written to a stream.
  * @author Paul Ferraro
  */
 public class SizeComputingProtoStreamWriter extends AbstractProtoStreamWriter implements Supplier<OptionalInt> {
 
+    private final TagWriterImpl writer;
     private boolean present = true;
 
     public SizeComputingProtoStreamWriter(ImmutableSerializationContext context) {
-        this(context, TagWriterImpl.newInstance(context));
+        this(TagWriterImpl.newInstance(context));
     }
 
-    private SizeComputingProtoStreamWriter(ImmutableSerializationContext context, TagWriter writer) {
-        super(new WriteContext() {
-            @Override
-            public ImmutableSerializationContext getSerializationContext() {
-                return context;
-            }
-
-            @Override
-            public Object getParam(Object key) {
-                return null;
-            }
-
-            @Override
-            public void setParam(Object key, Object value) {
-            }
-
-            @Override
-            public TagWriter getWriter() {
-                return writer;
-            }
-        });
+    private SizeComputingProtoStreamWriter(TagWriterImpl writer) {
+        super(writer);
+        this.writer = writer;
     }
 
     @Override
     public OptionalInt get() {
-        return this.present ? OptionalInt.of(((TagWriterImpl) this.getWriter()).getWrittenBytes()) : OptionalInt.empty();
+        return this.present ? OptionalInt.of(this.writer.getWrittenBytes()) : OptionalInt.empty();
     }
 
     @Override
     public void writeObjectNoTag(Object value) throws IOException {
         if (this.present) {
-            BaseMarshaller<?> marshaller = this.findMarshaller(value.getClass());
-            @SuppressWarnings("unchecked")
-            OptionalInt size = (marshaller instanceof Marshallable) ? ((Marshallable<Object>) marshaller).size(this.getSerializationContext(), value) : OptionalInt.empty();
+            ProtoStreamMarshaller<Object> marshaller = this.findMarshaller(value.getClass());
+            SizeComputingProtoStreamWriter sizer = new SizeComputingProtoStreamWriter(this.getSerializationContext());
+            marshaller.writeTo(sizer, value);
+            OptionalInt size = sizer.get();
             if (size.isPresent()) {
                 int length = size.getAsInt();
                 this.writeVarint32(length);

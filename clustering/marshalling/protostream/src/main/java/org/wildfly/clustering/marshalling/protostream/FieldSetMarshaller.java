@@ -23,9 +23,6 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.util.OptionalInt;
-
-import org.infinispan.protostream.ImmutableSerializationContext;
 
 /**
  * Marshaller for a set of fields, to be shared between multiple marshallers.
@@ -66,22 +63,4 @@ public interface FieldSetMarshaller<T, B> {
      * @throws IOException if the value could not be written
      */
     void writeFields(ProtoStreamWriter writer, int startIndex, T value) throws IOException;
-
-    /**
-     * Predicts the payload size of the fields that would be written via the {@link #writeFields(ProtoStreamWriter, int, Object)} method.
-     * @param context a serialization context
-     * @param startIndex the start index for the embedded fields
-     * @param value the value whose size is to be determined
-     * @param the object to be written
-     * @return the computed size of the fields, or empty if the size could not be determined.
-     */
-    default OptionalInt size(ImmutableSerializationContext context, int startIndex, T value) {
-        SizeComputingProtoStreamWriter writer = new SizeComputingProtoStreamWriter(context);
-        try {
-            this.writeFields(writer, startIndex, value);
-            return writer.get();
-        } catch (IOException e) {
-            return OptionalInt.empty();
-        }
-    }
 }

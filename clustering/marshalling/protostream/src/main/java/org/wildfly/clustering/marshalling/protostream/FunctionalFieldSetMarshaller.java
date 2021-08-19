@@ -23,10 +23,8 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.util.OptionalInt;
 import java.util.function.Function;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.descriptors.WireType;
 
 /**
@@ -65,11 +63,6 @@ public class FunctionalFieldSetMarshaller<T, B> implements ProtoStreamMarshaller
     @Override
     public void writeTo(ProtoStreamWriter writer, T value) throws IOException {
         this.marshaller.writeFields(writer, START_INDEX, value);
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, T value) {
-        return this.marshaller.size(context, START_INDEX, value);
     }
 
     @Override

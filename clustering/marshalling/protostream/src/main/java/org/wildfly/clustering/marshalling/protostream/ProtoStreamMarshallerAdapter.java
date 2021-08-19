@@ -23,44 +23,49 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.OptionalInt;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.infinispan.protostream.ProtobufTagMarshaller;
+import org.infinispan.protostream.impl.TagWriterImpl;
 
 /**
+ * Adapts a {@link ProtobufTagMarshaller} to a {@link ProtoStreamMarshaller}.
  * @author Paul Ferraro
  */
-public enum TestProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
-    INSTANCE;
+public class ProtoStreamMarshallerAdapter<T> implements ProtoStreamMarshaller<T> {
 
-    private final ByteBufferMarshaller marshaller;
+    private final ProtobufTagMarshaller<T> marshaller;
 
-    TestProtoStreamByteBufferMarshaller() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        ImmutableSerializationContext context = new SerializationContextBuilder(new SimpleClassLoaderMarshaller(loader)).load(loader).build();
-        this.marshaller = new ProtoStreamByteBufferMarshaller(context);
+    ProtoStreamMarshallerAdapter(ProtobufTagMarshaller<T> marshaller) {
+        this.marshaller = marshaller;
     }
 
     @Override
-    public boolean isMarshallable(Object object) {
-        return this.marshaller.isMarshallable(object);
+    public Class<? extends T> getJavaClass() {
+        return this.marshaller.getJavaClass();
     }
 
     @Override
-    public Object readFrom(InputStream input) throws IOException {
-        return this.marshaller.readFrom(input);
+    public String getTypeName() {
+        return this.marshaller.getTypeName();
     }
 
     @Override
-    public void writeTo(OutputStream output, Object object) throws IOException {
-        this.marshaller.writeTo(output, object);
+    public T readFrom(ProtoStreamReader reader) throws IOException {
+        return this.read((ReadContext) reader);
     }
 
     @Override
-    public OptionalInt size(Object object) {
-        return this.marshaller.size(object);
+    public void writeTo(ProtoStreamWriter writer, T value) throws IOException {
+        this.write((TagWriterImpl) ((WriteContext) writer).getWriter(), value);
+    }
+
+    @Override
+    public T read(ReadContext context) throws IOException {
+        return this.marshaller.read(context);
+    }
+
+    @Override
+    public void write(WriteContext context, T value) throws IOException {
+        this.marshaller.write(context, value);
     }
 }
