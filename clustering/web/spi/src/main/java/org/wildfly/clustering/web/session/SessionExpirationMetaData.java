@@ -20,37 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ee.infinispan.scheduler;
+package org.wildfly.clustering.web.session;
 
-import org.wildfly.clustering.dispatcher.Command;
+import java.time.Duration;
+import java.time.Instant;
 
 /**
- * Command that scheduled an element.
+ * Session meta data that governs expiration.
  * @author Paul Ferraro
  */
-public interface ScheduleCommand<I, M> extends Command<Void, Scheduler<I, M>> {
+public interface SessionExpirationMetaData {
 
     /**
-     * Returns the identifier of the element to be scheduled.
-     * @return the identifier of the element to be scheduled.
+     * Indicates whether or not this session was previously idle for longer than the maximum inactive interval.
+     * @return true, if this session is expired, false otherwise
      */
-    I getId();
-
-    /**
-     * Returns the meta data of the element to be scheduled.
-     * @return the meta data of the element to be scheduled.
-     */
-    M getMetaData();
-
-    @Override
-    default Void execute(Scheduler<I, M> scheduler) throws Exception {
-        I id = this.getId();
-        M metaData = this.getMetaData();
-        if (metaData != null) {
-            scheduler.schedule(id, metaData);
-        } else {
-            scheduler.schedule(id);
-        }
-        return null;
+    default boolean isExpired() {
+        Duration maxInactiveInterval = this.getMaxInactiveInterval();
+        return !maxInactiveInterval.isZero() ? this.getLastAccessEndTime().plus(maxInactiveInterval).isBefore(Instant.now()) : false;
     }
+
+    /**
+     * Returns the end time of the last request to access this session.
+     * @return the end time of the last request to access this session.
+     */
+    Instant getLastAccessEndTime();
+
+    /**
+     * Returns the time interval since {@link #getLastAccessEndTime()} after which this session will expire.
+     * @return a time interval
+     */
+    Duration getMaxInactiveInterval();
 }

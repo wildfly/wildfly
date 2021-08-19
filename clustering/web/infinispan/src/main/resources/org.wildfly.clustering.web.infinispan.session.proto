@@ -1,5 +1,7 @@
 package org.wildfly.clustering.web.infinispan.session;
 
+import "java.time.proto";
+
 // IDs: 200 - 204
 
 /**
@@ -21,4 +23,12 @@ message SessionAccessMetaDataKey {
  */
 enum SessionCreationMetaDataKeyFilter {
 	INSTANCE	= 0;
+}
+
+/**
+ * @TypeId(203)
+ */
+message SimpleSessionExpirationMetaData {
+	optional	java.time.Duration	maxInactiveInterval	 = 1;
+	optional	java.time.Instant	lastAccessEndTime	 = 2;
 }

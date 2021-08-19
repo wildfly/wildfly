@@ -37,6 +37,7 @@ import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
+import org.wildfly.clustering.web.session.SessionExpirationMetaData;
 
 /**
  * Unit test for {@link SessionExpirationScheduler}.
@@ -68,7 +69,7 @@ public class SessionExpirationSchedulerTestCase {
         when(canceledSessionMetaData.getLastAccessEndTime()).thenReturn(now);
         when(remover.remove(expiringSessionId)).thenReturn(true);
 
-        try (Scheduler<String, ImmutableSessionMetaData> scheduler = new SessionExpirationScheduler<>(batcher, metaDataFactory, remover, Duration.ZERO)) {
+        try (Scheduler<String, SessionExpirationMetaData> scheduler = new SessionExpirationScheduler<>(batcher, metaDataFactory, remover, Duration.ZERO)) {
             scheduler.schedule(immortalSessionId, immortalSessionMetaData);
             scheduler.schedule(canceledSessionId, canceledSessionMetaData);
             scheduler.schedule(expiringSessionId, expiringSessionMetaData);
