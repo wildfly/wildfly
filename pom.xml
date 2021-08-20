@@ -376,7 +376,7 @@
         <version.org.apache.xalan>2.7.1.jbossorg-5</version.org.apache.xalan>
         <version.org.awaitility.awaitility>4.0.2</version.org.awaitility.awaitility>
         <version.org.bitbucket.jose4j>0.7.2</version.org.bitbucket.jose4j>
-        <version.org.bytebuddy>1.9.11</version.org.bytebuddy>
+        <version.org.bytebuddy>1.11.12</version.org.bytebuddy>
         <version.org.codehaus.jettison>1.4.0</version.org.codehaus.jettison>
         <version.org.cryptacular>1.2.4</version.org.cryptacular>
         <version.org.eclipse.jdt>3.26.0</version.org.eclipse.jdt>
