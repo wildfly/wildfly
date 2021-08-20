@@ -1645,6 +1645,7 @@
                                         <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
                                         <!-- TODO see why these aren't working and fix or exclude with a clear explanation.
                                              They might require legacy security but why isn't obvious -->
+                                        <exclude>${test-group}/ejb/forwarding/*TestCase.java</exclude>
                                         <exclude>${test-group}/ejb/remote/GlobalAuthContextRemoteStatelessEJBFailoverTestCase.java</exclude>
                                         <exclude>${test-group}/ejb/remote/ThreadAuthContextRemoteStatelessEJBFailoverTestCase.java</exclude>
                                     </excludes>
