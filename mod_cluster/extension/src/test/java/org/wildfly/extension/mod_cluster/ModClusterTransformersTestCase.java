@@ -70,6 +70,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
             case EAP_7_2_0:
                 return ModClusterModel.VERSION_6_0_0;
             case EAP_7_3_0:
+            case EAP_7_4_0:
                 return ModClusterModel.VERSION_7_0_0;
         }
         throw new IllegalArgumentException();
@@ -98,6 +99,12 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
                 return new String[] {
                         formatArtifact("org.jboss.eap:wildfly-mod_cluster-extension:%s", version),
                         "org.jboss.mod_cluster:mod_cluster-core:1.4.1.Final-redhat-00001",
+                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
+                };
+            case EAP_7_4_0:
+                return new String[] {
+                        formatArtifact("org.jboss.eap:wildfly-mod_cluster-extension:%s", version),
+                        "org.jboss.mod_cluster:mod_cluster-core:1.4.3.Final-redhat-00002",
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
                 };
         }
@@ -129,6 +136,11 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         this.testTransformation(ModelTestControllerVersion.EAP_7_3_0);
     }
 
+    @Test
+    public void testTransformerEAP_7_4_0() throws Exception {
+        this.testTransformation(ModelTestControllerVersion.EAP_7_4_0);
+    }
+
     private void testTransformation(ModelTestControllerVersion controllerVersion) throws Exception {
         ModClusterModel model = getModelVersion(controllerVersion);
         ModelVersion modelVersion = model.getVersion();
@@ -139,7 +151,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         resources.add(String.format("subsystem-transform-%d_%d_%d.xml", modelVersion.getMajor(), modelVersion.getMinor(), modelVersion.getMicro()));
         if (modelVersion.getMajor() < 6) {
             // Also test simple-load-provider for legacy slaves which only allow for one mod_cluster proxy configuration
-            // which we can now tests within scope of multiple proxy configurations
+            // which we can now test within scope of multiple proxy configurations
             resources.add("subsystem-transform-simple.xml");
         }
 
@@ -189,6 +201,11 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
     @Test
     public void testRejectionsEAP_7_3_0() throws Exception {
         this.testRejections(ModelTestControllerVersion.EAP_7_3_0);
+    }
+
+    @Test
+    public void testRejectionsEAP_7_4_0() throws Exception {
+        this.testRejections(ModelTestControllerVersion.EAP_7_4_0);
     }
 
     private void testRejections(ModelTestControllerVersion controllerVersion) throws Exception {
