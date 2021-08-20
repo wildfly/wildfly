@@ -232,6 +232,7 @@
         <!-- Props that will differ start here-->
         <module.jakarta.classifier></module.jakarta.classifier>
         <module.jakarta.suffix></module.jakarta.suffix>
+        <module.jakartaee9.suffix></module.jakartaee9.suffix>
 
         <!--
             *Plugin* Dependency versions. Please keep alphabetical.
