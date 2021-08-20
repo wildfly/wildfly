@@ -477,6 +477,10 @@
                     <artifactId>undertow-servlet</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>io.undertow</groupId>
+                    <artifactId>undertow-websockets-jsr</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.jboss.metadata</groupId>
                     <artifactId>jboss-metadata-common</artifactId>
                 </exclusion>
@@ -954,6 +958,12 @@
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-servlet-jakartaee9</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-websockets-jsr-jakartaee9</artifactId>
             <scope>provided</scope>
         </dependency>
 
