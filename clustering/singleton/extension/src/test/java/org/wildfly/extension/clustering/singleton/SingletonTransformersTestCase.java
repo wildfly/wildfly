@@ -64,6 +64,7 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
             case EAP_7_2_0:
                 return SingletonModel.VERSION_2_0_0;
             case EAP_7_3_0:
+            case EAP_7_4_0:
                 return SingletonModel.VERSION_3_0_0;
             default:
                 throw new IllegalArgumentException();
@@ -76,6 +77,7 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
             case EAP_7_1_0:
             case EAP_7_2_0:
             case EAP_7_3_0:
+            case EAP_7_4_0:
                 return new String[] {
                         formatEAP7SubsystemArtifact(version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
@@ -119,6 +121,11 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         this.testTransformation(ModelTestControllerVersion.EAP_7_3_0);
     }
 
+    @Test
+    public void testTransformerEAP740() throws Exception {
+        this.testTransformation(ModelTestControllerVersion.EAP_7_4_0);
+    }
+
     private void testTransformation(final ModelTestControllerVersion controller) throws Exception {
         final ModelVersion version = getModelVersion(controller).getVersion();
         final String[] dependencies = getDependencies(controller);
@@ -146,6 +153,11 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
     @Test
     public void testRejectionsEAP730() throws Exception {
         this.testRejections(ModelTestControllerVersion.EAP_7_3_0);
+    }
+
+    @Test
+    public void testRejectionsEAP740() throws Exception {
+        this.testRejections(ModelTestControllerVersion.EAP_7_4_0);
     }
 
     private void testRejections(final ModelTestControllerVersion controller) throws Exception {
