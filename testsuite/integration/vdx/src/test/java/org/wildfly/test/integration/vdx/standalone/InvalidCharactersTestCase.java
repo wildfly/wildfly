@@ -128,8 +128,14 @@ public class InvalidCharactersTestCase extends TestBase {
     public void spaceInXmlDeclaration()throws Exception {
         container().tryStartAndWaitForFail();
         String errorLog = container().getErrorMessageFromServerStart();
-        assertContains(errorLog, " ^^^^ Illegal processing instruction target (\"xml\"); xml (case insensitive)");
-        assertContains(errorLog, "is reserved by the specs");
+        if (errorLog.contains("is reserved")) {
+           // Apache JAXP impl
+            assertContains(errorLog, " ^^^^ Illegal processing instruction target (\"xml\"); xml (case insensitive)");
+            assertContains(errorLog, "is reserved by the specs");
+        } else {
+           // JDK JAXP impl
+            assertContains(errorLog, "^^^^ The processing instruction target matching \"[xX][mM][lL]\" is not");
+        }
     }
 
     /*
@@ -141,8 +147,13 @@ public class InvalidCharactersTestCase extends TestBase {
         container().tryStartAndWaitForFail();
         String errorLog = container().getErrorMessageFromServerStart();
         assertContains(errorLog, " modify-wsdl-address>true</modify-wsdl-address>");
-        assertContains(errorLog, "^^^^ Received non-all-whitespace CHARACTERS or CDATA event in nextTag()");
-
+        if (errorLog.contains("CDATA")) {
+           // Apache JAXP impl
+            assertContains(errorLog, "^^^^ Received non-all-whitespace CHARACTERS or CDATA event in nextTag()");
+        } else {
+           // JDK JAXP impl
+            assertContains(errorLog, "^^^^ found: CHARACTERS, expected START_ELEMENT or END_ELEMENT");
+        }
     }
 
     /*
@@ -154,7 +165,14 @@ public class InvalidCharactersTestCase extends TestBase {
         container().tryStartAndWaitForFail();
         String errorLog = container().getErrorMessageFromServerStart();
         assertContains(errorLog, "<endpoint-config name=\"Standard-Endpoint-Config/>");
-        assertContains(errorLog, "^^^^ Unexpected character '<' (code 60) in attribute value");
+        if (errorLog.contains("(code 60)")) {
+           // Apache JAXP impl
+           assertContains(errorLog, "^^^^ Unexpected character '<' (code 60) in attribute value");
+        } else {
+           // JDK JAXP impl
+           assertContains(errorLog, "^^^^ The value of attribute \"name\" associated with an element type");
+           assertContains(errorLog, "\"endpoint-config\" must not contain the '<' character");
+        }
     }
 
     /*
@@ -169,7 +187,6 @@ public class InvalidCharactersTestCase extends TestBase {
                         .build()));
         String errorLog = container().getErrorMessageFromServerStart();
         assertContains(errorLog, "isn't an allowed element here");
-        assertContains(errorLog, "Elements allowed here are:");
     }
 
 

@@ -94,9 +94,6 @@ public class LoggingTestCase extends TestBase {
                                 "            </logger>")
                         .build()));
         String errorLog = container().getErrorMessageFromServerStart();
-        assertContains(errorLog, "OPVDX001: Validation error in standalone.xml");
-        assertContains(errorLog, "^^^^ 'logger' is missing one or more required attributes");
-        assertContains(errorLog, "All of the following are required: category ");
         assertContains(errorLog, "WFLYCTL0133: Missing required attribute(s): CATEGORY");
     }
 }
