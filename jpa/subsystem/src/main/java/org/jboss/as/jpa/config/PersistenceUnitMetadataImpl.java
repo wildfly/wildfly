@@ -55,6 +55,8 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     // required: name of the persistent unit scoped to deployment file
     private volatile String scopedName;
 
+    private volatile ArrayList<String> containingModuleName;
+
     // optional: jndi name of non-jta datasource
     private volatile String nonJtaDataSourceName;
 
@@ -133,6 +135,16 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     @Override
     public String getScopedPersistenceUnitName() {
         return scopedName;
+    }
+
+    @Override
+    public void setContainingModuleName(ArrayList<String> containingModuleName) {
+        this.containingModuleName = containingModuleName;
+    }
+
+    @Override
+    public ArrayList<String> getContainingModuleName() {
+        return containingModuleName;
     }
 
     @Override

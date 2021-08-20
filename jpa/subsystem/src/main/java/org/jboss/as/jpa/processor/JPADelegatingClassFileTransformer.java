@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2021 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jpa.classloader;
+package org.jboss.as.jpa.processor;
 
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.nio.ByteBuffer;
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
+import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Helps implement PersistenceUnitInfo.addClassTransformer() by using DelegatingClassFileTransformer
  *
  * @author Scott Marlow
  */
-public class JPADelegatingClassFileTransformer implements ClassFileTransformer, org.jboss.modules.ClassTransformer {
+class JPADelegatingClassFileTransformer implements ClassFileTransformer, org.jboss.modules.ClassTransformer {
     private final PersistenceUnitMetadata persistenceUnitMetadata;
 
     public JPADelegatingClassFileTransformer(PersistenceUnitMetadata pu) {
@@ -52,30 +57,40 @@ public class JPADelegatingClassFileTransformer implements ClassFileTransformer, 
     @Override
     public ByteBuffer transform(ClassLoader classLoader, String className, ProtectionDomain protectionDomain, ByteBuffer classBytes)
             throws IllegalArgumentException {
-        byte[] transformedBuffer = getBytes(classBytes);
-        boolean transformed = false;
-        for (javax.persistence.spi.ClassTransformer transformer : persistenceUnitMetadata.getTransformers()) {
-            if (ROOT_LOGGER.isTraceEnabled())
-                ROOT_LOGGER.tracef("rewrite entity class '%s' using transformer '%s' for '%s'", className,
-                        transformer.getClass().getName(),
-                        persistenceUnitMetadata.getScopedPersistenceUnitName());
-            byte[] result;
-            try {
-                // parameter classBeingRedefined is always passed as null
-                // because we won't ever be called to transform already loaded classes.
-                result = transformer.transform(classLoader, className, null, protectionDomain, transformedBuffer);
-            } catch (IllegalClassFormatException e) {
-                throw JpaLogger.ROOT_LOGGER.invalidClassFormat(e, className);
-            }
-            if (result != null) {
-                transformedBuffer = result;
-                transformed = true;
-            if (ROOT_LOGGER.isTraceEnabled())
-                ROOT_LOGGER.tracef("entity class '%s' was rewritten", className);
-            }
-        }
+        final AccessControlContext accessControlContext =
+                AccessController.doPrivileged(GetAccessControlContextAction.getInstance());
+        PrivilegedAction<ByteBuffer> privilegedAction =
+                new PrivilegedAction<ByteBuffer>() {
+                    // run as security privileged action
+                    @Override
+                    public ByteBuffer run() {
 
-        return transformed ? ByteBuffer.wrap(transformedBuffer) : null;
+                        byte[] transformedBuffer = getBytes(classBytes);
+                        boolean transformed = false;
+                        for (javax.persistence.spi.ClassTransformer transformer : persistenceUnitMetadata.getTransformers()) {
+                            if (ROOT_LOGGER.isTraceEnabled())
+                                ROOT_LOGGER.tracef("rewrite entity class '%s' using transformer '%s' for '%s'", className,
+                                        transformer.getClass().getName(),
+                                        persistenceUnitMetadata.getScopedPersistenceUnitName());
+                            byte[] result;
+                            try {
+                                // parameter classBeingRedefined is always passed as null
+                                // because we won't ever be called to transform already loaded classes.
+                                result = transformer.transform(classLoader, className, null, protectionDomain, transformedBuffer);
+                            } catch (IllegalClassFormatException e) {
+                                throw JpaLogger.ROOT_LOGGER.invalidClassFormat(e, className);
+                            }
+                            if (result != null) {
+                                transformedBuffer = result;
+                                transformed = true;
+                                if (ROOT_LOGGER.isTraceEnabled())
+                                    ROOT_LOGGER.tracef("entity class '%s' was rewritten", className);
+                            }
+                        }
+                        return transformed ? ByteBuffer.wrap(transformedBuffer) : null;
+                    }
+                };
+        return WildFlySecurityManager.doChecked(privilegedAction, accessControlContext);
     }
 
     private byte[] getBytes(ByteBuffer classBytes) {

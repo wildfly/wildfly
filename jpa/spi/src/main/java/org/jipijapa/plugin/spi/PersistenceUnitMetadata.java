@@ -23,6 +23,7 @@
 package org.jipijapa.plugin.spi;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -47,6 +48,9 @@ public interface PersistenceUnitMetadata extends PersistenceUnitInfo {
     void setScopedPersistenceUnitName(String scopedName);
 
     String getScopedPersistenceUnitName();
+
+    void setContainingModuleName(ArrayList<String> getContainingModuleName);
+    ArrayList<String> getContainingModuleName();
 
     void setPersistenceProviderClassName(String provider);
 
