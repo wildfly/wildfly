@@ -22,20 +22,20 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.forwarding;
 
-import static org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.fail;
 
+import java.net.SocketPermission;
+import java.util.PropertyPermission;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.common.CommonStatefulSB;
 import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.forwarding.AbstractForwardingStatefulSBImpl;
@@ -45,7 +45,10 @@ import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.stateful.RemoteS
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.NamingEJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
+import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.ejb.client.EJBClientPermission;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -77,12 +80,12 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
 
     @BeforeClass
     public static void beforeClass() {
-        thisTestIsFailingIntermittently("https://issues.jboss.org/browse/WFLY-10607");
+        IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-10607");
     }
 
-    private static long FAILURE_FREE_TIME = TimeoutUtil.adjust(5000);
-    private static long SERVER_DOWN_TIME = TimeoutUtil.adjust(5000);
-    private static long INVOCATION_WAIT = TimeoutUtil.adjust(1000);
+    private static final long FAILURE_FREE_TIME = TimeoutUtil.adjust(5_000);
+    private static final long SERVER_DOWN_TIME = TimeoutUtil.adjust(5_000);
+    private static final long INVOCATION_WAIT = TimeoutUtil.adjust(1_000);
 
     private final ExceptionSupplier<EJBDirectory, NamingException> directorySupplier;
     private final String implementationClass;
@@ -122,6 +125,11 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
         ejbJar.addClasses(EJBDirectory.class, NamingEJBDirectory.class, RemoteEJBDirectory.class);
         // remote outbound connection configuration
         ejbJar.addAsManifestResource(AbstractRemoteEJBForwardingTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        ejbJar.addAsResource(createPermissionsXmlAsset(
+                new SocketPermission("localhost", "resolve"),
+                new EJBClientPermission("changeWeakAffinity"),
+                new PropertyPermission("jboss.node.name", "read")
+        ), "META-INF/jboss-permissions.xml");
         return ejbJar;
     }
 
@@ -129,6 +137,9 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, AbstractForwardingStatefulSBImpl.MODULE_NAME + ".jar");
         ejbJar.addPackage(CommonStatefulSB.class.getPackage());
         ejbJar.addPackage(RemoteStatefulSB.class.getPackage());
+        ejbJar.addAsResource(createPermissionsXmlAsset(
+                new PropertyPermission("jboss.node.name", "read")
+        ), "META-INF/jboss-permissions.xml");
         return ejbJar;
     }
 
@@ -249,7 +260,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
     public static class ServerSetupTask extends CLIServerSetupTask {
         public ServerSetupTask() {
             this.builder
-                    // clusterA
+                    // clusterA is called 'ejb-forwarder'; clusterB uses default name 'ejb'
                     .node(NODE_1, NODE_2)
                     .setup("/subsystem=jgroups/channel=ee:write-attribute(name=cluster,value=ejb-forwarder)")
                     .setup(String.format("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=binding-remote-ejb-connection:add(host=%s,port=8280)", TESTSUITE_NODE3))
@@ -260,13 +271,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
                     .teardown("/core-service=management/security-realm=PasswordRealm:remove")
                     .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=binding-remote-ejb-connection:remove")
                     .teardown("/subsystem=jgroups/channel=ee:write-attribute(name=cluster,value=ejb)")
-                    .parent()
-                    // clusterB
-                    .node(NODE_3, NODE_4)
-                    .setup("/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=%s)", TESTSUITE_MCAST1)
-                    .teardown("/socket-binding-group=standard-sockets/socket-binding=jgroups-mping:write-attribute(name=multicast-address,value=\"${jboss.default.multicast.address:230.0.0.4}\"")
             ;
-
         }
     }
 }
