@@ -79,7 +79,7 @@
         <replicated-cache name="repl" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
-            <off-heap-memory size="20000" size-unit="BYTES"/>
+            <off-heap-memory size="20000"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <store class="org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder" fetch-state="true" passivation="true" preload="false" purge="true" shared="false" singleton="false">
                 <write-behind modification-queue-size="2048"/>
@@ -180,6 +180,8 @@
                          min-idle="5"
         />
         <invalidation-near-cache max-entries="20"/>
+        <property name="infinispan.client.hotrod.auth_username">username</property>
+        <property name="infinispan.client.hotrod.auth_password">password</property>
         <remote-clusters>
             <remote-cluster name="primary-site" socket-bindings="jdg1 jdg2 jdg3"/>
             <remote-cluster name="failover-site" socket-bindings="jdg4 jdg5 jdg6"/>

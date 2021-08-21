@@ -114,7 +114,7 @@ public class OffHeapMemoryResourceDefinition extends MemoryResourceDefinition {
             parent.rejectChildResource(PATH);
         } else {
             ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
-            // We cannot convert these size values - as there is not guarantee that such a converter would run before the sizeUnitConverter
+            // We cannot convert these size values - as there is no guarantee that such a converter would run before the sizeUnitConverter
             for (MemorySizeUnit unit : EnumSet.complementOf(EnumSet.of(MemorySizeUnit.ENTRIES, MemorySizeUnit.BYTES))) {
                 builder.getAttributeBuilder().addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(unit.name())), Attribute.SIZE_UNIT.getName());
             }
@@ -140,7 +140,7 @@ public class OffHeapMemoryResourceDefinition extends MemoryResourceDefinition {
     }
 
     @SuppressWarnings("deprecation")
-    static enum EvictionTypeTranslator implements AttributeTranslation {
+    enum EvictionTypeTranslator implements AttributeTranslation {
         INSTANCE;
 
         private final AttributeValueTranslator readTranslator = new AttributeValueTranslator() {
