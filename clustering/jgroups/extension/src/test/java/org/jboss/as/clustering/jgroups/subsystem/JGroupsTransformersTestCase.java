@@ -84,6 +84,8 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
                 return JGroupsModel.VERSION_6_0_0;
             case EAP_7_3_0:
                 return JGroupsModel.VERSION_7_0_0;
+            case EAP_7_4_0:
+                return JGroupsModel.VERSION_8_0_0;
             default:
                 throw new IllegalArgumentException();
         }
@@ -100,6 +102,7 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
             case EAP_7_1_0:
             case EAP_7_2_0:
             case EAP_7_3_0:
+            case EAP_7_4_0:
                 return new String[] {
                         formatEAP7SubsystemArtifact(version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
@@ -143,6 +146,11 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
     @Test
     public void testTransformerEAP730() throws Exception {
         testTransformation(ModelTestControllerVersion.EAP_7_3_0);
+    }
+
+    @Test
+    public void testTransformerEAP740() throws Exception {
+        testTransformation(ModelTestControllerVersion.EAP_7_4_0);
     }
 
     /**
@@ -352,6 +360,11 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
     @Test
     public void testRejectionsEAP730() throws Exception {
         testRejections(ModelTestControllerVersion.EAP_7_3_0);
+    }
+
+    @Test
+    public void testRejectionsEAP740() throws Exception {
+        testRejections(ModelTestControllerVersion.EAP_7_4_0);
     }
 
     private void testRejections(final ModelTestControllerVersion controller) throws Exception {
