@@ -50,6 +50,9 @@ public class RemoteCacheKey<I> implements Key<I> {
 
     @Override
     public boolean equals(Object object) {
+        if (object == null) {
+            return false;
+        }
         return this.getClass().equals(object.getClass()) && this.id.equals(((RemoteCacheKey<?>) object).id);
     }
 

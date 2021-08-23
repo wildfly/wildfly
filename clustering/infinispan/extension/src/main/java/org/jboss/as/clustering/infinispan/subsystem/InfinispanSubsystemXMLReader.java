@@ -1481,6 +1481,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 default: {
+                    if (address == null) {
+                        throw ParseUtils.missingOneOf(reader, EnumSet.of(XMLElement.ENTRY_TABLE, XMLElement.BUCKET_TABLE));
+                    }
                     this.parseStoreElement(reader, address, operations);
                 }
             }
