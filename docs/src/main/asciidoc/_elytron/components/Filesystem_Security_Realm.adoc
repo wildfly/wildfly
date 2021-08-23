@@ -13,6 +13,8 @@ Every identity is stored in an XML file where the name of the file is the name o
 * `encoded` When encoding is set to true, the identity names will be BASE32 encoded before they are used as filenames. This is beneficial, because some filesystems are case-insensitive or might restrict set of characters allowed in a filename. Default value is true.
 * `hash-encoding` specifies the string format for the password if it is not stored in plain text. Set to BASE64 bt default, but HEX is also supported.
 * `hash-charset` specifies the character set to use when converting the password string to a byte array. Set to UTF-8 by default.
+* `credential-store` specifies the credential store where the secret key is stored if the filesystem realm is to be encrypted. This attribute is optional.
+* `secret-key` specifies the alias of the secret key that is stored in the previously specified credential store. This attribute is optional.
 
 Filesystem security realm can be added with WildFly management CLI or with Elytron API.
 
@@ -21,9 +23,11 @@ Filesystem security realm can be added with WildFly management CLI or with Elytr
 The following command creates realm with name `fsRealm` that resides in directory `fs-realm-users` inside the base configuration directory defined by `jboss.server.config.dir` property. The levels number is 2 and encoded value is true.
 The charset is UTF-8 and the string encoding is BASE64.
 
+The `credential-store` being referenced is called `mycredstore` and the alias of the `secret-key` in that `credential-store` is `key`. The secret key will be used to encrypt and decrypt the filesystem realm.
+
 [source,options="nowrap"]
 ----
-/subsystem=elytron/filesystem-realm=fsRealm:add(path=fs-realm-users, relative-to=jboss.server.config.dir)
+/subsystem=elytron/filesystem-realm=fsRealm:add(path=fs-realm-users, relative-to=jboss.server.config.dir, credential-store=mycredstore, secret-key=key)
 ----
 
 NOTE: Although identities stored within the same realm can be hashed using different algorithms, they are all
@@ -47,11 +51,19 @@ To delete existing identity from filesystem realm:
 
 When creating filesystem realm with Elytron API, you can specify `name rewriter` in the constructor. The name rewriter will be applied to identity names to transform them from one form to another. It can be used to normalize the case, trim extra whitespaces, map one naming scheme to another, remove realm component from identity name (e.g. "user@realm" to "user") or to perform validation step on the syntax of the name.
 
-Class `org.wildfly.security.auth.realm.FileSystemSecurityRealm` is used to instantiate the realm.
+To enable encryption for a filesystem realm programmatically, you can specify a `SecretKey` when instantiating the realm.
+
+A `org.wildfly.security.auth.realm.FileSystemSecurityRealm` can be instantiated using a `builder()` method as shown in the example below.
 
 [source,options="nowrap"]
 ----
-FileSystemSecurityRealm fsRealm = new FileSystemSecurityRealm(fsRealmPath, NameRewriter.IDENTITY_REWRITER, 2, true);
+FileSystemSecurityRealm fsRealm = FileSystemSecurityRealm.builder()
+    .setRoot(fsRealmPath)
+    .setNameRewriter(IDENTITY_REWRITER)
+    .setLevels(2)
+    .setEncoded(true)
+    .setSecretKey(key)
+    .build();
 ----
 
 `org.wildfly.security.auth.server.NameRewriter.IDENTITY_REWRITER` is a simple identity name rewriter that does no rewriting. You can implement the `NameRewriter` interface and use your own rewriter.
@@ -232,3 +244,16 @@ $JBOSS_HOME/bin/elytron-tool.sh filesystem-realm -u conf/users.properties -r con
 ----
 
 This command creates new filesystem realm with users taken from users.properties file and roles taken from roles.properties file. Script `example-fs-realm.sh` that contains the commands for WildFly CLI is generated as well. The script adds this filesystem realm to the Elytron subsystem and also adds new security domain that uses this filesystem realm as a default realm.
+
+== Converting an unencrypted filesystem realm into an encrypted filesystem realm
+
+It is possible to convert an unencrypted filesystem realm into an encrypted one using the Elytron Tool. In particular, the `filesystem-realm-encrypt` command can be used as shown below:
+
+[source,options="nowrap"]
+----
+$JBOSS_HOME/bin/elytron-tool.sh filesystem-realm-encrypt -i ./standalone/configuration/fs-realm-plain -o ./standalone/configuration/fs-realm-enc -c ./mycredstore.cs
+----
+
+This command creates a new filesystem realm by taking the existing filesystem realm from the specified input location, `./standalone/configuration/fs-realm-plain`, and encrypting its contents using the secret key with alias `key` from the specified credential store, `./mycredstore.cs`. The new filesystem realm is stored in the specified output location, `./standalone/configuration/fs-realm-enc`.
+
+A `.cli` script will also be generated at the root of the filesystem realm. The script contains WildFly CLI commands that can be used to configure a `secret-key-credential-store` resource and a `filesystem-realm` resource in the Elytron subsystem that makes use of the newly encrypted realm content.
