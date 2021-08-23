@@ -33,9 +33,9 @@
         <ssl-required>EXTERNAL</ssl-required>
         <principal-attribute>sub</principal-attribute>
     </provider>
-    <secure-deployment name="web-console">
+    <secure-deployment name="myAppWithSecret">
         <realm>master</realm>
-        <resource>web-console</resource>
+        <resource>myAppId</resource>
         <use-resource-role-mappings>true</use-resource-role-mappings>
         <turn-off-change-session-id-on-login>false</turn-off-change-session-id-on-login>
         <token-minimum-time-to-live>10</token-minimum-time-to-live>
@@ -50,9 +50,9 @@
         <proxy-url>http://localhost:9000</proxy-url>
         <verify-token-audience>true</verify-token-audience>
         <credential name="secret" secret="0aa31d98-e0aa-404c-b6e0-e771dba1e798" />
-        <redirect-rewrite-rule name="^/wsmaster/api/(.*)$" replacement="api/$1" />
+        <redirect-rewrite-rule name="^/wsmaster/api/(.*)$" replacement="/api/$1/" />
     </secure-deployment>
-    <secure-deployment name="http-endpoint">
+    <secure-deployment name="myAppWithJwt">
         <realm>master</realm>
         <resource>http-endpoint</resource>
         <use-resource-role-mappings>true</use-resource-role-mappings>
@@ -67,7 +67,7 @@
                     client-keystore-type="jks" />
         <redirect-rewrite-rule name="^/wsmaster/api/(.*)$" replacement="/api/$1/" />
     </secure-deployment>
-    <secure-deployment name="some-endpoint">
+    <secure-deployment name="myAppWithSecretJwt">
         <realm>master</realm>
         <resource>some-endpoint</resource>
         <use-resource-role-mappings>true</use-resource-role-mappings>
@@ -77,8 +77,22 @@
         </realm-public-key>
         <auth-server-url>http://localhost:8080/auth</auth-server-url>
         <ssl-required>EXTERNAL</ssl-required>
-        <credential name="secret-jwt" secret="fd8f54e1-6994-413a-acf8-90bc67f05412" />
+        <credential name="secret-jwt" secret="fd8f54e1-6994-413a-acf8-90bc67f05412" algorithm="HS512"/>
         <redirect-rewrite-rule name="^/wsmaster/api/(.*)$" replacement="/api/$1/" />
+    </secure-deployment>
+    <secure-deployment name="myAppWithRealmInline">
+        <realm>demo</realm>
+        <auth-server-url>http://localhost:8081/auth</auth-server-url>
+        <ssl-required>external</ssl-required>
+        <resource>customer-portal</resource>
+        <credential name="secret" secret="password" />
+    </secure-deployment>
+    <secure-deployment name="myAppWithProvider">
+        <provider>google</provider>
+        <ssl-required>external</ssl-required>
+        <client-id>customer-portal</client-id>
+        <principal-attribute>firstName</principal-attribute>
+        <credential name="secret" secret="password" />
     </secure-deployment>
     <secure-deployment name="wildfly-management">
         <realm>jboss-infra</realm>

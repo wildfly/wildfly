@@ -44,4 +44,20 @@ public interface ElytronOidcLogger extends BasicLogger {
     @Message(id = 1, value = "Activating WildFly Elytron OIDC Subsystem")
     void activatingSubsystem();
 
+    @LogMessage(level = INFO)
+    @Message(id = 2, value = "Elytron OIDC Client subsystem override for deployment '%s'")
+    void deploymentSecured(String deploymentName);
+
+    @Message(id = 3, value = "Cannot remove credential. No credential defined for deployment in op '%s'")
+    RuntimeException cannotRemoveCredential(String operationName);
+
+    @Message(id = 4, value = "Cannot update credential. No credential defined for deployment in op '%s'")
+    RuntimeException cannotUpdateCredential(String operationName);
+
+    @Message(id = 5, value = "Cannot remove redirect rewrite rule. No redirect rewrite defined for deployment in op '%s'")
+    RuntimeException cannotRemoveRedirectRuntimeRule(String operationName);
+
+    @Message(id = 6, value = "Cannot update redirect rewrite. No redirect rewrite defined for deployment in op '%s'")
+    RuntimeException cannotUpdateRedirectRuntimeRule(String operationName);
+
 }

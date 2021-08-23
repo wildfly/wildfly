@@ -28,12 +28,19 @@
     </resources>
 
     <dependencies>
+        <module name="com.fasterxml.jackson.core.jackson-annotations"/>
+        <module name="com.fasterxml.jackson.core.jackson-core"/>
+        <module name="com.fasterxml.jackson.core.jackson-databind"/>
         <module name="org.wildfly.common"/>
+        <module name="org.wildfly.security.elytron-jose-jwk"/>
+        <module name="org.wildfly.security.elytron-jose-util"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.wildfly.security.elytron-jose-util"/>
         <module name="org.apache.httpcomponents.core"/>
         <module name="org.bitbucket.jose4j"/>
         <module name="org.jboss.logging"/>
         <module name="javax.json.api"/>
+        <module name="java.security.sasl"/>
+        <module name="javax.servlet.api"/>
     </dependencies>
 </module>

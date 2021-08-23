@@ -34,7 +34,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 /**
  * An {@link Extension} to add support for OpenID Connect.
  *
- * <a href="mailto:fjuma@redhat.com">Farah Juma</a>
+ * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
 public class ElytronOidcExtension implements Extension {
 
@@ -52,20 +52,15 @@ public class ElytronOidcExtension implements Extension {
 
     private static final ElytronOidcSubsystemParser_1_0 CURRENT_PARSER = new ElytronOidcSubsystemParser_1_0();
 
-    static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
-        return getResourceDescriptionResolver(true, keyPrefix);
-    }
-
-    static ResourceDescriptionResolver getResourceDescriptionResolver(final boolean useUnprefixedChildTypes, final String... keyPrefix) {
-        StringBuilder prefix = new StringBuilder();
-        for (String kp : keyPrefix) {
-            if (prefix.length() > 0){
-                prefix.append('.');
+    static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefixes) {
+        StringBuilder sb = new StringBuilder(SUBSYSTEM_NAME);
+        if (keyPrefixes != null) {
+            for (String current : keyPrefixes) {
+                sb.append(".").append(current);
             }
-            prefix.append(kp);
         }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, ElytronOidcExtension.class.getClassLoader(),
-                true, useUnprefixedChildTypes);
+        return new StandardResourceDescriptionResolver(sb.toString(), RESOURCE_NAME, ElytronOidcExtension.class.getClassLoader(),
+                true, false);
     }
     @Override
     public void initialize(ExtensionContext context) {
@@ -79,5 +74,6 @@ public class ElytronOidcExtension implements Extension {
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ElytronOidcSubsystemParser_1_0.NAMESPACE, CURRENT_PARSER);
     }
+
 
 }

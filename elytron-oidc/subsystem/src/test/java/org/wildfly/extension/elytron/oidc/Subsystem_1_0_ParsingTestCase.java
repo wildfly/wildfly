@@ -44,6 +44,23 @@ public class Subsystem_1_0_ParsingTestCase extends AbstractSubsystemBaseTest {
         return "schema/wildfly-elytron-oidc_1_0.xsd";
     }
 
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[]{
+                "/subsystem-templates/elytron-oidc.xml",
+        };
+    }
+
+    @Override
+    public void testSchemaOfSubsystemTemplates() throws Exception {
+        //
+    }
+
+    @Override
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
+        //
+    }
+
     protected Properties getResolvedProperties() {
         return System.getProperties();
     }

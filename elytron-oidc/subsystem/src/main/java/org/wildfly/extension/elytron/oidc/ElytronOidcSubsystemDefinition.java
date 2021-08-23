@@ -23,6 +23,7 @@ import java.util.Collections;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -30,22 +31,23 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 /**
  * Root subsystem definition for the Elytron OpenID Connect subsystem.
  *
- * <a href="mailto:fjuma@redhat.com">Farah Juma</a>
+ * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
 class ElytronOidcSubsystemDefinition extends PersistentResourceDefinition {
     static final String CONFIG_CAPABILITY_NAME = "org.wildlfly.elytron.oidc";
+    static final String ELYTRON_CAPABILITY_NAME = "org.wildfly.security.elytron";
 
     static final RuntimeCapability<Void> CONFIG_CAPABILITY =
             RuntimeCapability.Builder.of(CONFIG_CAPABILITY_NAME)
                     .setServiceType(Void.class)
+                    .addRequirements(ELYTRON_CAPABILITY_NAME)
                     .build();
-    // TODO - Identify the required capabilities.
 
     protected ElytronOidcSubsystemDefinition() {
         super(new SimpleResourceDefinition.Parameters(ElytronOidcExtension.SUBSYSTEM_PATH,
-                ElytronOidcExtension.getResourceDescriptionResolver(ElytronOidcExtension.SUBSYSTEM_NAME))
+                ElytronOidcExtension.getResourceDescriptionResolver())
                 .setAddHandler(new ElytronOidcSubsystemAdd())
-                .setRemoveHandler(new ElytronOidcSubsystemRemove())
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(CONFIG_CAPABILITY)
         );
     }
@@ -56,11 +58,13 @@ class ElytronOidcSubsystemDefinition extends PersistentResourceDefinition {
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(new RealmDefinition());
+        resourceRegistration.registerSubModel(new ProviderDefinition());
+        resourceRegistration.registerSubModel(new SecureDeploymentDefinition());
     }
 }
