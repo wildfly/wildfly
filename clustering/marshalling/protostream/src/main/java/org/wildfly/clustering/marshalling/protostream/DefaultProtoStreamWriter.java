@@ -27,8 +27,6 @@ import java.nio.ByteBuffer;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.ProtobufTagMarshaller;
-import org.infinispan.protostream.TagWriter;
 import org.infinispan.protostream.ProtobufTagMarshaller.WriteContext;
 import org.infinispan.protostream.impl.TagWriterImpl;
 import org.wildfly.clustering.marshalling.spi.ByteBufferOutputStream;
@@ -45,39 +43,28 @@ public class DefaultProtoStreamWriter extends AbstractProtoStreamWriter {
 
     @Override
     public void writeObjectNoTag(Object value) throws IOException {
-        ProtobufTagMarshaller<Object> marshaller = this.findMarshaller(value.getClass());
         ImmutableSerializationContext context = this.getSerializationContext();
-        @SuppressWarnings("unchecked")
-        OptionalInt size = (marshaller instanceof Marshallable) ? ((Marshallable<Object>) marshaller).size(context, value) : OptionalInt.empty();
+        ProtoStreamMarshaller<Object> marshaller = this.findMarshaller(value.getClass());
+        OptionalInt size = this.size(marshaller, value);
         try (ByteBufferOutputStream output = new ByteBufferOutputStream(size)) {
-            TagWriter writer = size.isPresent() ? TagWriterImpl.newInstance(context, output, size.getAsInt()) : TagWriterImpl.newInstance(context,  output);
-            marshaller.write(new WriteContext() {
-                @Override
-                public ImmutableSerializationContext getSerializationContext() {
-                    return DefaultProtoStreamWriter.this.getSerializationContext();
-                }
-
-                @Override
-                public Object getParam(Object key) {
-                    return DefaultProtoStreamWriter.this.getParam(key);
-                }
-
-                @Override
-                public void setParam(Object key, Object value) {
-                    DefaultProtoStreamWriter.this.setParam(key, value);
-                }
-
-                @Override
-                public TagWriter getWriter() {
-                    return writer;
-                }
-            }, value);
+            TagWriterImpl writer = size.isPresent() ? TagWriterImpl.newInstance(context, output, size.getAsInt()) : TagWriterImpl.newInstance(context,  output);
+            marshaller.writeTo(new DefaultProtoStreamWriter(writer), value);
             writer.flush();
             ByteBuffer buffer = output.getBuffer();
             int offset = buffer.arrayOffset();
             int length = buffer.limit() - offset;
-            this.getWriter().writeVarint32(length);
-            this.getWriter().writeRawBytes(buffer.array(), offset, length);
+            this.writeVarint32(length);
+            this.writeRawBytes(buffer.array(), offset, length);
+        }
+    }
+
+    private OptionalInt size(ProtoStreamMarshaller<Object> marshaller, Object value) {
+        SizeComputingProtoStreamWriter writer = new SizeComputingProtoStreamWriter(this.getSerializationContext());
+        try (ProtoStreamWriterContext context = ProtoStreamWriterContext.FACTORY.get().apply(writer)) {
+            marshaller.writeTo(writer, value);
+            return writer.get();
+        } catch (IOException e) {
+            return OptionalInt.empty();
         }
     }
 }

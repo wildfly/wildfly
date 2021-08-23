@@ -283,6 +283,8 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             }
 
             pu.setScopedPersistenceUnitName(scopedPersistenceUnitName);
+
+            pu.setContainingModuleName(getContainingModuleName(deploymentUnit));
         }
     }
 
@@ -392,6 +394,29 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
         String unitName = getScopedDeploymentUnitPath(deploymentUnit) + "#" + persistenceUnitName;
         return unitName;
     }
+
+    // returns the EE deployment module name.
+    // For top level deployments, only one element will be returned representing the top level module.
+    // For sub-deployments, the first element identifies the top level module and the second element is the sub-module.
+    private ArrayList<String> getContainingModuleName(DeploymentUnit deploymentUnit) {
+        ArrayList<String> parts = new ArrayList<String>();  // order of deployment elements will start with parent
+
+        do {
+            final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+            DeploymentUnit parentdeploymentUnit = deploymentUnit.getParent();
+            if (parentdeploymentUnit != null) {
+                ResourceRoot parentDeploymentRoot = parentdeploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+                parts.add(0, deploymentRoot.getRoot().getPathNameRelativeTo(parentDeploymentRoot.getRoot()));
+            } else {
+                parts.add(0, deploymentRoot.getRoot().getName());
+            }
+        }
+        while ((deploymentUnit = deploymentUnit.getParent()) != null);
+
+        return parts;
+
+    }
+
 
     private void markDU(PersistenceUnitMetadataHolder holder, DeploymentUnit deploymentUnit) {
         if (holder.getPersistenceUnits() != null && !holder.getPersistenceUnits().isEmpty()) {

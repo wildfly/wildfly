@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2020 Red Hat, Inc., and individual contributors
+  ~ Copyright 2021 Red Hat, Inc., and individual contributors
   ~ as indicated by the @author tags.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,9 +48,13 @@
         <full.ee-9-api.license.directory>${basedir}/src/license</full.ee-9-api.license.directory>
 
 
+        <!-- WildFly Preview vs standard WildFly GAV expression properties. -->
+        <module.jakarta.classifier>::jakarta</module.jakarta.classifier>
+        <module.jakarta.suffix>-jakarta</module.jakarta.suffix>
+
         <version.com.sun.faces>3.0.0.SP04</version.com.sun.faces>
-        <version.com.sun.activation.jakarta.activation>2.0.0</version.com.sun.activation.jakarta.activation>
         <version.jakarta.annotation.jakarta-annotation-api>2.0.0</version.jakarta.annotation.jakarta-annotation-api>
+        <version.com.sun.activation.jakarta.activation>2.0.0</version.com.sun.activation.jakarta.activation>
         <version.jakarta.authentication.jakarta-authentication-api>2.0.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>2.0.0</version.jakarta.authorization.jakarta-authorization-api>
         <version.jakarta.batch.jakarta.batch-api>2.0.0</version.jakarta.batch.jakarta.batch-api>
@@ -63,7 +67,6 @@
         <version.jakarta.jms.jakarta-jms-api>3.0.0</version.jakarta.jms.jakarta-jms-api>
         <version.jakarta.json.bind.api>2.0.0</version.jakarta.json.bind.api>
         <version.jakarta.json.jakarta-json-api>2.0.0</version.jakarta.json.jakarta-json-api>
-        <version.jakarta.mail>2.0.0</version.jakarta.mail>
         <version.jakarta.persistence>3.0.0</version.jakarta.persistence>
         <version.jakarta.resource.jakarta-resource-api>2.0.0</version.jakarta.resource.jakarta-resource-api>
         <version.jakarta.security.enterprise>2.0.0</version.jakarta.security.enterprise>
@@ -74,23 +77,23 @@
         <version.jakarta.websocket.jakarta-websocket-api>2.0.0</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>3.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
         <version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.0</version.jakarta.xml.bind.jakarta-xml-bind-api>
-        <version.org.bouncycastle>1.69</version.org.bouncycastle>
         <version.org.eclipse.yasson>2.0.1</version.org.eclipse.yasson>
-        <version.org.glassfish.jakarta.el>4.0.0</version.org.glassfish.jakarta.el>
-        <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
-		<!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
+        <!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
 		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version --> 
         <version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</version.org.glassfish.jaxb.jaxb-xjc>
         <version.org.apache.activemq.artemis>2.17.0</version.org.apache.activemq.artemis>
         <version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>3.0.0</version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>
         <version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>
+        <version.org.glassfish.jakarta.el>4.0.0</version.org.glassfish.jakarta.el>
+        <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
         <version.org.hibernate.validator>7.0.1.Final</version.org.hibernate.validator>
+        <version.org.jberet>2.0.1.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>1.0.4</version.org.jboss.activemq.artemis.integration>
-        <version.org.jboss.metadata>14.0.0.Beta1</version.org.jboss.metadata>
+        <version.org.jboss.metadata>14.0.0.Beta2</version.org.jboss.metadata>
         <version.org.jboss.weld.weld>4.0.2.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>4.0.SP1</version.org.jboss.weld.weld-api>
-        <version.org.jberet>2.0.0.Final</version.org.jberet>
+        <version.org.wildfly.transaction.client>2.0.0.Final</version.org.wildfly.transaction.client>
         <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta1</version.org.wildfly.security.jakarta.elytron-ee>
 
         <!-- TODO Glassfish uses org.glassfish:jakarta-el for this, which we use for the impl
@@ -171,12 +174,14 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <escapeString>\</escapeString>
                             <resources>
                                 <resource>
                                     <directory>${servlet.common.resources.directory}</directory>
                                     <excludes>
                                         <exclude>**/org/jboss/as/security/main/module.xml</exclude>
                                     </excludes>
+                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -206,9 +211,11 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <escapeString>\</escapeString>
                             <resources>
                                 <resource>
                                     <directory>${full.common.resources.directory}</directory>
+                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -439,6 +446,14 @@
                     <groupId>org.glassfish.jaxb</groupId>
                     <artifactId>jaxb-xjc</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.metadata</groupId>
+                    <artifactId>jboss-metadata-ejb</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-mail</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -456,6 +471,12 @@
             <version>${ee.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.metadata</groupId>
+                    <artifactId>jboss-metadata-common</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -683,12 +704,14 @@
             <artifactId>jackson-jaxrs-base</artifactId>
             <version>${version.com.fasterxml.jackson}</version>
             <classifier>jakarta</classifier>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
             <version>${version.com.fasterxml.jackson}</version>
             <classifier>jakarta</classifier>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.jaxrs</groupId>
@@ -706,6 +729,7 @@
             <artifactId>jackson-module-jaxb-annotations</artifactId>
             <version>${version.com.fasterxml.jackson}</version>
             <classifier>jakarta</classifier>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>jakarta.xml.bind</groupId>
@@ -721,14 +745,7 @@
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
-            <version>${version.jakarta.mail}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -933,7 +950,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcjmail-jdk15on</artifactId>
-            <version>${version.org.bouncycastle}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -977,6 +994,7 @@
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.enterprise.concurrent</artifactId>
             <version>${version.org.glassfish.jakarta.enterprise.concurrent}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>jakarta.enterprise.concurrent</groupId>
@@ -1049,22 +1067,22 @@
                     <groupId>org.jboss.logging</groupId>
                     <artifactId>jboss-logging</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.metadata</groupId>
+                    <artifactId>jboss-metadata-common</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common</artifactId>
+            <artifactId>jboss-metadata-common-jakarta</artifactId>
             <version>${version.org.jboss.metadata}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>org.jboss</groupId>
-                    <artifactId>jboss-common-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.logging</groupId>
-                    <artifactId>jboss-logging</artifactId>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -1079,18 +1097,22 @@
                     <groupId>org.jboss.logging</groupId>
                     <artifactId>jboss-logging</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.metadata</groupId>
+                    <artifactId>jboss-metadata-common</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-ejb</artifactId>
+            <artifactId>jboss-metadata-ejb-jakarta</artifactId>
             <version>${version.org.jboss.metadata}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>org.jboss.logging</groupId>
-                    <artifactId>jboss-logging</artifactId>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -1104,6 +1126,10 @@
                 <exclusion>
                     <groupId>org.jboss.logging</groupId>
                     <artifactId>jboss-logging</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.metadata</groupId>
+                    <artifactId>jboss-metadata-common</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -1440,12 +1466,14 @@
         <dependency>
             <groupId>org.jboss.spec.javax.xml.rpc</groupId>
             <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.wildfly.security.jakarta</groupId>
             <artifactId>jakarta-authentication</artifactId>
             <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1457,12 +1485,32 @@
             <groupId>org.wildfly.security.jakarta</groupId>
             <artifactId>jakarta-authorization</artifactId>
             <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.transaction</groupId>
+            <artifactId>wildfly-transaction-client-jakarta</artifactId>
+            <version>${version.org.wildfly.transaction.client}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-mail-jakarta</artifactId>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

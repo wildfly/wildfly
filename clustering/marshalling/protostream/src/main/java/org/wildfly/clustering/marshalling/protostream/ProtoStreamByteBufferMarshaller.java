@@ -46,12 +46,15 @@ public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
 
     @Override
     public OptionalInt size(Object value) {
-        SizeComputingProtoStreamWriter writer = new SizeComputingProtoStreamWriter(this.context);
-        try {
-            writer.writeObjectNoTag(new Any(value));
-            return writer.get();
-        } catch (IOException e) {
-            return OptionalInt.empty();
+        try (ProtoStreamWriterContext.Factory factory = ProtoStreamWriterContext.FACTORY.get()) {
+            ProtoStreamMarshaller<Any> marshaller = (ProtoStreamMarshaller<Any>) this.context.getMarshaller(Any.class);
+            SizeComputingProtoStreamWriter writer = new SizeComputingProtoStreamWriter(this.context);
+            try {
+                marshaller.writeTo(writer, new Any(value));
+                return writer.get();
+            } catch (IOException e) {
+                return OptionalInt.empty();
+            }
         }
     }
 
@@ -87,7 +90,7 @@ public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
 
     @Override
     public void writeTo(OutputStream output, Object object) throws IOException {
-        try (ProtoStreamWriterContext context = ProtoStreamWriterContext.INSTANCE.get()) {
+        try (ProtoStreamWriterContext.Factory factory = ProtoStreamWriterContext.FACTORY.get()) {
             ProtobufUtil.writeTo(this.context, output, new Any(object));
         }
     }

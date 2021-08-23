@@ -23,10 +23,8 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
-import java.util.OptionalInt;
 import java.util.function.Supplier;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.wildfly.common.function.Functions;
 
 /**
@@ -35,8 +33,6 @@ import org.wildfly.common.function.Functions;
  * @param <T> the type of this marshaller
  */
 public class ValueMarshaller<T> implements ProtoStreamMarshaller<T> {
-
-    private static final OptionalInt SIZE = OptionalInt.of(0);
 
     private final Class<T> targetClass;
     private final Supplier<T> factory;
@@ -68,10 +64,5 @@ public class ValueMarshaller<T> implements ProtoStreamMarshaller<T> {
     @Override
     public Class<? extends T> getJavaClass() {
         return this.targetClass;
-    }
-
-    @Override
-    public OptionalInt size(ImmutableSerializationContext context, T value) {
-        return SIZE;
     }
 }

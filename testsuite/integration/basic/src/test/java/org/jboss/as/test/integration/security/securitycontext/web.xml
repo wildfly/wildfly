@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+   metadata-complete="false">
+
+   <welcome-file-list>
+      <welcome-file>index.html</welcome-file>
+   </welcome-file-list>
+
+   <security-constraint>
+      <web-resource-collection>
+         <web-resource-name>Example Web App</web-resource-name>
+         <description></description>
+         <url-pattern>/main/*</url-pattern>
+      </web-resource-collection>
+      <auth-constraint>
+         <role-name>regular_user</role-name>
+      </auth-constraint>
+   </security-constraint>
+
+   <security-role>
+      <role-name>regular_user</role-name>
+   </security-role>
+
+   <login-config>
+      <auth-method>FORM</auth-method>
+      <form-login-config>
+         <form-login-page>/pub/login.html</form-login-page>
+         <form-error-page>/pub/login-error.html</form-error-page>
+      </form-login-config>
+   </login-config>
+
+</web-app>

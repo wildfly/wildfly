@@ -43,7 +43,9 @@ import org.wildfly.clustering.ee.cache.SimpleManager;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.infinispan.PrimaryOwnerLocator;
 import org.wildfly.clustering.ee.infinispan.scheduler.PrimaryOwnerScheduler;
+import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleLocalKeysTask;
+import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleWithMetaDataCommand;
 import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
 import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerListener;
 import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerTopologyChangeListener;
@@ -69,6 +71,7 @@ import org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionAttribu
 import org.wildfly.clustering.web.infinispan.session.fine.FineSessionAttributesFactory;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
+import org.wildfly.clustering.web.session.SessionExpirationMetaData;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
@@ -90,7 +93,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
     final Registrar<SessionExpirationListener> expirationRegistrar;
     final CacheProperties properties;
     final Cache<Key<String>, ?> cache;
-    final org.wildfly.clustering.ee.Scheduler<String, ImmutableSessionMetaData> scheduler;
+    final org.wildfly.clustering.ee.Scheduler<String, SessionExpirationMetaData> scheduler;
     final SpecificationProvider<S, SC, AL> provider;
     final ExecutorService executor = Executors.newCachedThreadPool(new DefaultThreadFactory(this.getClass()));
     final SessionAttributeActivationNotifierFactory<S, SC, AL, LC, TransactionBatch> notifierFactory;
@@ -122,10 +125,10 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
         this.factory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(config), config.getLocalContextFactory());
         ExpiredSessionRemover<SC, ?, ?, LC> remover = new ExpiredSessionRemover<>(this.factory);
         this.expirationRegistrar = remover;
-        Scheduler<String, ImmutableSessionMetaData> localScheduler = new SessionExpirationScheduler<>(this.batcher, this.factory.getMetaDataFactory(), remover, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()));
+        Scheduler<String, SessionExpirationMetaData> localScheduler = new SessionExpirationScheduler<>(this.batcher, this.factory.getMetaDataFactory(), remover, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()));
         CommandDispatcherFactory dispatcherFactory = config.getCommandDispatcherFactory();
         Group group = dispatcherFactory.getGroup();
-        this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(dispatcherFactory, this.cache.getName(), localScheduler, new PrimaryOwnerLocator<>(this.cache, config.getMemberFactory()), SessionCreationMetaDataKey::new);
+        this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(dispatcherFactory, this.cache.getName(), localScheduler, new PrimaryOwnerLocator<>(this.cache, config.getMemberFactory()), SessionCreationMetaDataKey::new, this.properties.isTransactional() ? ScheduleWithMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new);
 
         this.scheduleTask = new ScheduleLocalKeysTask<>(this.cache, SessionCreationMetaDataKeyFilter.INSTANCE, localScheduler);
         this.listener = new SchedulerTopologyChangeListener<>(this.cache, localScheduler, this.scheduleTask);
@@ -181,7 +184,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
             }
 
             @Override
-            public org.wildfly.clustering.ee.Scheduler<String, ImmutableSessionMetaData> getExpirationScheduler() {
+            public org.wildfly.clustering.ee.Scheduler<String, SessionExpirationMetaData> getExpirationScheduler() {
                 return InfinispanSessionManagerFactory.this.scheduler;
             }
 

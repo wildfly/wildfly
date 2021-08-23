@@ -61,7 +61,6 @@ import javax.transaction.HeuristicRollbackException;
 import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.CalendarTimer;
@@ -395,7 +394,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     }
 
     @Override
-    public boolean shouldRun(TimerImpl timer, @Deprecated TransactionManager ignored) {
+    public boolean shouldRun(TimerImpl timer) {
         final ContextTransactionManager tm = ContextTransactionManager.getInstance();
         if (!allowExecution) {
             //timers never execute on this node

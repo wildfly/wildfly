@@ -38,7 +38,6 @@
         <module name="java.xml"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="sun.jdk"/>
-        <module name="org.javassist" optional="true"/>
         <module name="jdk.sctp"/>
         <module name="jdk.unsupported"/>
     </dependencies>

@@ -51,12 +51,12 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jdt.core.compiler</groupId>
+      <groupId>org.eclipse.jdt</groupId>
       <artifactId>ecj</artifactId>
       <licenses>
         <license>
-          <name>Eclipse Public License 1.0</name>
-          <url>http://repository.jboss.org/licenses/epl-1.0.txt</url>
+          <name>Eclipse Public License 2.0</name>
+          <url>https://www.eclipse.org/legal/epl-2.0/</url>
           <distribution>repo</distribution>
         </license>
       </licenses>

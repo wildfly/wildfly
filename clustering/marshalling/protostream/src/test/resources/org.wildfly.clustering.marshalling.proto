@@ -20,3 +20,12 @@ message TestInvocationHandler {
  */
 enum Empty {
 }
+
+/**
+ * @TypeId(1003)
+ */
+message Person {
+	optional	string	name	 = 1;
+	optional	bytes	parent	 = 2;
+	repeated	bytes	child	 = 3;
+}

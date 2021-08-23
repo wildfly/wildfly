@@ -188,13 +188,12 @@ public class PersistenceUnitServiceHandler {
             // look for persistence.xml in war files in the META-INF/persistence.xml directory
             List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
             for (ResourceRoot resourceRoot : resourceRoots) {
-                if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
-                    if ((holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null
-                        && !holder.getPersistenceUnits().isEmpty()) {
+                if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")
+                        && (((holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS)) != null)
+                                && !holder.getPersistenceUnits().isEmpty())) {
 
-                        // assemble and install the PU service
-                        puList.add(holder);
-                    }
+                    // assemble and install the PU service
+                    puList.add(holder);
                 }
             }
 
@@ -224,7 +223,8 @@ public class PersistenceUnitServiceHandler {
                         puList.add(holder);
                     }
 
-                    ROOT_LOGGER.tracef("install persistence unit definitions for ear %s", root.getRootName());
+                    ROOT_LOGGER.tracef("install persistence unit definitions for ear %s",
+                            root != null ? root.getRootName() : "null");
                     addPuService(phaseContext, puList, startEarly, platform);
                 }
             }
@@ -334,11 +334,10 @@ public class PersistenceUnitServiceHandler {
             final HashMap<String, ValidatorFactory> properties = new HashMap<>();
 
             CapabilityServiceSupport css = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-            if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
-                if (css.hasCapability("org.wildfly.bean-validation")) {
-                    // Get the Jakarta Contexts and Dependency Injection enabled ValidatorFactory
-                    validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
-                }
+            if (!ValidationMode.NONE.equals(pu.getValidationMode())
+                    && css.hasCapability("org.wildfly.bean-validation")) {
+                // Get the Jakarta Contexts and Dependency Injection enabled ValidatorFactory
+                validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit, capabilitySupport);
 
@@ -577,11 +576,10 @@ public class PersistenceUnitServiceHandler {
         try {
             ValidatorFactory validatorFactory = null;
             final HashMap<String, ValidatorFactory> properties = new HashMap<>();
-            if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
-                if (capabilitySupport.hasCapability("org.wildfly.bean-validation")) {
-                    // Get the Jakarta Contexts and Dependency Injection enabled ValidatorFactory
-                    validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
-                }
+            if (!ValidationMode.NONE.equals(pu.getValidationMode())
+                    && capabilitySupport.hasCapability("org.wildfly.bean-validation")) {
+                // Get the Jakarta Contexts and Dependency Injection enabled ValidatorFactory
+                validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit, capabilitySupport);
             final PersistenceAdaptorRemoval persistenceAdaptorRemoval =  new PersistenceAdaptorRemoval(pu, adaptor);

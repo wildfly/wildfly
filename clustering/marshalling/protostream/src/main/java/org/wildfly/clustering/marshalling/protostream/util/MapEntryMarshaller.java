@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -60,11 +59,11 @@ public class MapEntryMarshaller<T extends Map.Entry<Object, Object>> implements 
             int index = WireType.getTagFieldNumber(tag);
             switch (index) {
                 case KEY_INDEX:
-                    Object key = reader.readObject(Any.class).get();
+                    Object key = reader.readAny();
                     entry = new SimpleEntry<>(key, entry.getValue());
                     break;
                 case VALUE_INDEX:
-                    Object value = reader.readObject(Any.class).get();
+                    Object value = reader.readAny();
                     entry.setValue(value);
                     break;
                 default:
@@ -78,11 +77,11 @@ public class MapEntryMarshaller<T extends Map.Entry<Object, Object>> implements 
     public void writeTo(ProtoStreamWriter writer, T entry) throws IOException {
         Object key = entry.getKey();
         if (key != null) {
-            writer.writeObject(KEY_INDEX, new Any(key));
+            writer.writeAny(KEY_INDEX, key);
         }
         Object value = entry.getValue();
         if (key != null) {
-            writer.writeObject(VALUE_INDEX, new Any(value));
+            writer.writeAny(VALUE_INDEX, value);
         }
     }
 

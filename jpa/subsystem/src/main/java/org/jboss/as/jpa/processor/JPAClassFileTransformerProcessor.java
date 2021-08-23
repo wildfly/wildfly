@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,7 +26,6 @@ import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 
 import org.jboss.as.hibernate.Hibernate51CompatibilityTransformer;
-import org.jboss.as.jpa.classloader.JPADelegatingClassFileTransformer;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -81,12 +80,10 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
                         }
                         // remove this check when we revert WFLY-10520
                         String provider = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
-                        if (provider != null) {
-                            if (provider.equals(Configuration.PROVIDER_MODULE_APPLICATION_SUPPLIED)) {
-                                appContainsPersistenceProviderJars = true;
-                            }
+                        if (provider != null
+                                && provider.equals(Configuration.PROVIDER_MODULE_APPLICATION_SUPPLIED)) {
+                            appContainsPersistenceProviderJars = true;
                         }
-
                     }
                 }
             }

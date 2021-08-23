@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 
 /**
@@ -58,10 +57,10 @@ public class MapMarshaller<T extends Map<Object, Object>> extends AbstractMapMar
             int index = WireType.getTagFieldNumber(tag);
             switch (index) {
                 case KEY_INDEX:
-                    keys.add(reader.readObject(Any.class).get());
+                    keys.add(reader.readAny());
                     break;
                 case VALUE_INDEX:
-                    values.add(reader.readObject(Any.class).get());
+                    values.add(reader.readAny());
                     break;
                 default:
                     reader.skipField(tag);

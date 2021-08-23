@@ -311,7 +311,6 @@ link:#gal.io[io] +
 |Support for legacy Picketbox-based web security.
 |
 link:#gal.naming[naming] +
-link:#gal.vault[vault] +
 
 |[[gal.logging]]logging
 |Support for the logging subsystem.
@@ -484,7 +483,6 @@ Use link:#gal.web-server[web-server] for a servlet container with EE integration
 |
 link:#gal.base-server[base-server] +
 link:#gal.io[io] +
-link:#gal.vault[vault] +
 
 |[[gal.undertow-https]]undertow-https
 |Support for the Undertow HTTPS server secured using the applicationSSC SSLContext.
@@ -503,12 +501,7 @@ link:#gal.undertow[undertow] +
 |
 link:#gal.base-server[base-server] +
 link:#gal.io[io] +
-link:#gal.vault[vault] +
 
-|[[gal.vault]]vault
-|Support for Picketbox security vaults.
-|
-link:#gal.base-server[base-server] +
 
 |[[gal.web-clustering]]web-clustering
 |Support for distributable web applications. Configures a non-local Infinispan-based container web cache for data session handling suitable to clustering environments.

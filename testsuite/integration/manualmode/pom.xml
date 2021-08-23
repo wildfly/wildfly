@@ -28,6 +28,8 @@
         <!-- Byteman -->
         <byteman.host>127.0.0.1</byteman.host>
         <byteman.port>17091</byteman.port>
+        <!-- JVM args -->
+        <microprofile.server.jvm.args>${server.jvm.args} -Djboss.node.name=microprofile</microprofile.server.jvm.args>
     </properties>
 
     <dependencies>
@@ -126,6 +128,12 @@
         <dependency>
             <groupId>org.jboss.spec.javax.jms</groupId>
             <artifactId>jboss-jms-api_2.0_spec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Required for MicroProfile Tests -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.health</groupId>
+            <artifactId>microprofile-health-api</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Required for Java 11 -->
@@ -273,6 +281,7 @@
                         <byteman.port>${byteman.port}</byteman.port>
                         <jvm.args>${jvm.args.ip.server} ${modular.jdk.args} -Dmaven.repo.local=${settings.localRepository}</jvm.args>
                         <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1} -Dnode0=${node0} -Dnode1=${node1} ${modular.jdk.args}</server.jvm2.args>
+                        <microprofile.server.jvm.args>${microprofile.server.jvm.args}</microprofile.server.jvm.args>
                         <arquillian.launch>manual-mode</arquillian.launch>
                         <jboss.config.file.name>standalone-ha.xml</jboss.config.file.name>
                         <!-- needed for SSLEJBRemoteClientTestCase only, however setting them from within the test itself isn't possible -->
@@ -376,8 +385,9 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <excludes>
-		                <exclude>org/wildfly/test/manual/management/MPScriptTestCase.java</exclude>
-		            </excludes> 
+		                            <exclude>org/wildfly/test/manual/management/MPScriptTestCase.java</exclude>
+		                            <exclude>org/wildfly/test/manual/microprofile/**/*TestCase.java</exclude>
+                            </excludes>
                         </configuration>
                     </plugin>
                 </plugins>

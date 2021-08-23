@@ -30,10 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.dmr.ModelNode;
 
@@ -52,7 +49,9 @@ public class DomainAdjuster740 extends DomainAdjuster {
         adjustUndertow(ops, profileAddress.append(SUBSYSTEM, "undertow"));
         adjustInfinispan(ops, profileAddress.append(SUBSYSTEM, "infinispan"));
         // Mixed Domain tests always uses the complete build instead of alternating with ee-dist. We need to remove here
+
         // the pre-configured microprofile extensions to adjust the current domain to work with a node running EAP 7.4.0
+        // which only uses the ee-dist
         removeSubsystemExtension(ops, profileAddress.append(SUBSYSTEM, "microprofile-opentracing-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.opentracing-smallrye"));
         removeSubsystemExtension(ops, profileAddress.append(SUBSYSTEM, "microprofile-jwt-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.jwt-smallrye"));
         removeSubsystemExtension(ops, profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.config-smallrye"));

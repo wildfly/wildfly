@@ -99,6 +99,8 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                 return InfinispanModel.VERSION_8_0_0;
             case EAP_7_3_0:
                 return InfinispanModel.VERSION_11_0_0;
+            case EAP_7_4_0:
+                return InfinispanModel.VERSION_14_0_0;
             default:
                 throw new IllegalArgumentException();
         }
@@ -139,6 +141,24 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
                         "org.infinispan:infinispan-core:9.4.16.Final-redhat-00002",
                         "org.infinispan:infinispan-cachestore-jdbc:9.4.16.Final-redhat-00002",
                         "org.infinispan:infinispan-client-hotrod:9.4.16.Final-redhat-00002",
+                        // Following are needed for InfinispanSubsystemInitialization
+                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-client:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-singleton-api:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-connector:%s", version),
+                };
+            case EAP_7_4_0:
+                return new String[] {
+                        formatEAP7SubsystemArtifact(version),
+                        "org.infinispan:infinispan-commons:11.0.9.Final-redhat-00001",
+                        "org.infinispan:infinispan-core:11.0.9.Final-redhat-00001",
+                        "org.infinispan:infinispan-cachestore-jdbc:11.0.9.Final-redhat-00001",
+                        "org.infinispan:infinispan-client-hotrod:11.0.9.Final-redhat-00001",
                         // Following are needed for InfinispanSubsystemInitialization
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-client:%s", version),
@@ -194,6 +214,11 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     @Test
     public void testTransformerEAP730() throws Exception {
         testTransformation(ModelTestControllerVersion.EAP_7_3_0);
+    }
+
+    @Test
+    public void testTransformerEAP740() throws Exception {
+        testTransformation(ModelTestControllerVersion.EAP_7_4_0);
     }
 
     private KernelServices buildKernelServices(String xml, ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
@@ -377,6 +402,11 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     @Test
     public void testRejectionsEAP730() throws Exception {
         testRejections(ModelTestControllerVersion.EAP_7_3_0);
+    }
+
+    @Test
+    public void testRejectionsEAP740() throws Exception {
+        testRejections(ModelTestControllerVersion.EAP_7_4_0);
     }
 
     private void testRejections(final ModelTestControllerVersion controller) throws Exception {

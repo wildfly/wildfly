@@ -476,6 +476,23 @@
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
             </configuration>
         </container>
+
+        <container qualifier="microprofile" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/wildfly</property>
+                <property name="javaVmArguments">${microprofile.server.jvm.args}</property>
+                <property name="serverConfig">standalone-microprofile.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
     </group>
 
 </arquillian>

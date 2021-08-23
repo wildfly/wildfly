@@ -66,6 +66,7 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.metadata.common"/>
+        <module name="org.jboss.metadata.ear"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.weld.core"/>
         <!-- Only used if capability org.wildfly.weld is available -->

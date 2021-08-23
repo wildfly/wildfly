@@ -36,13 +36,14 @@ import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
+import org.wildfly.clustering.web.session.SessionExpirationMetaData;
 
 /**
  * Session expiration scheduler that eagerly expires sessions as soon as they are eligible.
  * If/When Infinispan implements expiration notifications (ISPN-694), this will be obsolete.
  * @author Paul Ferraro
  */
-public class SessionExpirationScheduler<MV> implements Scheduler<String, ImmutableSessionMetaData>, Predicate<String> {
+public class SessionExpirationScheduler<MV> implements Scheduler<String, SessionExpirationMetaData>, Predicate<String> {
 
     private final LocalScheduler<String> scheduler;
     private final Batcher<TransactionBatch> batcher;
@@ -66,7 +67,7 @@ public class SessionExpirationScheduler<MV> implements Scheduler<String, Immutab
     }
 
     @Override
-    public void schedule(String sessionId, ImmutableSessionMetaData metaData) {
+    public void schedule(String sessionId, SessionExpirationMetaData metaData) {
         Duration maxInactiveInterval = metaData.getMaxInactiveInterval();
         if (!maxInactiveInterval.isZero()) {
             this.scheduler.schedule(sessionId, metaData.getLastAccessEndTime().plus(maxInactiveInterval));

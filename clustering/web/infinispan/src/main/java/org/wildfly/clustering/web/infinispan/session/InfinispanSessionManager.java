@@ -59,6 +59,7 @@ import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
+import org.wildfly.clustering.web.session.SessionExpirationMetaData;
 import org.wildfly.clustering.web.session.SessionManager;
 
 /**
@@ -79,7 +80,7 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
     private final CacheProperties properties;
     private final SessionFactory<SC, MV, AV, LC> factory;
     private final IdentifierFactory<String> identifierFactory;
-    private final Scheduler<String, ImmutableSessionMetaData> expirationScheduler;
+    private final Scheduler<String, SessionExpirationMetaData> expirationScheduler;
     private final Recordable<ImmutableSessionMetaData> recorder;
     private final SC context;
     private final Runnable startTask;
@@ -107,7 +108,7 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
             @Override
             public void accept(ImmutableSession session) {
                 if (session.isValid()) {
-                    configuration.getExpirationScheduler().schedule(session.getId(), session.getMetaData());
+                    configuration.getExpirationScheduler().schedule(session.getId(), new SimpleSessionExpirationMetaData(session.getMetaData()));
                 }
             }
         };

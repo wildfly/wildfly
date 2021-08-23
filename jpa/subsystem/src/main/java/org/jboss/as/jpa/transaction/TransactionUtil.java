@@ -173,18 +173,19 @@ public class TransactionUtil {
          * the Jakarta Transactions transaction.
          */
         private void safeCloseEntityManager() {
-            if ( afterCompletionCalled == true && associationCounter == 0) {
-                if (manager != null) {
-                    try {
-                        if (ROOT_LOGGER.isDebugEnabled())
-                            ROOT_LOGGER.debugf("%s: closing entity managersession", getEntityManagerDetails(manager, scopedPuName));
-                        manager.close();
-                    } catch (Exception ignored) {
-                        if (ROOT_LOGGER.isDebugEnabled())
-                            ROOT_LOGGER.debugf(ignored, "ignoring error that occurred while closing EntityManager for %s (", scopedPuName);
-                    }
-                    manager = null;
+            if (afterCompletionCalled
+                    && associationCounter == 0
+                    && manager != null) {
+                try {
+                    if (ROOT_LOGGER.isDebugEnabled())
+                        ROOT_LOGGER.debugf("%s: closing entity managersession", getEntityManagerDetails(manager, scopedPuName));
+                    manager.close();
+                } catch (Exception ignored) {
+                    if (ROOT_LOGGER.isDebugEnabled())
+                        ROOT_LOGGER.debugf(ignored, "ignoring error that occurred while closing EntityManager for %s (",
+                                scopedPuName);
                 }
+                manager = null;
             }
         }
 
