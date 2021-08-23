@@ -122,7 +122,7 @@ public class ExternalJMSQueueService implements Service<Queue> {
                 try {
                     storeBaseContext.close();
                 } catch (NamingException ex) {
-                    throw new StartException(ex);
+                    MessagingLogger.ROOT_LOGGER.tracef(ex, "Error closing the naming context %s", ex.getMessage());
                 }
             }
         }
