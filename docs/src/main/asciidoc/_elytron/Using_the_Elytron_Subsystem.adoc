@@ -127,6 +127,28 @@ _jboss.server.config.dir_.
 If your directory is located outside of _jboss.server.config.dir_, then
 you need to change the _path_ and _relative-to_ values appropriately.
 
+It is possible to encrypt the filesystem realm by configuring the credential-store and secret-key attributes for the realm.
+
+When creating a an encrypted filesystem realm, you will have to specify two more attributes.
+
+* `credential-store`: This attribute specifies the credential-store where the secret key used for encrypting and decrypting the realm is stored.
+
+* `secret-key`: This attribute specifies the alias to the secret key stored in the credential store. By default the alias in the credential store is set to `key`
+
+To create a the credential store and secret key for the attributes above, you can create a secret-key-credential-store using the folloing commands. This will create a credential store called `mycredstore` with the secret key alias `key`.
+[source,options="nowrap"]
+----
+/subsystem=elytron/secret-key-credential-store=mycredstore:add(path=propcredstore.cs, relative-to=jboss.server.config.dir, create=true, populate=true)
+----
+
+
+To create an encrypted filesystem realm with a credential-store called ``mycredstore`` and the secret-key alias ``key``, the following command would be used
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/filesystem-realm=exampleFsRealm:add(path=fs-realm-users,relative-to=jboss.server.config.dir, credential-store=mycredstore, secret-key=key)
+----
+
 [[add-a-user]]
 ==== Add a user:
 
