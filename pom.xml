@@ -158,6 +158,9 @@
           -->
         <maven.min.version>3.6.0</maven.min.version>
 
+        <!-- TarArchiver behavior -->
+        <assembly.tarLongFileMode>posix</assembly.tarLongFileMode>
+
         <!-- Modularized JDK support (various workarounds) - activated via profile -->
         <modular.jdk.args></modular.jdk.args>
         <modular.jdk.props></modular.jdk.props>
