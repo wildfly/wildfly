@@ -18,23 +18,47 @@
 
 package org.wildfly.extension.elytron.oidc;
 
+import static org.wildfly.extension.elytron.oidc._private.ElytronOidcLogger.ROOT_LOGGER;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.elytron.oidc._private.ElytronOidcLogger;
 
 /**
  * Add handler for the Elytron OpenID Connect subsystem.
  *
- * <a href="mailto:fjuma@redhat.com">Farah Juma</a>
+ * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
 class ElytronOidcSubsystemAdd extends AbstractBoottimeAddStepHandler {
+
+    private static final int PARSE_OIDC_DETECTION = 0x4C0E;
+    private static final int PARSE_DEFINE_VIRTUAL_HTTP_SERVER_MECHANISM_FACTORY_NAME = 0x4C18;
+    private static final int DEPENDENCIES_OIDC = 0x1910;
+    private static final int INSTALL_VIRTUAL_HTTP_SERVER_MECHANISM_FACTORY = 0x3100;
 
     ElytronOidcSubsystemAdd() {
     }
 
     @Override
     public void performBoottime(OperationContext context, ModelNode operation, ModelNode model) {
-        ElytronOidcLogger.ROOT_LOGGER.activatingSubsystem();
+        ROOT_LOGGER.activatingSubsystem();
+
+        if (context.isNormalServer()) {
+            context.addStep(new AbstractDeploymentChainStep() {
+
+                @Override
+                protected void execute(DeploymentProcessorTarget processorTarget) {
+                    processorTarget.addDeploymentProcessor(ElytronOidcExtension.SUBSYSTEM_NAME, Phase.PARSE, PARSE_OIDC_DETECTION, new OidcActivationProcessor());
+                    processorTarget.addDeploymentProcessor(ElytronOidcExtension.SUBSYSTEM_NAME, Phase.PARSE, PARSE_DEFINE_VIRTUAL_HTTP_SERVER_MECHANISM_FACTORY_NAME, new VirtualHttpServerMechanismFactoryNameProcessor());
+                    processorTarget.addDeploymentProcessor(ElytronOidcExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, DEPENDENCIES_OIDC, new OidcDependencyProcessor());
+                    processorTarget.addDeploymentProcessor(ElytronOidcExtension.SUBSYSTEM_NAME, Phase.INSTALL, INSTALL_VIRTUAL_HTTP_SERVER_MECHANISM_FACTORY, new VirtualHttpServerMechanismFactoryProcessor());
+                }
+
+            }, OperationContext.Stage.RUNTIME);
+        }
+
     }
 }
