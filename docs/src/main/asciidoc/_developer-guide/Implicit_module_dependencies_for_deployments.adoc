@@ -85,15 +85,33 @@ being added
 locations in the deployment, as specified by spec) or the presence of
 annotation based Jakarta Enterprise Beans (ex: @Stateless, @Stateful, @MessageDriven etc)
 
-|Jakarta RESTful Web Services (Resteasy) subsystem |javax.xml.bind.api
-|org.jboss.resteasy.resteasy-atom-provider
-org.jboss.resteasy.resteasy-cdi org.jboss.resteasy.resteasy-jaxrs
-org.jboss.resteasy.resteasy-jaxb-provider
-org.jboss.resteasy.resteasy-jackson2-provider
-org.jboss.resteasy.resteasy-jsapi
-org.jboss.resteasy.resteasy-multipart-provider
-org.jboss.resteasy.async-http-servlet-30 |The presence of Jakarta RESTful Web Services
-annotations in the deployment
+|Jakarta RESTful Web Services (RESTEasy) subsystem |
+com.fasterxml.jackson.core.jackson-annotations +
+com.fasterxml.jackson.core.jackson-core +
+com.fasterxml.jackson.core.jackson-databind +
+com.fasterxml.jackson.datatype.jackson-datatype-jdk8 +
+com.fasterxml.jackson.datatype.jackson-datatype-jsr310 +
+com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider +
+javax.json.api +
+javax.ws.rs.api +
+javax.xml.bind.api +
+org.eclipse.microprofile.restclient +
+org.jboss.resteasy.resteasy-atom-provider +
+org.jboss.resteasy.resteasy-client +
+org.jboss.resteasy.resteasy-client-api +
+org.jboss.resteasy.resteasy-client-microprofile +
+org.jboss.resteasy.resteasy-core +
+org.jboss.resteasy.resteasy-core-spi +
+org.jboss.resteasy.resteasy-crypto +
+org.jboss.resteasy.resteasy-jackson2-provider +
+org.jboss.resteasy.resteasy-jaxb-provider +
+org.jboss.resteasy.resteasy-jsapi +
+org.jboss.resteasy.resteasy-json-binding-provider +
+org.jboss.resteasy.resteasy-json-p-provider +
+org.jboss.resteasy.resteasy-multipart-provider +
+org.jboss.resteasy.resteasy-validator-provider
+|
+|The presence of Jakarta RESTful Web Services annotations in the deployment
 
 |Jakarta Connectors subsystem |javax.resource.api |javax.jms.api javax.validation.api
 org.jboss.logging org.jboss.ironjacamar.api org.jboss.ironjacamar.impl
