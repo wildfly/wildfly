@@ -83,7 +83,7 @@
                 <extension>org.wildfly.extension.discovery</extension>
                 <extension>org.wildfly.extension.ee-security</extension>
                 <extension>org.wildfly.extension.elytron</extension>
-                <extension>org.wildfly.extension.elytron-oidc</extension>
+                <extension>org.wildfly.extension.elytron-oidc-client</extension>
                 <extension>org.wildfly.extension.health</extension>
                 <extension>org.wildfly.extension.io</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>

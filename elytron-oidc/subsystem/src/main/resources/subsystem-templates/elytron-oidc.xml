@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-
-<config>
-    <extension-module>org.wildfly.extension.elytron-oidc</extension-module>
-    <subsystem xmlns="urn:wildfly:elytron-oidc:1.0">
-    </subsystem>
-</config>

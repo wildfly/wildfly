@@ -7,7 +7,7 @@
 
     <feature spec="subsystem.microprofile-config-smallrye"/>
     <feature spec="subsystem.microprofile-jwt-smallrye"/>
-    <feature spec="subsystem.elytron-oidc"/>
+    <feature spec="subsystem.elytron-oidc-client"/>
     <feature-group name="microprofile-opentracing-jaeger"/>
 
 </feature-group-spec>

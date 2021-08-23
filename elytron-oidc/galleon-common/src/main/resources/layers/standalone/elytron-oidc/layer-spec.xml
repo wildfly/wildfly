@@ -1,7 +1,0 @@
-<?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="elytron-oidc">
-    <dependencies>
-        <layer name="elytron"/>
-    </dependencies>
-    <feature spec="subsystem.elytron-oidc"/>
-</layer-spec>

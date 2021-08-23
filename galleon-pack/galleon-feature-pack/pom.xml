@@ -45,10 +45,10 @@
 
     <properties>
         <mp.galleon.common.resources.directory>${basedir}/../../microprofile/galleon-common/src/main/resources</mp.galleon.common.resources.directory>
-        <oidc.galleon.common.resources.directory>${basedir}/../../elytron-oidc/galleon-common/src/main/resources</oidc.galleon.common.resources.directory>
+        <oidc.galleon.common.resources.directory>${basedir}/../../elytron-oidc-client/galleon-common/src/main/resources</oidc.galleon.common.resources.directory>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
         <feature-pack.license.directory>${basedir}/../../microprofile/galleon-common/src/main/resources/license</feature-pack.license.directory>
-        <oidc.feature-pack.license.directory>${basedir}/../../elytron-oidc/galleon-common/src/main/resources/license</oidc.feature-pack.license.directory>
+        <oidc.feature-pack.license.directory>${basedir}/../../elytron-oidc-client/galleon-common/src/main/resources/license</oidc.feature-pack.license.directory>
         <content.resources.directory>${basedir}/../galleon-content/src/main/resources</content.resources.directory>
     </properties>
 
@@ -149,8 +149,8 @@
                         <phase>process-resources</phase>
                         <configuration>
                             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
-                            <licensesConfigFile>${oidc.feature-pack.license.directory}/elytron-oidc-feature-pack-licenses.xml</licensesConfigFile>
-                            <licensesOutputFile>${license.directory}/elytron-oidc-feature-pack-licenses.xml</licensesOutputFile>
+                            <licensesConfigFile>${oidc.feature-pack.license.directory}/elytron-oidc-client-feature-pack-licenses.xml</licensesConfigFile>
+                            <licensesOutputFile>${license.directory}/elytron-oidc-client-feature-pack-licenses.xml</licensesOutputFile>
                             <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-feature-pack-galleon-content</excludedArtifacts>
                         </configuration>
                     </execution>

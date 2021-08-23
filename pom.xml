@@ -69,7 +69,7 @@
         <module>ee-security</module>
         <module>ee-9</module>
         <module>ejb3</module>
-        <module>elytron-oidc</module>
+        <module>elytron-oidc-client</module>
         <module>galleon-pack</module>
         <module>health</module>
         <module>iiop-openjdk</module>
@@ -1073,7 +1073,7 @@
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-elytron-oidc-subsystem</artifactId>
+                <artifactId>wildfly-elytron-oidc-client-subsystem</artifactId>
                 <version>${full.maven.version}</version>
             </dependency>
 

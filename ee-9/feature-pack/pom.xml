@@ -41,7 +41,7 @@
     <properties>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
         <mp.galleon.common.resources.directory>${basedir}/../../microprofile/galleon-common/src/main/resources</mp.galleon.common.resources.directory>
-        <oidc.galleon.common.resources.directory>${basedir}/../../elytron-oidc/galleon-common/src/main/resources</oidc.galleon.common.resources.directory>
+        <oidc.galleon.common.resources.directory>${basedir}/../../elytron-oidc-client/galleon-common/src/main/resources</oidc.galleon.common.resources.directory>
         <full.common.resources.directory>${basedir}/../../ee-feature-pack/common/src/main/resources</full.common.resources.directory>
         <full.galleon-common.resources.directory>${basedir}/../../ee-feature-pack/galleon-common/src/main/resources</full.galleon-common.resources.directory>
         <servlet.common.resources.directory>${basedir}/../../servlet-feature-pack/common/src/main/resources</servlet.common.resources.directory>
@@ -355,8 +355,8 @@
                         <phase>process-resources</phase>
                         <configuration>
                             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
-                            <licensesConfigFile>${basedir}/target/resources/license/elytron-oidc-feature-pack-licenses.xml</licensesConfigFile>
-                            <licensesOutputFile>${license.directory}/elytron-oidc-feature-pack-licenses.xml</licensesOutputFile>
+                            <licensesConfigFile>${basedir}/target/resources/license/elytron-oidc-client-feature-pack-licenses.xml</licensesConfigFile>
+                            <licensesOutputFile>${license.directory}/elytron-oidc-client-feature-pack-licenses.xml</licensesOutputFile>
                         </configuration>
                     </execution>
                 </executions>
