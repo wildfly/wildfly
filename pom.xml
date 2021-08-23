@@ -422,7 +422,7 @@
         <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
         <!-- Only used for testing -->
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
-        <version.org.jboss.metadata>13.0.0.Final</version.org.jboss.metadata>
+        <version.org.jboss.metadata>14.0.0.Final</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.4.3.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>5.12.0.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.5.Final</version.org.jboss.openjdk-orb>
@@ -7460,6 +7460,16 @@
                 <groupId>org.jboss.metadata</groupId>
                 <artifactId>jboss-metadata-appclient</artifactId>
                 <version>${version.org.jboss.metadata}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.metadata</groupId>
+                        <artifactId>jboss-metadata-common</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -7476,20 +7486,78 @@
 
             <dependency>
                 <groupId>org.jboss.metadata</groupId>
+                <artifactId>jboss-metadata-common-jakarta</artifactId>
+                <version>${version.org.jboss.metadata}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jboss-common-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.metadata</groupId>
                 <artifactId>jboss-metadata-ear</artifactId>
                 <version>${version.org.jboss.metadata}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.metadata</groupId>
+                        <artifactId>jboss-metadata-common</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.metadata</groupId>
                 <artifactId>jboss-metadata-ejb</artifactId>
                 <version>${version.org.jboss.metadata}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.metadata</groupId>
+                        <artifactId>jboss-metadata-common</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.metadata</groupId>
+                <artifactId>jboss-metadata-ejb-jakarta</artifactId>
+                <version>${version.org.jboss.metadata}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.metadata</groupId>
+                        <artifactId>jboss-metadata-common-jakarta</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.metadata</groupId>
                 <artifactId>jboss-metadata-web</artifactId>
                 <version>${version.org.jboss.metadata}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.metadata</groupId>
+                        <artifactId>jboss-metadata-common</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
