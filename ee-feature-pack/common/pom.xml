@@ -1009,6 +1009,17 @@
             </exclusions>
         </dependency>
 
+<!--        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>-->
+
         <dependency>
             <groupId>org.jboss.mod_cluster</groupId>
             <artifactId>mod_cluster-container-spi</artifactId>
