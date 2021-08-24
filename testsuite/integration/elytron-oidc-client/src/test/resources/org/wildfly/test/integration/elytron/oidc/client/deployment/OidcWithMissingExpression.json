@@ -1,0 +1,9 @@
+{
+    "client-id" : "MissingExpressionOidcApp",
+    "public-client" : "false",
+    "provider-url" : "${missing.oidc.provider.url}",
+    "ssl-required" : "EXTERNAL",
+    "credentials" : {
+        "secret" : "secret"
+    }
+}

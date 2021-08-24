@@ -96,7 +96,7 @@ public class AutomaticSelfSignedCertificateGenerationTestCase {
 
     @Test
     public void testSelfSignedCertificateGenerated() throws Exception {
-        final URL servletUrl = new URL("https", TestSuiteEnvironment.getServerAddress(), HTTPS_PORT,
+        final URL servletUrl = new URL("https", TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getHttpPort(),
                 "/" + NAME + "/" + SimpleServlet.SERVLET_PATH.substring(1));
         HttpClient client = SSLTruststoreUtil.getHttpClientWithSSL(null, null);
         try {

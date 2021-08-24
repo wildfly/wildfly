@@ -480,6 +480,7 @@
         <version.org.jgroups.kubernetes>1.0.16.Final</version.org.jgroups.kubernetes>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
         <version.org.jvnet.staxex>1.8.3</version.org.jvnet.staxex>
+        <version.org.keycloak>15.0.2</version.org.keycloak>
         <version.org.kohsuke.metainf-services>1.8</version.org.kohsuke.metainf-services>
         <version.org.opensaml.opensaml>3.4.6</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.1</version.org.ow2.asm>
@@ -489,6 +490,7 @@
         <version.org.reactivestreams>1.0.3</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.springframework.kafka>2.7.3</version.org.springframework.kafka>
+        <version.org.testcontainers.testcontainers>1.15.3</version.org.testcontainers.testcontainers>
         <version.org.testng>6.14.3</version.org.testng>
         <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.core>17.0.0.Beta6</version.org.wildfly.core>
@@ -9773,6 +9775,25 @@
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
                 <version>${version.org.testng}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>${version.org.testcontainers.testcontainers}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-admin-client</artifactId>
+                <version>${version.org.keycloak}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-core</artifactId>
+                <version>${version.org.keycloak}</version>
                 <scope>test</scope>
             </dependency>
 
