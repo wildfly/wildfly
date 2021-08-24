@@ -259,22 +259,6 @@
                 </xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="username" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    The username that will be used for authentication during connection creation for nodes in the
-                    cluster
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="security-realm" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    The security-realm that will be used for authentication during connection creation for nodes in the
-                    cluster
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="clusterNodeType">
@@ -305,21 +289,6 @@
             <xsd:annotation>
                 <xsd:documentation>
                     The timeout in milliseconds while creating a connection for the node
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="username" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    The username that will be used for authentication during connection creation for the node
-                </xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="security-realm" type="xsd:string" use="optional">
-            <xsd:annotation>
-                <xsd:documentation>
-                    The security-realm that will be used for authentication during connection creation for the node
-                    cluster
                 </xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>

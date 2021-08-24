@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.structure;
 
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
+
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
@@ -115,8 +117,6 @@ class EJBClientDescriptor11Parser extends EJBClientDescriptor10Parser {
         String clusterNodeSelector = null;
         long connectTimeout = 5000;
         long maxAllowedConnectedNodes = 10;
-        String userName = null;
-        String securityRealm = null;
         for (int i = 0; i < count; i++) {
             final EJBClientDescriptorXMLAttribute attribute = EJBClientDescriptorXMLAttribute.forName(reader.getAttributeLocalName(i));
             required.remove(attribute);
@@ -135,11 +135,9 @@ class EJBClientDescriptor11Parser extends EJBClientDescriptor10Parser {
                     maxAllowedConnectedNodes = Long.parseLong(value);
                     break;
                 case USERNAME:
-                    userName = value;
-                    break;
+                    throw ROOT_LOGGER.attributeNoLongerSupported(EJBClientDescriptorXMLAttribute.USERNAME.getLocalName());
                 case SECURITY_REALM:
-                    securityRealm = value;
-                    break;
+                    throw ROOT_LOGGER.attributeNoLongerSupported(EJBClientDescriptorXMLAttribute.SECURITY_REALM.getLocalName());
                 default:
                     unexpectedContent(reader);
             }
@@ -152,8 +150,6 @@ class EJBClientDescriptor11Parser extends EJBClientDescriptor10Parser {
         clusterConfig.setConnectTimeout(connectTimeout);
         clusterConfig.setNodeSelector(clusterNodeSelector);
         clusterConfig.setMaxAllowedConnectedNodes(maxAllowedConnectedNodes);
-        clusterConfig.setSecurityRealm(securityRealm);
-        clusterConfig.setUserName(userName);
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -248,8 +244,6 @@ class EJBClientDescriptor11Parser extends EJBClientDescriptor10Parser {
         final int count = reader.getAttributeCount();
         String nodeName = null;
         long connectTimeout = 5000;
-        String userName = null;
-        String securityRealm = null;
         for (int i = 0; i < count; i++) {
             final EJBClientDescriptorXMLAttribute attribute = EJBClientDescriptorXMLAttribute.forName(reader.getAttributeLocalName(i));
             required.remove(attribute);
@@ -262,11 +256,9 @@ class EJBClientDescriptor11Parser extends EJBClientDescriptor10Parser {
                     connectTimeout = Long.parseLong(value);
                     break;
                 case USERNAME:
-                    userName = value;
-                    break;
+                    throw ROOT_LOGGER.attributeNoLongerSupported(EJBClientDescriptorXMLAttribute.USERNAME.getLocalName());
                 case SECURITY_REALM:
-                    securityRealm = value;
-                    break;
+                    throw ROOT_LOGGER.attributeNoLongerSupported(EJBClientDescriptorXMLAttribute.SECURITY_REALM.getLocalName());
                 default:
                     unexpectedContent(reader);
             }
@@ -277,8 +269,6 @@ class EJBClientDescriptor11Parser extends EJBClientDescriptor10Parser {
         // add a new node config to the cluster config
         final EJBClientDescriptorMetaData.ClusterNodeConfig clusterNodeConfig = clusterConfig.newClusterNode(nodeName);
         clusterNodeConfig.setConnectTimeout(connectTimeout);
-        clusterNodeConfig.setSecurityRealm(securityRealm);
-        clusterNodeConfig.setUserName(userName);
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {

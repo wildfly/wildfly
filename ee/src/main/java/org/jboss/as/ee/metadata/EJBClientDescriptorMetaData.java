@@ -271,8 +271,6 @@ public class EJBClientDescriptorMetaData {
         private Properties connectionOptions;
         private Properties channelCreationOptions;
         private long connectTimeout;
-        private String userName;
-        private String securityRealm;
 
         public void setConnectionOptions(final Properties connectionOptions) {
             this.connectionOptions = connectionOptions;
@@ -296,22 +294,6 @@ public class EJBClientDescriptorMetaData {
 
         public Properties getChannelCreationOptions() {
             return this.channelCreationOptions;
-        }
-
-        public void setUserName(final String userName) {
-            this.userName = userName;
-        }
-
-        public String getUserName() {
-            return this.userName;
-        }
-
-        public void setSecurityRealm(final String realm) {
-            this.securityRealm = realm;
-        }
-
-        public String getSecurityRealm() {
-            return this.securityRealm;
         }
     }
 
