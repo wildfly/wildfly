@@ -22,7 +22,6 @@
 package org.jboss.as.web.test;
 
 import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
@@ -30,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -68,7 +66,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.audit.EnvironmentNameReader;
-import org.jboss.as.domain.management.security.KeystoreAttributes;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -78,6 +75,7 @@ import org.jboss.as.web.WebExtension;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wildfly.extension.io.IOExtension;
 import org.wildfly.extension.undertow.Constants;
@@ -189,6 +187,7 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
     }
 
     @Test
+    @Ignore("[WFLY-15159] Web subsystem migration needs updating to migrate to Elytron.")
     public void testMigrateOperation() throws Exception {
         String subsystemXml = readResource("subsystem-migrate-2.2.0.xml");
         NewSubsystemAdditionalInitialization additionalInitialization = new NewSubsystemAdditionalInitialization();
@@ -270,8 +269,8 @@ public class WebMigrateTestCase extends AbstractSubsystemTest {
         ModelNode realm = model.get(CORE_SERVICE, MANAGEMENT).get(SECURITY_REALM, realmName);
 
         //trust store
-        ModelNode trustStore = realm.get(AUTHENTICATION, TRUSTSTORE);
-        assertEquals("${file-base}/jsse.keystore", trustStore.get(KeystoreAttributes.KEYSTORE_PATH.getName()).asString());
+//        ModelNode trustStore = realm.get(AUTHENTICATION, TRUSTSTORE);
+//        assertEquals("${file-base}/jsse.keystore", trustStore.get(KeystoreAttributes.KEYSTORE_PATH.getName()).asString());
         //Valves
         ModelNode filters = newSubsystem.get(Constants.CONFIGURATION, Constants.FILTER);
         ModelNode dumpFilter = filters.get("expression-filter", "request-dumper");
