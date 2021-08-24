@@ -57,6 +57,7 @@ class ProviderAttributeDefinitions {
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.SSL_REQUIRED, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode("external"))
+                    .setAllowedValues("external", "all", "none")
                     .build();
 
     protected static final SimpleAttributeDefinition ALLOW_ANY_HOSTNAME =
