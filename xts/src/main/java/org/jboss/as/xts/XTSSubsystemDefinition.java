@@ -62,9 +62,10 @@ public class XTSSubsystemDefinition extends SimpleResourceDefinition {
 
     protected static final SimpleAttributeDefinition DEFAULT_CONTEXT_PROPAGATION =
             new SimpleAttributeDefinitionBuilder(CommonAttributes.DEFAULT_CONTEXT_PROPAGATION, ModelType.BOOLEAN, true)
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setXmlName(Attribute.ENABLED.getLocalName())
                     .setFlags(AttributeAccess.Flag.RESTART_JVM)
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final SimpleAttributeDefinition ASYNC_REGISTRATION =

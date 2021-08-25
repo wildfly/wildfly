@@ -192,9 +192,6 @@ class XTSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             final String value = reader.getAttributeValue(index);
             switch (attribute) {
                 case ENABLED:
-                    if (value == null || (!value.toLowerCase().equals("true") && !value.toLowerCase().equals("false"))) {
-                        throw ParseUtils.invalidAttributeValue(reader, index);
-                    }
                     DEFAULT_CONTEXT_PROPAGATION.parseAndSetParameter(value, subsystem, reader);
                     break;
                 default:

@@ -220,7 +220,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             XtsAsLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s%n", coordinatorURL);
         }
 
-        final boolean isDefaultContextPropagation = DEFAULT_CONTEXT_PROPAGATION.resolveModelAttribute(context, model).asBoolean(false); // TODO WFLY-14350 make the 'false' the default value of DEFAULT_CONTEXT_PROPAGATION
+        final boolean isDefaultContextPropagation = DEFAULT_CONTEXT_PROPAGATION.resolveModelAttribute(context, model).asBoolean(false);
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
