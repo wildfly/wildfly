@@ -21,38 +21,17 @@
  */
 package org.jboss.as.test.integration.web.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.LOGIN_MODULE;
-import static org.jboss.as.security.Constants.MODULE_OPTIONS;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
 import org.wildfly.test.security.common.elytron.UndertowDomainMapper;
-import org.wildfly.test.security.common.elytron.UserWithAttributeValues;
 
 /**
  * @author Stuart Douglas
@@ -87,56 +66,13 @@ public class WebTestsSecurityDomainSetup extends AbstractSecurityDomainSetup {
         URL resourceUrl = this.getClass().getResource("/org/jboss/as/test/shared/shared-keystores/application.keystore");
         FileUtils.copyInputStreamToFile(resourceUrl.openStream(), destFile);
 
-        if (WebSecurityCommon.isElytron()) {
-            cli = new CLIWrapper(true);
-            setElytronBased();
-        } else {
-            setLegacySecurityRealmBased(managementClient);
-        }
+        cli = new CLIWrapper(true);
+        setElytronBased();
     }
 
     @Override
     protected String getSecurityDomainName() {
         return WEB_SECURITY_DOMAIN;
-    }
-
-    protected void setLegacySecurityRealmBased(final ManagementClient managementClient) throws Exception {
-        log.debug("start of the legacy security-realm based domain creation");
-
-        final ModelNode compositeOp = new ModelNode();
-        compositeOp.get(OP).set(COMPOSITE);
-        compositeOp.get(OP_ADDR).setEmptyList();
-        compositeOp.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-
-        ModelNode steps = compositeOp.get(STEPS);
-        PathAddress address = PathAddress.pathAddress()
-                .append(SUBSYSTEM, "security")
-                .append(SECURITY_DOMAIN, getSecurityDomainName());
-        steps.add(Util.createAddOperation(address));
-
-        // Prepare properties files with users, passwords and roles
-        address = address.append(Constants.AUTHENTICATION, Constants.CLASSIC);
-        steps.add(Util.createAddOperation(address));
-
-        List<UserWithAttributeValues> userWithRoles = new ArrayList<UserWithAttributeValues>();
-        userWithRoles.add(UserWithAttributeValues.builder().withName(GOOD_USER_NAME).withPassword(GOOD_USER_PASSWORD).withValues
-                (GOOD_USER_ROLE).build());
-        userWithRoles.add(UserWithAttributeValues.builder().withName(SUPER_USER_NAME).withPassword(SUPER_USER_PASSWORD)
-                .withValues(SUPER_USER_ROLE).build());
-        userWithRoles.add(UserWithAttributeValues.builder().withName(BAD_GUY_NAME).withPassword(BAD_GUY_PASSWORD).withValues
-                (BAD_GUY_ROLE).build());
-        WebSecurityCommon.PropertyFiles propFiles = WebSecurityCommon.createPropertiesFiles(userWithRoles,
-                WEB_SECURITY_DOMAIN);
-
-        ModelNode loginModule = Util.createAddOperation(address.append(LOGIN_MODULE, "UsersRoles"));
-        loginModule.get(CODE).set("UsersRoles");
-        loginModule.get(FLAG).set("required");
-        loginModule.get(MODULE_OPTIONS).get("usersProperties").set(propFiles.getUsers().getAbsolutePath());
-        loginModule.get(MODULE_OPTIONS).get("rolesProperties").set(propFiles.getRoles().getAbsolutePath());
-        steps.add(loginModule);
-
-        applyUpdates(managementClient.getControllerClient(), Arrays.asList(compositeOp));
-        log.debug("end of the legacy security-realm based domain creation");
     }
 
     protected void setElytronBased() throws Exception {
@@ -155,17 +91,13 @@ public class WebTestsSecurityDomainSetup extends AbstractSecurityDomainSetup {
 
     @Override
     public void tearDown(ManagementClient managementClient, String containerId) {
-        if (WebSecurityCommon.isElytron()) {
-            try {
-                domainMapper.remove(cli);
-                ps.remove(cli);
-                cli.close();
-                ServerReload.executeReloadAndWaitForCompletion(managementClient);
-            } catch (Exception e) {
-                throw new RuntimeException("Cleaning up for Elytron based security domain failed.", e);
-            }
-        } else {
-            super.tearDown(managementClient, containerId);
+        try {
+            domainMapper.remove(cli);
+            ps.remove(cli);
+            cli.close();
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
+        } catch (Exception e) {
+            throw new RuntimeException("Cleaning up for Elytron based security domain failed.", e);
         }
     }
 }
