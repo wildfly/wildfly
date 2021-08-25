@@ -27,9 +27,8 @@ import org.wildfly.clustering.group.Node;
 /**
  * @author Paul Ferraro
  */
-@SuppressWarnings("deprecation")
-public interface NodeFactory<A> extends org.wildfly.clustering.group.NodeFactory<A> {
-    @Override
+public interface NodeFactory<A> {
+
     Node createNode(A address);
 
     A getAddress(Node node);

@@ -35,7 +35,6 @@ import org.wildfly.clustering.singleton.SingletonCacheRequirement;
  */
 public enum ClusteringCacheRequirement implements DefaultableBinaryRequirement, DefaultableBinaryServiceNameFactoryProvider {
     GROUP("org.wildfly.clustering.cache.group", ClusteringDefaultCacheRequirement.GROUP),
-    @Deprecated NODE_FACTORY("org.wildfly.clustering.cache.node-factory", ClusteringDefaultCacheRequirement.NODE_FACTORY),
     REGISTRY("org.wildfly.clustering.cache.registry", ClusteringDefaultCacheRequirement.REGISTRY),
     REGISTRY_ENTRY("org.wildfly.clustering.cache.registry-entry", ClusteringDefaultCacheRequirement.REGISTRY_ENTRY),
     REGISTRY_FACTORY("org.wildfly.clustering.cache.registry-factory", ClusteringDefaultCacheRequirement.REGISTRY_FACTORY),

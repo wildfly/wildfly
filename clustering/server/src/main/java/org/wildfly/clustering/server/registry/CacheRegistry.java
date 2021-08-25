@@ -152,12 +152,6 @@ public class CacheRegistry<K, V> implements Registry<K, V>, CacheEventFilter<Obj
         }
     }
 
-    @Deprecated
-    @Override
-    public void removeListener(Registry.Listener<K, V> listener) {
-        this.unregister(listener);
-    }
-
     @Override
     public org.wildfly.clustering.group.Group getGroup() {
         return this.group;
