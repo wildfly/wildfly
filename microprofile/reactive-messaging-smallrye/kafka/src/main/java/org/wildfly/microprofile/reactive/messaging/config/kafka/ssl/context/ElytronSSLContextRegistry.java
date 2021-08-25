@@ -22,6 +22,8 @@
 
 package org.wildfly.microprofile.reactive.messaging.config.kafka.ssl.context;
 
+import static org.wildfly.microprofile.reactive.messaging.config.kafka.ssl.context._private.MicroProfileReactiveMessagingKafkaLogger.LOGGER;
+
 import javax.net.ssl.SSLContext;
 
 import org.jboss.msc.service.ServiceController;
@@ -45,10 +47,20 @@ public class ElytronSSLContextRegistry {
         serviceRegistry = serviceRegistry;
     }
 
+    static boolean isSSLContextInstalled(String name) {
+        return INSTANCE.getSSLContextController(name) != null;
+    }
+
     static SSLContext getInstalledSSLContext(String name) {
-        ServiceController<SSLContext> controller = (ServiceController<SSLContext>)INSTANCE.serviceRegistry
-                .getService(getSSLContextName(name));
+        ServiceController<SSLContext> controller = INSTANCE.getSSLContextController(name);
+        if (controller == null) {
+            throw LOGGER.noElytronClientSSLContext(name);
+        }
         return controller.getValue();
+    }
+
+    private ServiceController<SSLContext> getSSLContextController(String name) {
+        return (ServiceController<SSLContext>)INSTANCE.serviceRegistry.getService(getSSLContextName(name));
     }
 
     static ServiceName getSSLContextName(String name) {

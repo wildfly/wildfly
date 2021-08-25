@@ -30,8 +30,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.net.ssl.SSLContext;
-
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.jboss.as.server.deployment.AttachmentKey;
@@ -83,18 +81,11 @@ class ReactiveMessagingSslConfigProcessor implements DeploymentUnitProcessor {
                 }
                 if (prefix != null) {
                     LOGGER.foundPropertyUsingElytronClientSSLContext(propertyName, propertyValue);
-                    SSLContext ctx = ElytronSSLContextRegistry.getInstalledSSLContext(propertyValue);
-                    if (ctx == null) {
+                    if (!ElytronSSLContextRegistry.isSSLContextInstalled(propertyValue)) {
                         throw LOGGER.noElytronClientSSLContext(propertyValue);
                     }
                     mscDependencies.add(ElytronSSLContextRegistry.getSSLContextName(propertyValue));
                     addedProperties.put(prefix + SSL_ENGINE_FACTORY_CLASS, WildFlyKafkaSSLEngineFactory.class.getName());
-                }
-            }
-            if (addedProperties.size() > 0) {
-                ReactiveMessagingConfigSource.addProperties(config, addedProperties);
-                for (ServiceName svcName : mscDependencies) {
-                    phaseContext.addDeploymentDependency(svcName, DEPLOYMENT_ATTACHMENT_KEY);
                 }
             }
         }
