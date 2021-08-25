@@ -19,21 +19,39 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.service;
 
-import org.jboss.msc.value.Value;
+package org.jboss.as.clustering.msc;
+
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.service.ServiceNameProvider;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
 
 /**
- * Service dependency that provides a value.
+ * Service dependency whose provided value is made available via injection.
  * @author Paul Ferraro
- * @param <T> the dependency type
- * @deprecated Replaced by {@link SupplierDependency}.
+ * @deprecated Replaced by {@link ServiceSupplierDependency}.
  */
 @Deprecated
-public interface ValueDependency<T> extends Value<T>, SupplierDependency<T> {
+public class InjectedValueDependency<T> extends InjectorDependency<T> implements ValueDependency<T> {
+
+    private final InjectedValue<T> value;
+
+    public InjectedValueDependency(ServiceNameProvider provider, Class<T> targetClass) {
+        this(provider.getServiceName(), targetClass, new InjectedValue<T>());
+    }
+
+    public InjectedValueDependency(ServiceName name, Class<T> targetClass) {
+        this(name, targetClass, new InjectedValue<T>());
+    }
+
+    private InjectedValueDependency(ServiceName name, Class<T> targetClass, InjectedValue<T> value) {
+        super(name, targetClass, value);
+        this.value = value;
+    }
 
     @Override
-    default T get() {
-        return this.getValue();
+    public T getValue() {
+        return this.value.getValue();
     }
 }

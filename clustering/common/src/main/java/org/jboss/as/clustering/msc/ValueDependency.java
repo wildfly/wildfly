@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,33 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.clustering.msc;
 
-package org.wildfly.clustering.service;
-
-import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.value.Value;
+import org.wildfly.clustering.service.SupplierDependency;
 
 /**
- * A trivial {@link ValueDependency} whose value is immediately available.
+ * Service dependency that provides a value.
  * @author Paul Ferraro
- * @deprecated Replaced by {@link SimpleSupplierDependency}.
+ * @param <T> the dependency type
+ * @deprecated Replaced by {@link SupplierDependency}.
  */
 @Deprecated
-public class ImmediateValueDependency<V> implements ValueDependency<V> {
-
-    private final V value;
-
-    public ImmediateValueDependency(V value) {
-        this.value = value;
-    }
+public interface ValueDependency<T> extends Value<T>, SupplierDependency<T> {
 
     @Override
-    public V getValue() {
-        return this.value;
-    }
-
-    @Override
-    public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
-        // Nothing to register
-        return builder;
+    default T get() {
+        return this.getValue();
     }
 }

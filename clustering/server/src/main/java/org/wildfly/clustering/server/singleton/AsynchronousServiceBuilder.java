@@ -19,10 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.service;
+package org.wildfly.clustering.server.singleton;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.function.Supplier;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -32,6 +33,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.service.AsyncServiceConfigurator;
+import org.wildfly.clustering.service.Builder;
 
 /**
  * Builder for asynchronously started/stopped services.
@@ -40,7 +43,7 @@ import org.jboss.msc.value.InjectedValue;
  * @deprecated Replaced by {@link AsyncServiceConfigurator}.
  */
 @Deprecated
-public class AsynchronousServiceBuilder<T> implements Builder<T>, Service<T> {
+public class AsynchronousServiceBuilder<T> implements Builder<T>, Service<T>, Supplier<Service<T>> {
 
     private static final ServiceName EXECUTOR_SERVICE_NAME = ServiceName.JBOSS.append("as", "server-executor");
 
@@ -74,7 +77,8 @@ public class AsynchronousServiceBuilder<T> implements Builder<T>, Service<T> {
      * Return the underlying service for this builder
      * @return an MSC service
      */
-    public Service<T> getService() {
+    @Override
+    public Service<T> get() {
         return this.service;
     }
 
