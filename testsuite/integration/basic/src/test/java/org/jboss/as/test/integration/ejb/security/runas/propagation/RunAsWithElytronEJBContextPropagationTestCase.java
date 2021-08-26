@@ -32,6 +32,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.naming.InitialContext;
+import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
+import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -39,12 +41,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.wildfly.naming.client.WildFlyInitialContextFactory;
-import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
-import org.jboss.as.test.integration.management.util.CLIOpResult;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 
 /**
  * Testing EJB Elytron security context propagation with @RunAs annotation, using outbound connection to connect to back to this
@@ -109,72 +106,6 @@ public class RunAsWithElytronEJBContextPropagationTestCase extends AbstractCliTe
         Assert.assertFalse(intermediate.isCallerInRole(ROLE));
         Assert.assertTrue(intermediate.isServerCallerInRole(ROLE));
         closeContext(context);
-    }
-
-    @BeforeClass
-    public static void before() throws Exception {
-        AbstractCliTestBase.initCLI();
-        // When CI runs with Elytron property the setup changes
-        try {
-            cli.sendLine("/core-service=management/security-realm=ApplicationRealm/authentication=properties:read-resource",
-                    true);
-            CLIOpResult opResult = cli.readAllAsOpResult();
-            if (opResult.isIsOutcomeSuccess()) {
-                cli.sendLine(String.format(
-                        "/core-service=management/security-realm=ApplicationRealm/authentication=properties:write-attribute(name=path,value=\"%s\")",
-                        USERS_PATH));
-                cli.sendLine(
-                        "/core-service=management/security-realm=ApplicationRealm/authentication=properties:write-attribute(name=plain-text,value=true)");
-                cli.sendLine(
-                        "/core-service=management/security-realm=ApplicationRealm/authentication=properties:undefine-attribute(name=relative-to)");
-                cli.sendLine(String.format(
-                        "/core-service=management/security-realm=ApplicationRealm/authorization=properties:write-attribute(name=path,value=\"%s\")",
-                        ROLES_PATH));
-                cli.sendLine(
-                        "/core-service=management/security-realm=ApplicationRealm/authorization=properties:undefine-attribute(name=relative-to)");
-                cli.sendLine(
-                        "/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory,value=application-sasl-authentication)");
-            } else {
-                removeRealmProperties = true;
-                cli.sendLine("/core-service=management/security-realm=ApplicationRealm:add");
-                cli.sendLine(String.format(
-                        "/core-service=management/security-realm=ApplicationRealm/authentication=properties:add(path=\"%s\",plain-text=true)",
-                        USERS_PATH));
-                cli.sendLine(String.format(
-                        "/core-service=management/security-realm=ApplicationRealm/authorization=properties:add(path=\"%s\")",
-                        ROLES_PATH));
-            }
-            cli.sendLine("reload");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @AfterClass
-    public static void after() throws Exception {
-        if (removeRealmProperties) {
-            cli.sendLine("/core-service=management/security-realm=ApplicationRealm:remove");
-        } else {
-            cli.sendLine(String.format(
-                    "/core-service=management/security-realm=ApplicationRealm/authentication=properties:write-attribute(name=path,value=\"%s\")",
-                    ORIGINAL_USERS_PATH));
-            cli.sendLine(String.format(
-                    "/core-service=management/security-realm=ApplicationRealm/authentication=properties:write-attribute(name=relative-to,value=\"%s\")",
-                    RELATIVE_TO));
-            cli.sendLine(
-                    "/core-service=management/security-realm=ApplicationRealm/authentication=properties:write-attribute(name=plain-text,value=false)");
-            cli.sendLine(String.format(
-                    "/core-service=management/security-realm=ApplicationRealm/authorization=properties:write-attribute(name=path,value=\"%s\")",
-                    ORIGINAL_ROLES_PATH));
-            cli.sendLine(String.format(
-                    "/core-service=management/security-realm=ApplicationRealm/authorization=properties:write-attribute(name=relative-to,value=\"%s\")",
-                    RELATIVE_TO));
-            cli.sendLine(
-                    "/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=sasl-authentication-factory)");
-        }
-
-        cli.sendLine("reload");
-        AbstractCliTestBase.closeCLI();
     }
 
     private InitialContext initContext() {
