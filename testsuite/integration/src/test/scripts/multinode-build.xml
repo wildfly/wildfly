@@ -33,9 +33,11 @@
         <copy todir="target/jbossas-multinode-client">
             <fileset dir="target/wildfly"/>
         </copy>
+    	<ts.config-as.add-remote-outbound-connection name="jbossas-multinode-client" node="${node1}" remotePort="8180" protocol="remote+http" />
+    	<!--
         <ts.config-as.add-remote-outbound-connection name="jbossas-multinode-client" node="${node1}" remotePort="8180" protocol="remote+http" securityRealm="PasswordRealm" userName="user1"/>
         <ts.config-as.add-identity-realm name="jbossas-multinode-client" realmName="PasswordRealm" secret="cGFzc3dvcmQx"/>
-
+        -->
    
     </target>
 
