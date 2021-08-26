@@ -27,7 +27,7 @@ import javax.inject.Inject;
 import com.arjuna.mw.wst11.UserBusinessActivity;
 import com.arjuna.mw.wst11.UserBusinessActivityFactory;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.xts.base.BaseFunctionalTest;

@@ -30,7 +30,7 @@ import java.io.FilePermission;
 import java.lang.reflect.ReflectPermission;
 import java.util.PropertyPermission;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
