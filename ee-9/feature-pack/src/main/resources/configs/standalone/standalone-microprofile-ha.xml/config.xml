@@ -3,7 +3,6 @@
 <config xmlns="urn:jboss:galleon:config:1.0" name="standalone-microprofile-ha.xml" model="standalone">
     <layers>
         <include name="cloud-server"/>
-        <exclude name="core-security-realms" />
         <include name="h2-default-datasource"/>
         <include name="microprofile-fault-tolerance"/>
         <include name="microprofile-jwt"/>
