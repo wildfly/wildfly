@@ -134,9 +134,9 @@
 
         <!-- Connects back to original host (node0) -->
         <ts.config-as.add-remote-outbound-connection name="jbossas-with-remote-outbound-connection" node="${node0}"
-                                                     remotePort="8080" protocol="remote+http" securityRealm="PasswordRealm" userName="user1"/>
-        <ts.config-as.add-identity-realm name="jbossas-with-remote-outbound-connection" realmName="PasswordRealm"
-                                         secret="cGFzc3dvcmQx"/>
+                                                     remotePort="8080" protocol="remote+http" />
+        <!--<ts.config-as.add-identity-realm name="jbossas-with-remote-outbound-connection" realmName="PasswordRealm"
+                                         secret="cGFzc3dvcmQx"/>-->
 
         <ts.config-as.ip-with-multicast name="jbossas-with-remote-outbound-connection"
             node="${node1}"

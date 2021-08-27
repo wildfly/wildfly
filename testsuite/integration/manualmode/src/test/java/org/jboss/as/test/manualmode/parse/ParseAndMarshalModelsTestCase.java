@@ -34,6 +34,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -44,6 +45,7 @@ import org.junit.Test;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
+@Ignore("[WFLY-15178] Rework ParseAndMarshalModelsTestCase.")
 public class ParseAndMarshalModelsTestCase {
 
     private enum Version {
