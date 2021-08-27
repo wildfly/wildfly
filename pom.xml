@@ -9128,6 +9128,49 @@
                 <artifactId>picketbox-commons</artifactId>
                 <version>${version.org.picketbox.picketbox-commons}</version>
             </dependency>
+            <dependency>
+                <groupId>org.picketbox</groupId>
+                <artifactId>picketbox</artifactId>
+                <version>${version.org.picketbox}</version>
+                <exclusions>
+                    <exclusion>
+                         <groupId>org.picketbox</groupId>
+                         <artifactId>jboss-security-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                         <groupId>org.picketbox</groupId>
+                         <artifactId>jbosssx</artifactId>
+                    </exclusion>
+                    <exclusion>
+                         <groupId>org.picketbox</groupId>
+                         <artifactId>picketbox-bare</artifactId>
+                    </exclusion>
+                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.picketbox</groupId>
+                <artifactId>picketbox-infinispan</artifactId>
+                <version>${version.org.picketbox}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.picketbox</groupId>
+                        <artifactId>picketbox-spi-bare</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketbox</groupId>
+                        <artifactId>jbosssx-bare</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.infinispan</groupId>
+                        <artifactId>infinispan-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
 
             <dependency>
                 <groupId>org.picketlink</groupId>
