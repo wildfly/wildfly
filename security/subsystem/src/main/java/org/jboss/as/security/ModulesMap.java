@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.security.remoting.RemotingLoginModule;
 import org.jboss.security.ClientLoginModule;
 import org.jboss.security.auth.spi.AnonLoginModule;
 import org.jboss.security.auth.spi.BaseCertLoginModule;
@@ -88,7 +87,7 @@ public interface ModulesMap {
             put("Simple", SimpleServerLoginModule.class.getName());
             put("UsersRoles", UsersRolesLoginModule.class.getName());
             put("RealmUsersRoles", RealmUsersRolesLoginModule.class.getName());
-            put("RealmDirect", RealmDirectLoginModule.class.getName());
+            put("RealmDirect", "org.jboss.as.security.RealmDirectLoginModule"); // TODO Cleaning up with legacy security.
             put("Disabled", DisabledLoginModule.class.getName());
             put("Anon", AnonLoginModule.class.getName());
             // Authentication only modules
@@ -107,7 +106,7 @@ public interface ModulesMap {
             put("SecureIdentity", SecureIdentityLoginModule.class.getName());
             put("ConfiguredIdentity", ConfiguredIdentityLoginModule.class.getName());
             // Remoting Integration
-            put("Remoting", RemotingLoginModule.class.getName());
+            put("Remoting", "org.jboss.as.security.remoting.RemotingLoginModule"); // TODO - Only applicable managing older hosts.
         }
     });
 

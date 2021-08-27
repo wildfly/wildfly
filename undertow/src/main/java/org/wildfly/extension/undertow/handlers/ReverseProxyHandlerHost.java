@@ -56,7 +56,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -190,9 +189,8 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             final Consumer<ReverseProxyHostService> serviceConsumer = sb.provides(REVERSE_PROXY_HOST_RUNTIME_CAPABILITY);
             final Supplier<HttpHandler> phSupplier = sb.requiresCapability(Capabilities.CAPABILITY_HANDLER, HttpHandler.class, proxyName);
             final Supplier<OutboundSocketBinding> sbSupplier = sb.requiresCapability(Capabilities.REF_OUTBOUND_SOCKET, OutboundSocketBinding.class, socketBinding);
-            final Supplier<SecurityRealm> srSupplier = securityRealm.isDefined() ? SecurityRealm.ServiceUtil.requires(sb, securityRealm.asString()) : null;
             final Supplier<SSLContext> scSupplier = sslContext.isDefined() ? sb.requiresCapability(REF_SSL_CONTEXT, SSLContext.class, sslContext.asString()) : null;
-            sb.setInstance(new ReverseProxyHostService(serviceConsumer, phSupplier, sbSupplier, srSupplier, scSupplier, scheme, jvmRoute, path, enableHttp2));
+            sb.setInstance(new ReverseProxyHostService(serviceConsumer, phSupplier, sbSupplier, scSupplier, scheme, jvmRoute, path, enableHttp2));
             sb.install();
         }
     }
@@ -202,7 +200,6 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
         private final Consumer<ReverseProxyHostService> serviceConsumer;
         private final Supplier<HttpHandler> proxyHandler;
         private final Supplier<OutboundSocketBinding> socketBinding;
-        private final Supplier<SecurityRealm> securityRealm;
         private final Supplier<SSLContext> sslContext;
         private final String instanceId;
         private final String scheme;
@@ -212,13 +209,11 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
         private ReverseProxyHostService(final Consumer<ReverseProxyHostService> serviceConsumer,
                 final Supplier<HttpHandler> proxyHandler,
                 final Supplier<OutboundSocketBinding> socketBinding,
-                final Supplier<SecurityRealm> securityRealm,
                 final Supplier<SSLContext> sslContext,
                 String scheme, String instanceId, String path, boolean enableHttp2) {
             this.serviceConsumer = serviceConsumer;
             this.proxyHandler = proxyHandler;
             this.socketBinding = socketBinding;
-            this.securityRealm = securityRealm;
             this.sslContext = sslContext;
             this.instanceId = instanceId;
             this.scheme = scheme;
@@ -238,12 +233,6 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             final LoadBalancingProxyClient client = (LoadBalancingProxyClient) proxyHandler.getProxyClient();
             try {
                 SSLContext sslContext = this.sslContext != null ? this.sslContext.get() : null;
-                if (sslContext == null) {
-                    SecurityRealm securityRealm = this.securityRealm != null ? this.securityRealm.get() : null;
-                    if (securityRealm != null) {
-                        sslContext = securityRealm.getSSLContext();
-                    }
-                }
 
                 if (sslContext == null) {
                     client.addHost(getUri(), instanceId, null, OptionMap.create(UndertowOptions.ENABLE_HTTP2, enableHttp2));
