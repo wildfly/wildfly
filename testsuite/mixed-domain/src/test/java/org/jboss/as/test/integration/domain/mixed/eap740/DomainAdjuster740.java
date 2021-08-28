@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.dmr.ModelNode;
 
