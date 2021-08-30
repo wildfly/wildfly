@@ -44,7 +44,6 @@
         <module name="org.jboss.ws.cxf.jbossws-cxf-transports-udp" export="true" services="export" />
         <module name="org.jboss.jaxbintros" export="true"/>
         <module name="javax.security.auth.message.api" export="true"/>
-        <module name="org.picketbox" export="true"/>
         <module name="org.apache.ws.security" export="true"/>
 		<!-- Tools support on JDK 9 and later -->
 		<module name="org.jboss.modules"/>
