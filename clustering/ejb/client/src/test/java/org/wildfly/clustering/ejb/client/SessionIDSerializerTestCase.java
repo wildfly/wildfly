@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.clustering.ejb.client;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -29,9 +29,9 @@ import java.util.UUID;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.UUIDSessionID;
 import org.junit.Test;
-import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer.BasicSessionIDExternalizer;
-import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer.UUIDSessionIDExternalizer;
-import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer.UnknownSessionIDExternalizer;
+import org.wildfly.clustering.ejb.client.SessionIDSerializer.BasicSessionIDExternalizer;
+import org.wildfly.clustering.ejb.client.SessionIDSerializer.UUIDSessionIDExternalizer;
+import org.wildfly.clustering.ejb.client.SessionIDSerializer.UnknownSessionIDExternalizer;
 import org.wildfly.clustering.marshalling.ExternalizerTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;

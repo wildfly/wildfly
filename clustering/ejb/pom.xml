@@ -45,6 +45,7 @@
     </description>
 
     <modules>
+        <module>client</module>
         <module>spi</module>
         <module>infinispan</module>
     </modules>

@@ -20,29 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.clustering.ejb.client;
 
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.ejb.client.SessionID;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
 
 /**
+ * {@link SerializationContextInitializer} service for this module
  * @author Paul Ferraro
  */
-public enum EJBClientMarshallingProvider implements ProtoStreamMarshallerProvider {
+@MetaInfServices(SerializationContextInitializer.class)
+public class EJBClientSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    SESSION_ID(new FunctionalScalarMarshaller<>(SessionID.class, Scalar.BYTE_ARRAY.cast(byte[].class), SessionID::getEncodedForm, SessionID::createSessionID)),
-    ;
-    private final ProtoStreamMarshaller<?> marshaller;
-
-    EJBClientMarshallingProvider(ProtoStreamMarshaller<?> marshaller) {
-        this.marshaller = marshaller;
+    public EJBClientSerializationContextInitializer() {
+        super("org.jboss.ejb.client.proto");
     }
 
     @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
-        return this.marshaller;
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(SessionID.class, Scalar.BYTE_ARRAY.cast(byte[].class), SessionID::getEncodedForm, SessionID::createSessionID));
     }
 }
