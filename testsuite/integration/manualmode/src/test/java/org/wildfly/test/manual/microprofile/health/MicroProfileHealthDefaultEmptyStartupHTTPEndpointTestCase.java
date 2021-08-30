@@ -75,6 +75,7 @@ public class MicroProfileHealthDefaultEmptyStartupHTTPEndpointTestCase extends M
             }
 
             String content = EntityUtils.toString(resp.getEntity());
+            System.out.println("Health response content: " + content);
             resp.close();
 
             try (
