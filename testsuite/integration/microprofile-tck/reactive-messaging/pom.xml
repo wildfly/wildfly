@@ -100,31 +100,6 @@
                     <dependenciesToScan>
                         <dependenciesToScan>org.eclipse.microprofile.reactive.messaging:microprofile-reactive-messaging-tck</dependenciesToScan>
                     </dependenciesToScan>
-                    <excludes>
-                        <!--
-                            TODO https://issues.redhat.com/browse/WFLY-15014
-                            For the following excluded tests, I have opened the indicated PRs for the TCK, which will
-                            be part of 2.0.1. I've confirmed locally with a snapshot of the TCK that it works.
-                        -->
-                        <!--
-                            These use beans which are not valid according to the CDI spec.
-                            https://github.com/eclipse/microprofile-reactive-messaging/pull/136/
-                        -->
-                        <exclude>**/ChannelInjectionPublisherBuilderMessageTest.java</exclude>
-                        <exclude>**/ChannelInjectionPublisherBuilderPayloadTest.java</exclude>
-                        <exclude>**/ChannelInjectionPublisherTest.java</exclude>
-                        <exclude>**/ChannelInjectionPublisherPayloadTest.java</exclude>
-                        <!--
-                            Test the deployment is missing a bean.
-                            https://github.com/eclipse/microprofile-reactive-messaging/pull/135
-                        -->
-                        <exclude>**/EmitterInjectionMessageBeanWithPayloadsWithAckTest.java</exclude>
-                        <!--
-                            The deployment is missing the ArchiveExtender
-                            https://github.com/eclipse/microprofile-reactive-messaging/pull/135
-                        -->
-                        <exclude>**/.MetricsTest.java</exclude>
-                    </excludes>
                     <systemPropertyVariables>
                         <microprofile.jvm.args>${microprofile.jvm.args}</microprofile.jvm.args>
                         <!-- Override the standard module path that points at the shared module set from servlet-dist -->
