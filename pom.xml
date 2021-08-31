@@ -418,7 +418,7 @@
         <version.org.jboss.ejb-client>4.0.42.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb-client-legacy>3.0.3.Final</version.org.jboss.ejb-client-legacy>
         <version.org.jboss.ejb3.ext-api>2.3.0.Final</version.org.jboss.ejb3.ext-api>
-        <version.org.jboss.genericjms>2.0.9.Final</version.org.jboss.genericjms>
+        <version.org.jboss.genericjms>2.0.10.Final</version.org.jboss.genericjms>
         <version.org.jboss.hal.console>3.3.7.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.1.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.4.38.Final</version.org.jboss.ironjacamar>
@@ -5665,7 +5665,7 @@
                         <groupId>jakarta.xml.bind</groupId>
                         <artifactId>jakarta.xml.bind-api</artifactId>
                     </exclusion>
-                   <exclusion>
+                    <exclusion>
                         <groupId>jakarta.annotation</groupId>
                         <artifactId>jakarta.annotation-api</artifactId>
                     </exclusion>
@@ -5705,11 +5705,11 @@
                         <groupId>jakarta.xml.bind</groupId>
                         <artifactId>jakarta.xml.bind-api</artifactId>
                     </exclusion>
-                   <exclusion>
+                    <exclusion>
                         <groupId>jakarta.activation</groupId>
                         <artifactId>jakarta.activation-api</artifactId>
                     </exclusion>
-                   <exclusion>
+                    <exclusion>
                         <groupId>jakarta.annotation</groupId>
                         <artifactId>jakarta.annotation-api</artifactId>
                     </exclusion>
@@ -7207,6 +7207,12 @@
             <dependency>
                 <groupId>org.jboss.genericjms</groupId>
                 <artifactId>generic-jms-ra-jar</artifactId>
+                <version>${version.org.jboss.genericjms}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.genericjms</groupId>
+                <artifactId>generic-jakarta-messaging-ra-jar</artifactId>
                 <version>${version.org.jboss.genericjms}</version>
             </dependency>
 
