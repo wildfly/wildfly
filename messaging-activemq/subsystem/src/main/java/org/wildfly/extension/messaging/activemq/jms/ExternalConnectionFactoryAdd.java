@@ -43,6 +43,7 @@ import org.wildfly.extension.messaging.activemq.BinderServiceUtil;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.DiscoveryGroupDefinition;
 import org.wildfly.extension.messaging.activemq.GroupBindingService;
+import org.wildfly.extension.messaging.activemq.JGroupsDiscoveryGroupDefinition;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
@@ -98,8 +99,8 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
                 discoveryGroupModel = new ModelNode();
             }
             if (discoveryGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
-                ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
-                ServiceName commandDispatcherFactoryServiceName = MessagingServices.getBroadcastCommandDispatcherFactoryServiceName(name, channel.asStringOrNull());
+                ModelNode channel = JGroupsDiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
+                ServiceName commandDispatcherFactoryServiceName = MessagingServices.getBroadcastCommandDispatcherFactoryServiceName(channel.asStringOrNull());
                 Supplier<BroadcastCommandDispatcherFactory> commandDispatcherFactorySupplier = builder.requires(commandDispatcherFactoryServiceName);
                 commandDispatcherFactories.put(key, commandDispatcherFactorySupplier);
                 String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();

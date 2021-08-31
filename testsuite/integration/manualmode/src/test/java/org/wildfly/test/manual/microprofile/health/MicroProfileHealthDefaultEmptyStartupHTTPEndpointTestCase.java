@@ -75,7 +75,7 @@ public class MicroProfileHealthDefaultEmptyStartupHTTPEndpointTestCase extends M
             }
 
             String content = EntityUtils.toString(resp.getEntity());
-            resp.close();
+            System.out.println("Health response content: " + content);
 
             try (
                     JsonReader jsonReader = Json.createReader(new StringReader(content))
