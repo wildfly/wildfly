@@ -1396,6 +1396,11 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.genericjms</groupId>
+            <artifactId>generic-jakarta-messaging-ra-jar</artifactId>
+        </dependency>
+
         <!-- Misc -->
         <dependency>
             <groupId>org.jboss.spec.javax.xml.rpc</groupId>
