@@ -31,6 +31,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -160,13 +162,11 @@ public class MessagingSubsystemRootResourceDefinition extends PersistentResource
         GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_TASK_COUNT, GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_KEEPALIVE_TIME
     };
 
-    public static final MessagingSubsystemRootResourceDefinition INSTANCE = new MessagingSubsystemRootResourceDefinition();
-
-    private MessagingSubsystemRootResourceDefinition() {
+    MessagingSubsystemRootResourceDefinition(BiConsumer<OperationContext, String> broadcastCommandDispatcherFactoryInstaller) {
         super(new SimpleResourceDefinition.Parameters(MessagingExtension.SUBSYSTEM_PATH,
                 MessagingExtension.getResourceDescriptionResolver(MessagingExtension.SUBSYSTEM_NAME))
-                .setAddHandler(MessagingSubsystemAdd.INSTANCE)
-                .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
+                .setAddHandler(new MessagingSubsystemAdd(broadcastCommandDispatcherFactoryInstaller))
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(CONFIGURATION_CAPABILITY));
     }
 

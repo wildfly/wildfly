@@ -32,10 +32,13 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.BROADCAS
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CLUSTER_CONNECTION;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONFIGURATION;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.CONNECTOR_SERVICE;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXTERNAL_JMS_QUEUE;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXTERNAL_JMS_TOPIC;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.GROUPING_HANDLER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA_POLICY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_ACCEPTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_CONNECTOR;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_BROADCAST_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_QUEUE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JMS_TOPIC;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JOURNAL_DIRECTORY;
@@ -55,12 +58,19 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.SERVER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SHARED_STORE_MASTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SHARED_STORE_SLAVE;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SLAVE;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SOCKET_BROADCAST_GROUP;
 
-import io.netty.util.internal.logging.InternalLoggerFactory;
-import io.netty.util.internal.logging.JdkLoggerFactory;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.function.BiConsumer;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition.Parameters;
@@ -75,26 +85,18 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactoryInstaller;
 import org.wildfly.extension.messaging.activemq.jms.ExternalConnectionFactoryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.ExternalJMSQueueDefinition;
 import org.wildfly.extension.messaging.activemq.jms.ExternalJMSTopicDefinition;
+import org.wildfly.extension.messaging.activemq.jms.ExternalPooledConnectionFactoryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSQueueDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSTopicDefinition;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
 
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXTERNAL_JMS_QUEUE;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.EXTERNAL_JMS_TOPIC;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_BROADCAST_GROUP;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.SOCKET_BROADCAST_GROUP;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
-
-import org.wildfly.extension.messaging.activemq.jms.ExternalPooledConnectionFactoryDefinition;
+import io.netty.util.internal.logging.InternalLoggerFactory;
+import io.netty.util.internal.logging.JdkLoggerFactory;
 
 /**
  * Domain extension that integrates Apache ActiveMQ 6.
@@ -322,8 +324,10 @@ public class MessagingExtension implements Extension {
 
         boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
+        BiConsumer<OperationContext, String> broadcastCommandDispatcherFactoryInstaller = new BroadcastCommandDispatcherFactoryInstaller();
+
         // Root resource
-        final ManagementResourceRegistration subsystem = subsystemRegistration.registerSubsystemModel(MessagingSubsystemRootResourceDefinition.INSTANCE);
+        final ManagementResourceRegistration subsystem = subsystemRegistration.registerSubsystemModel(new MessagingSubsystemRootResourceDefinition(broadcastCommandDispatcherFactoryInstaller));
         subsystem.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         // WFLY-10518 - register new client resources under subsystem
@@ -340,7 +344,7 @@ public class MessagingExtension implements Extension {
         subsystem.registerSubModel(new ExternalJMSTopicDefinition(registerRuntimeOnly));
 
         // ActiveMQ Servers
-        final ManagementResourceRegistration server = subsystem.registerSubModel(new ServerDefinition(registerRuntimeOnly));
+        final ManagementResourceRegistration server = subsystem.registerSubModel(new ServerDefinition(broadcastCommandDispatcherFactoryInstaller, registerRuntimeOnly));
 
         for (PathDefinition path : new PathDefinition[] {
                 PathDefinition.JOURNAL_INSTANCE,

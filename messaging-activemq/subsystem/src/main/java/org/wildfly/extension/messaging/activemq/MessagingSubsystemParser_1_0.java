@@ -62,7 +62,7 @@ public class MessagingSubsystemParser_1_0 extends PersistentResourceXMLParser {
 
     @Override
     public PersistentResourceXMLDescription getParserDescription() {
-        return builder(MessagingSubsystemRootResourceDefinition.INSTANCE.getPathElement(), NAMESPACE)
+        return builder(MessagingExtension.SUBSYSTEM_PATH, NAMESPACE)
                         .addChild(
                                 builder(MessagingExtension.SERVER_PATH)
                                         .addAttributes(
