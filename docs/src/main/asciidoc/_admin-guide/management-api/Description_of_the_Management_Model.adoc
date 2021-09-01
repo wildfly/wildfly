@@ -108,11 +108,14 @@ values described.
 attribute may be of type `ModelType.EXPRESSION`, instead of its standard
 type (see `type` and `value-type` above for discussion of an attribute's
 standard type.) A value of ModelType.EXPRESSION contains a
-system-property substitution expression that the server will resolve
+system-property or environment variable
+substitution expression that the server will resolve
 against the server-side system property map before using the value. For
 example, an attribute named max-threads may have an expression value of
 `${example.pool.max-threads:10`} instead of just 10. Default value if
 not present is false.
+See the <<Expression_Resolution, Expression Resolution>> subsection
+for a more thorough description.
 * `required` – boolean – true if the attribute must have a defined value
 in a representation of its portion of the model unless another attribute
 included in a list of `alternatives` is defined; false if it may be
@@ -255,11 +258,14 @@ values described.
 the parameter or return value may be of type `ModelType.EXPRESSION`,
 instead its standard type (see type and value-type above for discussion
 of the standard type.) A value of ModelType.EXPRESSION contains a
-system-property substitution expression that the server will resolve
+system-property or environment variable
+substitution expression that the server will resolve
 against the server-side system property map before using the value. For
 example, a parameter named max-threads may have an expression value of
 `${example.pool.max-threads:10`} instead of just 10. Default value if
 not present is false.
+See the <<Expression_Resolution, Expression Resolution>> subsection
+for a more thorough description.
 * `required` – boolean – true if the parameter or return value must have
 a defined value in the operation or response unless another item
 included in a list of `alternatives` is defined; false if it may be
@@ -516,3 +522,33 @@ operation will go ahead and restart the runtime service. Otherwise
 executing the operation will put the server into a `reload-required`
 state. (See the discussion of `all-services` above for more on the
 `reload-required` state.)
+
+[[Expression_Resolution]]
+== Expression Resolution
+When resolving an expression in the model the following locations are checked.
+For this example we will use the expression `${my.example-expr}`.
+
+* First we check if there is a system property with the name
+`my.example-expr`.
+If there is, we use its value as the result of the resolution.
+If not, we continue checking the next locations.
+* We convert the name `my.example-expr` to upper case, and replace all
+non-alphanumeric characters with underscores, ending up with
+`MY_EXAMPLE_EXPR`. We check if there is an environment variable with that
+name. If there is, we use its value as the result of the resolution.
+If not, we continue checking the next location.
+
+NOTE: This step was introduced for WildFly 25, and has the scope to introduce some issues in special cases. Say you have an environment variable `COMMON_VAR_NAME=foo` already in use, and you use `${common-var-name:bar}` in the wildfly configuration. Prior to WildFly 25, the default value (i.e. `bar`) will be used. In WildFly 25 and later, the value from the environment variable (i.e. `foo`) will be used.
+
+* If (and only if) the original name starts with `env.` we trim the prefix
+and look for an environment variable called what we are left with, with no
+conversion performed (e.g. if the original name was `env.example`, we look for
+an environment variable called `example`; if the original name was
+`env.MY_EXAMPLE_EXPR`, we look for an environment variable called `MY_EXAMPLE_EXPR`).
+If there is such an environmet variable, we use its value as the result of the resolution.
+* If none of the above checks yielded a result, the resolution failed. The
+final step is to check if the expression provided a default. Our `${my.example-expr}`
+example provided no default, so the expression could not be resolved. If
+we had specified a default in the expression the default is returned (e.g. for
+`${my.example-expr:hello}`, the value `hello` is returned).
+
