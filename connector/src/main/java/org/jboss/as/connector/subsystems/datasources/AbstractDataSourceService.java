@@ -619,7 +619,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         }
 
         private void setMcfProperties(final BaseWrapperManagedConnectionFactory managedConnectionFactory,
-                CommonDataSource dataSourceConfig, final Statement statement) {
+                CommonDataSource dataSourceConfig, final Statement statement) throws DeployException {
 
             if (dataSourceConfig.getTransactionIsolation() != null) {
                 managedConnectionFactory.setTransactionIsolation(dataSourceConfig.getTransactionIsolation().name());
@@ -671,6 +671,9 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                     if (validConnectionChecker.getClassName() != null) {
                         managedConnectionFactory.setValidConnectionCheckerClassName(validConnectionChecker.getClassName());
                     }
+                    if (validConnectionChecker.getClassLoader() != null) {
+                        managedConnectionFactory.setValidConnectionCheckerClassLoader(validConnectionChecker.getClassLoader());
+                    }
                     if (validConnectionChecker.getConfigPropertiesMap() != null) {
                         managedConnectionFactory
                                 .setValidConnectionCheckerProperties(buildConfigPropsString(validConnectionChecker
@@ -682,6 +685,9 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                     if (exceptionSorter.getClassName() != null) {
                         managedConnectionFactory.setExceptionSorterClassName(exceptionSorter.getClassName());
                     }
+                    if (exceptionSorter.getClassLoader() != null) {
+                        managedConnectionFactory.setExceptionSorterClassLoader(exceptionSorter.getClassLoader());
+                    }
                     if (exceptionSorter.getConfigPropertiesMap() != null) {
                         managedConnectionFactory.setExceptionSorterProperties(buildConfigPropsString(exceptionSorter
                                 .getConfigPropertiesMap()));
@@ -691,6 +697,9 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 if (staleConnectionChecker != null) {
                     if (staleConnectionChecker.getClassName() != null) {
                         managedConnectionFactory.setStaleConnectionCheckerClassName(staleConnectionChecker.getClassName());
+                    }
+                    if (staleConnectionChecker.getClassLoader() != null) {
+                        managedConnectionFactory.setExceptionSorterClassLoader(staleConnectionChecker.getClassLoader());
                     }
                     if (staleConnectionChecker.getConfigPropertiesMap() != null) {
                         managedConnectionFactory
