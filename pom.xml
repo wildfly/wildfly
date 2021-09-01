@@ -327,7 +327,7 @@
         <version.io.reactivex.rxjava2>2.2.20</version.io.reactivex.rxjava2>
         <version.io.reactivex.rxjava3>3.0.13</version.io.reactivex.rxjava3>
         <version.io.rest-assured>3.0.6</version.io.rest-assured>
-        <version.io.smallrye.open-api>2.1.9</version.io.smallrye.open-api>
+        <version.io.smallrye.open-api>2.1.10</version.io.smallrye.open-api>
         <version.io.smallrye.opentracing>2.0.0</version.io.smallrye.opentracing>
         <version.io.smallrye.reactive-utils>2.1.1</version.io.smallrye.reactive-utils>
         <version.io.smallrye.smallrye-common>1.6.0</version.io.smallrye.smallrye-common>
