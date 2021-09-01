@@ -24,6 +24,7 @@
 
 package org.jboss.as.ejb3.logging;
 
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -407,7 +408,6 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 37, value = "Dynamic stub creation failed for class %s")
     void dynamicStubCreationFailed(String clazz, @Cause Throwable t);
-
 
 //    /**
 //     */
@@ -2935,8 +2935,8 @@ public interface EjbLogger extends BasicLogger {
 //    @Message(id = 440, value = "%s method %s must be public")
 //    DeploymentUnitProcessingException ejbMethodMustBePublic(final String type, final Method method);
 
-    @Message(id = 441, value = "Jakarta Enterprise Beans business method %s must be public")
-    DeploymentUnitProcessingException ejbBusinessMethodMustBePublic(final Method method);
+//    @Message(id = 441, value = "Jakarta Enterprise Beans business method %s must be public")
+//    DeploymentUnitProcessingException ejbBusinessMethodMustBePublic(final Method method);
 
     @Message(id = 442, value = "Unexpected Error")
     @Signature(String.class)
@@ -3244,4 +3244,8 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 527, value = "Remoting connector (address %s, port %s) is not correctly configured for EJB client invocations, the connector must be listed in <remote/> 'connectors' attribute to receive EJB client invocations")
     void connectorNotConfiguredForEJBClientInvocations(String address, int port);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 528, value = "Jakarta Enterprise Beans business method %s must be public")
+    void ejbBusinessMethodMustBePublic(final Method method);
 }

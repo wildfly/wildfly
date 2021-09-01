@@ -57,7 +57,6 @@ public class MicroProfileHealthApplicationWithoutStartupHTTPEndpointTestCase ext
             assertEquals(mustBeUP ? 200 : 503, resp.getStatusLine().getStatusCode());
 
             String content = EntityUtils.toString(resp.getEntity());
-            resp.close();
 
             try (
                 JsonReader jsonReader = Json.createReader(new StringReader(content))

@@ -95,9 +95,8 @@ public class MessagingServices {
        return JBOSS_MESSAGING_ACTIVEMQ.append(JMS_BRIDGE).append(bridgeName);
     }
 
-    public static ServiceName getBroadcastCommandDispatcherFactoryServiceName(String serverName, String channelName) {
-        ServiceName result = COMMAND_DISPATCHER_FACTORY.append(serverName);
-        return (channelName != null) ? result.append(channelName) : result;
+    public static ServiceName getBroadcastCommandDispatcherFactoryServiceName(String channelName) {
+        return (channelName != null) ? COMMAND_DISPATCHER_FACTORY.append(channelName) : COMMAND_DISPATCHER_FACTORY;
     }
 
     /**

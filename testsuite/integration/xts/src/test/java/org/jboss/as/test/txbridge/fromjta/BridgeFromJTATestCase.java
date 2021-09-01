@@ -32,7 +32,7 @@ import java.util.PropertyPermission;
 import javax.naming.InitialContext;
 import javax.transaction.UserTransaction;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.txbridge.fromjta.service.FirstServiceAT;

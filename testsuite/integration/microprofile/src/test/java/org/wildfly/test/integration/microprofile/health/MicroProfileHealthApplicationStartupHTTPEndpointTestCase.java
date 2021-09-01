@@ -55,7 +55,6 @@ public class MicroProfileHealthApplicationStartupHTTPEndpointTestCase extends Mi
              CloseableHttpResponse resp = client.execute(new HttpGet(healthURL))) {
 
             String content = EntityUtils.toString(resp.getEntity());
-            resp.close();
 
             assertEquals(content, mustBeUP ? 200 : 503, resp.getStatusLine().getStatusCode());
 

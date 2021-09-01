@@ -64,6 +64,10 @@
             <artifactId>jboss-metadata-web</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-common</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.modules</groupId>
             <artifactId>jboss-modules</artifactId>
         </dependency>

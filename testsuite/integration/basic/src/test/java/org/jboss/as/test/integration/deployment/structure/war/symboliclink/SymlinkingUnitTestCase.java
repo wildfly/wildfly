@@ -7,7 +7,7 @@ import java.net.URL;
 
 import org.junit.Assert;
 import org.junit.Assume;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.PathAddress;

@@ -383,11 +383,6 @@
         </dependency>
 
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.dom4j</groupId>
             <artifactId>dom4j</artifactId>
         </dependency>
@@ -1008,6 +1003,17 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+<!--        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>-->
 
         <dependency>
             <groupId>org.jboss.mod_cluster</groupId>
@@ -2993,7 +2999,7 @@
                             <appendAssemblyId>false</appendAssemblyId>
                             <outputDirectory>${project.build.directory}</outputDirectory>
                             <workDirectory>${project.build.directory}/assembly/work</workDirectory>
-                            <tarLongFileMode>gnu</tarLongFileMode>
+                            <tarLongFileMode>${assembly.tarLongFileMode}</tarLongFileMode>
                         </configuration>
                     </execution>
                 </executions>

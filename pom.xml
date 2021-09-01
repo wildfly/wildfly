@@ -158,6 +158,9 @@
           -->
         <maven.min.version>3.6.0</maven.min.version>
 
+        <!-- TarArchiver behavior -->
+        <assembly.tarLongFileMode>posix</assembly.tarLongFileMode>
+
         <!-- Modularized JDK support (various workarounds) - activated via profile -->
         <modular.jdk.args></modular.jdk.args>
         <modular.jdk.props></modular.jdk.props>
@@ -415,14 +418,14 @@
         <version.org.jboss.ejb-client>4.0.42.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb-client-legacy>3.0.3.Final</version.org.jboss.ejb-client-legacy>
         <version.org.jboss.ejb3.ext-api>2.3.0.Final</version.org.jboss.ejb3.ext-api>
-        <version.org.jboss.genericjms>2.0.9.Final</version.org.jboss.genericjms>
+        <version.org.jboss.genericjms>2.0.10.Final</version.org.jboss.genericjms>
         <version.org.jboss.hal.console>3.3.7.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.1.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.4.38.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
         <!-- Only used for testing -->
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
-        <version.org.jboss.metadata>13.0.0.Final</version.org.jboss.metadata>
+        <version.org.jboss.metadata>14.0.0.Final</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.4.3.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>5.12.0.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.5.Final</version.org.jboss.openjdk-orb>
@@ -481,7 +484,7 @@
         <version.org.springframework.kafka>2.6.4</version.org.springframework.kafka>
         <version.org.testng>6.14.3</version.org.testng>
         <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>17.0.0.Beta4</version.org.wildfly.core>
+        <version.org.wildfly.core>17.0.0.Beta5</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.1.8.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.14.Final</version.org.wildfly.naming-client>
@@ -5663,7 +5666,7 @@
                         <groupId>jakarta.xml.bind</groupId>
                         <artifactId>jakarta.xml.bind-api</artifactId>
                     </exclusion>
-                   <exclusion>
+                    <exclusion>
                         <groupId>jakarta.annotation</groupId>
                         <artifactId>jakarta.annotation-api</artifactId>
                     </exclusion>
@@ -5703,11 +5706,11 @@
                         <groupId>jakarta.xml.bind</groupId>
                         <artifactId>jakarta.xml.bind-api</artifactId>
                     </exclusion>
-                   <exclusion>
+                    <exclusion>
                         <groupId>jakarta.activation</groupId>
                         <artifactId>jakarta.activation-api</artifactId>
                     </exclusion>
-                   <exclusion>
+                    <exclusion>
                         <groupId>jakarta.annotation</groupId>
                         <artifactId>jakarta.annotation-api</artifactId>
                     </exclusion>
@@ -7209,6 +7212,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.genericjms</groupId>
+                <artifactId>generic-jakarta-messaging-ra-jar</artifactId>
+                <version>${version.org.jboss.genericjms}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.hal</groupId>
                 <artifactId>hal-console</artifactId>
                 <version>${version.org.jboss.hal.console}</version>
@@ -7461,6 +7470,16 @@
                 <groupId>org.jboss.metadata</groupId>
                 <artifactId>jboss-metadata-appclient</artifactId>
                 <version>${version.org.jboss.metadata}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.metadata</groupId>
+                        <artifactId>jboss-metadata-common</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -7477,20 +7496,78 @@
 
             <dependency>
                 <groupId>org.jboss.metadata</groupId>
+                <artifactId>jboss-metadata-common-jakarta</artifactId>
+                <version>${version.org.jboss.metadata}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jboss-common-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.metadata</groupId>
                 <artifactId>jboss-metadata-ear</artifactId>
                 <version>${version.org.jboss.metadata}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.metadata</groupId>
+                        <artifactId>jboss-metadata-common</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.metadata</groupId>
                 <artifactId>jboss-metadata-ejb</artifactId>
                 <version>${version.org.jboss.metadata}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.metadata</groupId>
+                        <artifactId>jboss-metadata-common</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.metadata</groupId>
+                <artifactId>jboss-metadata-ejb-jakarta</artifactId>
+                <version>${version.org.jboss.metadata}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.metadata</groupId>
+                        <artifactId>jboss-metadata-common-jakarta</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.metadata</groupId>
                 <artifactId>jboss-metadata-web</artifactId>
                 <version>${version.org.jboss.metadata}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.metadata</groupId>
+                        <artifactId>jboss-metadata-common</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -10273,8 +10350,10 @@
                     --add-opens=java.base/java.io=ALL-UNNAMED
                     --add-opens=java.base/java.lang=ALL-UNNAMED
                     --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+                    --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
                     --add-opens=java.base/java.security=ALL-UNNAMED
                     --add-opens=java.base/java.util=ALL-UNNAMED
+                    --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
                     --add-opens=java.management/javax.management=ALL-UNNAMED
                     --add-opens=java.naming/javax.naming=ALL-UNNAMED
                 </modular.jdk.args>

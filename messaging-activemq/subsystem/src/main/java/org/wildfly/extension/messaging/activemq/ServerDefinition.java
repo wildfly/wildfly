@@ -40,11 +40,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.core.server.NetworkHealthCheck;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -58,6 +60,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
 import static org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators.LONG_INSTANCE;
 import org.wildfly.extension.messaging.activemq.ha.LiveOnlyDefinition;
 import org.wildfly.extension.messaging.activemq.ha.ReplicationColocatedDefinition;
@@ -931,9 +934,9 @@ public class ServerDefinition extends PersistentResourceDefinition {
 
     private final boolean registerRuntimeOnly;
 
-    ServerDefinition(boolean registerRuntimeOnly) {
+    ServerDefinition(BiConsumer<OperationContext, String> broadcastCommandDispatcherFactoryInstaller, boolean registerRuntimeOnly) {
         super(new SimpleResourceDefinition.Parameters(MessagingExtension.SERVER_PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.SERVER))
-                .setAddHandler(ServerAdd.INSTANCE)
+                .setAddHandler(new ServerAdd(broadcastCommandDispatcherFactoryInstaller))
                 .setRemoveHandler(ServerRemove.INSTANCE)
                 .addCapabilities(Capabilities.ACTIVEMQ_SERVER_CAPABILITY));
         this.registerRuntimeOnly = registerRuntimeOnly;

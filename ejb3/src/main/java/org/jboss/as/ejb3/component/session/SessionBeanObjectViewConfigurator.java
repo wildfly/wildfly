@@ -115,7 +115,7 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
 
                 if (componentMethod != null) {
                     if(!Modifier.isPublic(componentMethod.getModifiers())) {
-                        throw EjbLogger.ROOT_LOGGER.ejbBusinessMethodMustBePublic(componentMethod);
+                        EjbLogger.ROOT_LOGGER.ejbBusinessMethodMustBePublic(componentMethod);
                     }
 
                     configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);

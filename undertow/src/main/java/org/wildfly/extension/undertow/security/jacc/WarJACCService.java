@@ -807,6 +807,9 @@ public class WarJACCService extends JaccService<WarMetaData> {
         }
 
         public boolean equals(Object obj) {
+            if(!(obj instanceof PatternInfo)) {
+                return false;
+            }
             PatternInfo pi = (PatternInfo) obj;
             return pattern.equals(pi.pattern);
         }

@@ -300,7 +300,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
         if (groupConfiguration != null) {
             final String key = "discovery" + groupConfiguration.getName();
             if (service.jgroupsClusterName != null) {
-                Supplier<BroadcastCommandDispatcherFactory> commandDispatcherFactorySupplier = serviceBuilder.requires(MessagingServices.getBroadcastCommandDispatcherFactoryServiceName(service.name, service.jgroupsChannelName));
+                Supplier<BroadcastCommandDispatcherFactory> commandDispatcherFactorySupplier = serviceBuilder.requires(MessagingServices.getBroadcastCommandDispatcherFactoryServiceName(service.jgroupsChannelName));
                 service.commandDispatcherFactories.put(key, commandDispatcherFactorySupplier);
                 service.clusterNames.put(key, service.jgroupsClusterName);
             } else {

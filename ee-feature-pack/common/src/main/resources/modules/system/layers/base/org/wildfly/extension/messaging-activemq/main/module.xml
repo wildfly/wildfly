@@ -30,7 +30,7 @@
 
     <resources>
         <artifact name="${org.wildfly:wildfly-messaging-activemq-subsystem}"/>
-        <artifact name="${org.jboss.activemq.artemis.integration:artemis-wildfly-integration}"/>
+        <artifact name="\${org.jboss.activemq.artemis.integration:artemis-wildfly@module.jakarta.suffix@-integration}"/>
         <resource-root path="META-INF"/>
     </resources>
 
