@@ -75,7 +75,7 @@ public abstract class XACMLTestUtils {
         LOGGER.debug("Adding jboss-deployment-structure.xml to the Archive");
         mc.addAsManifestResource(new StringAsset("<jboss-deployment-structure><deployment><dependencies>" //
                         + "<module name='org.jboss.security.xacml'/>" //
-                        + "<module name='org.apache.commons.lang'/>" //
+                        + "<module name='org.apache.commons.lang3'/>" //
                         + "<module name='org.apache.commons.io'/>" //
                         + "</dependencies></deployment></jboss-deployment-structure>"), //
                 "jboss-deployment-structure.xml");

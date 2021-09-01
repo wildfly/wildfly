@@ -49,7 +49,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.directory.api.ldap.model.entry.DefaultEntry;
 import org.apache.directory.api.ldap.model.ldif.LdifEntry;
 import org.apache.directory.api.ldap.model.ldif.LdifReader;
@@ -439,7 +439,7 @@ public class SPNEGOLoginModuleTestCase {
         war.addAsWebInfResource(SPNEGOLoginModuleTestCase.class.getPackage(), webXmlFilename, "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(securityDomain), "jboss-web.xml");
         war.addAsManifestResource(
-                Utils.getJBossDeploymentStructure("org.jboss.security.negotiation", "org.apache.commons.lang"),
+                Utils.getJBossDeploymentStructure("org.jboss.security.negotiation", "org.apache.commons.lang3"),
                 "jboss-deployment-structure.xml");
         return war;
     }

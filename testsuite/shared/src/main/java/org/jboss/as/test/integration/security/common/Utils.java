@@ -63,9 +63,9 @@ import javax.security.auth.x500.X500Principal;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
-import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
