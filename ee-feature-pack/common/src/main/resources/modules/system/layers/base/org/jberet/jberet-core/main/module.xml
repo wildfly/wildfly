@@ -44,6 +44,7 @@
         <module name="javax.enterprise.api"/>
         <module name="javax.annotation.api"/>
         <module name="javax.transaction.api"/>
+        <module name="javax.validation.api"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.logging"/>
         <module name="org.wildfly.security.elytron-private"/>
