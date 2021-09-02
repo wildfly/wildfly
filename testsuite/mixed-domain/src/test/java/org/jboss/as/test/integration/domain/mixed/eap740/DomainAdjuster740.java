@@ -48,7 +48,6 @@ public class DomainAdjuster740 extends DomainAdjuster {
 
         adjustRemoting(ops, profileAddress.append(SUBSYSTEM, "remoting"));
         adjustUndertow(ops, profileAddress.append(SUBSYSTEM, "undertow"));
-        adjustInfinispan(ops, profileAddress.append(SUBSYSTEM, "infinispan"));
         // Mixed Domain tests always uses the complete build instead of alternating with ee-dist. We need to remove here
 
         // the pre-configured microprofile extensions to adjust the current domain to work with a node running EAP 7.4.0
@@ -67,7 +66,6 @@ public class DomainAdjuster740 extends DomainAdjuster {
         final PathAddress httpRemotingConnector = subsystem
                 .append("http-connector", "http-remoting-connector");
         ops.add(Util.getUndefineAttributeOperation(httpRemotingConnector, "sasl-authentication-factory"));
-        ops.add(Util.getWriteAttributeOperation(httpRemotingConnector, "security-realm", "ApplicationRealm"));
     }
 
     private void removeSubsystemExtension(List<ModelNode> ops, PathAddress subsystem, PathAddress extension) {
@@ -76,16 +74,6 @@ public class DomainAdjuster740 extends DomainAdjuster {
     }
 
     private static void adjustUndertow(final List<ModelNode> ops, final PathAddress subsystem) {
-        // EAP 7.0 and earlier required explicit SSL configuration. Wildfly 10.1 added support
-        // for SSL by default, which automatically generates certs.
-        // This could be removed if all hosts were configured to contain a security domain with SSL enabled.
-        // However, for the mixed domain tests, we are using a reduced host slave configuration file (see slave-config resource dir)
-        // these configurations do not configure a SSL on ApplicationRealm, hence this removal to make it compatible across all domains.
-        final PathAddress httpsListener = subsystem
-                .append("server", "default-server")
-                .append("https-listener", "https");
-        ops.add(Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, httpsListener.toModelNode()));
-
         // This adjusts the configuration to reflect the configuration that was used in EAP 7.4,
         // this could equally be moved all the way back and only adjusted for EAP 7.0.0 as we remove
         // the Elytron subsystem.
@@ -97,12 +85,4 @@ public class DomainAdjuster740 extends DomainAdjuster {
         ops.add(Util.getWriteAttributeOperation(httpInvoker, "security-realm", "ApplicationRealm"));
     }
 
-    private static void adjustInfinispan(List<ModelNode> ops, PathAddress address) {
-        // Default configs now use specific marshaller attributes
-        // For compatibility with older versions, we need to use the LEGACY marshaller
-        ops.add(Util.getUndefineAttributeOperation(address.append(PathElement.pathElement("cache-container", "server")), "marshaller"));
-        ops.add(Util.getUndefineAttributeOperation(address.append(PathElement.pathElement("cache-container", "web")), "marshaller"));
-        ops.add(Util.getUndefineAttributeOperation(address.append(PathElement.pathElement("cache-container", "ejb")), "marshaller"));
-        ops.add(Util.getUndefineAttributeOperation(address.append(PathElement.pathElement("cache-container", "hibernate")), "marshaller"));
-    }
 }
