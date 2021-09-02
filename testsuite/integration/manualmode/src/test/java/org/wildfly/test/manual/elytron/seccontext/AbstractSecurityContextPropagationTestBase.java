@@ -696,7 +696,10 @@ public abstract class AbstractSecurityContextPropagationTestBase {
          * @return true if CLI returns Success
          */
         public boolean runBatch(File batchFile) throws IOException {
-            sendLine("run-batch --file=\"" + batchFile.getAbsolutePath() + "\" -v", false);
+            for(String line : Files.readAllLines(batchFile.toPath())) {
+                sendLine(line, false);
+            }
+            //sendLine("run-batch --file=\"" + batchFile.getAbsolutePath() + "\" -v", false);
             if (consoleOut.size() <= 0) {
                 return false;
             }
