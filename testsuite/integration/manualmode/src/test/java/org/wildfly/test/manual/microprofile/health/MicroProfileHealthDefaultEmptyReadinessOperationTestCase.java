@@ -37,7 +37,7 @@ import static org.junit.Assert.fail;
 /**
  * @author <a href="http://xstefank.io/">Martin Stefanko</a> (c) 2021 Red Hat inc.
  */
-public class MicroProfileHealthDefaultEmptyStartupOperationTestCase extends MicroProfileHealthDefaultEmptyStartupTestBase {
+public class MicroProfileHealthDefaultEmptyReadinessOperationTestCase extends MicroProfileHealthDefaultEmptyReadinessTestBase {
 
     void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException, InvalidHealthResponseException {
         final ModelNode address = new ModelNode();

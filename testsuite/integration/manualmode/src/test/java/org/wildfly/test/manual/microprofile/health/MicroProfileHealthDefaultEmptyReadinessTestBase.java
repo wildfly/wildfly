@@ -47,39 +47,39 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Test that startup handling with mp.health.disable-default-procedures=true respects the
- * value of mp.health.default.startup.empty.response
+ * Test that readiness handling with mp.health.disable-default-procedures=true respects the
+ * value of mp.health.default.readiness.empty.response
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public abstract class MicroProfileHealthDefaultEmptyStartupTestBase {
+public abstract class MicroProfileHealthDefaultEmptyReadinessTestBase {
 
     abstract void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException, InvalidHealthResponseException;
 
-    public static final String MICRO_PROFILE_HEALTH_APPLICATION_WITHOUT_STARTUP_TEST_BASE = "MicroProfileHealthApplicationWithoutStartupTestBase";
-    public static final String MICRO_PROFILE_HEALTH_APPLICATION_WITH_SUCCESSFUL_STARTUP_TEST_BASE = "MicroProfileHealthApplicationWithSuccessfulStartupTestBase";
+    public static final String MICRO_PROFILE_HEALTH_APPLICATION_WITHOUT_READINESS_TEST_BASE = "MicroProfileHealthApplicationWithoutReadinessTestBase";
+    public static final String MICRO_PROFILE_HEALTH_APPLICATION_WITH_SUCCESSFUL_READINESS_TEST_BASE = "MicroProfileHealthApplicationWithSuccessfulReadinessTestBase";
 
     private static final String CONTAINER_NAME = "microprofile";
     private static final String DISABLE_DEFAULT_PROCEDURES_PROPERTY = "-Dmp.health.disable-default-procedures=true";
-    private static final String DEFAULT_STARTUP_EMPTY_RESPONSE_PROPERTY = "-Dmp.health.default.startup.empty.response";
+    private static final String DEFAULT_READINESS_EMPTY_RESPONSE_PROPERTY = "-Dmp.health.default.readiness.empty.response";
     private static final String MICROPROFILE_SERVER_JVM_ARGS = "microprofile.server.jvm.args";
     private static final String JAVA_VM_ARGUMENTS = "javaVmArguments";
 
-    // deployment does not define any startup probe
-    @Deployment(name = MICRO_PROFILE_HEALTH_APPLICATION_WITHOUT_STARTUP_TEST_BASE, managed = false, testable = false)
+    // deployment does not define any readiness probe
+    @Deployment(name = MICRO_PROFILE_HEALTH_APPLICATION_WITHOUT_READINESS_TEST_BASE, managed = false, testable = false)
     @TargetsContainer(CONTAINER_NAME)
     public static Archive<?> deployEmpty() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, MICRO_PROFILE_HEALTH_APPLICATION_WITHOUT_STARTUP_TEST_BASE + ".war")
+        WebArchive war = ShrinkWrap.create(WebArchive.class, MICRO_PROFILE_HEALTH_APPLICATION_WITHOUT_READINESS_TEST_BASE + ".war")
             .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
     }
 
-    // deployment defines one successful startup probe
-    @Deployment(name = MICRO_PROFILE_HEALTH_APPLICATION_WITH_SUCCESSFUL_STARTUP_TEST_BASE, managed = false, testable = false)
+    // deployment defines one successful readiness probe
+    @Deployment(name = MICRO_PROFILE_HEALTH_APPLICATION_WITH_SUCCESSFUL_READINESS_TEST_BASE, managed = false, testable = false)
     @TargetsContainer(CONTAINER_NAME)
     public static Archive<?> deploySuccessful() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, MICRO_PROFILE_HEALTH_APPLICATION_WITH_SUCCESSFUL_STARTUP_TEST_BASE + ".war")
-            .addClasses(SuccessfulStartupCheck.class)
+            WebArchive war = ShrinkWrap.create(WebArchive.class, MICRO_PROFILE_HEALTH_APPLICATION_WITH_SUCCESSFUL_READINESS_TEST_BASE + ".war")
+            .addClasses(SuccessfulReadinessCheck.class)
             .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
     }
@@ -95,14 +95,14 @@ public abstract class MicroProfileHealthDefaultEmptyStartupTestBase {
 
     @Test
     @InSequence(1)
-    public void testApplicationStartupWithoutDeploymentWithDefaultEmptyStartup() throws Exception {
+    public void testApplicationReadinessWithoutDeploymentWithDefaultEmptyReadiness() throws Exception {
 
         final CompletableFuture<Void> testResultFuture = CompletableFuture.runAsync(() -> {
             boolean connectionEstablished = false;
 
             do {
                 try {
-                    checkGlobalOutcome(managementClient, "check-started", false, null);
+                    checkGlobalOutcome(managementClient, "check-ready", false, null);
                     connectionEstablished = true;
                 } catch (ConnectException ce) {
                     // OK, server is not started yet
@@ -113,7 +113,7 @@ public abstract class MicroProfileHealthDefaultEmptyStartupTestBase {
             } while (!connectionEstablished);
 
             try {
-                checkGlobalOutcome(managementClient, "check-started", false, null);
+                checkGlobalOutcome(managementClient, "check-ready", false, null);
             } catch (IOException | InvalidHealthResponseException ex) {
                 throw new RuntimeException(ex);
             }
@@ -131,21 +131,21 @@ public abstract class MicroProfileHealthDefaultEmptyStartupTestBase {
 
     @Test
     @InSequence(2)
-    public void testApplicationStartupWithEmptyDeploymentWithDefaultEmptyStartup() throws Exception {
+    public void testApplicationReadinessWithEmptyDeploymentWithDefaultEmptyReadiness() throws Exception {
 
         // deploy the application and stop the container
         containerController.start(CONTAINER_NAME);
-        deployer.deploy(MICRO_PROFILE_HEALTH_APPLICATION_WITHOUT_STARTUP_TEST_BASE);
+        deployer.deploy(MICRO_PROFILE_HEALTH_APPLICATION_WITHOUT_READINESS_TEST_BASE);
         containerController.stop(CONTAINER_NAME);
 
-        // check that the startup status is changed to UP once the user deployment checks (which there are none
+        // check that the readiness status is changed to UP once the user deployment checks (which there are none
         // in this case) are processed
         final CompletableFuture<Void> testResultFuture = CompletableFuture.runAsync(() -> {
             boolean connectionEstablished = false;
 
             do {
                 try {
-                    checkGlobalOutcome(managementClient, "check-started", false, null);
+                    checkGlobalOutcome(managementClient, "check-ready", false, null);
                     connectionEstablished = true;
                 } catch (ConnectException ce) {
                     // OK, server is not started yet
@@ -163,12 +163,12 @@ public abstract class MicroProfileHealthDefaultEmptyStartupTestBase {
 
             do {
                 try {
-                    checkGlobalOutcome(managementClient, "check-started", false, null);
+                    checkGlobalOutcome(managementClient, "check-ready", false, null);
                 } catch (InvalidHealthResponseException ihre) {
                     // OK user checks are processed, check once more that we have an UP empty response
                     userChecksProcessed = true;
                     try {
-                        checkGlobalOutcome(managementClient, "check-started", true, null);
+                        checkGlobalOutcome(managementClient, "check-ready", true, null);
                     } catch (IOException | InvalidHealthResponseException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -184,7 +184,7 @@ public abstract class MicroProfileHealthDefaultEmptyStartupTestBase {
         try {
             testResultFuture.get(1, TimeUnit.MINUTES);
         } finally {
-            deployer.undeploy(MICRO_PROFILE_HEALTH_APPLICATION_WITHOUT_STARTUP_TEST_BASE);
+            deployer.undeploy(MICRO_PROFILE_HEALTH_APPLICATION_WITHOUT_READINESS_TEST_BASE);
             containerController.stop(CONTAINER_NAME);
         }
 
@@ -192,20 +192,20 @@ public abstract class MicroProfileHealthDefaultEmptyStartupTestBase {
 
     @Test
     @InSequence(3)
-    public void testApplicationStartupWithDeploymentContainingStartupCheckWithDefaultEmptyStartup() throws Exception {
+    public void testApplicationReadinessWithDeploymentContainingReadinessCheckWithDefaultEmptyReadiness() throws Exception {
 
         // deploy the application and stop the container
         containerController.start(CONTAINER_NAME);
-        deployer.deploy(MICRO_PROFILE_HEALTH_APPLICATION_WITH_SUCCESSFUL_STARTUP_TEST_BASE);
+        deployer.deploy(MICRO_PROFILE_HEALTH_APPLICATION_WITH_SUCCESSFUL_READINESS_TEST_BASE);
         containerController.stop(CONTAINER_NAME);
 
-        // check that the startup status is changed to UP once the user deployment checks are processed
+        // check that the readiness status is changed to UP once the user deployment checks are processed
         final CompletableFuture<Void> testResultFuture = CompletableFuture.runAsync(() -> {
             boolean connectionEstablished = false;
 
             do {
                 try {
-                    checkGlobalOutcome(managementClient, "check-started", false, null);
+                    checkGlobalOutcome(managementClient, "check-ready", false, null);
                     connectionEstablished = true;
                 } catch (ConnectException ce) {
                     // OK, server is not started yet
@@ -223,13 +223,13 @@ public abstract class MicroProfileHealthDefaultEmptyStartupTestBase {
 
             do {
                 try {
-                    checkGlobalOutcome(managementClient, "check-started", false, null);
+                    checkGlobalOutcome(managementClient, "check-ready", false, null);
                 } catch (InvalidHealthResponseException ihre) {
                     // OK user checks are processed, check once more that we have an UP response
                     userChecksProcessed = true;
                     try {
-                        checkGlobalOutcome(managementClient, "check-started", true,
-                            SuccessfulStartupCheck.NAME);
+                        checkGlobalOutcome(managementClient, "check-ready", true,
+                            SuccessfulReadinessCheck.NAME);
                     } catch (IOException | InvalidHealthResponseException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -245,22 +245,21 @@ public abstract class MicroProfileHealthDefaultEmptyStartupTestBase {
         try {
             testResultFuture.get(1, TimeUnit.MINUTES);
         } finally {
-            deployer.undeploy(MICRO_PROFILE_HEALTH_APPLICATION_WITH_SUCCESSFUL_STARTUP_TEST_BASE);
+            deployer.undeploy(MICRO_PROFILE_HEALTH_APPLICATION_WITH_SUCCESSFUL_READINESS_TEST_BASE);
             containerController.stop(CONTAINER_NAME);
         }
-
     }
 
     @Test
     @InSequence(4)
-    public void testApplicationStartupWithoutDeploymentWithEmptyStartupSetToUP() throws Exception {
+    public void testApplicationReadinessWithoutDeploymentWithEmptyReadinessSetToUP() throws Exception {
 
         final CompletableFuture<Void> testResultFuture = CompletableFuture.runAsync(() -> {
             boolean connectionEstablished = false;
 
             do {
                 try {
-                    checkGlobalOutcome(managementClient, "check-started", true, null);
+                    checkGlobalOutcome(managementClient, "check-ready", true, null);
                     connectionEstablished = true;
                 } catch (ConnectException ce) {
                     // OK, server is not started yet
@@ -271,14 +270,14 @@ public abstract class MicroProfileHealthDefaultEmptyStartupTestBase {
             } while (!connectionEstablished);
 
             try {
-                checkGlobalOutcome(managementClient, "check-started", true, null);
+                checkGlobalOutcome(managementClient, "check-ready", true, null);
             } catch (IOException | InvalidHealthResponseException ex) {
                 throw new RuntimeException(ex);
             }
         });
 
         Map<String, String> map = getVMArgMap(String.format("%s %s=UP",
-            DISABLE_DEFAULT_PROCEDURES_PROPERTY, DEFAULT_STARTUP_EMPTY_RESPONSE_PROPERTY));
+            DISABLE_DEFAULT_PROCEDURES_PROPERTY, DEFAULT_READINESS_EMPTY_RESPONSE_PROPERTY));
         containerController.start(CONTAINER_NAME, map);
 
         try {
