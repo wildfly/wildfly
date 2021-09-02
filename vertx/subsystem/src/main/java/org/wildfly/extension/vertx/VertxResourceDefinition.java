@@ -15,7 +15,6 @@
  */
 package org.wildfly.extension.vertx;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -44,7 +43,7 @@ import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
 /**
  * Each VertxDefinition represents a Vert.x instance.
  */
-public class VertxDefinition extends PersistentResourceDefinition {
+public class VertxResourceDefinition extends PersistentResourceDefinition {
 
     static final String VERTX_CAPABILITY_NAME = "org.wildfly.extension.vertx";
 
@@ -53,9 +52,9 @@ public class VertxDefinition extends PersistentResourceDefinition {
                     .setDynamicNameMapper(DynamicNameMappers.PARENT)
                     .build();
 
-    static VertxDefinition INSTANCE = new VertxDefinition();
+    static VertxResourceDefinition INSTANCE = new VertxResourceDefinition();
 
-    VertxDefinition() {
+    VertxResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(PathElement.pathElement("vertx"),
                 VertxSubsystemExtension.getResourceDescriptionResolver(VertxSubsystemExtension.SUBSYSTEM_NAME))
                 .setAddHandler(new VertxResourceAdd())
@@ -80,23 +79,26 @@ public class VertxDefinition extends PersistentResourceDefinition {
         protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
             final String name = context.getCurrentAddressValue();
             final String jndiName = VertxAttributes.JNDI_NAME.resolveModelAttribute(context, operation).asString();
-            final String vertxOptionsFile = VertxAttributes.VERTX_OPTIONS_FILE.resolveModelAttribute(context, operation).asString();
+            final String vertxOptionsFile = operation.hasDefined(VertxConstants.VERTX_OPTIONS_FILE) ? VertxAttributes.VERTX_OPTIONS_FILE.resolveModelAttribute(context, operation).asString() : null;
+            final boolean clustered = VertxAttributes.CLUSTERED.resolveModelAttribute(context, operation).asBoolean();
+            String jgroupChannel = operation.hasDefined(VertxConstants.JGROUPS_CHANNEL) ? VertxAttributes.JGROUPS_CHANNEL.resolveModelAttribute(context, operation).asString() : null;
+            if (clustered && jgroupChannel == null) {
+                throw VERTX_LOGGER.noJgroupsChannelConfigured(name);
+            }
             try {
                 final VertxProxy vertxProxy = new VertxProxy();
-                vertxProxy.setJndiName(jndiName);
                 vertxProxy.setName(name);
+                vertxProxy.setJndiName(jndiName);
+                vertxProxy.setClustered(clustered);
+                vertxProxy.setJgroupChannelName(jgroupChannel);
                 final VertxOptions vertxOptions;
                 if (vertxOptionsFile == null) {
                     vertxOptions = new VertxOptions();
                 } else {
                     JsonObject json = readJsonFromFile(vertxOptionsFile);
-                    vertxProxy.setVertxOptionsFile(vertxOptionsFile);
                     vertxOptions = new VertxOptions(json);
                 }
-                vertxProxy.setOptions(vertxOptions);
-                Vertx coreVertx = Vertx.vertx(vertxOptions);
-                VertxDelegate vertxDelegate = new VertxDelegate(coreVertx);
-                vertxProxy.setVertx(vertxDelegate);
+                vertxProxy.setVertxOptions(vertxOptions);
                 VertxProxyService.installService(context, vertxProxy);
             } catch (Exception e) {
                 throw VERTX_LOGGER.failedToStartVertx(name, e);
@@ -126,7 +128,7 @@ public class VertxDefinition extends PersistentResourceDefinition {
                 }
             }
             if (optionURL == null) {
-                return new JsonObject();
+                throw VERTX_LOGGER.cannotFindVertxOptionsURL(vertxOptionsFile);
             }
             String jsonContent;
             try (InputStream inputStream = optionURL.openStream();

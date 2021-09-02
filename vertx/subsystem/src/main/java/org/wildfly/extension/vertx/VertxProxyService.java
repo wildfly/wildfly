@@ -15,6 +15,15 @@
  */
 package org.wildfly.extension.vertx;
 
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
+import io.vertx.ext.cluster.infinispan.InfinispanClusterManager;
+import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
+import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -28,25 +37,46 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.extension.vertx.logging.VertxLogger;
+import org.jgroups.JChannel;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 
-class VertxProxyService implements Service {
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+
+import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
+
+public class VertxProxyService implements Service, VertxConstants {
     private final VertxProxy vertxProxy;
-    private static final ServiceName serviceNameBase = ServiceName.JBOSS.append(VertxSubsystemExtension.SUBSYSTEM_NAME);
+    private final Supplier<ChannelFactory> channelFactorySupplier;
+    private final Supplier<String> clusterSupplier;
+    private volatile VertxDelegate vertxDelegate;
+    private volatile DefaultCacheManager defaultCacheManager;
 
     static void installService(OperationContext context, VertxProxy vertxProxy) {
-        VertxProxyService service = new VertxProxyService(vertxProxy);
-        ServiceName serviceName = serviceNameBase.append(vertxProxy.getName());
-
-        context.getServiceTarget().addService(serviceName)
-                .setInstance(service)
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+        VertxProxyService vertxProxyService;
+        ServiceName vertxServiceName = VertxResourceDefinition.VERTX_RUNTIME_CAPABILITY.getCapabilityServiceName(vertxProxy.getName());
+        ServiceBuilder<?> vertxServiceBuilder = context.getServiceTarget().addService(vertxServiceName);
+        if (vertxProxy.isClustered()) {
+            // it is the source channel, new channel and transport ports need to be specified if multiple Vertx instances are to be created.
+            // cluster name cannot be overridden.
+            ServiceName channelFactoryServiceName = JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, vertxProxy.getJgroupChannelName());
+            Supplier<ChannelFactory> cacheManagerSupplier = vertxServiceBuilder.requires(channelFactoryServiceName);
+            ServiceName clusterServiceName = JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, vertxProxy.getJgroupChannelName());
+            Supplier<String> clusterSupplier = vertxServiceBuilder.requires(clusterServiceName);
+            vertxProxyService = new VertxProxyService(cacheManagerSupplier, clusterSupplier, vertxProxy);
+        } else  {
+            vertxProxyService = new VertxProxyService(null, null, vertxProxy);
+        }
+        vertxServiceBuilder.setInstance(vertxProxyService);
+        vertxServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+        vertxServiceBuilder.install();
 
         final String jndiName = vertxProxy.getJndiName();
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
-        VertxManagementReferenceFactory valueManagedReferenceFactory = new VertxManagementReferenceFactory(service);
+        VertxManagementReferenceFactory valueManagedReferenceFactory = new VertxManagementReferenceFactory(vertxProxyService);
         binderService.getManagedObjectInjector().inject(valueManagedReferenceFactory);
         final ServiceBuilder<?> builder = context.getServiceTarget().addService(bindInfo.getBinderServiceName());
         builder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
@@ -58,19 +88,19 @@ class VertxProxyService implements Service {
                     public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
                         switch (event) {
                             case UP: {
-                                VertxLogger.VERTX_LOGGER.vertxStarted(vertxProxy.getName(), jndiName);
+                                VERTX_LOGGER.vertxStarted(vertxProxy.getName(), jndiName);
                                 bound = true;
                                 break;
                             }
                             case DOWN: {
                                 if (bound) {
-                                    VertxLogger.VERTX_LOGGER.vertxStopped(vertxProxy.getName(), jndiName);
+                                    VERTX_LOGGER.vertxStopped(vertxProxy.getName(), jndiName);
                                     bound = false;
                                 }
                                 break;
                             }
                             case REMOVED: {
-                                VertxLogger.VERTX_LOGGER.vertxRemoved(vertxProxy.getName(), jndiName);
+                                VERTX_LOGGER.vertxRemoved(vertxProxy.getName(), jndiName);
                                 break;
                             }
                         }
@@ -80,22 +110,72 @@ class VertxProxyService implements Service {
     }
 
     VertxDelegate getValue() {
-        return this.vertxProxy.getVertx();
+        return this.vertxDelegate;
     }
 
-    private VertxProxyService(VertxProxy vertxProxy) {
+    private VertxProxyService(Supplier<ChannelFactory> channelFactorySupplier, Supplier<String> clusterSupplier, VertxProxy vertxProxy) {
         this.vertxProxy = vertxProxy;
+        this.clusterSupplier = clusterSupplier;
+        this.channelFactorySupplier = channelFactorySupplier;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
+        try {
+            this.vertxDelegate = new VertxDelegate(createVertx());
+        } catch (Exception e) {
+            throw VERTX_LOGGER.failedToStartVertxService(vertxProxy.getName(), e);
+        }
         VertxRegistry.INSTANCE.registerVertx(vertxProxy);
+    }
+
+    private Vertx createVertx() throws Exception {
+        VertxOptions vertxOptions = vertxProxy.getVertxOptions();
+        if (vertxProxy.isClustered()) {
+            JChannel jChannel = channelFactorySupplier.get().createChannel(UUID.randomUUID().toString());
+            String clusterName = clusterSupplier.get() != null ? clusterSupplier.get() : vertxProxy.getJgroupChannelName();
+            ClassLoader classLoader = getClass().getClassLoader();
+            GlobalConfigurationBuilder globalConfigBuilder = new GlobalConfigurationBuilder()
+                    .classLoader(classLoader).defaultCacheName(DEFAULT_CACHE_NAME);
+            globalConfigBuilder.transport().transport(new JGroupsTransport(jChannel)).clusterName(clusterName);
+            ConfigurationBuilderHolder configurationBuilderHolder = new ConfigurationBuilderHolder(classLoader, globalConfigBuilder);
+            configurationBuilderHolder.newConfigurationBuilder(DEFAULT_CACHE_NAME).clustering().cacheMode(CacheMode.DIST_SYNC);
+            configurationBuilderHolder.newConfigurationBuilder(SUBS_CACHE_NAME).clustering().cacheMode(CacheMode.REPL_SYNC);
+            configurationBuilderHolder.newConfigurationBuilder(HA_INFO_CACHE_NAME).clustering().cacheMode(CacheMode.REPL_SYNC);
+            configurationBuilderHolder.newConfigurationBuilder(NODE_INFO_CACHE_NAME).clustering().cacheMode(CacheMode.REPL_SYNC);
+            configurationBuilderHolder.newConfigurationBuilder(CACHE_CONFIGURATION).template(true).clustering().cacheMode(CacheMode.DIST_SYNC);
+            defaultCacheManager = new DefaultCacheManager(configurationBuilderHolder, true);
+            vertxOptions.setClusterManager(new InfinispanClusterManager(defaultCacheManager));
+            CompletableFuture<Vertx> vertxFuture = (CompletableFuture<Vertx>)Vertx.clusteredVertx(vertxOptions)
+                    .toCompletionStage();
+            return vertxFuture.get();
+        } else {
+            return Vertx.vertx(vertxOptions);
+        }
     }
 
     @Override
     public void stop(StopContext context) {
-        VertxRegistry.INSTANCE.unRegister(vertxProxy.getName());
-        vertxProxy.getVertx().closeInternal();
+        CompletableFuture<Void> closeFuture = (CompletableFuture<Void>)this.vertxDelegate.closeInternal()
+                .flatMap(v -> {
+                    try {
+                        if (defaultCacheManager != null) {
+                            defaultCacheManager.stop();
+                        }
+                    } catch (Exception e) {
+                        return Future.failedFuture(e);
+                    }
+                    return Future.<Void>succeededFuture();
+                })
+                .toCompletionStage();
+        try {
+            closeFuture.get();
+        } catch (Exception e) {
+            VERTX_LOGGER.errorWhenClosingVertx(vertxProxy.getName(), e);
+        } finally {
+            VertxRegistry.INSTANCE.unRegister(vertxProxy.getName());
+            this.vertxDelegate = null;
+        }
     }
 
 }

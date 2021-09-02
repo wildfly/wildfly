@@ -41,7 +41,7 @@ public class VertxSubsystemParser_1_0 extends PersistentResourceXMLParser {
         AttributeDefinition[] rootAttrs = rootAttrList.toArray(new AttributeDefinition[0]);
         xmlDescription = builder(VertxSubsystemExtension.SUBSYSTEM_PATH, NAMESPACE)
                 .addChild(
-                        builder(VertxDefinition.INSTANCE.getPathElement())
+                        builder(VertxResourceDefinition.INSTANCE.getPathElement())
                         .addAttributes(rootAttrs)
                 )
                 .build();

@@ -19,38 +19,34 @@ package org.wildfly.extension.vertx;
 import io.vertx.core.VertxOptions;
 
 public class VertxProxy {
-    private VertxDelegate vertx;
-    private VertxOptions options;
     private String name;
     private String jndiName;
-    private String vertxOptionsFile;
     private VertxOptions vertxOptions;
+    private boolean clustered;
+    private String jgroupChannelName;
 
-    public VertxOptions getOptions() {
-        return options;
+    public VertxOptions getVertxOptions() {
+        return vertxOptions;
     }
 
-    public VertxProxy setOptions(VertxOptions options) {
-        this.options = options;
-        return this;
+    public void setVertxOptions(VertxOptions vertxOptions) {
+        this.vertxOptions = vertxOptions;
     }
 
-    public String getVertxOptionsFile() {
-        return vertxOptionsFile;
+    public boolean isClustered() {
+        return clustered;
     }
 
-    public VertxProxy setVertxOptionsFile(String vertxOptionsFile) {
-        this.vertxOptionsFile = vertxOptionsFile;
-        return this;
+    public void setClustered(boolean clustered) {
+        this.clustered = clustered;
     }
 
-    public VertxDelegate getVertx() {
-        return vertx;
+    public String getJgroupChannelName() {
+        return jgroupChannelName;
     }
 
-    public VertxProxy setVertx(VertxDelegate vertx) {
-        this.vertx = vertx;
-        return this;
+    public void setJgroupChannelName(String jgroupChannelName) {
+        this.jgroupChannelName = jgroupChannelName;
     }
 
     public String getName() {

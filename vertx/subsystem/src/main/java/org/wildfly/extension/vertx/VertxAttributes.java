@@ -19,6 +19,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 import java.util.ArrayList;
@@ -40,10 +41,28 @@ public abstract class VertxAttributes {
             .setValidator(new ModelTypeValidator(ModelType.STRING, true))
             .build();
 
+    public static final SimpleAttributeDefinition CLUSTERED = new SimpleAttributeDefinitionBuilder(VertxConstants.CLUSTERED, ModelType.BOOLEAN)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
+            .setDefaultValue(ModelNode.TRUE)
+            .build();
+
+    public static final SimpleAttributeDefinition JGROUPS_CHANNEL = new SimpleAttributeDefinitionBuilder(VertxConstants.JGROUPS_CHANNEL, ModelType.STRING)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .setValidator(new ModelTypeValidator(ModelType.STRING, true))
+            .build();
+
+
     private static final List<AttributeDefinition> ATTRS = new ArrayList<>();
     static {
         ATTRS.add(JNDI_NAME);
         ATTRS.add(VERTX_OPTIONS_FILE);
+        ATTRS.add(CLUSTERED);
+        ATTRS.add(JGROUPS_CHANNEL);
     }
 
     static List<AttributeDefinition> getSimpleAttributes() {

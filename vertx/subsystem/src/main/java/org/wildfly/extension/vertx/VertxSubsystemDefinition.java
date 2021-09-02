@@ -63,7 +63,7 @@ public class VertxSubsystemDefinition extends PersistentResourceDefinition {
 
     @Override
     protected List<? extends PersistentResourceDefinition> getChildren() {
-        return Collections.singletonList(VertxDefinition.INSTANCE);
+        return Collections.singletonList(VertxResourceDefinition.INSTANCE);
     }
 
     @Override
@@ -102,9 +102,6 @@ public class VertxSubsystemDefinition extends PersistentResourceDefinition {
                 ModelNode vp = new ModelNode();
                 vp.get(VertxConstants.NAME).set(v.getName());
                 vp.get(VertxConstants.JNDI_NAME).set(v.getJndiName());
-                if (v.getVertxOptionsFile() != null) {
-                    vp.get(VertxConstants.VERTX_OPTIONS_FILE).set(v.getVertxOptionsFile());
-                }
                 vertx.add(vp);
             }
             context.getResult().set(vertx);

@@ -43,6 +43,7 @@ import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.shareddata.SharedData;
 import io.vertx.core.spi.VerticleFactory;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -52,6 +53,7 @@ public class VertxDelegate implements Vertx {
     private final Vertx vertx;
 
     public VertxDelegate(Vertx vertx) {
+        Objects.requireNonNull(vertx, "vertx cannot be null");
         this.vertx = vertx;
     }
 

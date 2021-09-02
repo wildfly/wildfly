@@ -21,5 +21,13 @@ public interface VertxConstants {
     String JNDI_NAME = "jndi-name";
     String VERTX_OPTIONS_FILE = "vertx-options-file";
     String VERTX_OPTIONS_URL = "org.wildfly.vertx.options.url";
+    String CLUSTERED = "clustered";
+    String JGROUPS_CHANNEL = "jgroups-channel";
+
+    String DEFAULT_CACHE_NAME = "distributed-cache";
+    String SUBS_CACHE_NAME = "__vertx.subs";
+    String HA_INFO_CACHE_NAME = "__vertx.haInfo";
+    String NODE_INFO_CACHE_NAME = "__vertx.nodeInfo";
+    String CACHE_CONFIGURATION = "__vertx.distributed.cache.configuration";
 
 }

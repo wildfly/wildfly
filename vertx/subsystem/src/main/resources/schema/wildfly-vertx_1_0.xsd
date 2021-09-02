@@ -30,5 +30,7 @@
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="jndi-name" type="xs:string" use="required" />
         <xs:attribute name="vertx-options-file" type="xs:string" />
+        <xs:attribute name="clustered" type="xs:boolean" />
+        <xs:attribute name="cache-container" type="xs:string" />
     </xs:complexType>
 </xs:schema>
