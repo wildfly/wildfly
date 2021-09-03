@@ -31,6 +31,12 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.util.Arrays;
+
 import javax.naming.InitialContext;
 
 /**
@@ -60,6 +66,11 @@ public class TransactionPropagationTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, CLIENT_DEPLOYMENT + ".jar");
         jar.addPackage(TransactionPropagationTestCase.class.getPackage());
         jar.addAsManifestResource("META-INF/jboss-ejb-client-receivers.xml", "jboss-ejb-client.xml");
+        jar.addAsManifestResource(
+                createPermissionsXmlAsset(
+                        createFilePermission("read",
+                                "jboss.home", Arrays.asList("standalone", "tmp", "auth", "-"))),
+                "permissions.xml");
         return jar;
     }
 

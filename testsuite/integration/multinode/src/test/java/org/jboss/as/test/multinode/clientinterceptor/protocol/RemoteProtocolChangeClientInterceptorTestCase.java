@@ -23,6 +23,9 @@ package org.jboss.as.test.multinode.clientinterceptor.protocol;
 
 import static org.jboss.as.test.shared.TestSuiteEnvironment.getSystemProperty;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.io.File;
+import java.io.FilePermission;
 import java.security.SecurityPermission;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -88,7 +91,8 @@ public class RemoteProtocolChangeClientInterceptorTestCase {
                         new PropertyPermission("management.address", "read"),
                         new PropertyPermission("node0", "read"),
                         new PropertyPermission("jboss.http.port", "read"),
-                        new PropertyPermission("jboss.socket.binding.port-offset", "read")),
+                        new PropertyPermission("jboss.socket.binding.port-offset", "read"),
+                        new FilePermission(System.getProperty("jboss.home") + File.separatorChar + "standalone" + File.separatorChar + "tmp" + File.separatorChar + "auth" + File.separatorChar + "-", "read")),
 
                 "permissions.xml");
         return jar;

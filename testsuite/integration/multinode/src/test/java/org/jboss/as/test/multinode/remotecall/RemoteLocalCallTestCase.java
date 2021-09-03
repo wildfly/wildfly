@@ -77,6 +77,8 @@ public class RemoteLocalCallTestCase {
                 createPermissionsXmlAsset(
                         createFilePermission("delete",
                                 "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-")),
+                        createFilePermission("read",
+                                "jboss.home", Arrays.asList("standalone", "tmp", "auth", "-")),
                         new SecurityPermission("putProviderProperty.WildFlyElytron")),
                 "permissions.xml");
         return jar;
