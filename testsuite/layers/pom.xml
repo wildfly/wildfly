@@ -776,34 +776,6 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>undertow-legacy-https-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/undertow-legacy-https</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${servlet.feature.pack.groupId}</groupId>
-                                            <artifactId>${servlet.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>undertow-legacy-https</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
                                 <id>undertow-https-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -1001,7 +973,7 @@
                                                 <layer>naming</layer>
                                                 <layer>legacy-security</layer>
                                                 <layer>undertow</layer>
-                                                <layer>undertow-legacy-https</layer>
+                                                <layer>undertow-https</layer>
                                                 <layer>web-server</layer>
                                                 <!-- core-server, core-tools are from core, 
                                                 required to compare all layers with reference installation -->
@@ -2177,7 +2149,7 @@
                                                 <layer>microprofile-fault-tolerance</layer>
                                                 <layer>microprofile-jwt</layer>
                                                 <layer>microprofile-openapi</layer>
-                                                <layer>undertow-legacy-https</layer>
+                                                <layer>undertow-https</layer>
                                                 <layer>web-passivation</layer>
                                             </layers>
                                         </config>
@@ -2211,13 +2183,12 @@
                                                 <layer>microprofile-fault-tolerance</layer>
                                                 <layer>microprofile-jwt</layer>
                                                 <layer>microprofile-openapi</layer>
-                                                <layer>undertow-legacy-https</layer>
+                                                <layer>undertow-https</layer>
                                                 <layer>jpa-distributed</layer>
                                                 <layer>web-clustering</layer>
                                             </layers>
                                             <excluded-layers>
                                                 <layer>jpa</layer>
-                                                <layer>management-security-realm</layer>
                                             </excluded-layers>
                                         </config>
                                     </configurations>
@@ -2277,7 +2248,6 @@
                                             <model>standalone</model>
                                             <name>standalone.xml</name>
                                             <layers>
-                                                <layer>application-security-realm</layer>
                                                 <layer>base-server</layer>
                                                 <layer>batch-jberet</layer>
                                                 <layer>bean-validation</layer>
@@ -2285,7 +2255,6 @@
                                                 <layer>cloud-profile</layer>
                                                 <layer>cloud-server</layer>
                                                 <layer>core-management</layer>
-                                                <layer>core-security-realms</layer>
                                                 <layer>core-server</layer>
                                                 <layer>core-tools</layer>
                                                 <layer>datasources</layer>
@@ -2313,13 +2282,10 @@
                                                 <layer>jsf</layer>
                                                 <layer>jsonb</layer>
                                                 <layer>jsonp</layer>
-                                                <layer>legacy-management</layer>
-                                                <layer>legacy-remoting</layer>
                                                 <layer>legacy-security</layer>
                                                 <layer>logging</layer>
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
-                                                <layer>management-security-realm</layer>
                                                 <layer>messaging-activemq</layer>
                                                 <layer>naming</layer>
                                                 <layer>observability</layer>
@@ -2332,7 +2298,7 @@
                                                 <layer>security-manager</layer>
                                                 <layer>transactions</layer>
                                                 <layer>undertow</layer>
-                                                <layer>undertow-legacy-https</layer>
+                                                <layer>undertow-https</layer>
                                                 <layer>undertow-load-balancer</layer>
                                                 <layer>web-passivation</layer>
                                                 <layer>web-console</layer>
@@ -2378,7 +2344,6 @@
                                             <model>standalone</model>
                                             <name>standalone.xml</name>
                                             <layers>
-                                                <layer>application-security-realm</layer>
                                                 <layer>base-server</layer>
                                                 <layer>batch-jberet</layer>
                                                 <layer>bean-validation</layer>
@@ -2386,7 +2351,6 @@
                                                 <layer>cloud-profile</layer>
                                                 <layer>cloud-server</layer>
                                                 <layer>core-management</layer>
-                                                <layer>core-security-realms</layer>
                                                 <layer>core-server</layer>
                                                 <layer>core-tools</layer>
                                                 <layer>datasources</layer>
@@ -2414,13 +2378,10 @@
                                                 <layer>jsf</layer>
                                                 <layer>jsonb</layer>
                                                 <layer>jsonp</layer>
-                                                <layer>legacy-management</layer>
-                                                <layer>legacy-remoting</layer>
                                                 <layer>legacy-security</layer>
                                                 <layer>logging</layer>
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
-                                                <layer>management-security-realm</layer>
                                                 <layer>messaging-activemq</layer>
                                                 <layer>naming</layer>
                                                 <layer>observability</layer>
@@ -2433,7 +2394,7 @@
                                                 <layer>security-manager</layer>
                                                 <layer>transactions</layer>
                                                 <layer>undertow</layer>
-                                                <layer>undertow-legacy-https</layer>
+                                                <layer>undertow-https</layer>
                                                 <layer>undertow-load-balancer</layer>
                                                 <layer>web-clustering</layer>
                                                 <layer>web-console</layer>
