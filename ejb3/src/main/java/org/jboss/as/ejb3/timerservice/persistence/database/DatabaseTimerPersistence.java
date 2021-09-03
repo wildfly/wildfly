@@ -509,10 +509,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                         TimerImpl ret = timer.timer;
                         EjbLogger.DEPLOYMENT_LOGGER.loadedPersistentTimerInTimeout(ret.getId(), ret.getTimedObjectId());
                         if(ret.getNextExpiration() == null) {
-                            ret.setTimerState(TimerState.CANCELED);
+                            ret.setTimerState(TimerState.CANCELED, null);
                             persistTimer(ret);
                         } else {
-                            ret.setTimerState(TimerState.ACTIVE);
+                            ret.setTimerState(TimerState.ACTIVE, null);
                             persistTimer(ret);
                         }
                     }

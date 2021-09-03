@@ -622,7 +622,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         if (timer == null) {
             return;
         }
-        if (timer.isTimerPersistent()) {
+        if (timer.persistent) {
             try {
                 if (timerPersistence.getOptionalValue() == null) {
                     EJB3_TIMER_LOGGER.timerPersistenceNotEnable();
@@ -1194,7 +1194,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      */
     public boolean shouldRun(TimerImpl timer) {
         // check peristent without further check to prevent from Exception (WFLY-6152)
-        return !timer.isTimerPersistent() || timerPersistence.getValue().shouldRun(timer);
+        return !timer.persistent || timerPersistence.getValue().shouldRun(timer);
     }
 
     private class TimerCreationTransactionSynchronization implements Synchronization {
