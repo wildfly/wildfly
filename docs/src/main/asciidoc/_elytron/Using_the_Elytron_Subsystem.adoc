@@ -1151,7 +1151,7 @@ SSL/TLS for deployed applications. Example of wizard usage:
 
 [source,java,options="nowrap"]
 ----
-security enable-ssl-http-server --interactive
+security enable-ssl-http-server --interactive --override-ssl-context
 Please provide required pieces of information to enable SSL:
 Key-store file name (default default-server.keystore): keystore.jks
 Password (blank generated): secret
@@ -1301,7 +1301,7 @@ SSL/TLS for the deployed applications. Example of wizard usage:
 
 [source,java,options="nowrap"]
 ----
-security enable-ssl-http-server --interactive
+security enable-ssl-http-server --interactive --override-ssl-context
 Please provide required pieces of information to enable SSL:
 Key-store file name (default default-server.keystore): server.keystore.jks
 Password (blank generated): secret
