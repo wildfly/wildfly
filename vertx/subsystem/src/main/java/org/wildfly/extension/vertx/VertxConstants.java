@@ -17,6 +17,7 @@ package org.wildfly.extension.vertx;
 
 public interface VertxConstants {
 
+    String DEFAULT_JNDI_PREFIX = "java:/vertx/";
     String NAME = "name";
     String JNDI_NAME = "jndi-name";
     String VERTX_OPTIONS_FILE = "vertx-options-file";

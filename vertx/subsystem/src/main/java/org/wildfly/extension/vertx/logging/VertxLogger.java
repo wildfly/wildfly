@@ -47,7 +47,7 @@ public interface VertxLogger extends BasicLogger {
     @Message(id = 4, value = "Could not find VertxOptions from: %s")
     IllegalStateException cannotFindVertxOptionsURL(String vertxOptionsFile);
 
-    @Message(id = 5, value = "No Jgroups channel is specified for clustered Vertx %s")
+    @Message(id = 5, value = "No Jgroups channel is specified for clustered Vertx: %s")
     OperationFailedException noJgroupsChannelConfigured(String name);
 
     @Message(id = 6, value = "Could not find VertxOptions from: %s")

@@ -78,7 +78,12 @@ public class VertxResourceDefinition extends PersistentResourceDefinition {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
             final String name = context.getCurrentAddressValue();
-            final String jndiName = VertxAttributes.JNDI_NAME.resolveModelAttribute(context, operation).asString();
+            final String jndiName;
+            if (operation.hasDefined(VertxConstants.JNDI_NAME)) {
+                jndiName = VertxAttributes.JNDI_NAME.resolveModelAttribute(context, operation).asString();
+            } else {
+                jndiName = VertxConstants.DEFAULT_JNDI_PREFIX + name;
+            }
             final String vertxOptionsFile = operation.hasDefined(VertxConstants.VERTX_OPTIONS_FILE) ? VertxAttributes.VERTX_OPTIONS_FILE.resolveModelAttribute(context, operation).asString() : null;
             final boolean clustered = VertxAttributes.CLUSTERED.resolveModelAttribute(context, operation).asBoolean();
             String jgroupChannel = operation.hasDefined(VertxConstants.JGROUPS_CHANNEL) ? VertxAttributes.JGROUPS_CHANNEL.resolveModelAttribute(context, operation).asString() : null;

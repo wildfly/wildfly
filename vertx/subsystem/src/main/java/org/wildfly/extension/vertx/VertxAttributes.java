@@ -28,7 +28,7 @@ import java.util.List;
 public abstract class VertxAttributes {
 
     public static final SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(VertxConstants.JNDI_NAME, ModelType.STRING)
-            .setRequired(true)
+            .setRequired(false)
             .setAllowExpression(false)
             .setRestartAllServices()
             .setValidator(new ModelTypeValidator(ModelType.STRING, false))
