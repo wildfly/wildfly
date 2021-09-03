@@ -85,6 +85,7 @@ public class VertxResourceDefinition extends PersistentResourceDefinition {
             if (clustered && jgroupChannel == null) {
                 throw VERTX_LOGGER.noJgroupsChannelConfigured(name);
             }
+            final boolean forkedChannel = VertxAttributes.FORKED_CHANNEL.resolveModelAttribute(context, operation).asBoolean();
             try {
                 final VertxProxy vertxProxy = new VertxProxy();
                 vertxProxy.setName(name);
@@ -99,7 +100,7 @@ public class VertxResourceDefinition extends PersistentResourceDefinition {
                     vertxOptions = new VertxOptions(json);
                 }
                 vertxProxy.setVertxOptions(vertxOptions);
-                VertxProxyService.installService(context, vertxProxy);
+                VertxProxyService.installService(context, vertxProxy, forkedChannel);
             } catch (Exception e) {
                 throw VERTX_LOGGER.failedToStartVertx(name, e);
             }

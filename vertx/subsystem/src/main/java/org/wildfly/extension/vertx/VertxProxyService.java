@@ -54,14 +54,20 @@ public class VertxProxyService implements Service, VertxConstants {
     private volatile VertxDelegate vertxDelegate;
     private volatile DefaultCacheManager defaultCacheManager;
 
-    static void installService(OperationContext context, VertxProxy vertxProxy) {
+    static void installService(OperationContext context, VertxProxy vertxProxy, boolean forkedChannel) {
         VertxProxyService vertxProxyService;
         ServiceName vertxServiceName = VertxResourceDefinition.VERTX_RUNTIME_CAPABILITY.getCapabilityServiceName(vertxProxy.getName());
         ServiceBuilder<?> vertxServiceBuilder = context.getServiceTarget().addService(vertxServiceName);
         if (vertxProxy.isClustered()) {
-            // it is the source channel, new channel and transport ports need to be specified if multiple Vertx instances are to be created.
+            // channel factory can be either from source or forked.
+            // new channel and transport ports need to be specified if multiple Vertx instances are to be created.
             // cluster name cannot be overridden.
-            ServiceName channelFactoryServiceName = JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, vertxProxy.getJgroupChannelName());
+            final ServiceName channelFactoryServiceName;
+            if (forkedChannel) {
+                channelFactoryServiceName = JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, vertxProxy.getJgroupChannelName());
+            } else {
+                channelFactoryServiceName = JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, vertxProxy.getJgroupChannelName());
+            }
             Supplier<ChannelFactory> cacheManagerSupplier = vertxServiceBuilder.requires(channelFactoryServiceName);
             ServiceName clusterServiceName = JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, vertxProxy.getJgroupChannelName());
             Supplier<String> clusterSupplier = vertxServiceBuilder.requires(clusterServiceName);

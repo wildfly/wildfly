@@ -23,6 +23,7 @@ public interface VertxConstants {
     String VERTX_OPTIONS_URL = "org.wildfly.vertx.options.url";
     String CLUSTERED = "clustered";
     String JGROUPS_CHANNEL = "jgroups-channel";
+    String FORKED_CHANNEL = "forked-channel";
 
     String DEFAULT_CACHE_NAME = "distributed-cache";
     String SUBS_CACHE_NAME = "__vertx.subs";
