@@ -128,7 +128,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         final String appJNDIBaseName = "java:app/" + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
         final String moduleJNDIBaseName = "java:module/" + sessionBean.getEJBName();
         final String remoteExportedJNDIBaseName = "java:jboss/exported/" + (applicationName != null ? applicationName + "/" : "") + sessionBean.getModuleName() + "/" + sessionBean.getEJBName();
-        final String ejbNamespaceBindingBaseName = "ejb:" + (applicationName != null ? applicationName : "") + "/" + sessionBean.getModuleName() + "/" + (distinctName != "" ? distinctName + "/" : "") + sessionBean.getEJBName();
+        final String ejbNamespaceBindingBaseName = "ejb:" + (applicationName != null ? applicationName : "") + "/" + sessionBean.getModuleName() + "/" + (!"".equals(distinctName) ? distinctName + "/" : "") + sessionBean.getEJBName();
 
         // the base ServiceName which will be used to create the ServiceName(s) for each of the view bindings
         final StringBuilder jndiBindingsLogMessage = new StringBuilder();
