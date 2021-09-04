@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.dmr.ModelNode;
 
@@ -45,7 +46,10 @@ public class DomainAdjuster740 extends DomainAdjuster {
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) throws Exception {
         final List<ModelNode> ops = new ArrayList<>();
 
-        // Mixed Domain tests always uses the full build instead of alternating with ee-dist. We need to remove here
+        adjustRemoting(ops, profileAddress.append(SUBSYSTEM, "remoting"));
+        adjustUndertow(ops, profileAddress.append(SUBSYSTEM, "undertow"));
+        // Mixed Domain tests always uses the complete build instead of alternating with ee-dist. We need to remove here
+
         // the pre-configured microprofile extensions to adjust the current domain to work with a node running EAP 7.4.0
         // which only uses the ee-dist
         removeSubsystemExtension(ops, profileAddress.append(SUBSYSTEM, "microprofile-opentracing-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.opentracing-smallrye"));
@@ -55,8 +59,30 @@ public class DomainAdjuster740 extends DomainAdjuster {
         return ops;
     }
 
+    private static void adjustRemoting(final List<ModelNode> ops, final PathAddress subsystem) {
+        // This adjusts the configuration to reflect the configuration that was used in EAP 7.4,
+        // this could equally be moved all the way back and only adjusted for EAP 7.0.0 as we remove
+        // the Elytron subsystem.
+        final PathAddress httpRemotingConnector = subsystem
+                .append("http-connector", "http-remoting-connector");
+        ops.add(Util.getUndefineAttributeOperation(httpRemotingConnector, "sasl-authentication-factory"));
+    }
+
     private void removeSubsystemExtension(List<ModelNode> ops, PathAddress subsystem, PathAddress extension) {
         ops.add(createRemoveOperation(subsystem));
         ops.add(createRemoveOperation(extension));
     }
+
+    private static void adjustUndertow(final List<ModelNode> ops, final PathAddress subsystem) {
+        // This adjusts the configuration to reflect the configuration that was used in EAP 7.4,
+        // this could equally be moved all the way back and only adjusted for EAP 7.0.0 as we remove
+        // the Elytron subsystem.
+        final PathAddress httpInvoker = subsystem
+                .append("server", "default-server")
+                .append("host", "default-host")
+                .append("setting", "http-invoker");
+        ops.add(Util.getUndefineAttributeOperation(httpInvoker, "http-authentication-factory"));
+        ops.add(Util.getWriteAttributeOperation(httpInvoker, "security-realm", "ApplicationRealm"));
+    }
+
 }

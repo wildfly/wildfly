@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="core-host-slave" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="host">
+        <param name="host" value="slave"/>
+        <param name="persist-name" value="false"/>
+
+        <feature spec="core-service.management"/>
+        <feature spec="host.domain-controller">
+            <!--<param name="remote" value="{security-realm=ManagementRealm}"/>-->
+            <!-- TODO convert to Elytron -->
+            <param name="remote" value="{}" /> 
+        </feature>
+
+        <!-- TODO Add an authentication client example.
+ 
+        <feature spec="core-service.management.security-realm">
+            <param name="security-realm" value="ManagementRealm"/>
+            <feature spec="core-service.management.security-realm.server-identity.secret">
+                <param name="value" value="&quot;c2xhdmVfdXNlcl9wYXNzd29yZA==&quot;"/>
+            </feature>
+        </feature>
+        -->
+
+        <feature-group name="host-audit"/>
+        <feature-group name="host-profile"/>
+
+        <feature spec="host.core-service.discovery-options">
+            <feature spec="host.core-service.discovery-options.static-discovery">
+                <param name="static-discovery" value="primary"/>
+                <param name="protocol" value="${jboss.domain.master.protocol:remote+http}"/>
+                <param name="host-feature" value="${jboss.domain.master.address}"/>
+                <param name="host" value="slave"/>
+                <param name="port" value="${jboss.domain.master.port:9990}"/>
+            </feature>
+        </feature>
+
+        <feature-group name="host-interfaces"/>
+        <feature-group name="host-management-interfaces"/>
+
+        <feature spec="host.server-config">
+            <param name="server-config" value="server-one"/>
+            <param name="group" value="main-server-group"/>
+        </feature>
+        <feature spec="host.server-config">
+            <param name="server-config" value="server-two"/>
+            <param name="group" value="other-server-group"/>
+            <param name="socket-binding-port-offset" value="150"/>
+        </feature>
+
+        <feature-group name="host-jvm"/>
+    </feature>
+</feature-group-spec>

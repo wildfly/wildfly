@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="undertow-https">
+    <dependencies>
+        <layer name="elytron"/>
+        <layer name="undertow"/>
+    </dependencies>
+    <feature-group name="undertow-https"/>
+</layer-spec>

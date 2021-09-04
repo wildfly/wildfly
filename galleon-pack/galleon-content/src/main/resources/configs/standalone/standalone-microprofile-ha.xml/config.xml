@@ -11,10 +11,10 @@
         <include name="microprofile-openapi"/>
         <include name="microprofile-opentracing"/>
         <include name="microprofile-rest-client"/>
-        <include name="undertow-legacy-https"/>
-        <exclude name="management-security-realm"/>
         <exclude name="jpa"/>
         <include name="jpa-distributed"/>
         <include name="web-clustering"/>
     </layers>
+    <!-- TODO WFLY-15021 Add an undertow-https layer -->
+    <feature-group name="undertow-https"/>
 </config>

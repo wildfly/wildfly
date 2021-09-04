@@ -22,6 +22,10 @@
 
 package org.jboss.as.test.manualmode.ejb.client.outbound.connection;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.io.File;
+import java.io.FilePermission;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -102,6 +106,10 @@ public class RemoteOutboundConnectionReconnectTestCase {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, SERVER_ONE_MODULE_NAME + ".jar");
         ejbJar.addClasses(EchoOnServerOne.class, RemoteEcho.class, IndependentBean.class);
         ejbJar.addAsManifestResource(EchoOnServerOne.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        ejbJar.addAsManifestResource(
+                createPermissionsXmlAsset(
+                        new FilePermission(System.getProperty("jboss.home") + File.separatorChar + "standalone" + File.separatorChar + "tmp" + File.separatorChar + "auth" + File.separatorChar + "-", "read")),
+                "permissions.xml");
         return ejbJar;
     }
 

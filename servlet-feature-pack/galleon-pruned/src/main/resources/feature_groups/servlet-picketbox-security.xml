@@ -12,10 +12,10 @@
                     <param name="module-options" value="{password-stacking=useFirstPass}"/>
                 </feature>
                 <feature spec="subsystem.security.security-domain.authentication.classic.login-module">
-                    <param name="login-module" value="RealmDirect"/>
-                    <param name="code" value="RealmDirect"/>
+                    <param name="login-module" value="RealmUsersRoles"/>
+                    <param name="code" value="RealmUsersRoles"/>
                     <param name="flag" value="required"/>
-                    <param name="module-options" value="{password-stacking=useFirstPass}"/>
+                    <param name="module-options" value="{password-stacking=useFirstPass, usersProperties=${jboss.server.config.dir}/application-users.properties , rolesProperties=${jboss.server.config.dir}/application-roles.properties}"/>
                 </feature>
             </feature>
         </feature>

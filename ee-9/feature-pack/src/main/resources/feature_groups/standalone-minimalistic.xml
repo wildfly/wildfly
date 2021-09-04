@@ -18,14 +18,11 @@
         </feature>
     </feature>
 
-    <feature-group name="servlet-security-realms">
-        <exclude feature-id="core-service.management.security-realm:security-realm=ApplicationRealm"/>
-        <exclude spec="core-service.management.security-realm.authorization.properties" />
-        <include feature-id="core-service.management.security-realm:core-service=management,security-realm=ManagementRealm">
-            <unset param="map-groups-to-roles"/>
-        </include>
-    </feature-group>
-
+    <!-- TODO like standalone-loadbalancer this will need the absolute minimum -->
+    <feature spec="subsystem.elytron" />
+    <feature-group name="elytron-common"/>
+    <feature-group name="standalone-elytron"/>
+    <feature spec="core-service.management" />
     <feature-group name="management-interfaces">
         <feature spec="core-service.management.management-interface.http-interface">
             <param name="console-enabled" value="false"/>

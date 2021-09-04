@@ -11,26 +11,21 @@ echo INFO: Updating configuration to use elytron
 /subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
 /subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
 
-# These apply to full configurations only.
-if (outcome == success) of /subsystem=messaging-activemq/server=default:read-resource
-  /subsystem=messaging-activemq/server=default:write-attribute(name=security-domain)
-  /subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
-end-if
 if (outcome == success) of /subsystem=iiop-openjdk:read-resource
-    /subsystem=iiop-openjdk:write-attribute(name=security, value=elytron)
+  /subsystem=iiop-openjdk:write-attribute(name=security, value=elytron)
+else 
+  echo INFO: iiop-openjdk not present, skipping update to use Elytron
 end-if
 
-/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
-/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
+if (outcome == success) of /subsystem=messaging-activemq/server=default:read-resource
+  /subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
+else 
+  echo INFO: messaging-activemq not present, skipping update to use Elytron
+end-if
 
-/core-service=management/access=identity:add(security-domain=ManagementDomain)
-/core-service=management/management-interface=http-interface:write-attribute(name=http-upgrade,value={enabled=true, sasl-authentication-factory=management-sasl-authentication})
-/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory,value=management-http-authentication)
-/core-service=management/management-interface=http-interface:undefine-attribute(name=security-realm)
 
-echo INFO: Removing security subsystem and ManagementRealm.
+echo INFO: Removing security subsystem.
 
-/core-service=management/security-realm=ManagementRealm:remove
 /subsystem=security:remove
 /extension=org.jboss.as.security:remove
 

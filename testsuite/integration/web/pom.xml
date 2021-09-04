@@ -326,7 +326,7 @@
                             </feature-packs>
                             <layers>
                                 <layer>datasources-web-server</layer>
-                                <layer>undertow-legacy-https</layer>
+                                <layer>undertow-https</layer>
                             </layers>
                             <excluded-layers>
                                 <layer>datasources</layer>
@@ -683,7 +683,7 @@
                                             <name>standalone.xml</name>
                                             <layers>
                                                 <layer>datasources-web-server</layer>
-                                                <layer>undertow-legacy-https</layer>
+                                                <layer>undertow-https</layer>
                                             </layers>
                                             <excluded-layers>
                                                 <layer>datasources</layer>

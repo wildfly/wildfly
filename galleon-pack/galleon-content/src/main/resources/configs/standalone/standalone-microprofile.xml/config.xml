@@ -11,9 +11,9 @@
         <include name="microprofile-openapi"/>
         <include name="microprofile-opentracing"/>
         <include name="microprofile-rest-client"/>
-        <include name="undertow-legacy-https"/>
-        <exclude name="management-security-realm"/>
     </layers>
+    <!-- TODO WFLY-15021 Add an undertow-https layer -->
+    <feature-group name="undertow-https"/>
     <!-- TODO WFLY-13150 encapsulate these in a layer -->
     <feature-group name="distributable-web-local"/>
     <feature-group name="infinispan-local-web"/>

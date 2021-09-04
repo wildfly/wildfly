@@ -38,11 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.security.auth.callback.CallbackHandler;
-
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.domain.management.CallbackHandlerFactory;
-import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
@@ -65,9 +61,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.RemotingOptions;
@@ -275,12 +269,6 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                     final long clusterConnectTimeout = clusterConfig.getConnectTimeout();
                     clientClusterBuilder.setConnectTimeoutMilliseconds(clusterConnectTimeout);
 
-                    final String clusterSecurityRealm = clusterConfig.getSecurityRealm();
-                    final String clusterUserName = clusterConfig.getUserName();
-                    CallbackHandler callbackHandler = getCallbackHandler(phaseContext.getServiceRegistry(), clusterUserName, clusterSecurityRealm);
-                    if (callbackHandler != null) {
-                        defaultAuthenticationConfiguration = defaultAuthenticationConfiguration.useCallbackHandler(callbackHandler);
-                    }
                     if (clusterConnectionOptionMap != null) {
                         RemotingOptions.mergeOptionsIntoAuthenticationConfiguration(clusterConnectionOptionMap, defaultAuthenticationConfiguration);
                     }
@@ -300,12 +288,6 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                         final OptionMap connectionOptionMap = getOptionMapFromProperties(connectionOptions, EJBClientDescriptorMetaDataProcessor.class.getClassLoader());
                         final long connectTimeout = clusterNodeConfig.getConnectTimeout();
 
-                        final String securityRealm = clusterNodeConfig.getSecurityRealm();
-                        final String userName = clusterNodeConfig.getUserName();
-                        CallbackHandler nodeCallbackHandler = getCallbackHandler(phaseContext.getServiceRegistry(), userName, securityRealm);
-                        if (nodeCallbackHandler != null) {
-                            nodeAuthenticationConfiguration = nodeAuthenticationConfiguration.useCallbackHandler(nodeCallbackHandler);
-                        }
                         if (connectionOptionMap != null) {
                             RemotingOptions.mergeOptionsIntoAuthenticationConfiguration(connectionOptionMap, nodeAuthenticationConfiguration);
                         }
@@ -364,21 +346,6 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
             }
         }
         return optionMapBuilder.getMap();
-    }
-
-    private CallbackHandler getCallbackHandler(final ServiceRegistry serviceRegistry, final String userName, final String securityRealmName) {
-        if (securityRealmName != null && ! securityRealmName.trim().isEmpty()) {
-            final ServiceName securityRealmServiceName = SecurityRealm.ServiceUtil.createServiceName(securityRealmName);
-            final ServiceController<SecurityRealm> securityRealmController = (ServiceController<SecurityRealm>) serviceRegistry.getService(securityRealmServiceName);
-            if (securityRealmController != null) {
-                final SecurityRealm securityRealm = securityRealmController.getValue();
-                final CallbackHandlerFactory cbhFactory;
-                if (securityRealm != null && (cbhFactory = securityRealm.getSecretCallbackHandlerFactory()) != null && userName != null) {
-                    return cbhFactory.getCallbackHandler(userName);
-                }
-            }
-        }
-        return null;
     }
 
     private List<EJBClientInterceptor> getClassPathInterceptors(final ClassLoader classLoader) throws DeploymentUnitProcessingException {

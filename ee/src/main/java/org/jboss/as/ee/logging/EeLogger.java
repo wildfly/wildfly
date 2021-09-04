@@ -1204,4 +1204,7 @@ public interface EeLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 130, value = "%s hung task %s not cancelled")
     void hungTaskNotCancelled(String executorName, String taskName);
+
+    @Message(id = 131, value = "The attribute %s is no longer supported.")
+    XMLStreamException attributeNoLongerSupported(final String attribute);
 }

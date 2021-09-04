@@ -37,7 +37,6 @@ import org.codehaus.plexus.util.FileUtils;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
-import org.jboss.as.test.integration.web.security.WebSecurityCommon;
 import org.junit.Assert;
 import org.wildfly.test.security.common.other.KeyStoreUtils;
 import org.wildfly.test.security.common.other.KeyUtils;
@@ -50,8 +49,6 @@ import org.wildfly.test.security.common.other.KeyUtils;
 public class WebCERTTestsSetup implements ServerSetupTask {
     static final int HTTPS_PORT = 8380;
 
-
-    private WebCERTTestsSecurityDomainSetup legacySetup = null;
     private WebCERTTestsElytronSetup elytronSetup = null;
 
     private static final String NAME = WebCERTTestsSetup.class.getSimpleName();
@@ -64,29 +61,20 @@ public class WebCERTTestsSetup implements ServerSetupTask {
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         keyMaterialSetup(WORK_DIR);
-        if (WebSecurityCommon.isElytron()) {
-            elytronSetup = new WebCERTTestsElytronSetup();
-            try {
-                elytronSetup.setup(managementClient, containerId);
-            } catch (Exception e) {
-                throw new RuntimeException("Setting up of Elytron based security domain failed.", e);
-            }
-        } else {
-            legacySetup = new WebCERTTestsSecurityDomainSetup();
-            legacySetup.setup(managementClient, containerId);
+        elytronSetup = new WebCERTTestsElytronSetup();
+        try {
+            elytronSetup.setup(managementClient, containerId);
+        } catch (Exception e) {
+            throw new RuntimeException("Setting up of Elytron based security domain failed.", e);
         }
     }
 
     @Override
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        if (WebSecurityCommon.isElytron()) {
-            try {
-                elytronSetup.tearDown(managementClient, containerId);
-            } catch (Exception e) {
-                throw new RuntimeException("Cleaning up for Elytron based security domain failed.", e);
-            }
-        } else {
-            legacySetup.tearDown(managementClient, containerId);
+        try {
+            elytronSetup.tearDown(managementClient, containerId);
+        } catch (Exception e) {
+            throw new RuntimeException("Cleaning up for Elytron based security domain failed.", e);
         }
         FileUtils.deleteDirectory(WORK_DIR);
     }

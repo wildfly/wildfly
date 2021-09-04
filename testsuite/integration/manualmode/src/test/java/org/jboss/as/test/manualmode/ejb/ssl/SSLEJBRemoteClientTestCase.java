@@ -44,6 +44,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -62,6 +63,7 @@ import java.util.concurrent.Future;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("[WFLY-15179] Update SSLEJBRemoteClientTestCase to use Elytron SSLContext.")
 public class SSLEJBRemoteClientTestCase {
     private static final Logger log = Logger.getLogger(SSLEJBRemoteClientTestCase.class);
     private static final String MODULE_NAME_STATELESS = "ssl-remote-ejb-client-test";

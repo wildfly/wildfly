@@ -29,9 +29,7 @@ import io.undertow.server.ListenerRegistry;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.OptionMap;
 
 import java.util.function.Consumer;
@@ -89,21 +87,10 @@ class HttpsListenerAdd extends ListenerAdd {
         final ModelNode securityRealmModel = HttpsListenerResourceDefinition.SECURITY_REALM.resolveModelAttribute(context, model);
         final String sslContextRef = sslContextModel.isDefined() ? sslContextModel.asString() : null;
         final Supplier<SSLContext> sslContextInjector = sslContextRef != null ? serviceBuilder.requiresCapability(REF_SSL_CONTEXT, SSLContext.class, sslContextRef) : null;
-        final String securityRealmRef = securityRealmModel.isDefined() ? securityRealmModel.asString() : null;
-        final Supplier<SecurityRealm> securityRealmInjector = securityRealmRef != null ? SecurityRealm.ServiceUtil.requires(serviceBuilder, securityRealmRef) : null;
 
         ((HttpsListenerService)service).setSSLContextSupplier(()-> {
             if (sslContextRef != null) {
                 return sslContextInjector.get();
-            }
-
-            if (securityRealmRef != null) {
-                 SSLContext sslContext = securityRealmInjector.get().getSSLContext();
-
-                 if (sslContext == null) {
-                     throw UndertowLogger.ROOT_LOGGER.noSslContextInSecurityRealm(securityRealmRef);
-                 }
-                 return sslContext;
             }
 
             try {

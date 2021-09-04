@@ -121,9 +121,7 @@ public class HostXmlSmokeTestCase extends TestBase {
         assertContains(errorLog, "audit-log");
         assertContains(errorLog, "management-interfaces");
         assertContains(errorLog, "configuration-changes");
-        assertContains(errorLog, "outbound-connections");
         assertContains(errorLog, "identity");
-        assertContains(errorLog, "security-realms");
 
     }
     @Test

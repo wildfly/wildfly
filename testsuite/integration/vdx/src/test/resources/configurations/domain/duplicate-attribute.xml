@@ -266,7 +266,7 @@
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:4.0">
                 <endpoint/>
-                <http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
+                <http-connector name="http-remoting-connector" connector-ref="default" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:4.0"/>
             <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
@@ -322,7 +322,7 @@
                 <buffer-cache name="default"/>
                 <server name="default-server">
                     <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
-                    <https-listener name="https" socket-binding="https" security-realm="ApplicationRealm" enable-http2="true"/>
+                    <https-listener name="https" socket-binding="https" enable-http2="true"/>
                     <host name="default-host" alias="localhost">
                         <location name="/" handler="welcome-content"/>
                         <filter-ref name="server-header"/>
@@ -605,7 +605,7 @@
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:4.0">
                 <endpoint/>
-                <http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
+                <http-connector name="http-remoting-connector" connector-ref="default" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:4.0"/>
             <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
@@ -669,7 +669,7 @@
                 <server name="default-server">
                     <ajp-listener name="ajp" socket-binding="ajp"/>
                     <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
-                    <https-listener name="https" socket-binding="https" security-realm="ApplicationRealm" enable-http2="true"/>
+                    <https-listener name="https" socket-binding="https" enable-http2="true"/>
                     <host name="default-host" alias="localhost">
                         <location name="/" handler="welcome-content"/>
                         <filter-ref name="server-header"/>
@@ -949,7 +949,7 @@
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:4.0">
                 <endpoint/>
-                <http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
+                <http-connector name="http-remoting-connector" connector-ref="default" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:4.0"/>
             <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
@@ -1005,7 +1005,7 @@
                 <buffer-cache name="default"/>
                 <server name="default-server">
                     <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
-                    <https-listener name="https" socket-binding="https" security-realm="ApplicationRealm" enable-http2="true"/>
+                    <https-listener name="https" socket-binding="https"  enable-http2="true"/>
                     <host name="default-host" alias="localhost">
                         <location name="/" handler="welcome-content"/>
                         <filter-ref name="server-header"/>
@@ -1326,7 +1326,7 @@
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:4.0">
                 <endpoint/>
-                <http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
+                <http-connector name="http-remoting-connector" connector-ref="default" />
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:4.0"/>
             <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
@@ -1390,7 +1390,7 @@
                 <server name="default-server">
                     <ajp-listener name="ajp" socket-binding="ajp"/>
                     <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
-                    <https-listener name="https" socket-binding="https" security-realm="ApplicationRealm" enable-http2="true"/>
+                    <https-listener name="https" socket-binding="https"  enable-http2="true"/>
                     <host name="default-host" alias="localhost">
                         <location name="/" handler="welcome-content"/>
                         <filter-ref name="server-header"/>

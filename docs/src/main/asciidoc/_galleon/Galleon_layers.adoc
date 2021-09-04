@@ -484,10 +484,10 @@ Use link:#gal.web-server[web-server] for a servlet container with EE integration
 link:#gal.base-server[base-server] +
 link:#gal.io[io] +
 
-|[[gal.undertow-legacy-https]]undertow-legacy-https
-|Support for the Undertow HTTPS server secured using the legacy security ApplicationRealm.
+|[[gal.undertow-https]]undertow-https
+|Support for the Undertow HTTPS server secured using the applicationSSC SSLContext.
 |
-link:#gal.core-security-realms[core-security-realms] +
+link:#gal.elytron[elytron] +
 link:#gal.undertow[undertow] +
 
 |[[gal.undertow-load-balancer]]undertow-load-balancer

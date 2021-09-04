@@ -56,7 +56,6 @@ public class ElytronTestCase extends TestBase {
         assertContains(errorLog, "hash-encoding");
         assertContains(errorLog, "users-properties");
         assertContains(errorLog, "'plain-text' is allowed on elements:");
-        assertContains(errorLog, "server > management > security-realms > security-realm > authentication > properties");
         assertContains(errorLog, "server > profile > {urn:wildfly:elytron");
         assertContains(errorLog, "subsystem > security-realms > properties-realm > users-properties");
 

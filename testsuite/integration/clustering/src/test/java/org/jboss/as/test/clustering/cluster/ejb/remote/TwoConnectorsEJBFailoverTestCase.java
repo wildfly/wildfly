@@ -228,7 +228,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
         public ServerSetupTask() {
             this.builder.node(TWO_NODES)
                     .setup("/socket-binding-group=standard-sockets/socket-binding=remoting:add(port=4447)")
-                    .setup("/subsystem=remoting/connector=remoting-connector:add(socket-binding=remoting, security-realm=ApplicationRealm)")
+                    .setup("/subsystem=remoting/connector=remoting-connector:add(socket-binding=remoting, sasl-authentication-factory=application-sasl-authentication)")
                     .setup("/subsystem=remoting/connector=remoting-connector/property=SSL_ENABLED:add(value=false)")
                     // this step results in a capabilities error if the list is not formatted correctly for CLI
                     .setup("/subsystem=ejb3/service=remote:list-add(name=connectors, value=remoting-connector)")

@@ -24,6 +24,8 @@ package org.jboss.as.test.manualmode.ejb.ssl;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -161,6 +163,17 @@ public class SSLRealmSetupTool {
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // make the https connector use our SSL realm
+        final ModelNode compositeOp = Util.createOperation(COMPOSITE, PathAddress.EMPTY_ADDRESS);
+        final ModelNode steps = compositeOp.get(STEPS);
+
+        operation = new ModelNode();
+        operation.get(OP).set(UNDEFINE_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).add(SUBSYSTEM, "undertow");
+        operation.get(OP_ADDR).add("server", "default-server");
+        operation.get(OP_ADDR).add("https-listener", "https");
+        operation.get(NAME).set("ssl-context");
+        steps.add(operation);
+
         operation = new ModelNode();
         operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         operation.get(OP_ADDR).add(SUBSYSTEM, "undertow");
@@ -168,14 +181,17 @@ public class SSLRealmSetupTool {
         operation.get(OP_ADDR).add("https-listener", "https");
         operation.get(NAME).set("security-realm");
         operation.get(VALUE).set(SECURITY_REALM_NAME);
-        result = managementClient.getControllerClient().execute(operation);
+        steps.add(operation);
+
+        result = managementClient.getControllerClient().execute(compositeOp);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         //add remoting connector
         operation = new ModelNode();
         operation.get(OP_ADDR).set(SSLRealmSetupTool.getRemotingConnectorAddress());
         operation.get(OP).set(ADD);
-        operation.get(SECURITY_REALM).set("ApplicationRealm");
+        operation.get("sasl-authentication-factory").set("application-sasl-authentication");
+        operation.get("ssl-context").set("applicationSSC");
         operation.get(PROTOCOL).set("https-remoting");
         operation.get("connector-ref").set("https");
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
@@ -229,15 +245,28 @@ public class SSLRealmSetupTool {
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
 
         // restore https connector to previous state
+        final ModelNode compositeOp = Util.createOperation(COMPOSITE, PathAddress.EMPTY_ADDRESS);
+        compositeOp.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        final ModelNode steps = compositeOp.get(STEPS);
+
+        operation = new ModelNode();
+        operation.get(OP).set(UNDEFINE_ATTRIBUTE_OPERATION);
+        operation.get(OP_ADDR).add(SUBSYSTEM, "undertow");
+        operation.get(OP_ADDR).add("server", "default-server");
+        operation.get(OP_ADDR).add("https-listener", "https");
+        operation.get(NAME).set("security-realm");
+        steps.add(operation);
+
         operation = new ModelNode();
         operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         operation.get(OP_ADDR).add(SUBSYSTEM, "undertow");
         operation.get(OP_ADDR).add("server", "default-server");
         operation.get(OP_ADDR).add("https-listener", "https");
-        operation.get(NAME).set("security-realm");
-        operation.get(VALUE).set("ApplicationRealm");
-        operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        result = managementClient.getControllerClient().execute(operation);
+        operation.get(NAME).set("ssl-context");
+        operation.get(VALUE).set("applicationSSC");
+        steps.add(operation);
+
+        result = managementClient.getControllerClient().execute(compositeOp);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
 

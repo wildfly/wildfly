@@ -21,17 +21,17 @@
  */
 package org.jboss.as.test.manualmode.web.ssl;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.jboss.as.test.integration.security.common.Utils.makeCallWithHttpClient;
 import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT_VERIFY_FALSE;
 import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT_VERIFY_TRUE;
 import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT_VERIFY_WANT;
+import static org.jboss.as.test.integration.security.common.Utils.makeCallWithHttpClient;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -39,6 +39,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import javax.net.ssl.SSLException;
@@ -57,6 +59,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -83,6 +86,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assume;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -94,7 +98,7 @@ import org.junit.runner.RunWith;
  * certificate is accepted in server truststore. HTTP client uses client truststore with accepted
  * server certificate to authenticate server identity.
  *
- * Keystores and truststores have valid certificates until 25 Octover 2033.
+ * Keystores and truststores have valid certificates until 25 October 2033.
  *
  * @author Filip Bogyai
  * @author Josef cacek
@@ -103,6 +107,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @Category(CommonCriteria.class)
+@Ignore("[WFLY-15177] Complete porting of HTTPSWebConnectorTestCase to Elytron.")
 public class HTTPSWebConnectorTestCase {
 
     private static final String STANDARD_SOCKETS = "standard-sockets";
@@ -126,7 +131,10 @@ public class HTTPSWebConnectorTestCase {
     private static final String HTTPS_NAME_VERIFY_REQUESTED = "https-verify-requested";
     private static final String HTTPS_NAME_VERIFY_REQUIRED = "https-verify-required";
 
-    private static final String HTTPS_REALM = "httpsRealm";
+    private static final String SSL_CONTEXT_DEFAULT = "TestSSLContextDefault";
+    private static final String SSL_CONTEXT_NEED = "TestSSLContextNeed";
+    private static final String SSL_CONTEXT_WANT = "TestSSLContextWant";
+
     private static final String APP_CONTEXT = HTTPS;
     private static final String SECURED_SERVLET_WITH_SESSION = SimpleSecuredServlet.SERVLET_PATH + "?"
             + SimpleSecuredServlet.CREATE_SESSION_PARAM + "=true";
@@ -368,35 +376,95 @@ public class HTTPSWebConnectorTestCase {
 
         final ModelControllerClient client = managementClient.getControllerClient();
 
-        // add new HTTPS_REALM with SSL
-        ModelNode operation = createOpNode("core-service=management/security-realm=" + HTTPS_REALM, ModelDescriptionConstants.ADD);
-        Utils.applyUpdate(operation, client);
-
-        operation = createOpNode("core-service=management/security-realm=" + HTTPS_REALM + "/authentication=truststore",
-                ModelDescriptionConstants.ADD);
-        operation.get("keystore-path").set(SERVER_TRUSTSTORE_FILE.getAbsolutePath());
-        operation.get("keystore-password").set(SecurityTestConstants.KEYSTORE_PASSWORD);
-        Utils.applyUpdate(operation, client);
-
-        operation = createOpNode("core-service=management/security-realm=" + HTTPS_REALM + "/server-identity=ssl",
-                ModelDescriptionConstants.ADD);
-        operation.get(PROTOCOL).set("TLSv1");
-        operation.get("keystore-path").set(SERVER_KEYSTORE_FILE.getAbsolutePath());
-        operation.get("keystore-password").set(SecurityTestConstants.KEYSTORE_PASSWORD);
-        // operation.get("alias").set("management");
-        Utils.applyUpdate(operation, client);
+        // add new SSLContext
+        ModelNode addSSLContexts = createAddSSLContexts();
+        Utils.applyUpdate(addSSLContexts, client);
 
         LOGGER.trace("*** restarting server");
         containerController.stop(CONTAINER);
         containerController.start(CONTAINER);
 
-        addHttpsConnector("NOT_REQUESTED", HTTPS_NAME_VERIFY_NOT_REQUESTED, HTTPS_PORT_VERIFY_FALSE, client);
-        addHttpsConnector("REQUESTED", HTTPS_NAME_VERIFY_REQUESTED, HTTPS_PORT_VERIFY_WANT, client);
-        addHttpsConnector("REQUIRED", HTTPS_NAME_VERIFY_REQUIRED, HTTPS_PORT_VERIFY_TRUE, client);
-
+        addHttpsConnector(SSL_CONTEXT_DEFAULT, HTTPS_NAME_VERIFY_NOT_REQUESTED, HTTPS_PORT_VERIFY_FALSE, client);
+        addHttpsConnector(SSL_CONTEXT_WANT, HTTPS_NAME_VERIFY_REQUESTED, HTTPS_PORT_VERIFY_WANT, client);
+        addHttpsConnector(SSL_CONTEXT_NEED, HTTPS_NAME_VERIFY_REQUIRED, HTTPS_PORT_VERIFY_TRUE, client);
     }
 
-    private void addHttpsConnector(String verifyClient, String httpsName, int httpsPort, ModelControllerClient client)
+    private ModelNode createAddSSLContexts() throws Exception {
+        List<ModelNode> operations = new ArrayList<>();
+
+        // Shared by all contexts
+        addKeyManager(operations);
+        addTrustManager(operations);
+
+        addSSLContext(operations, SSL_CONTEXT_DEFAULT, false, false);
+        addSSLContext(operations, SSL_CONTEXT_NEED, false, true);
+        addSSLContext(operations, SSL_CONTEXT_WANT, true, false);
+
+        return Operations.createCompositeOperation(operations);
+    }
+
+    private ModelNode createRemoveSSLContexts() throws Exception {
+        List<ModelNode> operations = new ArrayList<>();
+        operations.add(createOpNode("subsystem=elytron/server-ssl-context=" + SSL_CONTEXT_DEFAULT, ModelDescriptionConstants.REMOVE));
+        operations.add(createOpNode("subsystem=elytron/server-ssl-context=" + SSL_CONTEXT_NEED, ModelDescriptionConstants.REMOVE));
+        operations.add(createOpNode("subsystem=elytron/server-ssl-context=" + SSL_CONTEXT_WANT, ModelDescriptionConstants.REMOVE));
+
+        operations.add(createOpNode("subsystem=elytron/trust-manager=TestTrustManager", ModelDescriptionConstants.REMOVE));
+        operations.add(createOpNode("subsystem=elytron/key-manager=TestKeyManager", ModelDescriptionConstants.REMOVE));
+
+        operations.add(createOpNode("subsystem=elytron/key-store=TestStore", ModelDescriptionConstants.REMOVE));
+
+        return Operations.createCompositeOperation(operations);
+    }
+
+    private void addSSLContext(List<ModelNode> operations, final String name, final boolean wantClientAuth,
+                               final boolean needClientAuth) throws Exception {
+        final ModelNode addOp = createOpNode("subsystem=elytron/server-ssl-context=" + name, ADD);
+        addOp.get("key-manager").set("TestKeyManager");
+        addOp.get("trust-manager").set("TestTrustManager");
+        final ModelNode protocols = new ModelNode();
+        protocols.add("TLSv1");
+        addOp.get("protocols").set(protocols);
+        if (wantClientAuth) {
+            addOp.get("want-client-auth").set(true);
+        }
+        if (needClientAuth) {
+            addOp.get("need-client-auth").set(true);
+        }
+
+        operations.add(addOp);
+    }
+
+    private void addTrustManager(List<ModelNode> operations) throws Exception {
+        final ModelNode addOp = createOpNode("subsystem=elytron/trust-manager=TestTrustManager", ADD);
+        addOp.get("key-store").set("TestStore");
+
+        operations.add(addOp);
+    }
+
+    private void addKeyManager(List<ModelNode> operations) throws Exception {
+        addKeyStore(operations);
+
+        final ModelNode addOp = createOpNode("subsystem=elytron/key-manager=TestKeyManager", ADD);
+        ModelNode credentialReference = new ModelNode();
+        credentialReference.get("clear-text").set(SecurityTestConstants.KEYSTORE_PASSWORD);
+        addOp.get("credential-reference").set(credentialReference);
+        addOp.get("key-store").set("TestStore");
+
+        operations.add(addOp);
+    }
+
+    private void addKeyStore(List<ModelNode> operations) throws Exception {
+        final ModelNode addOp = createOpNode("subsystem=elytron/key-store=TestStore", ADD);
+        addOp.get("path").set(SERVER_KEYSTORE_FILE.getAbsolutePath());
+        ModelNode credentialReference = new ModelNode();
+        credentialReference.get("clear-text").set(SecurityTestConstants.KEYSTORE_PASSWORD);
+        addOp.get("credential-reference").set(credentialReference);
+
+        operations.add(addOp);
+    }
+
+    private void addHttpsConnector(String sslContextName, String httpsName, int httpsPort, ModelControllerClient client)
             throws Exception {
         final ModelNode compositeOp = Util.createOperation(COMPOSITE, PathAddress.EMPTY_ADDRESS);
         final ModelNode steps = compositeOp.get(STEPS);
@@ -410,8 +478,7 @@ public class HTTPSWebConnectorTestCase {
         ModelNode operation = createOpNode("subsystem=undertow/server=default-server/https-listener=" + httpsName,
                 ModelDescriptionConstants.ADD);
         operation.get("socket-binding").set(httpsName);
-        operation.get("security-realm").set(HTTPS_REALM);
-        operation.get("verify-client").set(verifyClient);
+        operation.get("ssl-context").set(sslContextName);
 
         steps.add(operation);
 
@@ -430,7 +497,7 @@ public class HTTPSWebConnectorTestCase {
         rmHttpsConnector(HTTPS_NAME_VERIFY_REQUESTED, client);
         rmHttpsConnector(HTTPS_NAME_VERIFY_REQUIRED, client);
 
-        ModelNode operation = createOpNode("core-service=management/security-realm=" + HTTPS_REALM, ModelDescriptionConstants.REMOVE);
+        ModelNode operation = createRemoveSSLContexts();
         Utils.applyUpdate(operation, client);
 
         FileUtils.deleteDirectory(WORK_DIR);

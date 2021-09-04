@@ -17,7 +17,6 @@
         <feature-group name="ha-sockets"/>
     </feature>
 
-    <feature-group name="servlet-security-realms"/>
     <feature-group name="management-audit"/>
     <feature-group name="management-interfaces"/>
     <feature-group name="access-control"/>

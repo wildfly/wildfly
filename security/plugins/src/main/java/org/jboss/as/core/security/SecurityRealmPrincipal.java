@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,44 +19,53 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.container.interceptor.security.api;
+
+package org.jboss.as.core.security;
 
 import static org.wildfly.common.Assert.checkNotNullParam;
 
+import java.io.Serializable;
+import java.security.Principal;
+
 /**
- * A helper Credential, which holds current RealmUser name. It's used in the {@link GuestDelegationLoginModule} to check if the
- * delegation is allowed for this user.
+ * Base class for Principals defined for security realms.
  *
- * @author Josef Cacek
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public final class CurrentUserCredential {
+public abstract class SecurityRealmPrincipal implements Principal, Serializable {
 
-    private final String user;
+    private static final long serialVersionUID = 3616079359863450698L;
 
-    public CurrentUserCredential(final String user) {
-        this.user = checkNotNullParam("user", user);
+    private final String name;
+
+    SecurityRealmPrincipal(final String name) {
+        this.name = checkNotNullParam("name", name);
     }
 
-    // Public methods --------------------------------------------------------
-
     /**
-     * Returns user name held by this Credential.
-     *
-     * @return
+     * @see java.security.Principal#getName()
      */
-    public String getUser() {
-        return user;
+    public String getName() {
+        return name;
     }
 
     @Override
     public int hashCode() {
-        return user.hashCode();
+        return name.hashCode();
     }
 
     @Override
-    public boolean equals(Object other) {
-        return other instanceof CurrentUserCredential
-                && (this == other || other != null && user.equals(((CurrentUserCredential) other).user));
+    public boolean equals(Object obj) {
+        return obj != null && this.getClass().equals(obj.getClass()) ? equals((SecurityRealmPrincipal) obj) : false;
+    }
+
+    protected boolean equals(SecurityRealmPrincipal principal) {
+        return this == principal || name.equals(principal.name);
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
 }

@@ -431,7 +431,12 @@
             <artifactId>netty-all</artifactId>
             <scope>test</scope>
         </dependency>
-
+        <!-- This contains classes moved from WildFly Core -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-security-plugins</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

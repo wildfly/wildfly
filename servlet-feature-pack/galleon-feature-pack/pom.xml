@@ -91,13 +91,6 @@
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
-        
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-core-feature-pack-galleon-pruned</artifactId>
-            <type>pom</type>
-            <scope>provided</scope>
-        </dependency>
 
         <!-- Bring in all the common deps in one go -->
         <dependency>
@@ -172,11 +165,6 @@
                                 <artifactItem>
                                     <groupId>org.wildfly.core</groupId>
                                     <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
-                                    <type>zip</type>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.wildfly.core</groupId>
-                                    <artifactId>wildfly-core-feature-pack-galleon-pruned</artifactId>
                                     <type>zip</type>
                                 </artifactItem>
                             </artifactItems>

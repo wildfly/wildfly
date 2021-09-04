@@ -34,7 +34,6 @@ import io.undertow.server.handlers.CookieImpl;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.session.SecureRandomSessionIdGenerator;
 import io.undertow.util.StatusCodes;
-import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.web.session.SimpleRoutingSupport;
 import org.jboss.as.web.session.SimpleSessionIdentifierCodec;
 import org.jboss.msc.Service;
@@ -57,19 +56,16 @@ final class HttpInvokerHostService implements Service {
 
     private final Supplier<Host> host;
     private final Supplier<HttpAuthenticationFactory> httpAuthenticationFactory;
-    private final Supplier<SecurityRealm> realmService;
     private final Supplier<PathHandler> remoteHttpInvokerService;
     private final String path;
 
     HttpInvokerHostService(
             final Supplier<Host> host,
             final Supplier<HttpAuthenticationFactory> httpAuthenticationFactory,
-            final Supplier<SecurityRealm> realmService,
             final Supplier<PathHandler> remoteHttpInvokerService,
             final String path) {
         this.host = host;
         this.httpAuthenticationFactory = httpAuthenticationFactory;
-        this.realmService = realmService;
         this.remoteHttpInvokerService = remoteHttpInvokerService;
         this.path = path;
     }
@@ -79,8 +75,6 @@ final class HttpInvokerHostService implements Service {
         HttpHandler handler = remoteHttpInvokerService.get();
         if (httpAuthenticationFactory != null) {
             handler = secureAccess(handler, httpAuthenticationFactory.get());
-        } else if(realmService != null) {
-            handler = secureAccess(handler, realmService.get().getHttpAuthenticationFactory());
         }
         handler = setupRoutes(handler);
         host.get().registerHandler(path, handler);

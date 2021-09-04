@@ -1,5 +1,20 @@
 package org.jboss.as.test.integration.ws.wsse.trust;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL_CONTEXT;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.clustering.controller.Operations;
@@ -10,25 +25,9 @@ import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-
 
 public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
 
-    public static final String SECURITY_REALM_NAME = "jbws-test-https-realm";
     public static final String SECURITY_DOMAIN_NAME = "JBossWS-trust-sts";
     public static final String HTTPS_LISTENER_NAME = "jbws-test-https-listener";
 
@@ -37,10 +36,9 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         List<ModelNode> operations = new ArrayList<>();
-        addSecurityRealm(operations);
+        addSSLContext(operations);
         addHttpsListener(operations);
         ModelNode updateOp = Operations.createCompositeOperation(operations);
-        updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());
         securityDomainsSubtask.setup(managementClient, containerId);
@@ -51,7 +49,7 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
         securityDomainsSubtask.tearDown(managementClient, containerId);
         List<ModelNode> operations = new ArrayList<>();
         removeHttpsListener(operations);
-        removeSecurityRealm(operations);
+        removeSSLContext(operations);
         ModelNode updateOp = Operations.createCompositeOperation(operations);
         updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
@@ -59,6 +57,42 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
         ServerReload.reloadIfRequired(managementClient);
     }
 
+    private void addSSLContext(List<ModelNode> operations) throws Exception {
+        addKeyManager(operations);
+
+        final ModelNode addOp = createOpNode("subsystem=elytron/server-ssl-context=TestContext", ADD);
+        addOp.get("key-manager").set("TestManager");
+
+        operations.add(addOp);
+    }
+
+    private void addKeyManager(List<ModelNode> operations) throws Exception {
+        addKeyStore(operations);
+
+        final ModelNode addOp = createOpNode("subsystem=elytron/key-manager=TestManager", ADD);
+        ModelNode credentialReference = new ModelNode();
+        credentialReference.get("clear-text").set("changeit");
+        addOp.get("credential-reference").set(credentialReference);
+        addOp.get("key-store").set("TestStore");
+
+        operations.add(addOp);
+    }
+
+    private void addKeyStore(List<ModelNode> operations) throws Exception {
+        final ModelNode addOp = createOpNode("subsystem=elytron/key-store=TestStore", ADD);
+        addOp.get("path").set(WSTrustTestCaseElytronSecuritySetupTask.class.getResource("test.keystore").getPath());
+        ModelNode credentialReference = new ModelNode();
+        credentialReference.get("clear-text").set("changeit");
+        addOp.get("credential-reference").set(credentialReference);
+
+        operations.add(addOp);
+    }
+
+    private void removeSSLContext(List<ModelNode> operations) {
+        operations.add(createOpNode("subsystem=elytron/server-ssl-context=TestContext", REMOVE));
+        operations.add(createOpNode("subsystem=elytron/key-manager=TestManager", REMOVE));
+        operations.add(createOpNode("subsystem=elytron/key-store=TestStore", REMOVE));
+    }
 
     /**
      * Add https listner like this:
@@ -77,7 +111,7 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
         operations.add(addOp);
         addOp = createOpNode("subsystem=undertow/server=default-server/https-listener=" + HTTPS_LISTENER_NAME, ADD);
         addOp.get(SOCKET_BINDING).set("https2");
-        addOp.get(SECURITY_REALM).set(SECURITY_REALM_NAME);
+        addOp.get(SSL_CONTEXT).set("TestContext");
         operations.add(addOp);
     }
 
@@ -87,34 +121,6 @@ public class WSTrustTestCaseSecuritySetupTask implements ServerSetupTask {
         removeOp = createOpNode("subsystem=undertow/server=default-server/https-listener=" + HTTPS_LISTENER_NAME, REMOVE);
         operations.add(removeOp);
     }
-
-    /**
-     * Add https listner like this:
-     * <p/>
-     * /**
-     * <security-realm name="jbws-test-https-realm">
-     * <server-identities>
-     * <ssl>
-     * <keystore path="/path/test.keystore" keystore-password="changeit" alias="tomcat"/>
-     * </ssl>
-     * </server-identities>
-     * </security-realm>
-     */
-    private void addSecurityRealm(List<ModelNode> operations) throws Exception {
-        final ModelNode addOp = createOpNode("core-service=management/security-realm=" + SECURITY_REALM_NAME, ADD);
-        operations.add(addOp);
-        final ModelNode addSslIdentityOp = createOpNode("core-service=management/security-realm=" + SECURITY_REALM_NAME + "/server-identity=ssl", ADD);
-        addSslIdentityOp.get("keystore-path").set(WSTrustTestCaseSecuritySetupTask.class.getResource("test.keystore").getPath());
-        addSslIdentityOp.get("keystore-password").set("changeit");
-        addSslIdentityOp.get("alias").set("tomcat");
-        operations.add(addSslIdentityOp);
-    }
-
-    private void removeSecurityRealm(List<ModelNode> operations) throws Exception {
-        final ModelNode removeOp = createOpNode("core-service=management/security-realm=" + SECURITY_REALM_NAME, REMOVE);
-        operations.add(removeOp);
-    }
-
 
     class WSTrustSecurityDomainSetupTask extends AbstractSecurityDomainsServerSetupTask {
 
