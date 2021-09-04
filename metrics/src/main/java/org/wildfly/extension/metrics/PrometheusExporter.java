@@ -79,7 +79,7 @@ public class PrometheusExporter {
         } else {
             // if it's a gauge, let's add the base unit to the prometheus name
             String baseUnit = metadata.getBaseMetricUnit();
-            if (baseUnit != "none") {
+            if (!MetricMetadata.NONE.equals(baseUnit)) {
                 prometheusName += "_" + baseUnit;
             }
         }

@@ -24,6 +24,9 @@ package org.wildfly.extension.metrics;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 
 public interface MetricMetadata {
+
+    static final String NONE = "none";
+
     String getMetricName();
 
     MetricTag[] getTags();
@@ -42,7 +45,7 @@ public interface MetricMetadata {
 
     static String baseMetricUnit(MeasurementUnit unit) {
         if (unit == null) {
-            return "none";
+            return NONE;
         }
         switch (unit.getBaseUnits()) {
             case PERCENTAGE:
@@ -91,7 +94,7 @@ public interface MetricMetadata {
                 return "degree_fahrenheit";
             case NONE:
             default:
-                return "none";
+                return NONE;
         }
     }
 
