@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
@@ -37,6 +38,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,6 +55,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.mixed.eap740.DomainAdjuster740;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
@@ -76,9 +79,6 @@ public class DomainAdjuster {
     private final String MAIN_SERVER_GROUP = "main-server-group";
     private final String OTHER_SERVER_GROUP = "other-server-group";
     private static final Set<String> UNUSED_SERVER_GROUP_ATTRIBUTES = new HashSet<>(Arrays.asList("management-subsystem-endpoint", "deployment", "deployment-overlay", "jvm", "system-property"));
-
-    protected DomainAdjuster() {
-    }
 
     static void adjustForVersion(final DomainClient client, final Version.AsVersion asVersion, final String profile, final boolean withMasterServers) throws Exception {
 
@@ -119,6 +119,15 @@ public class DomainAdjuster {
         //Add a jaspi test security domain used later by the tests
         addJaspiTestSecurityDomain(client, profile);
 
+        // Mixed Domain tests always use the full build instead of alternating between ee-dist and dist. If the DC is not an EAP server, we need to remove here
+        // the pre-configured microprofile extensions provided by WildFly to adjust the current domain to work with a node running EAP which does not contain
+        // those extensions.
+        // We remove here these MP extensions and subsystems configured by default if they are in the current configuration.
+        final PathAddress profileAddress = PathAddress.pathAddress(PROFILE, profile);
+        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-opentracing-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.opentracing-smallrye"));
+        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-jwt-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.jwt-smallrye"));
+        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.config-smallrye"));
+
         //Version specific changes
         final List<ModelNode> adjustments = adjustForVersion(client, PathAddress.pathAddress(PROFILE, profile), withMasterServers);
         if (withMasterServers) {
@@ -143,12 +152,17 @@ public class DomainAdjuster {
         }
     }
 
-    protected List<ModelNode> adjustForVersion(final DomainClient client, final PathAddress profileAddress, boolean withMasterServers) throws Exception {
+    /**
+     * Adjust the Domain configuration to work properly with the expected slave.
+     *
+     * @param client           The domain client.
+     * @param profileAddress   The address of the profile that is being used.
+     * @param withMasterServer Whether the Dc has managed servers.
+     * @return The List of Operations that need to be executed to adjust the domain.
+     * @throws Exception
+     */
+    protected List<ModelNode> adjustForVersion(final DomainClient client, final PathAddress profileAddress, final boolean withMasterServer) throws Exception {
         return Collections.emptyList();
-    }
-
-    protected List<ModelNode> adjustForVersion(final DomainClient client, final PathAddress profileAddress) throws Exception {
-        return adjustForVersion(client, profileAddress, false);
     }
 
     private void removeProfile(final DomainClient client, final String name) throws Exception {
@@ -289,5 +303,20 @@ public class DomainAdjuster {
         list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-two"), AUTO_START, true));
         list.add(Util.getWriteAttributeOperation(masterHostAddress.append(SERVER_CONFIG, "server-two"), ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET, 100));
         return list;
+    }
+
+    private void removeSubsystemExtensionIfExist(DomainClient client, PathAddress subsystem, PathAddress extension) throws IOException {
+        try {
+            DomainTestUtils.executeForResult(Util.getReadResourceOperation(subsystem), client);
+            DomainTestUtils.executeForResult(Util.createRemoveOperation(subsystem), client);
+        } catch (MgmtOperationException e) {
+            // ignored, the subsystem does not exist
+        }
+        try {
+            DomainTestUtils.executeForResult(Util.getReadResourceOperation(extension), client);
+            DomainTestUtils.executeForResult(Util.createRemoveOperation(extension), client);
+        } catch (MgmtOperationException e) {
+            // ignored, the extension does not exist
+        }
     }
 }
