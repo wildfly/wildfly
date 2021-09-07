@@ -19,6 +19,7 @@
 package org.wildfly.extension.elytron.oidc._private;
 
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
@@ -63,5 +64,9 @@ public interface ElytronOidcLogger extends BasicLogger {
 
     @Message(id = 7, value = "Must set 'resource' or 'client-id'")
     OperationFailedException resourceOrClientIdMustBeConfigured();
+
+    @LogMessage(level = WARN)
+    @Message(id = 8, value = "The 'disable-trust-manager' attribute has been set to 'true' so no trust manager will be used when communicating with the OpenID provider over HTTPS. This value should always be set to 'false' in a production environment.")
+    void disableTrustManagerSetToTrue();
 
 }

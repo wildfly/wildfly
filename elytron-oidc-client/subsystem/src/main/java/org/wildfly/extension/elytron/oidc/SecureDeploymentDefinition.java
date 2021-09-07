@@ -18,6 +18,7 @@
 
 package org.wildfly.extension.elytron.oidc;
 
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.DISABLE_TRUST_MANAGER;
 import static org.wildfly.extension.elytron.oidc._private.ElytronOidcLogger.ROOT_LOGGER;
 
 import java.util.ArrayList;
@@ -194,6 +195,11 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
             String resource = RESOURCE.resolveModelAttribute(context, model).asStringOrNull();
             if (clientId == null && resource == null) {
                 throw ROOT_LOGGER.resourceOrClientIdMustBeConfigured();
+            }
+
+            boolean disableTrustManager = DISABLE_TRUST_MANAGER.resolveModelAttribute(context, model).asBoolean();
+            if (disableTrustManager) {
+                ROOT_LOGGER.disableTrustManagerSetToTrue();
             }
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
             oidcConfigService.addSecureDeployment(operation, context.resolveExpressions(model));

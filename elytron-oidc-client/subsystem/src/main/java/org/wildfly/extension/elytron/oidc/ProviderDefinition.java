@@ -18,6 +18,9 @@
 
 package org.wildfly.extension.elytron.oidc;
 
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.DISABLE_TRUST_MANAGER;
+import static org.wildfly.extension.elytron.oidc._private.ElytronOidcLogger.ROOT_LOGGER;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
@@ -71,6 +74,12 @@ class ProviderDefinition extends SimpleResourceDefinition {
 
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRuntime(context, operation, model);
+
+            boolean disableTrustManager = DISABLE_TRUST_MANAGER.resolveModelAttribute(context, model).asBoolean();
+            if (disableTrustManager) {
+                ROOT_LOGGER.disableTrustManagerSetToTrue();
+            }
+
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
             oidcConfigService.addProvider(operation, context.resolveExpressions(model));
         }
