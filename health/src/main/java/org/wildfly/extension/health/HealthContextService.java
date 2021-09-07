@@ -49,12 +49,14 @@ import org.jboss.msc.service.StopContext;
 public class HealthContextService implements Service {
 
     private static final String CONTEXT_NAME = "health";
+    public static final String MICROPROFILE_HEALTH_REPORTER_CAPABILITY = "org.wildfly.extension.microprofile.health.reporter";
 
     private final Consumer<HealthContextService> consumer;
     private final Supplier<ExtensibleHttpManagement> extensibleHttpManagement;
     private final Supplier<Boolean> securityEnabled;
     private Supplier<ServerProbesService> serverProbesService;
     private HttpHandler overrideableHealthHandler;
+    private static boolean mpHealthSubsystemActive = false;
 
 
     static void install(OperationContext context, boolean securityEnabled) {
@@ -73,6 +75,10 @@ public class HealthContextService implements Service {
                     return securityEnabled;
                 }
             };
+        }
+        // check if we will be also booting the MP Health subsystem. In that case, this subsystem should not be responding.
+        if (context.getCapabilityServiceSupport().hasCapability(MICROPROFILE_HEALTH_REPORTER_CAPABILITY)) {
+            mpHealthSubsystemActive = true;
         }
         serviceBuilder.setInstance(new HealthContextService(extensibleHttpManagement, consumer, securityEnabledSupplier, serverProbesService))
                 .install();
@@ -117,6 +123,12 @@ public class HealthContextService implements Service {
         public void handleRequest(HttpServerExchange exchange) throws Exception {
             if (overrideableHealthHandler != null) {
                 overrideableHealthHandler.handleRequest(exchange);
+                return;
+            }
+
+            if (mpHealthSubsystemActive) {
+                // don't respond through this subsystem if MP Health subsystem is present but not started yet
+                exchange.setStatusCode(503);
                 return;
             }
 
