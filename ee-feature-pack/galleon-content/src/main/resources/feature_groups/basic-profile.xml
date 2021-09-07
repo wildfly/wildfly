@@ -4,9 +4,9 @@
     <feature-group name="unsecured-basic-profile"/>
 
     <feature-group name="application-http-basic"/>
-    <feature-group name="undertow-https"/>
-
     <feature-group name="undertow-http-invoker"/>
+
+    <feature-group name="undertow-https"/>
 
     <feature-group name="picketbox-security"/>
     <feature-group name="distributable-web-local"/>
