@@ -20,6 +20,7 @@ package org.wildfly.extension.elytron.oidc._private;
 
 import static org.jboss.logging.Logger.Level.INFO;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.LogMessage;
@@ -59,5 +60,8 @@ public interface ElytronOidcLogger extends BasicLogger {
 
     @Message(id = 6, value = "Cannot update redirect rewrite. No redirect rewrite defined for deployment in op '%s'")
     RuntimeException cannotUpdateRedirectRuntimeRule(String operationName);
+
+    @Message(id = 7, value = "Must set 'resource' or 'client-id'")
+    OperationFailedException resourceOrClientIdMustBeConfigured();
 
 }

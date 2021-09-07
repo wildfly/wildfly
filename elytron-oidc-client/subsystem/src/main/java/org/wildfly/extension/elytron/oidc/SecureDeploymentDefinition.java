@@ -18,6 +18,8 @@
 
 package org.wildfly.extension.elytron.oidc;
 
+import static org.wildfly.extension.elytron.oidc._private.ElytronOidcLogger.ROOT_LOGGER;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -188,6 +190,11 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRuntime(context, operation, model);
+            String clientId = CLIENT_ID.resolveModelAttribute(context, model).asStringOrNull();
+            String resource = RESOURCE.resolveModelAttribute(context, model).asStringOrNull();
+            if (clientId == null && resource == null) {
+                throw ROOT_LOGGER.resourceOrClientIdMustBeConfigured();
+            }
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
             oidcConfigService.addSecureDeployment(operation, context.resolveExpressions(model));
         }
