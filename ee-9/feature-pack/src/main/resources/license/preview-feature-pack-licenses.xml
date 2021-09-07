@@ -191,6 +191,17 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.jboss.invocation</groupId>
+      <artifactId>jboss-invocation-jakarta</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.metadata</groupId>
       <artifactId>jboss-metadata-common-jakarta</artifactId>
       <licenses>
