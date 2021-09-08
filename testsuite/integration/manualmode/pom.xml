@@ -30,6 +30,8 @@
         <byteman.port>17091</byteman.port>
         <!-- JVM args -->
         <microprofile.server.jvm.args>${server.jvm.args} -Djboss.node.name=microprofile</microprofile.server.jvm.args>
+        <!-- elytron script -->
+        <ts.elytron.cli>../../shared/enable-elytron-manualmode.cli</ts.elytron.cli>
     </properties>
 
     <dependencies>
@@ -197,7 +199,7 @@
                 <executions>
                     <execution>
                         <id>ts.config-as.configure-wildfly</id>
-                        <phase>process-test-resources</phase>
+                        <phase>generate-test-resources</phase>
                         <goals>
                             <goal>execute-commands</goal>
                         </goals>
@@ -401,9 +403,6 @@
                 <property>
                     <name>elytron</name>
                 </property>
-                <file>
-                    <exists>${ts.elytron.cli}</exists>
-                </file>
             </activation>
             <build>
                 <plugins>
@@ -416,7 +415,7 @@
                                 <!-- run in test-compile instead of process-test-resources
                                      as we want this to run after build-manual-mode-servers
                                      has created all the servers other than target/wildfly -->
-                                <phase>test-compile</phase>
+                                <phase>generate-test-resources</phase>
                             </execution>
                         </executions>
                     </plugin>
