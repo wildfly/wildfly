@@ -70,6 +70,7 @@ import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.ds.DatasourcesImpl;
 import org.jboss.jca.common.metadata.ds.DriverImpl;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
+import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.bootstrapcontext.BootstrapContextCoordinator;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
@@ -611,6 +612,13 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             if (dataSourceConfig.getUrlSelectorStrategyClassName() != null) {
                 managedConnectionFactory.setUrlSelectorStrategyClassName(dataSourceConfig.getUrlSelectorStrategyClassName());
             }
+
+            if (dataSourceConfig.getPoolName() != null) {
+                if (PoolConfiguration.getPoolsWithDisabledValidationLogging().contains(dataSourceConfig.getPoolName())) {
+                    managedConnectionFactory.setPoolValidationLoggingEnabled(false);
+                }
+            }
+
             setMcfProperties(managedConnectionFactory, dataSourceConfig, dataSourceConfig.getStatement());
 
             return managedConnectionFactory;
