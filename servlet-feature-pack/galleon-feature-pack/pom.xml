@@ -168,7 +168,7 @@
                                     <type>zip</type>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <outputDirectory>${basedir}/target/unpacked-wildfly-core-galleon-resources</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -180,6 +180,23 @@
                     <overwrite>true</overwrite>
                 </configuration>
                 <executions>
+                    <execution>
+                        <id>copy-unpacked-wildfly-core-galleon-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <escapeString>\</escapeString>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/target/unpacked-wildfly-core-galleon-resources</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>copy-common-feature-pack-resources</id>
                         <phase>process-resources</phase>
