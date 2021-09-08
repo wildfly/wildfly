@@ -22,21 +22,11 @@
 
 package org.wildfly.extension.picketlink.federation.model.handlers;
 
-import org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler;
-import org.picketlink.identity.federation.web.handlers.saml2.SAML2AttributeHandler;
-import org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler;
-import org.picketlink.identity.federation.web.handlers.saml2.SAML2EncryptionHandler;
-import org.picketlink.identity.federation.web.handlers.saml2.SAML2InResponseToVerificationHandler;
-import org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler;
-import org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler;
-import org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureGenerationHandler;
-import org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureValidationHandler;
-
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>Enum defining alias for each supported built-in {@link org.picketlink.idm.credential.handler.CredentialHandler} provided by
+ * <p>Enum defining alias for each supported built-in org.picketlink.idm.credential.handler.CredentialHandler provided by
  * PicketLink. The alias is used in the configuration without using the full qualified name of a type.</p>
  *
  * @author Pedro Igor
@@ -44,15 +34,15 @@ import java.util.Map;
 public enum HandlerTypeEnum {
 
     // handlers
-    SAML2_ISSUER_TRUST_HANDLER("SAML2IssuerTrustHandler", SAML2IssuerTrustHandler.class.getName()),
-    SAML2_AUTHENTICATION_HANDLER("SAML2AuthenticationHandler", SAML2AuthenticationHandler.class.getName()),
-    ROLES_GENERATION_HANDLER("RolesGenerationHandler", RolesGenerationHandler.class.getName()),
-    SAML2_ATTRIBUTE_HANDLER("SAML2AttributeHandler", SAML2AttributeHandler.class.getName()),
-    SAML2_ENCRYPTION_HANDLER("SAML2EncryptionHandler", SAML2EncryptionHandler.class.getName()),
-    SAML2_IN_RESPONSE_VERIFICATION_HANDLER("SAML2InResponseToVerificationHandler", SAML2InResponseToVerificationHandler.class.getName()),
-    SAML2_LOGOUT_HANDLER("SAML2LogOutHandler", SAML2LogOutHandler.class.getName()),
-    SAML2_SIGNATURE_GENERATION_HANDLER("SAML2SignatureGenerationHandler", SAML2SignatureGenerationHandler.class.getName()),
-    SAML2_SIGNATURE_VALIDATION_HANDLER("SAML2SignatureValidationHandler", SAML2SignatureValidationHandler.class.getName());
+    SAML2_ISSUER_TRUST_HANDLER("SAML2IssuerTrustHandler", "org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler"),
+    SAML2_AUTHENTICATION_HANDLER("SAML2AuthenticationHandler", "org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"),
+    ROLES_GENERATION_HANDLER("RolesGenerationHandler", "org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"),
+    SAML2_ATTRIBUTE_HANDLER("SAML2AttributeHandler", "org.picketlink.identity.federation.web.handlers.saml2.SAML2AttributeHandler"),
+    SAML2_ENCRYPTION_HANDLER("SAML2EncryptionHandler", "org.picketlink.identity.federation.web.handlers.saml2.SAML2EncryptionHandler"),
+    SAML2_IN_RESPONSE_VERIFICATION_HANDLER("SAML2InResponseToVerificationHandler", "org.picketlink.identity.federation.web.handlers.saml2.SAML2InResponseToVerificationHandler"),
+    SAML2_LOGOUT_HANDLER("SAML2LogOutHandler", "org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler"),
+    SAML2_SIGNATURE_GENERATION_HANDLER("SAML2SignatureGenerationHandler", "org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureGenerationHandler"),
+    SAML2_SIGNATURE_VALIDATION_HANDLER("SAML2SignatureValidationHandler", "org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureValidationHandler");
 
 
     private static final Map<String, HandlerTypeEnum> types = new HashMap<String, HandlerTypeEnum>();

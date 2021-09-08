@@ -71,7 +71,7 @@ public class LDAPStoreResourceDefinition extends AbstractIdentityStoreResourceDe
             UNIQUE_ID_ATTRIBUTE_NAME);
 
     private LDAPStoreResourceDefinition(SimpleAttributeDefinition... attributes) {
-        super(ModelElement.LDAP_STORE, new IDMConfigAddStepHandler(getModelValidators(), attributes), attributes);
+        super(ModelElement.LDAP_STORE, getModelValidators(), attributes);
     }
 
     @Override

@@ -86,7 +86,6 @@ public class WSTrustTestCase {
     private static final String ON_BEHALF_OF_SERVER_DEP = "jaxws-samples-wsse-policy-trust-onbehalfof";
     private static final String HOLDER_OF_KEY_STS_DEP = "jaxws-samples-wsse-policy-trust-sts-holderofkey";
     private static final String HOLDER_OF_KEY_SERVER_DEP = "jaxws-samples-wsse-policy-trust-holderofkey";
-    private static final String PL_STS_DEP = "jaxws-samples-wsse-policy-trustPicketLink-sts";
     private static final String BEARER_STS_DEP = "jaxws-samples-wsse-policy-trust-sts-bearer";
     private static final String BEARER_SERVER_DEP = "jaxws-samples-wsse-policy-trust-bearer";
     @Rule
@@ -129,23 +128,6 @@ public class WSTrustTestCase {
                 .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/servicestore.jks", "classes/servicestore.jks")
                 .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/serviceKeystore.properties", "classes/serviceKeystore.properties")
                 .addAsManifestResource(WSTrustTestCase.class.getPackage(), "WEB-INF/permissions.xml", "permissions.xml");
-        return archive;
-    }
-
-    @Deployment(name = PL_STS_DEP, testable = false)
-    public static WebArchive createPicketLinkSTSDeployment() {
-        WebArchive archive = ShrinkWrap.create(WebArchive.class, PL_STS_DEP + ".war");
-        archive
-                .setManifest(new StringAsset("Manifest-Version: 1.0\n"
-                        + "Dependencies: org.jboss.ws.cxf.jbossws-cxf-client,org.picketlink\n"))
-                .addClass(org.jboss.as.test.integration.ws.wsse.trust.picketlink.PicketLinkSTService.class)
-                .addClass(org.jboss.as.test.integration.ws.wsse.trust.sts.STSCallbackHandler.class)
-                .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/jboss-web.xml", "jboss-web.xml")
-                .addAsWebInfResource(createFilteredAsset("WEB-INF/wsdl/PicketLinkSTS.wsdl"), "wsdl/PicketLinkSTS.wsdl")
-                .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/stsstore.jks", "classes/stsstore.jks")
-                .addAsWebInfResource(createFilteredAsset("WEB-INF/picketlink-sts.xml"), "classes/picketlink-sts.xml")
-                .
-                        addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/stsKeystore.properties", "classes/stsKeystore.properties");
         return archive;
     }
 
@@ -493,35 +475,6 @@ public class WSTrustTestCase {
             WSTrustTestUtils.setupWsseAndSTSClientHolderOfKey((BindingProvider) proxy, bus);
             assertEquals("Holder-Of-Key WS-Trust Hello World!", proxy.sayHello());
 
-        } finally {
-            bus.shutdown(true);
-        }
-    }
-
-    @Test
-    @RunAsClient
-    @OperateOnDeployment(SERVER_DEP)
-    @WrapThreadContextClassLoader
-    public void testPicketLink() throws Exception {
-        Bus bus = BusFactory.newInstance().createBus();
-        try {
-            BusFactory.setThreadDefaultBus(bus);
-
-            final QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "SecurityService");
-            final URL wsdlURL = new URL(serviceURL + "SecurityService?wsdl");
-            Service service = Service.create(wsdlURL, serviceName);
-            ServiceIface proxy = (ServiceIface) service.getPort(ServiceIface.class);
-
-            final QName stsServiceName = new QName("urn:picketlink:identity-federation:sts", "PicketLinkSTS");
-            final QName stsPortName = new QName("urn:picketlink:identity-federation:sts", "PicketLinkSTSPort");
-            final URL stsURL = new URL(serviceURL.getProtocol(), serviceURL.getHost(), serviceURL.getPort(), "/jaxws-samples-wsse-policy-trustPicketLink-sts/PicketLinkSTS?wsdl");
-            WSTrustTestUtils.setupWsseAndSTSClient(proxy, bus, stsURL.toString(), stsServiceName, stsPortName);
-
-            try {
-                assertEquals("WS-Trust Hello World!", proxy.sayHello());
-            } catch (Exception e) {
-                throw e;
-            }
         } finally {
             bus.shutdown(true);
         }

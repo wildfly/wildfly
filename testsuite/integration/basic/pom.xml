@@ -3656,8 +3656,6 @@
                                         <exclude>org/jboss/as/test/integration/jca/security/workmanager/WildFlyActivationRaWithWMSecurityDomainWorkManagerTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainDotNameTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/web/security/runas/WebSecurityRunAsTestCase.java</exclude>
-                                        <!-- Requires picketlink -->
-                                        <exclude>org/jboss/as/test/integration/ws/authentication/policy/AuthenticationPolicyContextTestCase.java</exclude>
                                         <!-- Requires JSR77 -->
                                         <exclude>org/jboss/as/test/integration/jsr77/*TestCase.java</exclude>
                                         <!-- TODO figure out the problem -->

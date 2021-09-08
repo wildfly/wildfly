@@ -22,12 +22,12 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
 
 public abstract class AbstractIdentityStoreResourceDefinition extends AbstractIDMResourceDefinition {
 
@@ -41,7 +41,7 @@ public abstract class AbstractIdentityStoreResourceDefinition extends AbstractID
         .setAllowExpression(true)
         .build();
 
-    protected AbstractIdentityStoreResourceDefinition(ModelElement modelElement, OperationStepHandler addHandler, SimpleAttributeDefinition... attributes) {
-        super(modelElement, addHandler, IdentityStoreRemoveStepHandler.INSTANCE, attributes);
+    protected AbstractIdentityStoreResourceDefinition(ModelElement modelElement, ModelValidationStepHandler[] modelValidators, SimpleAttributeDefinition... attributes) {
+        super(modelElement, modelValidators, address -> address.getParent().getParent(), attributes);
     }
 }

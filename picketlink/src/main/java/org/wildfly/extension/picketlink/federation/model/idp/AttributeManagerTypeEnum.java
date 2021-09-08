@@ -22,22 +22,19 @@
 
 package org.wildfly.extension.picketlink.federation.model.idp;
 
-import org.picketlink.identity.federation.bindings.wildfly.idp.UndertowAttributeManager;
-import org.picketlink.identity.federation.core.impl.EmptyAttributeManager;
-
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>Enum defining alias for each supported built-in {@link org.picketlink.identity.federation.core.interfaces.AttributeManager} provided by
+ * <p>Enum defining alias for each supported built-in org.picketlink.identity.federation.core.interfaces.AttributeManager provided by
  * PicketLink. The alias is used in the configuration without using the full qualified name of a type.</p>
  *
  * @author Pedro Igor
  */
 public enum AttributeManagerTypeEnum {
 
-    UNDERTOW_ATTRIBUTE_MANAGER("UndertowAttributeManager", UndertowAttributeManager.class.getName()),
-    EMPTY_ATTRIBUTE_MANAGER("EmptyAttributeManager", EmptyAttributeManager.class.getName());
+    UNDERTOW_ATTRIBUTE_MANAGER("UndertowAttributeManager"),
+    EMPTY_ATTRIBUTE_MANAGER("EmptyAttributeManager");
 
     private static final Map<String, AttributeManagerTypeEnum> types = new HashMap<String, AttributeManagerTypeEnum>();
 
@@ -48,21 +45,9 @@ public enum AttributeManagerTypeEnum {
     }
 
     private final String alias;
-    private final String type;
 
-    private AttributeManagerTypeEnum(String alias, String type) {
+    AttributeManagerTypeEnum(String alias) {
         this.alias = alias;
-        this.type = type;
-    }
-
-    static String forType(String alias) {
-        AttributeManagerTypeEnum resolvedType = types.get(alias);
-
-        if (resolvedType != null) {
-            return resolvedType.getType();
-        }
-
-        return null;
     }
 
     @Override
@@ -72,9 +57,5 @@ public enum AttributeManagerTypeEnum {
 
     String getAlias() {
         return this.alias;
-    }
-
-    String getType() {
-        return this.type;
     }
 }

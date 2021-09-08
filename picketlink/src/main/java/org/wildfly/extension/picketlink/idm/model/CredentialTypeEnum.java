@@ -22,16 +22,11 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
-import org.picketlink.idm.credential.handler.DigestCredentialHandler;
-import org.picketlink.idm.credential.handler.PasswordCredentialHandler;
-import org.picketlink.idm.credential.handler.X509CertificateCredentialHandler;
-import org.picketlink.idm.ldap.internal.LDAPPlainTextPasswordCredentialHandler;
-
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>Enum defining alias for each supported built-in {@link org.picketlink.idm.credential.handler.CredentialHandler} provided by
+ * <p>Enum defining alias for each supported built-in {@code org.picketlink.idm.credential.handler.CredentialHandler} provided by
  * PicketLink. The alias is used in the configuration without using the full qualified name of a type.</p>
  *
  * @author Pedro Igor
@@ -39,10 +34,10 @@ import java.util.Map;
 public enum CredentialTypeEnum {
 
     // credential types
-    PASSWORD_CREDENTIAL_HANDLER("PasswordHandler", PasswordCredentialHandler.class.getName()),
-    LDAP_PASSWORD_CREDENTIAL_HANDLER("LDAPPasswordHandler", LDAPPlainTextPasswordCredentialHandler.class.getName()),
-    DIGEST_CREDENTIAL_HANDLER("DigestHandler", DigestCredentialHandler.class.getName()),
-    X509_CERT_CREDENTIAL_HANDLER("X509CertHandler", X509CertificateCredentialHandler.class.getName());
+    PASSWORD_CREDENTIAL_HANDLER("PasswordHandler", "org.picketlink.idm.credential.handler.PasswordCredentialHandler"),
+    LDAP_PASSWORD_CREDENTIAL_HANDLER("LDAPPasswordHandler", "org.picketlink.idm.ldap.internal.LDAPPlainTextPasswordCredentialHandler"),
+    DIGEST_CREDENTIAL_HANDLER("DigestHandler", "org.picketlink.idm.credential.handler.DigestCredentialHandler"),
+    X509_CERT_CREDENTIAL_HANDLER("X509CertHandler", "org.picketlink.idm.credential.handler.X509CertificateCredentialHandler");
 
     private static final Map<String, CredentialTypeEnum> types = new HashMap<String, CredentialTypeEnum>();
 
@@ -55,7 +50,7 @@ public enum CredentialTypeEnum {
     private final String alias;
     private final String type;
 
-    private CredentialTypeEnum(String alias, String type) {
+    CredentialTypeEnum(String alias, String type) {
         this.alias = alias;
         this.type = type;
     }
