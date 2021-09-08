@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,16 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.serializer;
+package org.wildfly.test.integration.microprofile.reactive.messaging.ported.config;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.wildfly.test.integration.microprofile.reactive.messaging.ported.utils.ReactiveMessagingTestUtils.await;
 
 import java.util.List;
 import java.util.PropertyPermission;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -38,63 +41,54 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
-import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
+import org.wildfly.test.integration.microprofile.reactive.messaging.ported.utils.ReactiveMessagingTestUtils;
 
 /**
- * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
+ * Copied from Quarkus and adjusted
  */
+@ServerSetup(EnableReactiveExtensionsSetupTask.class)
 @RunWith(Arquillian.class)
-@ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
-public class ReactiveMessagingKafkaSerializerTestCase {
-
-    private static final long TIMEOUT = TimeoutUtil.adjust(15000);
-
-    @Inject
-    Bean bean;
+public class ConnectorProfileConfigTestCase {
 
     @Deployment
-    public static WebArchive getDeployment() {
-        final WebArchive webArchive = ShrinkWrap.create(WebArchive.class, "reactive-messaging-kafka-tx.war")
+    public static WebArchive createArchive() {
+        final WebArchive webArchive = ShrinkWrap.create(WebArchive.class, "rx-messaging-connector-profile-cfg.war")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addPackage(ReactiveMessagingKafkaSerializerTestCase.class.getPackage())
-                .addClasses(RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class, CLIServerSetupTask.class)
-                .addAsWebInfResource(ReactiveMessagingKafkaSerializerTestCase.class.getPackage(), "microprofile-config.properties", "classes/META-INF/microprofile-config.properties")
-                .addClass(TimeoutUtil.class)
+                .addClasses(DumbConnector.class, BeanUsingDummyConnector.class)
+                .addClasses(ReactiveMessagingTestUtils.class, TimeoutUtil.class, EnableReactiveExtensionsSetupTask.class, CLIServerSetupTask.class)
+                .addAsWebInfResource(ConnectorProfileConfigTestCase.class.getPackage(),
+                        "dummy-connector-with-profile.properties", "classes/META-INF/microprofile-config.properties")
                 .addAsManifestResource(createPermissionsXmlAsset(
                         new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")
                 ), "permissions.xml");
-
         return webArchive;
     }
 
+    @Inject
+    BeanUsingDummyConnector bean;
+
     @Test
-    public void test() throws InterruptedException {
-        boolean wait = bean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
-        Assert.assertTrue("Timed out", wait);
-        List<Person> list = bean.getReceived();
-        Assert.assertEquals(3, list.size());
-
-        Person kabir = findPerson(list, "Kabir");
-        Person bob = findPerson(list, "Bob");
-        Person roger = findPerson(list, "Roger");
-
-
-        Assert.assertEquals(101, kabir.getAge());
-        Assert.assertEquals(18, bob.getAge());
-        Assert.assertEquals(21, roger.getAge());
+    public void testThatTestProfileValuesAreUsed() {
+        await(() -> bean.getList().size() == 2);
+        ReactiveMessagingTestUtils.checkList(bean.getList(), "ola", "OLA");
     }
 
-    private Person findPerson(List<Person> list, String name) {
-        for (Person p : list) {
-            if (p.getName().equals(name)) {
-                return p;
-            }
+    @ApplicationScoped
+    public static class BeanUsingDummyConnector {
+
+        private List<String> list = new CopyOnWriteArrayList<>();
+
+        @Incoming("a")
+        public void consume(String s) {
+            list.add(s);
         }
-        Assert.fail("Could not find " + name);
-        return null;
+
+        public List<String> getList() {
+            return list;
+        }
+
     }
 }

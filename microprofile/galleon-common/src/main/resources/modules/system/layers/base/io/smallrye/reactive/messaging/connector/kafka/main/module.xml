@@ -34,8 +34,10 @@
         <module name="io.opentelemetry.context"/>
         <module name="io.reactivex.rxjava2.rxjava"/>
         <module name="io.smallrye.config" services="import"/>
+        <module name="io.smallrye.common.annotation"/>
         <module name="io.smallrye.reactive.converters.api"/>
         <module name="io.smallrye.reactive.messaging"/>
+        <module name="io.smallrye.reactive.messaging.connector.kafka.api"/>
         <module name="io.smallrye.reactive.mutiny"/>
         <module name="io.smallrye.reactive.mutiny.reactive-streams-operators"/>
         <module name="io.smallrye.reactive.mutiny.vertx-core"/>

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2021, Red Hat, Inc., and individual contributors
@@ -22,18 +21,17 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.9" name="io.smallrye.common.annotation">
+<module xmlns="urn:jboss:module:1.8" name="io.smallrye.reactive.messaging.connector.kafka.api">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
-        <artifact name="${io.smallrye.common:smallrye-common-annotation}"/>
+        <artifact name="${io.smallrye.reactive:smallrye-reactive-messaging-kafka-api}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.enterprise.api"/>
-        <module name="org.jboss.logging"/>
-        <module name="sun.jdk" optional="true"/>
+        <module name="org.eclipse.microprofile.reactive-messaging.api"/>
+        <module name="org.apache.kafka.client"/>
     </dependencies>
 </module>
