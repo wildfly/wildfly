@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.timerservice;
 import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.Date;
-
 import javax.ejb.EJBException;
 import javax.ejb.ScheduleExpression;
 
@@ -53,19 +52,6 @@ public class CalendarTimer extends TimerImpl {
 
     private final Method timeoutMethod;
 
-
-    /**
-     * Constructs a {@link CalendarTimer}
-     *
-     * @param id              The id of this timer
-     * @param timerService    The timer service to which this timer belongs
-     * @param calendarTimeout The {@link CalendarBasedTimeout} from which this {@link CalendarTimer} is being created
-     * @param info            The serializable info which will be made available through {@link javax.ejb.Timer#getInfo()}
-     * @param persistent      True if this timer is persistent. False otherwise
-     * @param timeoutMethod   If this is a non-null value, then this {@link CalendarTimer} is marked as an auto-timer.
-     *                        This <code>timeoutMethod</code> is then considered as the name of the timeout method which has to
-     *                        be invoked when this timer times out.
-     */
     public CalendarTimer(Builder builder, TimerServiceImpl timerService) {
         super(builder, timerService);
 
@@ -166,32 +152,6 @@ public class CalendarTimer extends TimerImpl {
         }
         return this.timeoutMethod;
     }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    /**
-     * A {@link javax.ejb.Timer} is equal to another {@link javax.ejb.Timer} if their
-     * {@link javax.ejb.TimerHandle}s are equal
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (this.handle == null) {
-            return false;
-        }
-        if (!(obj instanceof CalendarTimer)) {
-            return false;
-        }
-        CalendarTimer otherTimer = (CalendarTimer) obj;
-        return this.handle.equals(otherTimer.getTimerHandle());
-    }
-
-
 
     public static Builder builder() {
         return new Builder();
