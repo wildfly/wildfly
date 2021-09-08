@@ -111,8 +111,10 @@ or you can use annotations.
 The https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Transactional.html[`@Transactional`]
 defines transaction boundaries
 (start of the method starts the transaction, while the transaction is finished at its end).
-If the method finishes sucessfully the transaction is committed.
-If the transaction ends with `RuntimeException` then it's rolled-back.
+If the method finishes successfully the transaction is committed.
+If the code throws the `java.lang.RuntimeException` then the transaction is rolled-back.
+You can control the behaviour for transaction rollback on throwing the exception
+with attributes `rollbackOn` and `dontRollbackOn` of the `@Transactional` annotation.
 
 When you define the method to be `@Transactional` you define the behaviour
 of incoming (or non-existent) transactional context.
@@ -147,9 +149,6 @@ public class MyCDIBean {
   }
 }
 ----
-
-NOTE: the exception handling could be influenced by attributes
-      `rollbackOn` and `dontRollbackOn` (of the `@Transactional` annotation)
 
 WARNING: if you use the `@Transactional` for managing transactions boundaries
          you won't be permitted to use the `UserTransaction` methods.
@@ -196,10 +195,52 @@ the container is responsible to manage transactions. The boundary of the transac
 is defined by the start and end of the method and you influence the behaviour by using
 https://javaee.github.io/javaee-spec/javadocs/javax/ejb/TransactionAttribute.html[`@TransactionAttribute`].
 
-If `java.lang.RuntimeException` is thrown the transaction is rolled back.
-https://javaee.github.io/javaee-spec/javadocs/javax/ejb/EJBContext.html[EJBContext]
-could be used to define the transaction should be rolled-back
-by the end of the method when `setRollbackOnly` is used.
+A way to rollback the transaction is to use `setRollbackOnly()` method (see <<rolling-back>>).
+As well, the transaction is rolled-back when the code throws the `java.lang.RuntimeException`.
+
+If you want to use an application exception that rolls-back the transaction then
+you need to annotate the `Exception` declaration with
+https://javaee.github.io/javaee-spec/javadocs/javax/ejb/ApplicationException.html#rollback--[`@ApplicationException(rollback=true)`].
+
+NOTE: That it is a specification violation to try to combine user and
+      container managed transactions, in particular calling `EJBContext.getUserTransaction()`
+      will result in a `RuntimeException`.
+
+==== Bean managed transactions
+
+Using the `@TransactionManagement(TransactionManagementType.BEAN)` means
+the transaction will be managed manually with the use of the JTA API.
+That's with the `UserTransaction` injections and methods on it.
+
+NOTE: You can use injection of `EJBContext` (with `@Resource` annotation)
+      to access the `UserTransaction` instance.
+
+NOTE: If a call is made from EJB with a container managed transaction
+      to an EJB with a bean managed transaction
+      then the transaction context is suspended.
+      It's similar to
+      call a transaction managed bean annotated with
+      `@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)`.
+
+[[rolling-back]]
+==== Rolling back the transaction
+
+When the transaction is manually managed with `UserTransaction` interface
+then the API call
+https://javaee.github.io/javaee-spec/javadocs/javax/transaction/UserTransaction.html#rollback--[`UserTransaction.rollback()`] is a natural way to
+immediatelly rollback the transaction and let all the work being aborted.
+
+The other option is to call
+https://javaee.github.io/javaee-spec/javadocs/javax/transaction/UserTransaction.html#setRollbackOnly--[`UserTransaction.setRollbackOnly()`].
+The transaction won't be directly aborted, and it will be marked
+for rolling-back when it's time to finish it.
+When later the `UserTransaction.commit()` is invoked the transaction
+is rolled-back and the execution finishes with
+https://javaee.github.io/javaee-spec/javadocs/javax/transaction/RollbackException.html[`javax.transaction.RollbackException`].
+
+When the transaction is managed by container, for example in case
+of EJB bean managed transaction, you can use
+https://javaee.github.io/javaee-spec/javadocs/javax/ejb/EJBContext.html#setRollbackOnly--[`javax.ejb.EJBContext`] to access the `setRollbackOnly()` method.
 
 [source,java,options="nowrap"]
 ----
@@ -219,32 +260,21 @@ public class MyBean {
 }
 ----
 
-NOTE: the `EJBContext` let you get the `UserTransaction` but you are not allowed
-      to do any operation with that when you run container managed transaction.
-      You can expect to receive a runtime exception in such case.
-
-==== Bean managed transactions
-
-Using the `@TransactionManagement(TransactionManagementType.BEAN)` means
-the transaction will be managed manually with the use of the JTA API.
-That's with the `UserTransaction` injections and methods on it.
-You can inject the `EJBContext` to get the `UserTransaction` instance too.
-
-NOTE: if a call is made from the container-managed method,
-      passing the transaction context to the bean managed method
-      then the context is suspended. It's similar(!) to
-      call transaction managed bean annotated with
-      `@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)`
+NOTE: The `setRollbackOnly` method can be accessed from
+      https://javaee.github.io/javaee-spec/javadocs/javax/transaction/TransactionManager.html#setRollbackOnly--[`TransactionManager`]
+      interface as well.
 
 ==== Transaction synchronization
 
-JTA API gives a chance to react to the event of a finishing transaction.
-The definition says that transaction manager announces the even of `beforeCompletion` and `afterCompletion`
-which are defined by the interface https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html[javax.transaction.Synchronization].
+JTA API gives a chance to react to events of a finishing transaction.
+The transaction manager invokes registered callbacks of `beforeCompletion`
+and `afterCompletion`. The callbacks are defined by implementing
+interface https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html[javax.transaction.Synchronization].
+
 The https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html#beforeCompletion--[`beforeCompletion`]
-callback is invoked at time the transaction manager starts to commit the global transaction. The invocation is processed in the transaction context.
+callback is invoked before the transaction manager commits the global transaction. Be aware that the `beforeCompletion` call back is not invoked for transaction which is rolled-back (either with `rollback()` call or when marked with `setRollbackOnly`). The `beforeCompletion` proceeds with the transaction context.
 The https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Synchronization.html#afterCompletion-int-[`afterCompletion`]
-is invoked after the transaction is committed or rolled-back (and is processed outside of the transaction context).
+is invoked after the transaction is committed or rolled-back. The `afterCompletion` is processed outside of the transaction context.
 
 The user needs just to create a simple Java POJO and implement the interface.
 
@@ -252,59 +282,55 @@ The user needs just to create a simple Java POJO and implement the interface.
 ----
 public class MySynchronization
         implements javax.transaction.Synchronization {
+  // called when transaction was not marked for rollback
   @Override
   public void beforeCompletion() {
-    System.out.println("Transaction is about to be finished"):
+    System.out.println("Transaction is about to be finished, expecting commit");
   }
 
   @Override
   public void afterCompletion(int status) {
-    System.out.println("Transaction finished with status " + status):
+    System.out.println("Transaction finished with status " + status);
   }
 }
 ----
 
-For registration of the synchronization callback, the user can inject the
-https://docs.oracle.com/javaee/7/api/javax/transaction/TransactionSynchronizationRegistry.html[javax.transaction.TransactionSynchronizationRegistry].
-(the mandated JNDI location for the object is at `java:comp/TransactionSynchronizationRegistry`) and then to register
-the synchronization instance. The instance is bound to the currently active transaction.
+The transaction synchronization can be registered from `Transaction`
+interface as a standard synchronization or
+from `TransactionSynchronizationRegistry` as an interposed synchronization.
+Any interposed synchronization will be called after all standard synchronization
+callbacks of the particular type are finished
+(i.e., first all standard `beforeCompletion` callbacks are executed
+and then all interposed `beforeCompletion` callbacks are executed).
 
-[source,java,options="nowrap"]
-----
-@Resource
-TransactionSynchronizationRegistry transactionSynchronizationRegistry;
-
-public void method() {
-  transactionSynchronizationRegistry
-    .registerInterposedSynchronization(new MySynchronization());
-}
-----
-
-The transaction synchronization registry adds other useful methods which are `putResource(Object key, Object value)`
-and `getResource(Object key)`. Their purpose is saving data objects alongside the transaction context.
-When the transaction is active you can store and retrieve the saved data. When the transaction is finished
-and there is no transaction context available (e.g. at `afterCompletion`) the `java.lang.IllegalStateException`
-is thrown.
-
-The other option for the user is to use https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Transaction.html[the transaction object]
+Using https://javaee.github.io/javaee-spec/javadocs/javax/transaction/Transaction.html[the transaction object]
 to register the synchronization.
 
 [source,java,options="nowrap"]
 ----
-@Resource(lookup = "java:/TransactionManager")
-TransactionManager tm;
+@Stateless
+public class MyBean {
+  @Resource(lookup = "java:/TransactionManager")
+  TransactionManager tm;
 
-public void method() {
-tm.getTransaction().registerSynchronization(new MySynchronization());
+  public void method() {
+    // synchronization callbacks will be called when the transaction finishes,
+    // that's a time when the code leaves this method
+    tm.getTransaction().registerSynchronization(new MySynchronization());
+  }
+}
 ----
 
 When the user runs the Stateful Session Bean he can implement
-interface https://javaee.github.io/javaee-spec/javadocs/javax/ejb/SessionSynchronization.html[javax.ejb.SessionSynchronization]
-(or to use annotations) for the definition of the synchronization callbacks onto the bean.
-The session synchronization defines three methods.
-Of these three methods `afterBegin` is not connected to the transaction synchronization so we will not discuss it further.
-The  following example works with annotations but the bean may just implement the `SessionSynchronization`
-interface and it would work the same way.
+interface https://javaee.github.io/javaee-spec/javadocs/javax/ejb/SessionSynchronization.html[javax.ejb.SessionSynchronization],
+or just to use annotations
+https://javaee.github.io/javaee-spec/javadocs/javax/ejb/BeforeCompletion.html[`@BeforeCompletion`] and
+https://javaee.github.io/javaee-spec/javadocs/javax/ejb/AfterCompletion.html[`@AfterCompletion`],
+to define the synchronization callbacks onto the bean.
+
+NOTE: The session synchronization interface defines three methods.
+      One of these three, the `afterBegin`, is not connected to the transaction
+      synchronization callbacks.
 
 [source,java,options="nowrap"]
 ----
@@ -316,21 +342,53 @@ public class MyStatefulBean {
     Thread.sleep(42000);
   }
 
+  // called when transaction was not marked for rollback
   @BeforeCompletion
   public void beforeCompletion() {
-    System.out.println("Transaction is about to be finished"):
+    System.out.println("Transaction is about to be finished, expecting commit");
   }
 
   @AfterCompletion
   public void afterCompletion(boolean committed) {
     System.out.println("Transaction finished with the outcome "
-      + (committed ? "committed" : "rolled-back")):
+      + (committed ? "committed" : "rolled-back"));
   }
 }
 ----
 
-NOTE: for more information about CDI and registration of transaction synchronization
-      look at https://jbossts.blogspot.com/2019/04/jta-and-cdi-integration.html[the article about Narayana integration of CDI events].
+For CDI one can observe the https://docs.jboss.org/weld/reference/latest/en-US/html/events.html#_transactional_observers[transactional events]
+or he may works with `@TransactionalScope` observing the `@BeforeDestroy` and
+`@Destroyed` events. The transaction synchronization
+callbacks are used underneath in both cases.
+
+NOTE: For more information about CDI and registration of transaction
+      synchronization look at
+      https://jbossts.blogspot.com/2019/04/jta-and-cdi-integration.html[the article about Narayana integration of CDI events].
+
+To register the interposed synchronization callback, the user can inject the
+https://docs.oracle.com/javaee/7/api/javax/transaction/TransactionSynchronizationRegistry.html[javax.transaction.TransactionSynchronizationRegistry].
+(the mandated JNDI location for the object is at `java:comp/TransactionSynchronizationRegistry`).
+The instance is bound to the currently active transaction.
+
+[source,java,options="nowrap"]
+----
+@Stateless
+public class MyBean {
+  @Resource
+  TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+
+  public void method() {
+    transactionSynchronizationRegistry
+      .registerInterposedSynchronization(new MySynchronization());
+  }
+}
+----
+
+The transaction synchronization registry adds other useful methods which are `putResource(Object key, Object value)`
+and `getResource(Object key)`. Their purpose is saving data objects alongside the transaction context.
+When the transaction is active you can store and retrieve the saved data. When the transaction is finished
+and there is no transaction context available (e.g. at `afterCompletion`) the `java.lang.IllegalStateException`
+is thrown.
 
 [[classloading]]
 == Transactions subsystem class loading
