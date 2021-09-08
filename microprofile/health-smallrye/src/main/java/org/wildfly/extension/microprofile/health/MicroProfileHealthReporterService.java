@@ -80,10 +80,13 @@ public class MicroProfileHealthReporterService implements Service<MicroProfileHe
     public void start(StartContext context) {
         // MicroProfile Health supports the mp.health.disable-default-procedures to let users disable any vendor procedures
         final boolean defaultServerProceduresDisabled = ConfigProvider.getConfig().getOptionalValue("mp.health.disable-default-procedures", Boolean.class).orElse(false);
+        // MicroProfile Health supports the mp.health.default.readiness.empty.response to let users specify default empty readiness responses
+        final String defaultReadinessEmptyResponse = ConfigProvider.getConfig().getOptionalValue("mp.health.default.readiness.empty.response", String.class).orElse("DOWN");
         // MicroProfile Health supports the mp.health.default.startup.empty.response to let users specify default empty startup responses
         final String defaultStartupEmptyResponse = ConfigProvider.getConfig().getOptionalValue("mp.health.default.startup.empty.response", String.class).orElse("DOWN");
         healthReporter = new MicroProfileHealthReporter(emptyLivenessChecksStatus, emptyReadinessChecksStatus,
-            emptyStartupChecksStatus, defaultServerProceduresDisabled, defaultStartupEmptyResponse);
+            emptyStartupChecksStatus, defaultServerProceduresDisabled,
+            defaultReadinessEmptyResponse, defaultStartupEmptyResponse);
 
         if (!defaultServerProceduresDisabled) {
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();

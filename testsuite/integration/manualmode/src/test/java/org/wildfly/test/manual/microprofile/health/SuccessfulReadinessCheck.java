@@ -22,10 +22,17 @@
 
 package org.wildfly.test.manual.microprofile.health;
 
+import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
+import org.eclipse.microprofile.health.Readiness;
 
-public class InvalidHealthResponseException extends Exception {
-    public InvalidHealthResponseException(HealthCheckResponse.Status expectedStatus, String receivedStatus) {
-        super(String.format("Expected %s but received %s", expectedStatus, receivedStatus));
+@Readiness
+public class SuccessfulReadinessCheck implements HealthCheck {
+
+    public static final String NAME = "SuccessfulReadinessCheck";
+
+    @Override
+    public HealthCheckResponse call() {
+        return HealthCheckResponse.up(NAME);
     }
 }
