@@ -175,6 +175,13 @@ link:#gal.naming[naming] +
 |
 link:#gal.cdi[cdi] +
 
+|[[gal.ejb]]ejb-http-invoker
+|Support for invoking Jakarta Enterprise Beans over HTTP.
+|
+link:#gal.ejb-lite[ejb-lite] +
+link:#gal.elytron[elytron] +
+link:#gal.undertow[undertow] +
+
 |[[gal.ejb]]ejb
 |Support for Jakarta Enterprise Beans, excluding the IIOP protocol.
 |
