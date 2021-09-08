@@ -307,7 +307,7 @@
             <subsystem xmlns="urn:jboss:domain:modcluster:1.2">
                 <mod-cluster-config advertise-socket="modcluster" connector="default"/>
             </subsystem>
-            <subsystem xmlns="urn:wildfly:elytron:15.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+            <subsystem xmlns="urn:wildfly:elytron:14.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
                 <providers>
                     <aggregate-providers name="combined-providers">
                         <providers name="elytron"/>
@@ -665,7 +665,7 @@
             <subsystem xmlns="urn:jboss:domain:modcluster:1.2">
                 <mod-cluster-config advertise-socket="modcluster" connector="default"/>
             </subsystem>
-            <subsystem xmlns="urn:wildfly:elytron:15.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+            <subsystem xmlns="urn:wildfly:elytron:14.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
                 <providers>
                     <aggregate-providers name="combined-providers">
                         <providers name="elytron"/>

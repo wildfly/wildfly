@@ -133,7 +133,7 @@
 
 
     <profile>
-        <subsystem xmlns="urn:wildfly:elytron:15.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+        <subsystem xmlns="urn:wildfly:elytron:14.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
             <authentication-client>
                 <!-- corresponding secret: <secret value="c2xhdmVfdXMzcl9wYXNzd29yZA==" /> -->
                 <authentication-configuration sasl-mechanism-selector="DIGEST-MD5" name="slaveHostAConfiguration" authentication-name="slave" realm="ManagementRealm">
