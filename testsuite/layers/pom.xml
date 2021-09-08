@@ -1298,6 +1298,34 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>ejb-http-invoker-provisioning-test</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/ejb-http-invoker</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>ejb-http-invoker</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>ejb-local-cache-provisioning-test</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -2264,6 +2292,7 @@
                                                 <layer>ee</layer>
                                                 <layer>ee-security</layer>
                                                 <layer>ejb</layer>
+                                                <layer>ejb-http-invoker</layer>
                                                 <layer>ejb-lite</layer>
                                                 <layer>ejb-local-cache</layer>
                                                 <layer>elytron</layer>
@@ -2361,6 +2390,7 @@
                                                 <layer>ee-security</layer>
                                                 <layer>ejb</layer>
                                                 <layer>ejb-dist-cache</layer>
+                                                <layer>ejb-http-invoker</layer>
                                                 <layer>ejb-lite</layer>
                                                 <layer>elytron</layer>
                                                 <layer>h2-datasource</layer>

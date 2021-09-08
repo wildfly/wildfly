@@ -3,10 +3,7 @@
 
     <feature-group name="servlet-unsecured-basic-profile"/>
 
-    <feature-group name="application-http-basic"/>
     <feature-group name="undertow-https"/>
-
-    <feature-group name="undertow-http-invoker"/>
 
     <feature-group name="servlet-picketbox-security"/>
 

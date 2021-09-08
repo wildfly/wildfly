@@ -14,10 +14,7 @@
         <include name="core-tools"/>
         <include name="git-history"/>
     </layers>
-    
-    <!-- WFLY-15020 This pair should be split into their own layer. -->
-    <feature-group name="application-http-basic"/>
-    <feature-group name="undertow-http-invoker"/>
+
     <!-- WFLY-15021 The following should be added to an undertow-https layer. -->
     <feature-group name="undertow-https"/>
     
