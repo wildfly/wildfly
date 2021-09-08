@@ -49,6 +49,7 @@ class DataSourcesSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+
         final DsDeploymentActivator dsDeploymentActivator = new DsDeploymentActivator();
 
         context.addStep(new AbstractDeploymentChainStep() {
