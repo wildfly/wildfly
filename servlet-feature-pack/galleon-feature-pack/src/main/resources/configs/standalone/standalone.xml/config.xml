@@ -10,7 +10,6 @@
         <include name="request-controller"/>
         <include name="security-manager"/>
         <include name="web-server"/>
-        <include name="legacy-security"/>
         <include name="core-tools"/>
         <include name="git-history"/>
     </layers>

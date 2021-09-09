@@ -4,6 +4,7 @@
         <feature spec="subsystem.messaging-activemq.server">
             <param name="server" value="default"/>
             <param name="statistics-enabled" value="${wildfly.messaging-activemq.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
+            <param name="elytron-domain" value="ApplicationDomain"/>
             <feature spec="subsystem.messaging-activemq.server.http-connector">
                 <param name="http-connector" value="http-connector"/>
                 <param name="socket-binding" value="http"/>

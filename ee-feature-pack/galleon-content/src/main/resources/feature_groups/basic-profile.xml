@@ -8,7 +8,6 @@
 
     <feature-group name="undertow-https"/>
 
-    <feature-group name="picketbox-security"/>
     <feature-group name="distributable-web-local"/>
 
 </feature-group-spec>

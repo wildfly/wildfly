@@ -4,6 +4,7 @@
     <feature spec="subsystem.messaging-activemq">
         <feature spec="subsystem.messaging-activemq.server">
             <param name="server" value="default"/>
+            <param name="elytron-domain" value="ApplicationDomain"/>
             <param name="cluster-password" value="${jboss.messaging.cluster.password:CHANGE ME!!}"/>
             <feature spec="subsystem.messaging-activemq.server.address-setting">
                 <param name="address-setting" value="#"/>

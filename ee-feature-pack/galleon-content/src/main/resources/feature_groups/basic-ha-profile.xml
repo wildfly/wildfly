@@ -8,7 +8,6 @@
 
     <feature-group name="undertow-http-invoker"/>
 
-    <feature-group name="picketbox-security"/>
     <feature-group name="distributable-web"/>
 
 </feature-group-spec>
