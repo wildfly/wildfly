@@ -22,8 +22,9 @@
 
 package org.wildfly.extension.picketlink.federation.model;
 
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.SimpleAttributeDefinition;
+import java.util.List;
+
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -35,8 +36,6 @@ import org.wildfly.extension.picketlink.federation.model.keystore.KeyStoreProvid
 import org.wildfly.extension.picketlink.federation.model.saml.SAMLResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.sp.ServiceProviderResourceDefinition;
 
-import java.util.List;
-
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  * @since Mar 16, 2012
@@ -47,21 +46,16 @@ public class FederationResourceDefinition extends AbstractFederationResourceDefi
         new SensitivityClassification(FederationExtension.SUBSYSTEM_NAME, "federation", false, true, true)
     ).wrapAsList();
 
-    public static final SimpleAttributeDefinition[] ATTRIBUTE_DEFINITIONS = new SimpleAttributeDefinition[0];
-
-    private final ExtensionContext extensionContext;
-
-    public FederationResourceDefinition(ExtensionContext extensionContext) {
-        super(ModelElement.FEDERATION, FederationAddHandler.INSTANCE, FederationRemoveHandler.INSTANCE);
-        this.extensionContext = extensionContext;
+    public FederationResourceDefinition() {
+        super(ModelElement.FEDERATION, new ModelOnlyAddStepHandler());
         setDeprecated(FederationExtension.DEPRECATED_SINCE);
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         addChildResourceDefinition(KeyStoreProviderResourceDefinition.INSTANCE, resourceRegistration);
-        addChildResourceDefinition(new IdentityProviderResourceDefinition(this.extensionContext), resourceRegistration);
-        addChildResourceDefinition(new ServiceProviderResourceDefinition(this.extensionContext), resourceRegistration);
+        addChildResourceDefinition(new IdentityProviderResourceDefinition(), resourceRegistration);
+        addChildResourceDefinition(new ServiceProviderResourceDefinition(), resourceRegistration);
         addChildResourceDefinition(SAMLResourceDefinition.INSTANCE, resourceRegistration);
     }
 

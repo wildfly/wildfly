@@ -485,8 +485,6 @@
         <!-- WildFly overrides the picketbox version from core to use MRRC variants -->
         <version.org.picketbox>5.0.3.Final-redhat-00007</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
-        <version.org.picketlink>2.5.5.SP12-redhat-00009</version.org.picketlink>
-        <version.org.picketlink.bindings>2.5.5.SP12-redhat-00013</version.org.picketlink.bindings>
         <version.org.reactivestreams>1.0.3</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.springframework.kafka>2.7.3</version.org.springframework.kafka>
@@ -9274,66 +9272,6 @@
                 </exclusions>
             </dependency>
 
-
-            <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-api</artifactId>
-                <version>${version.org.picketlink}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-common</artifactId>
-                <version>${version.org.picketlink}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-config</artifactId>
-                <version>${version.org.picketlink}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-federation</artifactId>
-                <version>${version.org.picketlink}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-idm-api</artifactId>
-                <version>${version.org.picketlink}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-idm-impl</artifactId>
-                <version>${version.org.picketlink}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-idm-simple-schema</artifactId>
-                <version>${version.org.picketlink}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-impl</artifactId>
-                <version>${version.org.picketlink}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.picketlink.distribution</groupId>
-                <artifactId>picketlink-wildfly8</artifactId>
-                <version>${version.org.picketlink.bindings}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.reactivestreams</groupId>

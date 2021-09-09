@@ -26,7 +26,9 @@ import static org.wildfly.extension.picketlink.federation.Namespace.CURRENT;
 import static org.wildfly.extension.picketlink.federation.Namespace.PICKETLINK_FEDERATION_1_1;
 import static org.wildfly.extension.picketlink.federation.Namespace.PICKETLINK_FEDERATION_1_0;
 
-import org.jboss.as.controller.Extension;
+import java.util.Collections;
+import java.util.Set;
+
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -34,7 +36,9 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
+import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
@@ -46,7 +50,7 @@ import org.wildfly.extension.picketlink.federation.model.parser.FederationSubsys
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
-public class FederationExtension implements Extension {
+public final class FederationExtension extends AbstractLegacyExtension {
 
     public static final String SUBSYSTEM_NAME = "picketlink-federation";
     public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
@@ -57,26 +61,31 @@ public class FederationExtension implements Extension {
     //deprecated in EAP 6.4
     public static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(2,0,0);
 
+    public FederationExtension() {
+        super("org.wildfly.extension.picketlink", SUBSYSTEM_NAME);
+    }
+
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new DeprecatedResourceDescriptionResolver(SUBSYSTEM_NAME, keyPrefix, RESOURCE_NAME, FederationExtension.class.getClassLoader(), true, true);
     }
 
     @Override
-    public void initialize(ExtensionContext context) {
+    protected Set<ManagementResourceRegistration> initializeLegacyModel(ExtensionContext context) {
         SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION, true);
 
-        subsystemRegistration.registerSubsystemModel(new FederationSubsystemRootResourceDefinition(context));
+        final ManagementResourceRegistration subsystem = subsystemRegistration.registerSubsystemModel(new FederationSubsystemRootResourceDefinition());
         subsystemRegistration.registerXMLElementWriter(FederationSubsystemWriter.INSTANCE);
 
         if (context.isRegisterTransformers()) {
-            registerTransformers_1_0(context, subsystemRegistration);
+            registerTransformers_1_0(subsystemRegistration);
         }
+        return Collections.singleton(subsystem);
     }
 
-    private void registerTransformers_1_0(ExtensionContext context, SubsystemRegistration subsystemRegistration) {
+    private void registerTransformers_1_0(SubsystemRegistration subsystemRegistration) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         ResourceTransformationDescriptionBuilder federationTransfDescBuilder = builder
-            .addChildResource(new FederationResourceDefinition(context));
+            .addChildResource(new FederationResourceDefinition());
         ResourceTransformationDescriptionBuilder keyStoreTransfDescBuilder = federationTransfDescBuilder
             .addChildResource(KeyStoreProviderResourceDefinition.INSTANCE);
 
@@ -86,7 +95,7 @@ public class FederationExtension implements Extension {
     }
 
     @Override
-    public void initializeParsers(ExtensionParsingContext context) {
+    protected void initializeLegacyParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, CURRENT.getUri(), CURRENT::getXMLReader);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, PICKETLINK_FEDERATION_1_1.getUri(), PICKETLINK_FEDERATION_1_1::getXMLReader);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, PICKETLINK_FEDERATION_1_0.getUri(), PICKETLINK_FEDERATION_1_0::getXMLReader);

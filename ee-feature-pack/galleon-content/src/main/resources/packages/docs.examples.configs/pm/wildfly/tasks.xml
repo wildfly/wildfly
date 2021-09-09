@@ -11,14 +11,6 @@
         <config model="standalone" name="standalone-minimalistic.xml">
             <feature-group name="standalone-minimalistic"/>
         </config>
-        <config model="standalone" name="standalone-picketlink.xml">
-        <!--
-            <props>
-                <prop name="config.branch-per-spec" value="false"/>
-            </props>
-            -->
-            <feature-group name="standalone-picketlink"/>
-        </config>
         <config model="standalone" name="standalone-rts.xml">
             <feature-group name="standalone-rts"/>
         </config>

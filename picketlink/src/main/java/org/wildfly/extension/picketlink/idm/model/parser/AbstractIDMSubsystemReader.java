@@ -87,6 +87,7 @@ public abstract class AbstractIDMSubsystemReader implements XMLStreamConstants, 
                 break;
             case PICKETLINK_IDENTITY_MANAGEMENT_1_1:
             case PICKETLINK_IDENTITY_MANAGEMENT_2_0:
+            case PICKETLINK_IDENTITY_MANAGEMENT_3_0:
                 readElement(reader, subsystemNode, addOperations);
                 break;
             default:

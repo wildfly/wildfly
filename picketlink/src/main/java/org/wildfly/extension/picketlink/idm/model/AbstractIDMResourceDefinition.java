@@ -22,18 +22,16 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
+import java.util.function.Function;
+
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.picketlink.common.model.AbstractResourceDefinition;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
+import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
 import org.wildfly.extension.picketlink.idm.IDMExtension;
-
-import java.util.List;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -41,40 +39,29 @@ import java.util.List;
  */
 public abstract class AbstractIDMResourceDefinition extends AbstractResourceDefinition {
 
-    protected AbstractIDMResourceDefinition(ModelElement modelElement, OperationStepHandler addHandler, OperationStepHandler removeHandler, SimpleAttributeDefinition... attributes) {
-        super(modelElement, addHandler, removeHandler, IDMExtension.getResourceDescriptionResolver(modelElement.getName()), attributes);
+    private final ModelValidationStepHandler[] modelValidators;
+    private final Function<PathAddress, PathAddress> partitionAddressProvider;
+
+    protected AbstractIDMResourceDefinition(final ModelElement modelElement,
+                                            final Function<PathAddress, PathAddress> partitionAddressProvider,
+                                            final SimpleAttributeDefinition... attributes) {
+        this(modelElement, null, partitionAddressProvider, attributes);
     }
 
-    protected AbstractIDMResourceDefinition(ModelElement modelElement, String name, OperationStepHandler addHandler, SimpleAttributeDefinition... attributes) {
-        super(modelElement, name, addHandler, DefaultRemoveStepHandler.INSTANCE, IDMExtension.getResourceDescriptionResolver(modelElement.getName()), attributes);
-    }
-
-    protected AbstractIDMResourceDefinition(ModelElement modelElement, OperationStepHandler addHandler, SimpleAttributeDefinition... attributes) {
-        super(modelElement, addHandler, DefaultRemoveStepHandler.INSTANCE, IDMExtension.getResourceDescriptionResolver(modelElement.getName()), attributes);
+    protected AbstractIDMResourceDefinition(final ModelElement modelElement,
+                                            final ModelValidationStepHandler[] modelValidators,
+                                            final Function<PathAddress, PathAddress> partitionAddressProvider,
+                                            final SimpleAttributeDefinition... attributes) {
+        super(modelElement, new DefaultAddStepHandler(modelValidators, partitionAddressProvider, attributes),
+                new DefaultRemoveStepHandler(partitionAddressProvider),
+                IDMExtension.getResourceDescriptionResolver(modelElement.getName()),
+                attributes);
+        this.modelValidators = modelValidators;
+        this.partitionAddressProvider = partitionAddressProvider;
     }
 
     @Override
     protected OperationStepHandler createAttributeWriterHandler() {
-        List<SimpleAttributeDefinition> attributes = getAttributes();
-        final List<AttributeDefinition> alternativeAttributes = getAlternativesAttributes();
-
-        return new IDMConfigWriteAttributeHandler(attributes.toArray(new AttributeDefinition[attributes.size()])) {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                if (!alternativeAttributes.isEmpty()) {
-                    context.addStep(new AlternativeAttributeValidationStepHandler(alternativeAttributes
-                            .toArray(new AttributeDefinition[alternativeAttributes.size()])),
-                        OperationContext.Stage.MODEL);
-                }
-
-                doRegisterModelWriteAttributeHandler(context, operation);
-
-                super.execute(context, operation);
-            }
-        };
-    }
-
-    protected void doRegisterModelWriteAttributeHandler(OperationContext context, ModelNode operation) {
-
+        return new IDMConfigWriteAttributeHandler(modelValidators, partitionAddressProvider, getAttributes().toArray(new AttributeDefinition[0]));
     }
 }

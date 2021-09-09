@@ -103,11 +103,6 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         parseXml("docs/examples/configs/standalone-minimalistic.xml");
     }
 
-//    @Test
-//    public void testStandalonePicketLink() throws Exception {
-//        parseXml("docs/examples/configs/standalone-picketlink.xml");
-//    }
-
     @Test
     public void testStandaloneXTS() throws Exception {
         parseXml("docs/examples/configs/standalone-xts.xml");

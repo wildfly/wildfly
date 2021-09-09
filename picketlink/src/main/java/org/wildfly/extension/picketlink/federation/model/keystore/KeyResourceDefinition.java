@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.picketlink.federation.model.keystore;
 
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelType;
@@ -41,6 +42,6 @@ public class KeyResourceDefinition extends AbstractFederationResourceDefinition 
     public static final KeyResourceDefinition INSTANCE = new KeyResourceDefinition();
 
     private KeyResourceDefinition() {
-        super(ModelElement.KEY, KeyAddHandler.INSTANCE, KeyRemoveHandler.INSTANCE, HOST);
+        super(ModelElement.KEY, new ModelOnlyAddStepHandler(HOST), HOST);
     }
 }

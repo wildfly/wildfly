@@ -22,22 +22,19 @@
 
 package org.wildfly.extension.picketlink.federation.model.idp;
 
-import org.picketlink.identity.federation.bindings.wildfly.idp.UndertowRoleGenerator;
-import org.picketlink.identity.federation.core.impl.EmptyRoleGenerator;
-
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>Enum defining alias for each supported built-in {@link org.wildfly.extension.picketlink.federation.model.idp.RoleGeneratorTypeEnum} provided by
+ * <p>Enum defining alias for each supported built-in org.picketlink.identity.federation.core.interfaces.RoleGenerator provided by
  * PicketLink. The alias is used in the configuration without using the full qualified name of a type.</p>
  *
  * @author Pedro Igor
  */
 public enum RoleGeneratorTypeEnum {
 
-    UNDERTOW_ROLE_GENERATOR("UndertowRoleGenerator", UndertowRoleGenerator.class.getName()),
-    EMPTY_ROLE_GENERATOR("EmptyRoleGenerator", EmptyRoleGenerator.class.getName());
+    UNDERTOW_ROLE_GENERATOR("UndertowRoleGenerator"),
+    EMPTY_ROLE_GENERATOR("EmptyRoleGenerator");
 
     private static final Map<String, RoleGeneratorTypeEnum> types = new HashMap<String, RoleGeneratorTypeEnum>();
 
@@ -48,21 +45,9 @@ public enum RoleGeneratorTypeEnum {
     }
 
     private final String alias;
-    private final String type;
 
-    private RoleGeneratorTypeEnum(String alias, String type) {
+    RoleGeneratorTypeEnum(String alias) {
         this.alias = alias;
-        this.type = type;
-    }
-
-    static String forType(String alias) {
-        RoleGeneratorTypeEnum resolvedType = types.get(alias);
-
-        if (resolvedType != null) {
-            return resolvedType.getType();
-        }
-
-        return null;
     }
 
     @Override
@@ -72,9 +57,5 @@ public enum RoleGeneratorTypeEnum {
 
     String getAlias() {
         return this.alias;
-    }
-
-    String getType() {
-        return this.type;
     }
 }

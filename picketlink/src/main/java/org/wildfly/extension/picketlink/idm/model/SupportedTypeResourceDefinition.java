@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -32,8 +34,6 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
 import org.wildfly.extension.picketlink.common.model.validator.UniqueTypeValidationStepHandler;
-
-import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -46,7 +46,7 @@ public class SupportedTypeResourceDefinition extends AbstractIDMResourceDefiniti
         .setAlternatives(ModelElement.COMMON_CODE.getName())
         .build();
     public static final SimpleAttributeDefinition CODE = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_CODE.getName(), ModelType.STRING, true)
-        .setValidator(new EnumValidator<AttributedTypeEnum>(AttributedTypeEnum.class, true, true))
+        .setValidator(new EnumValidator<>(AttributedTypeEnum.class, true, true))
         .setAllowExpression(true)
         .setAlternatives(ModelElement.COMMON_CLASS_NAME.getName())
         .build();
@@ -57,8 +57,7 @@ public class SupportedTypeResourceDefinition extends AbstractIDMResourceDefiniti
     public static final SupportedTypeResourceDefinition INSTANCE = new SupportedTypeResourceDefinition(CLASS_NAME, CODE, MODULE);
 
     private SupportedTypeResourceDefinition(SimpleAttributeDefinition... attributes) {
-        super(ModelElement.SUPPORTED_TYPE, new IDMConfigAddStepHandler(
-            getModelValidators(), attributes), attributes);
+        super(ModelElement.SUPPORTED_TYPE, getModelValidators(), address -> address.getParent().getParent().getParent().getParent(), attributes);
     }
 
     private static ModelValidationStepHandler[] getModelValidators() {
@@ -70,13 +69,6 @@ public class SupportedTypeResourceDefinition extends AbstractIDMResourceDefiniti
                 }
             }
         };
-    }
-
-    @Override
-    protected void doRegisterModelWriteAttributeHandler(OperationContext context, ModelNode operation) {
-        for (ModelValidationStepHandler validator : getModelValidators()) {
-            context.addStep(validator, OperationContext.Stage.MODEL);
-        }
     }
 
     private static String getSupportedType(OperationContext context, ModelNode elementNode) throws OperationFailedException {

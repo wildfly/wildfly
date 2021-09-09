@@ -38,7 +38,6 @@ public class ExpressionSupportSmokeTestCase extends AbstractExpressionSupportTes
     private static final String JBOSSAS_FULL_HA = "jbossas-custom-full-ha";
     private static final String JBOSSAS_ACTIVEMQ_COLOCATED = "jbossas-custom-activemq-colocated";
     private static final String JBOSSAS_GENERICJMS = "jbossas-custom-genericjms";
-    private static final String JBOSSAS_PICKETLINK = "jbossas-custom-picketlink";
     private static final String JBOSSAS_RTS = "jbossas-custom-rts";
     private static final String JBOSSAS_XTS = "jbossas-custom-xts";
     private ManagementClient managementClient;
@@ -92,11 +91,6 @@ public class ExpressionSupportSmokeTestCase extends AbstractExpressionSupportTes
     @Test
     public void testGenericJMS() throws Exception {
         testContainer(JBOSSAS_GENERICJMS);
-    }
-
-    @Test
-    public void testPicketlink() throws Exception {
-        testContainer(JBOSSAS_PICKETLINK);
     }
 
     @Test
