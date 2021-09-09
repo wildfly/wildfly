@@ -1197,6 +1197,22 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         return !timer.persistent || timerPersistence.getValue().shouldRun(timer);
     }
 
+    /**
+     * Safely closes some resource without throwing an exception.
+     * Any exception will be logged at TRACE level.
+     *
+     * @param resource the resource to close
+     */
+    public static void safeClose(final AutoCloseable resource) {
+        if (resource != null) {
+            try {
+                resource.close();
+            } catch (Throwable t) {
+                EjbLogger.EJB3_TIMER_LOGGER.tracef(t, "Closing resource failed");
+            }
+        }
+    }
+
     private class TimerCreationTransactionSynchronization implements Synchronization {
         /**
          * The timer being managed in the transaction
