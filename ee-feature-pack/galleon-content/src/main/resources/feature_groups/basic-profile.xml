@@ -8,6 +8,9 @@
 
     <feature-group name="undertow-https"/>
 
+    <feature-group name="ejb3-elytron-security"/>
+    <feature-group name="undertow-elytron-security"/>
+
     <feature-group name="distributable-web-local"/>
 
 </feature-group-spec>

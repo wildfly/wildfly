@@ -18,6 +18,8 @@
     <feature-group name="undertow-https"/>
     
     <feature-group name="undertow-default-config"/>
+    <feature-group name="undertow-elytron-security"/>
+
     <!-- package included in case configuration is provisioned without inheriting all modules -->
     <packages>
         <package name="org.jboss.as.patching.cli"/>

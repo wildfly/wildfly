@@ -2,7 +2,7 @@
 <feature-group-spec name="servlet-standalone-profile" xmlns="urn:jboss:galleon:feature-group:1.0">
 
     <feature-group name="servlet-unsecured-standalone-profile"/>
-
+    <feature-group name="undertow-elytron-security"/>
     <feature-group name="undertow-https"/>
 
 </feature-group-spec>
