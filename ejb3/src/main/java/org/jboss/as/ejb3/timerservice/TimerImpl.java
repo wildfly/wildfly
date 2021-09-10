@@ -533,7 +533,7 @@ public class TimerImpl implements Timer {
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
-        if (this.getClass() != o.getClass()) return false;
+        if (o == null || this.getClass() != o.getClass()) return false;
 
         final TimerImpl otherTimer = (TimerImpl) o;
 
