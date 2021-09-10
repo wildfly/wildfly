@@ -220,10 +220,17 @@ class ProviderAttributeDefinitions {
                     .setValidator(new LongRangeValidator(-1L, true))
                     .build();
 
+    protected static final SimpleAttributeDefinition TOKEN_SIGNATURE_ALGORITHM =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.TOKEN_SIGNATURE_ALGORITHM, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode("RS256"))
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .build();
+
     protected static final SimpleAttributeDefinition[] ATTRIBUTES = { REALM_PUBLIC_KEY, AUTH_SERVER_URL, PROVIDER_URL, TRUSTSTORE, TRUSTSTORE_PASSWORD,
             SSL_REQUIRED, CONFIDENTIAL_PORT, ALLOW_ANY_HOSTNAME, DISABLE_TRUST_MANAGER, CONNECTION_POOL_SIZE, ENABLE_CORS, CLIENT_KEYSTORE,
             CLIENT_KEYSTORE_PASSWORD, CLIENT_KEY_PASSWORD, CORS_MAX_AGE, CORS_ALLOWED_HEADERS, CORS_ALLOWED_METHODS, CORS_EXPOSED_HEADERS,
             EXPOSE_TOKEN, ALWAYS_REFRESH_TOKEN, REGISTER_NODE_AT_STARTUP, REGISTER_NODE_PERIOD, TOKEN_STORE, PRINCIPAL_ATTRIBUTE, AUTODETECT_BEARER_ONLY,
-            IGNORE_OAUTH_QUERY_PARAMETER, PROXY_URL, VERIFY_TOKEN_AUDIENCE, SOCKET_TIMEOUT_MILLIS, CONNECTION_TTL_MILLIS, CONNECTION_TIMEOUT_MILLIS};
+            IGNORE_OAUTH_QUERY_PARAMETER, PROXY_URL, VERIFY_TOKEN_AUDIENCE, SOCKET_TIMEOUT_MILLIS, CONNECTION_TTL_MILLIS, CONNECTION_TIMEOUT_MILLIS, TOKEN_SIGNATURE_ALGORITHM};
 
 }

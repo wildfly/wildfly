@@ -90,6 +90,16 @@
         <connection-timeout-millis>50000</connection-timeout-millis>
         <principal-attribute>preferred_username</principal-attribute>
     </secure-deployment>
+    <secure-deployment name="wildfly-test">
+        <provider-url>http://localhost:8080/auth/realms/WildFly</provider-url>
+        <client-id>wildfly-management</client-id>
+        <ssl-required>EXTERNAL</ssl-required>
+        <socket-timeout-millis>10000</socket-timeout-millis>
+        <connection-ttl-millis>40000</connection-ttl-millis>
+        <connection-timeout-millis>50000</connection-timeout-millis>
+        <principal-attribute>preferred_username</principal-attribute>
+        <token-signature-algorithm>HS256</token-signature-algorithm>
+    </secure-deployment>
 <!--    <secure-server name="wildfly-console">-->
 <!--        <realm>jboss-infra</realm>-->
 <!--        <resource>wildfly-console</resource>-->

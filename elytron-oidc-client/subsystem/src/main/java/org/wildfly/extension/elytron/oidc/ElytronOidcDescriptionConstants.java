@@ -75,6 +75,7 @@ interface ElytronOidcDescriptionConstants {
     String SOCKET_TIMEOUT_MILLIS = "socket-timeout-millis";
     String SSL_REQUIRED = "ssl-required";
     String TOKEN_MINIMUM_TIME_TO_LIVE = "token-minimum-time-to-live";
+    String TOKEN_SIGNATURE_ALGORITHM = "token-signature-algorithm";
     String TOKEN_STORE = "token-store";
     String TOKEN_TIMEOUT = "token-timeout";
     String TRUSTSTORE = "truststore";
