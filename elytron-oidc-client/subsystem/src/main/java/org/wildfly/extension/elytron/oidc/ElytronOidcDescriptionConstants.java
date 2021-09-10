@@ -71,7 +71,6 @@ interface ElytronOidcDescriptionConstants {
     String RESOURCE = "resource";
     String SECRET = "secret";
     String SECURE_DEPLOYMENT = "secure-deployment";
-    String SECURE_SERVER = "secure-server";
     String SOCKET_TIMEOUT_MILLIS = "socket-timeout-millis";
     String SSL_REQUIRED = "ssl-required";
     String TOKEN_MINIMUM_TIME_TO_LIVE = "token-minimum-time-to-live";

@@ -100,14 +100,5 @@
         <principal-attribute>preferred_username</principal-attribute>
         <token-signature-algorithm>HS256</token-signature-algorithm>
     </secure-deployment>
-<!--    <secure-server name="wildfly-console">-->
-<!--        <realm>jboss-infra</realm>-->
-<!--        <resource>wildfly-console</resource>-->
-<!--        <public-client>true</public-client>-->
-<!--        <adapter-state-cookie-path>/</adapter-state-cookie-path>-->
-<!--        <ssl-required>EXTERNAL</ssl-required>-->
-<!--        <confidential-port>443</confidential-port>-->
-<!--        <proxy-url>http://localhost:9000</proxy-url>-->
-<!--    </secure-server>-->
 </subsystem>
 

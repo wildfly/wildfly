@@ -15,7 +15,6 @@
             <xs:element name="realm" maxOccurs="unbounded" minOccurs="0" type="realm-type"/>
             <xs:element name="provider" maxOccurs="unbounded" minOccurs="0" type="provider-type"/>
             <xs:element name="secure-deployment" maxOccurs="unbounded" minOccurs="0" type="secure-deployment-type"/>
-            <xs:element name="secure-server" maxOccurs="unbounded" minOccurs="0" type="secure-deployment-type"/>
         </xs:choice>
     </xs:complexType>
 
