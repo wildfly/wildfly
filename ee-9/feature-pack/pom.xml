@@ -91,6 +91,7 @@
         <version.org.hibernate.validator>7.0.1.Final</version.org.hibernate.validator>
         <version.org.jberet>2.0.1.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>1.0.5</version.org.jboss.activemq.artemis.integration>
+        <version.org.jboss.invocation>1.7.0.Final</version.org.jboss.invocation>
         <version.org.jboss.weld.weld>4.0.2.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>4.0.SP1</version.org.jboss.weld.weld-api>
         <version.org.wildfly.transaction.client>2.0.0.Final</version.org.wildfly.transaction.client>
@@ -1104,6 +1105,13 @@
         <dependency>
             <groupId>org.jboss.metadata</groupId>
             <artifactId>jboss-metadata-ejb-jakarta</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.invocation</groupId>
+            <artifactId>jboss-invocation-jakarta</artifactId>
+            <version>${version.org.jboss.invocation}</version>
             <scope>provided</scope>
         </dependency>
 
