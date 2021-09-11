@@ -59,6 +59,13 @@
             <artifactId>microprofile-health-tck</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <!-- WFLY-15265. This is a workaround for an unclear dep tree pollution problem.
+                 TODO Remove this if elytron aligns its version with WF or some other solution is found. -->
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
