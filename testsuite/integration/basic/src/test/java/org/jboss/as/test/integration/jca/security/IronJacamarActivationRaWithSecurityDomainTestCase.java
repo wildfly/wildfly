@@ -33,6 +33,7 @@ import javax.security.auth.PrivateCredentialPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.PermissionUtils;
@@ -77,6 +78,12 @@ public class IronJacamarActivationRaWithSecurityDomainTestCase {
             moduleOptions.put("principal", "sa");
             return moduleOptions;
         }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            // TODO Auto-generated method stub
+        }
+
     }
 
     @Deployment

@@ -80,7 +80,7 @@ public class DsWithElytronAuthContextTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "single.jar").addClasses(DsWithElytronAuthContextTestCase.class);
         jar.addClasses(AbstractElytronSetupTask.class);
         return ShrinkWrap.create(EnterpriseArchive.class, "test.ear").addAsLibrary(jar)
-                .addAsManifestResource(DsWithSecurityDomainTestCase.class.getPackage(), "security-ds-elytron.xml", "security-ds.xml");
+                .addAsManifestResource(DsWithElytronAuthContextTestCase.class.getPackage(), "security-ds-elytron.xml", "security-ds.xml");
     }
 
     @ArquillianResource
