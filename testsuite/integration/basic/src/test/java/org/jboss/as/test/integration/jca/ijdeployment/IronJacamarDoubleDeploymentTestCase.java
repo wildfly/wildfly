@@ -39,6 +39,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,6 +50,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("[WFLY-15249] Deployments need to handle lack of legacy security.")
 public class IronJacamarDoubleDeploymentTestCase extends ContainerResourceMgmtTestBase {
     private static final String deploymentName = "test-ij.ear";
     private static final String deployment2Name = "test-ij2.ear";

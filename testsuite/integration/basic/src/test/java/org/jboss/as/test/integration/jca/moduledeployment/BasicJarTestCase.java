@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.jca.moduledeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 
@@ -45,6 +46,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(BasicJarTestCase.ModuleAcDeploymentTestCaseSetup.class)
+@Ignore("[WFLY-15249] Deployments need to handle lack of legacy security.")
 public class BasicJarTestCase extends BasicFlatTestCase {
 
 

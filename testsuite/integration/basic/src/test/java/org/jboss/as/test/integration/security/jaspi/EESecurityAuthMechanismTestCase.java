@@ -14,7 +14,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.jacc.propagation.Manage;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
@@ -22,6 +21,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -31,8 +31,8 @@ import org.junit.runner.RunWith;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ JaspiSecurityDomainsSetup.class })
 @RunAsClient
+@Ignore("[WFLY-15264] Convert to Elytron configuration.")
 public class EESecurityAuthMechanismTestCase {
 
     @Deployment(name = "war")
@@ -44,7 +44,7 @@ public class EESecurityAuthMechanismTestCase {
         war.addAsResource(usersRolesAsset, "roles.properties");
 
         war.addAsWebInfResource(EESecurityAuthMechanismTestCase.class.getPackage(), "web.xml", "/web.xml");
-        war.addAsWebInfResource(Utils.getJBossWebXmlAsset(JaspiSecurityDomainsSetup.SECURITY_DOMAIN_NAME), "jboss-web.xml");
+        //war.addAsWebInfResource(Utils.getJBossWebXmlAsset(JaspiSecurityDomainsSetup.SECURITY_DOMAIN_NAME), "jboss-web.xml");
 
         // temporary. remove once the security subsystem is updated to proper consider the module option
         war.addAsManifestResource(Utils.getJBossDeploymentStructure("org.wildfly.extension.undertow"), "jboss-deployment-structure.xml");

@@ -57,6 +57,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -68,6 +69,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({SecurityAuditingTestCase.SecurityAuditingTestCaseSetup.class})
+@Ignore("[WFLY-15263] Update for lack of legacy security.")
 public class SecurityAuditingTestCase extends AnnSBTest {
 
     private static final Logger log = Logger.getLogger(testClass());
@@ -121,9 +123,7 @@ public class SecurityAuditingTestCase extends AnnSBTest {
 
             executeOperations(updates);
 
-            if (System.getProperty("elytron") != null) {
-                ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
-            }
+            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
         }
 
         @Override

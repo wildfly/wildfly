@@ -31,7 +31,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.jacc.propagation.Manage;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
@@ -39,6 +38,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,8 +49,8 @@ import org.junit.runner.RunWith;
  */
 @SuppressWarnings("MagicNumber")
 @RunWith(Arquillian.class)
-@ServerSetup({JaspiSecurityDomainsSetup.class})
 @RunAsClient
+@Ignore("[WFLY-15264] Convert to Elytron configuration.")
 public class EESecurityAuthMechanismMultiConstraintsTestCase {
 
     @Deployment(name = "WFLY-12655")
@@ -61,8 +61,8 @@ public class EESecurityAuthMechanismMultiConstraintsTestCase {
         war.addAsResource(usersRolesAsset, "users.properties")
                 .addAsResource(usersRolesAsset, "roles.properties");
 
-        war.addAsWebInfResource(EESecurityAuthMechanismMultiConstraintsTestCase.class.getPackage(), "WFLY-12655-web.xml", "/web.xml")
-                .addAsWebInfResource(Utils.getJBossWebXmlAsset(JaspiSecurityDomainsSetup.SECURITY_DOMAIN_NAME), "jboss-web.xml");
+        //war.addAsWebInfResource(EESecurityAuthMechanismMultiConstraintsTestCase.class.getPackage(), "WFLY-12655-web.xml", "/web.xml")
+        //        .addAsWebInfResource(Utils.getJBossWebXmlAsset(JaspiSecurityDomainsSetup.SECURITY_DOMAIN_NAME), "jboss-web.xml");
 
         // temporary. remove once the security subsystem is updated to proper consider the module option
         war.addAsManifestResource(Utils.getJBossDeploymentStructure("org.wildfly.extension.undertow"), "jboss-deployment-structure.xml");
