@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2014, Red Hat, Inc., and individual contributors
+  ~ Copyright 2021, Red Hat, Inc., and individual contributors
   ~ as indicated by the @author tags. See the copyright.txt file in the
   ~ distribution for a full listing of individual contributors.
   ~
@@ -20,67 +20,67 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-parent</artifactId>
+        <artifactId>wildfly-ee-9-source-transform-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>26.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-bean-validation</artifactId>
+    <artifactId>wildfly-bean-validation-jakarta</artifactId>
 
-    <name>WildFly: Bean Validation</name>
+    <name>WildFly: Bean Validation subsystem (Jakarta Namespace)</name>
+	
+    <packaging>jar</packaging>
+
+    <properties>
+        <transformer-input-dir>${project.basedir}/../../../bean-validation</transformer-input-dir>
+    </properties>
 
     <dependencies>
+
+        <!-- Jakarta-namespace specific deps -->
+
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
+
         <dependency>
-          <groupId>org.hibernate.validator</groupId>
-          <artifactId>hibernate-validator</artifactId>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
         </dependency>
+
         <dependency>
             <!-- Needed for Hibernate Validator since it asserts the existence of javax.el during bootstrap in the
                   default configuration-->
-            <groupId>org.jboss.spec.javax.el</groupId>
-            <artifactId>jboss-el-api_3.0_spec</artifactId>
+            <groupId>org.jboss.spec.jakarta.el</groupId>
+            <artifactId>jboss-el-api_4.0_spec</artifactId>
             <scope>runtime</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
+
         <dependency>
             <!-- Needed for Hibernate Validator since it asserts the existence of javax.el during bootstrap in the
                   default configuration-->
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.el</artifactId>
             <scope>runtime</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-ee-jakarta</artifactId>
+        </dependency>
+
+        <!-- Other deps consistent with the javax.* mail module -->
 
         <dependency>
             <groupId>org.jboss</groupId>
@@ -119,16 +119,6 @@
             <artifactId>staxmapper</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller</artifactId>
         </dependency>
@@ -155,22 +145,6 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-weld-common</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron-security-manager-action</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>
@@ -194,13 +168,16 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-security-manager-action</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron-security-manager</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml</groupId>
+            <artifactId>classmate</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -213,5 +190,6 @@
             <type>pom</type>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 </project>

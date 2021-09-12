@@ -18,29 +18,136 @@
 
    <dependencies>
 
+       <dependency>
+           <groupId>jakarta.enterprise</groupId>
+           <artifactId>jakarta.enterprise.cdi-api</artifactId>
+           <exclusions>
+               <exclusion>
+                   <groupId>*</groupId>
+                   <artifactId>*</artifactId>
+               </exclusion>
+           </exclusions>
+       </dependency>
+
+       <dependency>
+           <groupId>jakarta.validation</groupId>
+           <artifactId>jakarta.validation-api</artifactId>
+           <exclusions>
+               <exclusion>
+                   <groupId>*</groupId>
+                   <artifactId>*</artifactId>
+               </exclusion>
+           </exclusions>
+       </dependency>
+
+       <dependency>
+           <groupId>org.jboss.modules</groupId>
+           <artifactId>jboss-modules</artifactId>
+           <exclusions>
+               <exclusion>
+                   <groupId>*</groupId>
+                   <artifactId>*</artifactId>
+               </exclusion>
+           </exclusions>
+       </dependency>
+
+       <dependency>
+           <groupId>org.jboss.msc</groupId>
+           <artifactId>jboss-msc</artifactId>
+           <exclusions>
+               <exclusion>
+                   <groupId>*</groupId>
+                   <artifactId>*</artifactId>
+               </exclusion>
+           </exclusions>
+       </dependency>
+
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-weld-spi</artifactId>
+         <exclusions>
+             <exclusion>
+                 <groupId>*</groupId>
+                 <artifactId>*</artifactId>
+             </exclusion>
+         </exclusions>
       </dependency>
 
      <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-weld-common</artifactId>
-      </dependency>
+         <exclusions>
+             <exclusion>
+                 <groupId>*</groupId>
+                 <artifactId>*</artifactId>
+             </exclusion>
+         </exclusions>
+     </dependency>
 
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-bean-validation</artifactId>
+          <exclusions>
+              <exclusion>
+                  <groupId>*</groupId>
+                  <artifactId>*</artifactId>
+              </exclusion>
+          </exclusions>
       </dependency>
 
       <dependency>
          <groupId>org.hibernate.validator</groupId>
          <artifactId>hibernate-validator-cdi</artifactId>
+          <exclusions>
+              <exclusion>
+                  <groupId>*</groupId>
+                  <artifactId>*</artifactId>
+              </exclusion>
+          </exclusions>
       </dependency>
+
+       <dependency>
+           <groupId>org.wildfly.core</groupId>
+           <artifactId>wildfly-controller</artifactId>
+           <exclusions>
+               <exclusion>
+                   <groupId>*</groupId>
+                   <artifactId>*</artifactId>
+               </exclusion>
+           </exclusions>
+       </dependency>
+
+       <dependency>
+           <groupId>org.wildfly.core</groupId>
+           <artifactId>wildfly-server</artifactId>
+           <exclusions>
+               <exclusion>
+                   <groupId>*</groupId>
+                   <artifactId>*</artifactId>
+               </exclusion>
+           </exclusions>
+       </dependency>
+
+       <dependency>
+           <groupId>org.wildfly.security</groupId>
+           <artifactId>wildfly-elytron-permission</artifactId>
+           <exclusions>
+               <exclusion>
+                   <groupId>*</groupId>
+                   <artifactId>*</artifactId>
+               </exclusion>
+           </exclusions>
+       </dependency>
 
        <dependency>
            <groupId>org.wildfly.security</groupId>
            <artifactId>wildfly-elytron-security-manager</artifactId>
+           <exclusions>
+               <exclusion>
+                   <groupId>*</groupId>
+                   <artifactId>*</artifactId>
+               </exclusion>
+           </exclusions>
        </dependency>
 
    </dependencies>
