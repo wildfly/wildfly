@@ -45,6 +45,7 @@
     </properties>
 
     <modules>
+        <module>ee</module>
         <module>mail</module>
     </modules>
 
