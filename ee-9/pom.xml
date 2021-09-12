@@ -45,12 +45,17 @@
         <version.jakarta.annotation.jakarta-annotation-api>2.0.0</version.jakarta.annotation.jakarta-annotation-api>
         <version.jakarta.authorization.jakarta-authorization-api>2.0.0</version.jakarta.authorization.jakarta-authorization-api>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
+        <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
+        <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.interceptor.jakarta-interceptors-api>2.0.0</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.mail>2.0.0</version.jakarta.mail>
         <version.jakarta.transaction.jakarta-transaction-api>2.0.0</version.jakarta.transaction.jakarta-transaction-api>
         <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.jboss.invocation>1.7.0.Final</version.org.jboss.invocation>
         <version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>3.0.0</version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>
+        <version.org.jboss.weld.weld>4.0.2.Final</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>4.0.SP1</version.org.jboss.weld.weld-api>
+        <version.org.wildfly.transaction.client>2.0.0.Final</version.org.wildfly.transaction.client>
 
     </properties>
 
@@ -94,9 +99,33 @@
             </dependency>
 
             <dependency>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                <version>${version.jakarta.enterprise}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>jakarta.enterprise.concurrent</groupId>
                 <artifactId>jakarta.enterprise.concurrent-api</artifactId>
                 <version>${version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.inject</groupId>
+                <artifactId>jakarta.inject-api</artifactId>
+                <version>${version.jakarta.inject.jakarta.inject-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -166,6 +195,55 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-api</artifactId>
+                <version>${version.org.jboss.weld.weld-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-core-impl</artifactId>
+                <version>${version.org.jboss.weld.weld}</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-spi</artifactId>
+                <version>${version.org.jboss.weld.weld-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.weld.module</groupId>
+                <artifactId>weld-ejb</artifactId>
+                <version>${version.org.jboss.weld.weld}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ee-jakarta</artifactId>
                 <version>${ee.maven.version}</version>
@@ -181,6 +259,54 @@
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-mail-jakarta</artifactId>
                 <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-weld-common-jakarta</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-weld-spi-jakarta</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-weld-transactions-jakarta</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.transaction</groupId>
+                <artifactId>wildfly-transaction-client-jakarta</artifactId>
+                <version>${version.org.wildfly.transaction.client}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

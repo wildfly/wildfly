@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-weld-spi}"/>
+        <artifact name="\${org.wildfly:wildfly-weld-spi@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>

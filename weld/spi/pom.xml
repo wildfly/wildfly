@@ -19,33 +19,102 @@
    <dependencies>
 
       <dependency>
+         <groupId>org.jboss.modules</groupId>
+         <artifactId>jboss-modules</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>*</groupId>
+               <artifactId>*</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.msc</groupId>
+         <artifactId>jboss-msc</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>*</groupId>
+               <artifactId>*</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+
+      <dependency>
+         <groupId>org.jboss.spec.javax.interceptor</groupId>
+         <artifactId>jboss-interceptors-api_1.2_spec</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>*</groupId>
+               <artifactId>*</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+
+      <dependency>
          <groupId>org.wildfly.core</groupId>
          <artifactId>wildfly-server</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>*</groupId>
+               <artifactId>*</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
 
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>wildfly-ee</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>*</groupId>
+               <artifactId>*</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
 
       <dependency>
          <groupId>org.jboss.weld</groupId>
          <artifactId>weld-api</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>*</groupId>
+               <artifactId>*</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
 
       <dependency>
          <groupId>org.jboss.weld</groupId>
          <artifactId>weld-spi</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>*</groupId>
+               <artifactId>*</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
 
       <dependency>
          <groupId>jakarta.enterprise</groupId>
          <artifactId>jakarta.enterprise.cdi-api</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>*</groupId>
+               <artifactId>*</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
 
       <dependency>
          <groupId>jakarta.inject</groupId>
          <artifactId>jakarta.inject-api</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>*</groupId>
+               <artifactId>*</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
 
    </dependencies>
