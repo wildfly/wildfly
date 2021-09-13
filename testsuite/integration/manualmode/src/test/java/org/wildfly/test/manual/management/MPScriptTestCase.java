@@ -105,27 +105,6 @@ public class MPScriptTestCase {
         doTest();
     }
 
-    @Test
-    public void testFailure() throws Exception {
-        currentConfig = "standalone.xml";
-        setupConfig();
-        // Attempt to apply a second time, must fail
-        boolean error = false;
-        try {
-            // Rely on default config name property: standalone.xml
-            CommandContext ctx = CommandContextFactory.getInstance().newCommandContext();
-            for (String line : Files.readAllLines(SCRIPT_FILE, Charset.forName("UTF-8"))) {
-                ctx.handle(line);
-            }
-            error = true;
-        } catch (Exception ex) {
-            // XXX OK
-        }
-        if (error) {
-            throw new Exception("Should have failed");
-        }
-    }
-
     @After
     public void resetConfig() throws Exception {
         Path copy = CONFIG_DIR.resolve(PREFIX + currentConfig);
