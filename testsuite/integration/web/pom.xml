@@ -288,7 +288,6 @@
                             </feature-packs>
                             <layers>
                                 <layer>datasources-web-server</layer>
-                                <layer>legacy-security</layer>
                             </layers>
                             <excluded-layers>
                                 <layer>datasources</layer>
@@ -610,7 +609,7 @@
                                     </configurations>
                                 </configuration>
                             </execution>
-		                    <!-- Provision a datasources-web-server with legacy-security as well -->
+		                    <!-- Provision a datasources-web-server -->
                             <execution>
                                 <id>web-legacy-security-provisioning</id>
                                 <goals>
@@ -642,7 +641,6 @@
                                             <name>standalone.xml</name>
                                             <layers>
                                                 <layer>datasources-web-server</layer>
-                                                <layer>legacy-security</layer>
                                             </layers>
                                             <excluded-layers>
                                                 <layer>datasources</layer>
@@ -805,36 +803,6 @@
                                         <exclude>org/jboss/as/test/integration/web/annotationsmodule/WebModuleDeploymentTestCase.java</exclude>
                                         <!-- requires https -->
                                         <exclude>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</exclude>
-                                    </excludes>
-                                </configuration>
-                            </execution>
-
-                            <!-- Tests against the install with legacy security -->
-                            <execution>
-                                <id>legacy-security-layers.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <systemPropertyVariables>
-                                        <jboss.home>${project.build.directory}/wildfly-legacy-security</jboss.home>
-                                        <jboss.home.dir>${project.build.directory}/wildfly-legacy-security</jboss.home.dir>
-                                        <jbossas.dist>${project.build.directory}/wildfly-legacy-security</jbossas.dist>
-                                        <jboss.dist>${project.build.directory}/wildfly-legacy-security</jboss.dist>
-                                        <jboss.install.dir>${project.build.directory}/wildfly-legacy-security</jboss.install.dir>
-                                        <!-- Override the standard module path that points at the shared module set from servlet-dist -->
-                                        <module.path>${project.build.directory}/wildfly-legacy-security/modules${path.separator}${basedir}/target/modules</module.path>
-                                    </systemPropertyVariables>
-                                    <environmentVariables>
-                                        <JBOSS_HOME>${project.build.directory}/wildfly-legacy-security</JBOSS_HOME>
-                                    </environmentVariables>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/web/security/**/*TestCase.java</include>
-                                    </includes>
-                                    <excludes>
-                                        <exclude>org/jboss/as/test/integration/web/security/**/TransportGuaranteeTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>

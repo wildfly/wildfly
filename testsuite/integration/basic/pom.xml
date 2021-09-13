@@ -788,7 +788,6 @@
                             <layers>
                                 <layer>cloud-server</layer>
                                 <layer>h2-default-datasource</layer>
-                                <layer>legacy-security</layer>
                             </layers>
                         </configuration>
                     </execution>
@@ -1661,7 +1660,6 @@
                                             <layers>
                                                 <layer>cloud-server</layer>
                                                 <layer>h2-default-datasource</layer>
-                                                <layer>legacy-security</layer>
                                             </layers>
                                         </config>
                                     </configurations>
