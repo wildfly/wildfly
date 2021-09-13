@@ -44,6 +44,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,6 +62,7 @@ import static org.jboss.as.test.xts.util.EventLogEvent.*;
  * XTS business activities - coordinator completition test case
  */
 @RunWith(Arquillian.class)
+@Ignore("[WFLY-15275] Fix XTS test cases without legacy security.")
 public class BACoordinatorCompletionTestCase extends BaseFunctionalTest {
     private UserBusinessActivity uba;
     private BACoordinatorCompletion client1, client2, client3;

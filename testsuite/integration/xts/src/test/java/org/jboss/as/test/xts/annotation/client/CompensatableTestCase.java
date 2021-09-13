@@ -39,6 +39,7 @@ import org.jboss.as.test.xts.annotation.service.CompensatableServiceImpl;
 import org.jboss.as.test.xts.util.DeploymentHelper;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,6 +47,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  */
 @RunWith(Arquillian.class)
+@Ignore("[WFLY-15275] Fix XTS test cases without legacy security.")
 public class CompensatableTestCase {
 
     private static final String DEPLOYMENT_NAME = "compensatable-test";
