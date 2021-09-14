@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.domain.mixed;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -33,7 +32,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
 
@@ -50,7 +48,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.mixed.eap740.DomainAdjuster740;
 import org.jboss.dmr.ModelNode;
@@ -115,9 +112,6 @@ public class DomainAdjuster {
         // We don't want any standard host-excludes as the tests are meant to see what happens
         // with the current configs on legacy slaves
         removeHostExcludes(client);
-
-        //Add a jaspi test security domain used later by the tests
-        addJaspiTestSecurityDomain(client, profile);
 
         //Version specific changes
         final List<ModelNode> adjustments = adjustForVersion(client, PathAddress.pathAddress(PROFILE, profile), withMasterServers);
@@ -228,35 +222,6 @@ public class DomainAdjuster {
                 executeForResult(remove, client);
             }
         }
-    }
-
-    private void addJaspiTestSecurityDomain(final DomainClient client, String profile) throws Exception {
-        //Before when this test was configured via xml, there was an extra security domain for testing jaspi.
-        final PathAddress domain = PathAddress.pathAddress(PROFILE, profile)
-                .append(SUBSYSTEM, SecurityExtension.SUBSYSTEM_NAME).append("security-domain", "jaspi-test");
-        DomainTestUtils.executeForResult(Util.createAddOperation(domain), client);
-
-        final PathAddress auth = domain.append(AUTHENTICATION, "jaspi");
-        DomainTestUtils.executeForResult(Util.createAddOperation(auth), client);
-
-        final PathAddress stack = auth.append("login-module-stack", "lm-stack");
-        DomainTestUtils.executeForResult(Util.createAddOperation(stack), client);
-
-        final ModelNode addLoginModule = Util.createAddOperation(stack.append("login-module", "lm"));
-        addLoginModule.get("code").set("UsersRoles");
-        addLoginModule.get("flag").set("required");
-        addLoginModule.get("module").set("test-jaspi");
-        final ModelNode options = addLoginModule.get("module-options");
-        options.setEmptyList();
-        options.add(new ModelNode().set("usersProperties", "${jboss.server.config.dir:}/application-users.properties"));
-        options.add(new ModelNode().set("rolesProperties", "${jboss.server.config.dir:}/application-roles.properties"));
-        DomainTestUtils.executeForResult(addLoginModule, client);
-
-        final ModelNode addAuthModule = Util.createAddOperation(auth.append("auth-module", getJaspiTestAuthModuleName()));
-        addAuthModule.get("code").set(getJaspiTestAuthModuleName());
-        addAuthModule.get("login-module-stack-ref").set("lm-stack");
-        addAuthModule.get("flag").set("${test.prop:optional}");
-        DomainTestUtils.executeForResult(addAuthModule, client);
     }
 
     /**
