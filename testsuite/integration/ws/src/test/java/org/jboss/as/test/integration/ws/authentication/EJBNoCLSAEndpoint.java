@@ -50,7 +50,7 @@ import javax.jws.WebService;
         secureWSDLAccess = false
 )
 @Stateless
-@SecurityDomain("ejb3-tests")
+@SecurityDomain("other")
 public class EJBNoCLSAEndpoint implements EJBEndpointIface {
 
     public String hello(String input) {

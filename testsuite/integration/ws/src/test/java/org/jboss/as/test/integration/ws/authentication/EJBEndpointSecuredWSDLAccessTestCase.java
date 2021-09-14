@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.ws.authentication;
 
 import java.net.URL;
+
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceException;
@@ -38,10 +39,9 @@ import org.jboss.security.Base64Encoder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.runner.RunWith;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for secured access to WSDL for EJB endpoint
@@ -50,7 +50,6 @@ import org.junit.Test;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("[WFLY-15253] Update to use an Elytron configuration.")
 public class EJBEndpointSecuredWSDLAccessTestCase {
 
     @ArquillianResource
@@ -59,8 +58,6 @@ public class EJBEndpointSecuredWSDLAccessTestCase {
     @Deployment(testable = false)
     public static Archive<?> deployment() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "jaxws-authentication-ejb3-for-wsdl.jar")
-                .addAsResource(EJBEndpointSecuredWSDLAccessTestCase.class.getPackage(), "users.properties", "users.properties")
-                .addAsResource(EJBEndpointSecuredWSDLAccessTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addClasses(EJBEndpointIface.class, EJBEndpointSecuredWSDLAccess.class);
 
         return jar;

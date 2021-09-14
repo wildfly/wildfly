@@ -21,9 +21,12 @@
  */
 package org.jboss.as.test.integration.ws.authentication;
 
+import static org.hamcrest.CoreMatchers.containsString;
+
 import java.net.URL;
 import java.util.Map;
 import java.util.regex.Pattern;
+
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
@@ -36,12 +39,9 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.runner.RunWith;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import static org.hamcrest.CoreMatchers.containsString;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for authentication against EJB endpoint with no class level security annotation on the endpoint
@@ -51,7 +51,6 @@ import static org.hamcrest.CoreMatchers.containsString;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("[WFLY-15253] Update to use an Elytron configuration.")
 public class EJBEndpointNoClassLevelSecurityAnnotationAuthenticationTestCase {
 
     @ArquillianResource
@@ -64,8 +63,6 @@ public class EJBEndpointNoClassLevelSecurityAnnotationAuthenticationTestCase {
     @Deployment(testable = false)
     public static Archive<?> deployment() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "jaxws-authentication-no-cla-ejb.jar")
-                .addAsResource(EJBEndpointNoClassLevelSecurityAnnotationAuthenticationTestCase.class.getPackage(), "users.properties", "users.properties")
-                .addAsResource(EJBEndpointNoClassLevelSecurityAnnotationAuthenticationTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addClasses(EJBEndpointIface.class, EJBNoCLSAEndpoint.class);
         return jar;
     }
@@ -179,8 +176,8 @@ public class EJBEndpointNoClassLevelSecurityAnnotationAuthenticationTestCase {
         EJBEndpointIface proxy = service.getPort(EJBEndpointIface.class);
 
         Map<String, Object> reqContext = ((BindingProvider) proxy).getRequestContext();
-        reqContext.put(BindingProvider.USERNAME_PROPERTY, "user3");
-        reqContext.put(BindingProvider.PASSWORD_PROPERTY, "password3");
+        reqContext.put(BindingProvider.USERNAME_PROPERTY, "guest");
+        reqContext.put(BindingProvider.PASSWORD_PROPERTY, "guest");
 
         try {
             proxy.helloForRoles("World");
@@ -235,8 +232,8 @@ public class EJBEndpointNoClassLevelSecurityAnnotationAuthenticationTestCase {
         EJBEndpointIface proxy = service.getPort(EJBEndpointIface.class);
 
         Map<String, Object> reqContext = ((BindingProvider) proxy).getRequestContext();
-        reqContext.put(BindingProvider.USERNAME_PROPERTY, "user3");
-        reqContext.put(BindingProvider.PASSWORD_PROPERTY, "password3");
+        reqContext.put(BindingProvider.USERNAME_PROPERTY, "guest");
+        reqContext.put(BindingProvider.PASSWORD_PROPERTY, "guest");
 
         final String result = proxy.helloForAll("World");
         Assert.assertEquals("Hello World!", result);
@@ -295,8 +292,8 @@ public class EJBEndpointNoClassLevelSecurityAnnotationAuthenticationTestCase {
         EJBEndpointIface proxy = service.getPort(EJBEndpointIface.class);
 
         Map<String, Object> reqContext = ((BindingProvider) proxy).getRequestContext();
-        reqContext.put(BindingProvider.USERNAME_PROPERTY, "user3");
-        reqContext.put(BindingProvider.PASSWORD_PROPERTY, "password3");
+        reqContext.put(BindingProvider.USERNAME_PROPERTY, "guest");
+        reqContext.put(BindingProvider.PASSWORD_PROPERTY, "guest");
 
         try {
             proxy.helloForNone("World");
