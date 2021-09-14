@@ -31,7 +31,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
+//import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -57,7 +57,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(BasicFlatTestCase.ModuleAcDeploymentTestCaseSetup.class)
-@Ignore("[WFLY-15249] Deployments need to handle lack of legacy security.")
+//@Ignore("[WFLY-15249] Deployments need to handle lack of legacy security.")
 public class BasicFlatTestCase extends AbstractModuleDeploymentTestCase {
 
     private final String cf = "java:/testMeRA";

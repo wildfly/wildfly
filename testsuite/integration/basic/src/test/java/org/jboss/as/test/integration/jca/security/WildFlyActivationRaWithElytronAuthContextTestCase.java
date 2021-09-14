@@ -46,7 +46,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
+//import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
@@ -63,7 +63,7 @@ import org.wildfly.test.security.common.elytron.SimpleAuthContext;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({WildFlyActivationRaWithElytronAuthContextTestCase.ElytronSetup.class, WildFlyActivationRaWithElytronAuthContextTestCase.RaSetup.class})
-@Ignore("[WFLY-15249] Deployment failure needs correcting once legacy security is removed.")
+//@Ignore("[WFLY-15249] Deployment failure needs correcting once legacy security is removed.")
 public class WildFlyActivationRaWithElytronAuthContextTestCase {
 
     private static final String AUTH_CONFIG = "MyAuthConfig";
