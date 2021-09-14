@@ -33,9 +33,7 @@ import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
 public final class ActivationSecurityUtil {
 
     public static boolean isLegacySecurityRequired(Activation raxml) {
-        boolean required = false;
-        org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity wmsecurity = raxml.getWorkManager() != null ? raxml.getWorkManager().getSecurity() : null;
-        required = isLegacySecurityRequired(wmsecurity);
+        boolean required = isWorkManagerLegacySecurityRequired(raxml);
         if (!required) {
             List<ConnectionDefinition> connDefs = raxml.getConnectionDefinitions();
             if (connDefs != null) {
@@ -46,9 +44,7 @@ public final class ActivationSecurityUtil {
                 }
 
                 for (ConnectionDefinition cd : clonedDefs) {
-                    Security cdSecurity = cd.getSecurity();
-                    Credential cdRecoveryCredential = cd.getRecovery() == null? null : cd.getRecovery().getCredential();
-                    if (isLegacySecurityRequired(cdSecurity) || isLegacySecurityRequired(cdRecoveryCredential)) {
+                    if (isConnectionDefinitionLegacySecurityRequired(cd)) {
                         required = true;
                         break;
                     }
@@ -56,6 +52,17 @@ public final class ActivationSecurityUtil {
             }
         }
         return required;
+    }
+
+    public static boolean isWorkManagerLegacySecurityRequired(Activation raxml) {
+        org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity wmsecurity = raxml.getWorkManager() != null ? raxml.getWorkManager().getSecurity() : null;
+        return isLegacySecurityRequired(wmsecurity);
+    }
+
+    public static boolean isConnectionDefinitionLegacySecurityRequired(ConnectionDefinition cd) {
+        Security cdSecurity = cd.getSecurity();
+        Credential cdRecoveryCredential = cd.getRecovery() == null? null : cd.getRecovery().getCredential();
+        return isLegacySecurityRequired(cdSecurity) || isLegacySecurityRequired(cdRecoveryCredential);
     }
 
     public static boolean isLegacySecurityRequired(SecurityMetadata security) {
