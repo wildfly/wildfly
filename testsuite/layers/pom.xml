@@ -860,34 +860,6 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>legacy-security-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase.preview.excluded}</phase>
-                                <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/legacy-security</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${servlet.feature.pack.groupId}</groupId>
-                                            <artifactId>${servlet.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>legacy-security</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
                                 <id>undertow-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -971,7 +943,6 @@
                                                 <layer>ee</layer>
                                                 <layer>undertow-load-balancer</layer>
                                                 <layer>naming</layer>
-                                                <layer>legacy-security</layer>
                                                 <layer>undertow</layer>
                                                 <layer>undertow-https</layer>
                                                 <layer>web-server</layer>
@@ -2311,7 +2282,6 @@
                                                 <layer>jsf</layer>
                                                 <layer>jsonb</layer>
                                                 <layer>jsonp</layer>
-                                                <layer>legacy-security</layer>
                                                 <layer>logging</layer>
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
@@ -2408,7 +2378,6 @@
                                                 <layer>jsf</layer>
                                                 <layer>jsonb</layer>
                                                 <layer>jsonp</layer>
-                                                <layer>legacy-security</layer>
                                                 <layer>logging</layer>
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
