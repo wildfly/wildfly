@@ -1,8 +1,0 @@
-<?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="undertow-legacy-https">
-    <dependencies>
-        <layer name="core-security-realms"/>
-        <layer name="undertow"/>
-    </dependencies>
-    <feature-group name="undertow-legacy-security"/>
-</layer-spec>

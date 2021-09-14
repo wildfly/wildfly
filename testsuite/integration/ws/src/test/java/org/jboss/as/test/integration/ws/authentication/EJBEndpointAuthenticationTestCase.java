@@ -33,13 +33,12 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.runner.RunWith;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -47,9 +46,9 @@ import org.junit.Test;
  *
  * @author Rostislav Svoboda
  */
-@ServerSetup({EjbSecurityDomainSetup.class})
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("[WFLY-15253] Update to use an Elytron configuration.")
 public class EJBEndpointAuthenticationTestCase {
 
     @ArquillianResource

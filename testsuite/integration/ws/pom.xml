@@ -394,7 +394,6 @@
                                             <layers>
                                                 <layer>cloud-server</layer>
                                                 <layer>webservices</layer>
-                                                <layer>legacy-security</layer>
                                             </layers>
                                         </config>
                                     </configurations>

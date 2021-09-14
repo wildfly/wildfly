@@ -21,7 +21,6 @@
 */
 package org.jboss.as.test.integration.domain.mixed;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLONE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
@@ -30,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED_RESOURCES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED_RESOURCE_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALIASES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
@@ -43,10 +41,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
@@ -54,7 +50,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_PROFILE;
-import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateResponse;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URL;
@@ -69,9 +64,6 @@ import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.MapOperations;
-import org.jboss.as.model.test.ModelTestUtils;
-import org.jboss.as.security.Constants;
-import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
@@ -135,61 +127,6 @@ public abstract class SimpleMixedDomainTest  {
 
         //The version fields should be the same
         assertEquals(masterModel, slaveModel);
-    }
-
-    @Test
-    public void test00009_SecurityTransformers() throws Exception {
-        final DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
-        final DomainClient slaveClient = support.getDomainSlaveLifecycleUtil().createDomainClient();
-        try {
-            PathAddress subsystem = PathAddress.pathAddress(PathElement.pathElement(PROFILE, ACTIVE_PROFILE), PathElement.pathElement(SUBSYSTEM, SecurityExtension.SUBSYSTEM_NAME));
-            PathAddress webPolicy = subsystem.append(Constants.SECURITY_DOMAIN, "jboss-web-policy").append(Constants.AUTHORIZATION, Constants.CLASSIC);
-            ModelNode options = new ModelNode();
-            options.add("a", "b");
-            ModelNode op = Util.getWriteAttributeOperation(webPolicy.append(Constants.POLICY_MODULE, "Delegating"), Constants.MODULE_OPTIONS, options);
-            DomainTestUtils.executeForResult(op, masterClient);
-
-            //TODO check the resources
-            //System.out.println(DomainTestUtils.executeForResult(Util.createOperation(READ_RESOURCE_OPERATION, address), modelControllerClient));
-
-            PathAddress jaspi = subsystem.append(Constants.SECURITY_DOMAIN, "jaspi-test").append(Constants.AUTHENTICATION, Constants.JASPI);
-
-            PathAddress jaspiLoginStack = jaspi.append(Constants.LOGIN_MODULE_STACK, "lm-stack");
-            op = Util.createAddOperation(jaspiLoginStack.append(Constants.LOGIN_MODULE, "test2"));
-            op.get(Constants.CODE).set("UserRoles");
-            op.get(Constants.FLAG).set("required");
-            op.get(Constants.MODULE).set("test-jaspi");
-            DomainTestUtils.executeForResult(op, masterClient);
-
-            op = Util.createAddOperation(jaspi.append(Constants.AUTH_MODULE, "Delegating"));
-            op.get(Constants.CODE).set("Delegating");
-            op.get(Constants.LOGIN_MODULE_STACK_REF).set("lm-stack");
-            op.get(Constants.FLAG).set("optional");
-            DomainTestUtils.executeForResult(op, masterClient);
-
-            op = new ModelNode();
-            op.get(OP).set(READ_RESOURCE_OPERATION);
-            op.get(OP_ADDR).set(jaspi.toModelNode());
-            op.get(INCLUDE_ALIASES).set(false);
-            op.get(RECURSIVE).set(true);
-
-            ModelNode masterResource = DomainTestUtils.executeForResult(op, masterClient);
-            ModelNode slaveResource = DomainTestUtils.executeForResult(op, slaveClient);
-
-            ModelTestUtils.compare(masterResource, slaveResource, true);
-
-        } finally {
-            try {
-                //The server will be in restart-required mode, so restart it to get rid of the changes
-                PathAddress serverAddress = PathAddress.pathAddress(HOST, "slave").append(SERVER_CONFIG, "server-one");
-                ModelNode op = Util.createOperation(RESTART, PathAddress.pathAddress(serverAddress));
-                op.get(BLOCKING).set(true);
-                Assert.assertEquals("STARTED", validateResponse(slaveClient.execute(op), true).asString());
-            } finally {
-                IoUtils.safeClose(slaveClient);
-                IoUtils.safeClose(masterClient);
-            }
-        }
     }
 
     @Test

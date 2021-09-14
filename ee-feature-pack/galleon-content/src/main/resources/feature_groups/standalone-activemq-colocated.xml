@@ -64,6 +64,7 @@
             <!-- Backup server -->
             <feature spec="subsystem.messaging-activemq.server">
                 <param name="server" value="backuper-server"/>
+                <param name="elytron-domain" value="ApplicationDomain"/>
                 <param name="persistence-enabled" value="true"/>
                 <param name="cluster-password" value="${jboss.messaging.cluster.password:CHANGE ME!!}"/>
                 <param name="journal-file-size" value="102400"/>

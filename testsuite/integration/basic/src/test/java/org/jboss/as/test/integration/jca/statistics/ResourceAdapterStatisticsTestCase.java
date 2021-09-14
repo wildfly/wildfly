@@ -39,6 +39,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,6 +50,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("[WFLY-15249] Deployments need to handle lack of legacy security.")
 public class ResourceAdapterStatisticsTestCase extends JcaStatisticsBase {
 
     static int jndiCount = 0;

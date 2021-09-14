@@ -19,6 +19,7 @@ package org.wildfly.test.integration.vdx.standalone;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -189,6 +190,7 @@ public class MessagingTestCase extends TestBase {
     @Test
     @ServerConfig(configuration = "standalone-full-ha.xml", xmlTransformationGroovy = "messaging/AddSecurityElementToEndOfSubsystem.groovy",
             subtreeName = "messaging", subsystemName = "messaging-activemq")
+    @Ignore("[WFLY-15271] Update to use a different element as security is in the configuration already.")
     public void testWrongOrderOfElements() throws Exception {
         container().tryStartAndWaitForFail();
         String errorLog = container().getErrorMessageFromServerStart();

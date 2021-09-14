@@ -44,13 +44,13 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -59,7 +59,7 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@ServerSetup(WebSecurityDomainSetup.class)
+@Ignore("[WFLY-15276] Convert to an Elytron configuration.")
 public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)

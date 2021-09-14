@@ -788,7 +788,6 @@
                             <layers>
                                 <layer>cloud-server</layer>
                                 <layer>h2-default-datasource</layer>
-                                <layer>legacy-security</layer>
                             </layers>
                         </configuration>
                     </execution>
@@ -1029,23 +1028,6 @@
             -->
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>generate-ldap-store</id>
-                                <phase>test-compile</phase>
-                                <goals>
-                                    <goal>java</goal>
-                                </goals>
-                                <configuration>
-                                    <mainClass>org.jboss.as.test.integration.security.loginmodules.GenerateLDAPSJKSStore</mainClass>
-                                    <classpathScope>test</classpathScope>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
 
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
@@ -1678,7 +1660,6 @@
                                             <layers>
                                                 <layer>cloud-server</layer>
                                                 <layer>h2-default-datasource</layer>
-                                                <layer>legacy-security</layer>
                                             </layers>
                                         </config>
                                     </configurations>

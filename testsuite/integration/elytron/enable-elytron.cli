@@ -1,16 +1,10 @@
 embed-server --admin-only=true --server-config=standalone-full.xml
 
-/subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain)
-/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
 /subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
 /subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
 /subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
 /subsystem=iiop-openjdk:write-attribute(name=security, value=elytron)
 
 /core-service=management/access=identity:add(security-domain=ManagementDomain)
-
-# Legacy security subsystem is not needed
-/subsystem=security:remove
-/extension=org.jboss.as.security:remove
 
 stop-embedded-server

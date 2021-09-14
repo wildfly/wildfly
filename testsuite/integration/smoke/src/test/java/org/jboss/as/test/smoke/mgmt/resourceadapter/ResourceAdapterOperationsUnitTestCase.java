@@ -50,6 +50,7 @@ import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,6 +62,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("[WFLY-15249] Update test to use an Elytron configuration.")
 public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmtTestBase {
     private static final Deque<ModelNode> REMOVE_ADDRESSES = new LinkedList<>();
 

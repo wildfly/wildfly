@@ -30,6 +30,7 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.as.test.xts.suspend.AbstractTestCase;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import java.io.File;
@@ -44,6 +45,7 @@ import static org.junit.Assert.assertEquals;
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  */
 @RunWith(Arquillian.class)
+@Ignore("[WFLY-15275] Fix XTS test cases without legacy security.")
 public class AtomicTransactionSuspendTestCase extends AbstractTestCase {
 
     static final String serverHostPort = TestSuiteEnvironment.getServerAddress() + ":"
