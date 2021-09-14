@@ -467,7 +467,6 @@
                                         <exclude>org/jboss/as/test/integration/ws/authentication/EJBEndpointSecuredWSDLAccessTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ws/wsse/trust/WSBearerSecurityPropagationTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ws/wsse/trust/WSTrustTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/authentication/PojoEndpointAuthenticationTestCase.java</exclude>
                                         <!-- requires ejb/remoting layer -->
                                         <exclude>org/jboss/as/test/integration/ws/ejb/SimpleStatelessWebserviceEndpointTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ws/serviceref/ServiceRefEarTestCase.java</exclude>
@@ -515,6 +514,9 @@
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
                                      <includes>
+                                        <include>org/jboss/as/test/integration/ws/authentication/EJBEndpointAuthenticationTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ws/authentication/EJBEndpointNoClassLevelSecurityAnnotationAuthenticationTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ws/authentication/EJBEndpointSecuredWSDLAccessTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ws/ejb/SimpleStatelessWebserviceEndpointTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ws/serviceref/ServiceRefEarTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ws/serviceref/ServiceRefSevletTestCase.java</include>
