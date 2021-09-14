@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import java.util.EnumSet;
+
 /**
  * Timer states.
  * <p/>
@@ -77,4 +79,7 @@ public enum TimerState {
      */
     RETRY_TIMEOUT,
     ;
+
+    public static final EnumSet<TimerState> CREATED_ACTIVE_IN_TIMEOUT_RETRY_TIMEOUT =
+            EnumSet.of(IN_TIMEOUT, RETRY_TIMEOUT, CREATED, ACTIVE);
 }
