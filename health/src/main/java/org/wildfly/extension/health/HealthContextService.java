@@ -127,8 +127,10 @@ public class HealthContextService implements Service {
             }
 
             if (mpHealthSubsystemActive) {
-                // don't respond through this subsystem if MP Health subsystem is present but not started yet
-                exchange.setStatusCode(503);
+                // if MP Health subsystem is present but not started yet we can't respond with management operation
+                // as the clients expect JSON which is an object not an array. So respond with empty MP DOWN check
+                // until the MP Health subsystem takes over.
+                buildHealthResponse(exchange, 503, "{\"status\":\"DOWN\",\"checks\":[]}");
                 return;
             }
 
@@ -173,9 +175,13 @@ public class HealthContextService implements Service {
             }
             response.add(OUTCOME, globalOutcome);
 
-            exchange.setStatusCode(globalOutcome ? 200: 503)
-                    .getResponseHeaders().add(Headers.CONTENT_TYPE, "application/json");
-            exchange.getResponseSender().send(response.toJSONString(true));
+            buildHealthResponse(exchange, globalOutcome ? 200: 503, response.toJSONString(true));
+        }
+
+        private void buildHealthResponse(HttpServerExchange exchange, int status, String response) {
+            exchange.setStatusCode(status)
+                .getResponseHeaders().add(Headers.CONTENT_TYPE, "application/json");
+            exchange.getResponseSender().send(response);
         }
     }
 }
