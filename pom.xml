@@ -393,13 +393,7 @@
         <version.org.eclipse.microprofile.metrics.api>3.0</version.org.eclipse.microprofile.metrics.api>
         <version.org.eclipse.microprofile.openapi>2.0</version.org.eclipse.microprofile.openapi>
         <version.org.eclipse.microprofile.opentracing>2.0</version.org.eclipse.microprofile.opentracing>
-        <!--
-            Split the MP RM API into API and TCK versions. 2.0.1-RC2 contains fixes to the TCK as mentioned in
-            https://issues.redhat.com/browse/WFLY-15014. We should stick with final releases for code exposed to
-            users, i.e. the API.
-        -->
-        <version.org.eclipse.microprofile.reactive-messaging.api>2.0</version.org.eclipse.microprofile.reactive-messaging.api>
-        <version.org.eclipse.microprofile.reactive-messaging.tck>2.0.1-RC2</version.org.eclipse.microprofile.reactive-messaging.tck>
+        <version.org.eclipse.microprofile.reactive-messaging.api>2.0.1</version.org.eclipse.microprofile.reactive-messaging.api>
         <version.org.eclipse.microprofile.reactive-streams-operators.api>2.0</version.org.eclipse.microprofile.reactive-streams-operators.api>
         <version.org.eclipse.microprofile.rest.client.api>2.0</version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.yasson>1.0.9</version.org.eclipse.yasson>
@@ -6400,12 +6394,6 @@
                 <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
                 <artifactId>microprofile-reactive-messaging-tck</artifactId>
                 <version>${version.org.eclipse.microprofile.reactive-messaging.api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>

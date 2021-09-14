@@ -226,10 +226,4 @@ public class CacheGroup implements Group<Address>, AutoCloseable, Function<Group
             this.shutdown(executor);
         }
     }
-
-    @Deprecated
-    @Override
-    public void removeListener(Listener listener) {
-        this.unregister(listener);
-    }
 }
