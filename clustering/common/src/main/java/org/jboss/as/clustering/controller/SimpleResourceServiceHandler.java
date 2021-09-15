@@ -27,7 +27,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Simple {@link ResourceServiceHandler} that installs/removes a single service via a {@link ResourceServiceBuilderFactory}.
+ * Simple {@link ResourceServiceHandler} that installs/removes a single service via a {@link ResourceServiceConfiguratorFactory}.
  * @author Paul Ferraro
  */
 public class SimpleResourceServiceHandler implements ResourceServiceHandler {

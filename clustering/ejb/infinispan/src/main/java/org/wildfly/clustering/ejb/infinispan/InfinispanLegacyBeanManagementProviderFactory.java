@@ -22,7 +22,7 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ejb.DistributableBeanManagementProvider;
+import org.wildfly.clustering.ejb.BeanManagementProvider;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.ejb.LegacyBeanManagementProviderFactory;
 
@@ -33,7 +33,7 @@ import org.wildfly.clustering.ejb.LegacyBeanManagementProviderFactory;
 public class InfinispanLegacyBeanManagementProviderFactory implements LegacyBeanManagementProviderFactory {
 
     @Override
-    public DistributableBeanManagementProvider getBeanManagerFactoryBuilder(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
+    public BeanManagementProvider createBeanManagementProvider(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
         return new InfinispanBeanManagementProvider<>(name, config);
     }
 }

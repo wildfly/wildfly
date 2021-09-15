@@ -13,4 +13,6 @@
 
     <feature-group name="distributable-web-local"/>
 
+    <feature-group name="distributable-ejb-local"/>
+
 </feature-group-spec>

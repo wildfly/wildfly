@@ -27,6 +27,12 @@
                     <unset param="relative-to"/>
                 </feature>
             </feature>
+            <feature spec="subsystem.infinispan.cache-container.replicated-cache">
+                <param name="replicated-cache" value="client-mappings"/>
+                <feature spec="subsystem.infinispan.cache-container.replicated-cache.component.expiration">
+                    <param name="interval" value="0"/>
+                </feature>
+            </feature>
         </feature>
 
     </feature>

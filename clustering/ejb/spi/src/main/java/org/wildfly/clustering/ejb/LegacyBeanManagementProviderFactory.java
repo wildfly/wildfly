@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,8 +22,11 @@
 package org.wildfly.clustering.ejb;
 
 /**
+ * interface for obtaining BeanManagementProvider instances in the legacy case where no distributable-ejb subsystem is present.
+ *
  * @author Paul Ferraro
+ * @author Richard Achmatowicz
  */
 public interface LegacyBeanManagementProviderFactory {
-    DistributableBeanManagementProvider getBeanManagerFactoryBuilder(String name, BeanManagerFactoryServiceConfiguratorConfiguration config);
+    BeanManagementProvider createBeanManagementProvider(String name, BeanManagerFactoryServiceConfiguratorConfiguration config);
 }

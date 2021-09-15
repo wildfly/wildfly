@@ -463,7 +463,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         operations.add(operation);
     }
 
-    private void parseCaches(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    protected void parseCaches(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         // no attributes expected
         requireNoAttributes(reader);
 
@@ -480,7 +480,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         }
     }
 
-    private void parseCache(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    protected void parseCache(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         String name = null;
         ModelNode operation = Util.createAddOperation();
         //Set<String> aliases = new LinkedHashSet<String>();
@@ -493,11 +493,11 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                     break;
                 }
                 case PASSIVATION_STORE_REF: {
-                    CacheFactoryResourceDefinition.PASSIVATION_STORE.parseAndSetParameter(value, operation, reader);
+                    LegacyCacheFactoryResourceDefinition.PASSIVATION_STORE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case ALIASES: {
-                    CacheFactoryResourceDefinition.ALIASES.getParser().parseAndSetParameter(CacheFactoryResourceDefinition.ALIASES, value, operation, reader);
+                    LegacyCacheFactoryResourceDefinition.ALIASES.getParser().parseAndSetParameter(LegacyCacheFactoryResourceDefinition.ALIASES, value, operation, reader);
                     break;
                 }
                 default: {

@@ -43,7 +43,7 @@ import java.util.concurrent.CountDownLatch;
 @Stateful
 @Remote(LocalServerStatefulRemote.class)
 @LocalBean
-@Cache("passivating") // reference to the passivating cache configuration which comes shipped in Enterprise Beans 3 subsystem
+@Cache("distributable") // reference to the passivating cache configuration which comes shipped in Enterprise Beans 3 subsystem
 public class StatefulBeanA implements LocalServerStatefulRemote {
 
     @Resource(name = "other-server-remoting-port")

@@ -37,7 +37,7 @@ import org.jboss.ejb3.annotation.Cache;
  * @author <a href="mailto:bill@jboss.org">Bill Burke</a>
  */
 @Stateful
-@Cache("passivating")
+@Cache("distributable")
 public class StatefulTransientBean implements Serializable, StatefulRemote {
     private static final long serialVersionUID = 1L;
 

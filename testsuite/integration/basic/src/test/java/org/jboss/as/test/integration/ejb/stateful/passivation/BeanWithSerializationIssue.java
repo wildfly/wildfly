@@ -35,7 +35,7 @@ import org.jboss.ejb3.annotation.Cache;
  * @author Tomas Hofman (thofman@redhat.com)
  */
 @Stateful
-@Cache("passivating")
+@Cache("distributable")
 @Remote(TestPassivationRemote.class)
 public class BeanWithSerializationIssue extends TestPassivationBean {
 

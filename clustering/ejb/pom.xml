@@ -48,6 +48,7 @@
         <module>client</module>
         <module>spi</module>
         <module>infinispan</module>
+        <module>extension</module>
     </modules>
 
 </project>

@@ -30,18 +30,11 @@
         </feature>
         <param name="default-sfsb-passivation-disabled-cache" value="simple"/>
         <param name="default-stateful-bean-access-timeout" value="5000"/>
-        <feature spec="subsystem.ejb3.cache">
-            <param name="cache" value="simple"/>
+        <feature spec="subsystem.ejb3.simple-cache">
+            <param name="simple-cache" value="simple"/>
         </feature>
-        <feature spec="subsystem.ejb3.cache">
-            <param name="cache" value="distributable"/>
-            <param name="passivation-store" value="infinispan"/>
-            <param name="aliases" value="[passivating,clustered]"/>
-        </feature>
-        <feature spec="subsystem.ejb3.passivation-store">
-            <param name="passivation-store" value="infinispan"/>
-            <param name="cache-container" value="ejb"/>
-            <param name="max-size" value="10000"/>
+        <feature spec="subsystem.ejb3.distributable-cache">
+            <param name="distributable-cache" value="distributable"/>
         </feature>
         <feature spec="subsystem.ejb3.service.async">
             <param name="thread-pool-name" value="default"/>

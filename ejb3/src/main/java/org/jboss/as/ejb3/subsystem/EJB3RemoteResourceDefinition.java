@@ -25,7 +25,6 @@ package org.jboss.as.ejb3.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -70,6 +69,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
             .addRequirements(REMOTING_ENDPOINT_CAPABILITY_NAME)
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition CLIENT_MAPPINGS_CLUSTER_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME, ModelType.STRING, true)
                     // Capability references should not allow expressions
@@ -78,6 +78,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode(BeanManagerFactoryServiceConfiguratorConfiguration.DEFAULT_CONTAINER_NAME))
                     // TODO: replace this with a Requirement reference when the ejb-spi module for clustering is available
                     .setCapabilityReference(INFINISPAN_CACHE_CONTAINER_CAPABILITY_NAME, EJB_REMOTE_CAPABILITY)
+                    .setDeprecated(EJB3Model.VERSION_10_0_0.getVersion())
                     .build();
 
     @Deprecated
@@ -86,7 +87,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAlternatives(EJB3SubsystemModel.CONNECTORS)
-                    .setDeprecated(ModelVersion.create(8,0,0))
+                    .setDeprecated(EJB3Model.VERSION_8_0_0.getVersion())
                     .build();
 
     static final StringListAttributeDefinition CONNECTORS =

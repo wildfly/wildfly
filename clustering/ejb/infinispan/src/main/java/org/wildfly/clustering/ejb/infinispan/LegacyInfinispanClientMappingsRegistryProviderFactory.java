@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.cache.distributable;
 
-import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
-import org.jboss.as.ejb3.cache.Identifiable;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
+package org.wildfly.clustering.ejb.infinispan;
+
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.ejb.LegacyClientMappingsRegistryProviderFactory;
 
 /**
- * Builds a service that provides a distributable {@link org.jboss.as.ejb3.cache.CacheFactory}.
+ * Factory for creating legacy version of the InfinispanClientMappingsRegistryProvider
  *
- * @author Paul Ferraro
- *
- * @param <K> the cache key type
- * @param <V> the cache value type
+ * @author Richard Achmatowicz
  */
-public interface DistributableCacheFactoryBuilder<K, V extends Identifiable<K>> extends CacheFactoryBuilder<K, V> {
-    BeanManagerFactoryServiceConfiguratorConfiguration getConfiguration();
+@MetaInfServices(LegacyClientMappingsRegistryProviderFactory.class)
+public class LegacyInfinispanClientMappingsRegistryProviderFactory implements LegacyClientMappingsRegistryProviderFactory {
+
+    @Override
+    public ClientMappingsRegistryProvider createClientMappingsRegistryProvider(String clusterName) {
+        // need to create and return a configured client mappings registry factory
+        return new LegacyInfinispanClientMappingsRegistryProvider(clusterName);
+    }
 }

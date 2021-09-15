@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -68,8 +67,6 @@ public class EJB3Extension implements Extension {
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
-    static final ModelVersion CURRENT_MODEL_VERSION = EJB3Model.VERSION_10_0_0.getVersion();
-
     private static final String RESOURCE_NAME = EJB3Extension.class.getPackage().getName() + ".LocalDescriptions";
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
@@ -84,7 +81,7 @@ public class EJB3Extension implements Extension {
 
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, EJB3Model.CURRENT.getVersion());
 
         subsystem.registerXMLElementWriter(EJB3SubsystemXMLPersister.INSTANCE);
 

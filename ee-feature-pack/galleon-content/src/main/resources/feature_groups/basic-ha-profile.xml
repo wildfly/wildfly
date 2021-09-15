@@ -13,4 +13,6 @@
 
     <feature-group name="distributable-web"/>
 
+    <feature-group name="distributable-ejb"/>
+
 </feature-group-spec>

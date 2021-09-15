@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.function.Consumer;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderServiceNameProvider;
@@ -33,10 +35,8 @@ import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
  * Service that provides a simple {@link CacheFactoryBuilder}.
@@ -46,10 +46,10 @@ import org.wildfly.clustering.service.ServiceConfigurator;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class SimpleCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K>> extends CacheFactoryBuilderServiceNameProvider implements ServiceConfigurator, CacheFactoryBuilder<K, V> {
+public class SimpleCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K>> extends CacheFactoryBuilderServiceNameProvider implements ResourceServiceConfigurator, CacheFactoryBuilder<K, V> {
 
-    public SimpleCacheFactoryBuilderServiceConfigurator(String name) {
-        super(name);
+    public SimpleCacheFactoryBuilderServiceConfigurator(PathAddress address) {
+        super(address.getLastElement().getValue());
     }
 
     @Override
@@ -58,7 +58,7 @@ public class SimpleCacheFactoryBuilderServiceConfigurator<K, V extends Identifia
         ServiceBuilder<?> builder = target.addService(name);
         Consumer<CacheFactoryBuilder<K, V>> cacheFactoryBuilder = builder.provides(name);
         Service service = Service.newInstance(cacheFactoryBuilder, this);
-        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        return builder.setInstance(service);
     }
 
     @Override

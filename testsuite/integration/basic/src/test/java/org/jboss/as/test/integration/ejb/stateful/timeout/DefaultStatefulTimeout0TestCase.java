@@ -120,8 +120,7 @@ public class DefaultStatefulTimeout0TestCase extends StatefulTimeoutTestBase2 {
      */
     public static class ServerSetup extends SnapshotRestoreSetupTask {
         protected void doSetup(ManagementClient client, String containerId) throws Exception {
-            ModelNode writeDefaultStatefulTimeoutOp = Util.getWriteAttributeOperation(
-                    EJB3_ADDRESS, DEFAULT_STATEFUL_TIMEOUT_NAME, CONFIGURED_TIMEOUT);
+            ModelNode writeDefaultStatefulTimeoutOp = Util.getWriteAttributeOperation(EJB3_ADDRESS, DEFAULT_STATEFUL_TIMEOUT_NAME, CONFIGURED_TIMEOUT);
             ManagementOperations.executeOperation(client.getControllerClient(), writeDefaultStatefulTimeoutOp);
         }
     }
