@@ -58,6 +58,7 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.testcontainers.DockerClientFactory;
@@ -107,6 +108,11 @@ public abstract class OidcBaseTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @BeforeClass
+    public static void checkDockerAvailability() {
+        assumeTrue("Docker isn't available, OIDC tests will be skipped", isDockerAvailable());
     }
 
     @Test
@@ -196,7 +202,6 @@ public abstract class OidcBaseTest {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            assumeTrue("Docker isn't available, OIDC tests will be skipped", isDockerAvailable());
             KEYCLOAK_CONTAINER = new KeycloakContainer();
             KEYCLOAK_CONTAINER.start();
         }
