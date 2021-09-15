@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.Attribute;
@@ -36,13 +35,11 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.clustering.controller.transform.UndefinedAttributesDiscardPolicy;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ClientThreadPoolServiceConfigurator;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
@@ -52,8 +49,6 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -65,7 +60,7 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Radoslav Husar
  */
-public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition, ResourceServiceConfiguratorFactory, UnaryOperator<SimpleResourceDefinition.Parameters>, BiConsumer<ResourceTransformationDescriptionBuilder, ModelVersion> {
+public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition, ResourceServiceConfiguratorFactory, UnaryOperator<SimpleResourceDefinition.Parameters> {
 
     // cache-container
     @Deprecated ASYNC_OPERATIONS("async-operations", 25, 25, 1000, TimeUnit.MINUTES.toMillis(1), true, CacheContainerResourceDefinition.Capability.CONFIGURATION) {
@@ -74,43 +69,13 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
             return parameters.setDeprecatedSince(InfinispanModel.VERSION_13_0_0.getVersion());
         }
     },
-    BLOCKING("blocking", 1, 150, 5000, TimeUnit.MINUTES.toMillis(1), false, CacheContainerResourceDefinition.Capability.CONFIGURATION) {
-        @Override
-        public void buildTransformation(ResourceTransformationDescriptionBuilder parent, ModelVersion version) {
-            if (InfinispanModel.VERSION_13_0_0.requiresTransformation(version)) {
-                parent.discardChildResource(this.getPathElement());
-            }
-        }
-    },
-    LISTENER("listener", 1, 1, 1000, TimeUnit.MINUTES.toMillis(1), false, CacheContainerResourceDefinition.Capability.CONFIGURATION) {
-        @Override
-        public void accept(ResourceTransformationDescriptionBuilder builder, ModelVersion version) {
-            if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, this.getQueueLength().getName());
-            }
-        }
-    },
-    NON_BLOCKING("non-blocking", 2, 2, 1000, TimeUnit.MINUTES.toMillis(1), true, CacheContainerResourceDefinition.Capability.CONFIGURATION) {
-        @Override
-        public void buildTransformation(ResourceTransformationDescriptionBuilder parent, ModelVersion version) {
-            if (InfinispanModel.VERSION_13_0_0.requiresTransformation(version)) {
-                parent.discardChildResource(this.getPathElement());
-            }
-        }
-    },
+    BLOCKING("blocking", 1, 150, 5000, TimeUnit.MINUTES.toMillis(1), false, CacheContainerResourceDefinition.Capability.CONFIGURATION),
+    LISTENER("listener", 1, 1, 1000, TimeUnit.MINUTES.toMillis(1), false, CacheContainerResourceDefinition.Capability.CONFIGURATION),
+    NON_BLOCKING("non-blocking", 2, 2, 1000, TimeUnit.MINUTES.toMillis(1), true, CacheContainerResourceDefinition.Capability.CONFIGURATION),
     @Deprecated PERSISTENCE("persistence", 4, 4, 5000, TimeUnit.MINUTES.toMillis(1), false, CacheContainerResourceDefinition.Capability.CONFIGURATION) {
         @Override
         public SimpleResourceDefinition.Parameters apply(SimpleResourceDefinition.Parameters parameters) {
             return parameters.setDeprecatedSince(InfinispanModel.VERSION_13_0_0.getVersion());
-        }
-
-        @Override
-        public void accept(ResourceTransformationDescriptionBuilder builder, ModelVersion version) {
-            if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder()
-                        .setValueConverter(AttributeConverter.DEFAULT_VALUE, this.getMinThreads().getName(), this.getQueueLength().getName())
-                        ;
-            }
         }
     },
     @Deprecated REMOTE_COMMAND("remote-command", 1, 200, 0, TimeUnit.MINUTES.toMillis(1), false, CacheContainerResourceDefinition.Capability.CONFIGURATION) {
@@ -130,29 +95,12 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
         public SimpleResourceDefinition.Parameters apply(SimpleResourceDefinition.Parameters parameters) {
             return parameters.setDeprecatedSince(InfinispanModel.VERSION_13_0_0.getVersion());
         }
-
-        @Override
-        public void accept(ResourceTransformationDescriptionBuilder builder, ModelVersion version) {
-            if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder()
-                        .setValueConverter(AttributeConverter.DEFAULT_VALUE, this.getMinThreads().getName(), this.getMaxThreads().getName(), this.getQueueLength().getName())
-                        ;
-            }
-        }
     },
     // remote-cache-container
     CLIENT("async", 99, 99, 0, 0L, true, RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION) {
         @Override
         public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
             return new ClientThreadPoolServiceConfigurator(this, address);
-        }
-
-        @Override
-        public void buildTransformation(ResourceTransformationDescriptionBuilder parent, ModelVersion version) {
-            ResourceTransformationDescriptionBuilder builder = parent.addChildResource(this.getPathElement());
-            if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, this.getQueueLength().getName());
-            }
         }
     },
     ;
@@ -247,20 +195,5 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     @Override
     public PathElement getPathElement() {
         return this.path;
-    }
-
-    @Override
-    public void buildTransformation(ResourceTransformationDescriptionBuilder parent, ModelVersion version) {
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            parent.addChildResource(this.path, new UndefinedAttributesDiscardPolicy(this.minThreads, this.maxThreads, this.queueLength, this.keepAliveTime));
-        } else {
-            ResourceTransformationDescriptionBuilder builder = parent.addChildResource(this.path);
-            this.accept(builder, version);
-        }
-    }
-
-    @Override
-    public void accept(ResourceTransformationDescriptionBuilder builder, ModelVersion version) {
-        // Do nothing
     }
 }

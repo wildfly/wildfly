@@ -32,9 +32,7 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -44,10 +42,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.ResourceTransformationContext;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -90,38 +84,6 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
-
-        JDBCStoreResourceDefinition.buildTransformation(version, builder, PATH);
-
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            builder.setCustomResourceTransformer(new ResourceTransformer() {
-                @SuppressWarnings("deprecation")
-                @Override
-                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-                    final ModelNode model = resource.getModel();
-                    final ModelNode maxBatchSize = model.remove(StoreResourceDefinition.Attribute.MAX_BATCH_SIZE.getName());
-
-                    final ModelNode binaryTableModel = Resource.Tools.readModel(resource.removeChild(BinaryTableResourceDefinition.PATH));
-                    if (binaryTableModel != null && binaryTableModel.isDefined()) {
-                        model.get(DeprecatedAttribute.TABLE.getName()).set(binaryTableModel);
-                        model.get(DeprecatedAttribute.TABLE.getName()).get(TableResourceDefinition.DeprecatedAttribute.BATCH_SIZE.getName()).set((maxBatchSize != null) ? maxBatchSize : new ModelNode());
-                    }
-
-                    final ModelNode properties = model.remove(StoreResourceDefinition.Attribute.PROPERTIES.getName());
-                    final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
-
-                    LegacyPropertyResourceTransformer.transformPropertiesToChildrenResources(properties, address, childContext);
-
-                    context.processChildren(resource);
-                }
-            });
-        }
-
-        BinaryTableResourceDefinition.buildTransformation(version, builder);
     }
 
     static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {

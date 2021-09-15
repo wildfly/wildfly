@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
@@ -32,17 +31,13 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.clustering.controller.transform.RejectAttributeValueChecker;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -111,22 +106,6 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
-        }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
-
-        if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .addRejectChecks(Arrays.asList(RejectAttributeValueChecker.NEGATIVE, RejectAttributeValueChecker.ZERO), Attribute.TIMEOUT.getDefinition())
-                    .end();
-        }
-
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.TIMEOUT.getName(), Attribute.CHUNK_SIZE.getName())
-                    .end();
         }
     }
 

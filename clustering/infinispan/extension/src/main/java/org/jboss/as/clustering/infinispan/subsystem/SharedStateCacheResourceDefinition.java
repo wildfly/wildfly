@@ -28,7 +28,6 @@ import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -41,26 +40,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  */
 public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDefinition {
 
-    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-
-        StateTransferResourceDefinition.buildTransformation(version, builder);
-
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            builder.addChildResource(PartitionHandlingResourceDefinition.PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
-        } else {
-            PartitionHandlingResourceDefinition.buildTransformation(version, builder);
-        }
-
-        if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
-            final ResourceTransformationDescriptionBuilder backupsBuilder = builder.addChildResource(BackupsResourceDefinition.PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
-            backupsBuilder.rejectChildResource(BackupResourceDefinition.WILDCARD_PATH);
-
-            builder.addChildResource(BackupForResourceDefinition.PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
-        } else {
-            BackupsResourceDefinition.buildTransformation(version, builder);
-            BackupForResourceDefinition.buildTransformation(version, builder);
-        }
 
         ClusteredCacheResourceDefinition.buildTransformation(version, builder);
     }

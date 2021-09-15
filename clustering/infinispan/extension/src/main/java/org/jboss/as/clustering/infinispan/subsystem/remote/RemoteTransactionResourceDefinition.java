@@ -38,7 +38,6 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
-import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentResourceDefinition;
@@ -54,7 +53,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker.SimpleRejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -101,26 +99,18 @@ public class RemoteTransactionResourceDefinition extends ComponentResourceDefini
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        if (InfinispanModel.VERSION_9_0_0.requiresTransformation(version)) {
-            parent.addChildResource(PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
-        } else {
-            ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
-            if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder()
-                    .setValueConverter(new SimpleAttributeConverter(new SimpleAttributeConverter.Converter() {
-                        @Override
-                        public void convert(PathAddress address, String name, ModelNode value, ModelNode model, TransformationContext context) {
-                            ModelNode parentModel = context.readResourceFromRoot(address.getParent()).getModel();
-                            if (parentModel.hasDefined(RemoteCacheContainerResourceDefinition.Attribute.TRANSACTION_TIMEOUT.getName())) {
-                                value.set(parentModel.get(RemoteCacheContainerResourceDefinition.Attribute.TRANSACTION_TIMEOUT.getName()));
-                            }
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+        if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                .setValueConverter(new SimpleAttributeConverter(new SimpleAttributeConverter.Converter() {
+                    @Override
+                    public void convert(PathAddress address, String name, ModelNode value, ModelNode model, TransformationContext context) {
+                        ModelNode parentModel = context.readResourceFromRoot(address.getParent()).getModel();
+                        if (parentModel.hasDefined(RemoteCacheContainerResourceDefinition.Attribute.TRANSACTION_TIMEOUT.getName())) {
+                            value.set(parentModel.get(RemoteCacheContainerResourceDefinition.Attribute.TRANSACTION_TIMEOUT.getName()));
                         }
-                    }), Attribute.TIMEOUT.getDefinition())
-                    ;
-            }
-            if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder().addRejectCheck(new SimpleRejectAttributeChecker(new ModelNode(TransactionMode.NON_XA.name())), Attribute.MODE.getDefinition());
-            }
+                    }
+                }), Attribute.TIMEOUT.getDefinition());
         }
     }
 

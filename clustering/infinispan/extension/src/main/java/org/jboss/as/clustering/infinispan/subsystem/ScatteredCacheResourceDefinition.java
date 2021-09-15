@@ -87,13 +87,9 @@ public class ScatteredCacheResourceDefinition extends SegmentedCacheResourceDefi
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
-            parent.rejectChildResource(WILDCARD_PATH);
-        } else {
-            ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
-            SegmentedCacheResourceDefinition.buildTransformation(version, builder);
-        }
+        SegmentedCacheResourceDefinition.buildTransformation(version, builder);
     }
 
     ScatteredCacheResourceDefinition(FunctionExecutorRegistry<Cache<?, ?>> executors) {

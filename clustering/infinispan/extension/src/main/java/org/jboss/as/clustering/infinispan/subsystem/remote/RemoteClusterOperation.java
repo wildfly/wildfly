@@ -27,13 +27,10 @@ import java.util.Map;
 import org.infinispan.client.hotrod.jmx.RemoteCacheManagerMXBean;
 import org.jboss.as.clustering.controller.Operation;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
-import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
 import org.jboss.as.controller.ExpressionResolver;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -49,11 +46,6 @@ public enum RemoteClusterOperation implements Operation<Map.Entry<String, Remote
         }
     },
     ;
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
-            builder.discardOperations(SWITCH_CLUSTER.getName());
-        }
-    }
 
     private final OperationDefinition definition;
 

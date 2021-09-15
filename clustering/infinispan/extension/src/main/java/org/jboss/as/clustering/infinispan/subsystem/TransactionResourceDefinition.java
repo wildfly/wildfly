@@ -23,10 +23,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
@@ -39,7 +35,6 @@ import org.jboss.as.clustering.controller.BinaryRequirementCapability;
 import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.ReadAttributeTranslationHandler;
 import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -47,27 +42,15 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.clustering.controller.transform.AttributeOperationTransformer;
-import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
-import org.jboss.as.clustering.controller.transform.OperationTransformer;
-import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
-import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.OperationResultTransformer;
-import org.jboss.as.controller.transform.ResourceTransformationContext;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -194,128 +177,13 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         }
     }
 
-    @SuppressWarnings("deprecation")
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH, RequiredChildResourceDiscardPolicy.NEVER) : parent.addChildResource(PATH);
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
 
         if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.COMPLETE_TIMEOUT.getName())
                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.COMPLETE_TIMEOUT.getDefinition());
-        }
-
-        List<org.jboss.as.controller.transform.OperationTransformer> addOperationTransformers = new LinkedList<>();
-        List<org.jboss.as.controller.transform.OperationTransformer> removeOperationTransformers = new LinkedList<>();
-        Map<String, org.jboss.as.controller.transform.OperationTransformer> readAttributeTransformers = new HashMap<>();
-        Map<String, org.jboss.as.controller.transform.OperationTransformer> writeAttributeTransformers = new HashMap<>();
-        Map<String, org.jboss.as.controller.transform.OperationTransformer> undefineAttributeTransformers = new HashMap<>();
-
-        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
-            // Convert BATCH -> NONE, and include write-attribute:name=batching
-            OperationTransformer addTransformer = new OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    if (operation.hasDefined(Attribute.MODE.getName())) {
-                        ModelNode mode = operation.get(Attribute.MODE.getName());
-                        if ((mode.getType() == ModelType.STRING) && (TransactionMode.valueOf(mode.asString()) == TransactionMode.BATCH)) {
-                            mode.set(TransactionMode.NONE.name());
-                            PathAddress address = Operations.getPathAddress(operation);
-                            return Operations.createCompositeOperation(operation, Operations.createWriteAttributeOperation(cacheAddress(address), CacheResourceDefinition.DeprecatedAttribute.BATCHING, ModelNode.TRUE));
-                        }
-                    }
-                    return operation;
-                }
-            };
-            addOperationTransformers.add(new SimpleOperationTransformer(addTransformer));
-
-            // Additionally include undefine-attribute:name=batching
-            OperationTransformer removeTransformer = new OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    PathAddress address = Operations.getPathAddress(operation);
-                    return Operations.createCompositeOperation(operation, Operations.createUndefineAttributeOperation(cacheAddress(address), CacheResourceDefinition.DeprecatedAttribute.BATCHING));
-                }
-            };
-            removeOperationTransformers.add(new SimpleOperationTransformer(removeTransformer));
-
-            // If read-attribute:name=batching is true, return BATCH, otherwise use result from read-attribute:name=mode
-            OperationTransformer readAttributeOperationTransformer = new OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    PathAddress address = Operations.getPathAddress(operation);
-                    return Operations.createCompositeOperation(Operations.createReadAttributeOperation(cacheAddress(address), CacheResourceDefinition.DeprecatedAttribute.BATCHING), operation);
-                }
-            };
-            OperationResultTransformer readAttributeResultTransformer = new OperationResultTransformer() {
-                @Override
-                public ModelNode transformResult(ModelNode result) {
-                    ModelNode readBatchingResult = result.get(0);
-                    return readBatchingResult.asBoolean() ? new ModelNode(TransactionMode.BATCH.name()) : result.get(1);
-                }
-            };
-            readAttributeTransformers.put(Attribute.MODE.getName(), new SimpleOperationTransformer(readAttributeOperationTransformer, readAttributeResultTransformer));
-
-            // Convert BATCH -> NONE, and include write-attribute:name=batching
-            OperationTransformer writeAttributeTransformer = new OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    ModelNode mode = Operations.getAttributeValue(operation);
-                    boolean batching = (mode.isDefined() && (mode.getType() == ModelType.STRING)) ? (TransactionMode.valueOf(mode.asString()) == TransactionMode.BATCH) : false;
-                    if (batching) {
-                        mode.set(TransactionMode.NONE.name());
-                    }
-                    PathAddress address = Operations.getPathAddress(operation);
-                    return Operations.createCompositeOperation(operation, Operations.createWriteAttributeOperation(cacheAddress(address), CacheResourceDefinition.DeprecatedAttribute.BATCHING, new ModelNode(batching)));
-                }
-            };
-            writeAttributeTransformers.put(Attribute.MODE.getName(), new SimpleOperationTransformer(writeAttributeTransformer));
-
-            // Include undefine-attribute:name=batching
-            OperationTransformer undefineAttributeTransformer = new OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    PathAddress address = Operations.getPathAddress(operation);
-                    return Operations.createCompositeOperation(operation, Operations.createUndefineAttributeOperation(cacheAddress(address), CacheResourceDefinition.DeprecatedAttribute.BATCHING));
-                }
-            };
-            undefineAttributeTransformers.put(Attribute.MODE.getName(), new SimpleOperationTransformer(undefineAttributeTransformer));
-
-            // Convert BATCH -> NONE
-            ResourceTransformer modeTransformer = new ResourceTransformer() {
-                @Override
-                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-                    ModelNode model = resource.getModel();
-                    if (model.hasDefined(Attribute.MODE.getName())) {
-                        ModelNode value = model.get(Attribute.MODE.getName());
-                        if ((value.getType() == ModelType.STRING) && (TransactionMode.valueOf(value.asString()) == TransactionMode.BATCH)) {
-                            value.set(TransactionMode.NONE.name());
-                        }
-                    }
-                    context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource).processChildren(resource);
-                }
-            };
-            builder.setCustomResourceTransformer(modeTransformer);
-
-            // change default value of stop-timeout attribute
-            builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.STOP_TIMEOUT.getName());
-        }
-
-        buildOperationTransformation(builder, ModelDescriptionConstants.ADD, addOperationTransformers);
-        buildOperationTransformation(builder, ModelDescriptionConstants.REMOVE, removeOperationTransformers);
-        buildOperationTransformation(builder, ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION, readAttributeTransformers);
-        buildOperationTransformation(builder, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, writeAttributeTransformers);
-        buildOperationTransformation(builder, ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, undefineAttributeTransformers);
-    }
-
-    static void buildOperationTransformation(ResourceTransformationDescriptionBuilder builder, String operationName, List<org.jboss.as.controller.transform.OperationTransformer> transformers) {
-        if (!transformers.isEmpty()) {
-            builder.addOperationTransformationOverride(operationName).setCustomOperationTransformer(new ChainedOperationTransformer(transformers)).inheritResourceAttributeDefinitions();
-        }
-    }
-
-    static void buildOperationTransformation(ResourceTransformationDescriptionBuilder builder, String operationName, Map<String, org.jboss.as.controller.transform.OperationTransformer> transformers) {
-        if (!transformers.isEmpty()) {
-            builder.addOperationTransformationOverride(operationName).setCustomOperationTransformer(new AttributeOperationTransformer(transformers)).inheritResourceAttributeDefinitions();
         }
     }
 

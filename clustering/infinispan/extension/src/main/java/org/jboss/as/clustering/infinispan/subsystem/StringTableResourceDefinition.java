@@ -22,21 +22,10 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.Set;
-
-import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.transform.OperationTransformer;
-import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -64,42 +53,6 @@ public class StringTableResourceDefinition extends TableResourceDefinition {
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
-        }
-    }
-
-    @SuppressWarnings("deprecation")
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
-
-        TableResourceDefinition.buildTransformation(version, builder);
-
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            OperationTransformer addTransformer = new OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    PathAddress storeAddress = Operations.getPathAddress(operation).getParent();
-                    ModelNode value = new ModelNode();
-                    for (Set<? extends org.jboss.as.clustering.controller.Attribute> attributes : Arrays.asList(EnumSet.allOf(Attribute.class), EnumSet.complementOf(EnumSet.of(TableResourceDefinition.Attribute.CREATE_ON_START, TableResourceDefinition.Attribute.DROP_ON_STOP)), EnumSet.complementOf(EnumSet.of(TableResourceDefinition.ColumnAttribute.SEGMENT)))) {
-                        for (org.jboss.as.clustering.controller.Attribute attribute : attributes) {
-                            String name = attribute.getName();
-                            if (operation.hasDefined(name)) {
-                                value.get(name).set(operation.get(name));
-                            }
-                        }
-                    }
-                    return value.isDefined() ? Operations.createWriteAttributeOperation(storeAddress, StringKeyedJDBCStoreResourceDefinition.DeprecatedAttribute.TABLE, value) : Operations.createUndefineAttributeOperation(storeAddress, StringKeyedJDBCStoreResourceDefinition.DeprecatedAttribute.TABLE);
-                }
-            };
-            builder.addRawOperationTransformationOverride(ModelDescriptionConstants.ADD, new SimpleOperationTransformer(addTransformer));
-
-            OperationTransformer removeTransformer = new OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    PathAddress storeAddress = Operations.getPathAddress(operation).getParent();
-                    return Operations.createUndefineAttributeOperation(storeAddress, StringKeyedJDBCStoreResourceDefinition.DeprecatedAttribute.TABLE);
-                }
-            };
-            builder.addRawOperationTransformationOverride(ModelDescriptionConstants.REMOVE, new SimpleOperationTransformer(removeTransformer));
         }
     }
 
