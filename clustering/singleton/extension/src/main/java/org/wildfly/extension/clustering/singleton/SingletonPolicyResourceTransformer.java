@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,32 +22,28 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import java.util.EnumSet;
+import java.util.function.Consumer;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
-import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.kohsuke.MetaInfServices;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
- * Transformer registration for the singleton subsystem.
+ * Transforms the singleton policy resource.
  * @author Paul Ferraro
  */
-@MetaInfServices(ExtensionTransformerRegistration.class)
-public class SingletonExtensionTransformerRegistration implements ExtensionTransformerRegistration {
+public class SingletonPolicyResourceTransformer implements Consumer<ModelVersion> {
 
-    @Override
-    public String getSubsystemName() {
-        return SingletonExtension.SUBSYSTEM_NAME;
+    private final ResourceTransformationDescriptionBuilder builder;
+
+    SingletonPolicyResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
+        this.builder = parent.addChildResource(SingletonPolicyResourceDefinition.WILDCARD_PATH);
     }
 
     @Override
-    public void registerTransformers(SubsystemTransformerRegistration registration) {
-        // Register transformers for all but the current model
-        for (SingletonModel model : EnumSet.complementOf(EnumSet.of(SingletonModel.CURRENT))) {
-            ModelVersion version = model.getVersion();
-            TransformationDescription.Tools.register(new SingletonResourceTransformer().apply(version), registration, version);
+    public void accept(ModelVersion version) {
+        if (SingletonModel.VERSION_3_0_0.requiresTransformation(version)) {
+            this.builder.discardChildResource(SingletonDeploymentResourceDefinition.WILDCARD_PATH);
+            this.builder.discardChildResource(SingletonServiceResourceDefinition.WILDCARD_PATH);
         }
     }
 }
