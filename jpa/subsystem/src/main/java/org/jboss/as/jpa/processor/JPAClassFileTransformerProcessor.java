@@ -29,7 +29,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
-import org.jboss.as.server.deployment.module.DelegatingClassFileTransformer;
+import org.jboss.as.server.deployment.module.DelegatingClassTransformer;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
@@ -56,8 +56,8 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
         // to use ClassTransformers.  Providers that need class transformers will add them
         // during the call to CreateContainerEntityManagerFactory.
 
-        DelegatingClassFileTransformer transformer = deploymentUnit.getAttachment(DelegatingClassFileTransformer.ATTACHMENT_KEY);
-
+        DelegatingClassTransformer transformer = deploymentUnit.getAttachment(DelegatingClassTransformer.ATTACHMENT_KEY);
+        boolean appContainsPersistenceProviderJars = false;  // remove when we revert WFLY-10520
         if ( transformer != null) {
 
             for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(deploymentUnit)) {
