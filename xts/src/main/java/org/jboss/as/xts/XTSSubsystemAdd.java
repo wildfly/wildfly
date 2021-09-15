@@ -259,7 +259,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 map.put(endpointInfo.URLPattern, endpointInfo.SEIClassname);
             }
             endpointBuilder = EndpointPublishService.createServiceBuilder(target, contextName, loader, hostName, map, null,
-                    null, null, attachments);
+                    null, null, attachments, context.getCapabilityServiceSupport());
 
             controllers.add(endpointBuilder.setInitialMode(Mode.ACTIVE)
                     .install());

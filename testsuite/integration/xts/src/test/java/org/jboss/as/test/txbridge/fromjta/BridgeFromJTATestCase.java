@@ -44,7 +44,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,7 +54,6 @@ import org.junit.runner.RunWith;
  * Test ported from https://github.com/jbosstm/quickstart repository.
  */
 @RunWith(Arquillian.class)
-@Ignore("[WFLY-15275] Fix XTS test cases without legacy security.")
 public class BridgeFromJTATestCase {
     private static final Logger log = Logger.getLogger(BridgeFromJTATestCase.class);
 

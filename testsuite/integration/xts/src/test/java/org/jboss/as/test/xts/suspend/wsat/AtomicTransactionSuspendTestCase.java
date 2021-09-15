@@ -22,6 +22,14 @@
 
 package org.jboss.as.test.xts.suspend.wsat;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.io.FilePermission;
+import java.net.SocketPermission;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.lang3.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -30,22 +38,12 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.as.test.xts.suspend.AbstractTestCase;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
-
-import java.io.File;
-import java.io.FilePermission;
-import java.net.SocketPermission;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  */
 @RunWith(Arquillian.class)
-@Ignore("[WFLY-15275] Fix XTS test cases without legacy security.")
 public class AtomicTransactionSuspendTestCase extends AbstractTestCase {
 
     static final String serverHostPort = TestSuiteEnvironment.getServerAddress() + ":"

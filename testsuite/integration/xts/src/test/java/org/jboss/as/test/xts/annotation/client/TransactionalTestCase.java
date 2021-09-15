@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.xts.annotation.client;
 
-import com.arjuna.mw.wst11.UserTransaction;
-
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.File;
@@ -40,15 +38,15 @@ import org.jboss.as.test.xts.util.DeploymentHelper;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.arjuna.mw.wst11.UserTransaction;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  */
 @RunWith(Arquillian.class)
-@Ignore("[WFLY-15275] Fix XTS test cases without legacy security.")
 public class TransactionalTestCase {
 
     private static final String DEPLOYMENT_NAME = "transactional-test";

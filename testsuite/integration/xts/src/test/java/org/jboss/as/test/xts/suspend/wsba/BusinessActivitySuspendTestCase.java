@@ -36,14 +36,12 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.xts.suspend.AbstractTestCase;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  */
 @RunWith(Arquillian.class)
-@Ignore("[WFLY-15275] Fix XTS test cases without legacy security.")
 public class BusinessActivitySuspendTestCase extends AbstractTestCase {
 
     @TargetsContainer(EXECUTOR_SERVICE_CONTAINER)

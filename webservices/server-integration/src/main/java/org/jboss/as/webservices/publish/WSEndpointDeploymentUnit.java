@@ -27,8 +27,10 @@ import java.util.StringTokenizer;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.SimpleAttachable;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
@@ -47,11 +49,12 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
     private String deploymentName;
 
     public WSEndpointDeploymentUnit(ClassLoader loader, String context, Map<String,String> urlPatternToClassName, WebservicesMetaData metadata) {
-        this(loader, context, urlPatternToClassName, new JBossWebMetaData(), metadata, null);
+        this(loader, context, urlPatternToClassName, new JBossWebMetaData(), metadata, null, null);
     }
 
     public WSEndpointDeploymentUnit(ClassLoader loader, String context, Map<String, String> urlPatternToClassName,
-            JBossWebMetaData jbossWebMetaData, WebservicesMetaData metadata, JBossWebservicesMetaData jbwsMetaData) {
+            JBossWebMetaData jbossWebMetaData, WebservicesMetaData metadata, JBossWebservicesMetaData jbwsMetaData,
+            CapabilityServiceSupport capabilityServiceSupport) {
         this.deploymentName = context + ".deployment";
 
         JAXWSDeployment jaxwsDeployment = new JAXWSDeployment();
@@ -74,6 +77,9 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
         }
         if (jbwsMetaData != null) {
             this.putAttachment(WSAttachmentKeys.JBOSS_WEBSERVICES_METADATA_KEY, jbwsMetaData);
+        }
+        if (capabilityServiceSupport != null) {
+            this.putAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT, capabilityServiceSupport);
         }
     }
 
