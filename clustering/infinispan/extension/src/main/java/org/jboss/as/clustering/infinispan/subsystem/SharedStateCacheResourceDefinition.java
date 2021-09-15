@@ -28,9 +28,7 @@ import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * Base class for cache resources which require common cache attributes, clustered cache attributes
@@ -39,11 +37,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDefinition {
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-
-        ClusteredCacheResourceDefinition.buildTransformation(version, builder);
-    }
 
     private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
         private final UnaryOperator<ResourceDescriptor> configurator;

@@ -39,13 +39,9 @@ import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.infinispan.deployment.ClusteringDependencyProcessor;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.wildfly.clustering.spi.ClusteringRequirement;
@@ -77,15 +73,6 @@ public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefi
         for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
             CLUSTERING_CAPABILITIES.put(requirement, new RequirementCapability(requirement.getDefaultRequirement(), configurator));
         }
-    }
-
-    static TransformationDescription buildTransformation(ModelVersion version) {
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-
-        CacheContainerResourceDefinition.buildTransformation(version, builder);
-        RemoteCacheContainerResourceDefinition.buildTransformation(version, builder);
-
-        return builder.build();
     }
 
     InfinispanSubsystemResourceDefinition() {

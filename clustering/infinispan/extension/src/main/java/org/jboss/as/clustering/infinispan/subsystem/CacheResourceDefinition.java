@@ -43,14 +43,10 @@ import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.transform.DiscardSingletonListAttributeChecker;
-import org.jboss.as.clustering.controller.transform.RejectNonSingletonListAttributeChecker;
-import org.jboss.as.clustering.controller.transform.SingletonListAttributeConverter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -59,7 +55,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
@@ -296,19 +291,6 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
                 .setAllowExpression(true)
                 .setRequired(false)
                 ;
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-
-        if (InfinispanModel.VERSION_14_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setValueConverter(new SingletonListAttributeConverter(ListAttribute.MODULES), DeprecatedAttribute.MODULE.getDefinition())
-                    .setDiscard(DiscardSingletonListAttributeChecker.INSTANCE, ListAttribute.MODULES.getDefinition())
-                    .addRejectCheck(RejectNonSingletonListAttributeChecker.INSTANCE, ListAttribute.MODULES.getDefinition())
-                    .end();
-        }
-
-        TransactionResourceDefinition.buildTransformation(version, builder);
     }
 
     private final UnaryOperator<ResourceDescriptor> configurator;

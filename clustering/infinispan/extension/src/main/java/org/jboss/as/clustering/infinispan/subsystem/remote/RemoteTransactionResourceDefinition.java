@@ -38,22 +38,18 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
-import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
 import org.jboss.as.clustering.infinispan.subsystem.TransactionMode;
 import org.jboss.as.clustering.infinispan.subsystem.TransactionResourceCapabilityReference;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
@@ -95,22 +91,6 @@ public class RemoteTransactionResourceDefinition extends ComponentResourceDefini
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
-        }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
-        if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                .setValueConverter(new SimpleAttributeConverter(new SimpleAttributeConverter.Converter() {
-                    @Override
-                    public void convert(PathAddress address, String name, ModelNode value, ModelNode model, TransformationContext context) {
-                        ModelNode parentModel = context.readResourceFromRoot(address.getParent()).getModel();
-                        if (parentModel.hasDefined(RemoteCacheContainerResourceDefinition.Attribute.TRANSACTION_TIMEOUT.getName())) {
-                            value.set(parentModel.get(RemoteCacheContainerResourceDefinition.Attribute.TRANSACTION_TIMEOUT.getName()));
-                        }
-                    }
-                }), Attribute.TIMEOUT.getDefinition());
         }
     }
 

@@ -30,11 +30,9 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -93,11 +91,6 @@ public class SegmentedCacheResourceDefinition extends SharedStateCacheResourceDe
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-
-        SharedStateCacheResourceDefinition.buildTransformation(version, builder);
     }
 
     private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {

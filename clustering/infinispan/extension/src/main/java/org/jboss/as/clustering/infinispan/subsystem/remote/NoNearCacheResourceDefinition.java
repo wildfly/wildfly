@@ -25,9 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * /subsystem=infinispan/remote-cache-container=X/near-cache=none
@@ -38,10 +36,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class NoNearCacheResourceDefinition extends NearCacheResourceDefinition {
 
     static final PathElement PATH = pathElement("none");
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        // Nothing to transform yet
-    }
 
     public NoNearCacheResourceDefinition() {
         super(PATH);

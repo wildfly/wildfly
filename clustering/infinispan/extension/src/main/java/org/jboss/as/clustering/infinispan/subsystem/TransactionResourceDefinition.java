@@ -44,16 +44,12 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.tm.XAResourceRecoveryRegistry;
@@ -175,20 +171,6 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
             PathAddress cacheAddress = address.getParent();
             return cacheAddress.getParent().append(CacheRuntimeResourceDefinition.pathElement(cacheAddress.getLastElement().getValue()), TransactionRuntimeResourceDefinition.PATH);
         }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
-
-        if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                   .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.COMPLETE_TIMEOUT.getName())
-                   .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.COMPLETE_TIMEOUT.getDefinition());
-        }
-    }
-
-    static PathAddress cacheAddress(PathAddress transactionAddress) {
-        return transactionAddress.subAddress(0, transactionAddress.size() - 1);
     }
 
     TransactionResourceDefinition() {

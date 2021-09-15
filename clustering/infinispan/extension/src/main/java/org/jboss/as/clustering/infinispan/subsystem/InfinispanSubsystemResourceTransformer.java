@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,31 +22,28 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.EnumSet;
+import java.util.function.Function;
 
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceTransformer;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
-import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.kohsuke.MetaInfServices;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
+ * Transformer for the Infinispan subsystem resource.
  * @author Paul Ferraro
  */
-@MetaInfServices(ExtensionTransformerRegistration.class)
-public class InfinispanExtensionTransformerRegistration implements ExtensionTransformerRegistration {
+public class InfinispanSubsystemResourceTransformer implements Function<ModelVersion, TransformationDescription> {
+
+    private final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
     @Override
-    public String getSubsystemName() {
-        return InfinispanExtension.SUBSYSTEM_NAME;
-    }
+    public TransformationDescription apply(ModelVersion version) {
 
-    @Override
-    public void registerTransformers(SubsystemTransformerRegistration registration) {
-        // Register transformers for all but the current model
-        for (InfinispanModel model : EnumSet.complementOf(EnumSet.of(InfinispanModel.CURRENT))) {
-            ModelVersion version = model.getVersion();
-            TransformationDescription.Tools.register(new InfinispanSubsystemResourceTransformer().apply(version), registration, version);
-        }
+        new CacheContainerResourceTransformer(this.builder).accept(version);
+        new RemoteCacheContainerResourceTransformer(this.builder).accept(version);
+
+        return this.builder.build();
     }
 }
