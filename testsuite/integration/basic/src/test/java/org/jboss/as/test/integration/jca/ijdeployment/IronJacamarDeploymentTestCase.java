@@ -51,7 +51,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//@Ignore("[WFLY-15249] Deployments need to handle lack of legacy security.")
 public class IronJacamarDeploymentTestCase extends ContainerResourceMgmtTestBase {
 
     /**
@@ -175,7 +174,7 @@ public class IronJacamarDeploymentTestCase extends ContainerResourceMgmtTestBase
         prop.put("pad-xid", bool);
         prop.put("wrap-xa-resource", bool);
         prop.put("flush-strategy", firstCF ? "IDLE_CONNECTIONS" : "ENTIRE_POOL");
-        if (firstCF) {
+        if (true) {
             prop.put("security-application", bool);
             prop.put("recovery-username", "sa");
             prop.put("recovery-password", "sa-pass");

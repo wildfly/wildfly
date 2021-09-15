@@ -65,9 +65,11 @@
                 <pad-xid>false</pad-xid>
                 <wrap-xa-resource>false</wrap-xa-resource>
             </xa-pool>
+            <!-- 
             <security>
                 <security-domain>HsqlDbRealm</security-domain>
             </security>
+            -->
             <timeout>
                 <blocking-timeout-millis>5000</blocking-timeout-millis>
                 <idle-timeout-minutes>4</idle-timeout-minutes>
@@ -82,8 +84,12 @@
             </validation>
             <recovery no-recovery="false">
                 <recover-credential>
-                    <security-domain>HsqlDbRealm</security-domain>
+                    <user-name>sa</user-name>
+                    <password>sa-pass</password>
                 </recover-credential>
+                <!-- <recover-credential>
+                    <security-domain>HsqlDbRealm</security-domain>
+                </recover-credential>-->
                 <recover-plugin class-name="someClass2">
                     <config-property name="Property">C</config-property>
                 </recover-plugin>

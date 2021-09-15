@@ -50,7 +50,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//@Ignore("[WFLY-15249] Deployments need to handle lack of legacy security.")
 public class IronJacamarDoubleDeploymentTestCase extends ContainerResourceMgmtTestBase {
     private static final String deploymentName = "test-ij.ear";
     private static final String deployment2Name = "test-ij2.ear";
