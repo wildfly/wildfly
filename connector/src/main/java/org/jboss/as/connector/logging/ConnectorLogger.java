@@ -950,7 +950,21 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 121, value = "Unable to start the data source '%s' because there is more than one(%s) connection factory defined.")
     StartException cannotStartDSTooManyConnectionFactories(String dataSourceJNDIName, int factoriesCount);
 
-
     @Message(id = 122, value = "Thread pool name %s(type: %s) must match the workmanager name %s.")
     OperationFailedException threadPoolNameMustMatchWorkManagerName(String threadPoolName, String threadPoolType, String workManagerName);
+
+    @Message(id = 123, value = "Connection definition %s from resource adapter %s is configured to require the legacy security subsystem, which is not present")
+    OperationFailedException legacySecurityNotAvailable(String connectionDef, String ra);
+
+    @Message(id = 124, value = "Datasource %s is configured to require the legacy security subsystem, which is not present")
+    OperationFailedException legacySecurityNotAvailable(String datasourceName);
+
+    @Message(id = 125, value = "Datasource %s is configured to require the legacy security subsystem, which is not present")
+    DeploymentUnitProcessingException legacySecurityNotAvailableForDsXml(String datasourceName);
+
+    @Message(id = 126, value = "Connection definition for %s is configured to require the legacy security subsystem, which is not present")
+    DeploymentUnitProcessingException legacySecurityNotAvailableForRa(String deploymentName);
+
+    @Message(id = 127, value = "Connection factory  %s is configured to require the legacy security subsystem, which is not present")
+    IllegalStateException legacySecurityNotAvailableForConnectionFactory(String jndiName);
 }

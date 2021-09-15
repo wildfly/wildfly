@@ -24,6 +24,7 @@ package org.jboss.as.webservices.service;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.publish.EndpointPublisherHelper;
@@ -84,13 +85,15 @@ public final class EndpointDeployService implements Service {
 
     public static DeploymentUnit install(final ServiceTarget serviceTarget, final String context, final ClassLoader loader,
             final String hostName, final Map<String,String> urlPatternToClassName, JBossWebMetaData jbwmd, WebservicesMetaData wsmd, JBossWebservicesMetaData jbwsmd) {
-        return install(serviceTarget, context, loader, hostName, urlPatternToClassName, jbwmd, wsmd, jbwsmd, null);
+        return install(serviceTarget, context, loader, hostName, urlPatternToClassName, jbwmd, wsmd, jbwsmd, null, null);
     }
 
     public static DeploymentUnit install(final ServiceTarget serviceTarget, final String context, final ClassLoader loader,
             final String hostName, final Map<String, String> urlPatternToClassName, JBossWebMetaData jbwmd,
-            WebservicesMetaData wsmd, JBossWebservicesMetaData jbwsmd, Map<Class<?>, Object> deploymentAttachments) {
-        final DeploymentUnit unit = EndpointPublisherHelper.doPrepareStep(context, loader, urlPatternToClassName, jbwmd, wsmd, jbwsmd);
+            WebservicesMetaData wsmd, JBossWebservicesMetaData jbwsmd, Map<Class<?>, Object> deploymentAttachments,
+            CapabilityServiceSupport capabilityServiceSupport) {
+        final DeploymentUnit unit = EndpointPublisherHelper.doPrepareStep(context, loader, urlPatternToClassName, jbwmd, wsmd,
+                                                                          jbwsmd, capabilityServiceSupport);
         if (deploymentAttachments != null) {
             Deployment dep = unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY);
             for (Entry<Class<?>, Object> e : deploymentAttachments.entrySet()) {

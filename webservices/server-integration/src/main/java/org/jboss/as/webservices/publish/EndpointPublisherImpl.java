@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.host.ServletBuilder;
@@ -97,24 +98,25 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
 
     @Override
     public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap) throws Exception {
-        return publish(currentServiceContainer(), context, loader, urlPatternToClassNameMap, null, null, null);
+        return publish(currentServiceContainer(), context, loader, urlPatternToClassNameMap, null, null, null, null);
     }
 
     @Override
     public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap, WebservicesMetaData metadata) throws Exception {
-        return publish(currentServiceContainer(), context, loader, urlPatternToClassNameMap, null, metadata, null);
+        return publish(currentServiceContainer(), context, loader, urlPatternToClassNameMap, null, metadata, null, null);
     }
 
     @Override
     public Context publish(String context, ClassLoader loader, Map<String, String> urlPatternToClassNameMap,
             WebservicesMetaData metadata, JBossWebservicesMetaData jbwsMetadata) throws Exception {
-        return publish(currentServiceContainer(), context, loader, urlPatternToClassNameMap, null, metadata, jbwsMetadata);
+        return publish(currentServiceContainer(), context, loader, urlPatternToClassNameMap, null, metadata, jbwsMetadata, null);
     }
 
     protected Context publish(ServiceTarget target, String context, ClassLoader loader,
-            Map<String, String> urlPatternToClassNameMap, JBossWebMetaData jbwmd, WebservicesMetaData metadata, JBossWebservicesMetaData jbwsMetadata)
+            Map<String, String> urlPatternToClassNameMap, JBossWebMetaData jbwmd, WebservicesMetaData metadata,
+            JBossWebservicesMetaData jbwsMetadata, CapabilityServiceSupport capabilityServiceSupport)
             throws Exception {
-        DeploymentUnit unit = doPrepare(context, loader, urlPatternToClassNameMap, jbwmd, metadata, jbwsMetadata);
+        DeploymentUnit unit = doPrepare(context, loader, urlPatternToClassNameMap, jbwmd, metadata, jbwsMetadata, capabilityServiceSupport);
         doDeploy(target, unit);
         return doPublish(target, unit);
     }
@@ -131,9 +133,11 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
      * @return
      */
     protected DeploymentUnit doPrepare(String context, ClassLoader loader,
-            Map<String, String> urlPatternToClassNameMap, JBossWebMetaData jbwmd, WebservicesMetaData metadata, JBossWebservicesMetaData jbwsMetadata) {
+            Map<String, String> urlPatternToClassNameMap, JBossWebMetaData jbwmd, WebservicesMetaData metadata,
+            JBossWebservicesMetaData jbwsMetadata, CapabilityServiceSupport capabilityServiceSupport) {
         ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-        WSEndpointDeploymentUnit unit = new WSEndpointDeploymentUnit(loader, context, urlPatternToClassNameMap, jbwmd, metadata, jbwsMetadata);
+        WSEndpointDeploymentUnit unit = new WSEndpointDeploymentUnit(loader, context, urlPatternToClassNameMap,
+                                                                     jbwmd, metadata, jbwsMetadata, capabilityServiceSupport);
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
             WSDeploymentBuilder.getInstance().build(unit);

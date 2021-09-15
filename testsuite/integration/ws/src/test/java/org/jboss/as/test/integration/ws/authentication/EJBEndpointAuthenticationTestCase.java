@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.ws.authentication;
 import java.net.URL;
 import java.util.Map;
 import java.util.regex.Pattern;
+
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
@@ -33,21 +34,18 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.runner.RunWith;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for authentication against EJB endpoint
  *
  * @author Rostislav Svoboda
  */
-@ServerSetup({EjbSecurityDomainSetup.class})
 @RunWith(Arquillian.class)
 @RunAsClient
 public class EJBEndpointAuthenticationTestCase {
@@ -60,8 +58,6 @@ public class EJBEndpointAuthenticationTestCase {
     @Deployment(testable = false)
     public static Archive<?> deployment() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "jaxws-authentication-ejb.jar")
-                .addAsResource(EJBEndpointAuthenticationTestCase.class.getPackage(), "users.properties", "users.properties")
-                .addAsResource(EJBEndpointAuthenticationTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addClasses(EJBEndpointIface.class, EJBEndpoint.class);
         return jar;
     }
@@ -227,8 +223,8 @@ public class EJBEndpointAuthenticationTestCase {
         EJBEndpointIface proxy = service.getPort(EJBEndpointIface.class);
 
         Map<String, Object> reqContext = ((BindingProvider) proxy).getRequestContext();
-        reqContext.put(BindingProvider.USERNAME_PROPERTY, "user3");
-        reqContext.put(BindingProvider.PASSWORD_PROPERTY, "password3");
+        reqContext.put(BindingProvider.USERNAME_PROPERTY, "guest");
+        reqContext.put(BindingProvider.PASSWORD_PROPERTY, "guest");
 
         try {
             proxy.helloForRoles("World");
@@ -283,8 +279,8 @@ public class EJBEndpointAuthenticationTestCase {
         EJBEndpointIface proxy = service.getPort(EJBEndpointIface.class);
 
         Map<String, Object> reqContext = ((BindingProvider) proxy).getRequestContext();
-        reqContext.put(BindingProvider.USERNAME_PROPERTY, "user3");
-        reqContext.put(BindingProvider.PASSWORD_PROPERTY, "password3");
+        reqContext.put(BindingProvider.USERNAME_PROPERTY, "guest");
+        reqContext.put(BindingProvider.PASSWORD_PROPERTY, "guest");
 
         final String result = proxy.helloForAll("World");
         Assert.assertEquals("Hello World!", result);
@@ -343,8 +339,8 @@ public class EJBEndpointAuthenticationTestCase {
         EJBEndpointIface proxy = service.getPort(EJBEndpointIface.class);
 
         Map<String, Object> reqContext = ((BindingProvider) proxy).getRequestContext();
-        reqContext.put(BindingProvider.USERNAME_PROPERTY, "user3");
-        reqContext.put(BindingProvider.PASSWORD_PROPERTY, "password3");
+        reqContext.put(BindingProvider.USERNAME_PROPERTY, "guest");
+        reqContext.put(BindingProvider.PASSWORD_PROPERTY, "guest");
 
         try {
             proxy.helloForNone("World");

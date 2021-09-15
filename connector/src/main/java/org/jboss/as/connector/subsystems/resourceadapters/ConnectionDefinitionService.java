@@ -65,9 +65,12 @@ final class ConnectionDefinitionService implements Service<ModifiableConnDef> {
     public void start(StartContext context) throws StartException {
         createConnectionDefinition();
         ra.getValue().addConnectionDefinition(getValue());
-        if (ActivationSecurityUtil.isLegacySecurityRequired(ra.getValue())) {
+        // If the WM or our own ConnectionDefinition requires legacy security, we'll have had relevant
+        // objects injected, so pass those into the ra
+        if (ActivationSecurityUtil.isWorkManagerLegacySecurityRequired(ra.getValue())
+                || ActivationSecurityUtil.isConnectionDefinitionLegacySecurityRequired(getValue())) {
             ra.getValue().setSubjectFactory(subjectFactory.getValue());
-            ra.getValue().setSecManager(secManager.getOptionalValue());
+            ra.getValue().setSecManager(secManager.getValue());
         }
         SUBSYSTEM_RA_LOGGER.debugf("Starting ResourceAdapters Service");
     }

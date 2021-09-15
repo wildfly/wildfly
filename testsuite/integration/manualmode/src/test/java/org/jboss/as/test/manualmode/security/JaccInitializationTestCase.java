@@ -22,6 +22,18 @@
 
 package org.jboss.as.test.manualmode.security;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -46,21 +58,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 /**
  * Test whether server starts when system property contain vault value.
@@ -107,24 +104,11 @@ public class JaccInitializationTestCase {
         client.close();
     }
 
-    @Test
-    public void testUnsetLegacyJaccRequiresRestart() throws Exception {
-        ModelNode res = enableLegacyJacc();
-        assertOperationRequiresRestart(res);
-
-        restartContainer();
-
-        res = disableLegacyJacc(client);
-        assertOperationRequiresRestart(res);
-    }
 
     @Test
     @Ignore("Requires WFCORE-5272")
     public void testEnableElytronJaccRequiresRestart() throws Exception {
-        ModelNode res = disableLegacyJacc(client);
-        assertOperationRequiresRestart(res);
-
-        res = enableElytronJacc();
+        ModelNode res = enableElytronJacc();
         assertOperationRequiresRestart(res);
     }
 
@@ -138,27 +122,17 @@ public class JaccInitializationTestCase {
     @Test
     @Ignore("Requires WFCORE-5272")
     public void testEnableLegayJaccWhenElytronActiveThrowsException() throws Exception {
-        disableLegacyJacc(client);
         enableElytronJacc();
         restartContainer();
-
-        ModelNode res = enableLegacyJacc();
-        assertOperationFailed(res, "WFLYSEC0105");
     }
 
     @Test
     @Ignore("Requires WFCORE-5272")
     public void testSwitchJaccBack() throws Exception {
-        ModelNode res = disableLegacyJacc(client);
-        assertOperationRequiresRestart(res);
-
-        res = enableElytronJacc();
+        ModelNode res = enableElytronJacc();
         assertOperationRequiresRestart(res);
 
         res = disableElytronJacc();
-        assertOperationRequiresRestart(res);
-
-        res = enableLegacyJacc();
         assertOperationRequiresRestart(res);
     }
 
@@ -171,20 +145,6 @@ public class JaccInitializationTestCase {
     private ModelNode disableElytronJacc() throws Exception {
         ModelNode disableElectronJacc = Util.createRemoveOperation(PathAddress.pathAddress().append(SUBSYSTEM, ELYTRON).append(POLICY, "jacc"));
         return client.execute(disableElectronJacc);
-    }
-
-    private ModelNode disableLegacyJacc(ModelControllerClient client) throws Exception {
-        ModelNode disableJacc = Util.createEmptyOperation(WRITE_ATTRIBUTE_OPERATION, PathAddress.pathAddress().append(SUBSYSTEM, SECURITY));
-        disableJacc.get(NAME).set(INITIALIZE_JACC);
-        disableJacc.get(VALUE).set(false);
-        return client.execute(disableJacc);
-    }
-
-    private ModelNode enableLegacyJacc() throws Exception {
-        ModelNode enableJacc = Util.createEmptyOperation(WRITE_ATTRIBUTE_OPERATION, PathAddress.pathAddress().append(SUBSYSTEM, SECURITY));
-        enableJacc.get(NAME).set(INITIALIZE_JACC);
-        enableJacc.get(VALUE).set(true);
-        return client.execute(enableJacc);
     }
 
     private void assertOperationFailed(ModelNode response, String cause) {

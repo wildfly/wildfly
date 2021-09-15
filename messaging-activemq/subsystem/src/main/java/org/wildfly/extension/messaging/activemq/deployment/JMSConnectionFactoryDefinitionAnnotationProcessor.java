@@ -46,6 +46,12 @@ public class JMSConnectionFactoryDefinitionAnnotationProcessor extends ResourceD
     private static final DotName JMS_CONNECTION_FACTORY_DEFINITION = DotName.createSimple(JMSConnectionFactoryDefinition.class.getName());
     private static final DotName JMS_CONNECTION_FACTORY_DEFINITIONS = DotName.createSimple(JMSConnectionFactoryDefinitions.class.getName());
 
+    private final boolean legacySecurityAvailable;
+
+    public JMSConnectionFactoryDefinitionAnnotationProcessor(boolean legacySecurityAvailable) {
+        this.legacySecurityAvailable = legacySecurityAvailable;
+    }
+
     @Override
     protected DotName getAnnotationDotName() {
         return JMS_CONNECTION_FACTORY_DEFINITION;
@@ -67,6 +73,7 @@ public class JMSConnectionFactoryDefinitionAnnotationProcessor extends ResourceD
         directJMSConnectionFactoryInjectionSource.setTransactional(AnnotationElement.asOptionalBoolean(annotationInstance, "transactional"));
         directJMSConnectionFactoryInjectionSource.setMaxPoolSize(AnnotationElement.asOptionalInt(annotationInstance, "maxPoolSize", MAX_POOL_SIZE.getDefaultValue().asInt()));
         directJMSConnectionFactoryInjectionSource.setMinPoolSize(AnnotationElement.asOptionalInt(annotationInstance, "minPoolSize", MIN_POOL_SIZE.getDefaultValue().asInt()));
+        directJMSConnectionFactoryInjectionSource.setLegacySecurityAvailable(legacySecurityAvailable);
         directJMSConnectionFactoryInjectionSource.addProperties(AnnotationElement.asOptionalStringArray(annotationInstance, AnnotationElement.PROPERTIES), propertyReplacer);
         return directJMSConnectionFactoryInjectionSource;
     }

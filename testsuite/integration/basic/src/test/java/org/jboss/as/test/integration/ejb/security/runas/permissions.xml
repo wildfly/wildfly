@@ -8,4 +8,22 @@
         <class-name>org.wildfly.security.permission.ElytronPermission</class-name>
         <name>getSecurityDomain</name>
     </permission>
+    <permission>
+        <class-name>org.wildfly.security.permission.ElytronPermission</class-name>
+        <name>authenticate</name>
+    </permission>
+    <!-- TODO https://issues.redhat.com/browse/WFLY-15289 -->
+    <!-- We need to verify if deployments should require this permission set. -->
+    <permission>
+        <class-name>org.wildfly.security.permission.ElytronPermission</class-name>
+        <name>handleSecurityEvent</name>
+    </permission>
+    <permission>
+        <class-name>org.wildfly.security.permission.ElytronPermission</class-name>
+        <name>setRunAsPrincipal</name>
+    </permission>
+    <permission>
+        <class-name>org.wildfly.security.auth.permission.ChangeRoleMapperPermission</class-name>
+        <name>ejb</name>
+    </permission>
 </permissions>

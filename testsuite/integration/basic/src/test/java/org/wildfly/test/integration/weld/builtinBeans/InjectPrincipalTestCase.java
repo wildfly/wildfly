@@ -15,15 +15,19 @@
  */
 package org.wildfly.test.integration.weld.builtinBeans;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
 import org.junit.Assert;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
+import org.wildfly.security.permission.ElytronPermission;
 
 
 /**
@@ -39,7 +43,12 @@ public class InjectPrincipalTestCase {
     public static Archive<?> createTestArchive() {
         return ShrinkWrap.create(WebArchive.class).addPackage(InjectPrincipalTestCase.class.getPackage())
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsWebInfResource(InjectPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
+                .addAsWebInfResource(InjectPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new ElytronPermission("getIdentity"),
+                        new ElytronPermission("createAdHocIdentity"),
+                        new ChangeRoleMapperPermission("ejb")
+                        ), "permissions.xml");
     }
 
     @Test

@@ -21,7 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.security.runas.mdb;
 
-import org.jboss.logging.Logger;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -44,6 +45,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -52,6 +54,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
+import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * Make sure the run-as on a MDB is picked up.
@@ -94,12 +98,14 @@ public class RunAsMDBUnitTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "runas-mdb.jar")
                 .addPackage(RunAsMDBUnitTestCase.class.getPackage())
                 .addPackage(JMSOperations.class.getPackage())
-                .addClass(JmsQueueSetup.class)
-                .addAsResource(RunAsMDBUnitTestCase.class.getPackage(), "users.properties", "users.properties")
-                .addAsResource(RunAsMDBUnitTestCase.class.getPackage(), "roles.properties", "roles.properties");
+                .addClass(JmsQueueSetup.class);
         jar.addAsManifestResource(RunAsMDBUnitTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr \n"), "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
+        // TODO WFLY-15289 Should these permissions be required?
+        jar.addAsResource(createPermissionsXmlAsset(new ElytronPermission("setRunAsPrincipal"),
+                new ElytronPermission("handleSecurityEvent"),
+                new ChangeRoleMapperPermission("ejb")), "META-INF/jboss-permissions.xml");
         return jar;
     }
 

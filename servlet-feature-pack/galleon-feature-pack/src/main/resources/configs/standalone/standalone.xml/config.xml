@@ -10,7 +10,6 @@
         <include name="request-controller"/>
         <include name="security-manager"/>
         <include name="web-server"/>
-        <include name="legacy-security"/>
         <include name="core-tools"/>
         <include name="git-history"/>
     </layers>
@@ -19,6 +18,8 @@
     <feature-group name="undertow-https"/>
     
     <feature-group name="undertow-default-config"/>
+    <feature-group name="undertow-elytron-security"/>
+
     <!-- package included in case configuration is provisioned without inheriting all modules -->
     <packages>
         <package name="org.jboss.as.patching.cli"/>

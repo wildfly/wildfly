@@ -127,6 +127,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
     private boolean transactional;
     private int maxPoolSize;
     private int minPoolSize;
+    private boolean legacySecurityAvailable;
 
     public JMSConnectionFactoryDefinitionInjectionSource(String jndiName) {
         super(jndiName);
@@ -168,6 +169,10 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
         this.minPoolSize = minPoolSize;
     }
 
+    public void setLegacySecurityAvailable(boolean legacySecurityAvailable) {
+        this.legacySecurityAvailable = legacySecurityAvailable;
+    }
+
     @Override
     public void getResourceValue(ResolutionContext context, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -187,6 +192,7 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
             cfdis.setMaxPoolSize(maxPoolSize);
             cfdis.setMinPoolSize(minPoolSize);
             cfdis.setTransactionSupportLevel(transactional ? TransactionSupport.TransactionSupportLevel.XATransaction : TransactionSupport.TransactionSupportLevel.NoTransaction);
+            cfdis.setLegacySecurityAvailable(legacySecurityAvailable);
             // transfer all the generic properties + the additional properties specific to the JMSConnectionFactoryDefinition
             for (Map.Entry<String, String> property : properties.entrySet()) {
                 cfdis.addProperty(property.getKey(), property.getValue());
