@@ -425,57 +425,5 @@
                 <iiop.endorsed.argline/>
             </properties>
         </profile>
-        <profile>
-            <id>elytron.iiop.profile</id>
-            <activation>
-                <property>
-                    <name>elytron</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <excludes>
-                                <exclude>**/*BasicIIOPInvocationTestCase.java</exclude>
-                                <exclude>**/*IIOPTimeoutTestCase.java</exclude>
-                                <exclude>**/*IIOPTransactionPropagationTestCase.java</exclude>
-                                <exclude>**/*TransactionIIOPInvocationTestCase.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>build-clustering.server</id>
-                                <phase>test-compile</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <!-- Configure IIOP server and client. -->
-                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/iiop-build.xml">
-                                            <property name="node0" value="${node0}" /> <!-- inheritAll="true" doesn't work. -->
-                                            <property name="node1" value="${node1}" />
-                                            <property name="keystore.client.file" value="${wildfly.config.dir}/client.keystore.jks"/>
-                                            <property name="keystore.server.file" value="${wildfly.config.dir}/server.keystore.jks"/>
-                                            <property name="truststore.client.file" value="${wildfly.config.dir}/client.truststure.jks"/>
-                                            <property name="truststore.server.file" value="${wildfly.config.dir}/server.truststore.jks"/>
-                                            <property name="keystore.password" value="password"/>
-                                            <target name="build-iiop-elytron" />
-                                        </ant>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 </project>

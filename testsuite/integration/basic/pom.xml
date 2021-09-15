@@ -2857,7 +2857,6 @@
                                         <module.path>${project.build.directory}/wildfly-ejb/modules${path.separator}${basedir}/target/modules</module.path>
                                         <!-- EJB client library hack, see WFLY-4973-->
                                         <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
-                                        <elytron>true</elytron>
                                     </systemPropertyVariables>
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-ejb</JBOSS_HOME>
