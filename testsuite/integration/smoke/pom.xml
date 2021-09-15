@@ -357,7 +357,6 @@
                             <layers>
                                 <layer>cloud-server</layer>
                                 <layer>h2-default-datasource</layer>
-                                <layer>legacy-security</layer>
                             </layers>
                         </configuration>
                     </execution>
@@ -529,7 +528,6 @@
                                             <layers>
                                                 <layer>cloud-server</layer>
                                                 <layer>h2-default-datasource</layer>
-                                                <layer>legacy-security</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -933,22 +931,13 @@
                                         <server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</server.jvm.args>
                                     </systemPropertyVariables>
                                     <excludes>
-                                        <!-- Requires legacy security -->
+                                        <!-- Requires legacy security for some methods -->
                                         <exclude>org/jboss/as/test/smoke/mgmt/resourceadapter/ResourceAdapterOperationsUnitTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/configproperty/ConfigPropertyTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/earpackage/EarPackagedDeploymentTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiactivation/MultipleActivationTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiobjectactivation/MultipleObjectActivationTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiobjectpartialactivation/MultipleObjectPartialActivationTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/raconnection/RaTestConnectionTestCase.java</exclude>
                                         <!-- Requires messaging -->
                                         <exclude>org/jboss/as/test/smoke/jms/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/smoke/jms/**/*Test.java</exclude>
                                         <exclude>org/jboss/as/test/smoke/messaging/ArtemisMessagingTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/smoke/messaging/client/**/*TestCase.java</exclude>
-                                        <!-- FIXME Why do these fail? -->
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/afterresourcecreation/AfterResourceCreationDeploymentTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/smoke/deployment/rar/tests/redeployment/ReDeploymentTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>

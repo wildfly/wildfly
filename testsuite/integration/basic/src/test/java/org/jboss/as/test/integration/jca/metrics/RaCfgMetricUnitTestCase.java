@@ -36,6 +36,7 @@ import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
+//import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,6 +47,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+//@Ignore("[WFLY-15249] Deployments need to handle lack of legacy security.")
 public class RaCfgMetricUnitTestCase extends JCAMetrictsTestBase {
 
     public static void setBaseAddress(String rar) {

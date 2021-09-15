@@ -22,27 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.AUTHENTICATION;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-
 import java.io.File;
-import java.util.Arrays;
 
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
-import org.jboss.dmr.ModelNode;
 import org.wildfly.test.security.common.elytron.EjbElytronDomainSetup;
 import org.wildfly.test.security.common.elytron.ElytronDomainSetup;
 import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
@@ -78,49 +61,14 @@ public class EjbSecurityDomainSetup extends AbstractSecurityDomainSetup {
 
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-        if (System.getProperty("elytron") == null && System.getProperty("ts.ee9") == null) {
-            // elytron profile is not enabled, use legacy setup
-            final ModelNode compositeOp = new ModelNode();
-            compositeOp.get(OP).set(COMPOSITE);
-            compositeOp.get(OP_ADDR).setEmptyList();
+        // elytron profile is enabled
+        elytronDomainSetup = new ElytronDomainSetup(getUsersFile(), getGroupsFile(), getSecurityDomainName());
+        ejbElytronDomainSetup = new EjbElytronDomainSetup(getSecurityDomainName());
+        servletElytronDomainSetup = new ServletElytronDomainSetup(getSecurityDomainName());
 
-            ModelNode steps = compositeOp.get(STEPS);
-            PathAddress securityDomainAddress = PathAddress.pathAddress()
-                    .append(SUBSYSTEM, "security")
-                    .append(SECURITY_DOMAIN, getSecurityDomainName());
-            steps.add(Util.createAddOperation(securityDomainAddress));
-            PathAddress authAddress = securityDomainAddress.append(AUTHENTICATION, Constants.CLASSIC);
-            steps.add(Util.createAddOperation(authAddress));
-            ModelNode op = Util.createAddOperation(authAddress.append(Constants.LOGIN_MODULE, "Remoting"));
-            op.get(CODE).set("Remoting");
-            if (isUsersRolesRequired()) {
-                op.get(FLAG).set("optional");
-            } else {
-                op.get(FLAG).set("required");
-            }
-            op.get(Constants.MODULE_OPTIONS).add("password-stacking", "useFirstPass");
-            steps.add(op);
-            if (isUsersRolesRequired()) {
-
-                ModelNode loginModule = Util.createAddOperation(authAddress.append(Constants.LOGIN_MODULE, "UsersRoles"));
-                loginModule.get(CODE).set("UsersRoles");
-                loginModule.get(FLAG).set("required");
-                loginModule.get(Constants.MODULE_OPTIONS).add("password-stacking", "useFirstPass");
-                loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-                steps.add(loginModule);
-            }
-
-            applyUpdates(managementClient.getControllerClient(), Arrays.asList(compositeOp));
-        } else {
-            // elytron profile is enabled
-            elytronDomainSetup = new ElytronDomainSetup(getUsersFile(), getGroupsFile(), getSecurityDomainName());
-            ejbElytronDomainSetup = new EjbElytronDomainSetup(getSecurityDomainName());
-            servletElytronDomainSetup = new ServletElytronDomainSetup(getSecurityDomainName());
-
-            elytronDomainSetup.setup(managementClient, containerId);
-            ejbElytronDomainSetup.setup(managementClient, containerId);
-            servletElytronDomainSetup.setup(managementClient, containerId);
-        }
+        elytronDomainSetup.setup(managementClient, containerId);
+        ejbElytronDomainSetup.setup(managementClient, containerId);
+        servletElytronDomainSetup.setup(managementClient, containerId);
     }
 
     @Override
@@ -144,8 +92,6 @@ public class EjbSecurityDomainSetup extends AbstractSecurityDomainSetup {
                 if (ex == null) ex = e;
             }
             if (ex != null) throw new RuntimeException(ex);
-        } else {
-            super.tearDown(managementClient, containerId);
         }
     }
 }

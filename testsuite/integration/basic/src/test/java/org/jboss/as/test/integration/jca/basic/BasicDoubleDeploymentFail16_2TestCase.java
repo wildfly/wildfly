@@ -46,6 +46,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Assert;
+//import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -56,6 +57,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(BasicDoubleDeploymentFail16_2TestCase.BasicDoubleDeploymentTestCaseSetup.class)
+//@Ignore("[WFLY-15249] Update for lack of legacy security.")
 public class BasicDoubleDeploymentFail16_2TestCase {
 
     // deployment archive name must match "archive" element.

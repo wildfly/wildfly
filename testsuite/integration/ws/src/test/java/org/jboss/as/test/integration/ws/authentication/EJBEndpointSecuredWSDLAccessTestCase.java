@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.ws.authentication;
 
 import java.net.URL;
+
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceException;
@@ -33,23 +34,20 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.security.Base64Encoder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.runner.RunWith;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for secured access to WSDL for EJB endpoint
  *
  * @author Rostislav Svoboda
  */
-@ServerSetup({EjbSecurityDomainSetup.class})
 @RunWith(Arquillian.class)
 @RunAsClient
 public class EJBEndpointSecuredWSDLAccessTestCase {
@@ -60,8 +58,6 @@ public class EJBEndpointSecuredWSDLAccessTestCase {
     @Deployment(testable = false)
     public static Archive<?> deployment() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "jaxws-authentication-ejb3-for-wsdl.jar")
-                .addAsResource(EJBEndpointSecuredWSDLAccessTestCase.class.getPackage(), "users.properties", "users.properties")
-                .addAsResource(EJBEndpointSecuredWSDLAccessTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addClasses(EJBEndpointIface.class, EJBEndpointSecuredWSDLAccess.class);
 
         return jar;

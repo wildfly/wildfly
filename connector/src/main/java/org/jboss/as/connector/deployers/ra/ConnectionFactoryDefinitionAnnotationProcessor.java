@@ -45,6 +45,12 @@ public class ConnectionFactoryDefinitionAnnotationProcessor extends ResourceDefi
     private static final DotName CONNECTION_FACTORY_DEFINITION = DotName.createSimple(ConnectionFactoryDefinition.class.getName());
     private static final DotName CONNECTION_FACTORY_DEFINITIONS = DotName.createSimple(ConnectionFactoryDefinitions.class.getName());
 
+    private final boolean legacySecurityAvailable;
+
+    public ConnectionFactoryDefinitionAnnotationProcessor(boolean legacySecurityAvailable) {
+        this.legacySecurityAvailable = legacySecurityAvailable;
+    }
+
     @Override
     protected DotName getAnnotationDotName() {
         return CONNECTION_FACTORY_DEFINITION;
@@ -72,6 +78,7 @@ public class ConnectionFactoryDefinitionAnnotationProcessor extends ResourceDefi
                 AnnotationElement.PROPERTIES));
         directConnectionFactoryInjectionSource.setTransactionSupportLevel(asTransactionSupportLocal(annotationInstance,
                 ConnectionFactoryDefinitionInjectionSource.TRANSACTION_SUPPORT));
+        directConnectionFactoryInjectionSource.setLegacySecurityAvailable(legacySecurityAvailable);
         return directConnectionFactoryInjectionSource;
     }
 

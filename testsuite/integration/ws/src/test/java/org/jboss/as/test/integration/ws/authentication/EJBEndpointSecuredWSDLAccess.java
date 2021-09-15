@@ -47,7 +47,7 @@ import org.jboss.ws.api.annotation.WebContext;
         transportGuarantee = TransportGuarantee.NONE,
         secureWSDLAccess = true
 )
-@SecurityDomain("ejb3-tests")
+@SecurityDomain("other")
 @RolesAllowed("Role1")
 @Stateless
 public class EJBEndpointSecuredWSDLAccess implements EJBEndpointIface {

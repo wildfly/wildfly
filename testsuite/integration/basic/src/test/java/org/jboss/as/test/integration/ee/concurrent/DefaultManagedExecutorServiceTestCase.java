@@ -48,7 +48,8 @@ public class DefaultManagedExecutorServiceTestCase {
     public static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class, DefaultManagedExecutorServiceTestCase.class.getSimpleName() + ".war")
                 .addClasses(DefaultManagedExecutorServiceTestCase.class, DefaultManagedExecutorServiceTestEJB.class, TestEJBRunnable.class, Util.class)
-                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
+                                                                 new ElytronPermission("authenticate")), "permissions.xml");
     }
 
     @Test

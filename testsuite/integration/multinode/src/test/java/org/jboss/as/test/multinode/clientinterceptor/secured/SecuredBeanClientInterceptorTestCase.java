@@ -22,6 +22,9 @@
 package org.jboss.as.test.multinode.clientinterceptor.secured;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.io.File;
+import java.io.FilePermission;
 import java.security.SecurityPermission;
 import java.util.Collections;
 import java.util.List;
@@ -83,8 +86,6 @@ public class SecuredBeanClientInterceptorTestCase {
         war.addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class);
         war.addClasses(SecuredBeanClientInterceptorTestCase.class, SampleSecureInterceptor.class, Secured.class, SecuredBean.class);
         war.addPackage(AbstractClientInterceptorsSetupTask.class.getPackage());
-        war.addAsResource(currentPackage, "users.properties", "users.properties");
-        war.addAsResource(currentPackage, "roles.properties", "roles.properties");
         war.addAsManifestResource("META-INF/jboss-ejb-client-receivers.xml", "jboss-ejb-client.xml");
         war.addAsWebInfResource(currentPackage, "jboss-web.xml", "jboss-web.xml");
         war.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
@@ -92,8 +93,11 @@ public class SecuredBeanClientInterceptorTestCase {
                 createPermissionsXmlAsset(
                         new SecurityPermission("putProviderProperty.WildFlyElytron"),
                         new ElytronPermission("getSecurityDomain"),
+                        new ElytronPermission("authenticate"),
                         new RuntimePermission("getProtectionDomain"),
-                        new AuthPermission("modifyPrincipals")),
+                        new AuthPermission("modifyPrincipals"),
+                        new FilePermission(System.getProperty("jboss.home") + File.separatorChar + "standalone" +
+                                           File.separatorChar + "tmp" + File.separatorChar + "auth" + File.separatorChar + "-", "read")),
                 "permissions.xml");
         return war;
     }

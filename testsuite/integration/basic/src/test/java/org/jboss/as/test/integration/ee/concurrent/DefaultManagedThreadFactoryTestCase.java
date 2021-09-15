@@ -53,6 +53,7 @@ public class DefaultManagedThreadFactoryTestCase {
                 .addClasses(DefaultManagedThreadFactoryTestCase.class, DefaultManagedThreadFactoryTestEJB.class, TestEJBRunnable.class, Util.class, TimeoutUtil.class)
                 .addAsManifestResource(createPermissionsXmlAsset(
                         new ElytronPermission("getSecurityDomain"),
+                        new ElytronPermission("authenticate"),
                         new PropertyPermission("ts.timeout.factor", "read")
                         ), "permissions.xml");
     }

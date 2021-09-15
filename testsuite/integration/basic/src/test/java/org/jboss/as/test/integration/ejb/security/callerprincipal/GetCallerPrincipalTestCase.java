@@ -126,7 +126,8 @@ public class GetCallerPrincipalTestCase {
                 .addClass(ITestResultsSingleton.class)
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-single", "MANIFEST.MF")
-                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
+                                                                 new ElytronPermission("authenticate")), "permissions.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
         return jar;
     }
@@ -140,7 +141,8 @@ public class GetCallerPrincipalTestCase {
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF")
-                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
+                                                                 new ElytronPermission("authenticate")), "permissions.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
         return jar;
     }
@@ -154,7 +156,8 @@ public class GetCallerPrincipalTestCase {
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF")
-                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "jboss-permissions.xml");
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
+                                                                 new ElytronPermission("authenticate")), "jboss-permissions.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
         return jar;
     }
@@ -167,7 +170,8 @@ public class GetCallerPrincipalTestCase {
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF")
-                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
+                                                                 new ElytronPermission("authenticate")), "permissions.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
         return jar;
     }
@@ -186,7 +190,8 @@ public class GetCallerPrincipalTestCase {
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-test", "MANIFEST.MF")
-                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
+                                                                 new ElytronPermission("authenticate")), "permissions.xml");
         jar.addPackage(CommonCriteria.class.getPackage());
         return jar;
     }

@@ -47,10 +47,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.security.AnnSBTest;
 import org.jboss.as.test.integration.ejb.security.authorization.SingleMethodsAnnOnlyCheckSFSB;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
-import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.integration.security.common.config.SecurityDomain;
-import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.ServerSnapshot;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -60,6 +57,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -70,8 +68,8 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({SecurityAuditingTestCase.SecurityDomainsSetup.class,
-        SecurityAuditingTestCase.SecurityAuditingTestCaseSetup.class})
+@ServerSetup({SecurityAuditingTestCase.SecurityAuditingTestCaseSetup.class})
+@Ignore("[WFLY-15263] Update for lack of legacy security.")
 public class SecurityAuditingTestCase extends AnnSBTest {
 
     private static final Logger log = Logger.getLogger(testClass());
@@ -115,22 +113,17 @@ public class SecurityAuditingTestCase extends AnnSBTest {
             list.add("AUDIT");
             updates.add(op);
 
-            if (System.getProperty("elytron") != null) {
-                // /subsystem=elytron/security-domain=ApplicationDomain:write-attribute(name=security-event-listener, value=local-audit)
-                op = new ModelNode();
-                op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-                op.get(OP_ADDR).add(SUBSYSTEM, "elytron");
-                op.get(OP_ADDR).add("security-domain", "ApplicationDomain");
-                op.get("name").set("security-event-listener");
-                op.get("value").set("local-audit");
-                updates.add(op);
-            }
+            op = new ModelNode();
+            op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+            op.get(OP_ADDR).add(SUBSYSTEM, "elytron");
+            op.get(OP_ADDR).add("security-domain", "ApplicationDomain");
+            op.get("name").set("security-event-listener");
+            op.get("value").set("local-audit");
+            updates.add(op);
 
             executeOperations(updates);
 
-            if (System.getProperty("elytron") != null) {
-                ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
-            }
+            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
         }
 
         @Override
@@ -240,23 +233,4 @@ public class SecurityAuditingTestCase extends AnnSBTest {
 
     }
 
-    /*
-     * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     *
-     * @author Josef Cacek
-     */
-    static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
-
-        /*
-         * Returns SecurityDomains configuration for this testcase.
-         *
-         * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
-         */
-        @Override
-        protected SecurityDomain[] getSecurityDomains() {
-            final SecurityDomain sd = new SecurityDomain.Builder().name("form-auth")
-                    .loginModules(new SecurityModule.Builder().name("UsersRoles").build()).build();
-            return new SecurityDomain[]{sd};
-        }
-    }
 }

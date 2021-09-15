@@ -5,12 +5,6 @@
 
 embed-server --server-config=${config:standalone.xml}
 
-echo INFO: Updating configuration to use elytron
-
-/subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain)
-/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
-/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
-
 if (outcome == success) of /subsystem=iiop-openjdk:read-resource
   /subsystem=iiop-openjdk:write-attribute(name=security, value=elytron)
 else 
@@ -22,12 +16,6 @@ if (outcome == success) of /subsystem=messaging-activemq/server=default:read-res
 else 
   echo INFO: messaging-activemq not present, skipping update to use Elytron
 end-if
-
-
-echo INFO: Removing security subsystem.
-
-/subsystem=security:remove
-/extension=org.jboss.as.security:remove
 
 echo INFO: Adding microprofile subsystems.
 

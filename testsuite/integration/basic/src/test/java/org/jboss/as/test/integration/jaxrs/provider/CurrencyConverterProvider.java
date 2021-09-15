@@ -22,58 +22,31 @@
 package org.jboss.as.test.integration.jaxrs.provider;
 
 import java.util.Currency;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.ext.Provider;
+import javax.ws.rs.ext.ParamConverter;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.spi.StringConverter;
 
 /**
- * A RestEasy {@link StringConverter} test implementation for Currency.
+ * A Jakarta RESTful Web Services {@link ParamConverter} test implementation for Currency.
  *
  * @author Josef Cacek
  */
-@Provider
 @Path("/")
-public class CurrencyConverterProvider implements StringConverter<Currency> {
+public class CurrencyConverterProvider {
 
-    private static Logger LOGGER = Logger.getLogger(CurrencyConverterProvider.class);
+    private static final Logger LOGGER = Logger.getLogger(CurrencyConverterProvider.class);
 
     public static final String PARAM_CURRENCY = "currency";
     public static final String PATH_CONVERTER = "/converter/{" + PARAM_CURRENCY + "}";
-
-    // Public methods --------------------------------------------------------
-
-    /**
-     * Converts from a provided String currency code to a Currency instance.
-     *
-     * @param str
-     * @return
-     * @see org.jboss.resteasy.spi.StringConverter#fromString(java.lang.String)
-     */
-    public Currency fromString(String str) {
-        LOGGER.trace("Converting to currency: " + str);
-        return Currency.getInstance(str);
-    }
-
-    /**
-     * Returns Currency code.
-     *
-     * @param currency
-     * @return
-     * @see org.jboss.resteasy.spi.StringConverter#toString(java.lang.Object)
-     */
-    public String toString(Currency currency) {
-        return currency.getCurrencyCode();
-    }
 
     /**
      * Test method for currency converter.
      *
      * @param currency
+     *
      * @return
      */
     @GET
@@ -82,5 +55,4 @@ public class CurrencyConverterProvider implements StringConverter<Currency> {
         LOGGER.trace("Returning currency symbol");
         return currency.getSymbol();
     }
-
 }

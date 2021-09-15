@@ -30,8 +30,9 @@
         <module name="io.smallrye.reactive.messaging.connector.amqp" optional="true" export="true" services="export"/>
 
         <module name="io.smallrye.reactive.messaging.connector.kafka" optional="true" export="true" services="export"/>
-        <!-- Add the kafka API module here so that it will be added to the deployment classpath by the DUP -->
+        <!-- Add the kafka API module and a few other central ones so that it will be added to the deployment classpath by the DUP -->
         <module name="io.smallrye.reactive.messaging.connector.kafka.api" optional="true" export="true" services="export"/>
+        <module name="org.wildfly.reactive.messaging.kafka" optional="true" export="true" services="export"/>
 
         <module name="io.smallrye.reactive.messaging.connector.mqtt" optional="true" export="true" services="export"/>
     </dependencies>

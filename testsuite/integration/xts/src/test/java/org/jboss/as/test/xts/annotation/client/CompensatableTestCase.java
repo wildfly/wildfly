@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.xts.annotation.client;
 
-import com.arjuna.mw.wst11.UserBusinessActivity;
-
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.File;
@@ -41,6 +39,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.arjuna.mw.wst11.UserBusinessActivity;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>

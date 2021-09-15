@@ -63,7 +63,9 @@ public class SingletonSecurityTestCase {
         jar.addClass(Util.class);
         jar.addAsResource(createPermissionsXmlAsset(
                 new RuntimePermission("org.jboss.security.setSecurityContext"),
-                new ElytronPermission("getSecurityDomain")
+                new ElytronPermission("getSecurityDomain"),
+                new ElytronPermission("authenticate"),
+                new ElytronPermission("setRunAsPrincipal")
                 ), "META-INF/permissions.xml");
         return jar;
     }

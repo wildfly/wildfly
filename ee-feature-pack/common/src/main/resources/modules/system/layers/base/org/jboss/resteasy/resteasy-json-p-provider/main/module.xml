@@ -33,7 +33,8 @@
         <module name="javax.json.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.ws.rs.api"/>
-        <module name="org.jboss.resteasy.resteasy-jaxrs"/>
+        <module name="org.jboss.resteasy.resteasy-core"/>
+        <module name="org.jboss.resteasy.resteasy-core-spi"/>
         <module name="org.jboss.logging"/>
     </dependencies>
 </module>

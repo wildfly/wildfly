@@ -80,10 +80,12 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
             case EAP_7_4_0:
                 return new String[] {
                         formatEAP7SubsystemArtifact(version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-api:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-server:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-singleton-api:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-spi:%s", version),
-                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
                 };
             default:
                 throw new IllegalArgumentException();

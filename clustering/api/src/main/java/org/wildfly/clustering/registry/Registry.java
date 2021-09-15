@@ -38,31 +38,11 @@ import org.wildfly.clustering.group.Node;
 public interface Registry<K, V> extends Registrar<RegistryListener<K, V>>, AutoCloseable {
 
     /**
-     * @deprecated Replaced by {@link RegistryListener}.
-     */
-    @Deprecated interface Listener<K, V> extends RegistryListener<K, V> {
-    }
-
-    /**
      * Returns the group associated with this factory.
      *
      * @return a group
      */
     Group getGroup();
-
-    /**
-     * @deprecated Replaced by {@link #register(RegistryListener)}.
-     */
-    @Deprecated default void addListener(Listener<K, V> listener) {
-        this.register(listener);
-    }
-
-    /**
-     * @deprecated Replaced by {@link org.wildfly.clustering.Registration#close()}.
-     */
-    @Deprecated default void removeListener(Listener<K, V> listener) {
-        // Do nothing
-    }
 
     /**
      * Returns all registry entries in this group.

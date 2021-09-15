@@ -58,6 +58,8 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
+import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * Deploys a message driven bean and a stateless bean which is injected into MDB
@@ -86,7 +88,11 @@ public class MDBRoleTestCase {
         deployment.addAsManifestResource(MDBRoleTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
       deployment.addPackage(CommonCriteria.class.getPackage());
       // grant necessary permissions
-      deployment.addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
+      // TODO WFLY-15289 The Elytron permissions need to be checked, should a deployment really need these?
+      deployment.addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read"),
+                                                         new ElytronPermission("setRunAsPrincipal"),
+                                                         new ElytronPermission("handleSecurityEvent"),
+                                                         new ChangeRoleMapperPermission("ejb")), "META-INF/jboss-permissions.xml");
       return deployment;
    }
 

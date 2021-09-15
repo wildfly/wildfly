@@ -36,6 +36,9 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOV
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_ELYTRON_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DOMAIN;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +80,7 @@ public class RaAdd extends AbstractAddStepHandler {
         final ModelNode model = resource.getModel();
         // add extra security validation: authentication contexts should only be defined when Elytron Enabled is true
         // domains/application attributes should only be defined when Elytron enabled is undefined or false (default value)
+        // TODO WFLY-15231 -- this logic is using the wrong attributes, so it's currently doing nothing
         if (ELYTRON_ENABLED.resolveModelAttribute(context, model).asBoolean()) {
             if (model.hasDefined(SECURITY_DOMAIN.getName()))
                 throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(SECURITY_DOMAIN.getName(), ELYTRON_ENABLED.getName());
@@ -171,5 +175,11 @@ public class RaAdd extends AbstractAddStepHandler {
 
         resource.registerChild(peStats, statsResource);
 
+    }
+
+    static boolean requiresLegacySecurity(OperationContext context, ModelNode raModel) throws OperationFailedException {
+        return WM_SECURITY.resolveModelAttribute(context, raModel).asBoolean()
+                && WM_ELYTRON_SECURITY_DOMAIN.resolveModelAttribute(context, raModel).asStringOrNull() == null
+                && WM_SECURITY_DOMAIN.resolveModelAttribute(context, raModel).asStringOrNull() != null;
     }
 }

@@ -7,7 +7,7 @@
             <feature spec="subsystem.undertow.server.host">
                 <param name="host" value="default-host" />
                 <param name="alias" value="[localhost]"/>
-                <feature spec="subsystem.undertow.server.host.setting.http-invoker"/>
+                <feature spec="subsystem.undertow.server.host.setting.http-invoker"/> <!-- TODO Should this be here? -->
             </feature>
         </feature>
         <feature spec="subsystem.undertow.servlet-container">

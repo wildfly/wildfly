@@ -36,7 +36,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -44,6 +43,7 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.jaxrs.JaxrsAttribute;
 import org.jboss.as.jaxrs.JaxrsConstants;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -71,13 +71,14 @@ import org.junit.runner.RunWith;
 @ServerSetup(ResteasyAttributeTestCase.AttributeTestCaseDeploymentSetup.class)
 public class ResteasyAttributeTestCase {
 
-    private static ModelControllerClient modelControllerClient;
     private static final Map<AttributeDefinition, ModelNode> expectedValues = new HashMap<AttributeDefinition, ModelNode>();
     private static final Map<ModelType, Class<?>> modelTypeMap = new HashMap<ModelType, Class<?>>();
     private static Client jaxrsClient;
 
     @ArquillianResource
     private static URL url;
+    @ArquillianResource
+    private ManagementClient client;
 
     static {
         modelTypeMap.put(ModelType.BOOLEAN, Boolean.class);
@@ -104,17 +105,10 @@ public class ResteasyAttributeTestCase {
     private static final ModelNode VALUE_EXPRESSION_RESOURCE = new ModelNode(new ValueExpression("${rest.test.dummy:java:global/jaxrsnoap/" + EJB_Resource1.class.getSimpleName() + "}"));
     private static final ModelNode VALUE_EXPRESSION_PROVIDER = new ModelNode(new ValueExpression("${rest.test.dummy:" + StringTextStar.class.getName() + "}"));
 
-    static class AttributeTestCaseDeploymentSetup implements ServerSetupTask {
-
+    static class AttributeTestCaseDeploymentSetup extends SnapshotRestoreSetupTask {
         @Override
-        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            modelControllerClient = managementClient.getControllerClient();
-            setAttributeValues();
-        }
-
-        @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            resetAttributeValues();
+        protected void doSetup(final ManagementClient client, final String containerId) throws Exception {
+            setAttributeValues(client.getControllerClient());
         }
     }
     /**
@@ -162,65 +156,56 @@ public class ResteasyAttributeTestCase {
      * Note that StringTextStar is added to 'resteasy.providers" to compensate for the fact that
      * "resteasy.use.builtin.providers" is set to "false".
      */
-    static void setAttributeValues() throws IOException {
-        setAttributeValue(JaxrsAttribute.JAXRS_2_0_REQUEST_MATCHING, VALUE_EXPRESSION_BOOLEAN_TRUE);
-        setAttributeValue(JaxrsAttribute.RESTEASY_ADD_CHARSET, VALUE_EXPRESSION_BOOLEAN_FALSE);
-        setAttributeValue(JaxrsAttribute.RESTEASY_BUFFER_EXCEPTION_ENTITY, VALUE_EXPRESSION_BOOLEAN_FALSE);
-        setAttributeValue(JaxrsAttribute.RESTEASY_DISABLE_HTML_SANITIZER, VALUE_EXPRESSION_BOOLEAN_TRUE);
+    static void setAttributeValues(final ModelControllerClient client) throws IOException {
+        setAttributeValue(client, JaxrsAttribute.JAXRS_2_0_REQUEST_MATCHING, VALUE_EXPRESSION_BOOLEAN_TRUE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_ADD_CHARSET, VALUE_EXPRESSION_BOOLEAN_FALSE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_BUFFER_EXCEPTION_ENTITY, VALUE_EXPRESSION_BOOLEAN_FALSE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_DISABLE_HTML_SANITIZER, VALUE_EXPRESSION_BOOLEAN_TRUE);
 
         ModelNode list = new ModelNode().setEmptyList();
         list.add(VALUE_EXPRESSION_FILENAME_1);
         list.add(VALUE_EXPRESSION_FILENAME_2);
-        setAttributeValue(JaxrsAttribute.RESTEASY_DISABLE_PROVIDERS, list);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_DISABLE_PROVIDERS, list);
         list.clear();
 
-        setAttributeValue(JaxrsAttribute.RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES, VALUE_EXPRESSION_BOOLEAN_TRUE);
-        setAttributeValue(JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS, VALUE_EXPRESSION_BOOLEAN_FALSE);
-        setAttributeValue(JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE, VALUE_EXPRESSION_BOOLEAN_FALSE);
-        setAttributeValue(JaxrsAttribute.RESTEASY_GZIP_MAX_INPUT, VALUE_EXPRESSION_INT);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES, VALUE_EXPRESSION_BOOLEAN_TRUE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS, VALUE_EXPRESSION_BOOLEAN_FALSE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE, VALUE_EXPRESSION_BOOLEAN_FALSE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_GZIP_MAX_INPUT, VALUE_EXPRESSION_INT);
 
         list.add(VALUE_EXPRESSION_RESOURCE);
         list.add("java:global/jaxrsnoap/" + EJB_Resource2.class.getSimpleName());
-        setAttributeValue(JaxrsAttribute.RESTEASY_JNDI_RESOURCES, list);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_JNDI_RESOURCES, list);
         list.clear();
 
         ModelNode map = new ModelNode();
         map.add(new Property("en", new ModelNode("en-US")));
         map.add(new Property("es", VALUE_EXPRESSION_SPANISH));
         map.add(new Property("fr", new ModelNode("fr")));
-        setAttributeValue(JaxrsAttribute.RESTEASY_LANGUAGE_MAPPINGS, map);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_LANGUAGE_MAPPINGS, map);
         map.clear();
 
         map.add(new Property("unusual", VALUE_EXPRESSION_APPLICATION_UNUSUAL));
         map.add(new Property("xml", new ModelNode("application/xml")));
-        setAttributeValue(JaxrsAttribute.RESTEASY_MEDIA_TYPE_MAPPINGS, map);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_MEDIA_TYPE_MAPPINGS, map);
         map.clear();
 
-        setAttributeValue(JaxrsAttribute.RESTEASY_PREFER_JACKSON_OVER_JSONB, VALUE_EXPRESSION_BOOLEAN_TRUE);
-        setAttributeValue(JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING, VALUE_EXPRESSION_STRING);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_PREFER_JACKSON_OVER_JSONB, VALUE_EXPRESSION_BOOLEAN_TRUE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING, VALUE_EXPRESSION_STRING);
 
         list.add(VALUE_EXPRESSION_PROVIDER);
-        setAttributeValue(JaxrsAttribute.RESTEASY_PROVIDERS, list);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_PROVIDERS, list);
         list.clear();
 
-        setAttributeValue(JaxrsAttribute.RESTEASY_RFC7232_PRECONDITIONS, VALUE_EXPRESSION_BOOLEAN_TRUE);
-        setAttributeValue(JaxrsAttribute.RESTEASY_ROLE_BASED_SECURITY, VALUE_EXPRESSION_BOOLEAN_TRUE);
-        setAttributeValue(JaxrsAttribute.RESTEASY_SECURE_RANDOM_MAX_USE, VALUE_EXPRESSION_INT);
-        setAttributeValue(JaxrsAttribute.RESTEASY_USE_BUILTIN_PROVIDERS, VALUE_EXPRESSION_BOOLEAN_FALSE);
-        setAttributeValue(JaxrsAttribute.RESTEASY_USE_CONTAINER_FORM_PARAMS, VALUE_EXPRESSION_BOOLEAN_TRUE);
-        setAttributeValue(JaxrsAttribute.RESTEASY_WIDER_REQUEST_MATCHING, VALUE_EXPRESSION_BOOLEAN_TRUE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_RFC7232_PRECONDITIONS, VALUE_EXPRESSION_BOOLEAN_TRUE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_ROLE_BASED_SECURITY, VALUE_EXPRESSION_BOOLEAN_TRUE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_SECURE_RANDOM_MAX_USE, VALUE_EXPRESSION_INT);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_USE_BUILTIN_PROVIDERS, VALUE_EXPRESSION_BOOLEAN_FALSE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_USE_CONTAINER_FORM_PARAMS, VALUE_EXPRESSION_BOOLEAN_TRUE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_WIDER_REQUEST_MATCHING, VALUE_EXPRESSION_BOOLEAN_TRUE);
     }
 
-    /*
-     * Unset attributes.
-     */
-    static void resetAttributeValues() throws IOException {
-        for (AttributeDefinition attribute : JaxrsAttribute.ATTRIBUTES) {
-            undefineAttribute(attribute);
-        }
-    }
-
-    static void setAttributeValue(AttributeDefinition attribute, ModelNode value) throws IOException {
+    static void setAttributeValue(final ModelControllerClient client, AttributeDefinition attribute, ModelNode value) throws IOException {
         ModelNode expectedValue = null;
         ModelNode resolvedValue = value.resolve();
         switch (attribute.getType()) {
@@ -239,13 +224,7 @@ public class ResteasyAttributeTestCase {
         }
         expectedValues.put(attribute, expectedValue);
         ModelNode op = Operations.createWriteAttributeOperation(ADDRESS, attribute.getName(), value);
-        ModelNode result = modelControllerClient.execute(op);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-    }
-
-    static void undefineAttribute(AttributeDefinition attribute) throws IOException {
-        ModelNode op = Operations.createUndefineAttributeOperation(ADDRESS, attribute.getName());
-        ModelNode result = modelControllerClient.execute(op);
+        ModelNode result = client.execute(op);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
     }
 
@@ -345,7 +324,7 @@ public class ResteasyAttributeTestCase {
                 continue;
             }
             ModelNode op = Operations.createWriteAttributeOperation(ADDRESS, attribute.getName(), mangleAttribute(attribute));
-            ModelNode result = modelControllerClient.execute(op);
+            ModelNode result = client.getControllerClient().execute(op);
             Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
         }
     }
@@ -385,7 +364,7 @@ public class ResteasyAttributeTestCase {
 
         // Update "resteasy.add.charset" value to a new value.
         ModelNode op = Operations.createWriteAttributeOperation(ADDRESS, JaxrsAttribute.RESTEASY_ADD_CHARSET.getName(), !oldValue);
-        ModelNode result = modelControllerClient.execute(op);
+        ModelNode result = client.getControllerClient().execute(op);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         // Verify that value of "resteasy.add.charset" hasn't changed in existing deployment.
@@ -395,7 +374,7 @@ public class ResteasyAttributeTestCase {
 
         // Reset "resteasy.add.charset" to original value.
         op = Operations.createWriteAttributeOperation(ADDRESS, JaxrsAttribute.RESTEASY_ADD_CHARSET.getName(), oldValue);
-        result = modelControllerClient.execute(op);
+        result = client.getControllerClient().execute(op);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
     }
 }

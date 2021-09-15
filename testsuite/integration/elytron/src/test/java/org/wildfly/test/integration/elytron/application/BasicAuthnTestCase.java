@@ -41,10 +41,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
-import org.jboss.resteasy.client.jaxrs.BasicAuthentication;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.util.HttpResponseCodes;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -56,8 +52,10 @@ import org.wildfly.security.auth.client.MatchRule;
 import org.wildfly.security.credential.BearerTokenCredential;
 import org.wildfly.test.integration.elytron.util.ClientConfigProviderBearerTokenAbortFilter;
 import org.wildfly.test.integration.elytron.util.ClientConfigProviderNoBasicAuthorizationHeaderFilter;
+import org.wildfly.test.integration.elytron.util.HttpAuthorization;
 
 import javax.ws.rs.Priorities;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
@@ -168,10 +166,10 @@ public class BasicAuthnTestCase {
         AuthenticationContext context = AuthenticationContext.empty();
         context = context.with(MatchRule.ALL, adminConfig);
         context.run(() -> {
-            ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-            ResteasyClient client = builder.build();
+            ClientBuilder builder = ClientBuilder.newBuilder();
+            Client client = builder.build();
             Response response = client.target(servletUrl.toString()).request().get();
-            Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+            Assert.assertEquals(SC_OK, response.getStatus());
             client.close();
         });
     }
@@ -186,11 +184,11 @@ public class BasicAuthnTestCase {
         AuthenticationContext context = AuthenticationContext.empty();
         context = context.with(MatchRule.ALL, adminConfig);
         context.run(() -> {
-            ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-            ResteasyClient client = builder.build();
-            client.register(new BasicAuthentication("user1", "password1"));
+            ClientBuilder builder = ClientBuilder.newBuilder();
+            Client client = builder.build();
+            client.register(HttpAuthorization.basic("user1", "password1"));
             Response response = client.target(servletUrl.toString()).request().get();
-            Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+            Assert.assertEquals(SC_OK, response.getStatus());
             client.close();
         });
     }
@@ -207,9 +205,9 @@ public class BasicAuthnTestCase {
         AuthenticationContext context = AuthenticationContext.empty();
         context = context.with(MatchRule.ALL, adminConfig);
         context.run(() -> {
-            ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-            ResteasyClient client = builder.build();
-            client.register(new BasicAuthentication("user1", "password1"));
+            ClientBuilder builder = ClientBuilder.newBuilder();
+            Client client = builder.build();
+            client.register(HttpAuthorization.basic("user1", "password1"));
             client.register(ClientConfigProviderBearerTokenAbortFilter.class);
             try {
                 client.target(servletUrl.toString()).request().get();
@@ -232,10 +230,10 @@ public class BasicAuthnTestCase {
         AuthenticationContext context = AuthenticationContext.empty();
         context = context.with(MatchRule.ALL, adminConfig);
         context.run(() -> {
-            ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-            ResteasyClient client = builder.build();
+            ClientBuilder builder = ClientBuilder.newBuilder();
+            Client client = builder.build();
             Response response = client.target(servletUrl.toString()).request().get();
-            Assert.assertEquals(HttpResponseCodes.SC_FORBIDDEN, response.getStatus());
+            Assert.assertEquals(SC_FORBIDDEN, response.getStatus());
             client.close();
         });
     }
@@ -250,10 +248,10 @@ public class BasicAuthnTestCase {
         AuthenticationContext context = AuthenticationContext.empty();
         context = context.with(MatchRule.ALL, adminConfig);
         context.run(() -> {
-            ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-            ResteasyClient client = builder.build();
+            ClientBuilder builder = ClientBuilder.newBuilder();
+            Client client = builder.build();
             Response response = client.target(servletUrl.toString()).request().get();
-            Assert.assertEquals(HttpResponseCodes.SC_UNAUTHORIZED, response.getStatus());
+            Assert.assertEquals(SC_UNAUTHORIZED, response.getStatus());
             client.close();
         });
     }
@@ -268,8 +266,8 @@ public class BasicAuthnTestCase {
         AuthenticationContext context = AuthenticationContext.empty();
         context = context.with(MatchRule.ALL, adminConfig);
         context.run(() -> {
-            ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-            ResteasyClient client = builder.build();
+            ClientBuilder builder = ClientBuilder.newBuilder();
+            Client client = builder.build();
             client.register(new ClientConfigProviderNoBasicAuthorizationHeaderFilter(), Priorities.USER);
             try {
                 client.target(servletUrl.toString()).request().get();
@@ -278,7 +276,7 @@ public class BasicAuthnTestCase {
                 client.close();
             }
             Response response = builder.build().target(servletUrl.toString()).request().get();
-            Assert.assertEquals(HttpResponseCodes.SC_UNAUTHORIZED, response.getStatus());
+            Assert.assertEquals(SC_UNAUTHORIZED, response.getStatus());
             client.close();
         });
     }
@@ -293,11 +291,11 @@ public class BasicAuthnTestCase {
         AuthenticationContext context = AuthenticationContext.empty();
         context = context.with(MatchRule.ALL.matchHost("www.some-example.com"), adminConfig);
         context.run(() -> {
-            ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-            ResteasyClient client = builder.build();
+            ClientBuilder builder = ClientBuilder.newBuilder();
+            Client client = builder.build();
             Response response = client.target(servletUrl.toString()).request().get();
             // will be unauthorized because credentials were set for different hostname than we are calling
-            Assert.assertEquals(HttpResponseCodes.SC_UNAUTHORIZED, response.getStatus());
+            Assert.assertEquals(SC_UNAUTHORIZED, response.getStatus());
             client.close();
         });
     }
@@ -312,11 +310,11 @@ public class BasicAuthnTestCase {
         AuthenticationContext context = AuthenticationContext.empty();
         context = context.with(MatchRule.ALL.matchHost(servletUrl.getHost()), adminConfig);
         context.run(() -> {
-            ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-            ResteasyClient client = builder.build();
+            ClientBuilder builder = ClientBuilder.newBuilder();
+            Client client = builder.build();
             Response response = client.target(servletUrl.toString()).request().get();
             // will be authorized because we are calling hostname that credentials are set for
-            Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+            Assert.assertEquals(SC_OK, response.getStatus());
             Assert.assertEquals("response was not GOOD", "GOOD", response.readEntity(String.class));
             client.close();
         });

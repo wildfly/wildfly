@@ -6,6 +6,4 @@
 
     <feature-group name="undertow-https"/>
 
-    <feature-group name="servlet-picketbox-security-domain"/>
-
 </feature-group-spec>

@@ -16,4 +16,8 @@
         <class-name>org.wildfly.security.permission.ElytronPermission</class-name>
         <name>getSecurityDomain</name>
     </permission>
+    <permission>
+        <class-name>org.wildfly.security.permission.ElytronPermission</class-name>
+        <name>authenticate</name>
+    </permission>
 </permissions>

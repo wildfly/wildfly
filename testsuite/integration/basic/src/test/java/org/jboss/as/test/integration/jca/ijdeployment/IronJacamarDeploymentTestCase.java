@@ -40,6 +40,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
+//import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -173,7 +174,7 @@ public class IronJacamarDeploymentTestCase extends ContainerResourceMgmtTestBase
         prop.put("pad-xid", bool);
         prop.put("wrap-xa-resource", bool);
         prop.put("flush-strategy", firstCF ? "IDLE_CONNECTIONS" : "ENTIRE_POOL");
-        if (firstCF) {
+        if (true) {
             prop.put("security-application", bool);
             prop.put("recovery-username", "sa");
             prop.put("recovery-password", "sa-pass");

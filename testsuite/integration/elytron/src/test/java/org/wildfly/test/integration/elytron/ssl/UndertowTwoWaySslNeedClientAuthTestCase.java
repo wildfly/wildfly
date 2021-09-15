@@ -41,6 +41,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 import javax.ws.rs.ProcessingException;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
@@ -57,9 +58,6 @@ import org.jboss.as.test.integration.security.common.SSLTruststoreUtil;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.resteasy.client.jaxrs.BasicAuthentication;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -72,6 +70,7 @@ import org.wildfly.security.auth.client.AuthenticationContextConfigurationClient
 import org.wildfly.security.auth.client.ElytronXmlParser;
 import org.wildfly.security.auth.client.InvalidAuthenticationConfigurationException;
 import org.wildfly.test.integration.elytron.util.WelcomeContent;
+import org.wildfly.test.integration.elytron.util.HttpAuthorization;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.CredentialReference;
@@ -159,8 +158,8 @@ public class UndertowTwoWaySslNeedClientAuthTestCase {
             }
         });
         context.run(() -> {
-            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
-            ResteasyClient client = resteasyClientBuilder.build();
+            ClientBuilder resteasyClientBuilder =  ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
+            Client client = resteasyClientBuilder.build();
             Response response = client.target(String.valueOf(securedRootUrl)).request().get();
             Assert.assertEquals(200, response.getStatus());
         });
@@ -181,8 +180,8 @@ public class UndertowTwoWaySslNeedClientAuthTestCase {
             }
         });
         context.run(() -> {
-            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-            ResteasyClient client = resteasyClientBuilder.build();
+            ClientBuilder resteasyClientBuilder =  ClientBuilder.newBuilder();
+            Client client = resteasyClientBuilder.build();
             Response response = client.target(String.valueOf(securedRootUrl)).request().get();
             Assert.assertEquals("Hello World!", response.readEntity(String.class));
             Assert.assertEquals(200, response.getStatus());
@@ -216,9 +215,9 @@ public class UndertowTwoWaySslNeedClientAuthTestCase {
         });
         SSLContext sslContext = AUTH_CONTEXT_CLIENT.getSSLContext(securedRootUrl.toURI(), contextWithTruststore);
         context.run(() -> {
-            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
+            ClientBuilder resteasyClientBuilder =  ClientBuilder.newBuilder();
             resteasyClientBuilder.sslContext(sslContext).hostnameVerifier((s, sslSession) -> true);
-            ResteasyClient client = resteasyClientBuilder.build();
+            Client client = resteasyClientBuilder.build();
             Response response = client.target(String.valueOf(securedRootUrl)).request().get();
             Assert.assertEquals(200, response.getStatus());
         });
@@ -239,10 +238,10 @@ public class UndertowTwoWaySslNeedClientAuthTestCase {
             }
         });
         context.run(() -> {
-            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
+            ClientBuilder resteasyClientBuilder =  ClientBuilder.newBuilder();
             resteasyClientBuilder.hostnameVerifier((s, sslSession) -> true);
-            ResteasyClient client = resteasyClientBuilder.build();
-            client.register(new BasicAuthentication("randomName", "randomPass"));
+            Client client = resteasyClientBuilder.build();
+            client.register(HttpAuthorization.basic("randomName", "randomPass"));
             Response response = client.target(String.valueOf(securedRootUrl)).request().get();
             Assert.assertEquals(200, response.getStatus());
         });
@@ -263,8 +262,8 @@ public class UndertowTwoWaySslNeedClientAuthTestCase {
             }
         });
         context.run(() -> {
-            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
-            ResteasyClient client = resteasyClientBuilder.build();
+            ClientBuilder resteasyClientBuilder =  ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
+            Client client = resteasyClientBuilder.build();
             Response response = client.target(String.valueOf(securedRootUrl)).request().get();
             Assert.assertEquals(200, response.getStatus());
         });
@@ -285,8 +284,8 @@ public class UndertowTwoWaySslNeedClientAuthTestCase {
             }
         });
         context.run(() -> {
-            ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
-            ResteasyClient client = resteasyClientBuilder.build();
+            ClientBuilder resteasyClientBuilder =  ClientBuilder.newBuilder().hostnameVerifier((s, sslSession) -> true);
+            Client client = resteasyClientBuilder.build();
             Response response = client.target(String.valueOf(securedRootUrl)).request().get();
             Assert.assertEquals(200, response.getStatus());
         });

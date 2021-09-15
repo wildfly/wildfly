@@ -32,7 +32,10 @@
     <dependencies>
         <module name="java.logging"/>
         <module name="java.xml"/>
-        <module name="org.jboss.resteasy.resteasy-jaxrs" services="export"/>
+        <module name="org.jboss.modules"/>
+        <!-- Export the services for RESTful Web Services implementation -->
+        <module name="org.jboss.resteasy.resteasy-client" services="export"/>
+        <module name="org.jboss.resteasy.resteasy-core" services="export"/>
         <module name="javax.xml.bind.api"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
     </dependencies>

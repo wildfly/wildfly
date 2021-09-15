@@ -21,12 +21,8 @@
  */
 package org.wildfly.clustering.dispatcher;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.Future;
 
 import org.wildfly.clustering.group.Node;
 
@@ -67,77 +63,6 @@ public interface CommandDispatcher<C> extends AutoCloseable {
      * @throws CommandDispatcherException if the command could not be sent
      */
     <R> Map<Node, CompletionStage<R>> executeOnGroup(Command<R, ? super C> command, Node... excludedMembers) throws CommandDispatcherException;
-
-    /**
-     * Execute the specified command on the specified node.
-     *
-     * @param <R>     the return value type
-     * @param command the command to execute
-     * @param node    the node to execute the command on
-     * @return the result of the command execution
-     * @throws CommandDispatcherException if the command could not be sent
-     * @deprecated Replaced by {@link #executeOnMember(Command, Node)}.
-     */
-    @Deprecated default <R> CommandResponse<R> executeOnNode(Command<R, ? super C> command, Node node) throws CommandDispatcherException {
-        try {
-            return CommandResponse.of(this.executeOnMember(command, node).toCompletableFuture().join());
-        } catch (CompletionException e) {
-            return CommandResponse.of(e);
-        }
-    }
-
-    /**
-     * Execute the specified command on all nodes in the group, excluding the specified nodes
-     *
-     * @param <R>           the return value type
-     * @param command       the command to execute
-     * @param excludedNodes the set of nodes to exclude
-     * @return a map of command execution results per node
-     * @throws CommandDispatcherException if the command could not be broadcast
-     * @deprecated Replaced by {@link #executeOnGroup(Command, Node...)}.
-     */
-    @Deprecated default <R> Map<Node, CommandResponse<R>> executeOnCluster(Command<R, ? super C> command, Node... excludedNodes) throws CommandDispatcherException {
-        Map<Node, CommandResponse<R>> result = new HashMap<>();
-        for (Map.Entry<Node, CompletionStage<R>> entry : this.executeOnGroup(command, excludedNodes).entrySet()) {
-            try {
-                result.put(entry.getKey(), CommandResponse.of(entry.getValue().toCompletableFuture().join()));
-            } catch (CancellationException e) {
-                // Prune
-            } catch (CompletionException e) {
-                result.put(entry.getKey(), CommandResponse.of(e));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Submits the specified command on the specified node for execution.
-     *
-     * @param <R>     the return value type
-     * @param command the command to execute
-     * @param node    the node to execute the command on
-     * @return the result of the command execution
-     * @throws CommandDispatcherException if the command could not be sent
-     * @deprecated Replaced by {@link #executeOnMember(Command, Node)}.
-     */
-    @Deprecated default <R> Future<R> submitOnNode(Command<R, ? super C> command, Node node) throws CommandDispatcherException {
-        return this.executeOnMember(command, node).toCompletableFuture();
-    }
-
-    /**
-     * Submits the specified command on all nodes in the group, excluding the specified nodes.
-     *
-     * @param <R>           the return value type
-     * @param command       the command to execute
-     * @param excludedNodes the set of nodes to exclude
-     * @return a map of command execution results per node.
-     * @throws CommandDispatcherException if the command could not be broadcast
-     * @deprecated Replaced by {@link #executeOnGroup(Command, Node...)}.
-     */
-    @SuppressWarnings("unchecked")
-    @Deprecated default <R> Map<Node, Future<R>> submitOnCluster(Command<R, ? super C> command, Node... excludedNodes) throws CommandDispatcherException {
-        return (Map<Node, Future<R>>) (Map<?, ?>) this.executeOnGroup(command, excludedNodes);
-    }
 
     /**
      * Closes any resources used by this dispatcher.

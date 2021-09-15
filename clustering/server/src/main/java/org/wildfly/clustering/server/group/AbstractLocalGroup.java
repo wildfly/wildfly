@@ -53,12 +53,6 @@ public abstract class AbstractLocalGroup<A> implements Group<A>, Registration {
         return this;
     }
 
-    @Deprecated
-    @Override
-    public void removeListener(org.wildfly.clustering.group.Group.Listener listener) {
-        // We never registered anything
-    }
-
     @Override
     public String getName() {
         return NAME;

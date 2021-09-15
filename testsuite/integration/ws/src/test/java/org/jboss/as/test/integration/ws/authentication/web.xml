@@ -22,9 +22,6 @@
     <security-role>
         <role-name>Role2</role-name>
     </security-role>
-    <security-role>
-        <role-name>Role3</role-name>
-    </security-role>
 
     <login-config>
         <auth-method>BASIC</auth-method>
