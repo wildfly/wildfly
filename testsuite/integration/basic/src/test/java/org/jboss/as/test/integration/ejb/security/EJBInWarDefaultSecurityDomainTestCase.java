@@ -62,8 +62,6 @@ public class EJBInWarDefaultSecurityDomainTestCase {
                 .addAsWebInfResource(currentPackage, "jboss-web.xml", "jboss-web.xml")
                 .addPackage(CommonCriteria.class.getPackage())
                 .addPackage(AbstractSecurityDomainSetup.class.getPackage())
-                .addAsResource(currentPackage, "users.properties", "users.properties")
-                .addAsResource(currentPackage, "roles.properties", "roles.properties")
                 .addAsManifestResource(currentPackage, "permissions.xml", "permissions.xml");
         return war;
     }

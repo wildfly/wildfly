@@ -70,8 +70,6 @@ public class SecuredBeanTestCase {
                 .addClasses(SampleInterceptor.class)
                 .addPackage(AbstractServerInterceptorsSetupTask.class.getPackage())
                 .addPackage(SecuredBeanTestCase.class.getPackage())
-                .addAsResource(currentPackage, "users.properties", "users.properties")
-                .addAsResource(currentPackage, "roles.properties", "roles.properties")
                 .addAsWebInfResource(currentPackage, "jboss-web.xml", "jboss-web.xml")
                 .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
                 .addAsManifestResource(currentPackage, "permissions.xml", "permissions.xml");

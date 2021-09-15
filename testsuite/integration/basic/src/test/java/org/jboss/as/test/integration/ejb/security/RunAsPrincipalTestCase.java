@@ -60,6 +60,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
 import org.wildfly.security.permission.ElytronPermission;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
@@ -95,7 +96,8 @@ public class RunAsPrincipalTestCase  {
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsWebInfResource(RunAsPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
-                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
+                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
+                                                                 new ElytronPermission("authenticate")), "permissions.xml");
         war.addPackage(CommonCriteria.class.getPackage());
         return war;
     }
@@ -115,9 +117,15 @@ public class RunAsPrincipalTestCase  {
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsWebInfResource(RunAsPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
+               // TODO WFLY-15289 The Elytron permissions need to be checked, should a deployment really need these?
                 .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
                         new PropertyPermission("jboss.server.log.dir", "read"),
-                        PermissionUtils.createFilePermission("read", "standalone", "log", TEST_LOG_FILE_NAME)), "permissions.xml");
+                        PermissionUtils.createFilePermission("read", "standalone", "log", TEST_LOG_FILE_NAME),
+                        new ElytronPermission("authenticate"),
+                        new ElytronPermission("getIdentity"),
+                        new ElytronPermission("createAdHocIdentity"),
+                        new ChangeRoleMapperPermission("ejb"),
+                        new ElytronPermission("setRunAsPrincipal")), "permissions.xml");
         war.addPackage(CommonCriteria.class.getPackage());
         return war;
     }

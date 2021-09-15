@@ -77,8 +77,6 @@ public class LifecycleTestCase  {
                 .addPackage(EntryBean.class.getPackage())
                 .addClasses(Util.class) // TODO - Should not need to exclude the interfaces.
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
-                .addAsResource(currentPackage, "users.properties", "users.properties")
-                .addAsResource(currentPackage, "roles.properties", "roles.properties")
                 .addAsWebInfResource(currentPackage, "jboss-web.xml", "jboss-web.xml")
                 .addAsWebInfResource(currentPackage, "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
