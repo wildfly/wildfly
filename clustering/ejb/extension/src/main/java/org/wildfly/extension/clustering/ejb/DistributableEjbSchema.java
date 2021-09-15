@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,29 +19,42 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb;
+package org.wildfly.extension.clustering.ejb;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.msc.service.ServiceName;
+import java.util.Locale;
+
+import org.jboss.as.clustering.controller.Schema;
 
 /**
- * Interface for installing bean management services for a deployment and individual stateful EJB components.
- *
+ * Enumerates the schema versions for the distributable-ejb subsystem.
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public interface DistributableBeanManagementProvider {
+public enum DistributableEjbSchema implements Schema<DistributableEjbSchema> {
+    VERSION_1_0(1, 0), // WildFly 27
+    ;
+    static final Schema<DistributableEjbSchema> CURRENT = VERSION_1_0;
 
-    /**
-     * Installs dependencies for a deployment unit
-     * @param name the service name of the deployment unit
-     */
-    Iterable<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(ServiceName name);
+    private final int major;
+    private final int minor;
 
-    /**
-     * Builds a bean manager factory for an Jakarta Enterprise Beans within a deployment.
-     * @param context the bean context
-     * @return a service builder
-     */
-    CapabilityServiceConfigurator getBeanManagerFactoryServiceConfigurator(StatefulBeanConfiguration context);
+    DistributableEjbSchema(int major, int minor) {
+        this.major = major;
+        this.minor = minor;
+    }
+
+    @Override
+    public int major() {
+        return this.major;
+    }
+
+    @Override
+    public int minor() {
+        return this.minor;
+    }
+
+    @Override
+    public String getNamespaceUri() {
+        return String.format(Locale.ROOT, "urn:jboss:domain:distributable-ejb:%d.%d", this.major, this.minor);
+    }
 }
