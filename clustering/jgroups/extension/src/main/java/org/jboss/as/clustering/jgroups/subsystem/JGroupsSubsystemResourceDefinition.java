@@ -47,7 +47,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
@@ -112,13 +111,6 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
 
     static TransformationDescription buildTransformers(ModelVersion version) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-
-        if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    // The attribute is always discarded, the children will drive rejection/discardation
-                    .setDiscard(DiscardAttributeChecker.ALWAYS, Attribute.DEFAULT_CHANNEL.getDefinition())
-                    .end();
-        }
 
         ChannelResourceDefinition.buildTransformation(version, builder);
         StackResourceDefinition.buildTransformation(version, builder);

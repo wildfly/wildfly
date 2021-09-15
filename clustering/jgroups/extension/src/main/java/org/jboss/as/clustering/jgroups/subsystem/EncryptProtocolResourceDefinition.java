@@ -92,8 +92,6 @@ public class EncryptProtocolResourceDefinition<E extends KeyStore.Entry> extends
                     .addRejectCheck(CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, Attribute.KEY_CREDENTIAL.getName())
                     .end();
         }
-
-        ProtocolResourceDefinition.addTransformations(version, builder);
     }
 
     private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {

@@ -29,14 +29,10 @@ import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -76,16 +72,6 @@ public class SocketProtocolResourceDefinition extends ProtocolResourceDefinition
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        if (JGroupsModel.VERSION_7_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.CLIENT_SOCKET_BINDING.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CLIENT_SOCKET_BINDING.getDefinition());
-        }
-
-        ProtocolResourceDefinition.addTransformations(version, builder);
     }
 
     private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {

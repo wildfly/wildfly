@@ -21,25 +21,12 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.controller.PropertiesTestUtil.checkMapModels;
-import static org.jboss.as.clustering.controller.PropertiesTestUtil.checkMapResults;
-import static org.jboss.as.clustering.controller.PropertiesTestUtil.executeOpInBothControllersWithAttachments;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
 import java.util.List;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -59,31 +46,12 @@ import org.junit.Test;
  */
 public class JGroupsTransformersTestCase extends OperationTestCaseBase {
 
-    private static String formatEAP6SubsystemArtifact(ModelTestControllerVersion version) {
-        return formatArtifact("org.jboss.as:jboss-as-clustering-jgroups:%s", version);
-    }
-
-    private static String formatEAP7SubsystemArtifact(ModelTestControllerVersion version) {
-        return formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version);
-    }
-
     private static String formatArtifact(String pattern, ModelTestControllerVersion version) {
         return String.format(pattern, version.getMavenGavVersion());
     }
 
     private static JGroupsModel getModelVersion(ModelTestControllerVersion controllerVersion) {
         switch (controllerVersion) {
-            case EAP_6_4_0:
-            case EAP_6_4_7:
-                return JGroupsModel.VERSION_1_3_0;
-            case EAP_7_0_0:
-                return JGroupsModel.VERSION_4_0_0;
-            case EAP_7_1_0:
-                return JGroupsModel.VERSION_5_0_0;
-            case EAP_7_2_0:
-                return JGroupsModel.VERSION_6_0_0;
-            case EAP_7_3_0:
-                return JGroupsModel.VERSION_7_0_0;
             case EAP_7_4_0:
                 return JGroupsModel.VERSION_8_0_0;
             default:
@@ -93,18 +61,9 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
 
     private static String[] getDependencies(ModelTestControllerVersion version) {
         switch (version) {
-            case EAP_6_4_0:
-            case EAP_6_4_7:
-                return new String[] {
-                        formatEAP6SubsystemArtifact(version),
-                };
-            case EAP_7_0_0:
-            case EAP_7_1_0:
-            case EAP_7_2_0:
-            case EAP_7_3_0:
             case EAP_7_4_0:
                 return new String[] {
-                        formatEAP7SubsystemArtifact(version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-api:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
@@ -123,31 +82,6 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
                 .require(CommonUnaryRequirement.KEY_STORE, "my-key-store")
                 .require(CommonUnaryRequirement.CREDENTIAL_STORE, "my-credential-store")
                 ;
-    }
-
-    @Test
-    public void testTransformerEAP640() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_6_4_0);
-    }
-
-    @Test
-    public void testTransformerEAP700() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_7_0_0);
-    }
-
-    @Test
-    public void testTransformerEAP710() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_7_1_0);
-    }
-
-    @Test
-    public void testTransformerEAP720() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_7_2_0);
-    }
-
-    @Test
-    public void testTransformerEAP730() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_7_3_0);
     }
 
     @Test
@@ -183,185 +117,6 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
 
         // check that both versions of the legacy model are the same and valid
         checkSubsystemModelTransformation(services, version, null, false);
-
-        if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
-            // Test properties operations
-            propertiesMapOperationsTest(services, version);
-
-            testNonMapTransformersWork(services, version);
-        }
-    }
-
-    private static void propertiesMapOperationsTest(KernelServices services, ModelVersion version) throws Exception {
-        ////////////////////////////////////////////////////////////////////////////////////
-        // Check individual operations
-
-        // Check operations on /transport=*
-        executeOpInBothControllersWithAttachments(services, version, getTransportUndefinePropertiesOperation("maximal", "TCP"));
-        checkMapModels(services, version, getTransportAddress("maximal", "TCP"));
-
-        executeOpInBothControllersWithAttachments(services, version, getTransportPutPropertyOperation("maximal", "TCP", "tcp_nodelay", "true"));
-        checkMapResults(services, new ModelNode("true"), version, getTransportGetPropertyOperation("maximal", "TCP", "tcp_nodelay"));
-        checkMapModels(services, version, getTransportAddress("maximal", "TCP"), "tcp_nodelay", "true");
-
-        executeOpInBothControllersWithAttachments(services, version, getTransportPutPropertyOperation("maximal", "TCP", "loopback", "false"));
-        checkMapResults(services, new ModelNode("true"), version, getTransportGetPropertyOperation("maximal", "TCP", "tcp_nodelay"));
-        checkMapResults(services, new ModelNode("false"), version, getTransportGetPropertyOperation("maximal", "TCP", "loopback"));
-        checkMapModels(services, version, getTransportAddress("maximal", "TCP"), "tcp_nodelay", "true", "loopback", "false");
-
-        executeOpInBothControllersWithAttachments(services, version, getTransportPutPropertyOperation("maximal", "TCP", "loopback", "true"));
-        checkMapResults(services, new ModelNode("true"), version, getTransportGetPropertyOperation("maximal", "TCP", "tcp_nodelay"));
-        checkMapResults(services, new ModelNode("true"), version, getTransportGetPropertyOperation("maximal", "TCP", "loopback"));
-        checkMapModels(services, version, getTransportAddress("maximal", "TCP"), "tcp_nodelay", "true", "loopback", "true");
-
-        executeOpInBothControllersWithAttachments(services, version, getTransportRemovePropertyOperation("maximal", "TCP", "tcp_nodelay"));
-        checkMapResults(services, new ModelNode(), version, getTransportGetPropertyOperation("maximal", "TCP", "tcp_nodelay"));
-        checkMapResults(services, new ModelNode("true"), version, getTransportGetPropertyOperation("maximal", "TCP", "loopback"));
-        checkMapModels(services, version, getTransportAddress("maximal", "TCP"), "loopback", "true");
-
-        executeOpInBothControllersWithAttachments(services, version, getTransportPutPropertyOperation("maximal", "TCP", "tcp_nodelay", "false"));
-        checkMapResults(services, new ModelNode("false"), version, getTransportGetPropertyOperation("maximal", "TCP", "tcp_nodelay"));
-        checkMapResults(services, new ModelNode("true"), version, getTransportGetPropertyOperation("maximal", "TCP", "loopback"));
-        checkMapModels(services, version, getTransportAddress("maximal", "TCP"), "tcp_nodelay", "false", "loopback", "true");
-
-        executeOpInBothControllersWithAttachments(services, version, getTransportClearPropertiesOperation("maximal", "TCP"));
-        checkMapResults(services, new ModelNode(), version, getTransportGetPropertyOperation("maximal", "TCP", "tcp_nodelay"));
-        checkMapResults(services, new ModelNode(), version, getTransportGetPropertyOperation("maximal", "TCP", "loopback"));
-        checkMapModels(services, version, getTransportAddress("maximal", "TCP"));
-
-        // Check operations on /protocol=*
-        executeOpInBothControllersWithAttachments(services, version, getProtocolUndefinePropertiesOperation("maximal", "MPING"));
-        checkMapModels(services, version, getProtocolAddress("maximal", "MPING"));
-
-        executeOpInBothControllersWithAttachments(services, version, getProtocolPutPropertyOperation("maximal", "MPING", "send_on_all_interfaces", "true"));
-        checkMapResults(services, new ModelNode("true"), version, getProtocolGetPropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
-        checkMapModels(services, version, getProtocolAddress("maximal", "MPING"), "send_on_all_interfaces", "true");
-
-        executeOpInBothControllersWithAttachments(services, version, getProtocolPutPropertyOperation("maximal", "MPING", "receive_on_all_interfaces", "false"));
-        checkMapResults(services, new ModelNode("true"), version, getProtocolGetPropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
-        checkMapResults(services, new ModelNode("false"), version, getProtocolGetPropertyOperation("maximal", "MPING", "receive_on_all_interfaces"));
-        checkMapModels(services, version, getProtocolAddress("maximal", "MPING"), "send_on_all_interfaces", "true", "receive_on_all_interfaces", "false");
-
-        executeOpInBothControllersWithAttachments(services, version, getProtocolRemovePropertyOperation("maximal", "MPING", "receive_on_all_interfaces"));
-        checkMapResults(services, new ModelNode("true"), version, getProtocolGetPropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
-        checkMapResults(services, new ModelNode(), version, getProtocolGetPropertyOperation("maximal", "MPING", "receive_on_all_interfaces"));
-        checkMapModels(services, version, getProtocolAddress("maximal", "MPING"), "send_on_all_interfaces", "true");
-
-        executeOpInBothControllersWithAttachments(services, version, getProtocolRemovePropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
-        checkMapResults(services, new ModelNode(), version, getProtocolGetPropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
-        checkMapModels(services, version, getProtocolAddress("maximal", "MPING"));
-
-        executeOpInBothControllersWithAttachments(services, version, getProtocolPutPropertyOperation("maximal", "MPING", "receive_on_all_interfaces", "true"));
-        checkMapResults(services, new ModelNode("true"), version, getProtocolGetPropertyOperation("maximal", "MPING", "receive_on_all_interfaces"));
-        checkMapModels(services, version, getProtocolAddress("maximal", "MPING"), "receive_on_all_interfaces", "true");
-
-        executeOpInBothControllersWithAttachments(services, version, getProtocolPutPropertyOperation("maximal", "MPING", "receive_on_all_interfaces", "false"));
-        checkMapResults(services, new ModelNode("false"), version, getProtocolGetPropertyOperation("maximal", "MPING", "receive_on_all_interfaces"));
-        checkMapModels(services, version, getProtocolAddress("maximal", "MPING"), "receive_on_all_interfaces", "false");
-
-        executeOpInBothControllersWithAttachments(services, version, getProtocolClearPropertiesOperation("maximal", "MPING"));
-        checkMapModels(services, version, getProtocolAddress("maximal", "MPING"));
-
-        ////////////////////////////////////////////////////////////////////////////////////
-        // Check composite operations
-        ModelNode composite = new ModelNode();
-        composite.get(OP).set(COMPOSITE);
-        composite.get(OP_ADDR).setEmptyList();
-        composite.get(STEPS).add(getProtocolPutPropertyOperation("maximal", "MPING", "send_on_all_interfaces", "false"));
-        composite.get(STEPS).add(getProtocolPutPropertyOperation("maximal", "MPING", "receive_on_all_interfaces", "true"));
-        composite.get(STEPS).add(getTransportPutPropertyOperation("maximal", "TCP", "tcp_nodelay", "true"));
-        executeOpInBothControllersWithAttachments(services, version, composite);
-        // Reread values back
-        checkMapResults(services, new ModelNode("false"), version, getProtocolGetPropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
-        checkMapResults(services, new ModelNode("true"), version, getProtocolGetPropertyOperation("maximal", "MPING", "receive_on_all_interfaces"));
-        checkMapResults(services, new ModelNode("true"), version, getTransportGetPropertyOperation("maximal", "TCP", "tcp_nodelay"));
-
-        composite.get(STEPS).setEmptyList();
-        composite.get(STEPS).add(getProtocolPutPropertyOperation("maximal", "MPING", "send_on_all_interfaces", "true"));
-        composite.get(STEPS).add(getProtocolPutPropertyOperation("maximal", "MPING", "receive_on_all_interfaces", "false"));
-        composite.get(STEPS).add(getTransportPutPropertyOperation("maximal", "TCP", "tcp_nodelay", "false"));
-        executeOpInBothControllersWithAttachments(services, version, composite);
-        // Reread values back
-        checkMapResults(services, new ModelNode("true"), version, getProtocolGetPropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
-        checkMapResults(services, new ModelNode("false"), version, getProtocolGetPropertyOperation("maximal", "MPING", "receive_on_all_interfaces"));
-        checkMapResults(services, new ModelNode("false"), version, getTransportGetPropertyOperation("maximal", "TCP", "tcp_nodelay"));
-        checkMapModels(services, version, getProtocolAddress("maximal", "MPING"), "send_on_all_interfaces", "true", "receive_on_all_interfaces", "false");
-        checkMapModels(services, version, getTransportAddress("maximal", "TCP"), "tcp_nodelay", "false");
-
-        composite.get(STEPS).setEmptyList();
-        composite.get(STEPS).add(getProtocolRemovePropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
-        composite.get(STEPS).add(getProtocolRemovePropertyOperation("maximal", "MPING", "receive_on_all_interfaces"));
-        composite.get(STEPS).add(getTransportPutPropertyOperation("maximal", "TCP", "loopback", "false"));
-        composite.get(STEPS).add(getTransportRemovePropertyOperation("maximal", "TCP", "tcp_nodelay"));
-        executeOpInBothControllersWithAttachments(services, version, composite);
-        // Reread values back
-        checkMapResults(services, new ModelNode(), version, getProtocolGetPropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
-        checkMapResults(services, new ModelNode(), version, getProtocolGetPropertyOperation("maximal", "MPING", "receive_on_all_interfaces"));
-        checkMapResults(services, new ModelNode(), version, getTransportGetPropertyOperation("maximal", "TCP", "tcp_nodelay"));
-        checkMapResults(services, new ModelNode("false"), version, getTransportGetPropertyOperation("maximal", "TCP", "loopback"));
-        checkMapModels(services, version, getProtocolAddress("maximal", "MPING"));
-        checkMapModels(services, version, getTransportAddress("maximal", "TCP"), "loopback", "false");
-
-        composite.get(STEPS).setEmptyList();
-        composite.get(STEPS).add(getProtocolPutPropertyOperation("maximal", "MPING", "send_on_all_interfaces", "false"));
-        composite.get(STEPS).add(getProtocolPutPropertyOperation("maximal", "MPING", "receive_on_all_interfaces", "true"));
-        composite.get(STEPS).add(getTransportRemovePropertyOperation("maximal", "TCP", "loopback"));
-        executeOpInBothControllersWithAttachments(services, version, composite);
-        checkMapResults(services, new ModelNode("false"), version, getProtocolGetPropertyOperation("maximal", "MPING", "send_on_all_interfaces"));
-        checkMapResults(services, new ModelNode("true"), version, getProtocolGetPropertyOperation("maximal", "MPING", "receive_on_all_interfaces"));
-        checkMapResults(services, new ModelNode(), version, getTransportGetPropertyOperation("maximal", "TCP", "loopback"));
-        checkMapModels(services, version, getProtocolAddress("maximal", "MPING"), "send_on_all_interfaces", "false", "receive_on_all_interfaces", "true");
-        checkMapModels(services, version, getTransportAddress("maximal", "TCP"));
-    }
-
-    private void testNonMapTransformersWork(KernelServices services, ModelVersion version) throws Exception {
-        final PathAddress stackAddr = PathAddress.pathAddress(SUBSYSTEM, getMainSubsystemName()).append("stack", "test");
-        ModelNode addStack = Util.createAddOperation(stackAddr);
-        executeOpInBothControllersWithAttachments(services, version, addStack);
-
-        final PathAddress transportAddr = stackAddr.append("transport", "tcp");
-        ModelNode addTransport = Util.createAddOperation(transportAddr);
-        addTransport.get(MulticastProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()).set("some-binding");
-        addTransport.get(MODULE).set("do.reject");
-        TransformedOperation op = services.executeInMainAndGetTheTransformedOperation(addTransport, version);
-        Assert.assertTrue(op.rejectOperation(success()));
-
-        final PathAddress protocolAddr = stackAddr.append("protocol", "PING");
-        ModelNode addProtocol = Util.createAddOperation(protocolAddr);
-        addProtocol.get(MODULE).set("do.reject");
-        op = services.executeInMainAndGetTheTransformedOperation(addProtocol, version);
-        Assert.assertTrue(op.rejectOperation(success()));
-
-        op = services.executeInMainAndGetTheTransformedOperation(Util.getWriteAttributeOperation(transportAddr, MODULE, "reject.this"), version);
-        Assert.assertTrue(op.rejectOperation(success()));
-
-        op = services.executeInMainAndGetTheTransformedOperation(Util.getWriteAttributeOperation(protocolAddr, MODULE, "reject.this"), version);
-        Assert.assertTrue(op.rejectOperation(success()));
-    }
-
-    @Test
-    public void testRejectionsEAP640() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_6_4_0);
-    }
-
-    @Test
-    public void testRejectionsEAP700() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_7_0_0);
-    }
-
-    @Test
-    public void testRejectionsEAP710() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_7_1_0);
-    }
-
-    @Test
-    public void testRejectionsEAP720() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_7_2_0);
-    }
-
-    @Test
-    public void testRejectionsEAP730() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_7_3_0);
     }
 
     @Test
@@ -404,34 +159,6 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
                     FailedOperationTransformationConfig.REJECTED_RESOURCE);
         }
 
-        if (JGroupsModel.VERSION_7_0_0.requiresTransformation(version)) {
-            config.addFailedAttribute(subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH).append(TransportResourceDefinition.pathElement("TCP_NIO2")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
-            config.addFailedAttribute(subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH).append(ProtocolResourceDefinition.pathElement("FD_SOCK")), FailedOperationTransformationConfig.REJECTED_RESOURCE);
-        }
-
-        if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
-            // Channel resource in a typical configuration would be not rejected, but since we don't have infinispan subsystem setup (because
-            // that would create a cyclical dependency) it has to be rejected in this subsystem test
-            config.addFailedAttribute(subsystemAddress.append(ChannelResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
-            config.addFailedAttribute(subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH).append(TransportResourceDefinition.pathElement("TCP")).append(ThreadPoolResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
-        }
-
-        if (JGroupsModel.VERSION_2_0_0.requiresTransformation(version)) {
-            PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH);
-            PathAddress relayAddress = stackAddress.append(RelayResourceDefinition.PATH);
-            config.addFailedAttribute(relayAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
-            config.addFailedAttribute(relayAddress.append(RemoteSiteResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
-        }
-
         return config;
     }
-
-
-    private static ModelNode success() {
-        final ModelNode result = new ModelNode();
-        result.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.SUCCESS);
-        result.get(ModelDescriptionConstants.RESULT);
-        return result;
-    }
-
 }

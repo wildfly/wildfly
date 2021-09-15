@@ -25,12 +25,10 @@ import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 
@@ -66,14 +64,6 @@ public class RelayResourceDefinition extends AbstractProtocolResourceDefinition 
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    @SuppressWarnings("deprecation")
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
-
-        RemoteSiteResourceDefinition.buildTransformation(version, builder);
-        PropertyResourceDefinition.buildTransformation(version, builder);
     }
 
     private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;

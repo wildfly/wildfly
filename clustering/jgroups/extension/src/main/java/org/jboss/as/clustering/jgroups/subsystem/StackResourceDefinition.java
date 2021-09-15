@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityProvider;
@@ -51,11 +50,6 @@ import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.ResourceTransformationContext;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -137,40 +131,6 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
-        if (JGroupsModel.VERSION_4_1_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ModelNode.TRUE), Attribute.STATISTICS_ENABLED.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.STATISTICS_ENABLED.getDefinition())
-                    .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(ModelNode.FALSE), Attribute.STATISTICS_ENABLED.getDefinition())
-                    .end();
-        }
-
-        if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
-            // Create legacy "protocols" attributes, which lists protocols by name
-            ResourceTransformer transformer = new ResourceTransformer() {
-                @Override
-                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-                    for (String name : resource.getChildrenNames(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
-                        resource.getModel().get(PROTOCOLS.getName()).add(name);
-                    }
-                    context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource).processChildren(resource);
-                }
-            };
-            builder.setCustomResourceTransformer(transformer);
-        } else {
-            for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
-                pool.buildTransformation(builder, version);
-            }
-        }
-
-        if (JGroupsModel.VERSION_2_0_0.requiresTransformation(version)) {
-            builder.rejectChildResource(RelayResourceDefinition.PATH);
-        } else {
-            RelayResourceDefinition.buildTransformation(version, builder);
-        }
-
-        TransportRegistration.buildTransformation(version, builder);
         ProtocolRegistration.buildTransformation(version, builder);
     }
 
