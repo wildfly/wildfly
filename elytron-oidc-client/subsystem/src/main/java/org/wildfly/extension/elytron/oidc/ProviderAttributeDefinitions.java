@@ -63,13 +63,13 @@ class ProviderAttributeDefinitions {
     protected static final SimpleAttributeDefinition ALLOW_ANY_HOSTNAME =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.ALLOW_ANY_HOSTNAME, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final SimpleAttributeDefinition DISABLE_TRUST_MANAGER =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.DISABLE_TRUST_MANAGER, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final SimpleAttributeDefinition TRUSTSTORE =
@@ -93,7 +93,7 @@ class ProviderAttributeDefinitions {
     protected static final SimpleAttributeDefinition ENABLE_CORS =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.ENABLE_CORS, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final SimpleAttributeDefinition CLIENT_KEYSTORE =
@@ -141,19 +141,19 @@ class ProviderAttributeDefinitions {
     protected static final SimpleAttributeDefinition EXPOSE_TOKEN =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.EXPOSE_TOKEN, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final SimpleAttributeDefinition ALWAYS_REFRESH_TOKEN =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.ALWAYS_REFRESH_TOKEN, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final SimpleAttributeDefinition REGISTER_NODE_AT_STARTUP =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REGISTER_NODE_AT_STARTUP, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final SimpleAttributeDefinition REGISTER_NODE_PERIOD =
@@ -177,13 +177,13 @@ class ProviderAttributeDefinitions {
     protected static final SimpleAttributeDefinition AUTODETECT_BEARER_ONLY =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.AUTODETECT_BEARER_ONLY, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final SimpleAttributeDefinition IGNORE_OAUTH_QUERY_PARAMETER =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.IGNORE_OAUTH_QUERY_PARAMTER, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final SimpleAttributeDefinition CONFIDENTIAL_PORT =
@@ -201,7 +201,7 @@ class ProviderAttributeDefinitions {
     protected static final SimpleAttributeDefinition VERIFY_TOKEN_AUDIENCE =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.VERIFY_TOKEN_AUDIENCE, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(ModelNode.FALSE)
                     .build();
 
     protected static final SimpleAttributeDefinition SOCKET_TIMEOUT_MILLIS =
