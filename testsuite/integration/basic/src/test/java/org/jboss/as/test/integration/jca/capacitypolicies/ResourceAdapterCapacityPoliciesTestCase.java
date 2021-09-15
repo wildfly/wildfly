@@ -71,7 +71,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
+//import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -83,7 +83,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(ResourceAdapterCapacityPoliciesTestCase.ResourceAdapterCapacityPoliciesServerSetupTask.class)
-@Ignore("[WFLY-15249] Deployments need to handle lack of legacy security.")
+//@Ignore("[WFLY-15249] Deployments need to handle lack of legacy security.")
 public class ResourceAdapterCapacityPoliciesTestCase extends JcaMgmtBase {
     private static final String RA_NAME = "capacity-policies-test.rar";
     private static final ModelNode RA_ADDRESS = new ModelNode().add(SUBSYSTEM, "resource-adapters")

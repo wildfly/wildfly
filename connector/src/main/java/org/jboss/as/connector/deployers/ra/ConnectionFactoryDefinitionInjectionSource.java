@@ -69,6 +69,8 @@ public class ConnectionFactoryDefinitionInjectionSource extends ResourceDefiniti
 
     private TransactionSupport.TransactionSupportLevel transactionSupport;
 
+    private boolean legacySecurityAvailable;
+
     public ConnectionFactoryDefinitionInjectionSource(final String jndiName, final String interfaceName, final String resourceAdapter) {
         super(jndiName);
         this.interfaceName = interfaceName;
@@ -100,7 +102,7 @@ public class ConnectionFactoryDefinitionInjectionSource extends ResourceDefiniti
         DirectConnectionFactoryActivatorService service = new DirectConnectionFactoryActivatorService(jndiName, interfaceName, resourceAdapter,
                                                                     raId, maxPoolSize, minPoolSize,
                                                                     properties, transactionSupport,
-                                                                    module, bindInfo);
+                                                                    module, bindInfo, legacySecurityAvailable);
         ServiceName serviceName =  DirectConnectionFactoryActivatorService.SERVICE_NAME_BASE.append(jndiName);
         final ServiceBuilder sb = phaseContext.getServiceTarget().addService(serviceName, service);
         sb.addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, service.getMdrInjector());
@@ -159,6 +161,10 @@ public class ConnectionFactoryDefinitionInjectionSource extends ResourceDefiniti
 
     public void setTransactionSupportLevel(TransactionSupport.TransactionSupportLevel transactionSupport) {
         this.transactionSupport = transactionSupport;
+    }
+
+    public void setLegacySecurityAvailable(boolean legacySecurityAvailable) {
+        this.legacySecurityAvailable = legacySecurityAvailable;
     }
 
     @Override

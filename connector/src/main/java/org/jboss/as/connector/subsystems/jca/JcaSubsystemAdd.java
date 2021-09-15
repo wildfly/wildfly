@@ -68,7 +68,8 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) {
         final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
-        final RaDeploymentActivator raDeploymentActivator = new RaDeploymentActivator(appclient);
+        final boolean legacySecurityAvailable = context.hasOptionalCapability("org.wildfly.legacy-security", null, null);
+        final RaDeploymentActivator raDeploymentActivator = new RaDeploymentActivator(appclient, legacySecurityAvailable);
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 raDeploymentActivator.activateProcessors(processorTarget);

@@ -91,13 +91,15 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
 
     private final ContextNames.BindInfo bindInfo;
 
+    private boolean legacySecurityAvailable;
+
     /**
      * create an instance *
      */
     public DirectConnectionFactoryActivatorService(String jndiName, String interfaceName, String resourceAdapter,
                                                    String raId, int maxPoolSize, int minPoolSize,
                                                    Map<String, String> properties, TransactionSupport.TransactionSupportLevel transactionSupport,
-                                                   Module module, ContextNames.BindInfo bindInfo) {
+                                                   Module module, ContextNames.BindInfo bindInfo, boolean legacySecurityAvailable) {
         this.jndiName = jndiName;
         this.interfaceName = interfaceName;
         this.resourceAdapter = resourceAdapter;
@@ -110,6 +112,7 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
         this.transactionSupport = transactionSupport;
         this.module = module;
         this.bindInfo = bindInfo;
+        this.legacySecurityAvailable = legacySecurityAvailable;
     }
 
     @Override
@@ -255,11 +258,15 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
             connectionFactoryServiceBuilder.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
 
             if (ActivationSecurityUtil.isLegacySecurityRequired(security)) {
-                connectionFactoryServiceBuilder
-                        .addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class,
-                                activator.getSubjectFactoryInjector())
-                        .addDependency(SECURITY_MANAGER_SERVICE,
-                                ServerSecurityManager.class, activator.getServerSecurityManager());
+                if (legacySecurityAvailable) {
+                    connectionFactoryServiceBuilder
+                            .addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class,
+                                    activator.getSubjectFactoryInjector())
+                            .addDependency(SECURITY_MANAGER_SERVICE,
+                                    ServerSecurityManager.class, activator.getServerSecurityManager());
+                } else {
+                    throw ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER.legacySecurityNotAvailableForConnectionFactory(jndiName);
+                }
             }
 
             connectionFactoryServiceBuilder.setInitialMode(org.jboss.msc.service.ServiceController.Mode.ACTIVE).install();

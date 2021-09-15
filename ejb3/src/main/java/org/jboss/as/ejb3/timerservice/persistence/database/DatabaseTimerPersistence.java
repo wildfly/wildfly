@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.timerservice.persistence.database;
 
+import static org.jboss.as.ejb3.timerservice.TimerServiceImpl.safeClose;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -43,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,7 +55,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
-
 import javax.sql.DataSource;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -480,21 +480,23 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             resultSet = statement.executeQuery();
             final List<Holder> timers = new ArrayList<>();
             while (resultSet.next()) {
+                String timerId = null;
                 try {
-                    final Holder timerImpl = timerFromResult(resultSet, timerService);
+                    timerId = resultSet.getString(1);
+                    final Holder timerImpl = timerFromResult(resultSet, timerService, timerId, null);
                     if (timerImpl != null) {
                         timers.add(timerImpl);
                     } else {
                         final String deleteTimer = sql(DELETE_TIMER);
                         try (PreparedStatement deleteStatement = connection.prepareStatement(deleteTimer)) {
                             deleteStatement.setString(1, resultSet.getString(2));
-                            deleteStatement.setString(2, resultSet.getString(1));
+                            deleteStatement.setString(2, timerId);
                             deleteStatement.setString(3, partition);
                             deleteStatement.execute();
                         }
                     }
                 } catch (Exception e) {
-                    EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), e);
+                    EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), timerId, e);
                 }
             }
             synchronized (this) {
@@ -552,13 +554,27 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         refreshTask.run();
     }
 
-    private Holder timerFromResult(final ResultSet resultSet, final TimerServiceImpl timerService) throws SQLException {
+    /**
+     * Obtains a {@link Holder} from a row in {@code ResultSet}.
+     * Caller of this method must get the timer id from the {@code ResultSet}
+     * in advance and pass in as param {@code timerId}.
+     * Caller of this method may get the timer state from the {@code ResultSet}
+     * in advance and pass in as param {@code timerState}.
+     *
+     * @param resultSet  the {@code ResultSet} from database query
+     * @param timerService  the associated {@code TimerServiceImpl}
+     * @param timerId  the timer id, not null
+     * @param timerState  the timer state from current row in the {@code ResultSet}, may be null
+     * @return the {@code Holder} instance containing the timer from current {@code ResultSet} row
+     * @throws SQLException on errors reading from {@code ResultSet}
+     */
+    private Holder timerFromResult(final ResultSet resultSet, final TimerServiceImpl timerService,
+                                   final String timerId, final TimerState timerState) throws SQLException {
         boolean calendarTimer = resultSet.getBoolean(24);
         final String nodeName = resultSet.getString(25);
         boolean requiresReset = false;
 
-        TimerImpl.Builder builder = null;
-        final String timerId = resultSet.getString(1); // needed for error message
+        TimerImpl.Builder builder;
         if (calendarTimer) {
             CalendarTimer.Builder cb = CalendarTimer.builder();
             builder = cb;
@@ -582,7 +598,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 final String[] params = paramString == null || paramString.isEmpty() ? new String[0] : paramString.split(";");
                 final Method timeoutMethod = CalendarTimer.getTimeoutMethod(new TimeoutMethod(clazz, methodName, params), timerService.getTimedObjectInvoker().getValue().getClassLoader());
                 if (timeoutMethod == null) {
-                    EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), new NoSuchMethodException());
+                    EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), timerId, new NoSuchMethodException());
                     return null;
                 }
                 cb.setTimeoutMethod(timeoutMethod);
@@ -600,7 +616,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         builder.setPreviousRun(resultSet.getTimestamp(6));
         builder.setPrimaryKey(deSerialize(resultSet.getString(7)));
         builder.setInfo((Serializable) deSerialize(resultSet.getString(8)));
-        builder.setTimerState(TimerState.valueOf(resultSet.getString(9)));
+        builder.setTimerState(timerState != null ? timerState : TimerState.valueOf(resultSet.getString(9)));
         builder.setPersistent(true);
 
         TimerImpl ret =  builder.build(timerService);
@@ -774,46 +790,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         return timerInjectedValue;
     }
 
-    private static void safeClose(final Closeable resource) {
-        try {
-            if (resource != null) {
-                resource.close();
-            }
-        } catch (Throwable t) {
-            EjbLogger.EJB3_TIMER_LOGGER.tracef(t, "Closing resource failed");
-        }
-    }
-
-    private static void safeClose(final Statement resource) {
-        try {
-            if (resource != null) {
-                resource.close();
-            }
-        } catch (Throwable t) {
-            EjbLogger.EJB3_TIMER_LOGGER.tracef(t, "Closing resource failed");
-        }
-    }
-
-    private static void safeClose(final Connection resource) {
-        try {
-            if (resource != null) {
-                resource.close();
-            }
-        } catch (Throwable t) {
-            EjbLogger.EJB3_TIMER_LOGGER.tracef(t, "Closing resource failed");
-        }
-    }
-
-    private static void safeClose(final ResultSet resource) {
-        try {
-            if (resource != null) {
-                resource.close();
-            }
-        } catch (Throwable t) {
-            EjbLogger.EJB3_TIMER_LOGGER.tracef(t, "Closing resource failed");
-        }
-    }
-
     private class RefreshTask extends TimerTask {
 
         private volatile AtomicBoolean running = new AtomicBoolean();
@@ -847,10 +823,11 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                             resultSet = statement.executeQuery();
                             final TimerServiceImpl timerService = listener.getTimerService();
                             while (resultSet.next()) {
+                                String id = null;
                                 try {
-                                    String id = resultSet.getString(1);
+                                    id = resultSet.getString(1);
                                     if (!existing.remove(id)) {
-                                        final Holder holder = timerFromResult(resultSet, timerService);
+                                        final Holder holder = timerFromResult(resultSet, timerService, id, null);
                                         if(holder != null) {
                                             synchronized (DatabaseTimerPersistence.this) {
                                                 knownTimerIds.get(timedObjectId).add(id);
@@ -858,26 +835,28 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                                             }
                                         }
                                     } else {
-                                        final Holder holder = timerFromResult(resultSet, listener.getTimerService());
-                                        if (holder != null) {
-                                            TimerImpl oldTimer = listener.getTimerService().getTimer(id);
-                                            // if it is already in memory but it is not in sync we have a problem
-                                            // remove and add -> the probable cause is db glitch
-                                            EnumSet<TimerState> valid = EnumSet.of(TimerState.IN_TIMEOUT, TimerState.RETRY_TIMEOUT, TimerState.CREATED, TimerState.ACTIVE);
-                                            boolean validDBTimer = valid.contains(holder.timer.getState());
-                                            boolean validMemoryTimer = oldTimer != null && !valid.contains(oldTimer.getState());
-                                            // if timers memory - db are in non intersect subsets of valid/invalid states. we put them in sync
-                                            if (validMemoryTimer && validDBTimer) {
-                                                synchronized (DatabaseTimerPersistence.this) {
-                                                    knownTimerIds.get(timedObjectId).add(holder.timer.getId());
-                                                    listener.timerSync(oldTimer, holder.timer);
-                                                }
+                                        TimerImpl oldTimer = timerService.getTimer(id);
+                                        // if it is already in memory but it is not in sync we have a problem
+                                        // remove and add -> the probable cause is db glitch
+                                        boolean invalidMemoryTimer = oldTimer != null && !TimerState.CREATED_ACTIVE_IN_TIMEOUT_RETRY_TIMEOUT.contains(oldTimer.getState());
 
+                                        // if timers memory - db are in non intersect subsets of valid/invalid states. we put them in sync
+                                        if (invalidMemoryTimer) {
+                                            TimerState dbTimerState = TimerState.valueOf(resultSet.getString(9));
+                                            boolean validDBTimer = TimerState.CREATED_ACTIVE_IN_TIMEOUT_RETRY_TIMEOUT.contains(dbTimerState);
+                                            if (validDBTimer) {
+                                                final Holder holder = timerFromResult(resultSet, timerService, id, dbTimerState);
+                                                if (holder != null) {
+                                                    synchronized (DatabaseTimerPersistence.this) {
+                                                        knownTimerIds.get(timedObjectId).add(id);
+                                                        listener.timerSync(oldTimer, holder.timer);
+                                                    }
+                                                }
                                             }
                                         }
                                     }
                                 } catch (Exception e) {
-                                    EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), e);
+                                    EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), id, e);
                                 }
                             }
 
@@ -915,14 +894,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         Holder(TimerImpl timer, boolean requiresReset) {
             this.timer = timer;
             this.requiresReset = requiresReset;
-        }
-
-        public TimerImpl getTimer() {
-            return timer;
-        }
-
-        public boolean isRequiresReset() {
-            return requiresReset;
         }
     }
 }
