@@ -32,7 +32,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -48,7 +50,7 @@ public class RunKafkaSetupTask implements ServerSetupTask {
     Path kafkaDir;
     final boolean ipv6 = WildFlySecurityManager.doChecked(
             (PrivilegedAction<Boolean>) () -> System.getProperties().containsKey("ipv6"));
-    final String LOOPBACK = ipv6 ? "[::1]" : "127.0.0.1";
+    protected final String LOOPBACK = ipv6 ? "[::1]" : "127.0.0.1";
 
     @Override
     public void setup(ManagementClient managementClient, String s) throws Exception {
@@ -60,9 +62,18 @@ public class RunKafkaSetupTask implements ServerSetupTask {
         broker = new WildFlyEmbeddedKafkaBroker(1, true, getPartitions(), getTopics())
                 .zkPort(2181)
                 .kafkaPorts(9092)
-                .brokerProperty("log.dir", kafkaDir.toString())
-                .brokerProperty("offsets.topic.num.partitions", 5);
+                .brokerProperty("log.dir", kafkaDir.toString());
+
+        broker = augmentKafkaBroker((WildFlyEmbeddedKafkaBroker)broker);
         broker.afterPropertiesSet();
+    }
+
+    protected WildFlyEmbeddedKafkaBroker augmentKafkaBroker(WildFlyEmbeddedKafkaBroker broker) {
+        return broker;
+    }
+
+    protected Map<String, String> additionalBrokerProperties() {
+        return Collections.emptyMap();
     }
 
     protected String[] getTopics() {
@@ -105,19 +116,19 @@ public class RunKafkaSetupTask implements ServerSetupTask {
         }
     }
 
-    private class WildFlyEmbeddedKafkaBroker extends EmbeddedKafkaBroker {
+    protected class WildFlyEmbeddedKafkaBroker extends EmbeddedKafkaBroker {
         final int count;
         private int[] kafkaPorts;
 
-        public WildFlyEmbeddedKafkaBroker(int count) {
+        protected WildFlyEmbeddedKafkaBroker(int count) {
             this(count, false);
         }
 
-        public WildFlyEmbeddedKafkaBroker(int count, boolean controlledShutdown, String... topics) {
+        protected WildFlyEmbeddedKafkaBroker(int count, boolean controlledShutdown, String... topics) {
             this(count, controlledShutdown, 2, topics);
         }
 
-        public WildFlyEmbeddedKafkaBroker(int count, boolean controlledShutdown, int partitions, String... topics) {
+        protected WildFlyEmbeddedKafkaBroker(int count, boolean controlledShutdown, int partitions, String... topics) {
             super(count, controlledShutdown, partitions, topics);
             this.count = count;
         }
