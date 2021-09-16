@@ -1,0 +1,9 @@
+{
+    "client-id" : "SubsystemOverrideOidcApp",
+    "public-client" : "false",
+    "provider-url" : "http://fakeauthserver/auth",
+    "ssl-required" : "EXTERNAL",
+    "credentials" : {
+        "secret" : "secret"
+    }
+}

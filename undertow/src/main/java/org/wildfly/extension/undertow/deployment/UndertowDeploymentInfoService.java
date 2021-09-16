@@ -144,7 +144,11 @@ import org.wildfly.extension.undertow.security.jaspi.JASPICAuthenticationMechani
 import org.wildfly.extension.undertow.security.jaspi.JASPICSecureResponseHandler;
 import org.wildfly.extension.undertow.security.jaspi.JASPICSecurityContextFactory;
 import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
+import org.wildfly.security.auth.server.HttpAuthenticationFactory;
+import org.wildfly.security.auth.server.MechanismConfiguration;
+import org.wildfly.security.auth.server.MechanismConfigurationSelector;
 import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.http.HttpServerAuthenticationMechanismFactory;
 import org.xnio.IoUtils;
 
 import javax.servlet.Filter;
@@ -235,6 +239,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final Supplier<SuspendController> suspendController;
     private final Supplier<ServerEnvironment> serverEnvironment;
     private final Supplier<SecurityDomain> rawSecurityDomain;
+    private final Supplier<HttpServerAuthenticationMechanismFactory> rawMechanismFactory;
     private final Supplier<BiFunction> applySecurityFunction;
     private final Map<String, Supplier<Executor>> executorsByName = new HashMap<>();
     private final WebSocketDeploymentInfo webSocketDeploymentInfo;
@@ -255,6 +260,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             final Supplier<SuspendController> suspendController,
             final Supplier<ServerEnvironment> serverEnvironment,
             final Supplier<SecurityDomain> rawSecurityDomain,
+            final Supplier<HttpServerAuthenticationMechanismFactory> rawMechanismFactory,
             final Supplier<BiFunction> applySecurityFunction,
             final JBossWebMetaData mergedMetaData, final String deploymentName, final HashMap<String, TagLibraryInfo> tldInfo, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupHandler> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions, SharedSessionManagerConfig sharedSessionManagerConfig, WebSocketDeploymentInfo webSocketDeploymentInfo, File tempDir, List<File> externalResources, List<Predicate> allowSuspendedRequests) {
         this.deploymentInfoConsumer = deploymentInfoConsumer;
@@ -269,6 +275,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.suspendController = suspendController;
         this.serverEnvironment = serverEnvironment;
         this.rawSecurityDomain = rawSecurityDomain;
+        this.rawMechanismFactory = rawMechanismFactory;
         this.applySecurityFunction = applySecurityFunction;
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
@@ -1258,15 +1265,27 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         if (securityFunction != null) {
             registration = securityFunction.apply(deploymentInfo, runAsMapping);
         } else {
+            HttpServerAuthenticationMechanismFactory mechanismFactory = rawMechanismFactory == null ? null : rawMechanismFactory.get();
             SecurityDomain securityDomain = rawSecurityDomain.get();
 
             org.wildfly.elytron.web.undertow.server.servlet.AuthenticationManager.Builder builder =
                     org.wildfly.elytron.web.undertow.server.servlet.AuthenticationManager.builder();
-            builder.setSecurityDomain(securityDomain)
-                .setOverrideDeploymentConfig(true)
-                .setRunAsMapper(runAsMapping)
-                .setIntegratedJaspi(false)
-                .setEnableJaspi(true);
+
+            if (mechanismFactory != null) {
+                HttpAuthenticationFactory httpAuthenticationFactory = HttpAuthenticationFactory.builder()
+                        .setFactory(mechanismFactory)
+                        .setSecurityDomain(securityDomain)
+                        .setMechanismConfigurationSelector(MechanismConfigurationSelector.constantSelector(MechanismConfiguration.EMPTY))
+                        .build();
+                builder.setHttpAuthenticationFactory(httpAuthenticationFactory);
+                builder.setOverrideDeploymentConfig(true).setRunAsMapper(runAsMapping);
+            } else {
+                builder = builder.setSecurityDomain(securityDomain);
+                builder.setOverrideDeploymentConfig(true)
+                        .setRunAsMapper(runAsMapping)
+                        .setIntegratedJaspi(false)
+                        .setEnableJaspi(true);
+            }
 
             org.wildfly.elytron.web.undertow.server.servlet.AuthenticationManager authenticationManager = builder.build();
             authenticationManager.configure(deploymentInfo);
@@ -1497,11 +1516,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 final Supplier<SuspendController> suspendController,
                 final Supplier<ServerEnvironment> serverEnvironment,
                 final Supplier<SecurityDomain> rawSecurityDomain,
+                final Supplier<HttpServerAuthenticationMechanismFactory> rawMechanismFactory,
                 final Supplier<BiFunction> applySecurityFunction
         ) {
             return new UndertowDeploymentInfoService(deploymentInfoConsumer, undertowService, sessionManagerFactory,
                     sessionIdentifierCodec, securityDomainContext, container, componentRegistry, host, controlPoint,
-                    suspendController, serverEnvironment, rawSecurityDomain, applySecurityFunction, mergedMetaData, deploymentName, tldInfo, module,
+                    suspendController, serverEnvironment, rawSecurityDomain, rawMechanismFactory, applySecurityFunction, mergedMetaData, deploymentName, tldInfo, module,
                     scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays,
                     expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers,
                     threadSetupActions, explodedDeployment, servletExtensions, sharedSessionManagerConfig, webSocketDeploymentInfo, tempDir, externalResources, allowSuspendedRequests);

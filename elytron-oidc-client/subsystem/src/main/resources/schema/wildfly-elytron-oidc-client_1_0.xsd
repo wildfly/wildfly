@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="urn:wildfly:elytron-oidc-client:1.0"
+            xmlns="urn:wildfly:elytron-oidc-client:1.0"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            version="1.0">
+
+    <!-- The subsystem root element -->
+    <xs:element name="subsystem" type="subsystem-type"/>
+
+    <xs:complexType name="subsystem-type">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="realm" maxOccurs="unbounded" minOccurs="0" type="realm-type"/>
+            <xs:element name="provider" maxOccurs="unbounded" minOccurs="0" type="provider-type"/>
+            <xs:element name="secure-deployment" maxOccurs="unbounded" minOccurs="0" type="secure-deployment-type"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="realm-type">
+        <xs:all>
+            <xs:element name="cors-allowed-headers" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="client-keystore-password" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="client-keystore" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="truststore" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="truststore-password" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="enable-cors" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="allow-any-hostname" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="client-key-password" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="connection-pool-size" type="xs:integer" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="cors-max-age" type="xs:integer" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="auth-server-url" type="xs:string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="expose-token" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="disable-trust-manager" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ssl-required" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="confidential-port" type="xs:integer" minOccurs="0" maxOccurs="1" />
+            <xs:element name="cors-allowed-methods" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="cors-exposed-headers" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="realm-public-key" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="always-refresh-token" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="register-node-at-startup" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="register-node-period" type="xs:integer" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="token-store" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="principal-attribute" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="autodetect-bearer-only" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="ignore-oauth-query-parameter" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="proxy-url" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="verify-token-audience" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="socket-timeout-millis" type="xs:long" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="connection-ttl-millis" type="xs:long" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="connection-timeout-millis" type="xs:long" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="token-signature-algorithm" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>The name of the Keycloak realm.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="provider-type">
+        <xs:all>
+            <xs:element name="cors-allowed-headers" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="client-keystore-password" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="client-keystore" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="truststore" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="truststore-password" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="enable-cors" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="allow-any-hostname" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="client-key-password" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="connection-pool-size" type="xs:integer" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="cors-max-age" type="xs:integer" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="provider-url" type="xs:string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="expose-token" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="disable-trust-manager" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="ssl-required" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="confidential-port" type="xs:integer" minOccurs="0" maxOccurs="1" />
+            <xs:element name="cors-allowed-methods" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="cors-exposed-headers" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="realm-public-key" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="always-refresh-token" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="register-node-at-startup" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="register-node-period" type="xs:integer" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="token-store" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="principal-attribute" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="autodetect-bearer-only" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="ignore-oauth-query-parameter" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="proxy-url" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="verify-token-audience" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="socket-timeout-millis" type="xs:long" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="connection-ttl-millis" type="xs:long" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="connection-timeout-millis" type="xs:long" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="token-signature-algorithm" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>The name of the OpenID provider.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="secure-deployment-type">
+        <xs:all>
+            <xs:element name="client-keystore-password" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="client-keystore" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="enable-cors" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="allow-any-hostname" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="use-resource-role-mappings" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="cors-max-age" type="xs:integer" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="auth-server-url" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="provider-url" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="realm" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="provider" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="disable-trust-manager" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="cors-allowed-methods" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="bearer-only" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="cors-allowed-headers" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="cors-exposed-headers" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="resource" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="client-id" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="truststore" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="truststore-password" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="client-key-password" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="public-client" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="connection-pool-size" type="xs:integer" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="expose-token" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="ssl-required" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="confidential-port" type="xs:integer" minOccurs="0" maxOccurs="1" />
+            <xs:element name="realm-public-key" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="credential" type="credential-type" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="redirect-rewrite-rule" type="redirect-rewrite-rule-type" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="always-refresh-token" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="register-node-at-startup" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="register-node-period" type="xs:integer" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="token-store" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="principal-attribute" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="enable-basic-auth" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="turn-off-change-session-id-on-login" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="token-minimum-time-to-live" type="xs:integer" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="min-time-between-jwks-requests" type="xs:integer" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="public-key-cache-ttl" type="xs:integer" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="autodetect-bearer-only" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="ignore-oauth-query-parameter" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="proxy-url" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="verify-token-audience" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="adapter-state-cookie-path" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="socket-timeout-millis" type="xs:long" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="connection-ttl-millis" type="xs:long" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="connection-timeout-millis" type="xs:long" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="token-signature-algorithm" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>The name of the realm.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="credential-type">
+        <xs:attribute name="client-keystore-file" type="xs:string" />
+        <xs:attribute name="client-keystore-type" type="xs:string" />
+        <xs:attribute name="client-keystore-password" type="xs:string" />
+        <xs:attribute name="client-key-password" type="xs:string" />
+        <xs:attribute name="client-key-alias" type="xs:string" />
+        <xs:attribute name="token-timeout" type="xs:int" />
+        <xs:attribute name="secret" type="xs:string" />
+        <xs:attribute name="algorithm" type="xs:string" />
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>The name of the credential type.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="redirect-rewrite-rule-type">
+        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="replacement" type="xs:string" use="required" />
+    </xs:complexType>
+</xs:schema>

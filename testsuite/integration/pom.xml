@@ -75,6 +75,7 @@
                 <module>legacy</module>
                 <module>legacy-ejb-client</module>
                 <module>elytron</module>
+                <module>elytron-oidc-client</module>
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->
@@ -100,6 +101,7 @@
                 <module>legacy</module>
                 <module>legacy-ejb-client</module>
                 <module>elytron</module>
+                <module>elytron-oidc-client</module>
             </modules>
         </profile>
 
@@ -215,6 +217,7 @@
                 <module>microprofile-tck</module>
                 <module>clustering</module>
                 <module>ws</module>
+                <module>elytron-oidc-client</module>
             </modules>
         </profile>
 
@@ -227,6 +230,7 @@
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
                 <module>clustering</module>
+                <module>elytron-oidc-client</module>
             </modules>
         </profile>
 
@@ -285,6 +289,7 @@
                 <module>elytron</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
+                <module>elytron-oidc-client</module>
             </modules>
         </profile>
         <profile>
@@ -303,6 +308,7 @@
                 <module>clustering</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
+                <module>elytron-oidc-client</module>
             </modules>
         </profile>
 
@@ -320,7 +326,7 @@
                 <module>clustering</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
-                <module>secman</module>
+                <module>elytron-oidc-client</module>
             </modules>
         </profile>
 
@@ -491,6 +497,12 @@
         <dependency>
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-core</artifactId>
+            <version>1.6.0.Final</version>
             <scope>test</scope>
         </dependency>
 
