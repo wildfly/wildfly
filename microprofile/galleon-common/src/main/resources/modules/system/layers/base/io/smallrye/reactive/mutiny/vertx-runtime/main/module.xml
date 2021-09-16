@@ -20,7 +20,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.8" name="io.smallrye.reactive.mutiny.vertx-runtime">
+<module xmlns="urn:jboss:module:1.9" name="io.smallrye.reactive.mutiny.vertx-runtime">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
