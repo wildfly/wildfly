@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,30 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.function.UnaryOperator;
-
-import org.jboss.as.clustering.jgroups.auth.BinaryAuthToken;
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.clustering.jgroups.subsystem.EncryptProtocolResourceDefinition.Attribute;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
+ * Transformer for encrypt protocol resources.
  * @author Paul Ferraro
  */
-public class PlainAuthTokenResourceDefinition extends AuthTokenResourceDefinition<BinaryAuthToken> {
+public class EncryptProtocolResourceTransformer extends ProtocolResourceTransformer {
 
-    static final PathElement PATH = pathElement("plain");
+    EncryptProtocolResourceTransformer(ResourceTransformationDescriptionBuilder builder) {
+        super(builder);
+    }
 
-    PlainAuthTokenResourceDefinition() {
-        super(PATH, UnaryOperator.identity(), PlainAuthTokenServiceConfigurator::new);
+    @Override
+    public void accept(ModelVersion version) {
+
+        if (JGroupsModel.VERSION_8_0_0.requiresTransformation(version)) {
+            this.builder.getAttributeBuilder()
+                    .addRejectCheck(CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, Attribute.KEY_CREDENTIAL.getName())
+                    .end();
+        }
+
+        super.accept(version);
     }
 }

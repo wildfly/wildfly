@@ -35,11 +35,9 @@ import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
@@ -81,12 +79,6 @@ public class ForkResourceDefinition extends ChildResourceDefinition<ManagementRe
         for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
             CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement));
         }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
-
-        ProtocolRegistration.buildTransformation(version, builder);
     }
 
     static class ForkChannelFactoryServiceConfiguratorFactory implements ResourceServiceConfiguratorFactory {

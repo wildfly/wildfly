@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,27 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.function.UnaryOperator;
+import java.util.function.Function;
 
-import org.jboss.as.clustering.jgroups.auth.BinaryAuthToken;
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
+ * Transformer for the JGroups subsystem resource.
  * @author Paul Ferraro
  */
-public class PlainAuthTokenResourceDefinition extends AuthTokenResourceDefinition<BinaryAuthToken> {
+public class JGroupsSubsystemResourceTransformer implements Function<ModelVersion, TransformationDescription> {
 
-    static final PathElement PATH = pathElement("plain");
+    private final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-    PlainAuthTokenResourceDefinition() {
-        super(PATH, UnaryOperator.identity(), PlainAuthTokenServiceConfigurator::new);
+    @Override
+    public TransformationDescription apply(ModelVersion version) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        new ChannelResourceTransformer(this.builder).accept(version);
+
+        return builder.build();
     }
 }

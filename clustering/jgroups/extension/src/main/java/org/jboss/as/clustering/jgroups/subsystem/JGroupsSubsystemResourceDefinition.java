@@ -37,7 +37,6 @@ import org.jboss.as.clustering.controller.SubsystemRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -47,9 +46,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
@@ -107,15 +103,6 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    static TransformationDescription buildTransformers(ModelVersion version) {
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-
-        ChannelResourceDefinition.buildTransformation(version, builder);
-        StackResourceDefinition.buildTransformation(version, builder);
-
-        return builder.build();
     }
 
     static class AddOperationTransformer implements UnaryOperator<OperationStepHandler> {

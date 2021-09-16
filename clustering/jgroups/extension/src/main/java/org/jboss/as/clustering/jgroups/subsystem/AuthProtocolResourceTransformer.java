@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,26 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.function.UnaryOperator;
-
-import org.jboss.as.clustering.jgroups.auth.BinaryAuthToken;
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
+ * Transformer for auth protocol resources.
  * @author Paul Ferraro
  */
-public class PlainAuthTokenResourceDefinition extends AuthTokenResourceDefinition<BinaryAuthToken> {
+public class AuthProtocolResourceTransformer extends ProtocolResourceTransformer {
 
-    static final PathElement PATH = pathElement("plain");
+    AuthProtocolResourceTransformer(ResourceTransformationDescriptionBuilder builder) {
+        super(builder);
+    }
 
-    PlainAuthTokenResourceDefinition() {
-        super(PATH, UnaryOperator.identity(), PlainAuthTokenServiceConfigurator::new);
+    @Override
+    public void accept(ModelVersion version) {
+
+        new CipherAuthTokenResourceTransformer(this.builder).accept(version);
+        new DigestAuthTokenResourceTransformer(this.builder).accept(version);
+        new PlainAuthTokenResourceTransformer(this.builder).accept(version);
+
+        super.accept(version);
     }
 }
