@@ -35,6 +35,8 @@ import org.jboss.arquillian.container.spi.client.container.DeploymentExceptionTr
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class WildFlyDeploymentExceptionTransformer implements DeploymentExceptionTransformer {
+    // Trim of the prefix so it matches both javax. and jakarta.
+    private final String DEFINITION_EXCEPTION = ".enterprise.inject.spi.DefinitionException";
     @Override
     public Throwable transform(Throwable throwable) {
         if (throwable instanceof org.jboss.arquillian.container.spi.client.container.DeploymentException) {
@@ -54,7 +56,7 @@ public class WildFlyDeploymentExceptionTransformer implements DeploymentExceptio
             // the javax.enterprise.inject.spi.DeploymentException wanted by the test, so it has happened if
             // we can find it in the exception message.
             String msg = throwable.getMessage();
-            if ((msg.contains("SRMSG00081") || msg.contains("SRMSG00080")) && msg.contains("javax.enterprise.inject.spi.DefinitionException")) {
+            if ((msg.contains("SRMSG00081") || msg.contains("SRMSG00080")) && msg.contains(DEFINITION_EXCEPTION)) {
                 return new DefinitionException(msg);
             }
             if (msg.contains("WFLYCTL0080") && msg.contains("org.jboss.weld.exceptions.DeploymentException")) {
