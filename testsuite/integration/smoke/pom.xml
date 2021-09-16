@@ -931,8 +931,6 @@
                                         <server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</server.jvm.args>
                                     </systemPropertyVariables>
                                     <excludes>
-                                        <!-- Requires legacy security for some methods -->
-                                        <exclude>org/jboss/as/test/smoke/mgmt/resourceadapter/ResourceAdapterOperationsUnitTestCase.java</exclude>
                                         <!-- Requires messaging -->
                                         <exclude>org/jboss/as/test/smoke/jms/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/smoke/jms/**/*Test.java</exclude>

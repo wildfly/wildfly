@@ -2387,13 +2387,10 @@
                                         <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
                                         <exclude>%regex[${test-group}/(${ts.surefire.clustering.ha.additionalExcludes})/.*TestCase.class]</exclude>
 
-                                        <!-- Requires legacy security subsystem -->
-                                        <exclude>${test-group}/web/authentication/*TestCase.java</exclude>
                                         <!-- TODO see why these aren't working and fix or exclude with a clear explanation -->
                                         <exclude>${test-group}/ejb/remote/GlobalAuthContextRemoteStatelessEJBFailoverTestCase.java</exclude>
                                         <exclude>${test-group}/ejb/remote/ThreadAuthContextRemoteStatelessEJBFailoverTestCase.java</exclude>
                                         <exclude>${test-group}/jsf/JSFFailoverTestCase.java</exclude> <!-- test hard-codes javax package; need to parameterize -->
-                                        <exclude>${test-group}/sso/*TestCase.java</exclude><!-- Perhaps ElytronSSOServerSetupTask needs to deal with the EJB application-security-domain too? -->
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -2404,16 +2401,6 @@
                                     <excludes>
                                         <!-- Requires the /subsystem=messaging-activemq/server=default to exist for it's setup tasks -->
                                         <exclude>${test-group}/jms/ClusteredMessagingTestCase.java</exclude>
-                                    </excludes>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>ts.surefire.clustering.ha-infinispan-server</id>
-                                <!--<phase>none</phase>-->
-                                <configuration>
-                                    <excludes>
-                                        <!-- TODO see why these aren't working and fix or exclude with a clear explanation -->
-                                        <exclude>${test-group}/sso/remote/*TestCase.java</exclude><!-- Perhaps ElytronSSOServerSetupTask needs to deal with the EJB application-security-domain too? -->
                                     </excludes>
                                 </configuration>
                             </execution>
