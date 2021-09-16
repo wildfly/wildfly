@@ -2,15 +2,19 @@ package org.wildfly.test.extension.rts;
 
 import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.jboss.jbossts.star.util.TxLinkNames;
-import org.jboss.jbossts.star.util.TxSupport;
-import org.junit.Assert;
-
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.UncheckedIOException;
+import javax.json.Json;
+import javax.json.JsonArray;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
+
+import org.jboss.jbossts.star.util.TxLinkNames;
+import org.jboss.jbossts.star.util.TxSupport;
+import org.junit.Assert;
 
 final class InboundBridgeUtilities {
     private final TxSupport txSupport;
@@ -48,29 +52,26 @@ final class InboundBridgeUtilities {
         Assert.assertEquals(200, response.getStatus());
     }
 
-    protected JSONArray getInboundBridgeResourceInvocations() throws Exception {
+    protected JsonArray getInboundBridgeResourceInvocations() throws Exception {
         final String response = ClientBuilder.newClient().target(inboundBridgeResourceUrl).request().get(String.class);
-        final JSONArray jsonArray = new JSONArray(response);
 
-        return jsonArray;
+        return createJsonArray(response);
     }
 
-    protected JSONArray getLoggingRestATParticipantInvocations() throws Exception {
+    protected JsonArray getLoggingRestATParticipantInvocations() throws Exception {
         String response = ClientBuilder.newClient().target(loggingRestATParticipantInvocationsUrl).request().get(String.class);
-        JSONArray jsonArray = new JSONArray(response);
-
-        return jsonArray;
+        return createJsonArray(response);
     }
 
     /**
      * Checking if the parameter <code>recordToAssert</code>
-     * is placed exactly once in the {@link JSONArray}.
+     * is placed exactly once in the {@link JsonArray}.
      */
-    protected void assertJsonArray(JSONArray invocationsJSONArray, String recordToAssert, int expectedRecordFoundCount) throws JSONException {
+    protected void assertJsonArray(JsonArray invocationsJSONArray, String recordToAssert, int expectedRecordFoundCount) {
         checkNotNullParamWithNullPointerException("recordToAssert", recordToAssert);
         int recordFoundCount = 0;
-        for(int i = 0; i < invocationsJSONArray.length(); i++) {
-            if(recordToAssert.equals(invocationsJSONArray.get(i))) {
+        for(int i = 0; i < invocationsJSONArray.size(); i++) {
+            if(recordToAssert.equals(invocationsJSONArray.getString(i))) {
                 recordFoundCount++;
             }
         }
@@ -78,6 +79,14 @@ final class InboundBridgeUtilities {
             Assert.fail("Invocation result returned as a JSON array '" + invocationsJSONArray + "' "
                     + "expected to contain the record '" + recordToAssert + "' " + expectedRecordFoundCount + " times "
                     + "but the record was " + recordFoundCount + " times in the array");
+        }
+    }
+
+    private JsonArray createJsonArray(final String response) {
+        try (Reader reader = new StringReader(response)) {
+            return Json.createReader(reader).readArray();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 }

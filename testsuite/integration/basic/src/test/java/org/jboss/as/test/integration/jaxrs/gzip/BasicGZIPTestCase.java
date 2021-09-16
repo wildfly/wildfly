@@ -42,7 +42,6 @@ import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,17 +66,11 @@ public class BasicGZIPTestCase {
         return ShrinkWrap
                 .create(WebArchive.class, "gzip.war")
                 .addClasses(BasicGZIPTestCase.class, GZIPResource.class, JaxbModel.class)
-                .addAsManifestResource(getProviders(), "services/javax.ws.rs.ext.Providers")
                 .setWebXML(
                         WebXml.get("<servlet-mapping>\n"
                                 + "        <servlet-name>javax.ws.rs.core.Application</servlet-name>\n"
-                                + "        <url-pattern>/myjaxrs/*</url-pattern>\n" + "</servlet-mapping>\n"));
-    }
-
-    private static StringAsset getProviders() {
-        return new StringAsset("org.jboss.resteasy.plugins.interceptors.encoding.AcceptEncodingGZIPFilter\n"
-                + "org.jboss.resteasy.plugins.interceptors.encoding.GZIPDecodingInterceptor\n"
-                + "org.jboss.resteasy.plugins.interceptors.encoding.GZIPEncodingInterceptor");
+                                + "        <url-pattern>/myjaxrs/*</url-pattern>\n" + "</servlet-mapping>\n"
+                                + " <context-param><param-name>resteasy.allowGzip</param-name><param-value>true</param-value></context-param>\n"));
     }
 
     private String read(final InputStream in) throws IOException {
