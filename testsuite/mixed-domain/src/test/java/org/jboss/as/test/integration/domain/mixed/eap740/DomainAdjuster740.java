@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.domain.mixed.eap740;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.ArrayList;
@@ -47,6 +48,8 @@ public class DomainAdjuster740 extends DomainAdjuster {
         adjustRemoting(ops, profileAddress.append(SUBSYSTEM, "remoting"));
         adjustUndertow(ops, profileAddress.append(SUBSYSTEM, "undertow"));
 
+        removeSubsystemExtension(ops, profileAddress.append(SUBSYSTEM, "opentelemetry"),
+                PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.opentelemetry"));
         return ops;
     }
 
@@ -71,4 +74,8 @@ public class DomainAdjuster740 extends DomainAdjuster {
         ops.add(Util.getWriteAttributeOperation(httpInvoker, "security-realm", "ApplicationRealm"));
     }
 
+    private void removeSubsystemExtension(List<ModelNode> ops, PathAddress subsystem, PathAddress extension) {
+        ops.add(Util.createRemoveOperation(subsystem));
+        ops.add(Util.createRemoveOperation(extension));
+    }
 }

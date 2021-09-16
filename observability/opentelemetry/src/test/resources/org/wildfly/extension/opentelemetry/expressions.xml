@@ -1,0 +1,12 @@
+<subsystem xmlns="urn:wildfly:opentelemetry:1.0"
+           service-name="${test.service-name:test-service}">
+    <exporter type="${test.exporter-type:jaeger}"
+              endpoint="${test.endpoint:http://localhost:14250}"/>
+    <span-processor type="${test.span-processor-type:batch}"
+                    batch-delay="${test.batch-delay:5000}"
+                    max-queue-size="${test.max-queue-size:2048}"
+                    max-export-batch-size="${test.max-export-batch-size:512}"
+                    export-timeout="${test.export-timeout:30000}"
+    />
+    <sampler type="${test.sampler-type:on}" ratio="${test.ratio:0.75}"/>
+</subsystem>
