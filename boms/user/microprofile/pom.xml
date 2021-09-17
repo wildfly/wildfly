@@ -150,7 +150,11 @@
                                     <groupId>org.apache.kafka</groupId>
                                     <artifactId>kafka-clients</artifactId>
                                 </dependency>
-
+                                <!-- include SmallRye Kafka API -->
+                                <dependency>
+                                    <groupId>io.smallrye.reactive</groupId>
+                                    <artifactId>smallrye-reactive-messaging-kafka-api</artifactId>
+                                </dependency>
                             </includeDependencies>
                         </configuration>
                     </execution>
