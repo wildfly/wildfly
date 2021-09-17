@@ -123,7 +123,7 @@ public class AppClientXml extends CommonXml {
                 // Instead of having to list the remaining versions we just check it is actually a valid version.
                 for (Namespace current : Namespace.domainValues()) {
                     if (readerNS.equals(current)) {
-                        readServerElement_1_1(readerNS, reader, address, operationList);
+                        readServerElement_18(readerNS, reader, address, operationList);
                         return;
                     }
                 }
