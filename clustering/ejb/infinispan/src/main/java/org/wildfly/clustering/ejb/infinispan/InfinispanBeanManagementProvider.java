@@ -40,7 +40,7 @@ import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactory;
+import org.wildfly.clustering.ejb.DistributableBeanManagementProvider;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
@@ -60,7 +60,7 @@ import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
  * @param <G> the group identifier type
  * @param <I> the bean identifier type
  */
-public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implements BeanManagerFactoryServiceConfiguratorFactory {
+public class InfinispanBeanManagementProvider<I> implements DistributableBeanManagementProvider {
 
     static String getCacheName(ServiceName deploymentUnitServiceName, String beanManagerFactoryName) {
         List<String> parts = new ArrayList<>(3);
@@ -75,7 +75,7 @@ public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implement
     private final String name;
     private final BeanManagerFactoryServiceConfiguratorConfiguration config;
 
-    public InfinispanBeanManagerFactoryServiceConfiguratorFactory(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
+    public InfinispanBeanManagementProvider(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
         this.name = name;
         this.config = config;
     }
