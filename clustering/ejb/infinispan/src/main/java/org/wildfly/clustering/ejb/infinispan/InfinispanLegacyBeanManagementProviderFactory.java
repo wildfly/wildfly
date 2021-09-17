@@ -19,23 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb;
+package org.wildfly.clustering.ejb.infinispan;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.msc.service.ServiceName;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.ejb.DistributableBeanManagementProvider;
+import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
+import org.wildfly.clustering.ejb.LegacyBeanManagementProviderFactory;
 
-public interface BeanManagerFactoryServiceConfiguratorFactory {
+/**
+ * @author Paul Ferraro
+ */
+@MetaInfServices(LegacyBeanManagementProviderFactory.class)
+public class InfinispanLegacyBeanManagementProviderFactory implements LegacyBeanManagementProviderFactory {
 
-    /**
-     * Installs dependencies for a deployment unit
-     * @param name the service name of the deployment unit
-     */
-    Iterable<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(ServiceName name);
-
-    /**
-     * Builds a bean manager factory for an Jakarta Enterprise Beans within a deployment.
-     * @param context the bean context
-     * @return a service builder
-     */
-    CapabilityServiceConfigurator getBeanManagerFactoryServiceConfigurator(StatefulBeanConfiguration context);
+    @Override
+    public DistributableBeanManagementProvider getBeanManagerFactoryBuilder(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
+        return new InfinispanBeanManagementProvider<>(name, config);
+    }
 }

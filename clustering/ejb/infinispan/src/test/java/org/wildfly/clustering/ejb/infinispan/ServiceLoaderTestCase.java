@@ -27,7 +27,7 @@ import java.util.ServiceLoader;
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.junit.Test;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactoryProvider;
+import org.wildfly.clustering.ejb.LegacyBeanManagementProviderFactory;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
@@ -48,7 +48,7 @@ public class ServiceLoaderTestCase {
     @Test
     public void load() {
         load(Externalizer.class);
-        load(BeanManagerFactoryServiceConfiguratorFactoryProvider.class);
+        load(LegacyBeanManagementProviderFactory.class);
         load(DistributedCacheServiceConfiguratorProvider.class);
         load(LocalCacheServiceConfiguratorProvider.class);
         load(IdentityCacheServiceConfiguratorProvider.class);

@@ -81,7 +81,7 @@ public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends Simpl
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
         String containerName = this.configuration.getContainerName();
         ServiceName deploymentUnitServiceName = this.beanConfiguration.getDeploymentUnitServiceName();
-        String cacheName = InfinispanBeanManagerFactoryServiceConfiguratorFactory.getCacheName(deploymentUnitServiceName, this.name);
+        String cacheName = InfinispanBeanManagementProvider.getCacheName(deploymentUnitServiceName, this.name);
         this.cache = new ServiceSupplierDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, containerName, cacheName));
         this.affinityFactory = new ServiceSupplierDependency<>(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(support, containerName));
         this.dispatcherFactory = new ServiceSupplierDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, containerName));

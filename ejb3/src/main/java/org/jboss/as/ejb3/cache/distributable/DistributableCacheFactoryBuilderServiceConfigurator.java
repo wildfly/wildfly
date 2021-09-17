@@ -45,8 +45,8 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactory;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactoryProvider;
+import org.wildfly.clustering.ejb.DistributableBeanManagementProvider;
+import org.wildfly.clustering.ejb.LegacyBeanManagementProviderFactory;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -58,17 +58,17 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K> & Contextual<Batch>> extends DistributableCacheFactoryBuilderServiceNameProvider implements ServiceConfigurator, DistributableCacheFactoryBuilder<K, V> {
 
-    private final BeanManagerFactoryServiceConfiguratorFactory factory;
+    private final DistributableBeanManagementProvider factory;
     private final BeanManagerFactoryServiceConfiguratorConfiguration config;
 
     public DistributableCacheFactoryBuilderServiceConfigurator(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
         this(name, load(), config);
     }
 
-    private static BeanManagerFactoryServiceConfiguratorFactoryProvider load() {
-        Iterator<BeanManagerFactoryServiceConfiguratorFactoryProvider> providers = load(BeanManagerFactoryServiceConfiguratorFactoryProvider.class).iterator();
+    private static LegacyBeanManagementProviderFactory load() {
+        Iterator<LegacyBeanManagementProviderFactory> providers = load(LegacyBeanManagementProviderFactory.class).iterator();
         if (!providers.hasNext()) {
-            throw new ServiceConfigurationError(BeanManagerFactoryServiceConfiguratorFactoryProvider.class.getName());
+            throw new ServiceConfigurationError(LegacyBeanManagementProviderFactory.class.getName());
         }
         return providers.next();
     }
@@ -83,7 +83,7 @@ public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Id
         return WildFlySecurityManager.doUnchecked(action);
     }
 
-    public DistributableCacheFactoryBuilderServiceConfigurator(String name, BeanManagerFactoryServiceConfiguratorFactoryProvider provider, BeanManagerFactoryServiceConfiguratorConfiguration config) {
+    public DistributableCacheFactoryBuilderServiceConfigurator(String name, LegacyBeanManagementProviderFactory provider, BeanManagerFactoryServiceConfiguratorConfiguration config) {
         super(name);
         this.config = config;
         this.factory = provider.getBeanManagerFactoryBuilder(name, config);

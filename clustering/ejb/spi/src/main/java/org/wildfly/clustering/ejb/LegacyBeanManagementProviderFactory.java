@@ -19,21 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb.infinispan;
-
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactory;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactoryProvider;
+package org.wildfly.clustering.ejb;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(BeanManagerFactoryServiceConfiguratorFactoryProvider.class)
-public class InfinispanBeanManagerFactoryServiceConfiguratorFactoryProvider implements BeanManagerFactoryServiceConfiguratorFactoryProvider {
-
-    @Override
-    public BeanManagerFactoryServiceConfiguratorFactory getBeanManagerFactoryBuilder(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
-        return new InfinispanBeanManagerFactoryServiceConfiguratorFactory<>(name, config);
-    }
+public interface LegacyBeanManagementProviderFactory {
+    DistributableBeanManagementProvider getBeanManagerFactoryBuilder(String name, BeanManagerFactoryServiceConfiguratorConfiguration config);
 }
