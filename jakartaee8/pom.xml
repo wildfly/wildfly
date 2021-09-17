@@ -428,34 +428,10 @@
                                     <artifactId>jbossxacml</artifactId>
                                 </dependency>
 
-                                <!-- include security: picketbox/link -->
+                                <!-- include security: picketbox -->
                                 <dependency>
                                     <groupId>org.picketbox</groupId>
                                     <artifactId>picketbox-commons</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.picketlink</groupId>
-                                    <artifactId>picketlink-api</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.picketlink</groupId>
-                                    <artifactId>picketlink-common</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.picketlink</groupId>
-                                    <artifactId>picketlink-federation</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.picketlink</groupId>
-                                    <artifactId>picketlink-impl</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.picketlink</groupId>
-                                    <artifactId>picketlink-idm-api</artifactId>
-                                </dependency>
-                                <dependency>
-                                    <groupId>org.picketlink</groupId>
-                                    <artifactId>picketlink-idm-impl</artifactId>
                                 </dependency>
 
                                 <!-- include security: wfly -->
