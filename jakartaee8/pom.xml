@@ -354,22 +354,25 @@
                                     <groupId>org.jboss.resteasy</groupId>
                                     <artifactId>resteasy-jaxb-provider</artifactId>
                                 </dependency>
-                                <!-- resteasy-jettison-provider is deprecated for EAP 7 -->
-                                <dependency>
-                                    <groupId>org.jboss.resteasy</groupId>
-                                    <artifactId>resteasy-jettison-provider</artifactId>
-                                </dependency>
                                 <dependency>
                                     <groupId>org.jboss.resteasy</groupId>
                                     <artifactId>resteasy-jackson2-provider</artifactId>
                                 </dependency>
                                 <dependency>
                                     <groupId>org.jboss.resteasy</groupId>
-                                    <artifactId>resteasy-jaxrs</artifactId>
+                                    <artifactId>resteasy-core</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.resteasy</groupId>
+                                    <artifactId>resteasy-core-spi</artifactId>
                                 </dependency>
                                 <dependency>
                                     <groupId>org.jboss.resteasy</groupId>
                                     <artifactId>resteasy-client</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.resteasy</groupId>
+                                    <artifactId>resteasy-client-api</artifactId>
                                 </dependency>
                                 <dependency>
                                     <groupId>org.jboss.resteasy</groupId>
