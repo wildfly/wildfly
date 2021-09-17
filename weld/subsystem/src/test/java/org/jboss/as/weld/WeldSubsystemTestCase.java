@@ -21,25 +21,9 @@
 */
 package org.jboss.as.weld;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.model.test.FailedOperationTransformationConfig;
-import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
-import org.jboss.as.model.test.FailedOperationTransformationConfig.NewAttributesConfig;
-import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -77,134 +61,7 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersASEAP640() throws Exception {
-        testTransformers10(ModelTestControllerVersion.EAP_6_4_0);
+    public void testExpressions() throws Exception {
+        standardSubsystemTest("subsystem_with_expression.xml");
     }
-
-    private void testTransformers10(ModelTestControllerVersion controllerVersion) throws Exception {
-        ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("subsystem_3_0-transformers.xml");
-        //which is why we need to include the jboss-as-controller artifact.
-        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-weld:" + controllerVersion.getMavenGavVersion())
-                .skipReverseControllerCheck()
-                .dontPersistXml();
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        assertTrue(mainServices.isSuccessfulBoot());
-        assertTrue(legacyServices.isSuccessfulBoot());
-
-        checkSubsystemModelTransformation(mainServices, modelVersion);
-    }
-
-    @Test
-    public void testTransformersEAP70() throws Exception {
-        ModelVersion modelVersion = ModelVersion.create(3, 0, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("subsystem_4_0-transformers.xml");
-        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, ModelTestControllerVersion.EAP_7_0_0, modelVersion)
-                .addMavenResourceURL("org.jboss.eap:wildfly-weld:" + ModelTestControllerVersion.EAP_7_0_0.getMavenGavVersion())
-                .dontPersistXml();
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        assertTrue(mainServices.isSuccessfulBoot());
-        assertTrue(legacyServices.isSuccessfulBoot());
-        checkSubsystemModelTransformation(mainServices, modelVersion);
-    }
-
-    @Test
-    public void testTransformersRejectionASEAP640() throws Exception {
-        testRejectTransformers10(ModelTestControllerVersion.EAP_6_4_0);
-    }
-
-    private void testRejectTransformers10(ModelTestControllerVersion controllerVersion) throws Exception {
-
-        ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
-
-        //which is why we need to include the jboss-as-controller artifact.
-        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-weld:" + controllerVersion.getMavenGavVersion())
-                .dontPersistXml();
-
-        KernelServices mainServices = builder.build();
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(getSubsystemXml("subsystem-reject.xml")),
-                new FailedOperationTransformationConfig()
-                        .addFailedAttribute(
-                                PathAddress.pathAddress(WeldExtension.PATH_SUBSYSTEM),
-                                ChainedConfig.createBuilder(WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE).addConfig(new FalseOrUndefinedToTrueConfig (
-                                        WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE,
-                                        WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE
-                                ))
-                                .addConfig(new NewAttributesConfig(WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE))
-                                .addConfig(new NewAttributesConfig(WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE))
-                                .build()
-
-                        )
-        );
-    }
-
-    @Test
-    public void testTransformersRejectionEAP700() throws Exception {
-        ModelVersion modelVersion = ModelVersion.create(3, 0, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
-
-        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, ModelTestControllerVersion.EAP_7_0_0, modelVersion)
-                .addMavenResourceURL("org.jboss.eap:wildfly-weld:" + ModelTestControllerVersion.EAP_7_0_0.getMavenGavVersion())
-                .dontPersistXml();
-
-        KernelServices mainServices = builder.build();
-        assertTrue(mainServices.isSuccessfulBoot());
-        assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(getSubsystemXml("subsystem-reject.xml")),
-                new FailedOperationTransformationConfig().addFailedAttribute(PathAddress.pathAddress(WeldExtension.PATH_SUBSYSTEM),
-                        ChainedConfig
-                                .createBuilder(WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
-                                .addConfig(new NewAttributesConfig(WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE)).build()
-
-                ));
-    }
-
-    @Test
-    public void testExpressionInAttributeValue() throws Exception {
-        ModelVersion modelVersion = ModelVersion.create(3, 0, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("subsystem_with_expression.xml");
-        KernelServices mainServices = builder.build();
-        assertTrue(mainServices.isSuccessfulBoot());
-        ModelNode weldNode = mainServices.readWholeModel().get("subsystem", getMainSubsystemName());
-
-        assertEquals(true, weldNode.get("require-bean-descriptor").resolve().asBoolean());
-        assertEquals(9, weldNode.get("thread-pool-size").resolve().asInt());
-        assertEquals(true, weldNode.get("development-mode").resolve().asBoolean());
-        assertEquals(true, weldNode.get("non-portable-mode").resolve().asBoolean());
-    }
-
-
-    private static class FalseOrUndefinedToTrueConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<FalseOrUndefinedToTrueConfig>{
-
-        FalseOrUndefinedToTrueConfig(AttributeDefinition...defs){
-            super(convert(defs));
-        }
-
-        @Override
-        protected boolean isAttributeWritable(String attributeName) {
-            return true;
-        }
-
-        @Override
-        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
-            return !attribute.isDefined() || attribute.asString().equals("false");
-        }
-
-        @Override
-        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
-            return ModelNode.TRUE;
-        }
-    }
-
 }
