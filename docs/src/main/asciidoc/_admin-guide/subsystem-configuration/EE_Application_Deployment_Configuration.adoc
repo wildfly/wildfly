@@ -76,7 +76,7 @@ For example, suppose you have configured one global directory pointing to the fo
 The JBoss Modules module generated after scanning this global-directory will be equivalent to the following module.xml:
 
 ....
-<module xmlns="urn:jboss:module:1.5" name="deployment.external.global-directory.my-common-libs">
+<module xmlns="urn:jboss:module:1.9" name="deployment.external.global-directory.my-common-libs">
     <resources>
         <resource-root path="/my-common-libs"/>
         <resource-root path="/my-common-libs/a-lib.jar"/>

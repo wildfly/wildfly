@@ -1604,7 +1604,7 @@ and is used to define your module. It says that it contains the
 
 [source,xml,options="nowrap"]
 ----
-<module xmlns="urn:jboss:module:1.0" name="com.acme.corp.tracker">
+<module xmlns="urn:jboss:module:1.9" name="com.acme.corp.tracker">
     <resources>
         <resource-root path="acme-subsystem.jar"/>
     </resources>

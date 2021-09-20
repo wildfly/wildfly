@@ -396,7 +396,7 @@ module's module.xml file can tell you:
 
 [source,xml,options="nowrap"]
 ----
-<module xmlns="urn:jboss:module:1.5" name="com.google.guava">
+<module xmlns="urn:jboss:module:1.9" name="com.google.guava">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>

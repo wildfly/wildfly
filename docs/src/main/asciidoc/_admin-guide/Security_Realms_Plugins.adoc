@@ -284,7 +284,7 @@ To add as a module we first need a `module.xml`: -
 ----
 <?xml version="1.0" encoding="UTF-8"?>
  
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.sample.plugin">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.sample.plugin">
     <properties>
     </properties>
  
