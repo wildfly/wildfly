@@ -915,8 +915,6 @@
                                 <include>org/wildfly/test/integration/microprofile/**/*Test.java</include>
                             </includes>
                             <excludes>
-                                <!-- requires org.apache.commons.lang3 in test servlet otherwise passes -->
-                                <exclude>org/jboss/as/test/integration/security/loginmodules/negotiation/SPNEGOLoginModuleTestCase.java</exclude>
                                 <!-- requires webservices picketlink federation -->
                                 <exclude>org/jboss/as/test/integration/security/xacml/**/*TestCase.java</exclude>
                                 <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
@@ -2710,8 +2708,6 @@
                                         <include>org/jboss/as/test/integration/weld/builtin/*TestCase.java</include>
                                     </includes>
                                     <excludes>
-                                        <!-- requires org.apache.commons.lang3 in test servlet otherwise passes -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/negotiation/SPNEGOLoginModuleTestCase.java</exclude>
                                         <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
                                         <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
                                         <!-- no ejb -->
@@ -3344,8 +3340,6 @@
                                         <include>org/jboss/as/test/integration/weld/builtin/*TestCase.java</include>
                                     </includes>
                                     <excludes>
-                                        <!-- requires org.apache.commons.lang3 in test servlet otherwise passes -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/negotiation/SPNEGOLoginModuleTestCase.java</exclude>
                                         <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
                                         <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
                                         <!-- no ejb -->

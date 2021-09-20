@@ -38,7 +38,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.security.negotiation.NegotiationMechanismFactory;
 import org.wildfly.extension.undertow.security.digest.DigestAuthenticationMechanismFactory;
 import org.xnio.XnioWorker;
 
@@ -126,7 +125,6 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         // WFLY-2553 Adding default WildFly specific mechanisms here - subsequently we could enhance the servlet-container
         // config to override / add mechanisms.
         Map<String, AuthenticationMechanismFactory> authenticationMechanisms = new HashMap<>();
-        authenticationMechanisms.put("SPNEGO", new NegotiationMechanismFactory());
         authenticationMechanisms.put(HttpServletRequest.DIGEST_AUTH, DigestAuthenticationMechanismFactory.FACTORY);
 
         final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY);
