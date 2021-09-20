@@ -14,6 +14,7 @@
 
     <feature-group name="private-interface"/>
 
+    <feature-group name="distributable-ejb"/>
     <feature-group name="infinispan-dist-ejb"/>
     <feature-group name="jgroups-all"/>
     <packages>
