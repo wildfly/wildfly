@@ -374,6 +374,11 @@
                                     <groupId>org.jboss.resteasy</groupId>
                                     <artifactId>resteasy-client-api</artifactId>
                                 </dependency>
+                                <!-- seems to be needed by resteasy clients, yet excluded by wildcard on wfly dep management -->
+                                <dependency>
+                                    <groupId>commons-io</groupId>
+                                    <artifactId>commons-io</artifactId>
+                                </dependency>
                                 <dependency>
                                     <groupId>org.jboss.resteasy</groupId>
                                     <artifactId>resteasy-multipart-provider</artifactId>
