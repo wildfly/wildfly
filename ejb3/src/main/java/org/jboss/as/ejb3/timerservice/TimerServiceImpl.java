@@ -36,6 +36,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -766,9 +767,11 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                     if (doesTimeoutMethodMatch(calendarTimer.getTimeoutMethod(), methodName, params)) {
 
                         //the timers have the same method.
-                        //now lets make sure the schedule is the same
+                        //now lets make sure the schedule is the same, info is the same,
                         // and the timer does not change the persistence
-                        if (this.doesScheduleMatch(calendarTimer.getScheduleExpression(), timer.getScheduleExpression()) && timer.getTimerConfig().isPersistent()) {
+                        if (this.doesScheduleMatch(calendarTimer.getScheduleExpression(), timer.getScheduleExpression())
+                                && Objects.equals(calendarTimer.info, timer.getTimerConfig().getInfo())
+                                && timer.getTimerConfig().isPersistent()) {
                             it.remove();
                             found = true;
                             break;
