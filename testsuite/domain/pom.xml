@@ -50,7 +50,6 @@
 
         <jbossas.ts.dir>${basedir}/..</jbossas.ts.dir>
 
-        <ts.elytron.cli>../shared/enable-elytron-domain.cli</ts.elytron.cli>
     </properties>
 
     <!--
@@ -298,54 +297,6 @@
                                 <include>org/jboss/as/test/integration/domain/rbac/RbacSoakTest.java</include>
                             </includes>
                             <argLine />
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>elytron.profile</id>
-            <activation>
-                <property>
-                    <name>elytron</name>
-                </property>
-                <file>
-                    <exists>${ts.elytron.cli}</exists>
-                </file>
-            </activation>
-            <properties>
-                <!-- Re-enable the default surefire execution -->
-                <surefire.default-test.phase>test</surefire.default-test.phase>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <executions>
-                            <execution>
-                                <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>execute-commands</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <offline>true</offline>
-                            <scripts>
-                                <script>${ts.elytron.cli}</script>
-                            </scripts>
-                            <jboss-home>${project.build.directory}/wildfly</jboss-home>
-                            <stdout>none</stdout>
-                            <java-opts>${modular.jdk.args}</java-opts>
-                            <system-properties>
-                                <public.ip>${node0}</public.ip>
-                                <management.ip>${node0}</management.ip>
-                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                                <module.path>${jboss.dist}/modules</module.path>
-                            </system-properties>
                         </configuration>
                     </plugin>
                 </plugins>
