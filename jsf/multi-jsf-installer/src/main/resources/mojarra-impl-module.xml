@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="com.sun.jsf-impl:${jsf-impl-name}-${jsf-version}">
+<module xmlns="urn:jboss:module:1.9" name="com.sun.jsf-impl:${jsf-impl-name}-${jsf-version}">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
