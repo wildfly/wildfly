@@ -31,7 +31,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 
-public final class OidcConfigService {
+final class OidcConfigService {
 
     private static final String CREDENTIALS_JSON_NAME = "credentials";
 
