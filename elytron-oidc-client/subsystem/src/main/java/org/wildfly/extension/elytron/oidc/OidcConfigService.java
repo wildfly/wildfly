@@ -43,11 +43,11 @@ final class OidcConfigService {
         return INSTANCE;
     }
 
-    private final Map<String, ModelNode> realms = new HashMap<String, ModelNode>();
-    private final Map<String, ModelNode> providers = new HashMap<String, ModelNode>();
+    private Map<String, ModelNode> realms = new HashMap<>();
+    private Map<String, ModelNode> providers = new HashMap<>();
 
     // deployments secured with OpenID Connect
-    private final Map<String, ModelNode> secureDeployments = new HashMap<String, ModelNode>();
+    private Map<String, ModelNode> secureDeployments = new HashMap<>();
 
     private OidcConfigService() {
     }
@@ -194,6 +194,12 @@ final class OidcConfigService {
     public String getJSON(String deploymentName) {
         ModelNode deployment = this.secureDeployments.get(deploymentName);
         return getJSON(deployment);
+    }
+
+    public void clear() {
+        realms = new HashMap<>();
+        providers = new HashMap<>();
+        secureDeployments = new HashMap<>();
     }
 
     private String getJSON(ModelNode deployment) {
