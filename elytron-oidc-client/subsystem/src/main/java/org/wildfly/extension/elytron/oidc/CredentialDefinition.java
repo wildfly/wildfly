@@ -135,7 +135,7 @@ class CredentialDefinition extends SimpleResourceDefinition {
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRuntime(context, operation, model);
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.addCredential(operation, context.resolveExpressions(model));
+            oidcConfigService.addCredential(context.getCurrentAddress().getParent().getLastElement().getValue(), context.getCurrentAddressValue(), context.resolveExpressions(model));
         }
     }
 
@@ -150,7 +150,7 @@ class CredentialDefinition extends SimpleResourceDefinition {
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                                ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<OidcConfigService> handbackHolder) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.updateCredential(operation, attributeName, resolvedValue);
+            oidcConfigService.updateCredential(context.getCurrentAddress().getParent().getLastElement().getValue(), context.getCurrentAddressValue(), resolvedValue);
             handbackHolder.setHandback(oidcConfigService);
             return false;
         }
@@ -158,7 +158,7 @@ class CredentialDefinition extends SimpleResourceDefinition {
         @Override
         protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                              ModelNode valueToRestore, ModelNode valueToRevert, OidcConfigService oidcConfigService) throws OperationFailedException {
-            oidcConfigService.updateCredential(operation, attributeName, valueToRestore);
+            oidcConfigService.updateCredential(context.getCurrentAddress().getParent().getLastElement().getValue(), context.getCurrentAddressValue(), valueToRestore);
         }
     }
 
@@ -171,7 +171,7 @@ class CredentialDefinition extends SimpleResourceDefinition {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.removeCredential(operation);
+            oidcConfigService.removeCredential(context.getCurrentAddress().getParent().getLastElement().getValue(), context.getCurrentAddressValue());
         }
     }
 }

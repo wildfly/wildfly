@@ -18,7 +18,6 @@
 
 package org.wildfly.extension.elytron.oidc;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.wildfly.extension.elytron.oidc._private.ElytronOidcLogger.ROOT_LOGGER;
 
 import java.util.ArrayList;
@@ -53,61 +52,58 @@ public final class OidcConfigService {
     private OidcConfigService() {
     }
 
-    public void addRealm(ModelNode operation, ModelNode model) {
-        this.realms.put(realmNameFromOp(operation), model.clone());
+    public void addRealm(String realmName, ModelNode model) {
+        this.realms.put(realmName, model.clone());
     }
 
-    public void updateRealm(ModelNode operation, String attrName, ModelNode resolvedValue) {
-        ModelNode realm = this.realms.get(realmNameFromOp(operation));
+    public void updateRealm(String realmName, String attrName, ModelNode resolvedValue) {
+        ModelNode realm = this.realms.get(realmName);
         realm.get(attrName).set(resolvedValue);
     }
 
-    public void removeRealm(ModelNode operation) {
-        this.realms.remove(realmNameFromOp(operation));
+    public void removeRealm(String realmName) {
+        this.realms.remove(realmName);
     }
 
-    public void addProvider(ModelNode operation, ModelNode model) {
-        this.providers.put(providerNameFromOp(operation), model.clone());
+    public void addProvider(String providerName, ModelNode model) {
+        this.providers.put(providerName, model.clone());
     }
 
-    public void updateProvider(ModelNode operation, String attrName, ModelNode resolvedValue) {
-        ModelNode realm = this.providers.get(providerNameFromOp(operation));
+    public void updateProvider(String providerName, String attrName, ModelNode resolvedValue) {
+        ModelNode realm = this.providers.get(providerName);
         realm.get(attrName).set(resolvedValue);
     }
 
-    public void removeProvider(ModelNode operation) {
-        this.providers.remove(providerNameFromOp(operation));
+    public void removeProvider(String providerName) {
+        this.providers.remove(providerName);
     }
 
-    public void addSecureDeployment(ModelNode operation, ModelNode model) {
+    public void addSecureDeployment(String deploymentName, ModelNode model) {
         ModelNode deployment = model.clone();
-        String name = deploymentNameFromOp(operation);
-        this.secureDeployments.put(name, deployment);
+        this.secureDeployments.put(deploymentName, deployment);
     }
 
-    public void updateSecureDeployment(ModelNode operation, String attrName, ModelNode resolvedValue) {
-        ModelNode deployment = this.secureDeployments.get(deploymentNameFromOp(operation));
+    public void updateSecureDeployment(String deploymentName, String attrName, ModelNode resolvedValue) {
+        ModelNode deployment = this.secureDeployments.get(deploymentName);
         deployment.get(attrName).set(resolvedValue);
     }
 
-    public void removeSecureDeployment(ModelNode operation) {
-        String name = deploymentNameFromOp(operation);
-        this.secureDeployments.remove(name);
+    public void removeSecureDeployment(String deploymentName) {
+        this.secureDeployments.remove(deploymentName);
     }
 
-    public void addCredential(ModelNode operation, ModelNode model) {
-        ModelNode credentials = credentialsFromOp(operation);
+    public void addCredential(String deploymentName, String credentialName, ModelNode model) {
+        ModelNode credentials = getCredentialsForDeployment(deploymentName);
         if (! credentials.isDefined()) {
             credentials = new ModelNode();
         }
 
-        setCredential(operation, model, credentials);
-        ModelNode deployment = this.secureDeployments.get(deploymentNameFromOp(operation));
+        setCredential(credentialName, model, credentials);
+        ModelNode deployment = this.secureDeployments.get(deploymentName);
         deployment.get(CREDENTIALS_JSON_NAME).set(credentials);
     }
 
-    private void setCredential(ModelNode operation, ModelNode model, ModelNode credentials) {
-        String credentialName = credentialNameFromOp(operation);
+    private void setCredential(String credentialName, ModelNode model, ModelNode credentials) {
         if (credentialName.equals(ElytronOidcDescriptionConstants.SECRET)) {
             credentials.get(credentialName).set(model.get(ElytronOidcDescriptionConstants.SECRET).asString());
         } else {
@@ -127,99 +123,57 @@ public final class OidcConfigService {
         return credential;
     }
 
-    public void removeCredential(ModelNode operation) {
-        ModelNode credentials = credentialsFromOp(operation);
+    public void removeCredential(String deploymentName, String credentialName) {
+        ModelNode credentials = getCredentialsForDeployment(deploymentName);
         if (!credentials.isDefined()) {
-            throw ROOT_LOGGER.cannotRemoveCredential(operation.toString());
+            throw ROOT_LOGGER.cannotRemoveCredential(deploymentName);
         }
-        String credentialName = credentialNameFromOp(operation);
         credentials.remove(credentialName);
     }
 
-    public void updateCredential(ModelNode operation, String attrName, ModelNode resolvedValue) {
-        ModelNode credentials = credentialsFromOp(operation);
+    public void updateCredential(String deploymentName, String credentialName, ModelNode resolvedValue) {
+        ModelNode credentials = getCredentialsForDeployment(deploymentName);
         if (!credentials.isDefined()) {
-            throw ROOT_LOGGER.cannotUpdateCredential(operation.toString());
+            throw ROOT_LOGGER.cannotUpdateCredential(deploymentName);
         }
-        setCredential(operation, resolvedValue, credentials);
+        setCredential(credentialName, resolvedValue, credentials);
     }
 
-    private ModelNode credentialsFromOp(ModelNode operation) {
-        ModelNode deployment = this.secureDeployments.get(deploymentNameFromOp(operation));
+    private ModelNode getCredentialsForDeployment(String deploymentName) {
+        ModelNode deployment = this.secureDeployments.get(deploymentName);
         return deployment.get(CREDENTIALS_JSON_NAME);
     }
 
-    public void addRedirectRewriteRule(ModelNode operation, ModelNode model) {
-        ModelNode redirectRewritesRules = redirectRewriteRuleFromOp(operation);
+    public void addRedirectRewriteRule(String deploymentName, String redirectRewriteRuleName, ModelNode model) {
+        ModelNode redirectRewritesRules = getRedirectRewriteRuleForDeployment(deploymentName);
         if (!redirectRewritesRules.isDefined()) {
             redirectRewritesRules = new ModelNode();
         }
-        String redirectRewriteRuleName = redirectRewriteRule(operation);
         redirectRewritesRules.get(redirectRewriteRuleName).set(model.get(ElytronOidcDescriptionConstants.REPLACEMENT).asString());
 
-        ModelNode deployment = this.secureDeployments.get(deploymentNameFromOp(operation));
+        ModelNode deployment = this.secureDeployments.get(deploymentName);
         deployment.get(REDIRECT_REWRITE_RULE_JSON_NAME).set(redirectRewritesRules);
     }
 
-    public void removeRedirectRewriteRule(ModelNode operation) {
-        ModelNode redirectRewritesRules = redirectRewriteRuleFromOp(operation);
+    public void removeRedirectRewriteRule(String deploymentName, String redirectRewriteRuleName) {
+        ModelNode redirectRewritesRules = getRedirectRewriteRuleForDeployment(deploymentName);
         if (!redirectRewritesRules.isDefined()) {
-            throw ROOT_LOGGER.cannotRemoveRedirectRuntimeRule(operation.toString());
+            throw ROOT_LOGGER.cannotRemoveRedirectRuntimeRule(deploymentName);
         }
-
-        String ruleName = credentialNameFromOp(operation);
-        redirectRewritesRules.remove(ruleName);
+        redirectRewritesRules.remove(redirectRewriteRuleName);
     }
 
-    public void updateRedirectRewriteRule(ModelNode operation, String attrName, ModelNode resolvedValue) {
-        ModelNode redirectRewritesRules = redirectRewriteRuleFromOp(operation);
+    public void updateRedirectRewriteRule(String deploymentName, String redirectRewriteRuleName, ModelNode resolvedValue) {
+        ModelNode redirectRewritesRules = getRedirectRewriteRuleForDeployment(deploymentName);
         if (!redirectRewritesRules.isDefined()) {
-            throw ROOT_LOGGER.cannotUpdateRedirectRuntimeRule(operation.toString());
+            throw ROOT_LOGGER.cannotUpdateRedirectRuntimeRule(deploymentName);
         }
-
-        String ruleName = credentialNameFromOp(operation);
-        redirectRewritesRules.get(ruleName).set(resolvedValue.get(ElytronOidcDescriptionConstants.REPLACEMENT).asString());
+        redirectRewritesRules.get(redirectRewriteRuleName).set(resolvedValue.get(ElytronOidcDescriptionConstants.REPLACEMENT).asString());
     }
 
-    private ModelNode redirectRewriteRuleFromOp(ModelNode operation) {
-        ModelNode deployment = this.secureDeployments.get(deploymentNameFromOp(operation));
+    private ModelNode getRedirectRewriteRuleForDeployment(String deploymentName) {
+        ModelNode deployment = this.secureDeployments.get(deploymentName);
         return deployment.get(REDIRECT_REWRITE_RULE_JSON_NAME);
-    }
-
-    private String providerNameFromOp(ModelNode operation) {
-        return valueFromOpAddress(ElytronOidcDescriptionConstants.PROVIDER, operation);
-    }
-
-    private String realmNameFromOp(ModelNode operation) {
-        return valueFromOpAddress(ElytronOidcDescriptionConstants.REALM, operation);
-    }
-
-    private String deploymentNameFromOp(ModelNode operation) {
-        String deploymentName = valueFromOpAddress(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT, operation);
-
-        if (deploymentName == null) throw new RuntimeException("Can't find deployment name in address " + operation);
-
-        return deploymentName;
-    }
-
-    private String credentialNameFromOp(ModelNode operation) {
-        return valueFromOpAddress(ElytronOidcDescriptionConstants.CREDENTIAL, operation);
-    }
-
-    private String redirectRewriteRule(ModelNode operation) {
-        return valueFromOpAddress(ElytronOidcDescriptionConstants.REDIRECT_REWRITE_RULE, operation);
-    }
-
-    private String valueFromOpAddress(String addrElement, ModelNode operation) {
-        return getValueOfAddrElement(operation.get(ADDRESS), addrElement);
-    }
-
-    private String getValueOfAddrElement(ModelNode address, String elementName) {
-        for (ModelNode element : address.asList()) {
-            if (element.has(elementName)) return element.get(elementName).asString();
-        }
-
-        return null;
     }
 
     protected boolean isDeploymentConfigured(DeploymentUnit deploymentUnit) {

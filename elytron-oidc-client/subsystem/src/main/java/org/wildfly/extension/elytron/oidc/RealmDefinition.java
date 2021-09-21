@@ -81,7 +81,7 @@ class RealmDefinition extends SimpleResourceDefinition {
             }
 
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.addRealm(operation, context.resolveExpressions(model));
+            oidcConfigService.addRealm(context.getCurrentAddressValue(), context.resolveExpressions(model));
         }
     }
 
@@ -96,7 +96,7 @@ class RealmDefinition extends SimpleResourceDefinition {
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                                ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<OidcConfigService> handbackHolder) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.updateRealm(operation, attributeName, resolvedValue);
+            oidcConfigService.updateRealm(context.getCurrentAddressValue(), attributeName, resolvedValue);
             handbackHolder.setHandback(oidcConfigService);
             return false;
         }
@@ -104,7 +104,7 @@ class RealmDefinition extends SimpleResourceDefinition {
         @Override
         protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                              ModelNode valueToRestore, ModelNode valueToRevert, OidcConfigService oidcConfigService) throws OperationFailedException {
-            oidcConfigService.updateRealm(operation, attributeName, valueToRestore);
+            oidcConfigService.updateRealm(context.getCurrentAddressValue(), attributeName, valueToRestore);
         }
     }
 
@@ -117,7 +117,7 @@ class RealmDefinition extends SimpleResourceDefinition {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.removeRealm(operation);
+            oidcConfigService.removeRealm(context.getCurrentAddressValue());
         }
     }
 }

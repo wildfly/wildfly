@@ -202,7 +202,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
                 ROOT_LOGGER.disableTrustManagerSetToTrue();
             }
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.addSecureDeployment(operation, context.resolveExpressions(model));
+            oidcConfigService.addSecureDeployment(context.getCurrentAddressValue(), context.resolveExpressions(model));
         }
     }
 
@@ -217,7 +217,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                                ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<OidcConfigService> handbackHolder) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.updateSecureDeployment(operation, attributeName, resolvedValue);
+            oidcConfigService.updateSecureDeployment(context.getCurrentAddressValue(), attributeName, resolvedValue);
             handbackHolder.setHandback(oidcConfigService);
             return false;
         }
@@ -225,7 +225,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         @Override
         protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                              ModelNode valueToRestore, ModelNode valueToRevert, OidcConfigService oidcConfigService) throws OperationFailedException {
-            oidcConfigService.updateSecureDeployment(operation, attributeName, valueToRestore);
+            oidcConfigService.updateSecureDeployment(context.getCurrentAddressValue(), attributeName, valueToRestore);
         }
     }
 
@@ -238,7 +238,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.removeSecureDeployment(operation);
+            oidcConfigService.removeSecureDeployment(context.getCurrentAddressValue());
         }
     }
 }
