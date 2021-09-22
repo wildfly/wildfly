@@ -187,7 +187,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"
         )),
         WILDFLY_24_0("WildFly24.0", WILDFLY_23_0),
-        // If an extension is added to this enum, also check if it is supplied by wildfly-galleon-pack. If so, add it also
+        // If an extension is added to this enum, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
         // to the internal mpExtensions Set defined on this class.
         CURRENT(MAJOR, WILDFLY_24_0, Arrays.asList(
                 "org.wildfly.extension.elytron-oidc-client",
@@ -199,7 +199,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         private static final Map<String, ExtensionConf> MAP;
         private final boolean modified;
 
-        // List of extensions added by the wildfly-galleon-pack.
+        // List of extensions added only by the wildfly-galleon-pack
         private Set<String> mpExtensions = new HashSet<>(Arrays.asList(
                 "org.wildfly.extension.microprofile.config-smallrye",
                 "org.wildfly.extension.microprofile.health-smallrye",
@@ -210,8 +210,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.openapi-smallrye",
                 "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
                 "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
-                "org.wildfly.extension.elytron-oidc-client",
-                "org.wildfly.extension.opentelemetry"
+                "org.wildfly.extension.elytron-oidc-client"
         ));
 
         ExtensionConf(String name, List<String> addedExtensions) {
