@@ -21,11 +21,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="io.smallrye.reactive.messaging.connector.kafka.api">
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
-
+<module xmlns="urn:jboss:module:1.9" name="io.smallrye.reactive.messaging.connector.kafka.api">
     <resources>
         <artifact name="${io.smallrye.reactive:smallrye-reactive-messaging-kafka-api}"/>
     </resources>
