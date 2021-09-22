@@ -25,7 +25,6 @@ package org.wildfly.clustering.infinispan.spi;
 import java.util.function.Predicate;
 
 import org.infinispan.commons.configuration.BuiltBy;
-import org.infinispan.commons.configuration.ConfigurationInfo;
 import org.infinispan.commons.configuration.attributes.Attribute;
 import org.infinispan.commons.configuration.attributes.AttributeDefinition;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
@@ -36,7 +35,7 @@ import org.infinispan.commons.configuration.attributes.Matchable;
  * @author Paul Ferraro
  */
 @BuiltBy(DataContainerConfigurationBuilder.class)
-public class DataContainerConfiguration implements Matchable<DataContainerConfiguration>, ConfigurationInfo {
+public class DataContainerConfiguration implements Matchable<DataContainerConfiguration> {
     private static final Predicate<Object> ALWAYS = new Predicate<Object>() {
         @Override
         public boolean test(Object key) {
@@ -46,7 +45,7 @@ public class DataContainerConfiguration implements Matchable<DataContainerConfig
 
     @SuppressWarnings("rawtypes")
     static final AttributeDefinition<Predicate> EVICTABLE_PREDICATE = AttributeDefinition.builder("evictable", ALWAYS, Predicate.class)
-            .copier(IdentityAttributeCopier.INSTANCE)
+            .copier(IdentityAttributeCopier.identityCopier())
             .immutable()
             .build();
 

@@ -25,7 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.Arrays;
 import java.util.function.UnaryOperator;
 
-import org.infinispan.persistence.jdbc.DatabaseType;
+import org.infinispan.persistence.jdbc.common.DatabaseType;
 import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.AttributeValueTranslator;
 import org.jboss.as.clustering.controller.CapabilityReference;
