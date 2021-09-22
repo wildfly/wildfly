@@ -68,7 +68,7 @@ public class TimerImpl implements Timer {
     /**
      * The info which was passed while creating the timer.
      */
-    protected final Serializable info;
+    protected Serializable info;
 
     /**
      * Indicates whether the timer is persistent
@@ -225,7 +225,7 @@ public class TimerImpl implements Timer {
     public Serializable getInfo() throws IllegalStateException, EJBException {
         // make sure this call is allowed
         this.assertTimerState();
-        return this.info;
+        return getTimerInfo();
     }
 
     /**
@@ -233,10 +233,33 @@ public class TimerImpl implements Timer {
      * and hence does <i>not</i> throw either {@link IllegalStateException} or {@link javax.ejb.NoSuchObjectLocalException}
      * or {@link javax.ejb.EJBException}.
      *
-     * @return
+     * @return the timer info; if not available in-memory, retrieve it from persistence
      */
     public Serializable getTimerInfo() {
-        return this.info;
+        if (info != Object.class) {
+            return info;
+        }
+        return timerService.getPersistedTimerInfo(this);
+    }
+
+    /**
+     * Obtains the timer info cached in memory, without checking the persistent store.
+     *
+     * @return the cached timer info
+     */
+    public Serializable getCachedTimerInfo() {
+        return info;
+    }
+
+    /**
+     * Sets the timer info to a new value.
+     * The purpose of this method is for {@code DatabaseTimerPersistence} to reset
+     * the cached timer info. It should not be used for other purposes.
+     *
+     * @param newInfo the new timer info, typically null or an empty holder value
+     */
+    public void setCachedTimerInfo(final Serializable newInfo) {
+        info = newInfo;
     }
 
     /**
@@ -316,15 +339,6 @@ public class TimerImpl implements Timer {
 
     public boolean isAutoTimer() {
         return false;
-    }
-
-    /**
-     * Cancels any scheduled timer task for this timer
-     */
-    protected void cancelTimeout() {
-        // delegate to the timerservice, so that it can cancel any scheduled Future
-        // for this timer
-        this.timerService.cancelTimeout(this);
     }
 
     /**
@@ -489,7 +503,9 @@ public class TimerImpl implements Timer {
     // In terms of implementation, this is just equivalent to cancelTimeout() method
     public void suspend() {
         // cancel any scheduled timer task (Future) for this timer
-        this.cancelTimeout();
+        // delegate to the timerservice, so that it can cancel any scheduled Future
+        // for this timer
+        this.timerService.cancelTimeout(this);
     }
 
     /**

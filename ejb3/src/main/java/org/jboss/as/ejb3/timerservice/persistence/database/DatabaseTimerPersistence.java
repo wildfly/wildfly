@@ -53,6 +53,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import javax.sql.DataSource;
@@ -85,6 +86,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
@@ -133,10 +135,33 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private static final String LOAD_TIMER = "load-timer";
     private static final String DELETE_TIMER = "delete-timer";
     private static final String UPDATE_RUNNING = "update-running";
+    private static final String GET_TIMER_INFO = "get-timer-info";
     /** The format for scheduler start and end date*/
     private static final String SCHEDULER_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
     /** Pattern to pickout MSSQL */
     private static final Pattern MSSQL_PATTERN = Pattern.compile("(sqlserver|microsoft|mssql)");
+
+    /**
+     * System property {@code jboss.ejb.timer.database.clearTimerInfoCacheBeyond}
+     * to configure the threshold (in minutes) to clear timer info cache
+     * when database is used as the data store for the ejb timer service.
+     * The default value is 15 minutes.
+     * <p>
+     * For example, if it is set to 10, and a timer is about to expire in
+     * more than 10 minutes from now, its in-memory timer info is cleared;
+     * if the timer is to expire within 10 minutes, its info is retained.
+     * <p>
+     * Timer info of the following types are always retained, regardless of the value of this property:
+     * <ul>
+     *     <li>java.lang.String
+     *     <li>java.lang.Number
+     *     <li>java.util.Date
+     *     <li>java.lang.Character
+     *     <li>enum
+     * </ul>
+     */
+    private final long clearTimerInfoCacheBeyond = TimeUnit.MINUTES.toMillis(Long.parseLong(
+            WildFlySecurityManager.getPropertyPrivileged("jboss.ejb.timer.database.clearTimerInfoCacheBeyond", "15")));
 
     public DatabaseTimerPersistence(final String database, String partition, String nodeName, int refreshInterval, boolean allowExecution) {
         this.database = database;
@@ -343,7 +368,13 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             statement = connection.prepareStatement(createTimer);
             statementParameters(timerEntity, statement);
             statement.execute();
+
+            if (isClearTimerInfoCache(timerEntity)) {
+                timerEntity.setCachedTimerInfo(Object.class);
+                EjbLogger.EJB3_TIMER_LOGGER.debugf("Cleared timer info for timer: %s", timerEntity.getId());
+            }
         } catch (SQLException e) {
+            timerEntity.setCachedTimerInfo(null);
             throw new RuntimeException(e);
         } finally {
             safeClose(statement);
@@ -620,6 +651,11 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         builder.setPersistent(true);
 
         TimerImpl ret =  builder.build(timerService);
+        if (isClearTimerInfoCache(ret)) {
+            ret.setCachedTimerInfo(Object.class);
+            EjbLogger.EJB3_TIMER_LOGGER.debugf("Cleared timer info for timer: %s", timerId);
+        }
+
         if (nodeName != null
                 && nodeName.equals(this.nodeName)
                 && (ret.getState() == TimerState.IN_TIMEOUT ||
@@ -694,6 +730,63 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         setNodeName(timerEntity.getState(), statement, 26);
     }
 
+    /**
+     * Retrieves the timer info from the timer database.
+     *
+     * @param timer the timer whose info to be retrieved
+     * @return the timer info from database; null if {@code SQLException}
+     */
+    public Serializable getPersistedTimerInfo(final TimerImpl timer) {
+        String getTimerInfo = sql(GET_TIMER_INFO);
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        Serializable result = null;
+        try {
+            connection = dataSource.getConnection();
+            statement = connection.prepareStatement(getTimerInfo);
+            statement.setString(1, timer.getTimedObjectId());
+            statement.setString(2, timer.getId());
+            resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                result = (Serializable) deSerialize(resultSet.getString(1));
+            }
+        } catch (SQLException e) {
+            EjbLogger.EJB3_TIMER_LOGGER.failedToRetrieveTimerInfo(timer, e);
+        } finally {
+            safeClose(resultSet);
+            safeClose(statement);
+            safeClose(connection);
+        }
+        return result;
+    }
+
+    /**
+     * Determines if the cached info in the timer should be cleared.
+     * @param timer the timer to check
+     * @return true if the cached info in the timer should be cleared; otherwise false
+     */
+    private boolean isClearTimerInfoCache(final TimerImpl timer) {
+        if (timer.isAutoTimer()) {
+            return false;
+        }
+        final Serializable info = timer.getCachedTimerInfo();
+        if (info == null || info instanceof String || info instanceof Number
+                || info instanceof Enum || info instanceof java.util.Date
+                || info instanceof Character) {
+            return false;
+        }
+        final Date nextExpiration = timer.getNextExpiration();
+        if (nextExpiration == null) {
+            return true;
+        }
+        final long howLongTillExpiry = nextExpiration.getTime() - System.currentTimeMillis();
+        if (howLongTillExpiry <= clearTimerInfoCacheBeyond) {
+            return false;
+        }
+        return true;
+    }
+
     private String serialize(final Serializable serializable) {
         if (serializable == null) {
             return null;
@@ -722,9 +815,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             Object ret = unmarshaller.readObject();
             unmarshaller.finish();
             return ret;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         } finally {
             safeClose(in);

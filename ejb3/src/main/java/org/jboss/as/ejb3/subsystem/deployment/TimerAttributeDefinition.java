@@ -48,8 +48,9 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 /**
@@ -251,7 +252,7 @@ public class TimerAttributeDefinition extends ListAttributeDefinition {
 
     private static void addInfo(Timer timer, ModelNode timerNode, final String componentName) {
         try {
-            final Serializable info = timer.getInfo();
+            final Serializable info = ((TimerImpl) timer).getCachedTimerInfo();
             if (info != null) {
                 final ModelNode detailNode = timerNode.get(INFO);
                 detailNode.set(info.toString());
