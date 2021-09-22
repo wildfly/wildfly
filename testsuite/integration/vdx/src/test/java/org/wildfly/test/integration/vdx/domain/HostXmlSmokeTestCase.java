@@ -51,7 +51,7 @@ public class HostXmlSmokeTestCase extends TestBase {
 
         String errorLog = container().getErrorMessageFromServerStart();
         assertContains(errorLog, "^^^^ 'foo' isn't an allowed element here");
-        assertContains(errorLog, "Elements allowed here are: formatters, handlers, logger, server-logger");
+        assertContains(errorLog, "Unexpected element '{urn:jboss:domain:18.0}foo");
     }
 
     @Test
@@ -60,8 +60,8 @@ public class HostXmlSmokeTestCase extends TestBase {
         container().tryStartAndWaitForFail();
 
         String errorLog = container().getErrorMessageFromServerStart();
-        assertContains(errorLog, "^^^^ 'management-interfaces' is missing a required child element");
-        assertContains(errorLog, "One of the following is required: http-interface, native-interface");
+        assertContains(errorLog, "Must include one of the following elements:");
+        assertContains(errorLog, "HTTP_INTERFACE, NATIVE_INTERFACE");
     }
 
     @Test
@@ -72,8 +72,6 @@ public class HostXmlSmokeTestCase extends TestBase {
                         .subtree("path", Subtree.management()).build()));
 
         String errorLog = container().getErrorMessageFromServerStart();
-        assertContains(errorLog, "^^^^ 'domain-controller' is missing one or more required child elements");
-        assertContains(errorLog, "All of the following are required: management");
         assertContains(errorLog, "WFLYCTL0134: Missing required element(s): MANAGEMENT");
     }
 
@@ -92,49 +90,60 @@ public class HostXmlSmokeTestCase extends TestBase {
     @ServerConfig(configuration = "host.xml")
     public void appendElementInJvms() throws Exception {
         String errorLog = addElementAndStart( Subtree.jvms(), simpleXml);
-        assertContains(errorLog, "Elements allowed here are: jvm");
+        assertContains(errorLog, "'unexpectedElement' isn't an allowed element here");
+        assertContains(errorLog, "WFLYCTL0198: Unexpected element");
+        assertContains(errorLog, "'{urn:jboss:domain:18.0}unexpectedElement' encountered");
     }
 
     @Test
     @ServerConfig(configuration = "host.xml")
     public void appendElementInServers() throws Exception {
         String errorLog = addElementAndStart( Subtree.servers(), simpleXml);
-        assertContains(errorLog, "Elements allowed here are: server");
+        assertContains(errorLog, "'unexpectedElement' isn't an allowed element here");
+        assertContains(errorLog, "WFLYCTL0198: Unexpected element");
+        assertContains(errorLog, "'{urn:jboss:domain:18.0}unexpectedElement' encountered");
     }
+
     @Test
     @ServerConfig(configuration = "host.xml")
     public void appendElementInDC() throws Exception {
         String errorLog = addElementAndStart( Subtree.domainController(), simpleXml);
-        assertContains(errorLog, "Elements allowed here are: local, remote");
+        assertContains(errorLog, "'unexpectedElement' isn't an allowed element here");
+        assertContains(errorLog, "WFLYCTL0198: Unexpected element");
+        assertContains(errorLog, "'{urn:jboss:domain:18.0}unexpectedElement' encountered");
     }
     @Test
     @ServerConfig(configuration = "host.xml")
     public void appendElementInInterfaces() throws Exception {
         String errorLog = addElementAndStart( Subtree.interfaces(), simpleXml);
-        assertContains(errorLog, "Elements allowed here are: interface");
+        assertContains(errorLog, "'unexpectedElement' isn't an allowed element here");
+        assertContains(errorLog, "WFLYCTL0198: Unexpected element");
+        assertContains(errorLog, "'{urn:jboss:domain:18.0}unexpectedElement' encountered");
     }
     @Test
     @ServerConfig(configuration = "host.xml")
     public void appendElementInManagement() throws Exception {
         String errorLog = addElementAndStart( Subtree.management(), simpleXml);
-        assertContains(errorLog, "Elements allowed here are:");
-        assertContains(errorLog, "audit-log");
-        assertContains(errorLog, "management-interfaces");
-        assertContains(errorLog, "configuration-changes");
-        assertContains(errorLog, "identity");
+        assertContains(errorLog, "'unexpectedElement' isn't an allowed element here");
+        assertContains(errorLog, "WFLYCTL0198: Unexpected element");
+        assertContains(errorLog, "'{urn:jboss:domain:18.0}unexpectedElement' encountered");
 
     }
     @Test
     @ServerConfig(configuration = "host.xml")
     public void appendElementInExtensions() throws Exception {
         String errorLog = addElementAndStart( Subtree.extensions(), simpleXml);
-        assertContains(errorLog, "Elements allowed here are: extension");
+        assertContains(errorLog, "'unexpectedElement' isn't an allowed element here");
+        assertContains(errorLog, "WFLYCTL0198: Unexpected element");
+        assertContains(errorLog, "'{urn:jboss:domain:18.0}unexpectedElement' encountered");
     }
     @Test
     @ServerConfig(configuration = "host.xml")
     public void appendElementInProperties() throws Exception {
         String errorLog = addElementAndStart( Subtree.systemProperties(), simpleXml);
-        assertContains(errorLog, "Elements allowed here are: property");
+        assertContains(errorLog, "'unexpectedElement' isn't an allowed element here");
+        assertContains(errorLog, "WFLYCTL0198: Unexpected element");
+        assertContains(errorLog, "'{urn:jboss:domain:18.0}unexpectedElement' encountered");
     }
 
 

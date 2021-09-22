@@ -84,9 +84,9 @@ public class JBossWSDomainTestCase extends TestBase {
 
         String errorLog = container().getErrorMessageFromServerStart();
         assertContains(errorLog, "<mmodify-wsdl-address>true</mmodify-wsdl-address>");
-        assertContains(errorLog, "^^^^ 'mmodify-wsdl-address' isn't an allowed element here");
-        assertContains(errorLog, " Did you mean 'modify-wsdl-address'?");
-        assertContains(errorLog, "Elements allowed here are:");
+        assertContains(errorLog, "'mmodify-wsdl-address' isn't an allowed element here");
+        assertContains(errorLog, "WFLYCTL0198: Unexpected element");
+        assertContains(errorLog, "'{urn:jboss:domain:webservices:2.0}mmodify-wsdl-address' encountered");
     }
 
     @Test
