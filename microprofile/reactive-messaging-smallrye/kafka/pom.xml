@@ -67,7 +67,7 @@
             <artifactId>jboss-msc</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-microprofile-reactive-messaging-common</artifactId>
         </dependency>
         <dependency>
@@ -75,7 +75,7 @@
             <artifactId>wildfly-server</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-microprofile-reactive-messaging-config</artifactId>
         </dependency>
     </dependencies>

@@ -98,7 +98,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-elytron-oidc-client-subsystem</artifactId>
             <scope>test</scope>
         </dependency>
