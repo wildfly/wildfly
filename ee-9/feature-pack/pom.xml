@@ -90,7 +90,7 @@
         <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
         <version.org.hibernate.validator>7.0.1.Final</version.org.hibernate.validator>
-        <version.org.jberet>2.0.1.Final</version.org.jberet>
+        <version.org.jberet>2.0.2.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>1.0.5</version.org.jboss.activemq.artemis.integration>
         <version.org.jboss.invocation>1.7.0.Final</version.org.jboss.invocation>
         <version.org.jboss.weld.weld>4.0.2.Final</version.org.jboss.weld.weld>
