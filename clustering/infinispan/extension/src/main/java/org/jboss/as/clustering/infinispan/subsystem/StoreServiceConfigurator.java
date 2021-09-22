@@ -102,4 +102,8 @@ public abstract class StoreServiceConfigurator<C extends StoreConfiguration, B e
         this.accept(builder);
         return builder.async().read(this.async.get()).persistence().create();
     }
+
+    boolean isPurgeOnStartup() {
+        return this.purge;
+    }
 }

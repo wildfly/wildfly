@@ -27,14 +27,13 @@ import static org.wildfly.clustering.infinispan.spi.DataContainerConfiguration.*
 import java.util.function.Predicate;
 
 import org.infinispan.commons.configuration.Builder;
-import org.infinispan.commons.configuration.ConfigurationBuilderInfo;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 
 /**
  * @author Paul Ferraro
  */
-public class DataContainerConfigurationBuilder implements Builder<DataContainerConfiguration>, ConfigurationBuilderInfo {
+public class DataContainerConfigurationBuilder implements Builder<DataContainerConfiguration> {
 
     private final AttributeSet attributes;
 
