@@ -452,7 +452,7 @@ We define the module in `module.xml`:
 [source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<module xmlns="urn:jboss:module:1.1" name="org.acmemq">
+<module xmlns="urn:jboss:module:1.9" name="org.acmemq">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -468,7 +468,7 @@ We define the module in `module.xml`:
  
     <dependencies>
        <!-- add the dependencies required by messaging Bridge code                -->
-       <module name="javax.api" />
+       <module name="javax.api" /> <!-- deprecated -->
        <module name="javax.jms.api" />
        <module name="javax.transaction.api"/>
        <module name="org.jboss.remote-naming"/>

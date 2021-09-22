@@ -523,7 +523,7 @@ depends on OpenJPA, to deploy on WildFly.
 
 [source,java,options="nowrap"]
 ----
- <module xmlns="urn:jboss:module:1.1" name="org.apache.openjpa">
+ <module xmlns="urn:jboss:module:1.9" name="org.apache.openjpa">
     <resources>
         <resource-root path="jipijapa-openjpa-1.0.1.Final.jar"/>
         <resource-root path="openjpa-all.jar">
@@ -561,7 +561,7 @@ that depends on EclipseLink, to deploy on WildFly.
 
 [source,xml,options="nowrap"]
 ----
- <module xmlns="urn:jboss:module:1.1" name="org.eclipse.persistence">
+ <module xmlns="urn:jboss:module:1.9" name="org.eclipse.persistence">
     <resources>
         <resource-root path="jipijapa-eclipselink-10.0.0.Final.jar"/>
         <resource-root path="eclipselink.jar">           <filter>
