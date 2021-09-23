@@ -202,7 +202,7 @@
       <artifactId>proto-google-common-protos</artifactId>
       <licenses>
         <license>
-          <name>Apache-2.0</name>
+          <name>Apache License 2.0</name>
           <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
       </licenses>
@@ -245,7 +245,7 @@
       <artifactId>protobuf-java</artifactId>
       <licenses>
         <license>
-          <name>3-Clause BSD License</name>
+          <name>BSD 3-Clause "New" or "Revised" License</name>
           <url>https://opensource.org/licenses/BSD-3-Clause</url>
           <distribution>repo</distribution>
         </license>
@@ -256,7 +256,7 @@
       <artifactId>protobuf-java-util</artifactId>
       <licenses>
         <license>
-          <name>3-Clause BSD License</name>
+          <name>BSD 3-Clause "New" or "Revised" License</name>
           <url>https://opensource.org/licenses/BSD-3-Clause</url>
           <distribution>repo</distribution>
         </license>
@@ -500,7 +500,7 @@
       <artifactId>grpc-api</artifactId>
       <licenses>
         <license>
-          <name>Apache 2.0</name>
+          <name>Apache License 2.0</name>
           <url>https://opensource.org/licenses/Apache-2.0</url>
         </license>
       </licenses>
@@ -510,7 +510,7 @@
       <artifactId>grpc-context</artifactId>
       <licenses>
         <license>
-          <name>Apache 2.0</name>
+          <name>Apache License 2.0</name>
           <url>https://opensource.org/licenses/Apache-2.0</url>
         </license>
       </licenses>
@@ -520,7 +520,7 @@
       <artifactId>grpc-core</artifactId>
       <licenses>
         <license>
-          <name>Apache 2.0</name>
+          <name>Apache License 2.0</name>
           <url>https://opensource.org/licenses/Apache-2.0</url>
         </license>
       </licenses>
@@ -530,7 +530,7 @@
       <artifactId>grpc-okhttp</artifactId>
       <licenses>
         <license>
-          <name>Apache 2.0</name>
+          <name>Apache License 2.0</name>
           <url>https://opensource.org/licenses/Apache-2.0</url>
         </license>
       </licenses>
@@ -540,7 +540,7 @@
       <artifactId>grpc-protobuf</artifactId>
       <licenses>
         <license>
-          <name>Apache 2.0</name>
+          <name>Apache License 2.0</name>
           <url>https://opensource.org/licenses/Apache-2.0</url>
         </license>
       </licenses>
@@ -550,7 +550,7 @@
       <artifactId>grpc-protobuf-lite</artifactId>
       <licenses>
         <license>
-          <name>Apache 2.0</name>
+          <name>Apache License 2.0</name>
           <url>https://opensource.org/licenses/Apache-2.0</url>
         </license>
       </licenses>
@@ -560,8 +560,28 @@
       <artifactId>grpc-stub</artifactId>
       <licenses>
         <license>
-          <name>Apache 2.0</name>
+          <name>Apache License 2.0</name>
           <url>https://opensource.org/licenses/Apache-2.0</url>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.jaegertracing</groupId>
+      <artifactId>jaeger-core</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.jaegertracing</groupId>
+      <artifactId>jaeger-thrift</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
       </licenses>
     </dependency>
@@ -578,10 +598,20 @@
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api-metrics</artifactId>
       <licenses>
         <license>
-          <name>The Apache License, Version 2.0</name>
+          <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
       </licenses>
@@ -591,7 +621,7 @@
       <artifactId>opentelemetry-context</artifactId>
       <licenses>
         <license>
-          <name>The Apache License, Version 2.0</name>
+          <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
       </licenses>
@@ -601,7 +631,7 @@
       <artifactId>opentelemetry-exporter-jaeger</artifactId>
       <licenses>
         <license>
-          <name>The Apache License, Version 2.0</name>
+          <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
       </licenses>
@@ -611,17 +641,17 @@
       <artifactId>opentelemetry-exporter-otlp-common</artifactId>
       <licenses>
         <license>
-          <name>The Apache License, Version 2.0</name>
+          <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
       </licenses>
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-otlp-trace</artifactId>
+      <artifactId>opentelemetry-exporter-otlp-trace</artifactId>
       <licenses>
         <license>
-          <name>The Apache License, Version 2.0</name>
+          <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
       </licenses>
@@ -631,7 +661,7 @@
       <artifactId>opentelemetry-proto</artifactId>
       <licenses>
         <license>
-          <name>The Apache License, Version 2.0</name>
+          <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
       </licenses>
@@ -641,7 +671,7 @@
       <artifactId>opentelemetry-sdk</artifactId>
       <licenses>
         <license>
-          <name>The Apache License, Version 2.0</name>
+          <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
       </licenses>
@@ -651,7 +681,7 @@
       <artifactId>opentelemetry-sdk-common</artifactId>
       <licenses>
         <license>
-          <name>The Apache License, Version 2.0</name>
+          <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
       </licenses>
@@ -661,7 +691,7 @@
       <artifactId>opentelemetry-sdk-trace</artifactId>
       <licenses>
         <license>
-          <name>The Apache License, Version 2.0</name>
+          <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
       </licenses>
@@ -671,7 +701,7 @@
       <artifactId>opentelemetry-semconv</artifactId>
       <licenses>
         <license>
-          <name>The Apache License, Version 2.0</name>
+          <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
       </licenses>
@@ -681,7 +711,7 @@
       <artifactId>perfmark-api</artifactId>
       <licenses>
         <license>
-          <name>Apache 2.0</name>
+          <name>Apache License 2.0</name>
           <url>https://opensource.org/licenses/Apache-2.0</url>
         </license>
       </licenses>
