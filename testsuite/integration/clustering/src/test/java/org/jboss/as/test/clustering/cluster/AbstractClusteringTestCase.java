@@ -99,7 +99,7 @@ public abstract class AbstractClusteringTestCase {
 
     // Infinispan Server
     public static final String INFINISPAN_SERVER_HOME = System.getProperty("infinispan.server.home");
-    public static final String INFINISPAN_SERVER_PROFILE = "infinispan.xml";
+    public static final String INFINISPAN_SERVER_PROFILE = System.getProperty("infinispan.server.profile");
     public static final String INFINISPAN_SERVER_ADDRESS = "127.0.0.1";
     public static final int INFINISPAN_SERVER_PORT = 11222;
     public static final String INFINISPAN_APPLICATION_USER = "testsuite-application-user";
@@ -107,10 +107,11 @@ public abstract class AbstractClusteringTestCase {
     public static final InfinispanServerRule INFINISPAN_SERVER_RULE;
 
     static {
+        String profile = (INFINISPAN_SERVER_PROFILE == null || INFINISPAN_SERVER_PROFILE.isEmpty()) ? "infinispan.xml" : INFINISPAN_SERVER_PROFILE;
         // Workaround for "ISPN-13107 ServerRunMode.FORKED yields InvalidPathException with relative server config paths on Windows platform" by using absolute file path which won't get mangled.
         String absoluteConfigurationFile = null;
         try {
-            absoluteConfigurationFile = Paths.get(Objects.requireNonNull(AbstractClusteringTestCase.class.getClassLoader().getResource(INFINISPAN_SERVER_PROFILE)).toURI()).toFile().toString();
+            absoluteConfigurationFile = Paths.get(Objects.requireNonNull(AbstractClusteringTestCase.class.getClassLoader().getResource(profile)).toURI()).toFile().toString();
         } catch (URISyntaxException ignore) {
         }
 

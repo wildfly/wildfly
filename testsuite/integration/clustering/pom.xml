@@ -58,6 +58,8 @@
         <bootable-jar-web-passivation-packaging.phase>none</bootable-jar-web-passivation-packaging.phase>
         <!-- Disable the default surefire test execution. All profiles use custom executions. -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
+        <infinispan.server.home.override/>
+        <infinispan.server.profile.override/>
     </properties>
 
     <dependencies>
@@ -387,48 +389,6 @@
             </activation>
             <build>
                 <plugins>
-                    <!-- Download, unpack, and locally cache infinispan-server distribution -->
-                    <!-- This works around the fact that infinispan server distribution zip is no longer published in maven -->
-                    <plugin>
-                        <groupId>com.googlecode.maven-download-plugin</groupId>
-                        <artifactId>download-maven-plugin</artifactId>
-                        <version>1.3.0</version>
-                        <executions>
-                            <execution>
-                                <id>ts.config-as.configure-infinispan-server</id>
-                                <phase>generate-test-resources</phase>
-                                <goals>
-                                    <goal>wget</goal>
-                                </goals>
-                                <configuration>
-                                    <url>https://downloads.jboss.org/infinispan/${version.org.infinispan.server}/infinispan-server-${version.org.infinispan.server}.zip</url>
-                                    <unpack>true</unpack>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- Patch infinispan server distribution, e.g. with authentication / users configuration. -->
-                    <plugin>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ts.config-as.configure-users-infinispan-server</id>
-                                <phase>generate-test-resources</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <configuration>
-                                    <outputDirectory>${basedir}/target/infinispan-server-${version.org.infinispan.server}/server/conf</outputDirectory>
-                                    <resources>
-                                        <resource>
-                                            <directory>src/test/resources/infinispan-server-overlay</directory>
-                                            <filtering>true</filtering>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <!-- Update server profile with shared configuration changes and the load balancer -->
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
@@ -542,6 +502,124 @@
             </build>
         </profile>
 
+        <!-- Profile which provisions infinispan server by downloading, unpacking and patching it -->
+        <profile>
+            <id>ts.clustering.common.infinispan-server.download.profile</id>
+            <activation>
+                <property>
+                    <name>!infinispan.server.home.override</name>
+                </property>
+            </activation>
+            <properties>
+                <infinispan.server.home.template>${basedir}/target/infinispan-server-${version.org.infinispan.server}</infinispan.server.home.template>
+            </properties>
+            <build>
+                <plugins>
+                    <!-- Download, unpack, and locally cache infinispan server distribution -->
+                    <!-- This works around the fact that infinispan server distribution zip is no longer published in maven -->
+                    <plugin>
+                        <groupId>com.googlecode.maven-download-plugin</groupId>
+                        <artifactId>download-maven-plugin</artifactId>
+                        <version>1.3.0</version>
+                        <executions>
+                            <execution>
+                                <id>ts.config-as.configure-infinispan-server</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>wget</goal>
+                                </goals>
+                                <configuration>
+                                    <url>https://downloads.jboss.org/infinispan/${version.org.infinispan.server}/infinispan-server-${version.org.infinispan.server}.zip</url>
+                                    <unpack>true</unpack>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Patch infinispan server distribution, e.g. with authentication / users configuration. -->
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ts.config-as.configure-users-infinispan-server</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${infinispan.server.home.template}/server/conf</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/test/resources/infinispan-server-overlay</directory>
+                                            <filtering>true</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!-- Alternative profile to the above which copies over custom infinispan server distribution from user-specified path and patches it -->
+        <profile>
+            <id>ts.clustering.common.infinispan-server.custom.profile</id>
+            <activation>
+                <property>
+                    <name>infinispan.server.home.override</name>
+                </property>
+            </activation>
+            <properties>
+                <infinispan.server.home.template>${basedir}/target/infinispan-server-custom</infinispan.server.home.template>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <!-- FIXME Remove version override once rest of WF upgrades to this or newer version -->
+                        <!-- Bring in version with fix for https://issues.apache.org/jira/browse/MRESOURCES-236 -->
+                        <version>3.2.0</version>
+                        <executions>
+                            <!-- Copy over infinispan server distribution from custom path -->
+                            <execution>
+                                <id>ts.config-as.configure-infinispan-server-custom</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${infinispan.server.home.template}</outputDirectory>
+                                    <includeEmptyDirs>true</includeEmptyDirs>
+                                    <resources>
+                                        <resource>
+                                            <directory>${infinispan.server.home.override}</directory>
+                                            <filtering>false</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <!-- Patch infinispan server distribution, e.g. with authentication / users configuration. -->
+                            <execution>
+                                <id>ts.config-as.configure-users-infinispan-server-custom</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${infinispan.server.home.template}/server/conf</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/test/resources/infinispan-server-overlay</directory>
+                                            <filtering>true</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!-- Run cluster tests with standalone-ha.xml profile -->
         <profile>
             <id>ts.clustering.cluster.ha.profile</id>
@@ -606,7 +684,8 @@
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
-                                        <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
+                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
+                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -668,7 +747,8 @@
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
-                                        <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
+                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
+                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -731,7 +811,8 @@
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3} -Djboss.messaging.cluster.password=testsuite-messaging-password</server.jvm.args>
-                                        <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
+                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
+                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -851,7 +932,8 @@
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <!-- Usual server JVM args plus additional Byteman args (-Djboss.modules.system.pkgs, -Xbootclasspath)-->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} ${surefire.byteman.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
-                                        <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
+                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
+                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -926,7 +1008,8 @@
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
-                                        <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
+                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
+                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                     <!-- Tests to execute. -->
                                     <includes>
@@ -1012,7 +1095,8 @@
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
-                                        <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
+                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
+                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -1043,7 +1127,8 @@
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
-                                        <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
+                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
+                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -1674,7 +1759,8 @@
                                         <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <!-- Override ${server.jvm.arg} to only include ${jvm.args.ip} but *not* include ${jvm.args.ip.server} -->
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
-                                        <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
+                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
+                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                         <!-- Override the standard module path that points at the shared module set from dist.
                                         Have all the servers use wildfly-clustering-ejb-1 for the modules -->
                                         <module.path>${project.build.directory}/wildfly-clustering-ejb-1/modules${path.separator}${basedir}/target/modules</module.path>
