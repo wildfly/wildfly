@@ -45,6 +45,7 @@ class ElytronOidcSubsystemAdd extends AbstractBoottimeAddStepHandler {
     @Override
     public void performBoottime(OperationContext context, ModelNode operation, ModelNode model) {
         ROOT_LOGGER.activatingSubsystem();
+        OidcConfigService.getInstance().clear();
 
         if (context.isNormalServer()) {
             context.addStep(new AbstractDeploymentChainStep() {

@@ -31,7 +31,6 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -65,12 +64,6 @@ class RedirectRewriteRuleDefinition extends SimpleResourceDefinition {
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-    }
-
-    @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
         resourceRegistration.registerReadWriteAttribute(REPLACEMENT, null, RedirectRewriteRuleWriteHandler.INSTANCE);
@@ -87,7 +80,7 @@ class RedirectRewriteRuleDefinition extends SimpleResourceDefinition {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.addRedirectRewriteRule(operation, context.resolveExpressions(model));
+            oidcConfigService.addRedirectRewriteRule(context.getCurrentAddress().getParent().getLastElement().getValue(), context.getCurrentAddressValue(), context.resolveExpressions(model));
         }
     }
 
@@ -102,7 +95,7 @@ class RedirectRewriteRuleDefinition extends SimpleResourceDefinition {
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                                ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<OidcConfigService> handbackHolder) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.updateRedirectRewriteRule(operation, attributeName, resolvedValue);
+            oidcConfigService.updateRedirectRewriteRule(context.getCurrentAddress().getParent().getLastElement().getValue(), context.getCurrentAddressValue(), resolvedValue);
             handbackHolder.setHandback(oidcConfigService);
             return false;
         }
@@ -110,7 +103,7 @@ class RedirectRewriteRuleDefinition extends SimpleResourceDefinition {
         @Override
         protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                              ModelNode valueToRestore, ModelNode valueToRevert, OidcConfigService oidcConfigService) throws OperationFailedException {
-            oidcConfigService.updateRedirectRewriteRule(operation, attributeName, valueToRestore);
+            oidcConfigService.updateRedirectRewriteRule(context.getCurrentAddress().getParent().getLastElement().getValue(), context.getCurrentAddressValue(), valueToRestore);
         }
     }
 
@@ -123,7 +116,7 @@ class RedirectRewriteRuleDefinition extends SimpleResourceDefinition {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.removeRedirectRewriteRule(operation);
+            oidcConfigService.removeRedirectRewriteRule(context.getCurrentAddress().getParent().getLastElement().getValue(), context.getCurrentAddressValue());
         }
     }
 

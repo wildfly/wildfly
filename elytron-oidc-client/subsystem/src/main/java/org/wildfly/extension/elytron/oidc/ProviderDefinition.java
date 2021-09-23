@@ -30,7 +30,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
@@ -49,12 +48,6 @@ class ProviderDefinition extends SimpleResourceDefinition {
                 .setRemoveHandler(ProviderRemoveHandler.INSTANCE)
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES));
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
     }
 
     @Override
@@ -81,7 +74,7 @@ class ProviderDefinition extends SimpleResourceDefinition {
             }
 
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.addProvider(operation, context.resolveExpressions(model));
+            oidcConfigService.addProvider(context.getCurrentAddressValue(), context.resolveExpressions(model));
         }
     }
 
@@ -96,7 +89,7 @@ class ProviderDefinition extends SimpleResourceDefinition {
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                                ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<OidcConfigService> handbackHolder) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.updateProvider(operation, attributeName, resolvedValue);
+            oidcConfigService.updateProvider(context.getCurrentAddressValue(), attributeName, resolvedValue);
             handbackHolder.setHandback(oidcConfigService);
             return false;
         }
@@ -104,7 +97,7 @@ class ProviderDefinition extends SimpleResourceDefinition {
         @Override
         protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                              ModelNode valueToRestore, ModelNode valueToRevert, OidcConfigService oidcConfigService) throws OperationFailedException {
-            oidcConfigService.updateProvider(operation, attributeName, valueToRestore);
+            oidcConfigService.updateProvider(context.getCurrentAddressValue(), attributeName, valueToRestore);
         }
     }
 
@@ -117,7 +110,7 @@ class ProviderDefinition extends SimpleResourceDefinition {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.removeProvider(operation);
+            oidcConfigService.removeProvider(context.getCurrentAddressValue());
         }
     }
 }

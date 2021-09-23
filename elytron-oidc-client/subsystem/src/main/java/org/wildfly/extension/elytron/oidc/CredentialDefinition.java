@@ -32,7 +32,6 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -111,12 +110,6 @@ class CredentialDefinition extends SimpleResourceDefinition {
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-    }
-
-    @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
         for (AttributeDefinition attribute : ATTRIBUTES) {
@@ -135,7 +128,7 @@ class CredentialDefinition extends SimpleResourceDefinition {
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRuntime(context, operation, model);
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.addCredential(operation, context.resolveExpressions(model));
+            oidcConfigService.addCredential(context.getCurrentAddress().getParent().getLastElement().getValue(), context.getCurrentAddressValue(), context.resolveExpressions(model));
         }
     }
 
@@ -150,7 +143,7 @@ class CredentialDefinition extends SimpleResourceDefinition {
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                                ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<OidcConfigService> handbackHolder) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.updateCredential(operation, attributeName, resolvedValue);
+            oidcConfigService.updateCredential(context.getCurrentAddress().getParent().getLastElement().getValue(), context.getCurrentAddressValue(), resolvedValue);
             handbackHolder.setHandback(oidcConfigService);
             return false;
         }
@@ -158,7 +151,7 @@ class CredentialDefinition extends SimpleResourceDefinition {
         @Override
         protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                              ModelNode valueToRestore, ModelNode valueToRevert, OidcConfigService oidcConfigService) throws OperationFailedException {
-            oidcConfigService.updateCredential(operation, attributeName, valueToRestore);
+            oidcConfigService.updateCredential(context.getCurrentAddress().getParent().getLastElement().getValue(), context.getCurrentAddressValue(), valueToRestore);
         }
     }
 
@@ -171,7 +164,7 @@ class CredentialDefinition extends SimpleResourceDefinition {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.removeCredential(operation);
+            oidcConfigService.removeCredential(context.getCurrentAddress().getParent().getLastElement().getValue(), context.getCurrentAddressValue());
         }
     }
 }

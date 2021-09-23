@@ -35,7 +35,6 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -162,12 +161,6 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-    }
-
-    @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
         for (AttributeDefinition attribute : ALL_ATTRIBUTES) {
@@ -202,7 +195,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
                 ROOT_LOGGER.disableTrustManagerSetToTrue();
             }
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.addSecureDeployment(operation, context.resolveExpressions(model));
+            oidcConfigService.addSecureDeployment(context.getCurrentAddressValue(), context.resolveExpressions(model));
         }
     }
 
@@ -217,7 +210,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                                ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<OidcConfigService> handbackHolder) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.updateSecureDeployment(operation, attributeName, resolvedValue);
+            oidcConfigService.updateSecureDeployment(context.getCurrentAddressValue(), attributeName, resolvedValue);
             handbackHolder.setHandback(oidcConfigService);
             return false;
         }
@@ -225,7 +218,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         @Override
         protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                                              ModelNode valueToRestore, ModelNode valueToRevert, OidcConfigService oidcConfigService) throws OperationFailedException {
-            oidcConfigService.updateSecureDeployment(operation, attributeName, valueToRestore);
+            oidcConfigService.updateSecureDeployment(context.getCurrentAddressValue(), attributeName, valueToRestore);
         }
     }
 
@@ -238,7 +231,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.removeSecureDeployment(operation);
+            oidcConfigService.removeSecureDeployment(context.getCurrentAddressValue());
         }
     }
 }
