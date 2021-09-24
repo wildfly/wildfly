@@ -22,6 +22,13 @@
 
 package org.wildfly.test.manual.microprofile.health;
 
+import java.io.IOException;
+import java.net.ConnectException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -32,19 +39,14 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.IOException;
-import java.net.ConnectException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Test that readiness handling with mp.health.disable-default-procedures=true respects the
@@ -92,6 +94,12 @@ public abstract class MicroProfileHealthDefaultEmptyReadinessTestBase {
 
     @ArquillianResource
     private ContainerController containerController;
+
+    @Before
+    public void check() {
+        //Assume we are using the full distribution which contains standalone-microprofile.xml
+        AssumeTestGroupUtil.assumeFullDistribution();
+    }
 
     @Test
     @InSequence(1)
