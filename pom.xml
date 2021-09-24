@@ -389,6 +389,7 @@
         <version.org.apache.ws.security>2.3.2</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.2.5</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-5</version.org.apache.xalan>
+        <version.org.apache.xerces>2.12.0.SP03</version.org.apache.xerces>
         <version.org.awaitility.awaitility>4.0.2</version.org.awaitility.awaitility>
         <version.org.bitbucket.jose4j>0.7.9</version.org.bitbucket.jose4j>
         <version.org.bytebuddy>1.11.12</version.org.bytebuddy>
@@ -9553,6 +9554,18 @@
                 <groupId>xalan</groupId>
                 <artifactId>xalan</artifactId>
                 <version>${version.org.apache.xalan}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>xerces</groupId>
+                <artifactId>xercesImpl</artifactId>
+                <version>${version.org.apache.xerces}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

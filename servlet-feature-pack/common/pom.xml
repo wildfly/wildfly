@@ -399,6 +399,11 @@
             <artifactId>xalan</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
