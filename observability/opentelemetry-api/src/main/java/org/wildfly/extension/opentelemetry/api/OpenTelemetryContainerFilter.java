@@ -21,7 +21,6 @@ package org.wildfly.extension.opentelemetry.api;
 
 import java.net.URI;
 
-import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -41,7 +40,6 @@ import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 @Provider
-@RequestScoped
 public class OpenTelemetryContainerFilter implements ContainerRequestFilter, ContainerResponseFilter {
     public static final String SERVER_SPAN = "otel_server_span";
     @Inject
