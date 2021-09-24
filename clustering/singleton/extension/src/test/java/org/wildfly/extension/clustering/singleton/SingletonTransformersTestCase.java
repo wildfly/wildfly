@@ -58,12 +58,6 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
 
     private static SingletonModel getModelVersion(ModelTestControllerVersion controllerVersion) {
         switch (controllerVersion) {
-            case EAP_7_0_0:
-                return SingletonModel.VERSION_1_0_0;
-            case EAP_7_1_0:
-            case EAP_7_2_0:
-                return SingletonModel.VERSION_2_0_0;
-            case EAP_7_3_0:
             case EAP_7_4_0:
                 return SingletonModel.VERSION_3_0_0;
             default:
@@ -73,10 +67,6 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
 
     private static String[] getDependencies(ModelTestControllerVersion version) {
         switch (version) {
-            case EAP_7_0_0:
-            case EAP_7_1_0:
-            case EAP_7_2_0:
-            case EAP_7_3_0:
             case EAP_7_4_0:
                 return new String[] {
                         formatEAP7SubsystemArtifact(version),
@@ -104,26 +94,6 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-    public void testTransformerEAP700() throws Exception {
-        this.testTransformation(ModelTestControllerVersion.EAP_7_0_0);
-    }
-
-    @Test
-    public void testTransformerEAP710() throws Exception {
-        this.testTransformation(ModelTestControllerVersion.EAP_7_1_0);
-    }
-
-    @Test
-    public void testTransformerEAP720() throws Exception {
-        this.testTransformation(ModelTestControllerVersion.EAP_7_2_0);
-    }
-
-    @Test
-    public void testTransformerEAP730() throws Exception {
-        this.testTransformation(ModelTestControllerVersion.EAP_7_3_0);
-    }
-
-    @Test
     public void testTransformerEAP740() throws Exception {
         this.testTransformation(ModelTestControllerVersion.EAP_7_4_0);
     }
@@ -135,26 +105,6 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         KernelServices services = this.buildKernelServices("subsystem-transform.xml", controller, version, dependencies);
 
         checkSubsystemModelTransformation(services, version, null, false);
-    }
-
-    @Test
-    public void testRejectionsEAP700() throws Exception {
-        this.testRejections(ModelTestControllerVersion.EAP_7_0_0);
-    }
-
-    @Test
-    public void testRejectionsEAP710() throws Exception {
-        this.testRejections(ModelTestControllerVersion.EAP_7_1_0);
-    }
-
-    @Test
-    public void testRejectionsEAP720() throws Exception {
-        this.testRejections(ModelTestControllerVersion.EAP_7_2_0);
-    }
-
-    @Test
-    public void testRejectionsEAP730() throws Exception {
-        this.testRejections(ModelTestControllerVersion.EAP_7_3_0);
     }
 
     @Test

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,30 +22,24 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import org.jboss.as.clustering.controller.Model;
+import java.util.function.Function;
+
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
- * Enumeration of supported versions of management model.
  * @author Paul Ferraro
  */
-public enum SingletonModel implements Model {
-/*  Unsupported model versions - for reference purposes only
-    VERSION_1_0_0(1, 0, 0), // WildFly 10, EAP 7.0
-    VERSION_2_0_0(2, 0, 0), // WildFly 11-14, EAP 7.1-7.2
-*/
-    VERSION_3_0_0(3, 0, 0), // WildFly 15-present, EAP 7.3-present
-    ;
-    static final SingletonModel CURRENT = VERSION_3_0_0;
+public class SingletonResourceTransformer implements Function<ModelVersion, TransformationDescription> {
 
-    private final ModelVersion version;
-
-    SingletonModel(int major, int minor, int micro) {
-        this.version = ModelVersion.create(major, minor, micro);
-    }
+    private final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
     @Override
-    public ModelVersion getVersion() {
-        return this.version;
+    public TransformationDescription apply(ModelVersion version) {
+        new SingletonPolicyResourceTransformer(this.builder).accept(version);
+
+        return this.builder.build();
     }
 }

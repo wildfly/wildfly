@@ -22,16 +22,16 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import static org.jboss.as.controller.transform.description.TransformationDescription.Tools.register;
-
 import java.util.EnumSet;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.kohsuke.MetaInfServices;
 
 /**
+ * Transformer registration for the singleton subsystem.
  * @author Paul Ferraro
  */
 @MetaInfServices(ExtensionTransformerRegistration.class)
@@ -47,7 +47,7 @@ public class SingletonExtensionTransformerRegistration implements ExtensionTrans
         // Register transformers for all but the current model
         for (SingletonModel model : EnumSet.complementOf(EnumSet.of(SingletonModel.CURRENT))) {
             ModelVersion version = model.getVersion();
-            register(SingletonResourceDefinition.buildTransformers(version), registration, version);
+            TransformationDescription.Tools.register(new SingletonResourceTransformer().apply(version), registration, version);
         }
     }
 }
