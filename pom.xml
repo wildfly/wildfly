@@ -441,7 +441,7 @@
         <version.org.jboss.narayana>5.12.1.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.5.Final</version.org.jboss.openjdk-orb>
         <version.org.picketbox>5.0.3.Final-redhat-00007</version.org.picketbox>
-        <version.org.jboss.resteasy>4.7.0.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>4.7.2.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>3.0.6.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
