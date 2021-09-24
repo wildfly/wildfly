@@ -24,7 +24,11 @@ package org.jboss.as.security;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -83,14 +87,14 @@ public class JSSEResourceDefinition extends SimpleResourceDefinition {
     private JSSEResourceDefinition() {
         super(SecurityExtension.JSSE_PATH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.JSSE),
-                new SecurityDomainReloadAddHandler(ATTRIBUTES),
-                new SecurityDomainReloadRemoveHandler());
+                new ModelOnlyAddStepHandler(ATTRIBUTES),
+                ModelOnlyRemoveStepHandler.INSTANCE);
         setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        SecurityDomainReloadWriteHandler writeHandler = new SecurityDomainReloadWriteHandler(ATTRIBUTES);
+        OperationStepHandler writeHandler = new ModelOnlyWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }

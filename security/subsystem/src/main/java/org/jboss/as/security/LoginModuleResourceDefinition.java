@@ -25,6 +25,9 @@
 package org.jboss.as.security;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -63,15 +66,15 @@ public class LoginModuleResourceDefinition extends SimpleResourceDefinition {
     LoginModuleResourceDefinition(final String key) {
         super(PathElement.pathElement(key),
                 SecurityExtension.getResourceDescriptionResolver(Constants.LOGIN_MODULE_STACK, Constants.LOGIN_MODULES),
-                new SecurityDomainReloadAddHandler(ATTRIBUTES),
-                new SecurityDomainReloadRemoveHandler()
+                ModelOnlyRemoveStepHandler.INSTANCE,
+                ModelOnlyRemoveStepHandler.INSTANCE
         );
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        SecurityDomainReloadWriteHandler writeHandler = new SecurityDomainReloadWriteHandler(ATTRIBUTES);
+        OperationStepHandler writeHandler = new ModelOnlyWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attribute : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attribute, null, writeHandler);
         }

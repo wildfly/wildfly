@@ -26,6 +26,9 @@ package org.jboss.as.security;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -62,7 +65,7 @@ public class MappingModuleDefinition extends SimpleResourceDefinition {
         super(PathElement.pathElement(key),
                 SecurityExtension.getResourceDescriptionResolver(Constants.MAPPING_MODULE),
                 null,
-                new SecurityDomainReloadRemoveHandler()
+                ModelOnlyRemoveStepHandler.INSTANCE
         );
     }
 
@@ -75,7 +78,7 @@ public class MappingModuleDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        SecurityDomainReloadWriteHandler writeHandler = new SecurityDomainReloadWriteHandler(getAttributes());
+        OperationStepHandler writeHandler = new ModelOnlyWriteAttributeHandler(getAttributes());
         for (AttributeDefinition attr : getAttributes()) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
