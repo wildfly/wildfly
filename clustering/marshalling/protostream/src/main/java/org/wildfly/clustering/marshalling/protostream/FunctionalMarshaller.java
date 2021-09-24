@@ -25,7 +25,6 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.util.function.Function;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.wildfly.common.function.ExceptionFunction;
 
 /**
@@ -37,19 +36,19 @@ import org.wildfly.common.function.ExceptionFunction;
 public class FunctionalMarshaller<T, V> implements ProtoStreamMarshaller<T> {
 
     private final Class<T> targetClass;
-    private final Function<ImmutableSerializationContext, ProtoStreamMarshaller<V>> marshallerFactory;
+    private final Function<ProtoStreamOperation, ProtoStreamMarshaller<V>> marshallerFactory;
     private final ExceptionFunction<T, V, IOException> function;
     private final ExceptionFunction<V, T, IOException> factory;
 
     public FunctionalMarshaller(Class<T> targetClass, Class<V> sourceClass, ExceptionFunction<T, V, IOException> function, ExceptionFunction<V, T, IOException> factory) {
-        this(targetClass, context -> (ProtoStreamMarshaller<V>) context.getMarshaller(sourceClass), function, factory);
+        this(targetClass, operation -> operation.findMarshaller(sourceClass), function, factory);
     }
 
     public FunctionalMarshaller(Class<T> targetClass, ProtoStreamMarshaller<V> marshaller, ExceptionFunction<T, V, IOException> function, ExceptionFunction<V, T, IOException> factory) {
-        this(targetClass, context -> marshaller, function, factory);
+        this(targetClass, operation -> marshaller, function, factory);
     }
 
-    public FunctionalMarshaller(Class<T> targetClass, Function<ImmutableSerializationContext, ProtoStreamMarshaller<V>> marshallerFactory, ExceptionFunction<T, V, IOException> function, ExceptionFunction<V, T, IOException> factory) {
+    public FunctionalMarshaller(Class<T> targetClass, Function<ProtoStreamOperation, ProtoStreamMarshaller<V>> marshallerFactory, ExceptionFunction<T, V, IOException> function, ExceptionFunction<V, T, IOException> factory) {
         this.targetClass = targetClass;
         this.marshallerFactory = marshallerFactory;
         this.function = function;
@@ -58,7 +57,7 @@ public class FunctionalMarshaller<T, V> implements ProtoStreamMarshaller<T> {
 
     @Override
     public T readFrom(ProtoStreamReader reader) throws IOException {
-        ProtoStreamMarshaller<V> marshaller = this.marshallerFactory.apply(reader.getSerializationContext());
+        ProtoStreamMarshaller<V> marshaller = this.marshallerFactory.apply(reader);
         V value = marshaller.readFrom(reader);
         return this.factory.apply(value);
     }
@@ -66,7 +65,7 @@ public class FunctionalMarshaller<T, V> implements ProtoStreamMarshaller<T> {
     @Override
     public void writeTo(ProtoStreamWriter writer, T object) throws IOException {
         V value = this.function.apply(object);
-        ProtoStreamMarshaller<V> marshaller = this.marshallerFactory.apply(writer.getSerializationContext());
+        ProtoStreamMarshaller<V> marshaller = this.marshallerFactory.apply(writer);
         marshaller.writeTo(writer, value);
     }
 

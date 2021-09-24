@@ -27,7 +27,7 @@ import java.io.IOException;
 
 import org.jboss.ejb.client.SessionID;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ejb.infinispan.SessionIDSerializer;
+import org.wildfly.clustering.ejb.client.SessionIDSerializer;
 import org.wildfly.clustering.infinispan.spi.persistence.BinaryKeyFormat;
 import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 import org.wildfly.clustering.marshalling.spi.Serializer;

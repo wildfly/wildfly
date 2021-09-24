@@ -24,7 +24,6 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.TagWriter;
 import org.infinispan.protostream.descriptors.WireType;
 
@@ -78,33 +77,6 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
     default <E extends Enum<E>> void writeEnum(int index, E value) throws IOException {
         EnumMarshaller<E> marshaller = (EnumMarshaller<E>) this.getSerializationContext().getMarshaller(value.getDeclaringClass());
         this.writeEnum(index, marshaller.encode(value));
-    }
-
-    /**
-     * Returns a marshaller suitable of marshalling an object of the specified type.
-     * @param <T> the type of the associated marshaller
-     * @param <V> the type of the object to be marshalled
-     * @param javaClass the type of the value to be written.
-     * @return a marshaller suitable for the specified type
-     * @throws IllegalArgumentException if no suitable marshaller exists
-     */
-    @SuppressWarnings("unchecked")
-    default <T, V extends T> ProtoStreamMarshaller<T> findMarshaller(Class<V> javaClass) {
-        ImmutableSerializationContext context = this.getSerializationContext();
-        Class<?> targetClass = javaClass;
-        IllegalArgumentException exception = null;
-        while (targetClass != null) {
-            try {
-                return (ProtoStreamMarshaller<T>) context.getMarshaller((Class<T>) targetClass);
-            } catch (IllegalArgumentException e) {
-                // If no marshaller was found, check super class
-                if (exception == null) {
-                    exception = e;
-                }
-                targetClass = targetClass.getSuperclass();
-            }
-        }
-        throw exception;
     }
 
     /**

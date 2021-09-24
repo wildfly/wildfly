@@ -23,7 +23,7 @@
 package org.wildfly.clustering.ejb.infinispan.bean;
 
 import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.ejb.infinispan.EJBClientMarshallingProvider;
+import org.jboss.ejb.client.SessionID;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
 
@@ -33,9 +33,10 @@ import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
  */
 public class BeanSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+    @SuppressWarnings("unchecked")
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalMarshaller<>(InfinispanBeanKey.class, EJBClientMarshallingProvider.SESSION_ID, InfinispanBeanKey::getId, InfinispanBeanKey::new));
+        context.registerMarshaller(new FunctionalMarshaller<>((Class<InfinispanBeanKey<SessionID>>) (Class<?>) InfinispanBeanKey.class, SessionID.class, InfinispanBeanKey::getId, InfinispanBeanKey::new));
         context.registerMarshaller(new InfinispanBeanEntryMarshaller());
     }
 }
