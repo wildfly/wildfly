@@ -25,10 +25,12 @@ package org.wildfly.test.integration.elytron.oidc.client.deployment;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.getRealmRepresentation;
 
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -39,7 +41,6 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
@@ -55,7 +56,6 @@ import io.restassured.RestAssured;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ OidcWithDeploymentConfigTest.KeycloakAndSystemPropertySetup.class })
-@Ignore("WFLY-15297")
 public class OidcWithDeploymentConfigTest extends OidcBaseTest {
 
     private static final String OIDC_PROVIDER_URL = "oidc.provider.url";
@@ -74,7 +74,10 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
 
     private static final String[] APP_NAMES = new String[] {PROVIDER_URL_APP, AUTH_SERVER_URL_APP, WRONG_PROVIDER_URL_APP, WRONG_SECRET_APP, MISSING_EXPRESSION_APP};
 
-    @Deployment(name = PROVIDER_URL_APP)
+    @ArquillianResource
+    protected static Deployer deployer;
+
+    @Deployment(name = PROVIDER_URL_APP, managed = false, testable = false)
     public static WebArchive createProviderUrlDeployment() {
         return ShrinkWrap.create(WebArchive.class, PROVIDER_URL_APP + ".war")
                 .addClasses(SimpleServlet.class)
@@ -83,7 +86,7 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
                 .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_JSON_WITH_PROVIDER_URL_FILE, "oidc.json");
     }
 
-    @Deployment(name = AUTH_SERVER_URL_APP)
+    @Deployment(name = AUTH_SERVER_URL_APP, managed = false, testable = false)
     public static WebArchive createAuthServerUrlDeployment() {
         return ShrinkWrap.create(WebArchive.class, AUTH_SERVER_URL_APP + ".war")
                 .addClasses(SimpleServlet.class)
@@ -92,7 +95,7 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
                 .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_JSON_WITH_AUTH_SERVER_URL_FILE, "oidc.json");
     }
 
-    @Deployment(name = WRONG_PROVIDER_URL_APP)
+    @Deployment(name = WRONG_PROVIDER_URL_APP, managed = false, testable = false)
     public static WebArchive createWrongProviderUrlDeployment() {
         return ShrinkWrap.create(WebArchive.class, WRONG_PROVIDER_URL_APP + ".war")
                 .addClasses(SimpleServlet.class)
@@ -101,7 +104,7 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
                 .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_JSON_WITH_WRONG_PROVIDER_URL_FILE, "oidc.json");
     }
 
-    @Deployment(name = WRONG_SECRET_APP)
+    @Deployment(name = WRONG_SECRET_APP, managed = false, testable = false)
     public static WebArchive createWrongSecretDeployment() {
         return ShrinkWrap.create(WebArchive.class, WRONG_SECRET_APP + ".war")
                 .addClasses(SimpleServlet.class)
@@ -110,7 +113,7 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
                 .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_JSON_WITH_WRONG_SECRET_FILE, "oidc.json");
     }
 
-    @Deployment(name = MISSING_EXPRESSION_APP)
+    @Deployment(name = MISSING_EXPRESSION_APP, managed = false, testable = false)
     public static WebArchive createMissingExpressionDeployment() {
         return ShrinkWrap.create(WebArchive.class, MISSING_EXPRESSION_APP + ".war")
                 .addClasses(SimpleServlet.class)
@@ -120,9 +123,79 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
     }
 
     @Test
-    @OperateOnDeployment(MISSING_EXPRESSION_APP)
+    @InSequence(1)
+    public void testWrongPasswordWithProviderUrl() throws Exception {
+        deployer.deploy(PROVIDER_URL_APP);
+        super.testWrongPasswordWithProviderUrl();
+    }
+
+    @Test
+    @InSequence(2)
+    public void testSucessfulAuthenticationWithProviderUrl() throws Exception {
+        super.testSucessfulAuthenticationWithProviderUrl();
+    }
+
+    @Test
+    @InSequence(3)
+    public void testWrongRoleWithProviderUrl() throws Exception {
+        try {
+            super.testWrongRoleWithProviderUrl();
+        } finally {
+            deployer.undeploy(PROVIDER_URL_APP);
+        }
+    }
+
+    @Test
+    @InSequence(4)
+    public void testWrongPasswordWithAuthServerUrl() throws Exception {
+        deployer.deploy(AUTH_SERVER_URL_APP);
+        super.testWrongPasswordWithAuthServerUrl();
+    }
+
+    @Test
+    @InSequence(5)
+    public void testSucessfulAuthenticationWithAuthServerUrl() throws Exception {
+        super.testSucessfulAuthenticationWithAuthServerUrl();
+    }
+
+    @Test
+    @InSequence(6)
+    public void testWrongRoleWithAuthServerUrl() throws Exception {
+        try {
+            super.testWrongRoleWithAuthServerUrl();
+        } finally {
+            deployer.undeploy(AUTH_SERVER_URL_APP);
+        }
+    }
+
+    @Test
+    public void testWrongProviderUrl() throws Exception {
+        try {
+            deployer.deploy(WRONG_PROVIDER_URL_APP);
+            super.testWrongProviderUrl();
+        } finally {
+            deployer.undeploy(WRONG_PROVIDER_URL_APP);
+        }
+    }
+
+    @Test
+    public void testWrongClientSecret() throws Exception {
+        try {
+            deployer.deploy(WRONG_SECRET_APP);
+            super.testWrongClientSecret();
+        } finally {
+            deployer.undeploy(WRONG_SECRET_APP);
+        }
+    }
+
+    @Test
     public void testMissingExpression() throws Exception {
-        loginToApp(MISSING_EXPRESSION_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, -1, null, false);
+        deployer.deploy(MISSING_EXPRESSION_APP);
+        try {
+            loginToApp(MISSING_EXPRESSION_APP, KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, -1, null, false);
+        } finally {
+            deployer.undeploy(MISSING_EXPRESSION_APP);
+        }
     }
 
     static class KeycloakAndSystemPropertySetup extends KeycloakSetup {
