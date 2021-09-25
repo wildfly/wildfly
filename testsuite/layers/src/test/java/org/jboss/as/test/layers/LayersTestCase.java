@@ -63,7 +63,8 @@ public class LayersTestCase {
         // Removed legacy security
         "org.jboss.as.security",
         "org.jboss.as.security-integration",
-        "org.jboss.as.security-plugins"
+        "org.jboss.as.security-plugins",
+        "org.picketbox"
     };
     // Packages that are not referenced from the module graph but needed.
     // This is the expected set of un-referenced modules found when scanning
@@ -92,7 +93,9 @@ public class LayersTestCase {
         // Brought by galleon ServerRootResourceDefinition
         "wildflyee.api",
         // bootable jar runtime
-        "org.wildfly.bootable-jar"
+        "org.wildfly.bootable-jar",
+        // May be needed by deployments if running on IBM JDK.
+        "ibm.jdk"
         };
 
     /**
