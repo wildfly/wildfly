@@ -26,17 +26,8 @@ import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.ResourceTransformationContext;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Resource description for the addressable resource and its alias
@@ -67,45 +58,6 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
-
-        JDBCStoreResourceDefinition.buildTransformation(version, builder, PATH);
-
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            builder.setCustomResourceTransformer(new ResourceTransformer() {
-                @SuppressWarnings("deprecation")
-                @Override
-                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-                    final ModelNode model = resource.getModel();
-                    final ModelNode maxBatchSize = model.remove(StoreResourceDefinition.Attribute.MAX_BATCH_SIZE.getName());
-
-                    final ModelNode binaryTableModel = Resource.Tools.readModel(resource.removeChild(BinaryTableResourceDefinition.PATH));
-                    if (binaryTableModel != null && binaryTableModel.isDefined()) {
-                        model.get(DeprecatedAttribute.BINARY_TABLE.getName()).set(binaryTableModel);
-                        model.get(DeprecatedAttribute.BINARY_TABLE.getName()).get(TableResourceDefinition.DeprecatedAttribute.BATCH_SIZE.getName()).set((maxBatchSize != null) ? maxBatchSize : new ModelNode());
-                    }
-
-                    final ModelNode stringTableModel = Resource.Tools.readModel(resource.removeChild(StringTableResourceDefinition.PATH));
-                    if (stringTableModel != null && stringTableModel.isDefined()) {
-                        model.get(DeprecatedAttribute.STRING_TABLE.getName()).set(stringTableModel);
-                        model.get(DeprecatedAttribute.STRING_TABLE.getName()).get(TableResourceDefinition.DeprecatedAttribute.BATCH_SIZE.getName()).set((maxBatchSize != null) ? maxBatchSize : new ModelNode());
-                    }
-
-                    final ModelNode properties = model.remove(StoreResourceDefinition.Attribute.PROPERTIES.getName());
-                    final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
-
-                    LegacyPropertyResourceTransformer.transformPropertiesToChildrenResources(properties, address, childContext);
-
-                    context.processChildren(resource);
-                }
-            });
-        }
-
-        BinaryTableResourceDefinition.buildTransformation(version, builder);
-        StringTableResourceDefinition.buildTransformation(version, builder);
     }
 
     static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {

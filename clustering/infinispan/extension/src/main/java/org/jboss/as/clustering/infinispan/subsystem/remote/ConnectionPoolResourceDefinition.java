@@ -36,13 +36,11 @@ import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -89,10 +87,6 @@ public class ConnectionPoolResourceDefinition extends ComponentResourceDefinitio
         public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
             return builder;
         }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        // No transformations yet
     }
 
     ConnectionPoolResourceDefinition() {

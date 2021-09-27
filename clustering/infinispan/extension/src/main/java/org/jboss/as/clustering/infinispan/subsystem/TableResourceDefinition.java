@@ -33,20 +33,13 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
-import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter.Converter;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -144,40 +137,6 @@ public abstract class TableResourceDefinition extends ChildResourceDefinition<Ma
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
-        }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, ColumnAttribute.SEGMENT.getName())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, ColumnAttribute.SEGMENT.getName())
-                    ;
-        }
-        if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.CREATE_ON_START.getDefinition(), Attribute.DROP_ON_STOP.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.CREATE_ON_START.getDefinition(), Attribute.DROP_ON_STOP.getDefinition())
-                    ;
-        }
-        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
-            Converter converter = new Converter() {
-                @Override
-                public void convert(PathAddress address, String name, ModelNode value, ModelNode model, TransformationContext context) {
-                    PathAddress storeAddress = address.getParent();
-                    PathElement storePath = storeAddress.getLastElement();
-                    if (storePath.equals(StringKeyedJDBCStoreResourceDefinition.STRING_JDBC_PATH) || storePath.equals(StringKeyedJDBCStoreResourceDefinition.LEGACY_PATH)) {
-                        storeAddress = storeAddress.getParent().append(StringKeyedJDBCStoreResourceDefinition.PATH);
-                    } else if (storePath.equals(BinaryKeyedJDBCStoreResourceDefinition.LEGACY_PATH)) {
-                        storeAddress = storeAddress.getParent().append(BinaryKeyedJDBCStoreResourceDefinition.PATH);
-                    } else if (storePath.equals(MixedKeyedJDBCStoreResourceDefinition.LEGACY_PATH)) {
-                        storeAddress = storeAddress.getParent().append(MixedKeyedJDBCStoreResourceDefinition.PATH);
-                    }
-                    ModelNode store = context.readResourceFromRoot(storeAddress).getModel();
-                    value.set(store.hasDefined(StoreResourceDefinition.Attribute.MAX_BATCH_SIZE.getName()) ? store.get(StoreResourceDefinition.Attribute.MAX_BATCH_SIZE.getName()) : StoreResourceDefinition.Attribute.MAX_BATCH_SIZE.getDefinition().getDefaultValue());
-                }
-            };
-            builder.getAttributeBuilder().setValueConverter(new SimpleAttributeConverter(converter), DeprecatedAttribute.BATCH_SIZE.getDefinition());
         }
     }
 

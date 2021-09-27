@@ -31,11 +31,9 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.clustering.controller.transform.UndefinedAttributesDiscardPolicy;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
@@ -45,7 +43,6 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -128,17 +125,5 @@ public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinitionP
     @Override
     public PathElement getPathElement() {
         return this.path;
-    }
-
-    @Override
-    public void buildTransformation(ResourceTransformationDescriptionBuilder parent, ModelVersion version) {
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            parent.addChildResource(this.path, new UndefinedAttributesDiscardPolicy(this.minThreads, this.keepAliveTime));
-        } else {
-            ResourceTransformationDescriptionBuilder builder = parent.addChildResource(this.path);
-            if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder().addRename(this.minThreads.getDefinition(), this.maxThreads.getName());
-            }
-        }
     }
 }

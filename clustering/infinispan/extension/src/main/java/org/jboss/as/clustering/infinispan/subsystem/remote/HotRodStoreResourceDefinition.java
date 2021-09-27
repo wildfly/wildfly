@@ -26,15 +26,12 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
-import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
 import org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
 
@@ -68,12 +65,6 @@ public class HotRodStoreResourceDefinition extends StoreResourceDefinition {
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
-        }
-    }
-
-    public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
-            parent.rejectChildResource(HotRodStoreResourceDefinition.PATH);
         }
     }
 

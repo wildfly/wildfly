@@ -30,14 +30,9 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -96,25 +91,6 @@ public class SegmentedCacheResourceDefinition extends SharedStateCacheResourceDe
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    @SuppressWarnings("deprecation")
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-
-        if (InfinispanModel.VERSION_4_1_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, DeprecatedAttribute.CONSISTENT_HASH_STRATEGY.getName(), Attribute.SEGMENTS.getName())
-                    .end();
-        }
-
-        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(ConsistentHashStrategy.INTRA_CACHE.name())), DeprecatedAttribute.CONSISTENT_HASH_STRATEGY.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, DeprecatedAttribute.CONSISTENT_HASH_STRATEGY.getDefinition())
-                    .end();
-        }
-
-        SharedStateCacheResourceDefinition.buildTransformation(version, builder);
     }
 
     private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {

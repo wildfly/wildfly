@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,25 +22,14 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.function.UnaryOperator;
-
-import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/invalidation-cache=*
- *
- * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * @author Paul Ferraro
  */
-public class InvalidationCacheResourceDefinition extends ClusteredCacheResourceDefinition {
+public class SegmentedCacheResourceTransformer extends SharedStateCacheResourceTransformer {
 
-    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
-    static final PathElement pathElement(String name) {
-        return PathElement.pathElement("invalidation-cache", name);
-    }
-
-    InvalidationCacheResourceDefinition(FunctionExecutorRegistry<Cache<?, ?>> executors) {
-        super(WILDCARD_PATH, UnaryOperator.identity(), new ClusteredCacheServiceHandler(InvalidationCacheServiceConfigurator::new), executors);
+    SegmentedCacheResourceTransformer(ResourceTransformationDescriptionBuilder builder) {
+        super(builder);
     }
 }

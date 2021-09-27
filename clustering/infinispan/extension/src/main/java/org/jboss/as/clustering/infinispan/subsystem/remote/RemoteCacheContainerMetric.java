@@ -26,14 +26,10 @@ import java.util.function.ToIntFunction;
 
 import org.infinispan.client.hotrod.jmx.RemoteCacheManagerMXBean;
 import org.jboss.as.clustering.controller.Metric;
-import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -61,11 +57,6 @@ public enum RemoteCacheContainerMetric implements Metric<RemoteCacheManagerMXBea
         }
     }
     ;
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, ACTIVE_CONNECTIONS.getName(), CONNECTIONS.getName(), IDLE_CONNECTIONS.getName());
-        }
-    }
 
     private final AttributeDefinition definition;
 

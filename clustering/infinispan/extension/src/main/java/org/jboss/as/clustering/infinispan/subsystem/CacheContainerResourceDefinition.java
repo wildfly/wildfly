@@ -40,32 +40,21 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
-import org.jboss.as.clustering.controller.transform.DiscardSingletonListAttributeChecker;
-import org.jboss.as.clustering.controller.transform.OperationTransformer;
-import org.jboss.as.clustering.controller.transform.RejectNonSingletonListAttributeChecker;
-import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
-import org.jboss.as.clustering.controller.transform.SingletonListAttributeConverter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.ListOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
@@ -277,75 +266,6 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
             return builder;
         }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
-
-        for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT))) {
-            pool.buildTransformation(builder, version);
-        }
-        for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
-            pool.buildTransformation(builder, version);
-        }
-
-        if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.MARSHALLER.getDefinition())
-                    .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.MARSHALLER.getDefinition().getDefaultValue()), Attribute.MARSHALLER.getDefinition())
-                    .end();
-        }
-        if (InfinispanModel.VERSION_14_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setValueConverter(new SingletonListAttributeConverter(ListAttribute.MODULES), DeprecatedAttribute.MODULE.getDefinition())
-                    .setDiscard(DiscardSingletonListAttributeChecker.INSTANCE, ListAttribute.MODULES.getDefinition())
-                    .addRejectCheck(RejectNonSingletonListAttributeChecker.INSTANCE, ListAttribute.MODULES.getDefinition())
-                    .end();
-        }
-        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
-            OperationTransformer addAliasTransformer = new OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    String attributeName = Operations.getAttributeName(operation);
-                    if (ListAttribute.ALIASES.getName().equals(attributeName)) {
-                        ModelNode value = Operations.getAttributeValue(operation);
-                        PathAddress address = Operations.getPathAddress(operation);
-                        ModelNode transformedOperation = Util.createOperation(ALIAS_ADD, address);
-                        transformedOperation.get(ALIAS.getName()).set(value);
-                        return transformedOperation;
-                    }
-                    return operation;
-                }
-            };
-            builder.addRawOperationTransformationOverride(ListOperations.LIST_ADD_DEFINITION.getName(), new SimpleOperationTransformer(addAliasTransformer));
-
-            OperationTransformer removeAliasTransformer = new OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(ModelNode operation) {
-                    String attributeName = Operations.getAttributeName(operation);
-                    if (ListAttribute.ALIASES.getName().equals(attributeName)) {
-                        ModelNode value = Operations.getAttributeValue(operation);
-                        PathAddress address = Operations.getPathAddress(operation);
-                        ModelNode transformedOperation = Util.createOperation(ALIAS_REMOVE, address);
-                        transformedOperation.get(ALIAS.getName()).set(value);
-                        return transformedOperation;
-                    }
-                    return operation;
-                }
-            };
-            builder.addRawOperationTransformationOverride(ListOperations.LIST_REMOVE_DEFINITION.getName(), new SimpleOperationTransformer(removeAliasTransformer));
-        }
-
-        NoTransportResourceDefinition.buildTransformation(version, builder);
-        JGroupsTransportResourceDefinition.buildTransformation(version, builder);
-
-        ScatteredCacheResourceDefinition.buildTransformation(version, builder);
-        DistributedCacheResourceDefinition.buildTransformation(version, builder);
-        ReplicatedCacheResourceDefinition.buildTransformation(version, builder);
-        InvalidationCacheResourceDefinition.buildTransformation(version, builder);
-        LocalCacheResourceDefinition.buildTransformation(version, builder);
-
-        CacheRuntimeResourceDefinition.buildTransformation(version, builder);
     }
 
     CacheContainerResourceDefinition() {
