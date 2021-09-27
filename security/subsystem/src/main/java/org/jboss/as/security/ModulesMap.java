@@ -55,10 +55,6 @@ import org.jboss.security.mapping.providers.role.DatabaseRolesMappingProvider;
 import org.jboss.security.mapping.providers.role.LdapRolesMappingProvider;
 import org.jboss.security.mapping.providers.role.PropertiesRolesMappingProvider;
 import org.jboss.security.mapping.providers.role.SimpleRolesMappingProvider;
-import org.jboss.security.negotiation.AdvancedADLoginModule;
-import org.jboss.security.negotiation.AdvancedLdapLoginModule;
-import org.jboss.security.negotiation.KerberosLoginModule;
-import org.jboss.security.negotiation.spnego.SPNEGOLoginModule;
 import org.picketbox.datasource.security.ConfiguredIdentityLoginModule;
 import org.picketbox.datasource.security.SecureIdentityLoginModule;
 
@@ -97,11 +93,11 @@ public interface ModulesMap {
             put("DatabaseUsers", DatabaseServerLoginModule.class.getName()); // duplicated here to maintain name pattern
             put("LdapUsers", LdapUsersLoginModule.class.getName());
             // Negotiation Related Modules
-            put("Kerberos", KerberosLoginModule.class.getName());
-            put("SPNEGO", SPNEGOLoginModule.class.getName());
-            put("SPNEGOUsers", SPNEGOLoginModule.class.getName()); // duplicated here to maintain name pattern
-            put("AdvancedLdap", AdvancedLdapLoginModule.class.getName());
-            put("AdvancedAdLdap", AdvancedADLoginModule.class.getName());
+            put("Kerberos", "org.jboss.security.negotiation.KerberosLoginModule");
+            put("SPNEGO", "org.jboss.security.negotiation.spnego.SPNEGOLoginModule");
+            put("SPNEGOUsers", "org.jboss.security.negotiation.spnego.SPNEGOLoginModule"); // duplicated here to maintain name pattern
+            put("AdvancedLdap", "org.jboss.security.negotiation.AdvancedLdapLoginModule");
+            put("AdvancedAdLdap", "org.jboss.security.negotiation.AdvancedADLoginModule");
             // Datasource related modules
             put("SecureIdentity", SecureIdentityLoginModule.class.getName());
             put("ConfiguredIdentity", ConfiguredIdentityLoginModule.class.getName());

@@ -70,7 +70,6 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.remoting"/>
-        <module name="org.jboss.security.negotiation" optional="true"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.picketbox"/>
         <module name="org.wildfly.common"/>

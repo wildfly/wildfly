@@ -442,7 +442,6 @@
         <version.org.jboss.openjdk-orb>8.1.5.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.resteasy>4.7.2.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
-        <version.org.jboss.security.jboss-negotiation>3.0.6.Final</version.org.jboss.security.jboss-negotiation>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
@@ -8267,46 +8266,6 @@
                     <exclusion>
                         <groupId>org.jboss.seam</groupId>
                         <artifactId>jboss-seam</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.security</groupId>
-                <artifactId>jboss-negotiation-common</artifactId>
-                <version>${version.org.jboss.security.jboss-negotiation}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.servlet</groupId>
-                        <artifactId>jboss-servlet-api_3.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.web</groupId>
-                        <artifactId>jbossweb</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.security</groupId>
-                <artifactId>jboss-negotiation-extras</artifactId>
-                <version>${version.org.jboss.security.jboss-negotiation}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.security</groupId>
-                <artifactId>jboss-negotiation-ntlm</artifactId>
-                <version>${version.org.jboss.security.jboss-negotiation}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.security</groupId>
-                <artifactId>jboss-negotiation-spnego</artifactId>
-                <version>${version.org.jboss.security.jboss-negotiation}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.web</groupId>
-                        <artifactId>jbossweb</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
