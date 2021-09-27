@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.service;
+package org.wildfly.extension.clustering.singleton;
 
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -28,6 +28,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.IdentityServiceConfigurator;
 
 /**
  * Builds an alias to another service.

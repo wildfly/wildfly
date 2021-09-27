@@ -89,19 +89,14 @@ public class MessagingDependencies {
     }
 
     static String[] getJGroupsDependencies(ModelTestControllerVersion version) {
-        if (version.isEap()) {
-            return new String[]{
-                String.format("org.jboss.eap:wildfly-clustering-common:%s", version.getMavenGavVersion()),
-                String.format("org.jboss.eap:wildfly-clustering-jgroups-api:%s", version.getMavenGavVersion()),
-                String.format("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version.getMavenGavVersion()),
-                String.format("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version.getMavenGavVersion()),
-                "org.jgroups:jgroups:3.6.12.Final-redhat-1",};
-        }
-        return new String[]{
-            String.format("org.wildfly:wildfly-clustering-common:%s", version.getMavenGavVersion()),
-            String.format("org.wildfly:wildfly-clustering-jgroups-api:%s", version.getMavenGavVersion()),
-            String.format("org.wildfly:wildfly-clustering-jgroups-extension:%s", version.getMavenGavVersion()),
-            String.format("org.wildfly:wildfly-clustering-jgroups-spi:%s", version.getMavenGavVersion()),
-            "org.jgroups:jgroups:3.6.12.Final-redhat-1",};
+        String groupId = version.isEap() ? "org.jboss.eap" : "org.wildfly";
+        return new String[] {
+                String.format("%s:wildfly-clustering-common:%s", groupId, version.getMavenGavVersion()),
+                String.format("%s:wildfly-clustering-jgroups-api:%s", groupId, version.getMavenGavVersion()),
+                String.format("%s:wildfly-clustering-jgroups-extension:%s", groupId, version.getMavenGavVersion()),
+                String.format("%s:wildfly-clustering-jgroups-spi:%s", groupId, version.getMavenGavVersion()),
+                String.format("%s:wildfly-clustering-service:%s", groupId, version.getMavenGavVersion()),
+                "org.jgroups:jgroups:3.6.12.Final-redhat-1",
+        };
     }
 }

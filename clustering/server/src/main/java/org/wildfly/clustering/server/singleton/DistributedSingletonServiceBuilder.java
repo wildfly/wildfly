@@ -31,7 +31,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
-import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;

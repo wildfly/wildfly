@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,46 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.service;
+package org.jboss.as.clustering.msc;
 
-import org.jboss.msc.service.Service;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
-import org.jboss.msc.value.Value;
+import org.wildfly.clustering.service.Dependency;
+import org.wildfly.clustering.service.ServiceNameProvider;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
 
 /**
+ * Service dependency requiring an injector.
  * @author Paul Ferraro
- * @deprecated Replaced by {@link SimpleServiceConfigurator}.
+ * @deprecated Replaced by {@link ServiceSupplierDependency}.
  */
 @Deprecated
-public class SimpleBuilder<T> implements Builder<T> {
-
+public class InjectorDependency<T> implements Dependency {
     private final ServiceName name;
-    private final Service<T> service;
+    private final Class<T> targetClass;
+    private final Injector<T> injector;
 
-    public SimpleBuilder(ServiceName name, T value) {
-        this(name, new ImmediateValue<>(value));
+    public InjectorDependency(ServiceNameProvider provider, Class<T> targetClass, Injector<T> injector) {
+        this(provider.getServiceName(), targetClass, injector);
     }
 
-    public SimpleBuilder(ServiceName name, Value<T> value) {
-        this(name, new ValueService<>(value));
-    }
-
-    public SimpleBuilder(ServiceName name, Service<T> service) {
+    public InjectorDependency(ServiceName name, Class<T> targetClass, Injector<T> injector) {
         this.name = name;
-        this.service = service;
+        this.targetClass = targetClass;
+        this.injector = injector;
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return this.name;
-    }
-
-    @Override
-    public ServiceBuilder<T> build(ServiceTarget target) {
-        return target.addService(this.name, this.service);
+    public <X> ServiceBuilder<X> register(ServiceBuilder<X> builder) {
+        return builder.addDependency(this.name, this.targetClass, this.injector);
     }
 }

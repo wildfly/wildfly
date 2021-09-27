@@ -21,10 +21,10 @@
  */
 package org.wildfly.clustering.server.singleton;
 
+import org.jboss.as.clustering.msc.InjectedValueDependency;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
-import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;

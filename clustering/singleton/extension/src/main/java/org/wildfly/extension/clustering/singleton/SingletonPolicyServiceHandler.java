@@ -33,7 +33,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.SingletonRequirement;
