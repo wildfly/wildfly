@@ -77,7 +77,7 @@ public class Service1 {
         }
         String body = response.readEntity(String.class);
         client.close();
-        
+
         return body;
     }
 }
