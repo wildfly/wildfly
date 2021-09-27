@@ -47,6 +47,7 @@ import org.wildfly.clustering.service.ServiceConfigurator;
  *
  * @author Paul Ferraro
  */
+@Deprecated
 public class CacheFactoryAdd extends AbstractAddStepHandler {
 
     CacheFactoryAdd(AttributeDefinition... attributes) {

@@ -109,8 +109,8 @@ public interface EJB3SubsystemModel {
     String USE_QUALIFIED_NAME = "use-qualified-name";
     String ENABLE_BY_DEFAULT = "enable-by-default";
 
-    String CACHE = "cache";
-    String PASSIVATION_STORE = "passivation-store";
+    @Deprecated String CACHE = "cache";
+    @Deprecated String PASSIVATION_STORE = "passivation-store";
 
     String MDB_DELIVERY_GROUP="mdb-delivery-group";
     String MDB_DELVIERY_GROUP_ACTIVE = "active";

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,24 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.controller.ServiceRemoveStepHandler;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilderServiceNameProvider;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+
+import javax.xml.stream.XMLStreamException;
+import java.util.Collections;
+import java.util.List;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.parsing.ParseUtils.*;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN;
 
 /**
- * @author Paul Ferraro
+ * Parser for ejb3:10.0 namespace.
  */
-@Deprecated
-public class CacheFactoryRemove extends ServiceRemoveStepHandler {
+public class EJB3Subsystem100Parser extends EJB3Subsystem90Parser {
 
-    CacheFactoryRemove(CacheFactoryAdd addHandler) {
-        super(null, addHandler);
+    EJB3Subsystem100Parser() {
     }
 
     @Override
-    protected ServiceName serviceName(final String name) {
-        return new CacheFactoryBuilderServiceNameProvider(name).getServiceName();
+    protected EJB3SubsystemNamespace getExpectedNamespace() {
+        return EJB3SubsystemNamespace.EJB3_10_0;
     }
 }
