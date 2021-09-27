@@ -72,6 +72,17 @@ public class AssumeTestGroupUtil {
 //                () -> getJavaSpecificationVersion() == javaSpecificationVersion);
 //    }
 
+    /**
+     * Assume for test failures when running against a full distribution.
+     * Full distributions are available from build/dist modules. It skips tests in case
+     * {@code '-Dtestsuite.default.build.project.prefix'} Maven argument is used with
+     * a non empty value, e.g. testsuite.default.build.project.prefix=ee- which means we
+     * are using ee-build/ee-dist modules as the source where to find the server under test.
+     */
+    public static void assumeFullDistribution() {
+        assumeCondition("Tests requiring full distribution are disabled", () -> System.getProperty("testsuite.default.build.project.prefix", "").equals(""));
+    }
+
     private static int getJavaSpecificationVersion() {
         String versionString = System.getProperty("java.specification.version");
         versionString = versionString.startsWith("1.") ? versionString.substring(2) : versionString;
