@@ -26,9 +26,7 @@ import java.util.EnumSet;
 
 import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * Registers transport definitions, including any definition overrides.
@@ -42,14 +40,6 @@ public class TransportRegistration implements Registration<ManagementResourceReg
 
     enum SocketTransport {
         TCP, TCP_NIO2;
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        TransportResourceDefinition.addTransformations(version, parent.addChildResource(TransportResourceDefinition.WILDCARD_PATH));
-
-        for (SocketTransport transport : EnumSet.allOf(SocketTransport.class)) {
-            SocketTransportResourceDefinition.addTransformations(version, parent.addChildResource(TransportResourceDefinition.pathElement(transport.name())));
-        }
     }
 
     private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;

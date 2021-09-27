@@ -24,7 +24,6 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.function.BiConsumer;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
@@ -38,7 +37,6 @@ import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
@@ -48,8 +46,6 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -58,16 +54,9 @@ import org.jboss.dmr.ModelType;
  * @author Paul Ferraro
  * @version Aug 2014
  */
-public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition, ResourceServiceConfiguratorFactory, BiConsumer<ResourceTransformationDescriptionBuilder, ModelVersion> {
+public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition, ResourceServiceConfiguratorFactory {
 
-    DEFAULT("default", 0, 200, 0, 60000L, null) {
-        @Override
-        public void accept(ResourceTransformationDescriptionBuilder builder, ModelVersion version) {
-            if (JGroupsModel.VERSION_6_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, this.getMinThreads().getName(), this.getMaxThreads().getName(), this.getQueueLength().getName());
-            }
-        }
-    },
+    DEFAULT("default", 0, 200, 0, 60000L, null),
     @Deprecated OOB("oob", 20, 200, 0, 60000L, JGroupsModel.VERSION_6_0_0),
     @Deprecated INTERNAL("internal", 5, 20, 0, 60000L, JGroupsModel.VERSION_6_0_0),
     @Deprecated TIMER("timer", 2, 4, 0, 5000L, JGroupsModel.VERSION_6_0_0),
@@ -158,22 +147,5 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     @Override
     public PathElement getPathElement() {
         return this.path;
-    }
-
-    @Override
-    public void buildTransformation(ResourceTransformationDescriptionBuilder parent, ModelVersion version) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(this.path);
-        this.accept(builder, version);
-    }
-
-    @Override
-    public void accept(ResourceTransformationDescriptionBuilder builder, ModelVersion version) {
-        if (JGroupsModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, this.queueLength.getName());
-        }
-
-        if (JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, this.minThreads.getName(), this.maxThreads.getName());
-        }
     }
 }

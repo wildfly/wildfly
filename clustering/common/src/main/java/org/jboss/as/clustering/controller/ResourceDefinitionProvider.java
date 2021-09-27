@@ -44,5 +44,8 @@ public interface ResourceDefinitionProvider extends Registration<ManagementResou
      * @param parent the builder of the parent resource
      * @param version the version to which to transform
      */
-    void buildTransformation(ResourceTransformationDescriptionBuilder parent, ModelVersion version);
+    @Deprecated
+    default void buildTransformation(ResourceTransformationDescriptionBuilder parent, ModelVersion version) {
+        // Do nothing
+    }
 }

@@ -33,13 +33,11 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jgroups.auth.AuthToken;
 import org.wildfly.clustering.service.UnaryRequirement;
 
@@ -80,14 +78,6 @@ public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResou
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
-        }
-    }
-
-    static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        if (JGroupsModel.VERSION_8_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .addRejectCheck(CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, Attribute.SHARED_SECRET.getName())
-                    .end();
         }
     }
 
