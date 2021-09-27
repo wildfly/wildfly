@@ -33,7 +33,6 @@ import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolve
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.extension.AbstractLegacyExtension;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.security.elytron.ElytronIntegrationResourceDefinitions;
@@ -91,11 +90,9 @@ import org.jboss.msc.service.ServiceName;
 
     @Override
     protected Set<ManagementResourceRegistration> initializeLegacyModel(ExtensionContext context) {
-        final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
-
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION, true);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(SecuritySubsystemRootResourceDefinition.INSTANCE);
-        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+        //registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         final ManagementResourceRegistration securityDomain = registration.registerSubModel(new SecurityDomainResourceDefinition());
         securityDomain.registerSubModel(JASPIAuthenticationResourceDefinition.INSTANCE);

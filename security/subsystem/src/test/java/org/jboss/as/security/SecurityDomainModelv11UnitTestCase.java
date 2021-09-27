@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.junit.Test;
 
 public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemBaseTest {
@@ -59,4 +60,11 @@ public class SecurityDomainModelv11UnitTestCase extends AbstractSubsystemBaseTes
     public void testParseAndMarshalModelWithJASPI() throws Exception {
         super.standardSubsystemTest("securitysubsystemJASPIv11.xml", false);
     }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.ADMIN_ONLY_HC;
+    }
+
+
 }

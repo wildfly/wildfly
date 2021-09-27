@@ -30,11 +30,17 @@ import java.io.IOException;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.AdditionalInitialization.ManagementAdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Assert;
@@ -54,14 +60,26 @@ public class SecurityTransformersTestCase extends AbstractSubsystemBaseTest {
         return readResource("securitysubsystemv20.xml");
     }
 
-
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities(
-                "org.wildfly.clustering.infinispan.cache-container.security",
-                "org.wildfly.clustering.infinispan.default-cache-configuration.security"
-                );
+        String[] capabilities = new String[] {"org.wildfly.clustering.infinispan.cache-container.security",
+                "org.wildfly.clustering.infinispan.default-cache-configuration.security"};
+        return new ManagementAdditionalInitialization() {
+
+            @Override
+            protected ProcessType getProcessType() {
+                return ProcessType.HOST_CONTROLLER;
+            }
+
+            @Override
+            protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
+                super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration, capabilityRegistry);
+                registerCapabilities(capabilityRegistry, capabilities);
+            }
+
+        };
     }
+
 
     @Test
     public void testTransformersEAP64() throws Exception {
@@ -155,4 +173,6 @@ public class SecurityTransformersTestCase extends AbstractSubsystemBaseTest {
     @Override
     public void testSchema() throws Exception {
     }
+
+
 }

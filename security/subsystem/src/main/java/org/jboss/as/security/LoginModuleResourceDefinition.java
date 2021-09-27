@@ -25,6 +25,7 @@
 package org.jboss.as.security;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationStepHandler;
@@ -66,7 +67,7 @@ public class LoginModuleResourceDefinition extends SimpleResourceDefinition {
     LoginModuleResourceDefinition(final String key) {
         super(PathElement.pathElement(key),
                 SecurityExtension.getResourceDescriptionResolver(Constants.LOGIN_MODULE_STACK, Constants.LOGIN_MODULES),
-                ModelOnlyRemoveStepHandler.INSTANCE,
+                new ModelOnlyAddStepHandler(ATTRIBUTES),
                 ModelOnlyRemoveStepHandler.INSTANCE
         );
     }

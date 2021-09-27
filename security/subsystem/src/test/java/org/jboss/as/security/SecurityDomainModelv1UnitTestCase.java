@@ -24,6 +24,7 @@ package org.jboss.as.security;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -81,4 +82,10 @@ public class SecurityDomainModelv1UnitTestCase extends AbstractSubsystemTest {
 
         assertRemoveSubsystemResources(servicesB);
     }
+
+    @Override
+    protected KernelServicesBuilder createKernelServicesBuilder(AdditionalInitialization additionalInit) {
+        return super.createKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC);
+    }
+
 }

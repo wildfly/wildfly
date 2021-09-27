@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -119,12 +118,7 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization() {
-            @Override
-            protected RunningMode getRunningMode() {
-                return RunningMode.NORMAL;
-            }
-        };
+        return AdditionalInitialization.ADMIN_ONLY_HC;
     }
 
     @Override
