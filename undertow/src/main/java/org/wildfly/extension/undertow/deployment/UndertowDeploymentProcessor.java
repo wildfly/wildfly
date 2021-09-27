@@ -27,6 +27,7 @@ import static org.jboss.as.server.security.SecurityMetaData.ATTACHMENT_KEY;
 import static org.jboss.as.server.security.VirtualDomainMarkerUtility.isVirtualDomainRequired;
 import static org.jboss.as.web.common.VirtualHttpServerMechanismFactoryMarkerUtility.isVirtualMechanismFactoryRequired;
 import static org.wildfly.extension.undertow.Capabilities.REF_LEGACY_SECURITY;
+import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 
 import java.net.MalformedURLException;
 import java.time.Duration;
@@ -66,7 +67,6 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.deployers.StartupCountdown;
 import org.jboss.as.ee.security.JaccService;
 import org.jboss.as.security.plugins.SecurityDomainContext;
-import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
@@ -352,7 +352,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                         deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
                                 .getCapabilityServiceName(Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN, securityDomain));
             } else {
-                sdcSupplier = udisBuilder.requires(SecurityDomainService.SERVICE_NAME.append(securityDomain));
+                throw ROOT_LOGGER.deploymentConfiguredForLegacySecurity();
             }
         }
         if (isVirtualMechanismFactoryRequired(deploymentUnit)) {

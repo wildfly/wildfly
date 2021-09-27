@@ -432,4 +432,7 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 107, value = "Generated obfuscated session route '%s' from '%s'")
     void obfuscatedSessionRoute(String obfuscatedRoute, String route);
+
+    @Message(id=108, value = "The deployment is configured to use legacy security which is no longer available.")
+    DeploymentUnitProcessingException deploymentConfiguredForLegacySecurity();
 }
