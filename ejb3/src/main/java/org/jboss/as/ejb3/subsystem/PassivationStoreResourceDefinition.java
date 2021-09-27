@@ -29,6 +29,7 @@ import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
  *
  * @author Paul Ferraro
  */
+@Deprecated
 public class PassivationStoreResourceDefinition extends SimpleResourceDefinition {
 
     public static final String PASSIVATION_STORE_CAPABILITY_NAME = "org.wildfly.ejb.passivation-store";
@@ -37,10 +38,12 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
     protected static final String INFINISPAN_DEFAULT_CACHE_CONFIGURATION_CAPABILITY_NAME = "org.wildfly.clustering.infinispan.default-cache-configuration";
     protected static final String INFINISPAN_CACHE_CONFIGURATION_CAPABILITY_NAME = "org.wildfly.clustering.infinispan.cache-configuration";
 
+    @Deprecated
     static final RuntimeCapability<Void> PASSIVATION_STORE_CAPABILITY = RuntimeCapability.Builder.of(PASSIVATION_STORE_CAPABILITY_NAME, true)
             .setServiceType(Void.class)
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition MAX_SIZE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.MAX_SIZE, ModelType.INT, true)
             .setXmlName(EJB3SubsystemXMLAttribute.MAX_SIZE.getLocalName())
             .setDefaultValue(new ModelNode(10000))
@@ -49,6 +52,7 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition CACHE_CONTAINER = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CACHE_CONTAINER, ModelType.STRING, true)
             .setXmlName(EJB3SubsystemXMLAttribute.CACHE_CONTAINER.getLocalName())
             .setDefaultValue(new ModelNode(BeanManagerFactoryServiceConfiguratorConfiguration.DEFAULT_CONTAINER_NAME))
@@ -59,6 +63,7 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
             .setCapabilityReference(new CapabilityReference(()->PASSIVATION_STORE_CAPABILITY, InfinispanDefaultCacheRequirement.CONFIGURATION))
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition BEAN_CACHE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.BEAN_CACHE, ModelType.STRING, true)
             .setXmlName(EJB3SubsystemXMLAttribute.BEAN_CACHE.getLocalName())
             // Capability references should not allow expressions
@@ -72,6 +77,7 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
 
     static final PassivationStoreAdd ADD_HANDLER = new PassivationStoreAdd(ATTRIBUTES);
 
+    @Deprecated
     static final PassivationStoreResourceDefinition INSTANCE = new PassivationStoreResourceDefinition(EJB3SubsystemModel.PASSIVATION_STORE);
 
     private PassivationStoreResourceDefinition(String element, AttributeDefinition... attributes) {

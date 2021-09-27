@@ -34,6 +34,7 @@ import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfigura
 /**
  * @author Paul Ferraro
  */
+@Deprecated
 public class PassivationStoreAdd extends AbstractAddStepHandler {
 
     private final AttributeDefinition[] attributes;

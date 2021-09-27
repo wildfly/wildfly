@@ -42,15 +42,18 @@ import org.jboss.dmr.ModelType;
  *
  * @author Paul Ferraro
  */
+@Deprecated
 public class CacheFactoryResourceDefinition extends SimpleResourceDefinition {
 
     // capabilities not required as although we install CacheFactoryBuilder services, these do not depend on any defined clustering resources
 
+    @Deprecated
     public static final StringListAttributeDefinition ALIASES = new StringListAttributeDefinition.Builder(EJB3SubsystemModel.ALIASES)
             .setXmlName(EJB3SubsystemXMLAttribute.ALIASES.getLocalName())
             .setRequired(false)
             .build();
 
+    @Deprecated
     public static final SimpleAttributeDefinition PASSIVATION_STORE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PASSIVATION_STORE, ModelType.STRING, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.PASSIVATION_STORE_REF.getLocalName())
@@ -62,6 +65,7 @@ public class CacheFactoryResourceDefinition extends SimpleResourceDefinition {
     private static final CacheFactoryAdd ADD_HANDLER = new CacheFactoryAdd(ATTRIBUTES);
     private static final CacheFactoryRemove REMOVE_HANDLER = new CacheFactoryRemove(ADD_HANDLER);
 
+    @Deprecated
     public static final CacheFactoryResourceDefinition INSTANCE = new CacheFactoryResourceDefinition();
 
     private CacheFactoryResourceDefinition() {

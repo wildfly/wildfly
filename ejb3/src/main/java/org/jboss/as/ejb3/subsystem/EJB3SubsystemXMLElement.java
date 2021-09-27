@@ -59,7 +59,7 @@ public enum EJB3SubsystemXMLElement {
 
     POOLS("pools"),
 
-    CACHE("cache"),
+    @Deprecated CACHE("cache"),
     CACHES("caches"),
     CHANNEL_CREATION_OPTIONS("channel-creation-options"),
 
@@ -69,8 +69,8 @@ public enum EJB3SubsystemXMLElement {
     OPTION("option"),
     OUTBOUND_CONNECTION_REF("outbound-connection-ref"),
 
-    PASSIVATION_STORE("passivation-store"),
-    PASSIVATION_STORES("passivation-stores"),
+    @Deprecated PASSIVATION_STORE("passivation-store"),
+    @Deprecated PASSIVATION_STORES("passivation-stores"),
     PROFILE("profile"),
     PROFILES("profiles"),
     PROPERTY("property"),

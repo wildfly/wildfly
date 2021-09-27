@@ -32,12 +32,12 @@ public enum EJB3SubsystemXMLAttribute {
     UNKNOWN(null),
 
     ALIAS("alias"),
-    ALIASES("aliases"),
+    @Deprecated ALIASES("aliases"),
     ALLOW_EXECUTION("allow-execution"),
 
-    BEAN_CACHE("bean-cache"),
+    @Deprecated BEAN_CACHE("bean-cache"),
 
-    CACHE_CONTAINER("cache-container"),
+    @Deprecated CACHE_CONTAINER("cache-container"),
     CACHE_REF("cache-ref"),
     CLIENT_MAPPINGS_CLUSTER_NAME("cluster"),
     @Deprecated CLIENT_MAPPINGS_CACHE("client-mappings-cache"),
@@ -82,7 +82,7 @@ public enum EJB3SubsystemXMLAttribute {
     PASS_BY_VALUE("pass-by-value"),
     @Deprecated PASSIVATE_EVENTS_ON_REPLICATE("passivate-events-on-replicate"),
     PASSIVATION_DISABLED_CACHE_REF("passivation-disabled-cache-ref"),
-    PASSIVATION_STORE_REF("passivation-store-ref"),
+    @Deprecated PASSIVATION_STORE_REF("passivation-store-ref"),
     PATH("path"),
     POOL_NAME("pool-name"),
 
