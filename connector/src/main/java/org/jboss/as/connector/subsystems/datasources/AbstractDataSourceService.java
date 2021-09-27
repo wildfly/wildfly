@@ -49,7 +49,6 @@ import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
 import org.jboss.jca.adapters.jdbc.JDBCResourceAdapter;
@@ -129,7 +128,6 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     private final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
     private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
     private final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();
-    private final InjectedValue<ServerSecurityManager> secManager = new InjectedValue<ServerSecurityManager>();
     private final InjectedValue<ResourceAdapterRepository> raRepository = new InjectedValue<ResourceAdapterRepository>();
     private final InjectedValue<AuthenticationContext> authenticationContext = new InjectedValue<>();
     private final InjectedValue<AuthenticationContext> recoveryAuthenticationContext = new InjectedValue<>();
@@ -286,10 +284,6 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     public Injector<ResourceAdapterRepository> getRaRepositoryInjector() {
             return raRepository;
         }
-
-    public Injector<ServerSecurityManager> getServerSecurityManager() {
-        return secManager;
-    }
 
     Injector<AuthenticationContext> getAuthenticationContext() {
         return authenticationContext;

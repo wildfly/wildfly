@@ -43,12 +43,13 @@ import static org.jboss.as.controller.security.CredentialReference.CREDENTIAL_RE
 import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
 import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 
-import javax.sql.DataSource;
 import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import org.jboss.as.connector._private.Capabilities;
 import org.jboss.as.connector.logging.ConnectorLogger;
@@ -65,7 +66,6 @@ import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -90,7 +90,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueInjectionService;
-import org.jboss.security.SubjectFactory;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.credential.source.CredentialSource;
@@ -256,13 +255,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
          }
 
          if (requireLegacySecurity) {
-             if (context.hasOptionalCapability("org.wildfly.legacy-security", null, null)) {
-                 dataSourceServiceBuilder.addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class, dataSourceService.getSubjectFactoryInjector())
-                         .addDependency(SECURITY_MANAGER_SERVICE, ServerSecurityManager.class, dataSourceService.getServerSecurityManager());
-             } else {
-                 context.setRollbackOnly();
-                 throw SUBSYSTEM_RA_LOGGER.legacySecurityNotAvailable(dsName);
-             }
+             context.setRollbackOnly();
+             throw SUBSYSTEM_RA_LOGGER.legacySecurityNotAvailable(dsName);
          }
 
          ModelNode credentialReference = Constants.CREDENTIAL_REFERENCE.resolveModelAttribute(context, model);

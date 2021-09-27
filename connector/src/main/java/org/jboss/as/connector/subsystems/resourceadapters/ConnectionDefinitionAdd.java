@@ -54,7 +54,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
@@ -63,7 +62,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.security.SubjectFactory;
 import org.wildfly.security.auth.client.AuthenticationContext;
 
 /**
@@ -180,13 +178,7 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
             }
 
             if (!elytronEnabled || !elytronRecoveryEnabled) {
-                // hasOptionalCapability javadoc says null dependent is not allowed, but it actually is. See WFCORE-900
-                if (context.hasOptionalCapability("org.wildfly.legacy-security", null, null)) {
-                    cdServiceBuilder.addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class,
-                                    service.getSubjectFactoryInjector())
-                            .addDependency(SECURITY_MANAGER_SERVICE,
-                                    ServerSecurityManager.class, service.getServerSecurityManager());
-                } else if (hasSecurityDomain || hasSecurityDomainAndApp || hasRecoverySecurityDomain || RaAdd.requiresLegacySecurity(context, raModel)) {
+                if (hasSecurityDomain || hasSecurityDomainAndApp || hasRecoverySecurityDomain || RaAdd.requiresLegacySecurity(context, raModel)) {
                     // We can't satisfy the config, so fail with a meaningful error
                     context.setRollbackOnly();
                     throw SUBSYSTEM_RA_LOGGER.legacySecurityNotAvailable(path.getLastElement().getValue(), path.getParent().getLastElement().getValue());
