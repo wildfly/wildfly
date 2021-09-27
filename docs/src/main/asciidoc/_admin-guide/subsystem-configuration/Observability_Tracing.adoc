@@ -4,7 +4,13 @@
 [[required-extension-opentelemetry]]
 == Extension
 
-This extension is included in all the standalone configurations included in the WildFly distribution.
+This extension is not included in any of the standalone configurations included in the WildFly distribution.
+To enable, the administrator must run the following CLI commands:
+
+```
+ $ jboss-cli.sh -c "/extension=org.wildfly.extension.opentelemetry:add()"
+ $ jboss-cli.sh -c "/subsystem=opentelemetry:add()"
+```
 
 == Configuration
 
@@ -17,8 +23,7 @@ The exporter can be selected and configured using the `exporter` child element, 
 * `exporter`: WildFly supports two different exporters:
 ** `jaeger`: The default exporter
 ** `otlp`: The OpenTelemetry protocol
-* `endpoint`: The URL via which OpenTelemetry will push traces. The default is Jaeger's gRPC-based endpoint,
-http://localhost:14250
+* `endpoint`: The URL via which OpenTelemetry will push traces. The default is Jaeger's gRPC-based endpoint, http://localhost:14250
 
 === Span Processor
 The span process is configured via the `span-processor` element, which supports the following attributes:
@@ -28,10 +33,8 @@ The span process is configured via the `span-processor` element, which supports 
 ** `simple`: Traces are pushed to the exporter as they finish.
 * `batch-delay`: The amount of time, in milliseconds, to wait before traces are published (default: 5000)
 * `max-queue-size`: The maximum size of the queue before traces are dropped (default: 2048)
-* `max-export-batch-size`: The maximum number of traces that are published in each batch, which must be smaller or equal
-to `max-queue-size (default: 512)
-* `export-timeout`: The maximum amount of time in milliseconds to allow for an export to complete before being cancelled
-(default: 30000)
+* `max-export-batch-size`: The maximum number of traces that are published in each batch, which must be smaller or equal to `max-queue-size (default: 512)
+* `export-timeout`: The maximum amount of time in milliseconds to allow for an export to complete before being cancelled (default: 30000)
 
 === Sampler
 

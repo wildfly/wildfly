@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.FilePermission;
 import java.io.IOException;
+import java.net.NetPermission;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.util.Arrays;
@@ -146,7 +147,10 @@ public class ContextPropagationTestCase {
                         // Required for com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider. During <init> there is a
                         // reflection test to check for JAXRS 2.0.
                         new RuntimePermission("accessDeclaredMembers"),
+                        new NetPermission("getProxySelector"),
                         // Required for the client to connect
+                        new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":14250", "connect,resolve"),
+                        new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":16686", "connect,resolve"),
                         new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" +
                                 TestSuiteEnvironment.getHttpPort(), "connect,resolve")
                 ), "permissions.xml");
@@ -239,10 +243,16 @@ public class ContextPropagationTestCase {
     }
 
     static class OpenTelemetrySetupTask implements ServerSetupTask {
+
+        private final String WILDFLY_EXTENSION_OPENTELEMETRY = "org.wildfly.extension.opentelemetry";
+        private final ModelNode address = Operations.createAddress("subsystem", "opentelemetry");
+
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            // Enable debug logging for org.wildfly.extension.batch
-            final ModelNode address = Operations.createAddress("subsystem", "opentelemetry");
+            execute(managementClient, Operations.createAddOperation(Operations.createAddress("extension",
+                    WILDFLY_EXTENSION_OPENTELEMETRY)), true);
+            execute(managementClient, Operations.createAddOperation(address), true);
+
             execute(managementClient, Operations.createWriteAttributeOperation(address,
                     "span-processor-type", "simple"), true);
             execute(managementClient, Operations.createWriteAttributeOperation(address,
@@ -252,6 +262,11 @@ public class ContextPropagationTestCase {
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            final ModelNode address = Operations.createAddress("subsystem", "opentelemetry");
+            execute(managementClient, Operations.createRemoveOperation(address), true);
+            execute(managementClient, Operations.createRemoveOperation(Operations.createAddress("extension",
+                    WILDFLY_EXTENSION_OPENTELEMETRY)), true);
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         private ModelNode execute(final ManagementClient managementClient,
