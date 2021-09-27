@@ -269,11 +269,11 @@
             </activation>
             <build>
                 <plugins>
-                    <!-- Disable the standard copy-based provisioning -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
                         <executions combine.children="append">
+                            <!-- Disable the standard copy-based provisioning -->
                             <execution>
                                 <id>ts.copy-wildfly</id>
                                 <goals>
@@ -281,14 +281,6 @@
                                 </goals>
                                 <phase>none</phase>
                             </execution>
-                        </executions>
-                    </plugin>
-                    
-                    <!-- application-users.properties copying -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions combine.children="append">
                            <!-- Copy users and roles config from shared resources. -->
                             <execution>
                                 <id>ts.config-as.copy-mgmt-users</id>
