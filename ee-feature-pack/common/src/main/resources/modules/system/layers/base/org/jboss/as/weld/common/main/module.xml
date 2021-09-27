@@ -45,10 +45,6 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.security.elytron-private"/>
-        <!-- Only needed if capability 'org.wildfly.legacy-security' is present.
-             TODO Investigate whether this is needed at all.
-        -->
-        <module name="org.jboss.as.security" optional="true" />
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.metadata.common"/>
         <module name="javax.enterprise.api"/>

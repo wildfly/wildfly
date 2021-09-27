@@ -59,16 +59,6 @@
             <artifactId>wildfly-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-security</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hornetq</groupId>
-                    <artifactId>hornetq-core</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling-river</artifactId>
         </dependency>
