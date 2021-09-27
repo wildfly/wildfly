@@ -141,7 +141,7 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
             .build();
 
     public static final SimpleAttributeDefinition RATIO = SimpleAttributeDefinitionBuilder
-            .create(OpenTelemetryConfigurationConstants.ratio, ModelType.DOUBLE, true)
+            .create(OpenTelemetryConfigurationConstants.RATIO, ModelType.DOUBLE, true)
             .setAllowExpression(true)
             .setAttributeGroup(GROUP_SAMPLER)
             .setValidator((parameterName, value) -> {

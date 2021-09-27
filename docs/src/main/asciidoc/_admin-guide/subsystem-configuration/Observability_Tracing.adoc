@@ -44,7 +44,7 @@ The sampler is configured via the `sampler` element:
 ** `on`: Always on (all traces are recorded)
 ** `off`: Always off (no traces are recorded)
 ** `ratio`: Return a ratio of the traces (e.g., 1 trace in 10000).
-* `sampler-arg`: The value use to configure the `ratio` sampler, which must be within [0.0, 1.0].For example, if 1 trace in 10,000 is to recorded, this value would be `0.0001`.
+* `ratio`: The value used to configure the `ratio` sampler, which must be within [0.0, 1.0].For example, if 1 trace in 10,000 is to be exported, this value would be `0.0001`.
 
 === Example Configuration
 
@@ -53,11 +53,19 @@ default values, so what you see in the configuration file may look different):
 
 [code,xml]
 -----
-<subsystem xmlns="urn:wildfly:opentelemetry:1.0" service-name="example">
-    <exporter type="jaeger" endpoint="http://localhost:14250"/>
-    <span-processor type="batch" batch-delay="4500" max-queue-size="128"
-        max-export-batch-size="512" export-timeout="45"/>
-    <sampler type="on" sampler-arg="1"/>
+<subsystem xmlns="urn:wildfly:opentelemetry:1.0"
+        service-name="example">
+    <exporter
+        type="jaeger"
+        endpoint="http://localhost:14250"/>
+    <span-processor
+        type="batch"
+        batch-delay="4500"
+        max-queue-size="128"
+        max-export-batch-size="512"
+        export-timeout="45"/>
+    <sampler
+        type="on"/>
 </subsystem>
 -----
 
