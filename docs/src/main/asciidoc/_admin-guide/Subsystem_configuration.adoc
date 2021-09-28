@@ -80,6 +80,8 @@ include::subsystem-configuration/Core_Management.adoc[]
 
 include::subsystem-configuration/Jakarta_RESTful_Web_Services.adoc[]
 
+include::subsystem-configuration/Elytron_OIDC_Client.adoc[]
+
 include::subsystem-configuration/Simple_configuration_subsystems.adoc[]
 
 :leveloffset: -1
