@@ -149,8 +149,10 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
             bindingMap.put(bindingName, bindingName);
         }
 
-        for (String refKey : bindingMap.keySet()) {
-            String refName = bindingMap.get(refKey);
+        for (final Map.Entry<String, String> entry : bindingMap.entrySet()) {
+            final String refKey = entry.getKey();
+            final String refName = entry.getValue();
+
             ManagedReferenceFactory factory = WebServiceReferences.createWebServiceFactory(unit, type, annotation, target, refName, refKey);
             final EEModuleClassDescription classDescription = moduleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
             // Create the binding from whence our injection comes.

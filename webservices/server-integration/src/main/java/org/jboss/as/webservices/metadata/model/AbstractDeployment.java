@@ -55,7 +55,7 @@ abstract class AbstractDeployment {
     public void addEndpoint(final POJOEndpoint ep) {
         final String urlPattern = ep.getUrlPattern();
         final String className = ep.getClassName();
-        if (urlPatternToClassMapping.keySet().contains((urlPattern))) {
+        if (contains(urlPattern)) {
             final String clazz = urlPatternToClassMapping.get(urlPattern);
             throw WSLogger.ROOT_LOGGER.sameUrlPatternRequested(clazz, urlPattern, ep.getClassName());
         } else {
@@ -65,6 +65,6 @@ abstract class AbstractDeployment {
     }
 
     public boolean contains(String urlPattern) {
-        return urlPatternToClassMapping.keySet().contains((urlPattern));
+        return urlPatternToClassMapping.containsKey(urlPattern);
     }
 }
