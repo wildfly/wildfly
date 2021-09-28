@@ -27,6 +27,7 @@ import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
 
+import com.arjuna.ats.internal.jdbc.drivers.modifiers.list;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -92,37 +93,40 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
         }
 
         //extract SOAP-over-JMS 1.0 bindings
-        List<JMSEndpointMetaData> list = new LinkedList<JMSEndpointMetaData>();
-        if (!map.isEmpty()) {
+        List<JMSEndpointMetaData> list = new LinkedList<>();
 
-            for (String wsdlLocation : map.keySet()) {
-                try {
-                    final ResourceRoot resourceRoot = getWsdlResourceRoot(unit, wsdlLocation);
-                    if (resourceRoot == null) continue;
-                    final VirtualFile wsdlLocationFile = resourceRoot.getRoot().getChild(wsdlLocation);
-                    final URL url = wsdlLocationFile.toURL();
-                    SOAPAddressWSDLParser parser = new SOAPAddressWSDLParser(url);
-                    for (AnnotationInstance ai : map.get(wsdlLocation)) {
-                        String port = ai.value(PORT_NAME).asString();
-                        String service = ai.value(SERVICE_NAME).asString();
-                        AnnotationValue targetNS = ai.value(TARGET_NAMESPACE);
-                        String tns = targetNS != null ? targetNS.asString() : null;
-                        QName serviceName = new QName(tns, service);
-                        QName portName = new QName(tns, port);
-                        String soapAddress = parser.filterSoapAddress(serviceName, portName, SOAPAddressWSDLParser.SOAP_OVER_JMS_NS);
-                        if (soapAddress != null) {
-                            ClassInfo webServiceClassInfo = (ClassInfo) ai.target();
-                            String beanClassName = webServiceClassInfo.name().toString();
-                            //service name ?
-                            list.add(new JMSEndpointMetaData(beanClassName, port, beanClassName, wsdlLocation, soapAddress));
-                        }
-                    }
-                } catch (Exception ignore) {
-                    WSLogger.ROOT_LOGGER.cannotReadWsdl(wsdlLocation);
+        for (final Map.Entry<String, List<AnnotationInstance>> entry : map.entrySet()) {
+            final String wsdlLocation = entry.getKey();
+
+            try {
+                final ResourceRoot resourceRoot = getWsdlResourceRoot(unit, wsdlLocation);
+                if (resourceRoot == null) {
+                    continue;
                 }
-            }
 
+                final VirtualFile wsdlLocationFile = resourceRoot.getRoot().getChild(wsdlLocation);
+                final URL url = wsdlLocationFile.toURL();
+                SOAPAddressWSDLParser parser = new SOAPAddressWSDLParser(url);
+                for (AnnotationInstance ai : entry.getValue()) {
+                    String port = ai.value(PORT_NAME).asString();
+                    String service = ai.value(SERVICE_NAME).asString();
+                    AnnotationValue targetNS = ai.value(TARGET_NAMESPACE);
+                    String tns = targetNS != null ? targetNS.asString() : null;
+                    QName serviceName = new QName(tns, service);
+                    QName portName = new QName(tns, port);
+                    String soapAddress = parser.filterSoapAddress(serviceName, portName, SOAPAddressWSDLParser.SOAP_OVER_JMS_NS);
+                    if (soapAddress != null) {
+                        ClassInfo webServiceClassInfo = (ClassInfo) ai.target();
+                        String beanClassName = webServiceClassInfo.name().toString();
+                        //service name ?
+                        list.add(new JMSEndpointMetaData(beanClassName, port, beanClassName, wsdlLocation, soapAddress));
+                    }
+                }
+            } catch (Exception ignore) {
+                WSLogger.ROOT_LOGGER.cannotReadWsdl(wsdlLocation);
+            }
         }
+
         unit.putAttachment(JMS_ENDPOINT_METADATA_KEY, new JMSEndpointsMetaData(list));
     }
 
