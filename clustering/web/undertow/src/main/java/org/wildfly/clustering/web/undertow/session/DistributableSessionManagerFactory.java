@@ -23,6 +23,7 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.security.PrivilegedAction;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import javax.servlet.ServletContext;
 
@@ -30,7 +31,6 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
-import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
@@ -67,7 +67,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
         DeploymentInfo info = deployment.getDeploymentInfo();
         boolean statisticsEnabled = info.getMetricsCollector() != null;
         RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new RecordableInactiveSessionStatistics() : null;
-        IdentifierFactory<String> factory = new IdentifierFactoryAdapter(info.getSessionIdGenerator());
+        Supplier<String> factory = new IdentifierFactoryAdapter(info.getSessionIdGenerator());
         SessionExpirationListener expirationListener = new UndertowSessionExpirationListener(deployment, this.listeners);
         SessionManagerConfiguration<ServletContext> configuration = new SessionManagerConfiguration<ServletContext>() {
             @Override
@@ -76,7 +76,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
             }
 
             @Override
-            public IdentifierFactory<String> getIdentifierFactory() {
+            public Supplier<String> getIdentifierFactory() {
                 return factory;
             }
 

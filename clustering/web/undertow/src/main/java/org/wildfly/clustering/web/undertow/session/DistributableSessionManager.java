@@ -155,7 +155,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
             // The servlet specification mandates that an ISE be thrown here
             if (this.allowOrphanSession) {
                 // Return a single use session to be garbage collected at the end of the request
-                io.undertow.server.session.Session session = new OrphanSession(this, this.manager.createIdentifier());
+                io.undertow.server.session.Session session = new OrphanSession(this, this.manager.getIdentifierFactory().get());
                 session.setMaxInactiveInterval((int) this.manager.getDefaultMaxInactiveInterval().getSeconds());
                 return session;
             }
@@ -167,7 +167,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
         boolean close = true;
         Consumer<HttpServerExchange> closeTask = this.getSessionCloseTask();
         try {
-            String id = (requestedId == null) ? this.manager.createIdentifier() : requestedId;
+            String id = (requestedId == null) ? this.manager.getIdentifierFactory().get() : requestedId;
 
             Batcher<Batch> batcher = this.manager.getBatcher();
             // Batch will be closed by Session.close();

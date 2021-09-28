@@ -23,13 +23,13 @@ package org.wildfly.clustering.web.undertow;
 
 import io.undertow.server.session.SessionIdGenerator;
 
-import org.wildfly.clustering.web.IdentifierFactory;
+import java.util.function.Supplier;
 
 /**
  * Adapts a {@link SessionIdGenerator} to a {@link IdentifierFactory}.
  * @author Paul Ferraro
  */
-public class IdentifierFactoryAdapter implements IdentifierFactory<String> {
+public class IdentifierFactoryAdapter implements Supplier<String> {
 
     private final SessionIdGenerator generator;
 
@@ -38,15 +38,7 @@ public class IdentifierFactoryAdapter implements IdentifierFactory<String> {
     }
 
     @Override
-    public String createIdentifier() {
+    public String get() {
         return this.generator.createSessionId();
-    }
-
-    @Override
-    public void start() {
-    }
-
-    @Override
-    public void stop() {
     }
 }

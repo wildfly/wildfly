@@ -52,7 +52,7 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
 
     @Override
     public SingleSignOn createSingleSignOn(Account account, String mechanism) {
-        String id = this.manager.createIdentifier();
+        String id = this.manager.getIdentifierFactory().get();
         Batcher<Batch> batcher = this.manager.getBatcher();
         // Batch will be closed when SSO is closed
         @SuppressWarnings("resource")

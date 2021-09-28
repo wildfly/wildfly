@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.hotrod.session;
+package org.wildfly.clustering.ee.cache;
 
-import java.time.Duration;
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.Registrar;
-import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
+import org.wildfly.clustering.ee.Restartable;
 
 /**
- * Configuration for an {@link HotRodSessionManager}.
- * @param <C> the ServletContext specification type
+ * Factory for creating unique identifiers suitable for use by the local cluster member.
  * @author Paul Ferraro
+ * @param <I> the identifier type
  */
-public interface HotRodSessionManagerConfiguration<C> {
-    C getServletContext();
-    SessionExpirationListener getExpirationListener();
-    Registrar<SessionExpirationListener> getExpirationRegistrar();
-    Supplier<String> getIdentifierFactory();
-    Batcher<TransactionBatch> getBatcher();
-    Duration getStopTimeout();
+public interface IdentifierFactory<I> extends Restartable, Supplier<I> {
 }

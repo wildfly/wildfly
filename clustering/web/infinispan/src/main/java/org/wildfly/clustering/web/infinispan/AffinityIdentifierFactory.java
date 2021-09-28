@@ -21,14 +21,16 @@
  */
 package org.wildfly.clustering.web.infinispan;
 
+import java.util.function.Supplier;
+
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.wildfly.clustering.ee.Key;
+import org.wildfly.clustering.ee.cache.IdentifierFactory;
 import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.web.IdentifierFactory;
 
 /**
  * {@link IdentifierFactory} that uses a {@link KeyAffinityService} to generate identifiers.
@@ -37,35 +39,33 @@ import org.wildfly.clustering.web.IdentifierFactory;
  */
 public class AffinityIdentifierFactory<K> implements IdentifierFactory<K>, KeyGenerator<Key<K>> {
 
-    private final IdentifierFactory<K> factory;
+    private final Supplier<K> factory;
     private final KeyAffinityService<? extends Key<K>> affinity;
     private final EmbeddedCacheManager manager;
 
-    public AffinityIdentifierFactory(IdentifierFactory<K> factory, Cache<Key<K>, ?> cache, KeyAffinityServiceFactory affinityFactory) {
+    public AffinityIdentifierFactory(Supplier<K> factory, Cache<Key<K>, ?> cache, KeyAffinityServiceFactory affinityFactory) {
         this.factory = factory;
         this.affinity = affinityFactory.createService(cache, this);
         this.manager = cache.getCacheManager();
     }
 
     @Override
-    public K createIdentifier() {
+    public K get() {
         return this.affinity.getKeyForAddress(this.manager.getAddress()).getId();
     }
 
     @Override
     public Key<K> getKey() {
-        return new GroupedKey<>(this.factory.createIdentifier());
+        return new GroupedKey<>(this.factory.get());
     }
 
     @Override
     public void start() {
-        this.factory.start();
         this.affinity.start();
     }
 
     @Override
     public void stop() {
         this.affinity.stop();
-        this.factory.stop();
     }
 }

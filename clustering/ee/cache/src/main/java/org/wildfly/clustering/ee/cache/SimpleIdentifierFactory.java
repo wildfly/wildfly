@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,17 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web;
+
+package org.wildfly.clustering.ee.cache;
+
+import java.util.function.Supplier;
 
 /**
- * Identifier factory SPI
+ * Simple {@link IdentifierFactory} that delegates to a supplier.
  * @author Paul Ferraro
- * @param <K> the identifier type
  */
-public interface IdentifierFactory<K> {
-    K createIdentifier();
+public class SimpleIdentifierFactory<I> implements IdentifierFactory<I> {
 
-    void start();
+    private final Supplier<I> factory;
 
-    void stop();
+    public SimpleIdentifierFactory(Supplier<I> factory) {
+        this.factory = factory;
+    }
+
+    @Override
+    public I get() {
+        return this.factory.get();
+    }
+
+    @Override
+    public void start() {
+        // Do nothing
+    }
+
+    @Override
+    public void stop() {
+        // Do nothing
+    }
 }

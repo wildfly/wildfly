@@ -42,6 +42,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionActivationListener;
 
@@ -1067,6 +1069,7 @@ public class DistributableSessionTestCase {
         SessionConfig config = mock(SessionConfig.class);
 
         SessionManager<Map<String, Object>, Batch> manager = mock(SessionManager.class);
+        Supplier<String> identifierFactory = mock(Supplier.class);
         Batcher<Batch> batcher = mock(Batcher.class);
         BatchContext context = mock(BatchContext.class);
         Session<Map<String, Object>> newSession = mock(Session.class);
@@ -1090,7 +1093,8 @@ public class DistributableSessionTestCase {
         when(this.manager.getSessionManager()).thenReturn(manager);
         when(manager.getBatcher()).thenReturn(batcher);
         when(batcher.resumeBatch(this.batch)).thenReturn(context);
-        when(manager.createIdentifier()).thenReturn(newSessionId);
+        when(manager.getIdentifierFactory()).thenReturn(identifierFactory);
+        when(identifierFactory.get()).thenReturn(newSessionId);
         when(manager.createSession(newSessionId)).thenReturn(newSession);
         when(this.session.getAttributes()).thenReturn(oldAttributes);
         when(this.session.getMetaData()).thenReturn(oldMetaData);
@@ -1163,6 +1167,7 @@ public class DistributableSessionTestCase {
         SessionConfig config = mock(SessionConfig.class);
 
         SessionManager<Map<String, Object>, Batch> manager = mock(SessionManager.class);
+        Supplier<String> identifierFactory = mock(Supplier.class);
         Batcher<Batch> batcher = mock(Batcher.class);
         BatchContext context = mock(BatchContext.class);
         Session<Map<String, Object>> newSession = mock(Session.class);
@@ -1186,7 +1191,8 @@ public class DistributableSessionTestCase {
         when(this.manager.getSessionManager()).thenReturn(manager);
         when(manager.getBatcher()).thenReturn(batcher);
         when(batcher.resumeBatch(this.batch)).thenReturn(context);
-        when(manager.createIdentifier()).thenReturn(newSessionId);
+        when(manager.getIdentifierFactory()).thenReturn(identifierFactory);
+        when(identifierFactory.get()).thenReturn(newSessionId);
         when(manager.createSession(newSessionId)).thenReturn(newSession);
         when(this.session.getAttributes()).thenReturn(oldAttributes);
         when(this.session.getMetaData()).thenReturn(oldMetaData);

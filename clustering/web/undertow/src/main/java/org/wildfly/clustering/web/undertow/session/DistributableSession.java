@@ -304,7 +304,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
         }
         Session<Map<String, Object>> oldSession = this.getSessionEntry().getKey();
         SessionManager<Map<String, Object>, Batch> manager = this.manager.getSessionManager();
-        String id = manager.createIdentifier();
+        String id = manager.getIdentifierFactory().get();
         try (BatchContext context = this.resumeBatch()) {
             Session<Map<String, Object>> newSession = manager.createSession(id);
             try {

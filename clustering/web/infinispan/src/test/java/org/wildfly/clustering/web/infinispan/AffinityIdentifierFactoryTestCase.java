@@ -38,9 +38,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
 import org.wildfly.clustering.ee.Key;
+import org.wildfly.clustering.ee.cache.IdentifierFactory;
 import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.web.IdentifierFactory;
 
 /**
  * Unit test for {@link AffinityIdentifierFactory}
@@ -74,7 +74,7 @@ public class AffinityIdentifierFactoryTestCase {
 
             String expected = "id";
 
-            when(this.factory.createIdentifier()).thenReturn(expected);
+            when(this.factory.get()).thenReturn(expected);
 
             Key<String> result = generator.getKey();
 
@@ -90,7 +90,7 @@ public class AffinityIdentifierFactoryTestCase {
         when(this.manager.getAddress()).thenReturn(address);
         when(this.affinity.getKeyForAddress(address)).thenReturn(new GroupedKey<>(expected));
 
-        String result = this.subject.createIdentifier();
+        String result = this.subject.get();
 
         assertSame(expected, result);
     }
