@@ -36,6 +36,11 @@ public class AssumeTestGroupUtil {
         assumeCondition("Tests failing if the security manager is enabled.", () -> System.getProperty("security.manager") == null);
     }
 
+    public static void assumeSecurityManagerDisabledOrAssumeJDKVersionBefore(int javaSpecificationVersion) {
+        assumeCondition("Tests failing if the security manager is enabled and JDK in use is after " + javaSpecificationVersion + ".",
+                () -> (System.getProperty("security.manager") == null || getJavaSpecificationVersion() < javaSpecificationVersion));
+    }
+
     /**
      * Assume for tests that fail when the JVM version is too low. This should be used sparingly.
      *
