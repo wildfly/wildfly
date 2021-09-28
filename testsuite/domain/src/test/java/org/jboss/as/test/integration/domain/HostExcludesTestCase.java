@@ -197,6 +197,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
 
         private final String name;
         private final Set<String> extensions = new HashSet<>();
+        private final Set<String> removed = new HashSet<>();
         private static final Map<String, ExtensionConf> MAP;
         private final boolean modified;
 
@@ -240,11 +241,17 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
             if (addedExtensions != null) {
                 this.extensions.addAll(addedExtensions);
             }
-            if (parent != null && parent.extensions != null) {
-                this.extensions.addAll(parent.extensions);
+            if (parent != null) {
+                if (parent.extensions != null) {
+                    this.extensions.addAll(parent.extensions);
+                }
+                if (parent.removed != null) {
+                    this.removed.addAll(parent.removed);
+                }
             }
             if (removedExtensions != null) {
                 this.extensions.removeAll(removedExtensions);
+                this.removed.addAll(removedExtensions);
             }
         }
 
@@ -259,6 +266,10 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
 
         public static ExtensionConf forName(String name) {
             return MAP.get(name);
+        }
+
+        public Set<String> getRemovedExtensions() {
+            return removed;
         }
 
         public Set<String> getExtensions(boolean isEeGalleonPack) {
@@ -362,8 +373,9 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                     "This host-exclude name is not defined in this test: %s", name),
                     confPrevRelease);
 
-            //check that available extensions - excluded extensions = expected extensions in a previous release.
+            //check that available extensions - excluded extensions = expected extensions in a previous release - removed
             Set<String> expectedExtensions = ExtensionConf.forName(name).getExtensions(isEeGalleonPack);
+            expectedExtensions.removeAll(ExtensionConf.forName(MAJOR).getRemovedExtensions());
 
             Set<String> extensionsUnderTest = new HashSet<>(availableExtensions);
             extensionsUnderTest.removeAll(excludedExtensions);
@@ -384,7 +396,9 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         // Verifies all the exclusions Id added as configurations for this test are defined as host exclusions in the current server release
         for(ExtensionConf extensionConf : ExtensionConf.values()) {
             if (extensionConf != ExtensionConf.CURRENT && !processedExclusionsIds.contains(extensionConf.getName())) {
-                if (!extensionConf.getExtensions(isEeGalleonPack).equals(availableExtensions)) {
+                Set<String> extensions = extensionConf.getExtensions(isEeGalleonPack);
+                extensions.removeAll(ExtensionConf.forName(MAJOR).getRemovedExtensions());
+                if (!extensions.equals(availableExtensions)) {
                     fail(String.format("The %s exclusion id is not defined as host exclusion for the current release.", extensionConf.getName()));
                 }
             }
