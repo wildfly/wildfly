@@ -21,9 +21,10 @@
  */
 package org.jboss.as.ejb3.cache;
 
+import java.util.function.Supplier;
+
 import org.wildfly.clustering.ee.Restartable;
 import org.wildfly.clustering.ejb.AffinitySupport;
-import org.wildfly.clustering.ejb.IdentifierFactory;
 
 /**
  * Cache a stateful object and make sure any life cycle callbacks are
@@ -31,7 +32,7 @@ import org.wildfly.clustering.ejb.IdentifierFactory;
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  */
-public interface Cache<K, V extends Identifiable<K>> extends Restartable, AffinitySupport<K>, IdentifierFactory<K> {
+public interface Cache<K, V extends Identifiable<K>> extends Restartable, AffinitySupport<K> {
     ThreadLocal<Object> CURRENT_GROUP = new ThreadLocal<>();
 
     /**
@@ -90,4 +91,10 @@ public interface Cache<K, V extends Identifiable<K>> extends Restartable, Affini
     default boolean isRemotable(Throwable throwable) {
         return true;
     }
+
+    /**
+     * Returns the identifier factory of this cache.
+     * @return an identifier factory
+     */
+    Supplier<K> getIdentifierFactory();
 }

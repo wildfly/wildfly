@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.ejb;
 
+import java.util.function.Supplier;
+
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Restartable;
@@ -39,7 +41,7 @@ public interface BeanManager<I, T, B extends Batch> extends Restartable, Affinit
 
     boolean containsBean(I id);
 
-    IdentifierFactory<I> getIdentifierFactory();
+    Supplier<I> getIdentifierFactory();
 
     Batcher<B> getBatcher();
 

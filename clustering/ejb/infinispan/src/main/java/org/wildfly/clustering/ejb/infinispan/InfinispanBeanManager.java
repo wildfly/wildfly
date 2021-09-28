@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
@@ -50,7 +51,6 @@ import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerTopologyChangeLis
 import org.wildfly.clustering.ee.infinispan.tx.InfinispanBatcher;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.BeanManager;
-import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.RemoveListener;
 import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
@@ -76,7 +76,7 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
     private final CacheProperties properties;
     private final BeanFactory<I, T> beanFactory;
     private final BeanGroupFactory<I, T, C> groupFactory;
-    private final IdentifierFactory<I> identifierFactory;
+    private final Supplier<I> identifierFactory;
     private final KeyAffinityService<BeanKey<I>> affinity;
     private final CommandDispatcherFactory dispatcherFactory;
     private final ExpirationConfiguration<T> expiration;
@@ -89,7 +89,7 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
     private volatile org.wildfly.clustering.ee.Scheduler<I, ImmutableBeanEntry<I>> scheduler;
     private volatile SchedulerListener listener;
 
-    public InfinispanBeanManager(InfinispanBeanManagerConfiguration<I, T> configuration, IdentifierFactory<I> identifierFactory, Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration, Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T, C>, BeanGroupFactory<I, T, C>> groupConfiguration) {
+    public InfinispanBeanManager(InfinispanBeanManagerConfiguration<I, T> configuration, Supplier<I> identifierFactory, Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration, Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T, C>, BeanGroupFactory<I, T, C>> groupConfiguration) {
         this.filter = configuration.getBeanFilter();
         this.groupFactory = groupConfiguration.getFactory();
         this.beanFactory = beanConfiguration.getFactory();
@@ -98,7 +98,7 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
         this.batcher = new InfinispanBatcher(this.cache);
         Address address = this.cache.getCacheManager().getAddress();
         KeyAffinityServiceFactory affinityFactory = configuration.getAffinityFactory();
-        KeyGenerator<BeanKey<I>> beanKeyGenerator = () -> beanConfiguration.getFactory().createKey(identifierFactory.createIdentifier());
+        KeyGenerator<BeanKey<I>> beanKeyGenerator = () -> beanConfiguration.getFactory().createKey(identifierFactory.get());
         this.affinity = affinityFactory.createService(this.cache, beanKeyGenerator);
         this.identifierFactory = () -> this.affinity.getKeyForAddress(address).getId();
         this.dispatcherFactory = configuration.getCommandDispatcherFactory();
@@ -204,7 +204,7 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
     }
 
     @Override
-    public IdentifierFactory<I> getIdentifierFactory() {
+    public Supplier<I> getIdentifierFactory() {
         return this.identifierFactory;
     }
 

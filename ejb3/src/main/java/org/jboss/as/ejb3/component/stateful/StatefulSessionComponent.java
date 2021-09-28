@@ -28,7 +28,6 @@ import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Supplier;
 
 import javax.ejb.ConcurrentAccessException;
@@ -65,7 +64,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RunResult;
@@ -76,7 +74,16 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatefulSessionComponent extends SessionBeanComponent implements StatefulObjectFactory<StatefulSessionComponentInstance>, PassivationListener<StatefulSessionComponentInstance>, IdentifierFactory<SessionID> {
+public class StatefulSessionComponent extends SessionBeanComponent implements StatefulObjectFactory<StatefulSessionComponentInstance>, PassivationListener<StatefulSessionComponentInstance> {
+
+    enum IdentifierFactory implements Supplier<SessionID> {
+        UUID() {
+            @Override
+            public SessionID get() {
+                return new UUIDSessionID(java.util.UUID.randomUUID());
+            }
+        };
+    }
 
     private volatile Cache<SessionID, StatefulSessionComponentInstance> cache;
 
@@ -274,11 +281,6 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     }
 
     @Override
-    public SessionID createIdentifier() {
-        return new UUIDSessionID(UUID.randomUUID());
-    }
-
-    @Override
     protected BasicComponentInstance instantiateComponentInstance(final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, Map<Object, Object> context) {
         StatefulSessionComponentInstance instance = new StatefulSessionComponentInstance(this, preDestroyInterceptor, methodInterceptors, context);
         for(Object key : serialiableInterceptorContextKeys) {
@@ -338,7 +340,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     public synchronized void init() {
         super.init();
 
-        this.cache = this.cacheFactory.get().createCache(this, this, this);
+        this.cache = this.cacheFactory.get().createCache(IdentifierFactory.UUID, this, this);
         this.cache.start();
     }
 

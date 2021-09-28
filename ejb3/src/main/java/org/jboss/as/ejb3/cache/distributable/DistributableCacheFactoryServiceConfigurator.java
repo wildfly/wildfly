@@ -5,6 +5,7 @@
 package org.jboss.as.ejb3.cache.distributable;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.transaction.TransactionSynchronizationRegistry;
 
@@ -22,7 +23,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ejb.BeanManager;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
-import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -68,7 +68,7 @@ public class DistributableCacheFactoryServiceConfigurator<K, V extends Identifia
     }
 
     @Override
-    public Cache<K, V> createCache(IdentifierFactory<K> identifierFactory, StatefulObjectFactory<V> factory, PassivationListener<V> passivationListener) {
+    public Cache<K, V> createCache(Supplier<K> identifierFactory, StatefulObjectFactory<V> factory, PassivationListener<V> passivationListener) {
         BeanManager<K, V, Batch> manager = this.factory.get().createBeanManager(identifierFactory, passivationListener, new RemoveListenerAdapter<>(factory));
         return new DistributableCache<>(manager, factory, this.tsr.get());
     }

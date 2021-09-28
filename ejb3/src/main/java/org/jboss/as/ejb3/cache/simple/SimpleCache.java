@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.Identifiable;
@@ -41,7 +42,6 @@ import org.jboss.ejb.client.NodeAffinity;
 import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.scheduler.LinkedScheduledEntries;
 import org.wildfly.clustering.ee.cache.scheduler.LocalScheduler;
-import org.wildfly.clustering.ejb.IdentifierFactory;
 
 /**
  * Simple {@link Cache} implementation using in-memory storage and eager expiration.
@@ -54,12 +54,12 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V>, P
 
     private final ConcurrentMap<K, Entry<V>> entries = new ConcurrentHashMap<>();
     private final StatefulObjectFactory<V> factory;
-    private final IdentifierFactory<K> identifierFactory;
+    private final Supplier<K> identifierFactory;
     private final Duration timeout;
     private final ServerEnvironment environment;
     private final Scheduler<K, Instant> scheduler = new LocalScheduler<>(new LinkedScheduledEntries<>(), this, Duration.ZERO);
 
-    public SimpleCache(StatefulObjectFactory<V> factory, IdentifierFactory<K> identifierFactory, StatefulTimeoutInfo timeout, ServerEnvironment environment) {
+    public SimpleCache(StatefulObjectFactory<V> factory, Supplier<K> identifierFactory, StatefulTimeoutInfo timeout, ServerEnvironment environment) {
         this.factory = factory;
         this.identifierFactory = identifierFactory;
 
@@ -98,8 +98,8 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V>, P
     }
 
     @Override
-    public K createIdentifier() {
-        return this.identifierFactory.createIdentifier();
+    public Supplier<K> getIdentifierFactory() {
+        return this.identifierFactory;
     }
 
     @Override

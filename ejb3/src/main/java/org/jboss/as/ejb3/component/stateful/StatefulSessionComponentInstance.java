@@ -125,7 +125,7 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         super(component, preDestroyInterceptor, methodInterceptors);
 
         final SessionID existingSession = (SessionID) context.get(SessionID.class);
-        this.id = (existingSession != null) ? existingSession : component.getCache().createIdentifier();
+        this.id = (existingSession != null) ? existingSession : component.getCache().getIdentifierFactory().get();
         this.afterBegin = component.getAfterBegin();
         this.afterCompletion = component.getAfterCompletion();
         this.beforeCompletion = component.getBeforeCompletion();
