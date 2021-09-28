@@ -20,12 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan;
+package org.wildfly.clustering.ee.infinispan.affinity;
 
 import static org.junit.Assert.assertSame;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+
+import java.util.UUID;
+import java.util.function.Supplier;
 
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
@@ -49,48 +54,64 @@ import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
  */
 public class AffinityIdentifierFactoryTestCase {
 
-    private final IdentifierFactory<String> factory = mock(IdentifierFactory.class);
+    private final Supplier<UUID> factory = mock(Supplier.class);
     private final KeyAffinityServiceFactory affinityFactory = mock(KeyAffinityServiceFactory.class);
-    private final KeyAffinityService<Key<String>> affinity = mock(KeyAffinityService.class);
-    private final Cache<Key<String>, ?> cache = mock(Cache.class);
-    private final EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
+    private final KeyAffinityService<Key<UUID>> affinity = mock(KeyAffinityService.class);
+    private final Cache<Key<UUID>, ?> cache = mock(Cache.class);
+    private final Address localAddress = mock(Address.class);
 
-    private IdentifierFactory<String> subject;
+    private IdentifierFactory<UUID> subject;
 
     @Captor
-    private ArgumentCaptor<KeyGenerator<Key<String>>> capturedGenerator;
+    private ArgumentCaptor<KeyGenerator<Key<UUID>>> capturedGenerator;
 
     @Before
     public void init() throws Exception {
+        EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
         try (AutoCloseable test = MockitoAnnotations.openMocks(this)) {
             when(this.affinityFactory.createService(same(this.cache), this.capturedGenerator.capture())).thenReturn(this.affinity);
-            when(this.cache.getCacheManager()).thenReturn(this.manager);
+            when(this.cache.getCacheManager()).thenReturn(manager);
+            when(manager.getAddress()).thenReturn(this.localAddress);
 
             this.subject = new AffinityIdentifierFactory<>(this.factory, this.cache, this.affinityFactory);
 
-            KeyGenerator<Key<String>> generator = this.capturedGenerator.getValue();
+            KeyGenerator<Key<UUID>> generator = this.capturedGenerator.getValue();
 
             assertSame(generator, this.subject);
 
-            String expected = "id";
+            UUID expected = UUID.randomUUID();
 
             when(this.factory.get()).thenReturn(expected);
 
-            Key<String> result = generator.getKey();
+            Key<UUID> result = generator.getKey();
 
             assertSame(expected, result.getId());
         }
     }
 
     @Test
+    public void start() {
+        this.subject.start();
+
+        verify(this.affinity).start();
+        verifyNoMoreInteractions(this.affinity);
+    }
+
+    @Test
+    public void stop() {
+        this.subject.stop();
+
+        verify(this.affinity).stop();
+        verifyNoMoreInteractions(this.affinity);
+    }
+
+    @Test
     public void createIdentifier() {
-        String expected = "id";
-        Address address = mock(Address.class);
+        UUID expected = UUID.randomUUID();
 
-        when(this.manager.getAddress()).thenReturn(address);
-        when(this.affinity.getKeyForAddress(address)).thenReturn(new GroupedKey<>(expected));
+        when(this.affinity.getKeyForAddress(this.localAddress)).thenReturn(new GroupedKey<>(expected));
 
-        String result = this.subject.get();
+        UUID result = this.subject.get();
 
         assertSame(expected, result);
     }

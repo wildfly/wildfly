@@ -43,6 +43,7 @@ import org.wildfly.clustering.ee.cache.IdentifierFactory;
 import org.wildfly.clustering.ee.cache.SimpleManager;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.infinispan.PrimaryOwnerLocator;
+import org.wildfly.clustering.ee.infinispan.affinity.AffinityIdentifierFactory;
 import org.wildfly.clustering.ee.infinispan.scheduler.PrimaryOwnerScheduler;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleLocalKeysTask;
@@ -66,7 +67,6 @@ import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifi
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
-import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
 import org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionAttributesFactory;
 import org.wildfly.clustering.web.infinispan.session.fine.FineSessionAttributesFactory;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
