@@ -78,7 +78,6 @@
         <module>jpa</module>
         <module>jsf</module>
         <module>jsr77</module>
-        <module>legacy/cmp</module>
         <module>legacy/configadmin</module>
         <module>legacy/jacorb</module>
         <module>legacy/jaxr</module>
@@ -890,12 +889,6 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-web-undertow</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-cmp</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
 
