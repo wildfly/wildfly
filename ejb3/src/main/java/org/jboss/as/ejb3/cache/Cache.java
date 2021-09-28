@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.cache;
 
+import org.wildfly.clustering.ee.Restartable;
 import org.wildfly.clustering.ejb.AffinitySupport;
 import org.wildfly.clustering.ejb.IdentifierFactory;
 
@@ -30,7 +31,7 @@ import org.wildfly.clustering.ejb.IdentifierFactory;
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  */
-public interface Cache<K, V extends Identifiable<K>> extends AffinitySupport<K>, IdentifierFactory<K> {
+public interface Cache<K, V extends Identifiable<K>> extends Restartable, AffinitySupport<K>, IdentifierFactory<K> {
     ThreadLocal<Object> CURRENT_GROUP = new ThreadLocal<>();
 
     /**
@@ -76,17 +77,6 @@ public interface Cache<K, V extends Identifiable<K>> extends AffinitySupport<K>,
      * @param key the identifier of the object
      */
     void remove(K key);
-
-
-    /**
-     * Start the cache.
-     */
-    void start();
-
-    /**
-     * Stop the cache.
-     */
-    void stop();
 
     int getCacheSize();
 
