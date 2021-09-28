@@ -27,6 +27,7 @@ import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
 
+import com.arjuna.ats.internal.jdbc.drivers.modifiers.list;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
