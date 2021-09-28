@@ -31,6 +31,8 @@ import java.util.PropertyPermission;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -108,12 +110,22 @@ public class SubscriberSignatureTestCase {
     }
 
     private void emit(Emitter<Integer> emitter) {
+        CountDownLatch completedLatch = new CountDownLatch(1);
         new Thread(() -> {
             for (int i = 0; i < 10; i++) {
                 emitter.send(i);
             }
             emitter.complete();
+            completedLatch.countDown();
         }).start();
+
+        try {
+            completedLatch.await(3, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            // Rethrow as an unchecked exception to keep this test as similar as possible to the original Quarkus
+            // code (I don't want to declare every method to throw Exception)
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
