@@ -195,7 +195,8 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         // to the internal mpExtensions Set defined on this class.
         CURRENT(MAJOR, WILDFLY_25_0, null, Arrays.asList(
                 "org.jboss.as.cmp",
-                "org.jboss.as.jaxr"
+                "org.jboss.as.jaxr",
+                "org.jboss.as.configadmin"
         ));
 
         private final String name;

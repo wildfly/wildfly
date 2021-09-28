@@ -78,7 +78,6 @@
         <module>jpa</module>
         <module>jsf</module>
         <module>jsr77</module>
-        <module>legacy/configadmin</module>
         <module>legacy/jacorb</module>
         <module>legacy/messaging</module>
         <module>legacy/web</module>
@@ -888,12 +887,6 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-web-undertow</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-configadmin</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
 
