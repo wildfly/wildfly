@@ -33,7 +33,7 @@ import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 
 /**
- * {@link IdentifierFactory} that uses a {@link KeyAffinityService} to generate identifiers.
+ * An {@link IdentifierFactory} that uses a {@link KeyAffinityService} to pre-generate locally hashing identifiers from a supplier.
  * @author Paul Ferraro
  * @param <I> the identifier type
  */
@@ -43,7 +43,7 @@ public class AffinityIdentifierFactory<I> implements IdentifierFactory<I>, KeyGe
     private final KeyAffinityService<? extends Key<I>> affinity;
     private final Address localAddress;
 
-    public AffinityIdentifierFactory(Supplier<I> factory, Cache<Key<I>, ?> cache, KeyAffinityServiceFactory affinityFactory) {
+    public AffinityIdentifierFactory(Supplier<I> factory, Cache<? extends Key<I>, ?> cache, KeyAffinityServiceFactory affinityFactory) {
         this.factory = factory;
         this.affinity = affinityFactory.createService(cache, this);
         this.localAddress = cache.getCacheManager().getAddress();

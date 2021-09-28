@@ -36,7 +36,7 @@ import org.infinispan.remoting.transport.Address;
 public class DefaultKeyAffinityServiceFactory implements KeyAffinityServiceFactory {
 
     @Override
-    public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator, Predicate<Address> filter) {
+    public <K> KeyAffinityService<K> createService(Cache<? extends K, ?> cache, KeyGenerator<K> generator, Predicate<Address> filter) {
         return cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new DefaultKeyAffinityService<>(cache, generator, filter) : new SimpleKeyAffinityService<>(generator);
     }
 }

@@ -30,19 +30,18 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
-import org.infinispan.affinity.KeyAffinityService;
-import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.commons.CacheException;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.context.Flag;
-import org.infinispan.remoting.transport.Address;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.NodeAffinity;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.cache.IdentifierFactory;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.infinispan.PrimaryOwnerLocator;
+import org.wildfly.clustering.ee.infinispan.affinity.AffinityIdentifierFactory;
 import org.wildfly.clustering.ee.infinispan.scheduler.PrimaryOwnerScheduler;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleLocalEntriesTask;
 import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
@@ -56,7 +55,6 @@ import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
 import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
@@ -76,8 +74,7 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
     private final CacheProperties properties;
     private final BeanFactory<I, T> beanFactory;
     private final BeanGroupFactory<I, T, C> groupFactory;
-    private final Supplier<I> identifierFactory;
-    private final KeyAffinityService<BeanKey<I>> affinity;
+    private final IdentifierFactory<I> identifierFactory;
     private final CommandDispatcherFactory dispatcherFactory;
     private final ExpirationConfiguration<T> expiration;
     private final PassivationConfiguration<T> passivation;
@@ -96,11 +93,7 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
         this.cache = beanConfiguration.getCache();
         this.properties = configuration.getProperties();
         this.batcher = new InfinispanBatcher(this.cache);
-        Address address = this.cache.getCacheManager().getAddress();
-        KeyAffinityServiceFactory affinityFactory = configuration.getAffinityFactory();
-        KeyGenerator<BeanKey<I>> beanKeyGenerator = () -> beanConfiguration.getFactory().createKey(identifierFactory.get());
-        this.affinity = affinityFactory.createService(this.cache, beanKeyGenerator);
-        this.identifierFactory = () -> this.affinity.getKeyForAddress(address).getId();
+        this.identifierFactory = new AffinityIdentifierFactory<>(identifierFactory, this.cache, configuration.getAffinityFactory());
         this.dispatcherFactory = configuration.getCommandDispatcherFactory();
         this.expiration = configuration.getExpirationConfiguration();
         this.passivation = configuration.getPassivationConfiguration();
@@ -110,7 +103,7 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
 
     @Override
     public void start() {
-        this.affinity.start();
+        this.identifierFactory.start();
 
         Duration stopTimeout = Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout());
         Duration timeout = this.expiration.getTimeout();
@@ -134,7 +127,7 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
         if (this.scheduler != null) {
             this.scheduler.close();
         }
-        this.affinity.stop();
+        this.identifierFactory.stop();
         this.groupFactory.close();
     }
 
