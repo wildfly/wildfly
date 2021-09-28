@@ -65,8 +65,6 @@
         <module name="org.wildfly.extension.messaging-activemq" services="import"/>
         <module name="org.picketbox" optional="true"/>
         <module name="org.jboss.as.security-plugins"/>
-        <!-- Use of legacy security domain ends up using this module's class loader. -->
-        <module name="org.jboss.as.security" optional="true"/>
         <!-- this optional dependency is required to be able to use this module from a jms-bridge to connect to a remote
              WildFly server [AS7-6549] -->
         <module name="org.wildfly.naming-client" optional="true"  services="import"/>

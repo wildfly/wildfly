@@ -19,8 +19,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.AdditionalInitialization.ManagementAdditionalInitialization;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -77,8 +83,25 @@ public class SecurityDomainModelv20UnitTestCase extends AbstractSubsystemBaseTes
         return properties;
     }
 
+
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities("org.wildfly.clustering.infinispan.default-cache-configuration.security");
+        String[] capabilities = new String[] { "org.wildfly.clustering.infinispan.default-cache-configuration.security" };
+        return new ManagementAdditionalInitialization() {
+
+            @Override
+            protected ProcessType getProcessType() {
+                return ProcessType.HOST_CONTROLLER;
+            }
+
+            @Override
+            protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
+                    ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
+                super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration, capabilityRegistry);
+                registerCapabilities(capabilityRegistry, capabilities);
+            }
+        };
+
     }
+
 }

@@ -22,16 +22,8 @@ import java.util.HashSet;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.security.elytron.BasicService.ValueSupplier;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * This {@link AbstractAddStepHandler} implementation contains code that is common to all elytron integration handlers.
@@ -42,7 +34,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @param <T> the type of the object returned by the {@link BasicService} that is installed by this handler.
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-abstract class BasicAddHandler<T> extends AbstractAddStepHandler {
+class BasicAddHandler extends AbstractAddStepHandler {
 
     private final RuntimeCapability<?>[] runtimeCapabilities;
 
@@ -50,29 +42,5 @@ abstract class BasicAddHandler<T> extends AbstractAddStepHandler {
         super(new HashSet<>(Arrays.asList(checkNotNullParam("runtimeCapabilities", runtimeCapabilities))), attributes);
         this.runtimeCapabilities = runtimeCapabilities;
     }
-
-    @Override
-    protected final void performRuntime(OperationContext context, ModelNode operation, Resource resource)
-            throws OperationFailedException {
-        String address = context.getCurrentAddressValue();
-        ServiceName mainName = runtimeCapabilities[0].fromBaseCapability(address).getCapabilityServiceName();
-
-        ServiceTarget serviceTarget = context.getServiceTarget();
-        BasicService<T> basicService = new BasicService<T>();
-
-        ServiceBuilder<T> serviceBuilder = serviceTarget.addService(mainName, basicService);
-        for (int i = 1; i < runtimeCapabilities.length; i++) {
-            serviceBuilder.addAliases(runtimeCapabilities[i].fromBaseCapability(address).getCapabilityServiceName());
-        }
-
-        basicService.setValueSupplier(getValueSupplier(serviceBuilder, context, resource.getModel()));
-        serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-    }
-
-    /**
-     * Subclasses must implement this method to return a {@link ValueSupplier} instance that will be used to create
-     * the object returned by the installed service.
-     */
-    protected abstract ValueSupplier<T> getValueSupplier(ServiceBuilder<T> serviceBuilder, OperationContext context, ModelNode model) throws OperationFailedException;
 
 }

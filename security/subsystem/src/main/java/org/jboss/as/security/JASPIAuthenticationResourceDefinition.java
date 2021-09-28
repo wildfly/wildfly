@@ -23,12 +23,15 @@ package org.jboss.as.security;
 
 import static org.jboss.as.security.Constants.AUTH_MODULE;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -44,7 +47,7 @@ public class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinit
     private JASPIAuthenticationResourceDefinition() {
         super(SecurityExtension.PATH_JASPI_AUTH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.AUTHENTICATION + "." + Constants.JASPI),
-                new JASPIAuthenticationResourceDefinitionAdd(), new SecurityDomainReloadRemoveHandler());
+                new JASPIAuthenticationResourceDefinitionAdd(), ModelOnlyRemoveStepHandler.INSTANCE);
         setDeprecated(SecurityExtension.DEPRECATED_SINCE);
     }
 
@@ -60,11 +63,10 @@ public class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinit
         resourceRegistration.registerSubModel(LoginModuleStackResourceDefinition.INSTANCE);
     }
 
-    static class JASPIAuthenticationResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
+    static class JASPIAuthenticationResourceDefinitionAdd extends AbstractAddStepHandler {
 
         @Override
-        protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
-            super.updateModel(context, operation);
+        protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
             if (operation.hasDefined(AUTH_MODULES.getName())) {
                 context.addStep(new ModelNode(), operation, LEGACY_ADD_HANDLER, OperationContext.Stage.MODEL, true);
             }
