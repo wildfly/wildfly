@@ -323,6 +323,44 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         return sql.getProperty(key);
     }
 
+    /**
+     * Loads a timer from database by its id and timed object id.
+     *
+     * @param timedObjectId the timed object id for the timer
+     * @param timerId the timer id
+     * @param timerService the active timer service
+     * @return the timer loaded from database; null if nothing can be loaded
+     */
+    public TimerImpl loadTimer(final String timedObjectId, final String timerId, final TimerServiceImpl timerService) {
+        String loadTimer = sql(LOAD_TIMER);
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        TimerImpl timer = null;
+        try {
+            connection = dataSource.getConnection();
+            preparedStatement = connection.prepareStatement(loadTimer);
+            preparedStatement.setString(1, timedObjectId);
+            preparedStatement.setString(2, timerId);
+            preparedStatement.setString(3, partition);
+            resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                Holder holder = timerFromResult(resultSet, timerService, timerId, null);
+                if (holder != null) {
+                    timer = holder.timer;
+                }
+            }
+        } catch (SQLException e) {
+            EjbLogger.EJB3_TIMER_LOGGER.failToRestoreTimersForObjectId(timerId, e);
+        } finally {
+            safeClose(resultSet);
+            safeClose(preparedStatement);
+            safeClose(connection);
+        }
+        return timer;
+    }
+
     @Override
     public void addTimer(final TimerImpl timerEntity) {
         String timedObjectId = timerEntity.getTimedObjectId();

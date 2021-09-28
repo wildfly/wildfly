@@ -591,14 +591,23 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      */
     public TimerImpl getTimer(TimerHandle handle) {
         TimerHandleImpl timerHandle = (TimerHandleImpl) handle;
-        TimerImpl timer = null;
+        TimerImpl timer;
         synchronized (this.timers) {
             timer = this.timers.get(timerHandle.getId());
         }
         if (timer != null) {
             return timer;
         }
-        return getWaitingOnTxCompletionTimers().get(timerHandle.getId());
+        timer = getWaitingOnTxCompletionTimers().get(timerHandle.getId());
+        if (timer != null) {
+            return timer;
+        }
+        final TimerPersistence persistence = timerPersistence.getOptionalValue();
+        if (persistence instanceof DatabaseTimerPersistence) {
+            timer = ((DatabaseTimerPersistence) persistence).loadTimer(
+                    timerHandle.getTimedObjectId(), timerHandle.getId(), this);
+        }
+        return timer;
     }
 
     /**

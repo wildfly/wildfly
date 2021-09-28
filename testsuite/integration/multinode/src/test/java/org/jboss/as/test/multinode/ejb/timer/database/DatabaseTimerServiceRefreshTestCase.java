@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.multinode.ejb.timer.database.DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.getRemoteContext;
 import static org.jboss.as.test.multinode.ejb.timer.database.RefreshIF.Info.CLIENT1;
+import static org.jboss.as.test.multinode.ejb.timer.database.RefreshIF.Info.RETURN_HANDLE;
 import static org.jboss.as.test.multinode.ejb.timer.database.RefreshIF.Info.SERVER1;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
@@ -243,6 +244,21 @@ public class DatabaseTimerServiceRefreshTestCase {
             bean1Server.cancelTimers();
             verifyTimerInfo(bean1Client.getAllTimerInfoWithRefresh2(), 0);
             verifyTimerInfo(bean2Client.getAllTimerInfoNoRefresh(), 0);
+
+            // after server bean 1 creates a timer, both client beans see no timer,
+            // but client bean 1 should still be able to cancel this timer.
+            final byte[] handle = bean1Server.createTimer(TIMER_DELAY, RETURN_HANDLE);
+            try {
+                bean1Client.cancelTimer(handle);
+                verifyTimerInfo(bean1Server.getAllTimerInfoWithRefresh(), 0);
+                verifyTimerInfo(bean1Client.getAllTimerInfoWithRefresh(), 0);
+            } finally {
+                //clean up (cancel in the active node) in case the timer was not cancelled by client bean 1
+                try {
+                    bean1Server.cancelTimers();
+                } catch (Exception ignore) {
+                }
+            }
         } finally {
             if (clientContext != null) {
                 clientContext.close();
