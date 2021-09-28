@@ -194,7 +194,8 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         // If an extension is added to this enum, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
         // to the internal mpExtensions Set defined on this class.
         CURRENT(MAJOR, WILDFLY_25_0, null, Arrays.asList(
-                "org.jboss.as.cmp"
+                "org.jboss.as.cmp",
+                "org.jboss.as.jaxr"
         ));
 
         private final String name;
