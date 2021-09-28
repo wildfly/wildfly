@@ -62,11 +62,11 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
             jbossWebMetaData = new JBossWebMetaData();
         }
         jbossWebMetaData.setContextRoot(context);
-        String endpointName = null;
-        String className = null;
-        for (String urlPattern : urlPatternToClassName.keySet()) {
-            className = urlPatternToClassName.get(urlPattern);
-            endpointName = getShortName(className, urlPattern);
+
+        for (final Map.Entry<String, String> entry : urlPatternToClassName.entrySet()) {
+            final String urlPattern = entry.getKey();
+            final String className = entry.getValue();
+            final String endpointName = getShortName(className, urlPattern);
             addEndpoint(jbossWebMetaData, jaxwsDeployment, endpointName, className, urlPattern);
         }
         this.putAttachment(WSAttachmentKeys.CLASSLOADER_KEY, loader);
