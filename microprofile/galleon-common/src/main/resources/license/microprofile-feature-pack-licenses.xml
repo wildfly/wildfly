@@ -854,8 +854,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-client-microprofile</artifactId>
+      <groupId>org.jboss.resteasy.microprofile</groupId>
+      <artifactId>microprofile-rest-client</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -865,8 +865,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-client-microprofile-base</artifactId>
+      <groupId>org.jboss.resteasy.microprofile</groupId>
+      <artifactId>microprofile-rest-client-base</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
