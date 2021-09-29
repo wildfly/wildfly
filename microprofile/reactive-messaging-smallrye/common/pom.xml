@@ -25,12 +25,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <dependencies>
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-server</artifactId>
-        </dependency>
-    </dependencies>
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-microprofile-reactive-messaging-parent</artifactId>
@@ -41,8 +35,13 @@
         <version>25.0.0.Final-SNAPSHOT</version>
     </parent>
 
-
     <artifactId>wildfly-microprofile-reactive-messaging-common</artifactId>
     <name>WildFly: MicroProfile Reactive Messaging Common</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-server</artifactId>
+        </dependency>
+    </dependencies>
 </project>
