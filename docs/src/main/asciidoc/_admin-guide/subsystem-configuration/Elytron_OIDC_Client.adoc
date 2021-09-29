@@ -1,0 +1,151 @@
+[[Elytron_OIDC_Client]]
+= Elytron OpenID Connect Client Subsystem Configuration
+
+The ability to secure applications using https://openid.net/specs/openid-connect-core-1_0.html[OpenID Connect] is
+provided by the _elytron-oidc-client_ subsystem.
+
+[[subsystem-configuration-elytron-oidc-client]]
+== Subsystem
+
+The _elytron-oidc-client_ subsystem is included in the default configuration. If not present, the subsystem can be
+added using the following CLI commands.
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /extension=org.wildfly.extension.elytron-oidc-client:add
+
+[standalone@localhost:9990 /] /subsystem=elytron-oidc-client:add
+
+[standalone@localhost:9990 /] reload
+----
+
+== Configuration
+
+By default, the _elytron-oidc-client_ subsystem does not contain any configured resources or attributes.
+
+The configuration required to secure an application with OpenID Connect can either be provided within the
+application itself or within the _elytron-oidc-client_ subsystem.
+
+=== Deployment Configuration
+
+The configuration required to secure an application with OpenID Connect can be specified in the deployment.
+
+The first step is to create an `oidc.json` configuration file in the `WEB-INF` directory of the application.
+The second step is to set the `auth-method` to `OIDC` in the application's `web.xml` file.
+
+Here is an example of an `oidc.json` configuration file:
+
+[source,options="nowrap"]
+----
+{
+  "client-id" : "customer-portal",
+  "provider-url" : "http://localhost:8180/auth/realms/demo",
+  "ssl-required" : "external",
+  "use-resource-role-mappings" : false,
+  "enable-cors" : true,
+  "cors-max-age" : 1000,
+  "cors-allowed-methods" : "POST, PUT, DELETE, GET",
+  "cors-exposed-headers" : "WWW-Authenticate, My-custom-exposed-Header",
+  "enable-basic-auth" : false,
+  "expose-token" : true,
+  "verify-token-audience" : true,
+   "credentials" : {
+      "secret" : "234234-234234-234234"
+   },
+
+   "connection-pool-size" : 20,
+   "socket-timeout-millis": 5000,
+   "connection-timeout-millis": 6000,
+   "connection-ttl-millis": 500,
+   "disable-trust-manager": false,
+   "allow-any-hostname" : false,
+   "truststore" : "path/to/truststore.jks",
+   "truststore-password" : "geheim",
+   "client-keystore" : "path/to/client-keystore.jks",
+   "client-keystore-password" : "geheim",
+   "client-key-password" : "geheim",
+   "token-minimum-time-to-live" : 10,
+   "min-time-between-jwks-requests" : 10,
+   "public-key-cache-ttl": 86400,
+   "redirect-rewrite-rules" : {
+   "^/wsmaster/api/(.*)$" : "/api/$1"
+   }
+}
+----
+
+=== Subsystem Configuration
+
+Instead of adding configuration to your deployment to secure it with OpenID Connect as described in the
+previous section, another option is to add configuration to the _elytron-oidc-client_ subsystem instead.
+
+The following example shows how to add configuration to the _elytron-oidc-client_ subsystem.
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:wildfly:elytron-oidc-client:1.0">
+    <secure-deployment name="DEPLOYMENT_RUNTIME_NAME.war">
+        <client-id>customer-portal</client-id>
+        <provider-url>http://localhost:8180/auth/realms/demo</provider-url>
+        <ssl-required>external</ssl-required>
+        <credential name="secret" secret="0aa31d98-e0aa-404c-b6e0-e771dba1e798" />
+    </secure-deployment
+</subsystem>
+----
+
+The `secure-deployment` resource allows you to provide configuration for a specific deployment. In
+the example above, the `secure-deployment` resource is providing the configuration that should be used
+for the `DEPLOYMENT_RUNTIME_NAME.war` deployment, where `DEPLOYMENT_RUNTIME_NAME` corresponds to
+the `runtime-name` for the deployment.
+
+The various configuration options that can be specified in the `secure-deployment` configuration
+correspond to the same options that can be specified in the `oidc.json` configuration that was
+explained in the previous section.
+
+If you have multiple applications that are being secured using the same OpenID provider,
+the `provider` configuration can be defined separately as shown in the example below:
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:wildfly:elytron-oidc-client:1.0">
+    <provider name="keycloak">
+        <provider-url>http://localhost:8080/auth/realms/demo</provider-url>
+        <ssl-required>external</ssl-required>
+    </realm>
+    <secure-deployment name="customer-portal.war">
+        <provider>keycloak</provider>
+        <client-id>customer-portal</client-id>
+        <credential name="secret" secret="0aa31d98-e0aa-404c-b6e0-e771dba1e798" />
+    </secure-deployment>
+    <secure-deployment name="product-portal.war">
+        <provider>keycloak</provider>
+        <client-id>product-portal</client-id>
+        <credential name="secret" secret="0aa31d98-e0aa-404c-b6e0-e771dba1e798" />
+    </secure-deployment>
+</subsystem>
+----
+
+=== Activation
+
+The _elytron-oidc-client_ subsystem will scan deployments to detect if the `OIDC` authentication mechanism
+is required for any web components (i.e., for each deployment, the subsystem will determine if OIDC configuration
+has either been found within the deployment or if there is OIDC configuration for the deployment in the subsystem
+configuration). If the subsystem detects that the `OIDC` mechanism is indeed required, the subsystem will
+activate the authentication mechanism automatically. Otherwise, no activation will occur and deployment
+will continue normally.
+
+== Virtual Security
+
+The purpose of using OpenID Connect is to verify a user's identity based on the authentication that's been
+performed by the OpenID provider. For this reason, OpenID Connect deployments do not depend on `security-domain`
+resources that have been defined in the Elytron subsystem, like traditional deployments do. Instead,
+the _elytron-oidc-client_ subsystem will automatically create and make use of its own virtual security domain
+across the deployment. No further managed configuration is required.
+
+== OpenID Providers
+
+The `provider-url` attribute in the `oidc.json` configuration and in the _elytron-oidc-client_
+subsystem configuration allows you to specify the URL for the OpenID provider that you'd like to use.
+For WildFly 25, the _elytron-oidc-client_ subsystem has been tested with the Keycloak OpenID provider.
+Other OpenID providers haven't been extensively tested yet so the use of other OpenID providers should
+be considered experimental for now and should not be used in a production environment yet. Proper support
+for other OpenID providers will be added in a future WildFly release.
