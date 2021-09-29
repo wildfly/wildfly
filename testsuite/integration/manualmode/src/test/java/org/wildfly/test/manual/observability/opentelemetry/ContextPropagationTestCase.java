@@ -60,6 +60,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
@@ -79,6 +80,7 @@ import org.wildfly.test.manual.observability.opentelemetry.deployment2.TestAppli
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(ContextPropagationTestCase.OpenTelemetrySetupTask.class)
+@Ignore("Will fix in WFLY-15375")
 public class ContextPropagationTestCase {
     private static final String CONTAINER = "otel";
     public static final String DEPLOYMENTA = "otel-service1";
@@ -284,7 +286,3 @@ public class ContextPropagationTestCase {
         }
     }
 }
-
-
-
-
