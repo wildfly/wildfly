@@ -463,7 +463,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         operations.add(operation);
     }
 
-    private void parseCaches(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    protected void parseCaches(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         // no attributes expected
         requireNoAttributes(reader);
 
@@ -480,7 +480,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         }
     }
 
-    private void parseCache(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    protected void parseCache(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         String name = null;
         ModelNode operation = Util.createAddOperation();
         //Set<String> aliases = new LinkedHashSet<String>();

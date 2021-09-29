@@ -84,6 +84,7 @@ public enum EJB3SubsystemXMLElement {
     RESOURCE_ADAPTER_REF("resource-adapter-ref"),
 
     SESSION_BEAN("session-bean"),
+    SIMPLE_CACHE("simple-cache"),
     SINGLETON("singleton"),
     STATEFUL("stateful"),
     STATELESS("stateless"),

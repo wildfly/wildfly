@@ -28,13 +28,15 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.util.Collections;
 import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.*;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SIMPLE_CACHE;
 
 /**
  * Parser for ejb3:10.0 namespace.
@@ -48,4 +50,51 @@ public class EJB3Subsystem100Parser extends EJB3Subsystem90Parser {
     protected EJB3SubsystemNamespace getExpectedNamespace() {
         return EJB3SubsystemNamespace.EJB3_10_0;
     }
+
+    protected void parseCaches(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        // no attributes expected
+        requireNoAttributes(reader);
+
+        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
+                case CACHE: {
+                    this.parseCache(reader, operations);
+                    break;
+                }
+                case SIMPLE_CACHE: {
+                    this.parseSimpleCache(reader, operations);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseSimpleCache(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        String name = null;
+        ModelNode operation = Util.createAddOperation();
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            switch (EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i))) {
+                case NAME: {
+                    name = value;
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        requireNoContent(reader);
+        if (name == null) {
+            throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
+        }
+        final PathAddress address = this.getEJB3SubsystemAddress().append(PathElement.pathElement(SIMPLE_CACHE, name));
+        operation.get(OP_ADDR).set(address.toModelNode());
+        operations.add(operation);
+    }
+
 }

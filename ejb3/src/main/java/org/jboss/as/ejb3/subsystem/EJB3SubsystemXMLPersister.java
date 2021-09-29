@@ -161,11 +161,13 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         }
 
         // write the caches element
-        if (model.hasDefined(EJB3SubsystemModel.CACHE)) {
+        if (model.hasDefined(EJB3SubsystemModel.CACHE)
+                || model.hasDefined(EJB3SubsystemModel.SIMPLE_CACHE)) {
             // <caches>
             writer.writeStartElement(EJB3SubsystemXMLElement.CACHES.getLocalName());
             // write the caches
             this.writeCaches(writer, model);
+            this.writeSimpleCaches(writer, model);
             // </caches>
             writer.writeEndElement();
         }
@@ -175,7 +177,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
                 || model.hasDefined(EJB3SubsystemModel.FILE_PASSIVATION_STORE)) {
             // <passivation-stores>
             writer.writeStartElement(EJB3SubsystemXMLElement.PASSIVATION_STORES.getLocalName());
-            // write the caches
+            // write the stores
             this.writePassivationStores(writer, model);
             this.writeFilePassivationStores(writer, model);
             this.writeClusterPassivationStores(writer, model);
@@ -513,16 +515,42 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     }
 
     private void writeCaches(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
-        List<Property> caches = model.get(EJB3SubsystemModel.CACHE).asPropertyList();
-        for (Property property : caches) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.CACHE.getLocalName());
-            ModelNode cache = property.getValue();
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
-            CacheFactoryResourceDefinition.PASSIVATION_STORE.marshallAsAttribute(cache, writer);
-            writeAttribute(writer, cache, CacheFactoryResourceDefinition.ALIASES);
-            writer.writeEndElement();
+        // cache
+        if (model.hasDefined(EJB3SubsystemModel.CACHE)) {
+            List<Property> caches = model.get(EJB3SubsystemModel.CACHE).asPropertyList();
+            for (Property property : caches) {
+                writer.writeStartElement(EJB3SubsystemXMLElement.CACHE.getLocalName());
+                ModelNode cache = property.getValue();
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
+                CacheFactoryResourceDefinition.PASSIVATION_STORE.marshallAsAttribute(cache, writer);
+                writeAttribute(writer, cache, CacheFactoryResourceDefinition.ALIASES);
+                writer.writeEndElement();
+            }
         }
     }
+
+    /**
+     * Writes out the <simple-cache> element
+     *
+     * @param writer          XML writer
+     * @param model The <simple-cache> element {@link org.jboss.dmr.ModelNode}
+     * @throws javax.xml.stream.XMLStreamException
+     *
+     */
+    private void writeSimpleCaches(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
+        // simple-cache
+        if (model.hasDefined(EJB3SubsystemModel.SIMPLE_CACHE)) {
+            List<Property> simpleCaches = model.get(EJB3SubsystemModel.SIMPLE_CACHE).asPropertyList();
+            for (Property property : simpleCaches) {
+                writer.writeStartElement(EJB3SubsystemXMLElement.SIMPLE_CACHE.getLocalName());
+                ModelNode simpleCache = property.getValue();
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
+                // no attributes
+                writer.writeEndElement();
+            }
+        }
+    }
+
 
     private void writePassivationStores(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
         if (model.hasDefined(EJB3SubsystemModel.PASSIVATION_STORE)) {

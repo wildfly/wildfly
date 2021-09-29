@@ -269,6 +269,11 @@
                     <xs:documentation>Deprecated. Use simple-cache or distributable-cache instead.</xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="simple-cache" type="simpleCacheType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Used to define a non-distributable, non-passivating cache factory for a SFSB</xs:documentation>
+                </xs:annotation>
+            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
@@ -276,6 +281,10 @@
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="passivation-store-ref" type="xs:string"/>
         <xs:attribute name="aliases" type="aliases"/>
+    </xs:complexType>
+
+    <xs:complexType name="simpleCacheType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="passivation-storesType">
