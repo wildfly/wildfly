@@ -33,8 +33,6 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -105,13 +103,5 @@ public class CustomLoadMetricResourceDefinition extends ChildResourceDefinition<
     }
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
-
-        if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.MODULE.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.MODULE.getDefinition())
-                    .end();
-        }
     }
 }
