@@ -76,12 +76,6 @@ public class TimerImpl implements Timer {
     protected final boolean persistent;
 
     /**
-     * A {@link javax.ejb.TimerHandle} for this timer, not assigned till
-     * {@code getHandle()} is called.
-     */
-    protected TimerHandleImpl handle;
-
-    /**
      * The initial (first) expiry date of this timer
      */
     protected final Date initialExpiration;
@@ -197,13 +191,7 @@ public class TimerImpl implements Timer {
         if (!persistent) {
             throw EjbLogger.EJB3_TIMER_LOGGER.invalidTimerHandlersForPersistentTimers("Enterprise Beans 3.1 Spec 18.2.6");
         }
-
-        synchronized (this) {
-            if (handle == null) {
-                handle = new TimerHandleImpl(id, timedObjectId, timerService);
-            }
-        }
-        return handle;
+        return new TimerHandleImpl(id, timedObjectId, timerService);
     }
 
     /**
