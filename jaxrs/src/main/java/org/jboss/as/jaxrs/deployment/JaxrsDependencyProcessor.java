@@ -105,6 +105,11 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, MP_REST_CLIENT, true, false);
 
         final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+
+        // Load the config sources only if the config capability is present
+        if (support.hasCapability("org.wildfly.microprofile.config")) {
+            addDependency(moduleSpecification, moduleLoader, "org.jboss.resteasy.microprofile.config", true, false);
+        }
         if (support.hasCapability(WELD_CAPABILITY_NAME)) {
             final WeldCapability api = support.getOptionalCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class).get();
             if (api.isPartOfWeldDeployment(deploymentUnit)) {
@@ -129,6 +134,15 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
                                ModuleIdentifier moduleIdentifier, boolean optional, boolean deploymentBundelesClientBuilder) {
+        ModuleDependency dependency = new ModuleDependency(moduleLoader, moduleIdentifier, optional, false, true, false);
+        if(deploymentBundelesClientBuilder) {
+            dependency.addImportFilter(PathFilters.is(CLIENT_BUILDER), false);
+        }
+        moduleSpecification.addSystemDependency(dependency);
+    }
+
+    private void addDependency(final ModuleSpecification moduleSpecification, final ModuleLoader moduleLoader,
+                               final String moduleIdentifier, final boolean optional, final boolean deploymentBundelesClientBuilder) {
         ModuleDependency dependency = new ModuleDependency(moduleLoader, moduleIdentifier, optional, false, true, false);
         if(deploymentBundelesClientBuilder) {
             dependency.addImportFilter(PathFilters.is(CLIENT_BUILDER), false);
