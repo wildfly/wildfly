@@ -268,12 +268,13 @@ public class DistributableSession implements io.undertow.server.session.Session 
         if (session.isValid()) {
             // Invoke listeners outside of the context of the batch associated with this session
             // Trigger attribute listeners
+            this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
+
             ImmutableSessionAttributes attributes = session.getAttributes();
             for (String name : attributes.getAttributeNames()) {
                 Object value = attributes.getAttribute(name);
                 this.manager.getSessionListeners().attributeRemoved(this, name, value);
             }
-            this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
         }
         try (BatchContext context = this.resumeBatch()) {
             session.invalidate();
