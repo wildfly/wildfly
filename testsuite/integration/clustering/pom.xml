@@ -159,11 +159,6 @@
         <!-- Jakarta RESTful Web Services Client implementation -->
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client-api</artifactId>
             <scope>test</scope>
         </dependency>
