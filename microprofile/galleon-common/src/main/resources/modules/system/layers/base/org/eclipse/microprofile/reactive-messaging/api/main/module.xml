@@ -39,5 +39,6 @@
         <module name="javax.enterprise.api" />
         <!-- Needed by the temporary smallrye-reactive-messaging-api -->
         <module name="io.opentelemetry.api"/>
+        <module name="org.reactivestreams"/>
     </dependencies>
 </module>
