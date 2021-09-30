@@ -21,12 +21,14 @@
  */
 package org.jboss.as.ejb3.cache.distributable;
 
+import java.security.PrivilegedAction;
 import java.time.Duration;
+import java.util.Iterator;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.cache.Contextual;
@@ -35,69 +37,82 @@ import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.ejb3.subsystem.DistributableCacheFactoryResourceDefinition;
-import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.ejb.DistributableBeanManagementProvider;
-import org.wildfly.clustering.ejb.EjbProviderRequirement;
+import org.wildfly.clustering.ejb.LegacyBeanManagementProviderFactory;
+import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * Service that returns a distributable {@link org.jboss.as.ejb3.cache.CacheFactoryBuilder} using a beam management provider
- * from the distributable-ejb subsystem.
+ * Service that returns a distributable {@link org.jboss.as.ejb3.cache.CacheFactoryBuilder} using a legacy bean management provider
+ * loaded from the classpath.
  *
  * @author Paul Ferraro
- * @author Richard Achmatowicz
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K> & Contextual<Batch>> extends DistributableCacheFactoryBuilderServiceNameProvider implements ServiceConfigurator, DistributableCacheFactoryBuilder<K, V> {
+public class LegacyDistributableCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K> & Contextual<Batch>> extends DistributableCacheFactoryBuilderServiceNameProvider implements ServiceConfigurator, DistributableCacheFactoryBuilder<K, V> {
 
-    private String beanManagementProviderName;
-    private SupplierDependency<DistributableBeanManagementProvider> beanManagementProviderDependency;
+    private final DistributableBeanManagementProvider factory;
+    private final BeanManagerFactoryServiceConfiguratorConfiguration config;
 
-    public DistributableCacheFactoryBuilderServiceConfigurator(String name) {
+    public LegacyDistributableCacheFactoryBuilderServiceConfigurator(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
+        this(name, load(), config);
+    }
+
+    private static LegacyBeanManagementProviderFactory load() {
+        Iterator<LegacyBeanManagementProviderFactory> providers = load(LegacyBeanManagementProviderFactory.class).iterator();
+        if (!providers.hasNext()) {
+            throw new ServiceConfigurationError(LegacyBeanManagementProviderFactory.class.getName());
+        }
+        return providers.next();
+    }
+
+    private static <T> Iterable<T> load(Class<T> providerClass) {
+        PrivilegedAction<Iterable<T>> action = new PrivilegedAction<Iterable<T>>() {
+            @Override
+            public Iterable<T> run() {
+                return ServiceLoader.load(providerClass, providerClass.getClassLoader());
+            }
+        };
+        return WildFlySecurityManager.doUnchecked(action);
+    }
+
+    public LegacyDistributableCacheFactoryBuilderServiceConfigurator(String name, LegacyBeanManagementProviderFactory provider, BeanManagerFactoryServiceConfiguratorConfiguration config) {
         super(name);
-    }
-
-    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        // if the attribute is undefined, pass null when generating the service name to pick up the default bean management provider
-        this.beanManagementProviderName = DistributableCacheFactoryResourceDefinition.Attribute.BEAN_MANAGEMENT.resolveModelAttribute(context, model).asStringOrNull();
-        this.beanManagementProviderDependency = new ServiceSupplierDependency<>(EjbProviderRequirement.BEAN_MANAGEMENT_PROVIDER.getServiceName(context, this.beanManagementProviderName));
-        return this;
-    }
-
-    // get rid of me
-    public BeanManagerFactoryServiceConfiguratorConfiguration getConfiguration() {
-        return null;
+        this.config = config;
+        this.factory = provider.getBeanManagerFactoryBuilder(name, config);
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceName name = this.getServiceName();
         ServiceBuilder<?> builder = target.addService(name);
-        Consumer<DistributableCacheFactoryBuilder<K, V>> cacheFactoryBuilder = this.beanManagementProviderDependency.register(builder).provides(name);
+        Consumer<DistributableCacheFactoryBuilder<K, V>> cacheFactoryBuilder = builder.provides(name);
         Service service = Service.newInstance(cacheFactoryBuilder, this);
         return builder.setInstance(service);
     }
 
     @Override
+    public BeanManagerFactoryServiceConfiguratorConfiguration getConfiguration() {
+        return this.config;
+    }
+
+    @Override
     public Iterable<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(DeploymentUnit unit) {
-        return this.beanManagementProviderDependency.get().getDeploymentServiceConfigurators(unit.getServiceName());
+        return this.factory.getDeploymentServiceConfigurators(unit.getServiceName());
     }
 
     @Override
     public CapabilityServiceConfigurator getServiceConfigurator(DeploymentUnit unit, StatefulComponentDescription description, ComponentConfiguration configuration) {
-        StatefulBeanConfiguration statefulBeanConfiguration = new StatefulBeanConfiguration() {
+        StatefulBeanConfiguration context = new StatefulBeanConfiguration() {
             @Override
             public String getName() {
                 return configuration.getComponentName();
@@ -105,7 +120,7 @@ public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Id
 
             @Override
             public ServiceName getDeploymentUnitServiceName() {
-                return unit.getServiceName();
+                return description.getDeploymentUnitServiceName();
             }
 
             @Override
@@ -125,7 +140,7 @@ public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Id
                 return Duration.ofMillis(TimeUnit.MILLISECONDS.convert(info.getValue(), info.getTimeUnit()));
             }
         };
-        CapabilityServiceConfigurator configurator = this.beanManagementProviderDependency.get().getBeanManagerFactoryServiceConfigurator(statefulBeanConfiguration);
+        CapabilityServiceConfigurator configurator = this.factory.getBeanManagerFactoryServiceConfigurator(context);
         // name vs description.getCacheFactoryServiceName()
         return new DistributableCacheFactoryServiceConfigurator<K, V>(description.getCacheFactoryServiceName(), configurator);
     }

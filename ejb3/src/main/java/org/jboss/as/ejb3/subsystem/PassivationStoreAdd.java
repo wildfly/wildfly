@@ -26,7 +26,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.ejb3.cache.distributable.DistributableCacheFactoryBuilderServiceConfigurator;
+import org.jboss.as.ejb3.cache.distributable.LegacyDistributableCacheFactoryBuilderServiceConfigurator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
@@ -77,7 +77,7 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
                 return maxSize;
             }
         };
-        new DistributableCacheFactoryBuilderServiceConfigurator<>(name, config).build(context.getServiceTarget())
+        new LegacyDistributableCacheFactoryBuilderServiceConfigurator<>(name, config).build(context.getServiceTarget())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
     }

@@ -274,6 +274,11 @@
                     <xs:documentation>Used to define a non-distributable, non-passivating cache factory for a SFSB</xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="distributable-cache" type="distributableCacheType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Used to define a distributable, passivating cache factory for a SFSB</xs:documentation>
+                </xs:annotation>
+            </xs:element>
         </xs:sequence>
     </xs:complexType>
 
@@ -285,6 +290,11 @@
 
     <xs:complexType name="simpleCacheType">
         <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="distributableCacheType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="bean-management" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="passivation-storesType">

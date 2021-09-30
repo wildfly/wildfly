@@ -36,6 +36,7 @@ public enum EJB3SubsystemXMLAttribute {
     ALLOW_EXECUTION("allow-execution"),
 
     @Deprecated BEAN_CACHE("bean-cache"),
+    BEAN_MANAGEMENT("bean-management"),
 
     @Deprecated CACHE_CONTAINER("cache-container"),
     CACHE_REF("cache-ref"),

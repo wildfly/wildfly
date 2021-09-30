@@ -22,21 +22,28 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SIMPLE_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DISTRIBUTABLE_CACHE;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.util.Collections;
 import java.util.List;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.parsing.ParseUtils.*;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CACHE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SIMPLE_CACHE;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * Parser for ejb3:10.0 namespace.
@@ -63,6 +70,10 @@ public class EJB3Subsystem100Parser extends EJB3Subsystem90Parser {
                 }
                 case SIMPLE_CACHE: {
                     this.parseSimpleCache(reader, operations);
+                    break;
+                }
+                case DISTRIBUTABLE_CACHE: {
+                    this.parseDistributableCache(reader, operations);
                     break;
                 }
                 default: {
@@ -93,6 +104,36 @@ public class EJB3Subsystem100Parser extends EJB3Subsystem90Parser {
             throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
         }
         final PathAddress address = this.getEJB3SubsystemAddress().append(PathElement.pathElement(SIMPLE_CACHE, name));
+        operation.get(OP_ADDR).set(address.toModelNode());
+        operations.add(operation);
+    }
+
+    private void parseDistributableCache(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        String name = null;
+        ModelNode operation = Util.createAddOperation();
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            switch (EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i))) {
+                case NAME: {
+                    name = value;
+                    break;
+                }
+                case BEAN_MANAGEMENT: {
+                    AttributeDefinition definition = DistributableCacheFactoryResourceDefinition.Attribute.BEAN_MANAGEMENT.getDefinition();
+                    definition.getParser().parseAndSetParameter(definition, value, operation, reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        requireNoContent(reader);
+        if (name == null) {
+            throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
+        }
+        final PathAddress address = this.getEJB3SubsystemAddress().append(PathElement.pathElement(DISTRIBUTABLE_CACHE, name));
         operation.get(OP_ADDR).set(address.toModelNode());
         operations.add(operation);
     }

@@ -31,6 +31,7 @@
         <cache name="simple"/>
         <cache name="distributable" passivation-store-ref="infinispan"/>
         <simple-cache name="simple-cache"/>
+        <distributable-cache name="distributable-cache"/>
     </caches>
     <passivation-stores>
         <passivation-store name="infinispan" cache-container="ejb" bean-cache="default" max-size="10"/>
