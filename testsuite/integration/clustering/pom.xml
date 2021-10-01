@@ -45,7 +45,7 @@
         <surefire.forked.process.timeout>5400</surefire.forked.process.timeout>
         <test-group>org/jboss/as/test/clustering/cluster</test-group>
         <version.org.jboss.byteman>4.0.6</version.org.jboss.byteman>
-        <version.org.infinispan.server>12.1.7.Final</version.org.infinispan.server>
+        <version.org.infinispan.server>13.0.0.CR2</version.org.infinispan.server>
         <version.org.infinispan.server.driver>13.0.0.Dev03</version.org.infinispan.server.driver>
         <!-- Avoids REST call timeout on cluster shutdown -->
         <version.com.squareup.okhttp3>3.14.8</version.com.squareup.okhttp3>
@@ -157,11 +157,6 @@
             <scope>test</scope>
         </dependency>
         <!-- Jakarta RESTful Web Services Client implementation -->
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client-api</artifactId>
