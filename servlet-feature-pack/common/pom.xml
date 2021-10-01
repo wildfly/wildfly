@@ -68,6 +68,12 @@
             </exclusions>
         </dependency>
 
+        <!-- Override jandex from core -->
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jandex</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-servlet</artifactId>

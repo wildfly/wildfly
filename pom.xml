@@ -433,6 +433,7 @@
         <version.org.jboss.hal.console>3.3.8.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.1.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.5.2.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.jandex>2.3.1.Final</version.org.jboss.jandex>
         <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
         <!-- Only used for testing -->
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
@@ -518,6 +519,13 @@
                 <version>${version.org.wildfly.core}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- Override jandex from core -->
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jandex</artifactId>
+                <version>${version.org.jboss.jandex}</version>
             </dependency>
 
             <dependency>
