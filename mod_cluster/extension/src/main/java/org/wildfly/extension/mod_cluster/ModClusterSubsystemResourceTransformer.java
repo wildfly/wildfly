@@ -22,31 +22,27 @@
 
 package org.wildfly.extension.mod_cluster;
 
-import java.util.EnumSet;
+import java.util.function.Function;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
-import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.kohsuke.MetaInfServices;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
+ * Transformer logic for {@link ModClusterSubsystemResourceDefinition}.
+ *
  * @author Radoslav Husar
  */
-@MetaInfServices(ExtensionTransformerRegistration.class)
-public class ModClusterExtensionTransformerRegistration implements ExtensionTransformerRegistration {
+public class ModClusterSubsystemResourceTransformer implements Function<ModelVersion, TransformationDescription> {
+
+    private final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
     @Override
-    public String getSubsystemName() {
-        return ModClusterExtension.SUBSYSTEM_NAME;
-    }
+    public TransformationDescription apply(ModelVersion version) {
 
-    @Override
-    public void registerTransformers(SubsystemTransformerRegistration registration) {
-        // Register transformers for all but the current model
-        for (ModClusterModel model : EnumSet.complementOf(EnumSet.of(ModClusterModel.CURRENT))) {
-            ModelVersion version = model.getVersion();
-            TransformationDescription.Tools.register(new ModClusterSubsystemResourceTransformer().apply(version), registration, version);
-        }
+        new ProxyConfigurationResourceTransformer(this.builder).accept(version);
+
+        return this.builder.build();
     }
 }

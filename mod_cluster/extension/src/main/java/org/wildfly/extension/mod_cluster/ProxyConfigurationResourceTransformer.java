@@ -22,31 +22,24 @@
 
 package org.wildfly.extension.mod_cluster;
 
-import java.util.EnumSet;
+import java.util.function.Consumer;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
-import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.kohsuke.MetaInfServices;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * @author Radoslav Husar
  */
-@MetaInfServices(ExtensionTransformerRegistration.class)
-public class ModClusterExtensionTransformerRegistration implements ExtensionTransformerRegistration {
+public class ProxyConfigurationResourceTransformer implements Consumer<ModelVersion> {
 
-    @Override
-    public String getSubsystemName() {
-        return ModClusterExtension.SUBSYSTEM_NAME;
+    private final ResourceTransformationDescriptionBuilder builder;
+
+    public ProxyConfigurationResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
+        this.builder = parent.addChildResource(ProxyConfigurationResourceDefinition.WILDCARD_PATH);
     }
 
     @Override
-    public void registerTransformers(SubsystemTransformerRegistration registration) {
-        // Register transformers for all but the current model
-        for (ModClusterModel model : EnumSet.complementOf(EnumSet.of(ModClusterModel.CURRENT))) {
-            ModelVersion version = model.getVersion();
-            TransformationDescription.Tools.register(new ModClusterSubsystemResourceTransformer().apply(version), registration, version);
-        }
+    public void accept(ModelVersion version) {
+        new DynamicLoadProviderResourceTransformer(this.builder).accept(version);
     }
 }

@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.mod_cluster;
 
-
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
@@ -30,14 +29,10 @@ import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
@@ -105,20 +100,6 @@ public class DynamicLoadProviderResourceDefinition extends ChildResourceDefiniti
         new ReloadRequiredResourceRegistration(descriptor).register(registration);
 
         return registration;
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
-
-        if (ModClusterModel.VERSION_7_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(-1)), Attribute.INITIAL_LOAD.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.INITIAL_LOAD.getDefinition())
-                    .end();
-        }
-
-        LoadMetricResourceDefinition.buildTransformation(version, builder);
-        CustomLoadMetricResourceDefinition.buildTransformation(version, builder);
     }
 
 }
