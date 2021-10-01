@@ -39,7 +39,7 @@
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
         <module name="org.jboss.weld.api"/>
-        <module name="org.wildfly.security.elytron"/>
+        <module name="org.wildfly.security.manager"/>
         <module name="javax.enterprise.api" />
         <module name="java.logging"/>
         <module name="javax.ws.rs.api" optional="true" services="import"/>
