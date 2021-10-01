@@ -385,6 +385,10 @@
                                 </dependency>
                                 <dependency>
                                     <groupId>org.jboss.resteasy</groupId>
+                                    <artifactId>resteasy-json-binding-provider</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.resteasy</groupId>
                                     <artifactId>resteasy-json-p-provider</artifactId>
                                 </dependency>
                                 <dependency>
