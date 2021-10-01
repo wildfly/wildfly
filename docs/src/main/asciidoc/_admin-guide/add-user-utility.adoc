@@ -38,14 +38,6 @@ number and in any order:
 * Escaped backslash ( \\ )
 * Escaped equals (\=)
 
-[NOTE]
-
-The server caches the contents of the properties files in memory,
-however the server does check the modified time of the properties files
-on each authentication request and re-load if the time has been updated
-- this means all changes made by this utility are immediately applied to
-any running server.
-
 [[a-management-user]]
 === A Management User
 

@@ -181,7 +181,7 @@ galleon.sh install wildfly:current --dir=my-wildfly-server --layers=web-server,c
 
 [source,options="nowrap"]
 ----
-galleon.sh install wildfly:current --dir=my-wildfly-server --layers=web-server,undertowhttps
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=web-server,undertow-https
 ----
 
 ==== Installation of a core server

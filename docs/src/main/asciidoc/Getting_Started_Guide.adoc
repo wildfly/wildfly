@@ -179,7 +179,7 @@ find your way around when it comes to deploying your own applications.
 used by the application client container run from this installation.
 
 |bin |Start up scripts, start up configuration files and various command
-line utilities like Vault, add-user and Java diagnostic reportavailable
+line utilities like elytron-tool, add-user and Java diagnostic reportavailable
 for Unix and Windows environments
 
 |bin/client |Contains a client jar for use by non-maven based clients.
@@ -520,12 +520,10 @@ NOTE: port 9990 is the default port configured.
 [source,xml,options="nowrap"]
 ----
 <management-interfaces>
-   <native-interface security-realm="ManagementRealm">
-      <socket-binding native="management-native"/>
-   </native-interface>
-   <http-interface security-realm="ManagementRealm">
-      <socket-binding http="management-http"/>
-   </http-interface>
+    <http-interface http-authentication-factory="management-http-authentication">
+        <http-upgrade enabled="true" sasl-authentication-factory="management-sasl-authentication"/>
+        <socket-binding http="management-http"/>
+    </http-interface>
 </management-interfaces>
 ----
 
@@ -534,10 +532,13 @@ configuration: adjust the above command accordingly. If such
 modifications are made, then the link from the Welcome Screen will also
 be inaccessible.
 
+////
+    TODO https://issues.redhat.com/browse/WFCORE-5532
 If you have not yet added at least one management user an error page
 will be displayed asking you to add a new user, after a user has been
 added you can click on the 'Try Again' link at the bottom of the error
 page to try connecting to the administration console again.
+////
 
 [[command-line-interface]]
 === Command-Line Interface

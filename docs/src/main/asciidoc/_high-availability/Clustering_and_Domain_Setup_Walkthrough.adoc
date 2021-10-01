@@ -204,10 +204,11 @@ to the remote domain controller :
 [source,xml,options="nowrap"]
 ----
 <domain-controller>
- <remote security-realm="ManagementRealm" >
+ <remote authentication-context="slaveHostAContext" >
    <discovery-options>
      <static-discovery name="master-native" protocol="remote"  host="10.211.55.7" port="9999" />
-     <static-discovery name="master-https" protocol="https-remoting" host="10.211.55.7" port="9993" security-realm="ManagementRealm"/>
+     <static-discovery name="master-https" protocol="https-remoting" host="10.211.55.7" port="9993" 
+                       authentication-context="slaveHostAContext"/>
      <static-discovery name="master-http" protocol="http-remoting" host="10.211.55.7" port="9990" />
    </discovery-options>
  </remote>
@@ -241,126 +242,6 @@ public, and unsecured interfaces.
 It is easier to turn off all firewalls for testing, but in production,
 you need to enable the firewall and allow access to the following ports:
 9999.
-
-[[security-configuration]]
-=== Security Configuration
-
-If you start WildFly on both master and slave now, you will see the
-slave cannot be started with following error:
-
-[source,options="nowrap"]
-----
-[Host Controller] 20:31:24,575 ERROR [org.jboss.remoting.remote] (Remoting "endpoint" read-1) JBREM000200: Remote connection failed: javax.security.sasl.SaslException: Authentication failed: all available authentication mechanisms failed
-[Host Controller] 20:31:24,579 WARN  [org.jboss.as.host.controller] (Controller Boot Thread) JBAS010900: Could not connect to remote domain controller 10.211.55.7:9999
-[Host Controller] 20:31:24,582 ERROR [org.jboss.as.host.controller] (Controller Boot Thread) JBAS010901: Could not connect to master. Aborting. Error was: java.lang.IllegalStateException: JBAS010942: Unable to connect due to authentication failure.
-----
-
-Because we haven't properly set up the authentication between master and
-slave. Now let's work on it:
-
-[[master]]
-==== Master
-
-In bin directory there is a script called add-user.sh, we'll use it to
-add new users to the properties file used for domain management
-authentication:
-
-[source,subs="verbatim,attributes"]
-----
-./add-user.sh
- 
-Enter the details of the new user to add.
-Realm (ManagementRealm) :
-Username : admin
-Password recommendations are listed below. To modify these restrictions edit the add-user.properties configuration file.
- - The password should not be one of the following restricted values {root, admin, administrator}
- - The password should contain at least 8 characters, 1 alphabetic character(s), 1 digit(s), 1 non-alphanumeric symbol(s)
- - The password should be different from the username
-Password : passw0rd!
-Re-enter Password : passw0rd!
-The username 'admin' is easy to guess
-Are you sure you want to add user 'admin' yes/no? yes
-About to add user 'admin' for realm 'ManagementRealm'
-Is this correct yes/no? yes
-Added user 'admin' to file '/home/weli/projs/wildfly-{wildflyVersion}.0.0.Final/standalone/configuration/mgmt-users.properties'
-Added user 'admin' to file '/home/weli/projs/wildfly-{wildflyVersion}.0.0.Final/domain/configuration/mgmt-users.properties'
-----
-
-As shown above, we have created a user named 'admin' and its password is
-'passw0rd!'. Then we add another user called 'slave':
-
-[source,subs="verbatim,attributes"]
-----
-./add-user.sh
- 
-Enter the details of the new user to add.
-Realm (ManagementRealm) :
-Username : slave
-Password recommendations are listed below. To modify these restrictions edit the add-user.properties configuration file.
- - The password should not be one of the following restricted values {root, admin, administrator}
- - The password should contain at least 8 characters, 1 alphabetic character(s), 1 digit(s), 1 non-alphanumeric symbol(s)
- - The password should be different from the username
-Password : passw0rd!
-Re-enter Password : passw0rd!
-What groups do you want this user to belong to? (Please enter a comma separated list, or leave blank for none)[  ]:
-About to add user 'slave' for realm 'ManagementRealm'
-Is this correct yes/no? yes
-Added user 'slave' to file '/home/weli/projs/wildfly-{wildflyVersion}.0.0.Final/standalone/configuration/mgmt-users.properties'
-Added user 'slave' to file '/home/weli/projs/wildfly-{wildflyVersion}.0.0.Final/domain/configuration/mgmt-users.properties'
-Added user 'slave' with groups  to file '/home/weli/projs/wildfly-{wildflyVersion}.0.0.Final/standalone/configuration/mgmt-groups.properties'
-Added user 'slave' with groups  to file '/home/weli/projs/wildfly-{wildflyVersion}.0.0.Final/domain/configuration/mgmt-groups.properties'
-Is this new user going to be used for one AS process to connect to another AS process?
-e.g. for a slave host controller connecting to the master or for a Remoting connection for server to server EJB calls.
-yes/no? yes
-To represent the user add the following to the server-identities definition <secret value="cGFzc3cwcmQh" />
-----
-
-We will use this user for slave host to connect to master. The
-add-user.sh will let you choose the type of the user. Here we need to
-choose 'Management User' type for both 'admin' and 'slave' account.
-
-[[slave]]
-==== Slave
-
-In slave we need to configure host.xml for authentication. We should
-change the security-realms section as following:
-
-[source,xml,options="nowrap"]
-----
-<security-realms>
-   <security-realm name="ManagementRealm">
-       <server-identities>
-           <secret value="cGFzc3cwcmQh" />
-           <!-- This is required for SSL remoting -->
-           <ssl>
-             <keystore path="server.keystore" relative-to="jboss.domain.config.dir" keystore-password="jbossas" alias="jboss" key-password="jbossas"/>
-           </ssl>
-       </server-identities>
-       <authentication>
-           <properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir"/>
-       </authentication>
-   </security-realm>
-</security-realms>
-----
-
-We've added server-identities into security-realm, which is used for
-authentication host when slave tries to connect to master. In secret
-value property we have 'cGFzc3cwcmQh', which is the base64 code for
-'passw0rd!'. You can generate this value by using a base64 calculator
-such as the one at http://www.webutils.pl/index.php?idx=base64.
-
-Then in domain controller section we also need to add security-realm
-property:
-
-[source,xml,options="nowrap"]
-----
-<domain-controller>
-   <remote protocol="remote" host="10.211.55.7" port="9999" username="slave" security-realm="ManagementRealm"  />
-</domain-controller>
-----
-
-So the slave host could use the authentication information we provided
-in 'ManagementRealm'.
 
 [[dry-run]]
 ==== Dry Run

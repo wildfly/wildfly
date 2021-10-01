@@ -62,8 +62,6 @@ include::subsystem-configuration/MicroProfile_Reactive_Streams_Operators_SmallRy
 
 include::subsystem-configuration/MicroProfile_Reactive_Messsaging_SmallRye.adoc[]
 
-include::subsystem-configuration/Security.adoc[]
-
 include::subsystem-configuration/Web_services.adoc[]
 
 include::subsystem-configuration/Resource_adapters.adoc[]

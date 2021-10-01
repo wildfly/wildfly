@@ -293,27 +293,9 @@ Once this is done, map a user to the role:
 }
 ----
 
-Now if user `jsmith` authenticates to any security realm associated with
+Now if user `jsmith` authenticates to any security domain associated with
 the management interface they are using, he will be mapped to the
 `Administrator` role.
-
-To restrict the mapping to a particular security realm, change the
-`realm` attribute to the realm name. This might be useful if different
-realms are associated with different management interfaces, and the goal
-is to limit a user to a particular interface.
-
-[source,options="nowrap"]
-----
-[domain@localhost:9990 /] /core-service=management/access=authorization/role-mapping=Administrator/include=user-mjones:add(name=mjones,type=USER,realm=ManagementRealm)
-{
-    "outcome" => "success",
-    "result" => undefined,
-    "server-groups" => {"main-server-group" => {"host" => {"master" => {
-        "server-one" => {"response" => {"outcome" => "success"}},
-        "server-two" => {"response" => {"outcome" => "success"}}
-    }}}}
-}
-----
 
 [[user-groups]]
 === User groups
@@ -361,21 +343,6 @@ individual user mapping is the value of the `type` attribute should be
 }
 ----
 
-As with individual user mappings, the mapping can be restricted to users
-authenticating via a particular security realm:
-
-[source,options="nowrap"]
-----
-[domain@localhost:9990 /] /core-service=management/access=authorization/role-mapping=Administrator/include=group-PowerAdmins:add(name=PowerAdmins,type=GROUP,realm=ManagementRealm)
-{
-    "outcome" => "success",
-    "result" => undefined,
-    "server-groups" => {"main-server-group" => {"host" => {"master" => {
-        "server-one" => {"response" => {"outcome" => "success"}},
-        "server-two" => {"response" => {"outcome" => "success"}}
-    }}}}
-}
-----
 
 [[including-all-authenticated-users-in-a-role]]
 === Including all authenticated users in a role
@@ -611,7 +578,7 @@ administrative audit logging function
 * Whether the resource, attribute or operation is configured as security
 sensitive
 * Whether an attribute or operation parameter value has a security vault
-expression
+expression or an encrypted expression.
 * Whether a resource is considered to be associated with applications,
 as opposed to being part of a general container configuration
 

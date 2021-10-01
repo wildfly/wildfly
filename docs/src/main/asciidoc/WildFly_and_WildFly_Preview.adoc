@@ -140,10 +140,6 @@ make in the server. Here are the key ones:
 * WildFly Preview is not a Jakarta EE 8 compatible implementation. It also is not a MicroProfile platform compatible
 implementation. Most EE 8 and MicroProfile applications are expected to run well on WildFly Preview, but it is not
 certified compatible.
-* The legacy security subsytem is not supported. The standard configurations are all based on Elytron security.
-Our goal is to remove the underlying Picketbox libraries altogether. When this is done, security vault support will be
-removed as well. Elytron credential stores should be used.
-* The security vault tool (used to manipulate vault contents) is not provided.
 * The standard configuration files do not configure an embedded messaging broker. Instead they configure the
 'messaging-activemq' subsystem to provide connections to a remote ActiveMQ Artemis broker. (It's a task for the user to
 run such a broker or to update the config to integrate with a different broker.) We want WildFly out-of-the-box to be
@@ -153,10 +149,9 @@ configuration to act as a primary or backup. An embedded messaging broker also h
 requirements than a server primarily dedicated to handling HTTP requests would have. Note however that running an
 embedded broker is still supported. We've added to the $WILDFLY_HOME/docs/examples/configs folder an example
 ``standalone-activemq-embedded.xml`` configuration showing its use.
-* The Picketlink extension is removed.
 * The JSR-77 extension is removed.
 * The extensions providing the legacy subsystems 'cmp', 'config-admin', 'jacorb', 'jaxr', 'messaging' (HornetQ based),
-and 'web' (not 'undertow') are removed. These were only used for domain mode to allow a Domain Controller to control
+'security' (not 'elytron'), and 'web' (not 'undertow') are removed. These were only used for domain mode to allow a Domain Controller to control
 hosts running much earlier WildFly versions where servers using these subsystems were supported.
 
 == WildFly Preview Known Issues
