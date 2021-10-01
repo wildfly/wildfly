@@ -77,7 +77,7 @@
         -->
         <version.server>25.0.0.Beta1</version.server>
         <!-- Version of the maven plugin used to build BOMs -->
-        <version.bom-builder-plugin>2.0.0.Final</version.bom-builder-plugin>
+        <version.bom-builder-plugin>2.0.1.Final</version.bom-builder-plugin>
         <!-- Protocol to use for communication with remote maven repositories.
              You can set to 'http' if you are using a maven proxy and 'https'
              interferes with that. Use 'https' for builds that will be released
