@@ -543,18 +543,6 @@
                                 <id>default-test</id>
                                 <phase>none</phase>
                             </execution>
-                            <execution>
-                                <id>ws-integration-default.surefire</id>
-                                <configuration>
-                                    <excludes>
-                                        <!-- Other security issues -->
-                                        <exclude>org/jboss/as/test/integration/ws/authentication/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/authentication/policy/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/wsse/trust/WSBearerSecurityPropagationTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/wsse/trust/WSTrustTestCase.java</exclude>
-                                    </excludes>
-                                </configuration>
-                            </execution>
                         </executions>
                     </plugin>
                 </plugins>

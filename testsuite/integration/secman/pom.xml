@@ -99,10 +99,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
                                     </environmentVariables>
-                                    <excludes>
-                                        <!-- Requires legacy security -->
-                                        <exclude>org/jboss/as/testsuite/integration/secman/PBStaticMethodsTestCase.java</exclude>
-                                    </excludes>
                                 </configuration>
                             </execution>
                         </executions>
