@@ -28,6 +28,7 @@ import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
 
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -82,17 +83,23 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
             //support for contract-first development only: pick-up @WebService annotations referencing a provided wsdl contract only
             if (wsdlLocation != null && port != null && service != null) {
                 String key = wsdlLocation.asString();
-                List<AnnotationInstance> annotations = map.get(key);
-                if (annotations == null) {
-                    annotations = new LinkedList<AnnotationInstance>();
-                    map.put(key, annotations);
-                }
+                List<AnnotationInstance> annotations = map.computeIfAbsent(key, k -> new LinkedList<>());
                 annotations.add(webServiceAnnotation);
             }
         }
 
-        //extract SOAP-over-JMS 1.0 bindings
-        List<JMSEndpointMetaData> list = new LinkedList<>();
+        final List<JMSEndpointMetaData> list = extractSOAPOverJMSBindings(unit, map);
+        unit.putAttachment(JMS_ENDPOINT_METADATA_KEY, new JMSEndpointsMetaData(list));
+    }
+
+    private List<JMSEndpointMetaData> extractSOAPOverJMSBindings(DeploymentUnit unit, Map<String, List<AnnotationInstance>> map) {
+        // Avoid creating an unnecessary list if there are no contents in the map
+        if(map.isEmpty()){
+            return Collections.emptyList();
+        }
+
+        // Extract SOAP-over-JMS 1.0 bindings
+        final List<JMSEndpointMetaData> list = new LinkedList<>();
 
         for (final Map.Entry<String, List<AnnotationInstance>> entry : map.entrySet()) {
             final String wsdlLocation = entry.getKey();
@@ -125,8 +132,7 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
                 WSLogger.ROOT_LOGGER.cannotReadWsdl(wsdlLocation);
             }
         }
-
-        unit.putAttachment(JMS_ENDPOINT_METADATA_KEY, new JMSEndpointsMetaData(list));
+        return list;
     }
 
     @Override
