@@ -229,12 +229,4 @@ public class PropagateSecurityInterceptor extends WSS4JInInterceptor {
 }
 
 ----
-[[legacy-security-subsystem]]
-== Legacy Security Subsystem
-
-As previously described, Elytron based security is configured by
-chaining together different capability references to form a complete
-security policy. To allow an incremental migration from the legacy
-Security subsystem some of the major components of this subsystem can be
-mapped to Elytron capabilities and used within an Elytron based set up.
 
