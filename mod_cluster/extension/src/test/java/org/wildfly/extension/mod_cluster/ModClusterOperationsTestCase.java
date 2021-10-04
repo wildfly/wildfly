@@ -55,8 +55,6 @@ import org.junit.Test;
 @SuppressWarnings("SameParameterValue")
 public class ModClusterOperationsTestCase extends AbstractSubsystemTest {
 
-    private final String PROXY_NAME = "default";
-
     public ModClusterOperationsTestCase() {
         super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension());
     }
@@ -151,6 +149,8 @@ public class ModClusterOperationsTestCase extends AbstractSubsystemTest {
     @Test
     public void testLegacyLoadProviderOperations() throws Exception {
         KernelServices services = this.buildKernelServices();
+
+        String PROXY_NAME = "default";
         int testFactor = 66;
 
         // Test for WFLY-10872 - with dynamic load provider defined, check that a non-cryptic message is given to the user when
@@ -243,7 +243,7 @@ public class ModClusterOperationsTestCase extends AbstractSubsystemTest {
     // Setup
 
     private String getSubsystemXml() throws IOException {
-        return readResource("subsystem-transform-1_5_0.xml");
+        return readResource("subsystem-operations.xml");
     }
 
     private KernelServices buildKernelServices() throws Exception {

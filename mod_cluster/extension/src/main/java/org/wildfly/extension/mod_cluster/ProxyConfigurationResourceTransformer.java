@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,37 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.extension.mod_cluster;
 
-import org.jboss.as.clustering.controller.Model;
+import java.util.function.Consumer;
+
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
- * Enumerates the supported mod_cluster model versions.
- *
  * @author Radoslav Husar
  */
-public enum ModClusterModel implements Model {
-/*  Unsupported model versions - for reference only:
+public class ProxyConfigurationResourceTransformer implements Consumer<ModelVersion> {
 
-    VERSION_1_5_0(1, 5, 0), // EAP 6.3-6.4
-*/
-    VERSION_2_0_0(2, 0, 0), // WildFly 8
-    VERSION_3_0_0(3, 0, 0), // WildFly 9
-    VERSION_4_0_0(4, 0, 0), // WildFly 10, EAP 7.0
-    VERSION_5_0_0(5, 0, 0), // WildFly 11-13, EAP 7.1
-    VERSION_6_0_0(6, 0, 0), // WildFly 14-15, EAP 7.2
-    VERSION_7_0_0(7, 0, 0), // WildFly 16-25, EAP 7.3-7.4
-    ;
-    public static final ModClusterModel CURRENT = VERSION_7_0_0;
+    private final ResourceTransformationDescriptionBuilder builder;
 
-    private final ModelVersion version;
-
-    ModClusterModel(int major, int minor, int micro) {
-        this.version = ModelVersion.create(major, minor, micro);
+    public ProxyConfigurationResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
+        this.builder = parent.addChildResource(ProxyConfigurationResourceDefinition.WILDCARD_PATH);
     }
 
-    public ModelVersion getVersion() {
-        return this.version;
+    @Override
+    public void accept(ModelVersion version) {
+        new DynamicLoadProviderResourceTransformer(this.builder).accept(version);
     }
 }

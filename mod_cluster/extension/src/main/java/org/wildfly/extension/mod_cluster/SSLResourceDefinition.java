@@ -24,11 +24,13 @@ package org.wildfly.extension.mod_cluster;
 
 import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
 
+import java.util.List;
+import java.util.function.UnaryOperator;
+
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -39,13 +41,9 @@ import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.ValueExpression;
-
-import java.util.List;
-import java.util.function.UnaryOperator;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} implementation for the legacy mod_cluster SSL configuration resource.
@@ -142,7 +140,4 @@ class SSLResourceDefinition extends ChildResourceDefinition<ManagementResourceRe
         return ModClusterExtension.MOD_CLUSTER_SECURITY_DEF.wrapAsList();
     }
 
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        // Nothing to transform
-    }
 }

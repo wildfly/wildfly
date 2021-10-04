@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,13 +22,12 @@
 
 package org.wildfly.extension.mod_cluster;
 
-import static org.jboss.as.controller.transform.description.TransformationDescription.Tools.register;
-
 import java.util.EnumSet;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -45,9 +44,9 @@ public class ModClusterExtensionTransformerRegistration implements ExtensionTran
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         // Register transformers for all but the current model
-        for (ModClusterModel modClusterModel : EnumSet.complementOf(EnumSet.of(ModClusterModel.CURRENT))) {
-            ModelVersion version = modClusterModel.getVersion();
-            register(ModClusterSubsystemResourceDefinition.buildTransformation(version), registration, version);
+        for (ModClusterModel model : EnumSet.complementOf(EnumSet.of(ModClusterModel.CURRENT))) {
+            ModelVersion version = model.getVersion();
+            TransformationDescription.Tools.register(new ModClusterSubsystemResourceTransformer().apply(version), registration, version);
         }
     }
 }
