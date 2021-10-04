@@ -974,7 +974,7 @@ realm.
 [[default-management-authentication-configuration]]
 == Default Management Authentication Configuration
 
-By default, the WildFly management interfaces now secured using WildFly
+By default, the WildFly management interfaces are secured using WildFly
 Elytron capabilities.
 
 [[default-elytron-management-http-authentication-configuration]]

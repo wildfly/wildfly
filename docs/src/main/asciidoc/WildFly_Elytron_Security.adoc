@@ -19,12 +19,12 @@ ifndef::ebook-format[:leveloffset: 1]
 [[about]]
 == About
 
-The WildFly Elytron brings to WildFly a single unified security framework
-across the whole of the application server. As a single framework it will be
-usable both for configuring management access to the server and for
-applications deployed to the server, it will also be usable across all process
-types so there will be no need to learn a different security framework for
-host controllers in a domain compared to configuring a standalone server.
+WildFly Elytron brings to WildFly a single unified security framework across
+the whole of the application server. As a single framework it will be usable
+both for configuring management access to the server and for applications
+deployed to the server.  It will also be usable across all process types so
+there will be no need to learn a different security framework for host 
+controllers in a domain compared to configuring a standalone server.
 
 The project covers these main areas:
 

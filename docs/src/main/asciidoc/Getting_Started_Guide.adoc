@@ -179,7 +179,7 @@ find your way around when it comes to deploying your own applications.
 used by the application client container run from this installation.
 
 |bin |Start up scripts, start up configuration files and various command
-line utilities like elytron-tool, add-user and Java diagnostic reportavailable
+line utilities like elytron-tool, add-user and Java diagnostic report available
 for Unix and Windows environments
 
 |bin/client |Contains a client jar for use by non-maven based clients.
