@@ -174,7 +174,7 @@ public class ValueAnalysis extends ContainerAnalysis {
                 wo = null; // Wrong return type
             }
             if (wo != null) { // Right modifiers?
-                int mods = spf.getModifiers();
+                int mods = wo.getModifiers();
                 if (!Modifier.isPrivate(mods))
                     wo = null; // wrong modifiers
             }
