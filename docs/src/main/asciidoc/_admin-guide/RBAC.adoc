@@ -48,9 +48,7 @@ can continue to administer the system. This default mapping assigns the
 "$local" user name to the RBAC role that provides all permissions, the
 "SuperUser" role. The "$local" user name is the name an administrator
 will be assigned if he or she uses the CLI on the same system as the
-WildFly instance and the
-link:Detailed_Configuration.html#src-557240_DetailedConfiguration-authentication-local["local"
-authentication scheme] is enabled.
+WildFly instance and the "local" authentication scheme is enabled.
 
 [[rbac-provider-overview]]
 == RBAC provider overview
@@ -167,12 +165,10 @@ least one in the Administrator or SuperUser role. Otherwise your
 installation will not be manageable except by shutting it down and
 editing the xml configuration. If you have started with one of the
 standard xml configurations shipped with WildFly, the "$local" user will
-be mapped to the "SuperUser" role and the
-link:Detailed_Configuration.html#src-557240_DetailedConfiguration-authentication-local["local"
-authentication scheme] will be enabled. This will allow a user running
-the CLI on the same system as the WildFly process to have full
-administrative permissions. Remote CLI users and web-based admin console
-users will have no permissions.
+be mapped to the "SuperUser" role and the "local" authentication scheme will be
+enabled. This will allow a user running the CLI on the same system as the
+WildFly process to have full administrative permissions. Remote CLI users and
+web-based admin console users will have no permissions.
 
 We recommend <<mapping-users-and-groups-to-roles,mapping at least one
 user>> besides "$local" before switching the provider to "rbac". You can
