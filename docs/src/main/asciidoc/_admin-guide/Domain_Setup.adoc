@@ -126,14 +126,14 @@ to contain the identity of the host controller.
 <subsystem xmlns="urn:wildfly:elytron:14.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
     <authentication-client>
         <authentication-configuration sasl-mechanism-selector="DIGEST-MD5"
-                                      name="slaveHostAConfiguration"
+                                      name="hostAuthConfig"
                                       authentication-name="slave"
                                       realm="ManagementRealm">
-            <credential-reference clear-text="slave_us3r_password"/>
+            <credential-reference clear-text="host_us3r_password"/>
         </authentication-configuration>
         <authentication-context name="hcAuthContext">
             <match-rule match-host="${jboss.test.host.master.address}" 
-                        authentication-configuration="slaveHostAConfiguration"/>
+                        authentication-configuration="hostAuthConfig"/>
         </authentication-context>
     </authentication-client>
 ....
