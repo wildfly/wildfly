@@ -93,6 +93,7 @@
         <module>observability</module>
         <module>picketlink</module>
         <module>pojo</module>
+        <module>release</module>
         <module>sar</module>
         <module>security</module>
         <module>system-jmx</module>
@@ -1404,6 +1405,13 @@
                 <artifactId>wildfly-preview-feature-pack</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-release</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
             </dependency>
 
             <dependency>
