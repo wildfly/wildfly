@@ -64,10 +64,10 @@
 
     <profiles>
         <profile>
-            <id>release</id>
+            <id>uploads</id>
             <activation>
                 <property>
-                    <name>release</name>
+                    <name>uploads</name>
                     <value>true</value>
                 </property>
             </activation>
