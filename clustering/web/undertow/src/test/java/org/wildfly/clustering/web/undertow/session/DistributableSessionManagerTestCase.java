@@ -37,6 +37,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import io.undertow.UndertowOptions;
 import io.undertow.connector.ByteBufferPool;
@@ -146,6 +147,7 @@ public class DistributableSessionManagerTestCase {
     @Test
     public void createSessionNoSessionId() {
         HttpServerExchange exchange = new HttpServerExchange(null);
+        Supplier<String> identifierFactory = mock(Supplier.class);
         Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         SessionConfig config = mock(SessionConfig.class);
@@ -153,7 +155,8 @@ public class DistributableSessionManagerTestCase {
         SessionMetaData metaData = mock(SessionMetaData.class);
         String sessionId = "session";
 
-        when(this.manager.createIdentifier()).thenReturn(sessionId);
+        when(this.manager.getIdentifierFactory()).thenReturn(identifierFactory);
+        when(identifierFactory.get()).thenReturn(sessionId);
         when(this.manager.createSession(sessionId)).thenReturn(session);
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);

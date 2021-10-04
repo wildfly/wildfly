@@ -41,7 +41,7 @@ public interface KeyAffinityServiceFactory {
      * @return a key affinity service
      */
     @SuppressWarnings("resource")
-    default <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator) {
+    default <K> KeyAffinityService<K> createService(Cache<? extends K, ?> cache, KeyGenerator<K> generator) {
         return this.createService(cache, generator, cache.getCacheManager().getAddress()::equals);
     }
 
@@ -51,5 +51,5 @@ public interface KeyAffinityServiceFactory {
      * @param generator
      * @return a key affinity service
      */
-    <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator, Predicate<Address> filter);
+    <K> KeyAffinityService<K> createService(Cache<? extends K, ?> cache, KeyGenerator<K> generator, Predicate<Address> filter);
 }

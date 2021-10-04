@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.cache.simple;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.ejb3.cache.Cache;
@@ -29,14 +30,12 @@ import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
-import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
@@ -69,8 +68,7 @@ public class SimpleCacheFactoryServiceConfigurator<K, V extends Identifiable<K>>
     }
 
     @Override
-    public Cache<K, V> createCache(IdentifierFactory<K> identifierFactory, StatefulObjectFactory<V> factory, PassivationListener<V> passivationListener) {
-        final StatefulTimeoutInfo timeout = this.componentDescription.getStatefulTimeout();
+    public Cache<K, V> createCache(Supplier<K> identifierFactory, StatefulObjectFactory<V> factory, PassivationListener<V> passivationListener) {
         return new SimpleCache<>(factory, identifierFactory, this.componentDescription.getStatefulTimeout(), this.environment.get());
     }
 }

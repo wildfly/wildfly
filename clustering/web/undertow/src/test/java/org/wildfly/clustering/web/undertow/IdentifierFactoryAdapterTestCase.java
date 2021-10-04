@@ -25,9 +25,11 @@ import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.undertow.server.session.SessionIdGenerator;
+import java.util.function.Supplier;
+
 import org.junit.Test;
-import org.wildfly.clustering.web.IdentifierFactory;
+
+import io.undertow.server.session.SessionIdGenerator;
 
 /**
  * Unit test for {@link IdentifierFactoryAdapter}
@@ -36,14 +38,14 @@ import org.wildfly.clustering.web.IdentifierFactory;
  */
 public class IdentifierFactoryAdapterTestCase {
     private final SessionIdGenerator generator = mock(SessionIdGenerator.class);
-    private final IdentifierFactory<String> factory = new IdentifierFactoryAdapter(this.generator);
+    private final Supplier<String> factory = new IdentifierFactoryAdapter(this.generator);
 
     @Test
     public void test() {
         String expected = "expected";
         when(this.generator.createSessionId()).thenReturn(expected);
 
-        String result = this.factory.createIdentifier();
+        String result = this.factory.get();
 
         assertSame(expected, result);
     }

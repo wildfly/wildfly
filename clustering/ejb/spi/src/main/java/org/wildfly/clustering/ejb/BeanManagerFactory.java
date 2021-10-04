@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.ejb;
 
+import java.util.function.Supplier;
+
 import org.wildfly.clustering.ee.Batch;
 
 /**
@@ -33,5 +35,5 @@ import org.wildfly.clustering.ee.Batch;
  * @param <T> the bean type
  */
 public interface BeanManagerFactory<I, T, B extends Batch> {
-    BeanManager<I, T, B> createBeanManager(IdentifierFactory<I> factory, PassivationListener<T> passivationListener, RemoveListener<T> removeListener);
+    BeanManager<I, T, B> createBeanManager(Supplier<I> factory, PassivationListener<T> passivationListener, RemoveListener<T> removeListener);
 }

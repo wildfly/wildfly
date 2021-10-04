@@ -19,53 +19,53 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan;
+package org.wildfly.clustering.ee.infinispan.affinity;
+
+import java.util.function.Supplier;
 
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
-import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.ee.Key;
+import org.wildfly.clustering.ee.cache.IdentifierFactory;
 import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.web.IdentifierFactory;
 
 /**
- * {@link IdentifierFactory} that uses a {@link KeyAffinityService} to generate identifiers.
+ * An {@link IdentifierFactory} that uses a {@link KeyAffinityService} to pre-generate locally hashing identifiers from a supplier.
  * @author Paul Ferraro
- * @param <K> the key type
+ * @param <I> the identifier type
  */
-public class AffinityIdentifierFactory<K> implements IdentifierFactory<K>, KeyGenerator<Key<K>> {
+public class AffinityIdentifierFactory<I> implements IdentifierFactory<I>, KeyGenerator<Key<I>> {
 
-    private final IdentifierFactory<K> factory;
-    private final KeyAffinityService<? extends Key<K>> affinity;
-    private final EmbeddedCacheManager manager;
+    private final Supplier<I> factory;
+    private final KeyAffinityService<? extends Key<I>> affinity;
+    private final Address localAddress;
 
-    public AffinityIdentifierFactory(IdentifierFactory<K> factory, Cache<Key<K>, ?> cache, KeyAffinityServiceFactory affinityFactory) {
+    public AffinityIdentifierFactory(Supplier<I> factory, Cache<? extends Key<I>, ?> cache, KeyAffinityServiceFactory affinityFactory) {
         this.factory = factory;
         this.affinity = affinityFactory.createService(cache, this);
-        this.manager = cache.getCacheManager();
+        this.localAddress = cache.getCacheManager().getAddress();
     }
 
     @Override
-    public K createIdentifier() {
-        return this.affinity.getKeyForAddress(this.manager.getAddress()).getId();
+    public I get() {
+        return this.affinity.getKeyForAddress(this.localAddress).getId();
     }
 
     @Override
-    public Key<K> getKey() {
-        return new GroupedKey<>(this.factory.createIdentifier());
+    public Key<I> getKey() {
+        return new GroupedKey<>(this.factory.get());
     }
 
     @Override
     public void start() {
-        this.factory.start();
         this.affinity.start();
     }
 
     @Override
     public void stop() {
         this.affinity.stop();
-        this.factory.stop();
     }
 }

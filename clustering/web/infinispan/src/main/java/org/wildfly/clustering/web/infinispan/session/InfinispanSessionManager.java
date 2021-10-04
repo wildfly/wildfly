@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,11 +46,11 @@ import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.cache.IdentifierFactory;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.PredicateKeyFilter;
 import org.wildfly.clustering.infinispan.spi.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
-import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
 import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
@@ -166,8 +167,8 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
     }
 
     @Override
-    public String createIdentifier() {
-        return this.identifierFactory.createIdentifier();
+    public Supplier<String> getIdentifierFactory() {
+        return this.identifierFactory;
     }
 
     @Override

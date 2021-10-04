@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.cache.IdentifierFactory;
+import org.wildfly.clustering.ee.cache.SimpleIdentifierFactory;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.hotrod.tx.HotRodBatcher;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueMarshaller;
@@ -52,7 +54,8 @@ public class HotRodSSOManagerFactory<A, D, S> implements SSOManagerFactory<A, D,
     public <C, L> SSOManager<A, D, S, L, TransactionBatch> createSSOManager(SSOManagerConfiguration<C, L> config) {
         SessionsFactory<Map<D, S>, D, S> sessionsFactory = new CoarseSessionsFactory<>(this.configuration.getRemoteCache());
         SSOFactory<Map.Entry<A, AtomicReference<L>>, Map<D, S>, A, D, S, L> factory = new HotRodSSOFactory<>(this.configuration.getRemoteCache(), new MarshalledValueMarshaller<>(config.getMarshalledValueFactory()), config.getLocalContextFactory(), sessionsFactory);
+        IdentifierFactory<String> identifierFactory = new SimpleIdentifierFactory<>(config.getIdentifierFactory());
         Batcher<TransactionBatch> batcher = new HotRodBatcher(this.configuration.getRemoteCache());
-        return new CompositeSSOManager<>(factory, config.getIdentifierFactory(), batcher);
+        return new CompositeSSOManager<>(factory, identifierFactory, batcher);
     }
 }
