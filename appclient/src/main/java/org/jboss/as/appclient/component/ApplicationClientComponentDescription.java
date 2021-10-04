@@ -72,5 +72,5 @@ public final class ApplicationClientComponentDescription extends ComponentDescri
             }
         });
         return configuration;
-    };
+    }
 }

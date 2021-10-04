@@ -63,8 +63,6 @@ public final class CNNameParser implements NameParser {
         mySyntax.put("jndi.syntax.escape", "" + escapeChar);
     }
 
-    ;
-
     /**
      * Constructs a new name parser for parsing names in INS syntax.
      */
