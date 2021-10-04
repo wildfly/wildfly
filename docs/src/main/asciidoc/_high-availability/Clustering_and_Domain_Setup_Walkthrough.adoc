@@ -204,11 +204,11 @@ to the remote domain controller :
 [source,xml,options="nowrap"]
 ----
 <domain-controller>
- <remote authentication-context="slaveHostAContext" >
+ <remote authentication-context="hcAuthContext" >
    <discovery-options>
      <static-discovery name="master-native" protocol="remote"  host="10.211.55.7" port="9999" />
      <static-discovery name="master-https" protocol="https-remoting" host="10.211.55.7" port="9993" 
-                       authentication-context="slaveHostAContext"/>
+                       authentication-context="hcAuthContext"/>
      <static-discovery name="master-http" protocol="http-remoting" host="10.211.55.7" port="9990" />
    </discovery-options>
  </remote>

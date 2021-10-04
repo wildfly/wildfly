@@ -131,7 +131,7 @@ to contain the identity of the host controller.
                                       realm="ManagementRealm">
             <credential-reference clear-text="slave_us3r_password"/>
         </authentication-configuration>
-        <authentication-context name="slaveHostAContext">
+        <authentication-context name="hcAuthContext">
             <match-rule match-host="${jboss.test.host.master.address}" 
                         authentication-configuration="slaveHostAConfiguration"/>
         </authentication-context>
@@ -145,7 +145,7 @@ the domain:
 [source,xml,options="nowrap"]
 ----
 <domain-controller>
-   <remote protocol="remote" host="192.168.0.101" port="9999" authentication-context="slaveHostAContext"/>
+   <remote protocol="remote" host="192.168.0.101" port="9999" authentication-context="hcAuthContext"/>
 </domain-controller>
 ----
 
@@ -155,7 +155,7 @@ use :
 [source,xml,options="nowrap"]
 ----
 <domain-controller>
-   <remote protocol="http-remoting" host="192.168.0.101" port="9990" username="slave" authentication-context="slaveHostAContext"/>
+   <remote protocol="http-remoting" host="192.168.0.101" port="9990" username="slave" authentication-context="hcAuthContext"/>
 </domain-controller>
 ----
 
@@ -263,7 +263,7 @@ file and setting the `ignore-unused-configuration` attribute:
 [source,xml,options="nowrap"]
 ----
 <domain-controller>
-    <remote authentication-context="slaveHostAContext" ignore-unused-configuration="false">
+    <remote authentication-context="hcAuthContext" ignore-unused-configuration="false">
         <discovery-options>
             <static-discovery name="primary" protocol="${jboss.domain.master.protocol:remote}" host="${jboss.domain.master.address}" port="${jboss.domain.master.port:9999}"/>
         </discovery-options>
@@ -281,7 +281,7 @@ installed on the Domain Controller and on some slaves, but not this one:
 [source,xml,options="nowrap"]
 ----
 <domain-controller>
-    <remote authentication-context="slaveHostAContext" ignore-unused-configuration="true">
+    <remote authentication-context="hcAuthContext" ignore-unused-configuration="true">
         <ignored-resources type="extension">
             <instance name="org.example.foo"/>
         </ignored-resources>
