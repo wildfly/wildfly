@@ -21,11 +21,9 @@
  */
 package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * Provides a {@link ResourceDefinition} and handles its registration.
@@ -38,14 +36,4 @@ public interface ResourceDefinitionProvider extends Registration<ManagementResou
      * @return a path element
      */
     PathElement getPathElement();
-
-    /**
-     * Builds a resource transformation description for this resource
-     * @param parent the builder of the parent resource
-     * @param version the version to which to transform
-     */
-    @Deprecated
-    default void buildTransformation(ResourceTransformationDescriptionBuilder parent, ModelVersion version) {
-        // Do nothing
-    }
 }
