@@ -40,7 +40,6 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.EJBAccessException;
 import javax.ejb.EJBException;
@@ -54,7 +53,6 @@ import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.RemoveException;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Timer;
-import javax.ejb.TimerHandle;
 import javax.ejb.TransactionAttributeType;
 import javax.interceptor.InvocationContext;
 import javax.naming.Context;
@@ -2319,12 +2317,12 @@ public interface EjbLogger extends BasicLogger {
     EJBException timerServiceWithIdNotRegistered(String timedObjectId);
 
     /**
-     * Creates an exception indicating the timer for handle is not active"
+     * Creates an exception indicating the timer for the handle is not active.
      *
      * @return an {@link NoSuchObjectLocalException} for the error.
      */
-    @Message(id = 339, value = "Timer for handle: %s is not active")
-    NoSuchObjectLocalException timerHandleIsNotActive(TimerHandle timerHandle);
+    @Message(id = 339, value = "Timer for handle with timer id: %s, timedObjectId: %s is not active")
+    NoSuchObjectLocalException timerHandleIsNotActive(String timerId, String timedObjectId);
 
 //    /**
 //     * Creates an exception indicating it could not find timeout method
