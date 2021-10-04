@@ -1,0 +1,186 @@
+[[Contributing]]
+= Development environment
+* Latest Maven build tool https://maven.apache.org/
+* OpenJDK 8 (eight!) You can use any distribution in example Eclipse https://adoptium.net/
+* Eclipse https://www.eclipse.org/downloads/packages/[Eclipse Download] or any other IDE allowing correct source formatting (IntelliJ)
+
+= Maven
+Use maven. Simplest is to use the build.sh or build.bat scripts in the root of the source tree. If you don't use those scripts and use the ```mvn``` command directly, note that WildFly's root pom will enforce a minimum maven version.
+
+Building WildFly requires Java 8 or newer. Make sure you have JAVA_HOME set to point to the JDK8 installation. Build uses Maven 3.
+
+
+[source,options="nowrap"]
+----
+$ ./build.sh
+.....
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary:
+[INFO]
+[INFO] WildFly: BOM ..................... SUCCESS [1.834s]
+[INFO] WildFly: Parent Aggregator ....... SUCCESS [0.022s]
+[INFO] WildFly: Domain Core ............. SUCCESS [3.051s]
+[INFO] WildFly: Server Manager .......... SUCCESS [0.204s]
+[INFO] WildFly: Server .................. SUCCESS [0.283s]
+[INFO] WildFly: Domain Controller ....... SUCCESS [0.084s]
+[INFO] WildFly: Process Manager ......... SUCCESS [0.314s]
+[INFO] WildFly: Remoting ................ SUCCESS [0.390s]
+[INFO] WildFly: Build ................... SUCCESS [5.696s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+----
+
+= Community interaction
+Discuss your planned changes (if you want feedback)
+
+* On mailing list - [https://lists.jboss.org/mailman/listinfo/wildfly-dev]
+* On Zulip (recommended) - [https://wildfly.zulipchat.com]
+
+Getting feedback first is recommended before starting on any large-scale work. Large scale could mean many things including a complex change in a focused area, or a simple change made in many different parts of the code base.
+
+Getting feedback first is strongly recommended before beginning work on a new feature. Any change that introduces new user-controllable behavior will be regarded as a new feature. Before merging new features we require a larger set of inputs than are required for other types of fixes, including a formal requirements analysis, a more formally considered plan for testing, and appropriate additions to the WildFly documentation. Before getting too far along with a feature it is best to discuss with other WildFly developers what's needed and how best to ensure those things can be delivered.
+
+= IDE Integration
+== Eclipse
+The "formal" rules to format code are based on Eclipse. You can find them here https://github.com/wildfly/wildfly-core/tree/main/ide-configs/eclipse[WildFly Core IDE Eclipse Configuration]
+
+1. in Eclipse go to Window -> Preferences -> Java -> Code Style -> Formatter.
+2. click Import.
+3. select formatting rules which you have downloaded
+
+Same for cleanup and templates
+
+== IntelliJ
+There is a plugin for IntelliJ to use the Eclipse formatter: https://github.com/krasa/EclipseCodeFormatter#instructions[Eclipse Code Formatter]
+
+= Jira
+Make sure there is a JIRA somewhere for the enhancement/fix
+
+* https://issues.redhat.com/projects/WFLY (for WildFly full)
+* https://issues.redhat.com/projects/WFCORE (for WildFly Core)
+
+== Special cases
+For component upgrades select this type for the Jira. The title must reflect the library and the new version.
+In the description please offer a links to the release notes, the git tag diff.
+
+If you are aware that the component upgrade brings a fix for CVE, it's good to note that in the JIRA title, as later that will make this information more visible in the WildFly release notes.
+
+[source,options="nowrap"]
+----
+Sample title: Upgrade netty.io 4.1.68 (resolves [CVE-2021-37136|https://github.com/advisories/GHSA-grg4-wf29-r9vv], [CVE-2021-37136|https://github.com/advisories/GHSA-grg4-wf29-r9vv])
+Jira Body:
+Release Notes [https://netty.io/news/2021/09/09/4-1-68-Final.html]
+GitDiff [https://github.com/netty/netty/compare/netty-4.1.67.Final...netty-4.1.68.Final]
+----
+
+= Heaven - Coding
+[[contributing_topic_branch]]
+== Topic branch
+Create a simple topic branch to isolate that work
+
+[source,options="nowrap"]
+----
+git checkout -b WFLY-XXXX_my_cool_feature
+----
+
+== Code
+=== Extending WildFly
+There is an excellent documentation and guide link:Extending_WildFly{outfilesuffix}[Extending WildFly] and you can rely on Maven Archetypes to generate a skeleton https://github.com/wildfly/wildfly-archetypes/tree/main/wildfly-subsystem-archetype[WildFly Subsystem Archetype].
+
+=== Adding a new external dependency
+Take care that maintainers agree to pick up a new dependency.
+
+* Edit pom.xml and add a property of the form "version.groupId.artifactId" which contains the Maven version of the dependency. Add your new property in the proper alphabetical order with respect to the existing version properties. Add your dependency to the <dependencyManagement> section, and use the property for the version.  If your new dependency has any transitive dependencies, be sure to <exclude> them (or if possible, update the project so that all its dependencies are of provided scope).
+* Add your dependency to any AS modules that require it, but only with group/artifact. If your dependency will be provided by an existing WildFly module, add a new ```artifact``` element to the ```module.xml``` file for the existing module, with the value of the element's ```name``` attribute an expression of the form ```${groupId:artifactId}```
+* In the pom.xml file for the maven module where you added a new module.xml or updated an existing one for your new dependency, add a new ```dependency``` entry to the pom's ```dependencies``` section.
+* If your dependency will be provided by a new WildFly module, create a directory in the relevant feature-pack maven module, e.g. ```ee-feature-pack/common/src/main/resources/modules/system/layers/base/``` corresponding to the module's name (which will differ from the Maven group/artifact name; look at other modules to get a feel for the naming scheme), with a version of "main", like this: ```modules/system/layers/base/org/jboss/foo/main```. If the correct maven module to choose for your new directory is unclear, be sure to ask!
+* Create a module.xml file inside the "main" directory.  Use a module.xml from another similar module as a template. https://jboss-modules.github.io/jboss-modules/manual/[JBoss Modules Reference Documentation]
+* Important: Make sure you did not introduce any transitive dependencies by using "mvn dependency:tree".  If you did, be sure to add <exclusion>s for each of them to your dependency as described above.
+* Important: Do not introduce a dependency on the "system" module.  The JBoss Modules reference manual lists JDK packages. Please avoid deprecated packages.
+* Add license information to the license declaration file located in the maven module whose pom you just updated. For example, if you added a dependency entry to ```ee-feature-pack/common/pom.xml```, please add an entry to ```ee-feature-pack/common/src/license/ee-feature-pack-common-licenses.xml```. Add a new element in the appropriate spot. The elements are ordered by the maven groupId and artifactId of the entries. If the needed content for the entry is unclear, be sure to ask!
+
+[[contributing_commit_push]]
+=== Commit and push
+Make the changes and commit one or more times (Don't forget to push)
+
+[source,options="nowrap"]
+----
+git commit -m 'WFLY-XXXX Frunubucate the Fromungulator'
+First time: git push --set-upstream origin WFLY-XXXX_my_cool_feature
+Second and ongoing: git push origin WFLY-XXXX_my_cool_feature
+----
+
+Note that git push references the branch you are pushing and defaults to main, not your working branch.
+
+[[contributing_rebase_latest]]
+== Rebase topic branch on latest main
+Rebase your branch against the latest main (applies your patches on top of main)
+
+[source,options="nowrap"]
+----
+git fetch upstream
+git rebase -i upstream/main
+# if you have conflicts fix them and rerun rebase
+# The -f, forces the push, alters history, see note below
+git push -f origin WFLY-XXXX_my_cool_feature
+----
+
+The -i triggers an interactive update which also allows you to combine commits, alter commit messages etc. It's a good idea to make the commit log very nice for external consumption. Note that this alters history, which while great for making a clean patch, is unfriendly to anyone who has forked your branch. Therefore you want to make sure that you either work in a branch that you don't share, or if you do share it, tell them you are about to revise the branch history (and thus, they will then need to rebase on top of your branch once you push it out).
+
+= Quality and Testing
+A *must* read is the link:Testsuite{outfilesuffix}[WildFly Testsuite] documentation. It will save you time and nerves.
+
+== Checkstyle Errors
+If you need to first verify that your changes pass the checkstyle audit, do this first.
+
+[source,options="nowrap"]
+----
+mvn checkstyle:checkstyle
+----
+
+Then you can proceed with the build.
+
+== How do I ensure that my code does not blow up the testsuite?
+First try to run the tests as part of the build before sending a pull request.
+
+[source,options="nowrap"]
+----
+$> ./build.sh clean install -DallTests
+----
+
+Sometimes there are test failures that are not related to your code changes. Most times it's your code change. Try to discuss this on Zulip.
+
+You can get a full run using
+
+[source,options="nowrap"]
+----
+$> ./build.sh clean install -DallTests -fae
+----
+
+This additional option will allow the build to continue even when there are test failures. Doing this, you can get a stock of all the test failures and figure out how many are related to your code changes.
+
+= Pull requests to upstream
+Get your changes merged into upstream
+
+* Read the documentation to ensure that you follow a good Pull Request Standards link:#WildFly_PR_Standard[WildFly Pull Request Standards and Guidelines]
+* Make sure your repo is in sync with other unrelated changes in upstream before requesting your changes be merged into upstream by repeating  link:#contributing_rebase_latest[Rebase topic branch on latest main].
+* Send a github pull request, by clicking the pull request link while in your repo's fork. https://docs.github.com/en/get-started/quickstart/github-flow#create-a-pull-request[Quickstart - Create a pull request]
+* In general, WildFly maintainers are watching the project, so they will receive a notification on each new PR.
+* As part of the review you may see an automated test run comment on your request.
+* After review a maintainer will merge your patch, update/resolve issues by request, and reply when complete
+* Don't forget to switch back to main and pull the updates
+
+[source,options="nowrap"]
+----
+git checkout main
+git pull --ff-only upstream main
+----
+
+Update the main branch of your github repository (otherwise you will see a message like 'Your branch is ahead of 'origin/main' by XXX commits.'
+if you use 'git status' on your local main branch.
+
+[source,options="nowrap"]
+----
+git push origin main
+----

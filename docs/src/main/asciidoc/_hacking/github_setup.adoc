@@ -1,0 +1,156 @@
+[[Target_Audience]]
+= Target Audience
+
+This document is a guide to the setup of Github, preparing and developing changes and contributing
+to WildFly.
+
+This guide assumes you know how to deal with the CLI of your OS, for example the Linux bash or MacOS zsh.
+
+[[prerequisites]]
+= Prerequisites
+You are very welcome to improve WildFly, please read why:
+
+* How Red Hat deals with OpenSource https://www.redhat.com/en/resources/open-source-participation-guidelines-overview[Open source participation guidelines]
+* and the https://www.contributor-covenant.org/version/2/1/code_of_conduct/[Contributor Covenant Code of Conduct]
+
+== GitHub account
+Create a GitHub account if you don't have one already
+https://docs.github.com/en/get-started/signing-up-for-github/signing-up-for-a-new-github-account[Signing up for a new GitHub account]
+
+Create a Personal Access Token to work with on the command line.
+https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token[Account Security - Creating a personal access token]
+
+== Jira account
+Create an account for Red Hat's Jira [https://issues.redhat.com/] Choose "Sign up"
+
+= Getting started
+== Fork
+Fork wildfly repository into your account https://docs.github.com/en/get-started/quickstart/fork-a-repo[QuickStart - Fork a repo]
+
+   * https://github.com/wildfly/wildfly-core/
+   * https://github.com/wildfly/wildfly/
+
+== Clone
+Clone your newly forked copy onto your local workspace
+
+[source,options="nowrap"]
+----
+$ git clone git@github.com:[your user]/wildfly.git
+Cloning into 'wildfly'...
+remote: Counting objects: 533023, done.
+remote: Compressing objects: 100% (170/170), done.
+remote: Total 533023 (delta 60), reused 0 (delta 0), pack-reused 532777
+Receiving objects: 100% (533023/533023), 140.25 MiB | 1.75 MiB/s, done.
+Resolving deltas: 100% (210143/210143), done.
+Checking connectivity... done.
+
+$ cd wildfly
+----
+
+== Remote
+Add a remote ref to upstream, for pulling future updates
+
+[source,options="nowrap"]
+----
+git remote add upstream git://github.com/wildfly/wildfly.git
+----
+[[safety]]
+== Safety
+As a precaution, disable merge commits to your main
+
+[source,options="nowrap"]
+----
+git config branch.main.mergeoptions --ff-only
+----
+
+== Working with git later
+
+=== Pulling updates
+Pulling later updates from upstream
+
+[source,options="nowrap"]
+----
+$ git checkout -f main
+$ git pull --rebase upstream main
+From git://github.com/wildfly/wildfly
+ * branch            main     -> FETCH_HEAD
+Updating 3382570..1fa25df
+Fast-forward
+ {parent => bom}/pom.xml                            |   70 ++++----------
+ build/pom.xml                                      |   13 +--
+ domain/pom.xml                                     |   10 ++
+ .../src/main/resources/examples/host-example.xml   |    2 +-
+ .../resources/examples/jboss-domain-example.xml    |   28 +++---
+ .../main/resources/schema/jboss-domain-common.xsd  |   12 +--
+ .../main/resources/schema/jboss-domain-host.xsd    |    2 +-
+ domain/src/main/resources/schema/jboss-domain.xsd  |   17 ++--
+ pom.xml                                            |  100 ++++++++++++++++++--
+ process-manager/pom.xml                            |    3 +-
+ 10 files changed, 156 insertions(+), 101 deletions(-)
+ rename {parent => bom}/pom.xml (85%)
+----
+
+(--rebase will automatically move your local commits, if you have any, on top of the latest branch you pull from, you can leave it off if you do not).
+
+Best practice is to never add your own commits to your local 'main' branch. Instead create a topic branch from 'main' and add commits to your topic branch. Only use your local 'main' to track the current state of the 'upstream' remote's 'main' branch.
+
+Please note that --rebase is very important if you do have commits. What happens is that when git pull can't fast forward, it does a merge commit, and a merge commit puts the sucked in changes ON TOP of yours whereas a rebase puts them BELOW yours. In other words a merge commit makes the history a graph, and we prefer a cleaner, easier to follow linear history (hence the rebasing). Further once you do a merge commit it will be difficult to rebase the history before that commit (say you want to combine two commits to one later) as described in link:Hacking_On_WildFly.html#contributing_commit_push["Commit and push"]. Luckily the option set in step link:#safety[Safety] will prevent this from happening.
+
+One way to not forget --rebase the rebase option is you may want to create an alias
+
+[source,options="nowrap"]
+----
+ $ git config --global alias.up "pull --rebase"
+----
+
+and then just use the new alias instead of pull
+
+[source,options="nowrap"]
+----
+$ git up upstream main
+----
+
+One last option, which some prefer, is to avoid using pull altogether, and just use fetch + rebase (this is of course more typing)
+For some reasons tags are not updated (e.g. not part of an active branch). Update the tags with
+
+[source,options="nowrap"]
+----
+$ git fetch --tags upstream
+----
+
+=== Rebasing a feature branch
+
+Assume you have a feature branch WFLY-815_upgrade_sample_dep and you have rebased the local main branch to be up to date with upstream main as described before.
+
+[source,options="nowrap"]
+----
+git checkout -f WFLY-815_upgrade_sample_dep
+git rebase upstream/main
+----
+
+Do not pull the upstream main to your local feature branch! You'll be stuck in duplicate commit hell.
+
+=== Push
+Pushing pulled updates (or local commits if you aren't using topic branches) to your private github repo (origin)
+
+[source,options="nowrap"]
+----
+$ git push
+Counting objects: 192, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (44/44), done.
+Writing objects: 100% (100/100), 10.67 KiB, done.
+Total 100 (delta 47), reused 100 (delta 47)
+To git@github.com:[your user]/wildfly.git
+   3382570..1fa25df  main -> main
+----
+
+You might need to say -f to force the changes. Read link:Hacking_On_WildFly.html#contributing_topic_branch[Topic Branch] though before you do it.
+
+If you fetch the tags separately you have to push the tags also. Consider if you need them in your personal GitHub repository.
+
+[source,options="nowrap"]
+----
+git push --tags
+----
+
