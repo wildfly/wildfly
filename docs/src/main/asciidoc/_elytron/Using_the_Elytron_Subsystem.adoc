@@ -1210,7 +1210,7 @@ generate an example key pair:
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=httpsKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=1024,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
+/subsystem=elytron/key-store=httpsKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=2048,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
 /subsystem=elytron/key-store=httpsKS:store()
 ----
 
@@ -1281,7 +1281,7 @@ First, obtain or generate your client keystore.
 
 [source,options="nowrap"]
 ----
-$ keytool -genkeypair -alias client -keyalg RSA -keysize 1024 -validity 365 -keystore client.keystore.jks -dname "CN=client" -keypass secret -storepass secret
+$ keytool -genkeypair -alias client -keyalg RSA -keysize 2048 -validity 365 -keystore client.keystore.jks -dname "CN=client" -keypass secret -storepass secret
 ----
 
 Export the client certificate:
@@ -1358,7 +1358,7 @@ Create a server key-store:
 [source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=twoWayKS:add(path=/path/to/server.keystore.jks,credential-reference={clear-text=secret},type=JKS)
-/subsystem=elytron/key-store=twoWayKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=1024,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
+/subsystem=elytron/key-store=twoWayKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=2048,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
 /subsystem=elytron/key-store=twoWayKS:store()
 ----
 
@@ -1654,7 +1654,7 @@ generate an example key pair:
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=httpsKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=1024,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
+/subsystem=elytron/key-store=httpsKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=2048,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
 /subsystem=elytron/key-store=httpsKS:store()
 ----
 
@@ -1698,7 +1698,7 @@ First, obtain or generate your client keystore.
 
 [source,options="nowrap"]
 ----
-$ keytool -genkeypair -alias client -keyalg RSA -keysize 1024 -validity 365 -keystore client.keystore.jks -dname "CN=client" -keypass secret -storepass secret
+$ keytool -genkeypair -alias client -keyalg RSA -keysize 2048 -validity 365 -keystore client.keystore.jks -dname "CN=client" -keypass secret -storepass secret
 ----
 
 Export your client certificate.
@@ -1776,7 +1776,7 @@ Configure a key-store.
 ----
 /subsystem=elytron/key-store=twoWayKS:add(path=server.keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
 
-/subsystem=elytron/key-store=twoWayKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=1024,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
+/subsystem=elytron/key-store=twoWayKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=2048,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
 
 /subsystem=elytron/key-store=twoWayKS:store()
 ----
@@ -1877,7 +1877,7 @@ self-signed certificate will be added to the KeyStore.
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=httpsKS:generate-key-pair(alias=example,algorithm=RSA,key-size=1024,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=www.example.com")
+/subsystem=elytron/key-store=httpsKS:generate-key-pair(alias=example,algorithm=RSA,key-size=2048,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=www.example.com")
 ----
 
 [[generate-certificate-signing-request]]
@@ -1966,7 +1966,7 @@ obtains a signed certificate from Let's Encrypt, and stores it in the KeyStore.
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=httpsKS:obtain-certificate(alias=server,domain-names=[www.example.org],certificate-authority-account=myLEAccount,agree-to-terms-of-service=true,algorithm=RSA,key-size=1024,credential-reference={clear-text=secret})
+/subsystem=elytron/key-store=httpsKS:obtain-certificate(alias=server,domain-names=[www.example.org],certificate-authority-account=myLEAccount,agree-to-terms-of-service=true,algorithm=RSA,key-size=2048,credential-reference={clear-text=secret})
 ----
 
 [[revoke-certificate]]
