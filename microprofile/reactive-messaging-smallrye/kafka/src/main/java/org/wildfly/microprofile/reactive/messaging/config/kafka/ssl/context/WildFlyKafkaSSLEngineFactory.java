@@ -5,7 +5,9 @@
 
 package org.wildfly.microprofile.reactive.messaging.config.kafka.ssl.context;
 
-import static org.wildfly.microprofile.reactive.messaging.config.kafka.ssl.context.ReactiveMessagingSslConfigProcessor.SSL_CONTEXT_PROPERTY_SUFFIX;
+import org.wildfly.microprofile.reactive.messaging.common.security.ElytronSSLContextRegistry;
+
+import static org.wildfly.microprofile.reactive.messaging.config.kafka.ssl.context.KafkaReactiveMessagingSslConfigProcessor.SSL_CONTEXT_PROPERTY_SUFFIX;
 import static org.wildfly.microprofile.reactive.messaging.config.kafka.ssl.context._private.MicroProfileReactiveMessagingKafkaLogger.LOGGER;
 
 import java.io.IOException;
@@ -26,6 +28,7 @@ public class WildFlyKafkaSSLEngineFactory implements org.apache.kafka.common.sec
 
     @Override
     public void configure(Map<String, ?> configs) {
+        // Only the suffix will have been passed through the Kafka connection config mechanisms
         SSLContext context = ElytronSSLContextRegistry.getInstalledSSLContext((String) configs.get(SSL_CONTEXT_PROPERTY_SUFFIX));
         if (context == null) {
             throw LOGGER.noElytronClientSSLContext((String) configs.get(SSL_CONTEXT_PROPERTY_SUFFIX));
