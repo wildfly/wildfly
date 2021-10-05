@@ -33,6 +33,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelType;
 
@@ -48,7 +49,12 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
     // this is an unregistered copy of the capability defined and registered in /subsystem=ejb3/thread-pool=*
     // needed due to the unorthodox way in which the thread pools are defined in ejb3 subsystem
     protected static final String THREAD_POOL_CAPABILITY_NAME = ThreadsServices.createCapability(EJB3SubsystemModel.BASE_EJB_THREAD_POOL_NAME, ExecutorService.class).getName();
-    protected static final String DATASTORE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service.timer-persistence-service";
+
+    public static final String TIMER_PERSISTENCE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service.timer-persistence-service";
+    public static final RuntimeCapability<Void> TIMER_PERSISTENCE_CAPABILITY =
+            RuntimeCapability.Builder.of(TIMER_PERSISTENCE_CAPABILITY_NAME, true, TimerPersistence.class)
+                    .setAllowMultipleRegistrations(true)
+                    .build();
 
     public static final String TIMER_SERVICE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service";
     public static final RuntimeCapability<Void> TIMER_SERVICE_CAPABILITY =
@@ -65,7 +71,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setRequired(true)
                     //.setDefaultValue(new ModelNode("default-file-store")) //for backward compatibility!
-                    .setCapabilityReference(DATASTORE_CAPABILITY_NAME, TIMER_SERVICE_CAPABILITY)
+                    .setCapabilityReference(TIMER_PERSISTENCE_CAPABILITY_NAME, TIMER_SERVICE_CAPABILITY)
                     .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { THREAD_POOL_NAME, DEFAULT_DATA_STORE };
