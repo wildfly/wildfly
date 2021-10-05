@@ -87,7 +87,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private static final  BiFunction<Set<String>, Set<String>, Set<String>> diff = (a, b) -> a.stream().filter(e -> !b.contains(e)).collect(Collectors.toSet());
     private final boolean isEeGalleonPack = "ee-".equals(System.getProperty("testsuite.default.build.project.prefix"));
 
-    private static final String MAJOR = "25.";
+    private static final String MAJOR = "26.";
 
     /**
      * Maintains the list of expected extensions for each host-exclude name for previous releases.
@@ -187,12 +187,13 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"
         )),
         WILDFLY_24_0("WildFly24.0", WILDFLY_23_0),
-        // If an extension is added to this enum, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
-        // to the internal mpExtensions Set defined on this class.
-        CURRENT(MAJOR, WILDFLY_24_0, Arrays.asList(
+        WILDFLY_25_0("WildFly25.0", WILDFLY_24_0, Arrays.asList(
                 "org.wildfly.extension.elytron-oidc-client",
                 "org.wildfly.extension.opentelemetry"
-        ));
+        )),
+        // If an extension is added to this enum, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
+        // to the internal mpExtensions Set defined on this class.
+        CURRENT(MAJOR, WILDFLY_25_0);
 
         private final String name;
         private final Set<String> extensions = new HashSet<>();
