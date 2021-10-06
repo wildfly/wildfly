@@ -22,15 +22,12 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ejb3.timerservice.persistence.database.DatabaseTimerPersistence;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -67,8 +64,6 @@ public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
         }
         final String partition = DatabaseDataStoreResourceDefinition.PARTITION.resolveModelAttribute(context, model).asString();
 
-        final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
-
         int refreshInterval = DatabaseDataStoreResourceDefinition.REFRESH_INTERVAL.resolveModelAttribute(context, model).asInt();
         boolean allowExecution = DatabaseDataStoreResourceDefinition.ALLOW_EXECUTION.resolveModelAttribute(context, model).asBoolean();
 
@@ -77,7 +72,7 @@ public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
 
         // add the TimerPersistence instance
         final CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
-        final CapabilityServiceBuilder<DatabaseTimerPersistence> builder = serviceTarget.addCapability(DatabaseDataStoreResourceDefinition.TIMER_PERSISTENCE_CAPABILITY, databaseTimerPersistence);
+        final CapabilityServiceBuilder<DatabaseTimerPersistence> builder = serviceTarget.addCapability(TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY, databaseTimerPersistence);
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, databaseTimerPersistence.getModuleLoader());
         builder.addDependency(ContextNames.bindInfoFor(jndiName).getBinderServiceName(), ManagedReferenceFactory.class, databaseTimerPersistence.getDataSourceInjectedValue());
         builder.addCapabilityRequirement(TIMER_SERVICE_CAPABILITY_NAME, java.util.Timer.class, databaseTimerPersistence.getTimerInjectedValue());
