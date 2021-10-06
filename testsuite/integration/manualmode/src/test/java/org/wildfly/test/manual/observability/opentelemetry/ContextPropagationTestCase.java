@@ -27,10 +27,7 @@ import java.io.IOException;
 import java.net.NetPermission;
 import java.net.SocketPermission;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
@@ -50,6 +47,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -58,16 +56,10 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.InternetProtocol;
-import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
-import org.testcontainers.images.PullPolicy;
 import org.wildfly.test.manual.observability.opentelemetry.deployment1.TestApplication1;
 import org.wildfly.test.manual.observability.opentelemetry.deployment2.TestApplication2;
 
@@ -80,35 +72,15 @@ import org.wildfly.test.manual.observability.opentelemetry.deployment2.TestAppli
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(ContextPropagationTestCase.OpenTelemetrySetupTask.class)
-@Ignore("Will fix in WFLY-15375")
 public class ContextPropagationTestCase {
     private static final String CONTAINER = "otel";
     public static final String DEPLOYMENTA = "otel-service1";
     public static final String DEPLOYMENTB = "otel-service2";
-    public static final String JAEGER_IMAGE = "jaegertracing/all-in-one:latest";
 
     @ArquillianResource
     protected static ContainerController containerController;
 
-    public static GenericContainer jaeger = new FixedHostPortGenericContainer(JAEGER_IMAGE)
-            .withFixedExposedPort(5775, 5775, InternetProtocol.UDP)
-            .withFixedExposedPort(5778, 5778)
-            .withFixedExposedPort(6831, 6831, InternetProtocol.UDP)
-            .withFixedExposedPort(6832, 6832, InternetProtocol.UDP)
-            .withFixedExposedPort(9411, 9411)
-            .withFixedExposedPort(14250, 14250)
-            .withFixedExposedPort(14268, 14268)
-            .withFixedExposedPort(16686, 16686)
-            .withImagePullPolicy(PullPolicy.alwaysPull())
-            .withEnv("COLLECTOR_ZIPKIN_HOST_PORT", "9411")
-            .waitingFor(new HostPortWaitStrategy() {
-                @Override
-                protected Set<Integer> getLivenessCheckPorts() {
-                    Set<Integer> ports = new HashSet<>(1);
-                    ports.addAll(Arrays.asList(9411, 5778, 14250, 14268, 16686));
-                    return ports;
-                }
-            });
+    private static GenericContainer jaeger = new JaegerContainer();
 
     private static final String WEB_XML
             = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -160,7 +132,7 @@ public class ContextPropagationTestCase {
 
     @Before
     public void setup() throws Exception {
-        Assume.assumeTrue(System.getProperty("os.name").equalsIgnoreCase("Linux"));
+        AssumeTestGroupUtil.assumeDockerAvailable();
         jaeger.start();
         containerController.start(CONTAINER);
 
