@@ -45,6 +45,10 @@
     <dependencies>
 
         <!-- module and copy artifact dependencies -->
+        <dependency>
+            <groupId>com.fasterxml.woodstox</groupId>
+            <artifactId>woodstox-core</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -99,6 +103,11 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.woodstox</groupId>
+            <artifactId>stax2-api</artifactId>
         </dependency>
 
         <dependency>
@@ -353,6 +362,11 @@
         <dependency>
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
         </dependency>
 
     </dependencies>
