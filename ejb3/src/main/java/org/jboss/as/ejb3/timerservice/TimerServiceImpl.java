@@ -159,19 +159,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     /**
      * Creates a {@link TimerServiceImpl}
      *
-     * @param autoTimers
-     * @param serviceName
-     * @throws IllegalArgumentException If either of the passed param is null
-     * @deprecated Use {@link #TimerServiceImpl(java.util.Map, org.jboss.msc.service.ServiceName, org.jboss.as.ejb3.component.TimerServiceRegistry)} instead
-     */
-    @Deprecated
-    public TimerServiceImpl(final Map<Method, List<AutoTimer>> autoTimers, final ServiceName serviceName) {
-        this(autoTimers, serviceName, null);
-    }
-
-    /**
-     * Creates a {@link TimerServiceImpl}
-     *
      * @param autoTimers  The auto timers associated with this timer service
      * @param serviceName The service name of this timer service
      * @param registry    The {@link TimerServiceRegistry} which has the knowledge of other timer services belonging to the EJB module to which this
