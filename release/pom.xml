@@ -48,12 +48,7 @@
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-preview-dist</artifactId>
-            <type>pom</type>
-            <scope>provided</scope>
-        </dependency>
+
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-servlet-dist</artifactId>
@@ -71,6 +66,14 @@
                     <value>true</value>
                 </property>
             </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-preview-dist</artifactId>
+                    <type>pom</type>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
             <build>
                 <plugins>
                     <plugin>
