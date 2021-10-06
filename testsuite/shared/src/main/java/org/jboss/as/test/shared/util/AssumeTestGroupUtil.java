@@ -5,6 +5,8 @@ import java.security.PrivilegedAction;
 import java.util.function.Supplier;
 
 import org.junit.Assume;
+import org.junit.AssumptionViolatedException;
+import org.testcontainers.DockerClientFactory;
 
 /**
  * Helper methods which help to skip tests for feature which is not yet fully working. Put the call of the method directly into
@@ -86,6 +88,14 @@ public class AssumeTestGroupUtil {
      */
     public static void assumeFullDistribution() {
         assumeCondition("Tests requiring full distribution are disabled", () -> System.getProperty("testsuite.default.build.project.prefix", "").equals(""));
+    }
+
+    public static void assumeDockerAvailable() {
+        try {
+            DockerClientFactory.instance().client();
+        } catch (Throwable ex) {
+            throw new AssumptionViolatedException("Docker is not available.");
+        }
     }
 
     private static int getJavaSpecificationVersion() {
