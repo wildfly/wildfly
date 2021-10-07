@@ -134,9 +134,11 @@ of the current long-term support Java release.
 == Installation Options
 
 There are a number of ways you can install WildFly, including unzipping our traditional download zip, provisioning a
-custom installation using Galleon, or building a bootable jar. The link:Installation_Guide{outfilesuffix}[Installation Guide]
+custom installation using Galleon, or building a bootable jar. There are also link:WildFly_and_WildFly_Preview{outfilesuffix}[two variants of the server]: the standard "WildFly" variant and the tech-preview "WildFly Preview" variant used to showcase things in the works for future release of standard WildFly.
+
+The link:Installation_Guide{outfilesuffix}[Installation Guide]
 helps you identify the kind of WildFly installation that best fits your application's deployment needs. In this guide
-we'll focus on the common approach of installing the download zip.
+we'll focus on the common approach of installing the download zip of standard WildFly.
 
 [[download]]
 === Download
@@ -145,11 +147,17 @@ WildFly {wildflyVersion} distributions can be obtained from:
 
 http://www.wildfly.org/downloads/[wildfly.org/downloads]
 
-WildFly {wildflyVersion} provides a single distribution available in zip or tar file
+Standard WildFly {wildflyVersion} provides a single distribution available in zip or tar file
 formats.
 
 * *wildfly-{wildflyVersion}.0.0.Final.zip*
 * *wildfly-{wildflyVersion}.0.0.Final.tar.gz*
+
+WildFly Preview {wildflyVersion} also provides a single distribution available in zip or tar file
+formats.
+
+* *wildfly-preview-{wildflyVersion}.0.0.Final.zip*
+* *wildfly-preview-{wildflyVersion}.0.0.Final.tar.gz*
 
 [[installation]]
 === Installation
