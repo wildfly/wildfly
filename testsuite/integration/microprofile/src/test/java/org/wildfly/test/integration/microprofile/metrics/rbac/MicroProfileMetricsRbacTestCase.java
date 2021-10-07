@@ -61,6 +61,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.microprofile.metrics.MetricsHelper;
 import org.wildfly.test.integration.microprofile.metrics.TestApplication;
 
 @RunWith(Arquillian.class)
@@ -78,6 +79,7 @@ public class MicroProfileMetricsRbacTestCase {
 
     private URL metricsUrl;
     private CloseableHttpClient client;
+    private String vendorMetricsPrefix;
 
     @Before
     public void setup() throws Exception {
@@ -88,6 +90,8 @@ public class MicroProfileMetricsRbacTestCase {
         setEndpointSecurityStatus(true);
 
         ServerReload.reloadIfRequired(mgmtClient);
+
+        vendorMetricsPrefix = MetricsHelper.getExpectedVendorMetricPrefix(mgmtClient);
     }
 
     @After
@@ -110,7 +114,7 @@ public class MicroProfileMetricsRbacTestCase {
         final CloseableHttpResponse response = makeRequest(metricsUrl, getHttpClientContext());
         assertEquals(200, response.getStatusLine().getStatusCode());
         final String entity = EntityUtils.toString(response.getEntity());
-        assertFalse(entity.contains("wildfly"));
+        assertFalse(entity.contains(vendorMetricsPrefix));
     }
 
     @Test
@@ -121,7 +125,7 @@ public class MicroProfileMetricsRbacTestCase {
         final CloseableHttpResponse response = makeRequest(metricsUrl, getHttpClientContext());
         assertEquals(200, response.getStatusLine().getStatusCode());
         final String entity = EntityUtils.toString(response.getEntity());
-        assertTrue(entity.contains("wildfly"));
+        assertTrue(entity.contains(vendorMetricsPrefix));
     }
 
     private HttpClientContext getHttpClientContext() {

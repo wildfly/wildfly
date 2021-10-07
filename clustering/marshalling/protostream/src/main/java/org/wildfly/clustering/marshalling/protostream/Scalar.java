@@ -37,7 +37,7 @@ public enum Scalar implements ScalarMarshallerProvider {
     ANY(new ScalarMarshaller<Object>() {
         @Override
         public Object readFrom(ProtoStreamReader reader) throws IOException {
-            return reader.readObject(Any.class).get();
+            return reader.readAny();
         }
 
         @Override
@@ -58,12 +58,12 @@ public enum Scalar implements ScalarMarshallerProvider {
     BOOLEAN(new ScalarMarshaller<Boolean>() {
         @Override
         public Boolean readFrom(ProtoStreamReader reader) throws IOException {
-            return Boolean.valueOf(reader.readUInt32() != 0);
+            return reader.readUInt32() != 0;
         }
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Boolean value) throws IOException {
-            writer.writeVarint32(value.booleanValue() ? 1 : 0);
+            writer.writeVarint32(value ? 1 : 0);
         }
 
         @Override
@@ -79,7 +79,7 @@ public enum Scalar implements ScalarMarshallerProvider {
     BYTE(new ScalarMarshaller<Byte>() {
         @Override
         public Byte readFrom(ProtoStreamReader reader) throws IOException {
-            return Byte.valueOf((byte) reader.readSInt32());
+            return (byte) reader.readSInt32();
         }
 
         @Override
@@ -102,7 +102,7 @@ public enum Scalar implements ScalarMarshallerProvider {
     SHORT(new ScalarMarshaller<Short>() {
         @Override
         public Short readFrom(ProtoStreamReader reader) throws IOException {
-            return Short.valueOf((short) reader.readSInt32());
+            return (short) reader.readSInt32();
         }
 
         @Override
@@ -125,7 +125,7 @@ public enum Scalar implements ScalarMarshallerProvider {
     INTEGER(new ScalarMarshaller<Integer>() {
         @Override
         public Integer readFrom(ProtoStreamReader reader) throws IOException {
-            return Integer.valueOf(reader.readSInt32());
+            return reader.readSInt32();
         }
 
         @Override
@@ -148,7 +148,7 @@ public enum Scalar implements ScalarMarshallerProvider {
     LONG(new ScalarMarshaller<Long>() {
         @Override
         public Long readFrom(ProtoStreamReader reader) throws IOException {
-            return Long.valueOf(reader.readSInt64());
+            return reader.readSInt64();
         }
 
         @Override
@@ -171,12 +171,12 @@ public enum Scalar implements ScalarMarshallerProvider {
     FLOAT(new ScalarMarshaller<Float>() {
         @Override
         public Float readFrom(ProtoStreamReader reader) throws IOException {
-            return Float.valueOf(reader.readFloat());
+            return reader.readFloat();
         }
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Float value) throws IOException {
-            int bits = Float.floatToRawIntBits(value.floatValue());
+            int bits = Float.floatToRawIntBits(value);
             byte[] bytes = new byte[Float.BYTES];
             for (int i = 0; i < bytes.length; ++i) {
                 int index = i * Byte.SIZE;
@@ -198,12 +198,12 @@ public enum Scalar implements ScalarMarshallerProvider {
     DOUBLE(new ScalarMarshaller<Double>() {
         @Override
         public Double readFrom(ProtoStreamReader reader) throws IOException {
-            return Double.valueOf(reader.readDouble());
+            return reader.readDouble();
         }
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Double value) throws IOException {
-            long bits = Double.doubleToRawLongBits(value.doubleValue());
+            long bits = Double.doubleToRawLongBits(value);
             byte[] bytes = new byte[Double.BYTES];
             for (int i = 0; i < bytes.length; ++i) {
                 int index = i * Byte.SIZE;
@@ -229,12 +229,12 @@ public enum Scalar implements ScalarMarshallerProvider {
     CHARACTER(new ScalarMarshaller<Character>() {
         @Override
         public Character readFrom(ProtoStreamReader reader) throws IOException {
-            return Character.valueOf((char) reader.readUInt32());
+            return (char) reader.readUInt32();
         }
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Character value) throws IOException {
-            writer.writeVarint32(value.charValue());
+            writer.writeVarint32(value);
         }
 
         @Override

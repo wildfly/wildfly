@@ -44,13 +44,19 @@ public class MicroProfileHealthReporter {
     public static final String DOWN = "DOWN";
     public static final String UP = "UP";
     private final boolean defaultServerProceduresDisabled;
+    private final String defaultReadinessEmptyResponse;
+    private final String defaultStartupEmptyResponse;
     private Map<HealthCheck, ClassLoader> healthChecks = new HashMap<>();
     private Map<HealthCheck, ClassLoader> livenessChecks = new HashMap<>();
     private Map<HealthCheck, ClassLoader> readinessChecks = new HashMap<>();
+    private Map<HealthCheck, ClassLoader> startupChecks = new HashMap<>();
     private Map<HealthCheck, ClassLoader> serverReadinessChecks = new HashMap<>();
 
     private final HealthCheck emptyDeploymentLivenessCheck;
     private final HealthCheck emptyDeploymentReadinessCheck;
+    private final HealthCheck emptyDeploymentStartupCheck;
+
+    private boolean userChecksProcessed = false;
 
     private static class EmptyDeploymentCheckStatus implements HealthCheck {
         private final String name;
@@ -70,10 +76,15 @@ public class MicroProfileHealthReporter {
     }
 
 
-    public MicroProfileHealthReporter(String emptyLivenessChecksStatus, String emptyReadinessChecksStatus, boolean defaultServerProceduresDisabled) {
+    public MicroProfileHealthReporter(String emptyLivenessChecksStatus, String emptyReadinessChecksStatus,
+                                      String emptyStartupChecksStatus, boolean defaultServerProceduresDisabled,
+                                      String defaultReadinessEmptyResponse, String defaultStartupEmptyResponse) {
         this.emptyDeploymentLivenessCheck  = new EmptyDeploymentCheckStatus("empty-liveness-checks", emptyLivenessChecksStatus);
         this.emptyDeploymentReadinessCheck  = new EmptyDeploymentCheckStatus("empty-readiness-checks", emptyReadinessChecksStatus);
+        this.emptyDeploymentStartupCheck  = new EmptyDeploymentCheckStatus("empty-startup-checks", emptyStartupChecksStatus);
         this.defaultServerProceduresDisabled = defaultServerProceduresDisabled;
+        this.defaultReadinessEmptyResponse = defaultReadinessEmptyResponse;
+        this.defaultStartupEmptyResponse = defaultStartupEmptyResponse;
     }
 
     public SmallRyeHealth getHealth() {
@@ -81,12 +92,14 @@ public class MicroProfileHealthReporter {
         deploymentChecks.putAll(healthChecks);
         deploymentChecks.putAll(livenessChecks);
         deploymentChecks.putAll(readinessChecks);
+        deploymentChecks.putAll(startupChecks);
 
         HashMap<HealthCheck, ClassLoader> serverChecks= new HashMap<>();
         serverChecks.putAll(serverReadinessChecks);
         if (deploymentChecks.size() == 0 && !defaultServerProceduresDisabled) {
             serverChecks.put(emptyDeploymentLivenessCheck, Thread.currentThread().getContextClassLoader());
             serverChecks.put(emptyDeploymentReadinessCheck, Thread.currentThread().getContextClassLoader());
+            serverChecks.put(emptyDeploymentStartupCheck, Thread.currentThread().getContextClassLoader());
         }
 
         return getHealth(serverChecks, deploymentChecks);
@@ -105,15 +118,42 @@ public class MicroProfileHealthReporter {
     public SmallRyeHealth getReadiness() {
         final Map<HealthCheck, ClassLoader> serverChecks = new HashMap<>();
         serverChecks.putAll(serverReadinessChecks);
-        if (readinessChecks.size() == 0 && !defaultServerProceduresDisabled) {
-            serverChecks.put(emptyDeploymentReadinessCheck, Thread.currentThread().getContextClassLoader());
+        if (readinessChecks.size() == 0) {
+            if (defaultServerProceduresDisabled) {
+                return getHealth(serverChecks, readinessChecks,
+                    userChecksProcessed ? HealthCheckResponse.Status.UP :
+                        HealthCheckResponse.Status.valueOf(defaultReadinessEmptyResponse));
+            } else {
+                serverChecks.put(emptyDeploymentReadinessCheck, Thread.currentThread().getContextClassLoader());
+                return getHealth(serverChecks, readinessChecks);
+            }
         }
         return getHealth(serverChecks, readinessChecks);
     }
 
-    private final SmallRyeHealth getHealth(Map<HealthCheck, ClassLoader> serverChecks, Map<HealthCheck, ClassLoader> deploymentChecks) {
+    public SmallRyeHealth getStartup() {
+        Map<HealthCheck, ClassLoader> serverChecks = Collections.emptyMap();
+        if (startupChecks.size() == 0) {
+            if (defaultServerProceduresDisabled) {
+                return getHealth(serverChecks, startupChecks,
+                    userChecksProcessed ? HealthCheckResponse.Status.UP :
+                        HealthCheckResponse.Status.valueOf(defaultStartupEmptyResponse));
+            } else {
+                serverChecks = Collections.singletonMap(emptyDeploymentStartupCheck, Thread.currentThread().getContextClassLoader());
+                return getHealth(serverChecks, startupChecks);
+            }
+        }
+        return getHealth(serverChecks, startupChecks);
+    }
+
+    private SmallRyeHealth getHealth(Map<HealthCheck, ClassLoader> serverChecks, Map<HealthCheck, ClassLoader> deploymentChecks) {
+        return getHealth(serverChecks, deploymentChecks, HealthCheckResponse.Status.UP);
+    }
+
+    private SmallRyeHealth getHealth(Map<HealthCheck, ClassLoader> serverChecks, Map<HealthCheck,
+        ClassLoader> deploymentChecks, HealthCheckResponse.Status defaultStatus) {
         JsonArrayBuilder results = Json.createArrayBuilder();
-        HealthCheckResponse.Status status = HealthCheckResponse.Status.UP;
+        HealthCheckResponse.Status status = defaultStatus;
 
         status = processChecks(serverChecks, results, status);
 
@@ -229,5 +269,19 @@ public class MicroProfileHealthReporter {
 
     public void removeLivenessCheck(HealthCheck check) {
         livenessChecks.remove(check);
+    }
+
+    public void addStartupCheck(HealthCheck check, ClassLoader moduleClassLoader) {
+        if (check != null) {
+            startupChecks.put(check, moduleClassLoader);
+        }
+    }
+
+    public void removeStartupCheck(HealthCheck check) {
+        startupChecks.remove(check);
+    }
+
+    public void setUserChecksProcessed(boolean userChecksProcessed) {
+        this.userChecksProcessed = userChecksProcessed;
     }
 }

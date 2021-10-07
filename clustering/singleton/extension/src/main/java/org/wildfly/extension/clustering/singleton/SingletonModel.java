@@ -30,10 +30,11 @@ import org.jboss.as.controller.ModelVersion;
  * @author Paul Ferraro
  */
 public enum SingletonModel implements Model {
-
+/*  Unsupported model versions - for reference purposes only
     VERSION_1_0_0(1, 0, 0), // WildFly 10, EAP 7.0
-    VERSION_2_0_0(2, 0, 0), // WildFly 11-14, EAP 7.1 & 7.2
-    VERSION_3_0_0(3, 0, 0), // WildFly 15-23, EAP 7.3
+    VERSION_2_0_0(2, 0, 0), // WildFly 11-14, EAP 7.1-7.2
+*/
+    VERSION_3_0_0(3, 0, 0), // WildFly 15-present, EAP 7.3-present
     ;
     static final SingletonModel CURRENT = VERSION_3_0_0;
 

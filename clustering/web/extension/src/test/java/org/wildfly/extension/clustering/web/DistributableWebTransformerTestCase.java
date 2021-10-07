@@ -53,7 +53,7 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
 
     @Parameters
     public static Iterable<ModelTestControllerVersion> parameters() {
-        return EnumSet.of(ModelTestControllerVersion.EAP_7_3_0);
+        return EnumSet.of(ModelTestControllerVersion.EAP_7_4_0);
     }
 
     private final ModelTestControllerVersion controller;
@@ -86,8 +86,7 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
 
     private DistributableWebModel getModelVersion() {
         switch (this.controller) {
-            // Subsystem does not predate EAP 7.3.0
-            case EAP_7_3_0:
+            case EAP_7_4_0:
                 return DistributableWebModel.VERSION_2_0_0;
             default:
                 throw new IllegalArgumentException();
@@ -96,7 +95,7 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
 
     private String[] getDependencies() {
         switch (this.controller) {
-            case EAP_7_3_0:
+            case EAP_7_4_0:
                 return new String[] {
                         formatSubsystemArtifact(),
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s"),

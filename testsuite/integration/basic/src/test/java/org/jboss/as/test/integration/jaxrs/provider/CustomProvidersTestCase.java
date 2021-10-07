@@ -78,7 +78,7 @@ public class CustomProvidersTestCase {
     @Deployment(name = WEBAPP_TEST_CONVERTER)
     public static WebArchive deployConverterApp() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, WEBAPP_TEST_CONVERTER + ".war");
-        war.addClasses(MyApplication.class, CurrencyConverterProvider.class);
+        war.addClasses(MyApplication.class, CurrencyConverterProvider.class, CurrencyParamConverter.class);
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
     }

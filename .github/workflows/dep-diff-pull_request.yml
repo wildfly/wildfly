@@ -5,7 +5,7 @@ name: Dependency Tree Input Builder
 on:
   pull_request:
     branches:
-    - master
+    - main
 env:
   # The modules to check for dependencies. If there is more than one they are comma separated
   MODULES_TO_CHECK: ee-feature-pack/common,microprofile/galleon-common,servlet-feature-pack/common

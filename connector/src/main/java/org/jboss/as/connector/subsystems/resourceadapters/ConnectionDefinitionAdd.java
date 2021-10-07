@@ -111,25 +111,26 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
         final ModelNode credentialReference = RECOVERY_CREDENTIAL_REFERENCE.resolveModelAttribute(context, resourceModel);
         // add extra security validation: authentication contexts should only be defined when Elytron Enabled is false
         // domains should only be defined when Elytron enabled is undefined or false (default value)
+        boolean hasSecurityDomain = resourceModel.hasDefined(SECURITY_DOMAIN.getName());
+        boolean hasSecurityDomainAndApp = resourceModel.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName());
         if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT.getName()) && !elytronEnabled) {
             throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(AUTHENTICATION_CONTEXT.getName(), ELYTRON_ENABLED.getName());
         }
-        else if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName()) &&
-                !elytronEnabled) {
+        else if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName()) && !elytronEnabled) {
             throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName(), ELYTRON_ENABLED.getName());
         }
-        else if (resourceModel.hasDefined(SECURITY_DOMAIN.getName()) && elytronEnabled) {
+        else if (hasSecurityDomain && elytronEnabled) {
             throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(SECURITY_DOMAIN.getName(), ELYTRON_ENABLED.getName());
         }
-        else if (resourceModel.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName()) && elytronEnabled) {
+        else if (hasSecurityDomainAndApp && elytronEnabled) {
             throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(SECURITY_DOMAIN_AND_APPLICATION.getName(), ELYTRON_ENABLED.getName());
         }
+        boolean hasRecoverySecurityDomain = resourceModel.hasDefined(RECOVERY_SECURITY_DOMAIN.getName());
         if (resourceModel.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName()) &&
                 !elytronRecoveryEnabled) {
             throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(RECOVERY_AUTHENTICATION_CONTEXT.getName(), RECOVERY_ELYTRON_ENABLED.getName());
         }
-        else if (resourceModel.hasDefined(RECOVERY_SECURITY_DOMAIN.getName()) &&
-                elytronRecoveryEnabled) {
+        else if (hasRecoverySecurityDomain && elytronRecoveryEnabled) {
             throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(RECOVERY_SECURITY_DOMAIN.getName(), RECOVERY_ELYTRON_ENABLED.getName());
         }
         if (raModel.get(ARCHIVE.getName()).isDefined()) {
@@ -172,20 +173,24 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
                 }
             }
 
-            if (elytronRecoveryEnabled) {
-                if (resourceModel.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName())) {
-                    cdServiceBuilder.requires(context.getCapabilityServiceName(
-                            Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
-                            RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, resourceModel).asString(),
-                            AuthenticationContext.class));
-                }
+            if (elytronRecoveryEnabled && resourceModel.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName())) {
+                cdServiceBuilder.requires(context.getCapabilityServiceName(Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
+                        RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, resourceModel).asString(),
+                        AuthenticationContext.class));
             }
 
             if (!elytronEnabled || !elytronRecoveryEnabled) {
-                cdServiceBuilder.addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class,
-                        service.getSubjectFactoryInjector())
-                        .addDependency(SECURITY_MANAGER_SERVICE,
-                                ServerSecurityManager.class, service.getServerSecurityManager());
+                // hasOptionalCapability javadoc says null dependent is not allowed, but it actually is. See WFCORE-900
+                if (context.hasOptionalCapability("org.wildfly.legacy-security", null, null)) {
+                    cdServiceBuilder.addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class,
+                                    service.getSubjectFactoryInjector())
+                            .addDependency(SECURITY_MANAGER_SERVICE,
+                                    ServerSecurityManager.class, service.getServerSecurityManager());
+                } else if (hasSecurityDomain || hasSecurityDomainAndApp || hasRecoverySecurityDomain || RaAdd.requiresLegacySecurity(context, raModel)) {
+                    // We can't satisfy the config, so fail with a meaningful error
+                    context.setRollbackOnly();
+                    throw SUBSYSTEM_RA_LOGGER.legacySecurityNotAvailable(path.getLastElement().getValue(), path.getParent().getLastElement().getValue());
+                } // else there's no legacy security. We're not configured for elytron, but our RA's WM doesn't require legacy security nor do we.
             }
 
             if (credentialReference.isDefined()) {

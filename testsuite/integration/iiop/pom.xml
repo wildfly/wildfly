@@ -10,7 +10,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>25.0.0.Beta1-SNAPSHOT</version>
+        <version>26.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -96,30 +96,56 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>build-iiop.server</id>
-                                <phase>process-test-resources</phase>
+                                <id>build-clustering.server</id>
+                                <phase>test-compile</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
                                     <target>
                                         <!-- Configure IIOP server and client. -->
-                                        <ant
-                                                antfile="${jbossas.ts.integ.dir}/src/test/scripts/iiop-build.xml">
-                                            <property name="node0"
-                                                      value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
-                                            <property name="node1"
-                                                      value="${node1}"/>
-                                            <property name="keystore.file" value="${basedir}/target/iiop-test.keystore"/>
+                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/iiop-build.xml">
+                                            <property name="node0" value="${node0}" /> <!-- inheritAll="true" doesn't work. -->
+                                            <property name="node1" value="${node1}" />
+                                            <property name="keystore.client.file" value="${wildfly.config.dir}/client.keystore.jks"/>
+                                            <property name="keystore.server.file" value="${wildfly.config.dir}/server.keystore.jks"/>
+                                            <property name="truststore.client.file" value="${wildfly.config.dir}/client.truststure.jks"/>
+                                            <property name="truststore.server.file" value="${wildfly.config.dir}/server.truststore.jks"/>
                                             <property name="keystore.password" value="password"/>
-                                            <target name="build-iiop"/>
+                                            <target name="build-iiop-elytron" />
                                         </ant>
                                     </target>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
-
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <offline>true</offline>
+                            <scripts>
+                                <script>${ts.elytron.cli}</script>
+                            </scripts>
+                            <jboss-home>${wildfly.dir}</jboss-home>
+                            <stdout>none</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
+                            <system-properties>
+                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${jboss.dist}/modules</module.path>
+                            </system-properties>
+                        </configuration>
+                    </plugin>
+                    
                     <!-- Surefire test executions -->
                     <!--
                     -Djboss.socket.binding.port-offset=100
@@ -398,58 +424,6 @@
                 <!-- JDK9 does not support endorsing mechanism -->
                 <iiop.endorsed.argline/>
             </properties>
-        </profile>
-        <profile>
-            <id>elytron.iiop.profile</id>
-            <activation>
-                <property>
-                    <name>elytron</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <excludes>
-                                <exclude>**/*BasicIIOPInvocationTestCase.java</exclude>
-                                <exclude>**/*IIOPTimeoutTestCase.java</exclude>
-                                <exclude>**/*IIOPTransactionPropagationTestCase.java</exclude>
-                                <exclude>**/*TransactionIIOPInvocationTestCase.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>build-clustering.server</id>
-                                <phase>test-compile</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <!-- Configure IIOP server and client. -->
-                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/iiop-build.xml">
-                                            <property name="node0" value="${node0}" /> <!-- inheritAll="true" doesn't work. -->
-                                            <property name="node1" value="${node1}" />
-                                            <property name="keystore.client.file" value="${wildfly.config.dir}/client.keystore.jks"/>
-                                            <property name="keystore.server.file" value="${wildfly.config.dir}/server.keystore.jks"/>
-                                            <property name="truststore.client.file" value="${wildfly.config.dir}/client.truststure.jks"/>
-                                            <property name="truststore.server.file" value="${wildfly.config.dir}/server.truststore.jks"/>
-                                            <property name="keystore.password" value="password"/>
-                                            <target name="build-iiop-elytron" />
-                                        </ant>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
     </profiles>
 </project>

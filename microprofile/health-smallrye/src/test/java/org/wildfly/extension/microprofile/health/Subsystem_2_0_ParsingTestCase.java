@@ -53,6 +53,10 @@ public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
         super(MicroProfileHealthExtension.SUBSYSTEM_NAME, new MicroProfileHealthExtension());
     }
 
+    @Override
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
+    }
 
     @Override
     protected String getSubsystemXml() throws IOException {

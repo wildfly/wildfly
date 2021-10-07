@@ -27,7 +27,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
@@ -39,8 +38,6 @@ import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingStoreService;
@@ -293,19 +290,6 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
                 final Consumer<String> c = sb1.provides(tmpDirPath);
                 sb1.setInstance(Service.newInstance(c, System.getProperty("java.io.tmpdir")));
                 sb1.install();
-
-                final ServiceBuilder<?> sb2 = target.addService(SecurityRealm.ServiceUtil.createServiceName("UndertowRealm"));
-                final Consumer<SecurityRealm> securityRealmConsumer = sb2.provides(SecurityRealm.ServiceUtil.createServiceName("UndertowRealm"));
-                final Supplier<SSLContext> sslContextSupplier = () -> sslContext;
-                final Supplier<String> tmpDirPathSupplier = sb2.requires(tmpDirPath);
-                sb2.setInstance(new SecurityRealmService(securityRealmConsumer, null, null, null, sslContextSupplier, tmpDirPathSupplier, null, "UndertowRealm", false));
-                sb2.install();
-
-                final ServiceBuilder<?> sb3 = target.addService(SecurityRealm.ServiceUtil.createServiceName("other"));
-                final Consumer<SecurityRealm> srConsumer = sb3.provides(SecurityRealm.ServiceUtil.createServiceName("other"));
-                final Supplier<String> tdpSupplier = sb3.requires(tmpDirPath);
-                sb3.setInstance(new SecurityRealmService(srConsumer, null, null, null, null, tdpSupplier, null, "other", false));
-                sb3.install();
 
                 HttpAuthenticationFactory authenticationFactory = HttpAuthenticationFactory.builder()
                         .build();

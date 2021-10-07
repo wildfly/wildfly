@@ -292,7 +292,7 @@ ear deployment is as follows:
      <!-- exclude-subsystem prevents a subsystems deployment unit processors running on a deployment -->
      <!-- which gives basically the same effect as removing the subsystem, but it only affects single deployment -->
      <exclude-subsystems>
-        <subsystem name="resteasy" />
+        <subsystem name="logging" />
     </exclude-subsystems>
     <!-- Exclusions allow you to prevent the server from automatically adding some dependencies     -->
     <exclusions>
@@ -396,7 +396,7 @@ module's module.xml file can tell you:
 
 [source,xml,options="nowrap"]
 ----
-<module xmlns="urn:jboss:module:1.5" name="com.google.guava">
+<module xmlns="urn:jboss:module:1.9" name="com.google.guava">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>

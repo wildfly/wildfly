@@ -2,7 +2,7 @@
 
 <config xmlns="urn:jboss:galleon:config:1.0" name="standalone.xml" model="standalone">
     <layers>
-        <include name="legacy-management"/>
+        <include name="management"/>
         <include name="elytron"/> 
         <include name="jmx-remoting"/> 
         <include name="logging"/>
@@ -10,12 +10,16 @@
         <include name="request-controller"/>
         <include name="security-manager"/>
         <include name="web-server"/>
-        <include name="undertow-legacy-https"/>
-        <include name="legacy-security"/>
         <include name="core-tools"/>
         <include name="git-history"/>
     </layers>
+
+    <!-- WFLY-15021 The following should be added to an undertow-https layer. -->
+    <feature-group name="undertow-https"/>
+    
     <feature-group name="undertow-default-config"/>
+    <feature-group name="undertow-elytron-security"/>
+
     <!-- package included in case configuration is provisioned without inheriting all modules -->
     <packages>
         <package name="org.jboss.as.patching.cli"/>

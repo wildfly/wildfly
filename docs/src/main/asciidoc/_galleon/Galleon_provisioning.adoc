@@ -139,11 +139,11 @@ In order to exclude an optional layer prefix its name with '-', for example: '-j
 galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cloud-server
 ----
 
-==== Installation of a cloud-server with support for https (using legacy core ApplicationRealm)
+==== Installation of a cloud-server with support for https 
 
 [source,options="nowrap"]
 ----
-galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cloud-server,undertow-legacy-https
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cloud-server,undertow-https
 ----
 
 ==== Installation of a cloud-server and Jakarta Enterprise Beans with ejb-dist-cache as an alternative to ejb-local-cache
@@ -177,11 +177,11 @@ galleon.sh install wildfly:current --dir=my-wildfly-server --layers=jaxrs,cdi,el
 galleon.sh install wildfly:current --dir=my-wildfly-server --layers=web-server,core-server
 ----
 
-==== Installation of a servlet container with support for https (using legacy core ApplicationRealm)
+==== Installation of a servlet container with support for https
 
 [source,options="nowrap"]
 ----
-galleon.sh install wildfly:current --dir=my-wildfly-server --layers=web-server,undertow-legacy-https
+galleon.sh install wildfly:current --dir=my-wildfly-server --layers=web-server,undertow-https
 ----
 
 ==== Installation of a core server

@@ -64,6 +64,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
+//import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -74,6 +75,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(NoRaAnnoTestCase.NoRaAnnoTestCaseSetup.class)
+//@Ignore("[WFLY-15249] Update for lack of legacy security.")
 public class NoRaAnnoTestCase {
 
     /**

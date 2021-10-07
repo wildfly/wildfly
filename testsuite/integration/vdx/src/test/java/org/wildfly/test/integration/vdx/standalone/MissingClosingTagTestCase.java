@@ -144,7 +144,13 @@ public class MissingClosingTagTestCase extends TestBase {
 
         String errorLog = container().getErrorMessageFromServerStart();
         assertContains(errorLog, "OPVDX001: Validation error in " + STANDALONE_COMMENT_IS_NOT_CLOSED_XML);
-        assertContains(errorLog, "^^^^ Unexpected end of input block in comment");
+        if (errorLog.contains("input block")) {
+            // Apache JAXP impl
+            assertContains(errorLog, "^^^^ Unexpected end of input block in comment");
+        } else {
+            // JDK JAXP impl
+            assertContains(errorLog, "^^^^ XML document structures must start and end within the same entity");
+        }
         assertContains(errorLog, "WFLYCTL0085: Failed to parse configuration");
     }
 

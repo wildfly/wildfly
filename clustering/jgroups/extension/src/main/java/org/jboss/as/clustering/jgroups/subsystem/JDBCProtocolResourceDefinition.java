@@ -29,10 +29,8 @@ import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -63,11 +61,6 @@ public class JDBCProtocolResourceDefinition extends ProtocolResourceDefinition {
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-
-        ProtocolResourceDefinition.addTransformations(version, builder);
     }
 
     private static final class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {

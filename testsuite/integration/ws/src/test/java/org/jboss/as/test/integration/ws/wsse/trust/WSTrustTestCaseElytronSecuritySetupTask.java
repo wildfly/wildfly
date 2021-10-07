@@ -28,7 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL_CONTEXT;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 import java.util.ArrayList;
@@ -43,19 +43,17 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 
 public class WSTrustTestCaseElytronSecuritySetupTask implements ServerSetupTask {
-    public static final String HTTPS_SECURITY_REALM_NAME = "jbossws-https-realm";
-    public static final String SECURITY_REALM_NAME = "ApplicationRealm";
+
     public static final String SECURITY_DOMAIN_NAME = "ApplicationDomain";
     public static final String HTTPS_LISTENER_NAME = "jbossws-https-listener";
 
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         List<ModelNode> operations = new ArrayList<>();
-        addSecurityRealm(operations);
+        addSSLContext(operations);
         addHttpsListener(operations);
         addElytronSecurityDomain(operations);
         ModelNode updateOp = Operations.createCompositeOperation(operations);
-        updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());
         ServerReload.reloadIfRequired(managementClient);
@@ -65,7 +63,7 @@ public class WSTrustTestCaseElytronSecuritySetupTask implements ServerSetupTask 
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
         List<ModelNode> operations = new ArrayList<>();
         removeHttpsListener(operations);
-        removeSecurityRealm(operations);
+        removeSSLContext(operations);
         removeElytronSecurityDomain(operations);
         ModelNode updateOp = Operations.createCompositeOperation(operations);
         updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
@@ -73,31 +71,42 @@ public class WSTrustTestCaseElytronSecuritySetupTask implements ServerSetupTask 
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());
         ServerReload.reloadIfRequired(managementClient);
     }
-    /**
-     * Add https listner like this:
-     * <p/>
-     * /**
-     * <security-realm name="jbws-test-https-realm">
-     * <server-identities>
-     * <ssl>
-     * <keystore path="/path/test.keystore" keystore-password="changeit" alias="tomcat"/>
-     * </ssl>
-     * </server-identities>
-     * </security-realm>
-     */
-    private void addSecurityRealm(List<ModelNode> operations) throws Exception {
-        final ModelNode addOp = createOpNode("core-service=management/security-realm=" + HTTPS_SECURITY_REALM_NAME, ADD);
+
+    private void addSSLContext(List<ModelNode> operations) throws Exception {
+        addKeyManager(operations);
+
+        final ModelNode addOp = createOpNode("subsystem=elytron/server-ssl-context=TestContext", ADD);
+        addOp.get("key-manager").set("TestManager");
+
         operations.add(addOp);
-        final ModelNode addSslIdentityOp = createOpNode("core-service=management/security-realm=" + HTTPS_SECURITY_REALM_NAME + "/server-identity=ssl", ADD);
-        addSslIdentityOp.get("keystore-path").set(WSTrustTestCaseElytronSecuritySetupTask.class.getResource("test.keystore").getPath());
-        addSslIdentityOp.get("keystore-password").set("changeit");
-        addSslIdentityOp.get("alias").set("tomcat");
-        operations.add(addSslIdentityOp);
     }
 
-    private void removeSecurityRealm(List<ModelNode> operations) throws Exception {
-        final ModelNode removeOp = createOpNode("core-service=management/security-realm=" + HTTPS_SECURITY_REALM_NAME, REMOVE);
-        operations.add(removeOp);
+    private void addKeyManager(List<ModelNode> operations) throws Exception {
+        addKeyStore(operations);
+
+        final ModelNode addOp = createOpNode("subsystem=elytron/key-manager=TestManager", ADD);
+        ModelNode credentialReference = new ModelNode();
+        credentialReference.get("clear-text").set("changeit");
+        addOp.get("credential-reference").set(credentialReference);
+        addOp.get("key-store").set("TestStore");
+
+        operations.add(addOp);
+    }
+
+    private void addKeyStore(List<ModelNode> operations) throws Exception {
+        final ModelNode addOp = createOpNode("subsystem=elytron/key-store=TestStore", ADD);
+        addOp.get("path").set(WSTrustTestCaseElytronSecuritySetupTask.class.getResource("test.keystore").getPath());
+        ModelNode credentialReference = new ModelNode();
+        credentialReference.get("clear-text").set("changeit");
+        addOp.get("credential-reference").set(credentialReference);
+
+        operations.add(addOp);
+    }
+
+    private void removeSSLContext(List<ModelNode> operations) {
+        operations.add(createOpNode("subsystem=elytron/server-ssl-context=TestContext", REMOVE));
+        operations.add(createOpNode("subsystem=elytron/key-manager=TestManager", REMOVE));
+        operations.add(createOpNode("subsystem=elytron/key-store=TestStore", REMOVE));
     }
 
     /**
@@ -113,7 +122,7 @@ public class WSTrustTestCaseElytronSecuritySetupTask implements ServerSetupTask 
         operations.add(addOp);
         addOp = createOpNode("subsystem=undertow/server=default-server/https-listener=" + HTTPS_LISTENER_NAME, ADD);
         addOp.get(SOCKET_BINDING).set("https2");
-        addOp.get(SECURITY_REALM).set(HTTPS_SECURITY_REALM_NAME);
+        addOp.get(SSL_CONTEXT).set("TestContext");
         operations.add(addOp);
     }
 
@@ -126,14 +135,14 @@ public class WSTrustTestCaseElytronSecuritySetupTask implements ServerSetupTask 
 
     private void addElytronSecurityDomain(List<ModelNode> operations) throws Exception {
         final ModelNode elytronHttpAuthOp = ModelUtil.createOpNode(
-                "subsystem=elytron/http-authentication-factory=application-http-authentication", ADD);
+                "subsystem=elytron/http-authentication-factory=ws-http-authentication", ADD);
         elytronHttpAuthOp.get("http-server-mechanism-factory").set("global");
         elytronHttpAuthOp.get("security-domain").set(SECURITY_DOMAIN_NAME);
         operations.add(elytronHttpAuthOp);
 
         final ModelNode addUndertowDomainOp = ModelUtil.createOpNode("subsystem=undertow/application-security-domain="
                 + SECURITY_DOMAIN_NAME, ADD);
-        addUndertowDomainOp.get("http-authentication-factory").set("application-http-authentication");
+        addUndertowDomainOp.get("http-authentication-factory").set("ws-http-authentication");
         operations.add(addUndertowDomainOp);
 
         final ModelNode addEJbDomainOp = ModelUtil.createOpNode("subsystem=ejb3/application-security-domain="
@@ -145,7 +154,7 @@ public class WSTrustTestCaseElytronSecuritySetupTask implements ServerSetupTask 
 
     private void removeElytronSecurityDomain(List<ModelNode> operations) throws Exception {
         final ModelNode removeElytronHttpAuthOp = ModelUtil.createOpNode(
-                "subsystem=elytron/http-authentication-factory=application-http-authentication", REMOVE);
+                "subsystem=elytron/http-authentication-factory=ws-http-authentication", REMOVE);
         operations.add(removeElytronHttpAuthOp);
         final ModelNode removeUndertowDomainOp = ModelUtil.createOpNode(
                 "subsystem=undertow/application-security-domain=" + SECURITY_DOMAIN_NAME, REMOVE);

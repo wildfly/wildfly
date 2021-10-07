@@ -30,10 +30,11 @@ import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.cache.IdentifierFactory;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
+import org.wildfly.clustering.web.session.SessionExpirationMetaData;
 import org.wildfly.clustering.web.session.SessionManager;
 
 /**
@@ -49,7 +50,7 @@ public interface InfinispanSessionManagerConfiguration<SC, LC> {
     CacheProperties getProperties();
     IdentifierFactory<String> getIdentifierFactory();
     Batcher<TransactionBatch> getBatcher();
-    Scheduler<String, ImmutableSessionMetaData> getExpirationScheduler();
+    Scheduler<String, SessionExpirationMetaData> getExpirationScheduler();
     Recordable<ImmutableSessionMetaData> getInactiveSessionRecorder();
     Registrar<SessionExpirationListener> getExpirationRegistar();
     Runnable getStartTask();

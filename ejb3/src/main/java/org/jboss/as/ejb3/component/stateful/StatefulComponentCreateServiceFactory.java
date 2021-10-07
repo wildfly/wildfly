@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component.stateful;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.jboss.as.clustering.msc.InjectedValueDependency;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentStartService;
@@ -35,7 +36,6 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.subsystem.DefaultStatefulBeanSessionTimeoutWriteHandler;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.msc.service.ServiceBuilder;
-import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.SupplierDependency;
 
 /**

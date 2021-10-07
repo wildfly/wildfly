@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>25.0.0.Beta1-SNAPSHOT</version>
+        <version>26.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -25,15 +25,6 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <!-- todo,
-        Enable elytron script only runs on "wildfly" instance of server, other copies are not affected.
-        Since we updated this testsuite to reuse "wildfly" server instance for server itself instead of making extra copy
-        Test DynamicJNDIContextEJBInvocationTestCase started failing,
-        which would indicate that this test in combination with enabled elytron has issues
-        Maybe problem is just related that elytron should be enabled on both instances or it even lies somewhere else.
-        We disable eyltron script execution by setting script to non-existing.
-        -->
-        <ts.elytron.cli>multinode-setup.cli</ts.elytron.cli>
     </properties>
 
     <dependencies>

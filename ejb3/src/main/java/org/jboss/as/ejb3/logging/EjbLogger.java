@@ -24,6 +24,7 @@
 
 package org.jboss.as.ejb3.logging;
 
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -39,7 +40,6 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
 import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.EJBAccessException;
 import javax.ejb.EJBException;
@@ -53,7 +53,6 @@ import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.RemoveException;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Timer;
-import javax.ejb.TimerHandle;
 import javax.ejb.TransactionAttributeType;
 import javax.interceptor.InvocationContext;
 import javax.naming.Context;
@@ -407,7 +406,6 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 37, value = "Dynamic stub creation failed for class %s")
     void dynamicStubCreationFailed(String clazz, @Cause Throwable t);
-
 
 //    /**
 //     */
@@ -2319,12 +2317,12 @@ public interface EjbLogger extends BasicLogger {
     EJBException timerServiceWithIdNotRegistered(String timedObjectId);
 
     /**
-     * Creates an exception indicating the timer for handle is not active"
+     * Creates an exception indicating the timer for the handle is not active.
      *
      * @return an {@link NoSuchObjectLocalException} for the error.
      */
-    @Message(id = 339, value = "Timer for handle: %s is not active")
-    NoSuchObjectLocalException timerHandleIsNotActive(TimerHandle timerHandle);
+    @Message(id = 339, value = "Timer for handle with timer id: %s, timedObjectId: %s is not active")
+    NoSuchObjectLocalException timerHandleIsNotActive(String timerId, String timedObjectId);
 
 //    /**
 //     * Creates an exception indicating it could not find timeout method
@@ -2935,8 +2933,8 @@ public interface EjbLogger extends BasicLogger {
 //    @Message(id = 440, value = "%s method %s must be public")
 //    DeploymentUnitProcessingException ejbMethodMustBePublic(final String type, final Method method);
 
-    @Message(id = 441, value = "Jakarta Enterprise Beans business method %s must be public")
-    DeploymentUnitProcessingException ejbBusinessMethodMustBePublic(final Method method);
+//    @Message(id = 441, value = "Jakarta Enterprise Beans business method %s must be public")
+//    DeploymentUnitProcessingException ejbBusinessMethodMustBePublic(final Method method);
 
     @Message(id = 442, value = "Unexpected Error")
     @Signature(String.class)
@@ -3244,4 +3242,8 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 527, value = "Remoting connector (address %s, port %s) is not correctly configured for EJB client invocations, the connector must be listed in <remote/> 'connectors' attribute to receive EJB client invocations")
     void connectorNotConfiguredForEJBClientInvocations(String address, int port);
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 528, value = "Jakarta Enterprise Beans business method %s must be public")
+    void ejbBusinessMethodMustBePublic(final Method method);
 }

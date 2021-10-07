@@ -2,8 +2,15 @@
 <feature-group-spec name="basic-ha-profile" xmlns="urn:jboss:galleon:feature-group:1.0">
 
     <feature-group name="unsecured-basic-ha-profile"/>
-    <feature-group name="undertow-legacy-security"/>
-    <feature-group name="picketbox-security"/>
+
+    <feature-group name="application-http-basic"/>
+    <feature-group name="undertow-https"/>
+
+    <feature-group name="ejb3-elytron-security"/>
+    <feature-group name="undertow-elytron-security"/>
+
+    <feature-group name="undertow-http-invoker"/>
+
     <feature-group name="distributable-web"/>
 
 </feature-group-spec>

@@ -1,0 +1,60 @@
+embed-server --server-config=standalone.xml
+
+
+echo "Configuring standalone.xml"
+/subsystem=elytron/http-authentication-factory=ejb-http-authentication:add(security-domain=ApplicationDomain, http-server-mechanism-factory=global,mechanism-configurations=[{mechanism-name=BASIC}])
+
+/subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain)
+/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:write-attribute(name=http-authentication-factory, value=ejb-http-authentication)
+
+/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
+/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
+
+/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
+
+/core-service=management/access=identity:add(security-domain=ManagementDomain)
+/core-service=management/management-interface=http-interface:write-attribute(name=http-upgrade,value={enabled=true, sasl-authentication-factory=management-sasl-authentication})
+/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory,value=management-http-authentication)
+
+stop-embedded-server
+
+
+embed-server --server-config=standalone-full.xml
+
+echo "Configuring standalone-full.xml"
+/subsystem=elytron/http-authentication-factory=ejb-http-authentication:add(security-domain=ApplicationDomain, http-server-mechanism-factory=global,mechanism-configurations=[{mechanism-name=BASIC}])
+
+/subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain)
+/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:write-attribute(name=http-authentication-factory, value=ejb-http-authentication)
+/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
+/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
+/subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
+/subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
+
+/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
+
+/core-service=management/access=identity:add(security-domain=ManagementDomain)
+/core-service=management/management-interface=http-interface:write-attribute(name=http-upgrade,value={enabled=true, sasl-authentication-factory=management-sasl-authentication})
+/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory,value=management-http-authentication)
+
+stop-embedded-server
+
+embed-server --server-config=standalone-full-ha.xml
+
+echo "Configuring standalone-full-ha.xml"
+/subsystem=elytron/http-authentication-factory=ejb-http-authentication:add(security-domain=ApplicationDomain, http-server-mechanism-factory=global,mechanism-configurations=[{mechanism-name=BASIC}])
+
+/subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain)
+/subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:write-attribute(name=http-authentication-factory, value=ejb-http-authentication)
+/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
+/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
+/subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
+/subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
+
+/subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=sasl-authentication-factory, value=application-sasl-authentication)
+
+/core-service=management/access=identity:add(security-domain=ManagementDomain)
+/core-service=management/management-interface=http-interface:write-attribute(name=http-upgrade,value={enabled=true, sasl-authentication-factory=management-sasl-authentication})
+/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory,value=management-http-authentication)
+
+stop-embedded-server

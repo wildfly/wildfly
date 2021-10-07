@@ -82,6 +82,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
             public void run() {
                 final ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
+                        Throwable originalException = null;
                         try {
                             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
                             applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
@@ -97,19 +98,34 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                                 instance = applicationClientComponent.getValue().createInstance();
 
                                 mainMethod.invoke(null, new Object[]{parameters});
+                            } catch (Throwable ex) {
+                                if (ex instanceof InterruptedException) {
+                                    Thread.currentThread().interrupt();
+                                }
+                                originalException = ex;
                             } finally {
                                 final ListIterator<SetupAction> iterator = setupActions.listIterator(setupActions.size());
-                                Throwable error = null;
+                                Throwable suppressed = originalException;
                                 while (iterator.hasPrevious()) {
                                     SetupAction action = iterator.previous();
                                     try {
                                         action.teardown(Collections.<String, Object>emptyMap());
                                     } catch (Throwable e) {
-                                        error = e;
+                                        if (suppressed != null) {
+                                            suppressed.addSuppressed(e);
+                                        } else {
+                                            suppressed = e;
+                                        }
                                     }
                                 }
-                                if (error != null) {
-                                    throw new RuntimeException(error);
+                                if (suppressed != null) {
+                                    if (suppressed instanceof RuntimeException) {
+                                        throw (RuntimeException) suppressed;
+                                    }
+                                    if (suppressed instanceof Error) {
+                                        throw (Error) suppressed;
+                                    }
+                                    throw new RuntimeException(suppressed);
                                 }
                             }
                         } catch (Exception e) {

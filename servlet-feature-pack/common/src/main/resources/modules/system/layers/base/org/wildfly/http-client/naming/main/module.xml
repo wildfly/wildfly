@@ -33,7 +33,6 @@
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="org.wildfly.http-client.common"/>
         <module name="org.wildfly.client.config"/>
-        <module name="javax.transaction.api"/>
         <module name="io.undertow.core" />
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling" />

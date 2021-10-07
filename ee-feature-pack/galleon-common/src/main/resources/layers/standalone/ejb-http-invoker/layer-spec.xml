@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-http-invoker">
+
+    <dependencies>
+        <layer name="ejb-lite"/>
+        <layer name="elytron"/>
+        <layer name="undertow"/>
+    </dependencies>
+
+    <feature-group name="application-http-basic"/>
+    <feature-group name="undertow-http-invoker"/>
+
+</layer-spec>

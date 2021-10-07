@@ -32,18 +32,20 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 
 /**
+ * This message-driven bean does not implement MessageListener interface; instead
+ * it is specified with {@code messageListenerInterface} annotation.
  */
-@MessageDriven (activationConfig = {
+@MessageDriven (messageListenerInterface=MessageListener.class,
+        activationConfig = {
         @ActivationConfigProperty(propertyName = "connectionFactoryLookup", propertyValue = "java:/ConnectionFactory"),
         @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = MDBWithLookupActivationConfigProperties.QUEUE_JNDI_NAME),
 })
-public class MDBWithLookupActivationConfigProperties implements MessageListener {
+public class MDBWithLookupActivationConfigProperties {
     public static final String QUEUE_JNDI_NAME = "java:jboss/jms/mdbtest/MDBWithLookupActivationConfigProperties";
 
     @Resource(mappedName = "java:/ConnectionFactory")
     private ConnectionFactory connectionFactory;
 
-    @Override
     public void onMessage(Message message) {
         reply(connectionFactory, message);
     }

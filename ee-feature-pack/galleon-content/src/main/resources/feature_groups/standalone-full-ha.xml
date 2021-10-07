@@ -15,7 +15,7 @@
     </feature>
 
     <feature-group name="jsr77"/>
-    <feature-group name="iiop-openjdk-legacy"/>
+    <feature-group name="iiop-openjdk"/>
     <feature-group name="messaging-activemq-ha"/>
 
     <feature spec="subsystem.ejb3">

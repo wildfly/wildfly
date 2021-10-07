@@ -97,9 +97,6 @@ import org.jboss.security.SubjectFactory;
  */
 public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor {
 
-    private static final ServiceName SECURITY_MANAGER_SERVICE = ServiceName.JBOSS.append("security", "simple-security-manager");
-    private static final ServiceName SUBJECT_FACTORY_SERVICE = ServiceName.JBOSS.append("security", "subject-factory");
-
     private static final String DATA_SOURCE = "data-source";
     private static final String XA_DATA_SOURCE = "xa-data-source";
     private static final String CONNECTION_PROPERTIES = "connection-properties";
@@ -113,6 +110,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
         XA_DATASOURCE_ADDRESS = SUBSYSTEM_ADDRESS.append(PathElement.pathElement(XA_DATA_SOURCE));
         DATASOURCE_ADDRESS = SUBSYSTEM_ADDRESS.append(PathElement.pathElement(DATA_SOURCE));
     }
+
+
 
     /**
      * Process a deployment for standard ra deployment files. Will parse the xml
@@ -153,6 +152,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             boolean useLegacySecurity = legacySecurityPresent && isLegacySecurityRequired(ds.getSecurity());
                             startDataSource(lds, jndiName, ds.getDriver(), serviceTarget,
                                     getRegistration(false, deploymentUnit), getResource(dsName, false, deploymentUnit), dsName, useLegacySecurity, ds.isJTA(), support);
+                        } catch (DeploymentUnitProcessingException dupe) {
+                            throw dupe;
                         } catch (Exception e) {
                             throw ConnectorLogger.ROOT_LOGGER.exceptionDeployingDatasource(e, ds.getJndiName());
                         }
@@ -301,7 +302,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                                  final String managementName,
                                  boolean requireLegacySecurity,
                                  final boolean isTransactional,
-                                 final CapabilityServiceSupport support) {
+                                 final CapabilityServiceSupport support) throws DeploymentUnitProcessingException {
 
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
 
@@ -323,10 +324,14 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
         dataSourceServiceBuilder.requires(support.getCapabilityServiceName(NamingService.CAPABILITY_NAME));
 
         if (requireLegacySecurity) {
-            dataSourceServiceBuilder.addDependency(SECURITY_MANAGER_SERVICE, ServerSecurityManager.class,
-                    dataSourceService.getServerSecurityManager());
-            dataSourceServiceBuilder.addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class,
-                    dataSourceService.getSubjectFactoryInjector());
+            if (support.hasCapability("org.wildfly.legacy-security")) {
+                dataSourceServiceBuilder.addDependency(support.getCapabilityServiceName("org.wildfly.legacy-security.server-security-manager"), ServerSecurityManager.class,
+                        dataSourceService.getServerSecurityManager());
+                dataSourceServiceBuilder.addDependency(support.getCapabilityServiceName("org.wildfly.legacy-security.subject-factory"), SubjectFactory.class,
+                        dataSourceService.getSubjectFactoryInjector());
+            } else {
+                throw ConnectorLogger.DS_DEPLOYER_LOGGER.legacySecurityNotAvailableForDsXml(managementName);
+            }
         }
 
         //Register an empty override model regardless of we're enabled or not - the statistics listener will add the relevant childresources

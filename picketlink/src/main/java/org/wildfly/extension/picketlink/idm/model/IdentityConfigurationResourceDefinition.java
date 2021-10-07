@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
@@ -36,7 +37,7 @@ public class IdentityConfigurationResourceDefinition extends AbstractIDMResource
     public static final IdentityConfigurationResourceDefinition INSTANCE = new IdentityConfigurationResourceDefinition();
 
     private IdentityConfigurationResourceDefinition() {
-        super(ModelElement.IDENTITY_CONFIGURATION, new IDMConfigAddStepHandler(getModelValidators()), IdentityConfigurationRemoveStepHandler.INSTANCE);
+        super(ModelElement.IDENTITY_CONFIGURATION, getModelValidators(), PathAddress::getParent);
     }
 
     @Override

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -100,5 +101,10 @@ public class JSSEExpressionsUnitTestCase extends AbstractSubsystemBaseTest {
 
         ModelNode domain = model.get("subsystem", "security", "security-domain", "jboss-empty-jsse", "jsse", "classic");
         Assert.assertEquals(ModelType.OBJECT, domain.getType());
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.ADMIN_ONLY_HC;
     }
 }

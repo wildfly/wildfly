@@ -40,8 +40,5 @@ public class RankedAffinityResourceTransformer implements Consumer<ModelVersion>
 
     @Override
     public void accept(ModelVersion version) {
-        if (DistributableWebModel.VERSION_2_0_0.requiresTransformation(version)) {
-            this.parent.rejectChildResource(RankedAffinityResourceDefinition.PATH);
-        }
     }
 }

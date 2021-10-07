@@ -83,6 +83,7 @@
                 <extension>org.wildfly.extension.discovery</extension>
                 <extension>org.wildfly.extension.ee-security</extension>
                 <extension>org.wildfly.extension.elytron</extension>
+                <extension>org.wildfly.extension.elytron-oidc-client</extension>
                 <extension>org.wildfly.extension.health</extension>
                 <extension>org.wildfly.extension.io</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>
@@ -96,6 +97,7 @@
                 <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-messaging-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-streams-operators-smallrye</extension>
+                <extension>org.wildfly.extension.opentelemetry</extension>
                 <extension>org.wildfly.extension.request-controller</extension>
                 <extension>org.wildfly.extension.rts</extension>
                 <extension>org.wildfly.extension.security.manager</extension>
@@ -143,6 +145,7 @@
                 <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-messaging-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-streams-operators-smallrye</extension>
+                <extension>org.wildfly.extension.opentelemetry</extension>
                 <extension>org.wildfly.extension.request-controller</extension>
                 <extension>org.wildfly.extension.rts</extension>
                 <extension>org.wildfly.extension.security.manager</extension>

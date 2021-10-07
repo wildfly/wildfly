@@ -24,8 +24,6 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.ProtobufTagMarshaller;
 import org.infinispan.protostream.TagWriter;
 import org.infinispan.protostream.descriptors.WireType;
 
@@ -35,8 +33,24 @@ import org.infinispan.protostream.descriptors.WireType;
  */
 public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 
+    default Context getContext() {
+        return ProtoStreamWriterContext.FACTORY.get().apply(this);
+    }
+
     /**
-     * Writes the specified object field using the specified index.
+     * Writes the specified object of an abitrary type using the specified index.
+     * Object will be read via {@link ProtoStreamReader#readAny()}.
+     * @param index a field index
+     * @param value a value to be written
+     * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
+     */
+    default void writeAny(int index, Object value) throws IOException {
+        this.writeObject(index, new Any(value));
+    }
+
+    /**
+     * Writes the specified object of a specific type using the specified index.
+     * Object will be read via {@link ProtoStreamReader#readObject(Class)}.
      * @param index a field index
      * @param value a value to be written
      * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
@@ -55,6 +69,7 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 
     /**
      * Writes the specified enum field using the specified index.
+     * Object will be read via {@link ProtoStreamReader#readEnum(Class)}.
      * @param index a field index
      * @param value an enum to be written
      * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
@@ -62,33 +77,6 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
     default <E extends Enum<E>> void writeEnum(int index, E value) throws IOException {
         EnumMarshaller<E> marshaller = (EnumMarshaller<E>) this.getSerializationContext().getMarshaller(value.getDeclaringClass());
         this.writeEnum(index, marshaller.encode(value));
-    }
-
-    /**
-     * Returns a marshaller suitable of marshalling an object of the specified type.
-     * @param <T> the type of the associated marshaller
-     * @param <V> the type of the object to be marshalled
-     * @param javaClass the type of the value to be written.
-     * @return a marshaller suitable for the specified type
-     * @throws IllegalArgumentException if no suitable marshaller exists
-     */
-    @SuppressWarnings("unchecked")
-    default <T, V extends T> ProtobufTagMarshaller<T> findMarshaller(Class<V> javaClass) {
-        ImmutableSerializationContext context = this.getSerializationContext();
-        Class<?> targetClass = javaClass;
-        IllegalArgumentException exception = null;
-        while (targetClass != null) {
-            try {
-                return (ProtobufTagMarshaller<T>) context.getMarshaller((Class<T>) targetClass);
-            } catch (IllegalArgumentException e) {
-                // If no marshaller was found, check super class
-                if (exception == null) {
-                    exception = e;
-                }
-                targetClass = targetClass.getSuperclass();
-            }
-        }
-        throw exception;
     }
 
     /**

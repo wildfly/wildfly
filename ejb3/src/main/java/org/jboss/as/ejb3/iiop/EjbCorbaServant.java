@@ -420,12 +420,10 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
 
     private Object unmarshalIdentifier() throws IOException, ClassNotFoundException {
         final Object id;
-        try {
+        try (final Unmarshaller unmarshaller = factory.createUnmarshaller(configuration)) {
             final byte[] idData = poaCurrent.get_object_id();
-            final Unmarshaller unmarshaller = factory.createUnmarshaller(configuration);
             unmarshaller.start(new InputStreamByteInput(new ByteArrayInputStream(idData)));
             id = unmarshaller.readObject();
-            unmarshaller.finish();
         } catch (NoContext noContext) {
             throw new RuntimeException(noContext);
         }

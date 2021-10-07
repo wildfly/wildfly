@@ -21,7 +21,8 @@
  */
 package org.jboss.as.ejb3.cache;
 
-import org.wildfly.clustering.ejb.IdentifierFactory;
+import java.util.function.Supplier;
+
 import org.wildfly.clustering.ejb.PassivationListener;
 
 /**
@@ -32,5 +33,5 @@ import org.wildfly.clustering.ejb.PassivationListener;
  */
 public interface CacheFactory<K, T extends Identifiable<K>> {
 
-    Cache<K, T> createCache(IdentifierFactory<K> identifierFactory, StatefulObjectFactory<T> factory, PassivationListener<T> passivationListener);
+    Cache<K, T> createCache(Supplier<K> identifierFactory, StatefulObjectFactory<T> factory, PassivationListener<T> passivationListener);
 }

@@ -111,6 +111,6 @@ public interface ClusteringServerLogger extends BasicLogger {
     @Message(id = 16, value = "A command dispatcher already exists for %s")
     IllegalArgumentException commandDispatcherAlreadyExists(Object id);
 
-    @Message(id = 17, value ="A command dispatcher for %s already exists, but with a different command context")
-    IllegalArgumentException commandDispatcherContextMismatch(Object id);
+//    @Message(id = 17, value ="A command dispatcher for %s already exists, but with a different command context")
+//    IllegalArgumentException commandDispatcherContextMismatch(Object id);
 }

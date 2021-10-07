@@ -20,7 +20,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.8" name="io.smallrye.reactive.messaging">
+<module xmlns="urn:jboss:module:1.9" name="io.smallrye.reactive.messaging">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -58,5 +58,7 @@
         <module name="org.reactivestreams"/>
         <module name="org.slf4j"/>
         <module name="org.wildfly.reactive.messaging.config" services="import"/>
+        <module name="io.smallrye.metrics" optional="true"/>
+        <module name="org.eclipse.microprofile.metrics.api"/>
     </dependencies>
 </module>

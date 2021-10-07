@@ -169,12 +169,12 @@ public class ValueAnalysis extends ContainerAnalysis {
             } catch (NoSuchMethodException ex) {
                 // ignore
             }
-            if (wo != null) { // Right return type?
-                if (wo.getReturnType() != Void.TYPE)
-                    wo = null; // Wrong return type
+            if (wo != null // Right return type?
+                    && wo.getReturnType() != Void.TYPE) {
+                wo = null; // Wrong return type
             }
             if (wo != null) { // Right modifiers?
-                int mods = spf.getModifiers();
+                int mods = wo.getModifiers();
                 if (!Modifier.isPrivate(mods))
                     wo = null; // wrong modifiers
             }

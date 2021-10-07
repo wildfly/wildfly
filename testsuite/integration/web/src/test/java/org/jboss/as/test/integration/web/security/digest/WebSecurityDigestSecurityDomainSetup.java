@@ -21,22 +21,12 @@
  */
 package org.jboss.as.test.integration.web.security.digest;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
-import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
-import org.jboss.as.test.integration.security.common.config.SecurityDomain;
-import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
-import org.jboss.as.test.integration.web.security.WebSecurityCommon;
 import org.wildfly.test.security.common.elytron.PropertyFileBasedDomain;
 import org.wildfly.test.security.common.elytron.UndertowDomainMapper;
-import org.wildfly.test.security.common.elytron.UserWithAttributeValues;
 
 /**
  * Security domain setup for digest tests. This prepare either legacy security-domain or elytron configuration.
@@ -44,8 +34,6 @@ import org.wildfly.test.security.common.elytron.UserWithAttributeValues;
  * @author olukas, jstourac
  */
 public class WebSecurityDigestSecurityDomainSetup implements ServerSetupTask {
-
-    private LegacySecurityDomainsSetup secDomainSetup;
 
     private CLIWrapper cli;
     private PropertyFileBasedDomain ps;
@@ -62,24 +50,15 @@ public class WebSecurityDigestSecurityDomainSetup implements ServerSetupTask {
 
     @Override
     public void setup(ManagementClient managementClient, String s) throws Exception {
-        if (WebSecurityCommon.isElytron()) {
-            cli = new CLIWrapper(true);
-            setupElytronBasedSecurityDomain();
-        } else {
-            secDomainSetup = new LegacySecurityDomainsSetup();
-            secDomainSetup.setup(managementClient, s);
-        }
+        cli = new CLIWrapper(true);
+        setupElytronBasedSecurityDomain();
     }
 
     @Override
     public void tearDown(ManagementClient managementClient, String s) throws Exception {
-        if (WebSecurityCommon.isElytron()) {
-            domainMapper.remove(cli);
-            ps.remove(cli);
-            cli.close();
-        } else {
-            secDomainSetup.tearDown(managementClient, s);
-        }
+        domainMapper.remove(cli);
+        ps.remove(cli);
+        cli.close();
     }
 
     private void setupElytronBasedSecurityDomain() throws Exception {
@@ -90,39 +69,5 @@ public class WebSecurityDigestSecurityDomainSetup implements ServerSetupTask {
         ps.create(cli);
         domainMapper = UndertowDomainMapper.builder().withName(SECURITY_DOMAIN_NAME).build();
         domainMapper.create(cli);
-    }
-
-    private class LegacySecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
-
-        @Override
-        protected SecurityDomain[] getSecurityDomains() throws Exception {
-            List<UserWithAttributeValues> userWithRoles = new ArrayList<UserWithAttributeValues>();
-            userWithRoles.add(UserWithAttributeValues.builder().withName(GOOD_USER_NAME).withPassword(GOOD_USER_PASSWORD)
-                    .withValues(GOOD_USER_ROLE).build());
-            userWithRoles.add(UserWithAttributeValues.builder().withName(SUPER_USER_NAME).withPassword(SUPER_USER_PASSWORD)
-                    .withValues(SUPER_USER_ROLE).build());
-            WebSecurityCommon.PropertyFiles propFiles = WebSecurityCommon.createPropertiesFiles(userWithRoles,
-                    SECURITY_DOMAIN_NAME);
-
-            final Map<String, String> lmOptions = new HashMap<>();
-            lmOptions.put("hashAlgorithm", "MD5");
-            lmOptions.put("hashEncoding", "RFC2617");
-            lmOptions.put("hashUserPassword", "false");
-            lmOptions.put("hashStorePassword", "true");
-            lmOptions.put("passwordIsA1Hash", "false");
-            lmOptions.put("storeDigestCallback", "org.jboss.security.auth.callback.RFC2617Digest");
-            lmOptions.put("usersProperties", propFiles.getUsers().getAbsolutePath());
-            lmOptions.put("rolesProperties", propFiles.getRoles().getAbsolutePath());
-
-            final SecurityDomain sd1 = new SecurityDomain.Builder()
-                    .name(SECURITY_DOMAIN_NAME)
-                    .loginModules(new SecurityModule.Builder()
-                            .name("UsersRoles")
-                            .options(lmOptions)
-                            .build())
-                    .build();
-
-            return new SecurityDomain[]{sd1};
-        }
     }
 }

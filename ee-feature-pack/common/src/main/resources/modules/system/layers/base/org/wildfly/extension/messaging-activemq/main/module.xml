@@ -30,7 +30,7 @@
 
     <resources>
         <artifact name="${org.wildfly:wildfly-messaging-activemq-subsystem}"/>
-        <artifact name="${org.jboss.activemq.artemis.integration:artemis-wildfly-integration}"/>
+        <artifact name="\${org.jboss.activemq.artemis.integration:artemis-wildfly@module.jakarta.suffix@-integration}"/>
         <resource-root path="META-INF"/>
     </resources>
 
@@ -88,6 +88,8 @@
         <!-- org.jboss.xnio.netty.netty-xnio-transport is required only if http-acceptor are used -->
         <module name="org.jboss.xnio.netty.netty-xnio-transport" optional="true"/>
         <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.ee.cache"/>
+        <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.spi"/>

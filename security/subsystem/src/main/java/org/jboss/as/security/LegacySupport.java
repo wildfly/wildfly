@@ -46,6 +46,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -437,7 +438,7 @@ class LegacySupport {
             for (Resource.ResourceEntry entry : existing.getChildren(newKeyName)) {
                 PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR)).append(entry.getPathElement());
                 ModelNode removeModuleOp = Util.createRemoveOperation(address);
-                context.addStep(new ModelNode(), removeModuleOp, new SecurityDomainReloadRemoveHandler(), OperationContext.Stage.MODEL, true);
+                context.addStep(new ModelNode(), removeModuleOp, ModelOnlyRemoveStepHandler.INSTANCE, OperationContext.Stage.MODEL, true);
             }
         }
     }
@@ -476,7 +477,7 @@ class LegacySupport {
             for (Resource.ResourceEntry entry : existing.getChildren(newKeyName)) {
                 PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR)).append(entry.getPathElement());
                 ModelNode removeModuleOp = Util.createRemoveOperation(address);
-                context.addStep(new ModelNode(), removeModuleOp, new SecurityDomainReloadRemoveHandler(), OperationContext.Stage.MODEL, true);
+                context.addStep(new ModelNode(), removeModuleOp, ModelOnlyRemoveStepHandler.INSTANCE, OperationContext.Stage.MODEL, true);
             }
         }
     }

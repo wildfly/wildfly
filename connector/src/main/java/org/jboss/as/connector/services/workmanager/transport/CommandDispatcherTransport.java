@@ -132,7 +132,8 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
                 }
             }
         };
-        return this.executor.execute(task).orElse(null).orElse(null);
+        Optional<Serializable> val = this.executor.execute(task).orElse(null);
+        return val != null ? val.orElse(null) : null;
     }
 
     private void broadcast(Command<Void, CommandDispatcherTransport> command) throws WorkException {

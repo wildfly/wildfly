@@ -22,10 +22,11 @@
 package org.wildfly.clustering.web.cache.sso;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.cache.IdentifierFactory;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.Sessions;
@@ -67,8 +68,8 @@ public class CompositeSSOManager<AV, SV, A, D, S, L> implements SSOManager<A, D,
     }
 
     @Override
-    public String createIdentifier() {
-        return this.identifierFactory.createIdentifier();
+    public Supplier<String> getIdentifierFactory() {
+        return this.identifierFactory;
     }
 
     @Override

@@ -24,12 +24,9 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.interceptors.impl.CacheMgmtInterceptor;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -151,16 +148,5 @@ public enum CacheMetric implements Metric<CacheMgmtInterceptor> {
     @Override
     public AttributeDefinition getDefinition() {
         return this.definition;
-    }
-
-    static void buildTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, CacheMetric.AVERAGE_REMOVE_TIME.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, CacheMetric.NUMBER_OF_ENTRIES_IN_MEMORY.getDefinition())
-                    .addRename(CacheMetric.TIME_SINCE_START.getDefinition(), CacheResourceDefinition.DeprecatedMetric.ELAPSED_TIME.getName())
-                    .addRename(CacheMetric.WRITES.getDefinition(), CacheResourceDefinition.DeprecatedMetric.STORES.getName())
-                    ;
-        }
     }
 }

@@ -315,6 +315,23 @@
             </configuration>
         </container>
 
+        <container qualifier="otel" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/wildfly</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=otel</property>
+                <property name="serverConfig">${jboss.config.file.name:standalone.xml}</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">false</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
+
         <container qualifier="jbossas-custom" default="false" mode="manual">
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-custom</property>
@@ -423,24 +440,6 @@
             </configuration>
         </container>
 
-        <container qualifier="jbossas-custom-picketlink" default="false" mode="manual">
-            <configuration>
-                <property name="jbossHome">${basedir}/target/jbossas-custom</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=jbossas-custom</property>
-                <property name="readOnlyServerConfig">../../docs/examples/configs/standalone-picketlink.xml</property>
-                <property name="jbossArguments">${jboss.args}</property>
-                <property name="allowConnectingToRunningServer">true</property>
-                <property name="managementAddress">${node0:127.0.0.1}</property>
-                <property name="managementPort">${as.managementPort:9990}</property>
-                <property name="adminOnly">true</property>
-
-                <!-- AS7-4070 -->
-                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
-                <property name="waitForPortsTimeoutInSeconds">8</property>
-                <property name="modulePath">${basedir}/target/wildfly/modules</property>
-            </configuration>
-        </container>
-
         <container qualifier="jbossas-custom-rts" default="false" mode="manual">
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-custom</property>
@@ -469,6 +468,23 @@
                 <property name="managementAddress">${node0:127.0.0.1}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
                 <property name="adminOnly">true</property>
+
+                <!-- AS7-4070 -->
+                <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+            </configuration>
+        </container>
+
+        <container qualifier="microprofile" mode="manual">
+            <configuration>
+                <property name="jbossHome">${basedir}/target/wildfly</property>
+                <property name="javaVmArguments">${microprofile.server.jvm.args}</property>
+                <property name="serverConfig">standalone-microprofile.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
+                <property name="allowConnectingToRunningServer">true</property>
+                <property name="managementAddress">${node0:127.0.0.1}</property>
+                <property name="managementPort">${as.managementPort:9990}</property>
 
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>

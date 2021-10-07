@@ -31,7 +31,6 @@ import java.util.SortedMap;
 import java.util.function.Function;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
@@ -63,9 +62,9 @@ public class SortedMapMarshaller<T extends SortedMap<Object, Object>> extends Ab
             int tag = reader.readTag();
             int index = WireType.getTagFieldNumber(tag);
             if (index == KEY_INDEX) {
-                keys.add(reader.readObject(Any.class).get());
+                keys.add(reader.readAny());
             } else if (index == VALUE_INDEX) {
-                values.add(reader.readObject(Any.class).get());
+                values.add(reader.readAny());
             } else if ((index >= COMPARATOR_INDEX) && (index < COMPARATOR_INDEX + ComparatorMarshaller.INSTANCE.getFields())) {
                 comparator = (Comparator<Object>) ComparatorMarshaller.INSTANCE.readField(reader, index - COMPARATOR_INDEX, comparator);
                 map = this.factory.apply(comparator);

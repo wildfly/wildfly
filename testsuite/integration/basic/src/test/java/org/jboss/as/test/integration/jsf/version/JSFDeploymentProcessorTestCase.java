@@ -35,10 +35,12 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -48,12 +50,14 @@ import org.jboss.as.test.integration.jsf.version.ejb.JSFVersionEJB;
 import org.jboss.as.test.integration.jsf.version.war.JSFMyFaces;
 import org.jboss.as.test.integration.jsf.version.war.JSFVersion;
 import org.jboss.as.test.shared.TestLogHandlerSetupTask;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.as.test.shared.util.LoggingUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
@@ -77,19 +81,27 @@ public class JSFDeploymentProcessorTestCase {
     private ManagementClient managementClient;
 
     @ArquillianResource
-    @OperateOnDeployment(WEB_BUNDLED_JSF)
+    protected static Deployer deployer;
+
+    @ArquillianResource
     private URL bundledJsf;
 
     @ArquillianResource
     @OperateOnDeployment(WEB_FACES_CONFIG_XML)
     private URL facesConfigXml;
 
+    @BeforeClass
+    public static void beforeClass() {
+        // https://issues.redhat.com/browse/WFLY-15367
+        AssumeTestGroupUtil.assumeSecurityManagerDisabledOrAssumeJDKVersionBefore(11);
+    }
+
     /**
      * Creates a war with all the libraries needed in the war/lib folder, this sample does not call the
      * ejb as it is not necessary to test if the bundled Jakarta Server Faces is loaded
      * @return
      */
-    @Deployment(name = WEB_BUNDLED_JSF, testable = false)
+    @Deployment(name = WEB_BUNDLED_JSF, testable = false, managed = false)
     public static EnterpriseArchive createDeployment1() {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, WEB_BUNDLED_JSF + ".ear");
 
@@ -145,23 +157,36 @@ public class JSFDeploymentProcessorTestCase {
         return ear;
     }
 
+    @Test
+    @InSequence(1)
+    public void deployBundledJsf() {
+        // in order to use @ArquillianResource URL from the unmanaged deployment we need to deploy the test archive first
+        deployer.deploy(WEB_BUNDLED_JSF);
+    }
+
     /**
      * Facing intermitent problem on myfaces 2.3 documented here https://issues.jboss.org/browse/WELD-1387
      * using myfaces 2.0 instead
      * @throws Exception
      */
     @Test
+    @InSequence(2)
+    @OperateOnDeployment(WEB_BUNDLED_JSF)
     public void bundledJsf() throws Exception {
-        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-        try(CloseableHttpClient client = httpClientBuilder.build()) {
+        try {
+            HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+            try (CloseableHttpClient client = httpClientBuilder.build()) {
 
-            HttpUriRequest getVarRequest = new HttpGet(bundledJsf.toExternalForm() + "jsfmyfacesversion.xhtml");
-            try (CloseableHttpResponse getVarResponse = client.execute(getVarRequest)) {
-                String text = EntityUtils.toString(getVarResponse.getEntity());
-                Assert.assertTrue("Text should contain ["+ MYFACES + "] but it contains[" + text + "]", text.contains(MYFACES));
+                HttpUriRequest getVarRequest = new HttpGet(bundledJsf.toExternalForm() + "jsfmyfacesversion.xhtml");
+                try (CloseableHttpResponse getVarResponse = client.execute(getVarRequest)) {
+                    String text = EntityUtils.toString(getVarResponse.getEntity());
+                    Assert.assertTrue("Text should contain [" + MYFACES + "] but it contains[" + text + "]", text.contains(MYFACES));
+                }
             }
+            Assert.assertFalse("Unexpected log message: " + LOG_MESSAGE, LoggingUtil.hasLogMessage(managementClient, TEST_HANDLER_NAME, LOG_MESSAGE));
+        } finally {
+            deployer.undeploy(WEB_BUNDLED_JSF);
         }
-        Assert.assertFalse("Unexpected log message: " + LOG_MESSAGE, LoggingUtil.hasLogMessage(managementClient, TEST_HANDLER_NAME, LOG_MESSAGE));
     }
 
     @Test

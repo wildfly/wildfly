@@ -32,12 +32,9 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
-import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter.Converter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -47,10 +44,6 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -120,58 +113,10 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
 
-    public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder, PathElement path) {
-
-        if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    // WFLY-8985 value MARIA_DB and any expression which could potentially resolve to that value on a slave node must be rejected
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.DIALECT.getDefinition())
-                    .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(DatabaseType.MARIA_DB.name())), Attribute.DIALECT.getDefinition());
-
-            if (!InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-                // DATASOURCE attribute was only supported as an add operation parameter
-                builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, DeprecatedAttribute.DATASOURCE.getDefinition());
-            }
-        }
-
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            // Converts pool name to its JNDI name
-            Converter converter = new Converter() {
-                @Override
-                public void convert(PathAddress address, String name, ModelNode value, ModelNode model, TransformationContext context) {
-                    if (value.isDefined()) {
-                        PathAddress rootAddress = address.subAddress(0, address.size() - 4);
-                        PathAddress subsystemAddress = rootAddress.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "datasources"));
-                        Resource subsystem = context.readResourceFromRoot(subsystemAddress);
-                        String poolName = value.asString();
-                        for (String type : Arrays.asList("data-source", "xa-data-source")) {
-                            if (subsystem.hasChildren(type)) {
-                                for (Resource.ResourceEntry entry : subsystem.getChildren(type)) {
-                                    if (entry.getName().equals(poolName)) {
-                                        value.set(entry.getModel().get("jndi-name"));
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-            builder.getAttributeBuilder()
-                    .addRename(Attribute.DATA_SOURCE.getName(), DeprecatedAttribute.DATASOURCE.getName())
-                    .setValueConverter(new SimpleAttributeConverter(converter), Attribute.DATA_SOURCE.getDefinition())
-            ;
-        }
-
-        StoreResourceDefinition.buildTransformation(version, builder, path);
-
-        if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.DIALECT.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.DIALECT.getDefinition())
-                    .end();
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 

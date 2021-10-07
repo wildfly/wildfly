@@ -23,10 +23,8 @@
 package org.jboss.as.ejb3.subsystem.deployment;
 
 import java.util.Date;
-
 import javax.ejb.NoMoreTimeoutsException;
 import javax.ejb.ScheduleExpression;
-import javax.ejb.TimerHandle;
 
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
@@ -47,7 +45,6 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
-import org.jboss.as.ejb3.timerservice.TimerHandleImpl;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.dmr.ModelNode;
@@ -377,10 +374,9 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
             final String timerId = address.getLastElement().getValue();
             final String timedInvokerObjectId = timerService.getTimedObjectInvoker().getValue().getTimedObjectId();
-            final TimerHandle handle = new TimerHandleImpl(timerId, timedInvokerObjectId, timerService);
-            TimerImpl timer = null;
+            TimerImpl timer;
             try {
-                timer = timerService.getTimer(handle);
+                timer = timerService.getTimer(timerId, timedInvokerObjectId);
             } catch (Exception e) {
                 throw new OperationFailedException(e, null);
             }

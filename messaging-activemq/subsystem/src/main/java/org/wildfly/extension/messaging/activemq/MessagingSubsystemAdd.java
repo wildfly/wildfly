@@ -41,6 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.BiConsumer;
+
 import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
@@ -63,8 +65,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
-import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.extension.messaging.activemq.deployment.DefaultJMSConnectionFactoryBindingProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.DefaultJMSConnectionFactoryResourceReferenceProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.JMSConnectionFactoryDefinitionAnnotationProcessor;
@@ -86,10 +86,11 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
 
-    public static final MessagingSubsystemAdd INSTANCE = new MessagingSubsystemAdd();
+    final BiConsumer<OperationContext, String> broadcastCommandDispatcherFactoryInstaller;
 
-    private MessagingSubsystemAdd() {
+    MessagingSubsystemAdd(BiConsumer<OperationContext, String> broadcastCommandDispatcherFactoryInstaller) {
         super(MessagingSubsystemRootResourceDefinition.ATTRIBUTES);
+        this.broadcastCommandDispatcherFactoryInstaller = broadcastCommandDispatcherFactoryInstaller;
     }
 
     @Override
@@ -104,7 +105,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 // keep the statements ordered by phase + priority
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_JMS_CONNECTION_FACTORY_RESOURCE_INJECTION, new DefaultJMSConnectionFactoryResourceReferenceProcessor());
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_RESOURCE_DEF_ANNOTATION_JMS_DESTINATION, new JMSDestinationDefinitionAnnotationProcessor());
-                processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_RESOURCE_DEF_ANNOTATION_JMS_CONNECTION_FACTORY, new JMSConnectionFactoryDefinitionAnnotationProcessor());
+                processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_RESOURCE_DEF_ANNOTATION_JMS_CONNECTION_FACTORY, new JMSConnectionFactoryDefinitionAnnotationProcessor(MessagingServices.capabilityServiceSupport.hasCapability("org.wildfly.legacy-security")));
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_MESSAGING_XML_RESOURCES, new MessagingXmlParsingDeploymentUnitProcessor());
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JMS, new MessagingDependencyProcessor());
 
@@ -191,7 +192,6 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 final Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = ConfigurationHelper.addDiscoveryGroupConfigurations(context, model);
                 final Map<String, String> clusterNames = new HashMap<>();
                 final Map<String, ServiceName> commandDispatcherFactories = new HashMap<>();
-                final Set<ServiceName> commandDispatcherFactoryServices = new HashSet<>();
                 final Map<String, ServiceName> groupBindings = new HashMap<>();
                 final Set<ServiceName> groupBindingServices = new HashSet<>();
                 for (final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
@@ -200,13 +200,10 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                     ModelNode broadcastGroupModel = model.get(BROADCAST_GROUP, name);
 
                     if (broadcastGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
-                        ModelNode channel = BroadcastGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel);
-                        ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
+                        String channelName = JGroupsBroadcastGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel).asStringOrNull();
+                        MessagingSubsystemAdd.this.broadcastCommandDispatcherFactoryInstaller.accept(context, channelName);
+                        commandDispatcherFactories.put(key, MessagingServices.getBroadcastCommandDispatcherFactoryServiceName(channelName));
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, broadcastGroupModel).asString();
-                        if (!commandDispatcherFactoryServices.contains(commandDispatcherFactoryServiceName)) {
-                            commandDispatcherFactoryServices.add(commandDispatcherFactoryServiceName);
-                        }
-                        commandDispatcherFactories.put(key, commandDispatcherFactoryServiceName);
                         clusterNames.put(key, clusterName);
                     } else {
                         final ServiceName groupBindingServiceName = GroupBindingService.getBroadcastBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);
@@ -221,13 +218,10 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                     final String key = "discovery" + name;
                     ModelNode discoveryGroupModel = model.get(DISCOVERY_GROUP, name);
                     if (discoveryGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
-                        ModelNode channel = DiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel);
-                        ServiceName commandDispatcherFactoryServiceName = channel.isDefined() ? ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channel.asString()) : ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context);
+                        String channelName = JGroupsDiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel).asStringOrNull();
+                        MessagingSubsystemAdd.this.broadcastCommandDispatcherFactoryInstaller.accept(context, channelName);
+                        commandDispatcherFactories.put(key, MessagingServices.getBroadcastCommandDispatcherFactoryServiceName(channelName));
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
-                        if (!commandDispatcherFactoryServices.contains(commandDispatcherFactoryServiceName)) {
-                            commandDispatcherFactoryServices.add(commandDispatcherFactoryServiceName);
-                        }
-                        commandDispatcherFactories.put(key, commandDispatcherFactoryServiceName);
                         clusterNames.put(key, clusterName);
                     } else {
                         final ServiceName groupBindingServiceName = GroupBindingService.getDiscoveryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);

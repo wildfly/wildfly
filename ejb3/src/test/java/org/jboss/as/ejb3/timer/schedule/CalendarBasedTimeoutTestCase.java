@@ -141,7 +141,7 @@ public class CalendarBasedTimeoutTestCase {
         Calendar nextTimeout = calendarTimeout.getNextTimeout(firstTimeout);
 
         Assert.assertNotNull(timeZoneDisplayName, nextTimeout);
-        Assert.assertNotNull(timeZoneDisplayName, nextTimeout.after(firstTimeout));
+        Assert.assertTrue(timeZoneDisplayName, nextTimeout.after(firstTimeout));
 //        logger.debug("Previous timeout was: " + firstTimeout.getTime() + " Next timeout is " + nextTimeout.getTime());
         long diff = nextTimeout.getTimeInMillis() - firstTimeout.getTimeInMillis();
         Assert.assertEquals(timeZoneDisplayName, 1000, diff);
@@ -161,7 +161,7 @@ public class CalendarBasedTimeoutTestCase {
             Calendar nextTimeout = calendarTimeout.getNextTimeout(previousTimeout);
 
             Assert.assertNotNull(timeZoneDisplayName, nextTimeout);
-            Assert.assertNotNull(timeZoneDisplayName, nextTimeout.after(previousTimeout));
+            Assert.assertTrue(timeZoneDisplayName, nextTimeout.after(previousTimeout));
 //            logger.debug("First timeout was: " + firstTimeout.getTime() + " Previous timeout was: "
 //                    + previousTimeout.getTime() + " Next timeout is " + nextTimeout.getTime());
             long diff = nextTimeout.getTimeInMillis() - previousTimeout.getTimeInMillis();
@@ -198,7 +198,7 @@ public class CalendarBasedTimeoutTestCase {
             Calendar nextTimeout = calendarTimeout.getNextTimeout(previousTimeout);
 
             Assert.assertNotNull(timeZoneDisplayName, nextTimeout);
-            Assert.assertNotNull(timeZoneDisplayName, nextTimeout.after(previousTimeout));
+            Assert.assertTrue(timeZoneDisplayName, nextTimeout.after(previousTimeout));
 //            logger.debug("First timeout was: " + firstTimeout.getTime() + " Previous timeout was: "
 //                    + previousTimeout.getTime() + " Next timeout is " + nextTimeout.getTime());
 
@@ -239,7 +239,7 @@ public class CalendarBasedTimeoutTestCase {
             Calendar nextTimeout = calendarTimeout.getNextTimeout(previousTimeout);
 
             Assert.assertNotNull(timeZoneDisplayName, nextTimeout);
-            Assert.assertNotNull(timeZoneDisplayName, nextTimeout.after(previousTimeout));
+            Assert.assertTrue(timeZoneDisplayName, nextTimeout.after(previousTimeout));
 
 //            logger.debug("First timeout was: " + firstTimeoutDate + " Previous timeout was: " + previousTimeout.getTime()
 //                    + " Next timeout is " + nextTimeoutDate);
@@ -289,7 +289,7 @@ public class CalendarBasedTimeoutTestCase {
             Calendar nextTimeout = calendarTimeout.getNextTimeout(previousTimeout);
 
             Assert.assertNotNull(timeZoneDisplayName, nextTimeout);
-            Assert.assertNotNull(timeZoneDisplayName, nextTimeout.after(previousTimeout));
+            Assert.assertTrue(timeZoneDisplayName, nextTimeout.after(previousTimeout));
 
 //            logger.debug("First timeout was: " + firstTimeoutDate + " Previous timeout was: " + previousTimeout.getTime()
 //                    + " Next timeout is " + nextTimeoutDate);
@@ -336,7 +336,7 @@ public class CalendarBasedTimeoutTestCase {
             Calendar nextTimeout = calendarTimeout.getNextTimeout(previousTimeout);
 
             Assert.assertNotNull(timeZoneDisplayName, nextTimeout);
-            Assert.assertNotNull(timeZoneDisplayName, nextTimeout.after(previousTimeout));
+            Assert.assertTrue(timeZoneDisplayName, nextTimeout.after(previousTimeout));
 
 //            logger.debug("First timeout was: " + firstTimeoutDate + " Previous timeout was: " + previousTimeout.getTime()
 //                    + " Next timeout is " + nextTimeoutDate);
@@ -386,7 +386,7 @@ public class CalendarBasedTimeoutTestCase {
             Calendar nextTimeout = calendarTimeout.getNextTimeout(previousTimeout);
 
             Assert.assertNotNull(timeZoneDisplayName, nextTimeout);
-            Assert.assertNotNull(timeZoneDisplayName, nextTimeout.after(previousTimeout));
+            Assert.assertTrue(timeZoneDisplayName, nextTimeout.after(previousTimeout));
 
 //            logger.debug("First timeout was: " + firstTimeoutDate + " Previous timeout was: " + previousTimeout.getTime()
 //                    + " Next timeout is " + nextTimeoutDate);

@@ -22,15 +22,12 @@
 
 package org.jboss.as.test.integration.web.security.tg;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.io.File;
@@ -55,7 +52,6 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
@@ -267,13 +263,8 @@ public class TransportGuaranteeTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            if (WebSecurityCommon.isElytron()) {
-                cli = new CLIWrapper(true);
-                setElytronBased(managementClient);
-            } else {
-                super.setup(managementClient, containerId);
-                setLegacySecurityRealmBased(managementClient);
-            }
+            cli = new CLIWrapper(true);
+            setElytronBased(managementClient);
         }
 
         @Override
@@ -315,49 +306,6 @@ public class TransportGuaranteeTestCase {
 
         protected void setElytronBased(ManagementClient managementClient) throws Exception {
             setHttpsListenerSslContextBased(managementClient, cli, NAME, NAME, HTTPS_PORT, NAME, false);
-        }
-
-        protected void setLegacySecurityRealmBased(final ManagementClient managementClient) throws Exception {
-            setHttpsListenerSecurityRealmBased(NAME, NAME, HTTPS_PORT, NAME, "NOT_REQUESTED", managementClient);
-        }
-
-        private void setHttpsListenerSecurityRealmBased(String httpsListenerName, String sockBindName, int httpsPort,
-                                                        String secRealmName, String verifyClient, ManagementClient
-                                                                managementClient) {
-            log.debug("start of the creation of the https-listener with legacy security-realm");
-
-            final List<ModelNode> updates = new ArrayList<ModelNode>();
-
-            // Add the HTTPS socket binding.
-            ModelNode op = new ModelNode();
-            op.get(OP).set(ADD);
-            op.get(OP_ADDR).add("socket-binding-group", "standard-sockets");
-            op.get(OP_ADDR).add("socket-binding", sockBindName);
-            op.get("interface").set("public");
-            op.get("port").set(httpsPort);
-            op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            updates.add(op);
-
-            // Add the HTTPS connector.
-            final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
-            final ModelNode steps = composite.get(STEPS);
-            op = new ModelNode();
-            op.get(OP).set(ADD);
-            op.get(OP_ADDR).add(SUBSYSTEM, "undertow");
-            op.get(OP_ADDR).add("server", "default-server");
-            op.get(OP_ADDR).add("https-listener", httpsListenerName);
-            op.get("socket-binding").set(sockBindName);
-            op.get("enabled").set(true);
-            op.get("security-realm").set(secRealmName);
-            op.get("verify-client").set(verifyClient);
-            steps.add(op);
-
-            composite.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            updates.add(composite);
-
-            applyUpdates(managementClient.getControllerClient(), updates);
-
-            log.debug("end of the security-realm https-listener creation");
         }
 
         @Override

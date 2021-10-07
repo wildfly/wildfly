@@ -41,6 +41,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
+//import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,6 +52,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(BasicDeployment16TestCase.BasicDeploymentTestCaseSetup.class)
+//@Ignore("[WFLY-15249] Update for lack of legacy security.")
 public class BasicDeployment16TestCase {
 
     static class BasicDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {

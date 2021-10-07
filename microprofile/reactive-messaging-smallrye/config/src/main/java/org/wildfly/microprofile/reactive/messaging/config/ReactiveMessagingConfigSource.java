@@ -26,13 +26,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ReactiveMessagingConfigSource implements ConfigSource {
+
+    private static final String NAME = ReactiveMessagingConfigSource.class.getName();
 
     private static final Map<String, String> PROPERTIES;
     static {
@@ -42,19 +46,26 @@ public class ReactiveMessagingConfigSource implements ConfigSource {
         PROPERTIES = Collections.unmodifiableMap(map);
     }
 
+    private final Map<String, String> properties;
+
+    public ReactiveMessagingConfigSource() {
+        properties = new ConcurrentHashMap<>();
+        properties.putAll(PROPERTIES);
+    }
+
     @Override
     public Map<String, String> getProperties() {
-        return PROPERTIES;
+        return properties;
     }
 
     @Override
     public String getValue(String propertyName) {
-        return PROPERTIES.get(propertyName);
+        return properties.get(propertyName);
     }
 
     @Override
     public String getName() {
-        return this.getClass().getSimpleName();
+        return NAME;
     }
 
     @Override
@@ -65,6 +76,22 @@ public class ReactiveMessagingConfigSource implements ConfigSource {
 
     @Override
     public Set<String> getPropertyNames() {
-        return PROPERTIES.keySet();
+        return properties.keySet();
+    }
+
+    /**
+     * Adds properties to the {@code ReactiveMessagingConfigSource} instance in the deployment's overall
+     * {@code Config}
+     *
+     * @param config the deployment's {@code Config}
+     * @param properties the properties we want to add
+     */
+    public static void addProperties(Config config, Map<String, String> properties) {
+        for (ConfigSource source : config.getConfigSources()) {
+            if (source.getName().equals(NAME) && source instanceof ReactiveMessagingConfigSource) {
+                // We have found the instance of this class in the Config, and add our properties here
+                ((ReactiveMessagingConfigSource)source).properties.putAll(properties);
+            }
+        }
     }
 }

@@ -51,8 +51,8 @@ import org.jboss.ws.api.annotation.WebContext;
         secureWSDLAccess = false
 )
 @Stateless
-@SecurityDomain("ejb3-tests")
-@DeclareRoles({"Role1", "Role2", "Role3"})
+@SecurityDomain("other")
+@DeclareRoles({"Role1", "Role2", "guest"})
 @RolesAllowed("Role1")
 public class EJBEndpoint implements EJBEndpointIface {
 

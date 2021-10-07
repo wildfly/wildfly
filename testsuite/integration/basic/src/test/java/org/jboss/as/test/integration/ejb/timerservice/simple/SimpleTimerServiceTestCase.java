@@ -112,6 +112,11 @@ public class SimpleTimerServiceTestCase {
         Assert.assertTrue(AnnotationTimerServiceBean.awaitTimerCall());
         bean1.resetTimerServiceCalled();
         Assert.assertTrue(AnnotationTimerServiceBean.awaitTimerCall());
+
+        //verifies that timer1 equals itself and does not equal null
+        Assert.assertTrue(timer1.equals(timer1));
+        Assert.assertFalse(timer1.equals(null));
+
         timer1.cancel();
 
         TimedObjectTimerServiceBean bean2 = (TimedObjectTimerServiceBean) ctx.lookup("java:module/" + TimedObjectTimerServiceBean.class.getSimpleName());

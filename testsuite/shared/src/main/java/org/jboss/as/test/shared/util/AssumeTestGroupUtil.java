@@ -5,6 +5,8 @@ import java.security.PrivilegedAction;
 import java.util.function.Supplier;
 
 import org.junit.Assume;
+import org.junit.AssumptionViolatedException;
+import org.testcontainers.DockerClientFactory;
 
 /**
  * Helper methods which help to skip tests for feature which is not yet fully working. Put the call of the method directly into
@@ -34,6 +36,11 @@ public class AssumeTestGroupUtil {
      */
     public static void assumeSecurityManagerDisabled() {
         assumeCondition("Tests failing if the security manager is enabled.", () -> System.getProperty("security.manager") == null);
+    }
+
+    public static void assumeSecurityManagerDisabledOrAssumeJDKVersionBefore(int javaSpecificationVersion) {
+        assumeCondition("Tests failing if the security manager is enabled and JDK in use is after " + javaSpecificationVersion + ".",
+                () -> (System.getProperty("security.manager") == null || getJavaSpecificationVersion() < javaSpecificationVersion));
     }
 
     /**
@@ -71,6 +78,25 @@ public class AssumeTestGroupUtil {
 //        assumeCondition("Tests failing if the JDK in use is other than " + javaSpecificationVersion + ".",
 //                () -> getJavaSpecificationVersion() == javaSpecificationVersion);
 //    }
+
+    /**
+     * Assume for test failures when running against a full distribution.
+     * Full distributions are available from build/dist modules. It skips tests in case
+     * {@code '-Dtestsuite.default.build.project.prefix'} Maven argument is used with
+     * a non empty value, e.g. testsuite.default.build.project.prefix=ee- which means we
+     * are using ee-build/ee-dist modules as the source where to find the server under test.
+     */
+    public static void assumeFullDistribution() {
+        assumeCondition("Tests requiring full distribution are disabled", () -> System.getProperty("testsuite.default.build.project.prefix", "").equals(""));
+    }
+
+    public static void assumeDockerAvailable() {
+        try {
+            DockerClientFactory.instance().client();
+        } catch (Throwable ex) {
+            throw new AssumptionViolatedException("Docker is not available.");
+        }
+    }
 
     private static int getJavaSpecificationVersion() {
         String versionString = System.getProperty("java.specification.version");

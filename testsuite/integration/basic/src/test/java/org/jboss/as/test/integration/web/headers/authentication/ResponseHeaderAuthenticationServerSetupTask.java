@@ -41,7 +41,7 @@ public class ResponseHeaderAuthenticationServerSetupTask extends SnapshotRestore
         List<ModelNode> operations = new ArrayList<>();
 
         // /subsystem=elytron/http-authentication-factory=application-http-authentication:add(http-server-mechanism-factory=global, security-domain=ApplicationDomain,mechanism-configurations=[{mechanism-name=BASIC, mechanism-realm-configurations=[{realm-name=Application Realm}]},{mechanism-name=FORM}])
-        ModelNode addHttpAuthenticationFactory = createOpNode("subsystem=elytron/http-authentication-factory=application-http-authentication", ADD);
+        ModelNode addHttpAuthenticationFactory = createOpNode("subsystem=elytron/http-authentication-factory=test-http-authentication", ADD);
         addHttpAuthenticationFactory.get("http-server-mechanism-factory").set("global");
         addHttpAuthenticationFactory.get("security-domain").set("ApplicationDomain");
         addHttpAuthenticationFactory.get("mechanism-configurations").get(0).get("mechanism-name").set("BASIC");
@@ -61,7 +61,7 @@ public class ResponseHeaderAuthenticationServerSetupTask extends SnapshotRestore
 
         // /subsystem=undertow/application-security-domain=ApplicationDomain:add(http-authentication-factory=application-http-authentication)
         ModelNode addSecurityDomain = createOpNode("subsystem=undertow/application-security-domain=ApplicationDomain", ADD);
-        addSecurityDomain.get("http-authentication-factory").set("application-http-authentication");
+        addSecurityDomain.get("http-authentication-factory").set("test-http-authentication");
         operations.add(addSecurityDomain);
 
         // /subsystem=undertow/application-security-domain=ApplicationDomain/setting=single-sign-on:add(key-alias=single-sign-on, credential-reference={clear-text=password},key-store=single-sign-on)
@@ -72,7 +72,7 @@ public class ResponseHeaderAuthenticationServerSetupTask extends SnapshotRestore
         operations.add(addSingleSignOn);
 
         ModelNode updateOp = Operations.createCompositeOperation(operations);
-        updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+        updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(true);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());
 

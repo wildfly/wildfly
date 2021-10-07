@@ -21,7 +21,9 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
+import java.security.PrivilegedAction;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import javax.servlet.ServletContext;
 
@@ -29,7 +31,6 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Recordable;
-import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
@@ -37,6 +38,7 @@ import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.undertow.IdentifierFactoryAdapter;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionListeners;
@@ -49,6 +51,7 @@ import io.undertow.servlet.api.ThreadSetupHandler;
  * @author Paul Ferraro
  */
 public class DistributableSessionManagerFactory implements io.undertow.servlet.api.SessionManagerFactory {
+    private static final String ALLOW_ORPHAN_SESSION_PROPERTY = "jboss.web.allow-orphan-session";
 
     private final SessionManagerFactory<ServletContext, Map<String, Object>, Batch> factory;
     private final SessionManagerFactoryConfiguration config;
@@ -64,7 +67,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
         DeploymentInfo info = deployment.getDeploymentInfo();
         boolean statisticsEnabled = info.getMetricsCollector() != null;
         RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new RecordableInactiveSessionStatistics() : null;
-        IdentifierFactory<String> factory = new IdentifierFactoryAdapter(info.getSessionIdGenerator());
+        Supplier<String> factory = new IdentifierFactoryAdapter(info.getSessionIdGenerator());
         SessionExpirationListener expirationListener = new UndertowSessionExpirationListener(deployment, this.listeners);
         SessionManagerConfiguration<ServletContext> configuration = new SessionManagerConfiguration<ServletContext>() {
             @Override
@@ -73,7 +76,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
             }
 
             @Override
-            public IdentifierFactory<String> getIdentifierFactory() {
+            public Supplier<String> getIdentifierFactory() {
                 return factory;
             }
 
@@ -103,8 +106,40 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
                 };
             }
         });
+        SessionListeners listeners = this.listeners;
         RecordableSessionManagerStatistics statistics = (inactiveSessionStatistics != null) ? new DistributableSessionManagerStatistics(manager, inactiveSessionStatistics, this.config.getMaxActiveSessions()) : null;
-        io.undertow.server.session.SessionManager result = new DistributableSessionManager(info.getDeploymentName(), manager, this.listeners, statistics);
+        io.undertow.server.session.SessionManager result = new DistributableSessionManager(new DistributableSessionManagerConfiguration() {
+            @Override
+            public String getDeploymentName() {
+                return info.getDeploymentName();
+            }
+
+            @Override
+            public SessionManager<Map<String, Object>, Batch> getSessionManager() {
+                return manager;
+            }
+
+            @Override
+            public SessionListeners getSessionListeners() {
+                return listeners;
+            }
+
+            @Override
+            public RecordableSessionManagerStatistics getStatistics() {
+                return statistics;
+            }
+
+            @Override
+            public boolean isOrphanSessionAllowed() {
+                // TODO Configure via DeploymentInfo
+                return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Boolean>() {
+                    @Override
+                    public Boolean run() {
+                        return Boolean.getBoolean(ALLOW_ORPHAN_SESSION_PROPERTY);
+                    }
+                });
+            }
+        });
         result.setDefaultSessionTimeout((int) this.config.getDefaultSessionTimeout().getSeconds());
         return result;
     }

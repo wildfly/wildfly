@@ -30,6 +30,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.test.multinode.ejb.timer.database.DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.getRemoteContext;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.io.File;
+import java.io.FilePermission;
 import java.net.SocketPermission;
 import java.security.SecurityPermission;
 import java.util.Collections;
@@ -186,7 +188,8 @@ public class DatabaseTimerServiceMultiNodeTestCase {
             war.addAsManifestResource(
                     createPermissionsXmlAsset(
                             new SocketPermission("*:9092", "connect,resolve"),
-                            new SecurityPermission("putProviderProperty.WildFlyElytron")),
+                            new SecurityPermission("putProviderProperty.WildFlyElytron"),
+                            new FilePermission(System.getProperty("jboss.home") + File.separatorChar + "standalone" + File.separatorChar + "tmp" + File.separatorChar + "auth" + File.separatorChar + "-", "read")),
                     "permissions.xml");
         }
         return war;

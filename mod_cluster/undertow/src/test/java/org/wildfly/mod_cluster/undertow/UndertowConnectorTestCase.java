@@ -23,7 +23,7 @@ package org.wildfly.mod_cluster.undertow;
 
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.net.InetAddress;
@@ -87,6 +87,6 @@ public class UndertowConnectorTestCase {
     public void setAddress() throws UnknownHostException {
         connector.setAddress(InetAddress.getLocalHost());
 
-        verifyZeroInteractions(this.listener);
+        verifyNoMoreInteractions(this.listener);
     }
 }

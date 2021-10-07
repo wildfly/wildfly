@@ -26,9 +26,7 @@ import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.singleton.Singleton;
 
@@ -45,12 +43,6 @@ public class SingletonServiceResourceDefinition extends ChildResourceDefinition<
 
     static PathElement pathElement(String name) {
         return PathElement.pathElement("service", name);
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        if (SingletonModel.VERSION_3_0_0.requiresTransformation(version)) {
-            parent.discardChildResource(WILDCARD_PATH);
-        }
     }
 
     private final FunctionExecutorRegistry<Singleton> executors;

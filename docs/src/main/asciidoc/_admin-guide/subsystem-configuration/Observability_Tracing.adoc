@@ -1,0 +1,120 @@
+[[Observability_Tracing]]
+= OpenTelemetry Subsystem Configuration
+
+[[required-extension-opentelemetry]]
+== Extension
+
+This extension is not included in any of the standalone configurations included in the WildFly distribution.
+To enable, the administrator must run the following CLI commands:
+
+```
+ $ jboss-cli.sh -c "/extension=org.wildfly.extension.opentelemetry:add()"
+ $ jboss-cli.sh -c "/subsystem=opentelemetry:add()"
+```
+
+== Configuration
+
+Systems administrators can configure a number of aspects of OpenTelemetry: the exporter, span processor, and sampler.
+
+=== Exporter
+
+The exporter can be selected and configured using the `exporter` child element, which supports these attributes:
+
+* `exporter`: WildFly supports two different exporters:
+** `jaeger`: The default exporter
+** `otlp`: The OpenTelemetry protocol
+* `endpoint`: The URL via which OpenTelemetry will push traces. The default is Jaeger's gRPC-based endpoint, http://localhost:14250
+
+=== Span Processor
+The span process is configured via the `span-processor` element, which supports the following attributes:
+
+* `type`: The type of span processor to use.
+** `batch`: The default processor, which sends traces in batches as configured via the remaining attributes
+** `simple`: Traces are pushed to the exporter as they finish.
+* `batch-delay`: The amount of time, in milliseconds, to wait before traces are published (default: 5000)
+* `max-queue-size`: The maximum size of the queue before traces are dropped (default: 2048)
+* `max-export-batch-size`: The maximum number of traces that are published in each batch, which must be smaller or equal to `max-queue-size (default: 512)
+* `export-timeout`: The maximum amount of time in milliseconds to allow for an export to complete before being cancelled (default: 30000)
+
+=== Sampler
+
+The sampler is configured via the `sampler` element:
+
+* `type`: The type of sampler to use
+** `on`: Always on (all traces are recorded)
+** `off`: Always off (no traces are recorded)
+** `ratio`: Return a ratio of the traces (e.g., 1 trace in 10000).
+* `ratio`: The value used to configure the `ratio` sampler, which must be within [0.0, 1.0].For example, if 1 trace in 10,000 is to be exported, this value would be `0.0001`.
+
+=== Example Configuration
+
+The following XML is an example of the full configuration, including default values (WildFly does not typically persist
+default values, so what you see in the configuration file may look different):
+
+[code,xml]
+-----
+<subsystem xmlns="urn:wildfly:opentelemetry:1.0"
+        service-name="example">
+    <exporter
+        type="jaeger"
+        endpoint="http://localhost:14250"/>
+    <span-processor
+        type="batch"
+        batch-delay="4500"
+        max-queue-size="128"
+        max-export-batch-size="512"
+        export-timeout="45"/>
+    <sampler
+        type="on"/>
+</subsystem>
+-----
+
+== Application Usage
+
+All incoming REST requests are automatically traced, so no work needs be done in user applications.If a REST request is received and the OpenTelemetry context propagation header (`traceparent`) is present, the request will traced as part of the remote trace context automatically.
+
+Likewise, all Jakarta REST Client calls will have the trace context added to outgoing request headers so that requests to external applications can be traced correctly (assuming the remote system properly handles OpenTelemetry trace context propagation).If the REST Client call is made to another application on the local WildFly server, or a remote server of the same version or later, the trace context will propagate automatically as described above.
+
+While automatic tracing may be sufficient in many cases, it will often be desirable to have traces occur throughout the user application.To support that, WildFly makes available the `io.opentelemetry.api.OpenTelemetry` and
+`io.opentelemetry.api.trace.Tracer` instances, via CDI injection.A user application, then is able to create arbitrary spans as part of the server-managed trace:
+
+[code,java]
+-----
+@Path("/myEndpoint")
+public class MyEndpoint {
+    @Inject
+    private Tracer tracer;
+
+    @GET
+    public Response doSomeWork() {
+        final Span span = tracer.spanBuilder("Doing some work")
+                .startSpan();
+        span.makeCurrent();
+        doSomeMoreWork();
+        span.addEvent("Make request to external system.");
+        makeExternalRequest();
+        span.addEvent("All the work is done.");
+        span.end();
+
+        return Response.ok().build();
+}
+-----
+
+== Interaction with MicroProfile OpenTracing
+
+If you have the MicroProfile OpenTracing subsystem enabled (e.g., via the MicroProfile configuration), you may see duplicate traces exported for JAX-RS calls, for example.
+This is because both OpenTracing and OpenTelemetry have instrumented the endpoints to enable tracing, and both subsystems are configured to export traces to a collector such as Jaeger.
+Likely, this is not desirable, so if you would like to use OpenTelemetry for tracing, it is advisable to remove the OpenTracing subsystem:
+
+[source]
+-----
+ $ jboss-cli.sh -c "/subsystem=microprofile-opentracing-smallrye:remove()"
+ $ jboss-cli.sh -c "/extension=org.wildfly.extension.microprofile.opentracing-smallrye:remove()"
+-----
+
+If you leave both subsystems enabled, though, WildFly will continue to function normally.
+The only difference you will see is the duplicate trace export mentioned above.
+
+== Component Reference
+
+OpenTelemetry support is provided via the https://opentelemetry.io[OpenTelemetry] project.

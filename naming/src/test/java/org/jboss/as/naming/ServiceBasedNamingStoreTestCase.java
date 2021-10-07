@@ -114,7 +114,7 @@ public class ServiceBasedNamingStoreTestCase {
             @Override
             public Object lookup(Name name) throws NamingException {
                 if ("blah/blah2".equals(name.toString())) {
-                    return new Integer(5);
+                    return 5;
                 }
 
                 return null;
@@ -255,7 +255,7 @@ public class ServiceBasedNamingStoreTestCase {
         final Object obj = ctx.lookup(new CompositeName("foo-stored/again/blah/blah2"));
         ctx.listBindings("foo-stored/again/hi/there");
         assertNotNull(obj);
-        assertEquals(new Integer(5), obj);
+        assertEquals(5, obj);
     }
 
     @Test

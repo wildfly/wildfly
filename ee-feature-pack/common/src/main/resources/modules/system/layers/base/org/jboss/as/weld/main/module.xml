@@ -41,6 +41,7 @@
         <module name="org.jboss.weld.core" />
         <module name="org.jboss.weld.spi" />
         <module name="org.jboss.as.weld.spi" />
+        <module name="org.jboss.as.security-plugins" />
         <!-- Only needed if capability 'org.wildfly.legacy-security.server-security-manager' is present -->
         <module name="org.picketbox" optional="true"/>
         <module name="org.jboss.as.weld.common" />

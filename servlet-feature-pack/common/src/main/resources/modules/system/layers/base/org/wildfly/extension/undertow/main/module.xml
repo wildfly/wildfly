@@ -67,10 +67,6 @@
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.network"/>
 
-        <!-- Only needed if capability 'org.wildfly.legacy-security' is present -->
-        <module name="org.jboss.as.security" optional="true"/>
-        <module name="org.jboss.as.security-plugins" optional="true"/>
-
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.wildfly.security.elytron-web.undertow-server"/>
         <module name="org.wildfly.security.elytron-web.undertow-server-servlet"/>
@@ -85,13 +81,11 @@
         <module name="org.jboss.metadata.ear"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
-        <module name="org.jboss.security.negotiation"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.as.version"/>
         <module name="org.jboss.logging"/>
-        <!-- Only needed if capability 'org.wildfly.legacy-security' is present -->
-        <module name="org.picketbox" optional="true"/>
+        <module name="org.picketbox" optional="true"/> <!-- Needed to keep JACC working for now. -->
         <module name="javax.security.jacc.api"/>
         <module name="org.jboss.xnio"/>
         <module name="org.jboss.xnio.nio" services="import"/>

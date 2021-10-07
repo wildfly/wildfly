@@ -19,7 +19,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>25.0.0.Beta1-SNAPSHOT</version>
+        <version>26.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -171,6 +171,17 @@
             <artifactId>microprofile-jwt-auth-api</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- A required implementation for the org.jboss.resteasy:resteasy-json-binding-provider -->
+        <dependency>
+            <groupId>org.eclipse</groupId>
+            <artifactId>yasson</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -237,18 +248,23 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-annotations</artifactId>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-core-spi</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jackson2-provider</artifactId>
+            <artifactId>resteasy-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jaxrs</artifactId>
+            <artifactId>resteasy-client-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-json-binding-provider</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -431,7 +447,28 @@
             <artifactId>netty-all</artifactId>
             <scope>test</scope>
         </dependency>
-
+        <!-- This contains classes moved from WildFly Core -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-security-plugins</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-context</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>1.16.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -783,7 +820,6 @@
                             <layers>
                                 <layer>cloud-server</layer>
                                 <layer>h2-default-datasource</layer>
-                                <layer>legacy-security</layer>
                             </layers>
                         </configuration>
                     </execution>
@@ -884,8 +920,6 @@
                                 <include>org/wildfly/test/integration/microprofile/**/*Test.java</include>
                             </includes>
                             <excludes>
-                                <!-- requires org.apache.commons.lang in test servlet otherwise passes -->
-                                <exclude>org/jboss/as/test/integration/security/loginmodules/negotiation/SPNEGOLoginModuleTestCase.java</exclude>
                                 <!-- requires webservices picketlink federation -->
                                 <exclude>org/jboss/as/test/integration/security/xacml/**/*TestCase.java</exclude>
                                 <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
@@ -1024,23 +1058,6 @@
             -->
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>generate-ldap-store</id>
-                                <phase>test-compile</phase>
-                                <goals>
-                                    <goal>java</goal>
-                                </goals>
-                                <configuration>
-                                    <mainClass>org.jboss.as.test.integration.security.loginmodules.GenerateLDAPSJKSStore</mainClass>
-                                    <classpathScope>test</classpathScope>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
 
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
@@ -1673,7 +1690,6 @@
                                             <layers>
                                                 <layer>cloud-server</layer>
                                                 <layer>h2-default-datasource</layer>
-                                                <layer>legacy-security</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -2697,8 +2713,6 @@
                                         <include>org/jboss/as/test/integration/weld/builtin/*TestCase.java</include>
                                     </includes>
                                     <excludes>
-                                        <!-- requires org.apache.commons.lang in test servlet otherwise passes -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/negotiation/SPNEGOLoginModuleTestCase.java</exclude>
                                         <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
                                         <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
                                         <!-- no ejb -->
@@ -2871,7 +2885,6 @@
                                         <module.path>${project.build.directory}/wildfly-ejb/modules${path.separator}${basedir}/target/modules</module.path>
                                         <!-- EJB client library hack, see WFLY-4973-->
                                         <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
-                                        <elytron>true</elytron>
                                     </systemPropertyVariables>
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-ejb</JBOSS_HOME>
@@ -3288,10 +3301,8 @@
                                     <excludes combine.children="append">
                                         <!-- For bootable-jar, custom modules have to be prepared aside in the time of jar packinging,
                                         which is not sustainable for all tests. -->
-                                        <exclude>org/jboss/as/test/integration/security/vault/ExternalPasswordCommandsTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/vault/ExternalPasswordByClassTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/modules/deployment/ModuleBeanDiscoveryModeTest.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>                                   
+                                        <exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -3334,8 +3345,6 @@
                                         <include>org/jboss/as/test/integration/weld/builtin/*TestCase.java</include>
                                     </includes>
                                     <excludes>
-                                        <!-- requires org.apache.commons.lang in test servlet otherwise passes -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/negotiation/SPNEGOLoginModuleTestCase.java</exclude>
                                         <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
                                         <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
                                         <!-- no ejb -->
@@ -3558,8 +3567,6 @@
                                     <excludes combine.children="append">
                                         <!-- For bootable-jar, custom modules have to be prepared aside in the time of jar packinging,
                                         which is not sustainable for all tests. -->
-                                        <exclude>org/jboss/as/test/integration/security/vault/ExternalPasswordCommandsTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/vault/ExternalPasswordByClassTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/modules/deployment/ModuleBeanDiscoveryModeTest.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
                                         <!--EE9 -->
@@ -3647,16 +3654,8 @@
                                         <exclude>org/jboss/as/test/integration/ejb/security/RunAsPrincipalCustomDomainTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/security/securitydomain/EJBContextMultipleSDTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/security/callerprincipal/GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/security/DsWithMixedSecurityTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/security/DsWithSecurityDomainTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/security/IronJacamarActivationRaWithSecurityDomainTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithMixedSecurityTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithSecurityDomainTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/security/workmanager/WildFlyActivationRaWithWMSecurityDomainWorkManagerTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainDotNameTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/web/security/runas/WebSecurityRunAsTestCase.java</exclude>
-                                        <!-- Requires picketlink -->
-                                        <exclude>org/jboss/as/test/integration/ws/authentication/policy/AuthenticationPolicyContextTestCase.java</exclude>
                                         <!-- Requires JSR77 -->
                                         <exclude>org/jboss/as/test/integration/jsr77/*TestCase.java</exclude>
                                         <!-- TODO figure out the problem -->
@@ -3665,7 +3664,6 @@
                                         <exclude>org/jboss/as/test/integration/ejb/security/In*Ann*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/security/SaslLegacyMechanismConfigurationTestCase.java</exclude><!-- wants legacy security but the EE9 remoting config is probably wrong too -->
                                         <exclude>org/jboss/as/test/integration/ejb/security/SingleMethodsAnn*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithElytronAuthContextTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jmx/full/JMXFilterTestCase.java</exclude><!-- Uses jsr77 subsystem as test subject -->
                                         <exclude>org/jboss/as/test/integration/management/cli/DeploymentOverlayCLITestCase.java</exclude><!-- use of unmanaged (exploded) deployments?? -->
                                         <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude><!-- Problem is probably MDB use -->
@@ -3729,13 +3727,6 @@
                                         <!-- Requires legacy security -->
                                         <exclude>org/jboss/as/test/integration/ejb/container/interceptor/security/SwitchIdentityTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/container/interceptor/security/api/SwitchIdentityTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/anno/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/basic/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/capacitypolicies/ResourceAdapterCapacityPoliciesTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/ijdeployment/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/metrics/RaCfgMetricUnitTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/poolattributes/ResourceAdapterPoolAttributesTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jca/statistics/ResourceAdapterStatisticsTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainDotNameTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/aselytron/SecurityDomainAsElytronSecurityRealmTestCase.java</exclude>
@@ -3755,16 +3746,9 @@
                                         <exclude>org/jboss/as/test/integration/deployment/moduleslisting/DeploymentModulesListTestCase.java</exclude>
                                         <!-- TODO figure out the problem -->
                                         <exclude>org/jboss/as/test/integration/batch/repository/JdbcRepositoryTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/batch/transaction/BatchTransactionTimeoutTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/appclient/basic/SimpleApplicationClientTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/descriptor/ejbnamewildcard/EJBNameWildcardTestCase.java</exclude><!-- use of @Test(expected = EJBAccessException.class) ??? -->
-                                        <exclude>org/jboss/as/test/integration/ejb/mapbased/MapBasedInitialContextEjbClientTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ejb/remote/httpobfuscatedroute/*RemoteIdentityTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ejb/remote/security/*RemoteIdentityTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ejb/stateful/persistencecontext/StatefulUnitTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ejb/stateless/callerprincipal/Ejb2GetCallerPrincipalTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/transaction/bmt/BeanManagedTransactionsTestCase.java</exclude><!-- use of @Test(expected = EJBException.class) ??? -->
-                                        <exclude>org/jboss/as/test/integration/jdr/mgmt/JdrReportManagmentTestCase.java</exclude><!-- WFLY-13884 -->
                                         <exclude>org/jboss/as/test/integration/jsf/beanvalidation/cdi/BeanValidationCdiIntegrationTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsf/doctype/DoctypeDeclTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsf/jsf23/JSF23SanityTestCase.java</exclude>
@@ -3773,7 +3757,6 @@
                                         <exclude>org/jboss/as/test/integration/jsf/version/JSFDeploymentProcessorTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/deploy/runtime/JaxrsRuntimeNameTestCase.java</exclude><!-- test expects javax strings in mgmt api responses -->
                                         <exclude>org/jboss/as/test/integration/weld/ejb/SessionObjectReferenceTestCase.java</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase.java</exclude><!-- No JWT. TODO why would JWT work in the normal profile? -->
                                         <exclude>org/wildfly/test/integration/web/annotationsmodule/EarModuleDeploymentTestCase.java</exclude>
                                     </excludes>
                                 </configuration>

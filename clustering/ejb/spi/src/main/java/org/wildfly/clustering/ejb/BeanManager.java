@@ -21,8 +21,11 @@
  */
 package org.wildfly.clustering.ejb;
 
+import java.util.function.Supplier;
+
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.Restartable;
 
 /**
  * A SPI for managing beans.
@@ -32,18 +35,15 @@ import org.wildfly.clustering.ee.Batcher;
  * @param <I> the bean identifier type
  * @param <T> the bean instance type
  */
-public interface BeanManager<I, T, B extends Batch> extends AffinitySupport<I>, BeanManagerStatistics {
+public interface BeanManager<I, T, B extends Batch> extends Restartable, AffinitySupport<I>, BeanManagerStatistics {
     Bean<I, T> createBean(I id, I group, T bean);
     Bean<I, T> findBean(I id);
 
     boolean containsBean(I id);
 
-    IdentifierFactory<I> getIdentifierFactory();
+    Supplier<I> getIdentifierFactory();
 
     Batcher<B> getBatcher();
-
-    void start();
-    void stop();
 
     boolean isRemotable(Throwable throwable);
 }

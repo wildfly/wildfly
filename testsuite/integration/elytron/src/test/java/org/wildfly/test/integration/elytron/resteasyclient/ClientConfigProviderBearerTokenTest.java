@@ -22,26 +22,48 @@
 
 package org.wildfly.test.integration.elytron.resteasyclient;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.util.HttpResponseCodes;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
 import org.wildfly.security.credential.BearerTokenCredential;
 import org.wildfly.test.integration.elytron.util.ClientConfigProviderBearerTokenAbortFilter;
 
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.net.URL;
+
+@RunAsClient
+@RunWith(Arquillian.class)
 public class ClientConfigProviderBearerTokenTest {
 
-    private String dummyUrl = "dummyUrl";
+    /**
+     * Creates WAR with a secured servlet and BASIC authentication configured in web.xml deployment descriptor.
+     */
+    @Deployment(testable = false)
+    public static WebArchive createDeployment() {
+        return ShrinkWrap.create(WebArchive.class, ClientConfigProviderBearerTokenTest.class.getSimpleName() + ".war")
+                .addClasses(SimpleServlet.class);
+    }
+
+    @ArquillianResource
+    private URL dummyUrl;
 
     /**
      * Test that bearer token is loaded from Elytron client config and is used in Authorization header.
@@ -57,11 +79,11 @@ public class ClientConfigProviderBearerTokenTest {
             context = context.with(MatchRule.ALL, adminConfig);
             AuthenticationContext.getContextManager().setGlobalDefault(context);
             context.run(() -> {
-                ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-                ResteasyClient client = builder.build();
-                Response response = client.target(dummyUrl)
+                ClientBuilder builder = ClientBuilder.newBuilder();
+                Client client = builder.build();
+                Response response = client.target(dummyUrl.toString())
                         .register(ClientConfigProviderBearerTokenAbortFilter.class).request().get();
-                Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+                Assert.assertEquals(SC_OK, response.getStatus());
                 client.close();
             });
         } finally {
@@ -83,11 +105,11 @@ public class ClientConfigProviderBearerTokenTest {
             context = context.with(MatchRule.ALL, adminConfig);
             AuthenticationContext.getContextManager().setGlobalDefault(context);
             context.run(() -> {
-                ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-                ResteasyClient client = builder.build();
-                Response response = client.target(dummyUrl)
+                ClientBuilder builder = ClientBuilder.newBuilder();
+                Client client = builder.build();
+                Response response = client.target(dummyUrl.toString())
                         .register(ClientConfigProviderBearerTokenAbortFilter.class).request().get();
-                Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+                Assert.assertEquals(SC_OK, response.getStatus());
                 client.close();
             });
         } finally {
@@ -108,10 +130,10 @@ public class ClientConfigProviderBearerTokenTest {
             context = context.with(MatchRule.ALL, adminConfig);
             AuthenticationContext.getContextManager().setGlobalDefault(context);
             context.run(() -> {
-                ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-                ResteasyClient client = builder.build();
+                ClientBuilder builder = ClientBuilder.newBuilder();
+                Client client = builder.build();
                 try {
-                    client.target(dummyUrl).register(ClientConfigProviderBearerTokenAbortFilter.class).request().get();
+                    client.target(dummyUrl.toString().toString()).register(ClientConfigProviderBearerTokenAbortFilter.class).request().get();
                     fail("Configuration not found ex should be thrown.");
                 } catch (Exception e) {
                     assertTrue(e.getMessage().contains("The request authorization header is not correct expected:<Bearer myTestToken> but was:<null>"));
@@ -138,10 +160,10 @@ public class ClientConfigProviderBearerTokenTest {
             context = context.with(MatchRule.ALL.matchHost("www.redhat.com"), adminConfig);
             AuthenticationContext.getContextManager().setGlobalDefault(context);
             context.run(() -> {
-                ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-                ResteasyClient client = builder.build();
+                ClientBuilder builder = ClientBuilder.newBuilder();
+                Client client = builder.build();
                 try {
-                    client.target(dummyUrl).register(ClientConfigProviderBearerTokenAbortFilter.class).request().get();
+                    client.target(dummyUrl.toString()).register(ClientConfigProviderBearerTokenAbortFilter.class).request().get();
                     fail("Configuration not found ex should be thrown.");
                 } catch (Exception e) {
                     assertTrue(e.getMessage().contains("The request authorization header is not correct expected:<Bearer myTestToken> but was:<null>"));
@@ -165,10 +187,10 @@ public class ClientConfigProviderBearerTokenTest {
         AuthenticationContext context = AuthenticationContext.empty();
         context = context.with(MatchRule.ALL.matchHost("127.0.0.1"), authenticationConfiguration);
         context.run(() -> {
-            ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-            ResteasyClient client = builder.build();
+            ClientBuilder builder = ClientBuilder.newBuilder();
+            Client client = builder.build();
             Response response = client.target("http://127.0.0.1").register(ClientConfigProviderBearerTokenAbortFilter.class).request().get();
-            Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+            Assert.assertEquals(SC_OK, response.getStatus());
             client.close();
         });
     }

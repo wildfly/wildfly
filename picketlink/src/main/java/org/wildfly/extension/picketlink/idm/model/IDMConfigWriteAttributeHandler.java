@@ -22,54 +22,45 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
+import java.util.function.Function;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RestartParentWriteAttributeHandler;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
 
 /**
  * @author Pedro Silva
  */
-public class IDMConfigWriteAttributeHandler extends RestartParentWriteAttributeHandler {
+public class IDMConfigWriteAttributeHandler extends ModelOnlyWriteAttributeHandler {
 
-    IDMConfigWriteAttributeHandler(final AttributeDefinition... attributes) {
-        super(ModelElement.PARTITION_MANAGER.getName(), attributes);
+    private final ModelValidationStepHandler[] modelValidators;
+    private final Function<PathAddress, PathAddress> partitionAddressProvider;
+
+    IDMConfigWriteAttributeHandler(final ModelValidationStepHandler[] modelValidators,
+            final Function<PathAddress, PathAddress> partitionAddressProvider, final AttributeDefinition... attributes) {
+        super(attributes);
+        this.modelValidators = modelValidators;
+        this.partitionAddressProvider = partitionAddressProvider;
     }
-
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        context.addStep(new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                final PathAddress address = getParentAddress(PathAddress.pathAddress(operation.require(OP_ADDR)));
-                Resource resource = context.readResourceFromRoot(address);
-                final ModelNode parentModel = Resource.Tools.readModel(resource);
 
-                PartitionManagerAddHandler.INSTANCE.validateModel(context, address.getLastElement().getValue(), parentModel);
+        if (modelValidators != null) {
+
+            for (ModelValidationStepHandler validator : modelValidators) {
+                context.addStep(validator, OperationContext.Stage.MODEL);
             }
-        }, OperationContext.Stage.MODEL);
+        }
+
+        if (partitionAddressProvider != null) {
+            context.addStep((context1, operation1) -> PartitionManagerResourceDefinition.validateModel(context, partitionAddressProvider.apply(context1.getCurrentAddress())),
+                    OperationContext.Stage.MODEL);
+        }
+
         super.execute(context, operation);
-    }
-
-    @Override
-    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        final String federationName = parentAddress.getLastElement().getValue();
-        PartitionManagerRemoveHandler.INSTANCE.removeIdentityStoreServices(context, parentModel, federationName);
-        PartitionManagerAddHandler.INSTANCE.createPartitionManagerService(context, parentAddress.getLastElement().getValue(), parentModel, false);
-
-    }
-
-    @Override
-    protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return PartitionManagerService.createServiceName(parentAddress.getLastElement().getValue());
     }
 }

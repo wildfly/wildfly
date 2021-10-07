@@ -43,7 +43,6 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -133,15 +132,11 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(HTTP_INVOKER_HOST_CAPABILITY);
             final Supplier<Host> hSupplier = sb.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverName, hostName);
             Supplier<HttpAuthenticationFactory> hafSupplier = null;
-            Supplier<SecurityRealm> srSupplier = null;
             final Supplier<PathHandler> phSupplier = sb.requiresCapability(HTTP_INVOKER_RUNTIME_CAPABILITY.getName(), PathHandler.class);
             if (httpAuthenticationFactory != null) {
                 hafSupplier = sb.requiresCapability(Capabilities.REF_HTTP_AUTHENTICATION_FACTORY, HttpAuthenticationFactory.class, httpAuthenticationFactory);
-            } else if (securityRealmString != null) {
-                final ServiceName realmServiceName = SecurityRealm.ServiceUtil.createServiceName(securityRealmString);
-                srSupplier = sb.requires(realmServiceName);
             }
-            sb.setInstance(new HttpInvokerHostService(hSupplier, hafSupplier, srSupplier, phSupplier, path));
+            sb.setInstance(new HttpInvokerHostService(hSupplier, hafSupplier, phSupplier, path));
             sb.install();
         }
     }

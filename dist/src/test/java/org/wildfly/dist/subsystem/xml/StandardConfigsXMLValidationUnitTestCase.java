@@ -114,11 +114,6 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     }
 
     @Test
-    public void testStandalonePicketLink() throws Exception {
-        parseXml("docs/examples/configs/standalone-picketlink.xml");
-    }
-
-    @Test
     public void testStandaloneXTS() throws Exception {
         parseXml("docs/examples/configs/standalone-xts.xml");
     }

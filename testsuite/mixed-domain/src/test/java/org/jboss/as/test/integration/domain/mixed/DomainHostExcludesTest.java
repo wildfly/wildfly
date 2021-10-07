@@ -71,26 +71,12 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class DomainHostExcludesTest {
 
-    private static final String[] EXCLUDED_EXTENSIONS_6X = {
-            "org.wildfly.extension.batch.jberet",
-            "org.wildfly.extension.bean-validation",
-            "org.wildfly.extension.clustering.singleton",
-            "org.wildfly.extension.core-management",
-            "org.wildfly.extension.io",
-            "org.wildfly.extension.messaging-activemq",
-            "org.wildfly.extension.request-controller",
-            "org.wildfly.extension.security.manager",
-            "org.wildfly.extension.undertow",
-            "org.wildfly.iiop-openjdk"
-    };
-
     private static final String[] EXCLUDED_EXTENSIONS_7X = {
             "org.jboss.as.web",
             "org.jboss.as.messaging",
             "org.jboss.as.threads"
     };
 
-    public static final Set<String> EXTENSIONS_SET_6X = new HashSet<>(Arrays.asList(EXCLUDED_EXTENSIONS_6X));
     public static final Set<String> EXTENSIONS_SET_7X = new HashSet<>(Arrays.asList(EXCLUDED_EXTENSIONS_7X));
 
     private static final PathElement HOST = PathElement.pathElement("host", "slave");
@@ -108,24 +94,22 @@ public abstract class DomainHostExcludesTest {
 
         testSupport = MixedDomainTestSuite.getSupport(clazz);
 
-        if (version.getMajor() >= 7) {
-            // note that some of these 7+ specific changes may warrant creating a newer version of testing-host.xml for the newer slaves
-            // at some point (the currently used host.xml is quite an old version). If these exceptions become more complicated than this, we should
-            // probably do that.
+        // note that some of these 7+ specific changes may warrant creating a newer version of testing-host.xml for the newer slaves
+        // at some point (the currently used host.xml is quite an old version). If these exceptions become more complicated than this, we should
+        // probably do that.
 
-            //Unset the ignore-unused-configuration flag
-            ModelNode dc = DomainTestUtils.executeForResult(
-                    Util.getReadAttributeOperation(PathAddress.pathAddress(HOST), DOMAIN_CONTROLLER),
-                    testSupport.getDomainSlaveLifecycleUtil().getDomainClient());
+        //Unset the ignore-unused-configuration flag
+        ModelNode dc = DomainTestUtils.executeForResult(
+                Util.getReadAttributeOperation(PathAddress.pathAddress(HOST), DOMAIN_CONTROLLER),
+                testSupport.getDomainSlaveLifecycleUtil().getDomainClient());
 
-            dc = dc.get("remote");
+        dc = dc.get("remote");
 
-            dc.get(IGNORE_UNUSED_CONFIG).set(false);
-            dc.get(OP).set("write-remote-domain-controller");
-            dc.get(OP_ADDR).set(PathAddress.pathAddress(HOST).toModelNode());
+        dc.get(IGNORE_UNUSED_CONFIG).set(false);
+        dc.get(OP).set("write-remote-domain-controller");
+        dc.get(OP_ADDR).set(PathAddress.pathAddress(HOST).toModelNode());
 
-            DomainTestUtils.executeForResult(dc, testSupport.getDomainSlaveLifecycleUtil().getDomainClient());
-        }
+        DomainTestUtils.executeForResult(dc, testSupport.getDomainSlaveLifecycleUtil().getDomainClient());
 
         stopSlave();
 
@@ -378,18 +362,14 @@ public abstract class DomainHostExcludesTest {
     }
 
     private Set<String> getExtensionsSet() {
-        if (version.getMajor() == 6) {
-            return EXTENSIONS_SET_6X;
-        } else if (version.getMajor() >= 7) {
+        if (version.getMajor() >= 7) {
             return EXTENSIONS_SET_7X;
         }
         throw new IllegalStateException("Unknown version " + version);
     }
 
     private static String[] getExcludedExtensions() {
-        if (version.getMajor() == 6) {
-            return EXCLUDED_EXTENSIONS_6X;
-        } else if (version.getMajor() >= 7) {
+        if (version.getMajor() >= 7) {
             return EXCLUDED_EXTENSIONS_7X;
         }
         throw new IllegalStateException("Unknown version " + version);

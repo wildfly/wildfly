@@ -55,12 +55,6 @@ public class GroupBean implements Group, GroupListener {
         this.previousMembership = previousMembership;
     }
 
-    @Deprecated
-    @Override
-    public void removeListener(org.wildfly.clustering.group.Group.Listener listener) {
-        this.group.removeListener(listener);
-    }
-
     @Override
     public String getName() {
         return this.group.getName();

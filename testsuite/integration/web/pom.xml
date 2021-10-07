@@ -19,7 +19,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>25.0.0.Beta1-SNAPSHOT</version>
+        <version>26.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -37,8 +37,6 @@
         <jboss.dist>${jbossas.project.dir}/${wildfly.web.build.output.dir}</jboss.dist>
         <jboss.home>${jboss.dist}</jboss.home>
 
-        <ts.elytron.cli>web-enable-elytron.cli</ts.elytron.cli>
-        
         <!-- properties to enable plugins shared by various bootable jar executions -->
         <bootable.ts.config-as.copy-users.phase>none</bootable.ts.config-as.copy-users.phase>
         <bootable.copy-external-taglib-module-xml.phase>none</bootable.copy-external-taglib-module-xml.phase>
@@ -288,7 +286,6 @@
                             </feature-packs>
                             <layers>
                                 <layer>datasources-web-server</layer>
-                                <layer>legacy-security</layer>
                             </layers>
                             <excluded-layers>
                                 <layer>datasources</layer>
@@ -326,7 +323,7 @@
                             </feature-packs>
                             <layers>
                                 <layer>datasources-web-server</layer>
-                                <layer>undertow-legacy-https</layer>
+                                <layer>undertow-https</layer>
                             </layers>
                             <excluded-layers>
                                 <layer>datasources</layer>
@@ -610,7 +607,7 @@
                                     </configurations>
                                 </configuration>
                             </execution>
-		                    <!-- Provision a datasources-web-server with legacy-security as well -->
+		                    <!-- Provision a datasources-web-server -->
                             <execution>
                                 <id>web-legacy-security-provisioning</id>
                                 <goals>
@@ -642,7 +639,6 @@
                                             <name>standalone.xml</name>
                                             <layers>
                                                 <layer>datasources-web-server</layer>
-                                                <layer>legacy-security</layer>
                                             </layers>
                                             <excluded-layers>
                                                 <layer>datasources</layer>
@@ -683,7 +679,7 @@
                                             <name>standalone.xml</name>
                                             <layers>
                                                 <layer>datasources-web-server</layer>
-                                                <layer>undertow-legacy-https</layer>
+                                                <layer>undertow-https</layer>
                                             </layers>
                                             <excluded-layers>
                                                 <layer>datasources</layer>
@@ -805,36 +801,6 @@
                                         <exclude>org/jboss/as/test/integration/web/annotationsmodule/WebModuleDeploymentTestCase.java</exclude>
                                         <!-- requires https -->
                                         <exclude>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</exclude>
-                                    </excludes>
-                                </configuration>
-                            </execution>
-
-                            <!-- Tests against the install with legacy security -->
-                            <execution>
-                                <id>legacy-security-layers.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <systemPropertyVariables>
-                                        <jboss.home>${project.build.directory}/wildfly-legacy-security</jboss.home>
-                                        <jboss.home.dir>${project.build.directory}/wildfly-legacy-security</jboss.home.dir>
-                                        <jbossas.dist>${project.build.directory}/wildfly-legacy-security</jbossas.dist>
-                                        <jboss.dist>${project.build.directory}/wildfly-legacy-security</jboss.dist>
-                                        <jboss.install.dir>${project.build.directory}/wildfly-legacy-security</jboss.install.dir>
-                                        <!-- Override the standard module path that points at the shared module set from servlet-dist -->
-                                        <module.path>${project.build.directory}/wildfly-legacy-security/modules${path.separator}${basedir}/target/modules</module.path>
-                                    </systemPropertyVariables>
-                                    <environmentVariables>
-                                        <JBOSS_HOME>${project.build.directory}/wildfly-legacy-security</JBOSS_HOME>
-                                    </environmentVariables>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/web/security/**/*TestCase.java</include>
-                                    </includes>
-                                    <excludes>
-                                        <exclude>org/jboss/as/test/integration/web/security/**/TransportGuaranteeTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -1440,11 +1406,6 @@
                                 <phase>test</phase>
                                 <configuration>
                                     <excludes>
-                                        <!-- requires legacy-security -->
-                                        <exclude>org/jboss/as/test/integration/web/security/WebSecurity*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/web/security/external/WebSecurity*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/web/security/form/WebSecuritySimpleRoleMappingTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/web/security/jaspi/WebSecurity*TestCase.java</exclude>
                                         <!-- TODO rework these to handle EE 9 -->
                                         <exclude>org/jboss/as/test/integration/web/annotationsmodule/WebModuleDeploymentTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/web/jsp/taglib/external/ExternalTagLibTestCase.java</exclude>

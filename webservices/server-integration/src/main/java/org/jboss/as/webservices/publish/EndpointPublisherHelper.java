@@ -24,6 +24,7 @@ package org.jboss.as.webservices.publish;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -66,8 +67,8 @@ public class EndpointPublisherHelper {
     }
 
     public static DeploymentUnit doPrepareStep(String context, ClassLoader loader, Map<String, String> urlPatternToClassName,
-            JBossWebMetaData jbwmd, WebservicesMetaData wsmd, JBossWebservicesMetaData jbwsmd) {
+            JBossWebMetaData jbwmd, WebservicesMetaData wsmd, JBossWebservicesMetaData jbwsmd, CapabilityServiceSupport capabilityServiceSupport) {
         EndpointPublisherImpl publisher = new EndpointPublisherImpl(null, true);
-        return publisher.doPrepare(context, loader, urlPatternToClassName, jbwmd, wsmd, jbwsmd);
+        return publisher.doPrepare(context, loader, urlPatternToClassName, jbwmd, wsmd, jbwsmd, capabilityServiceSupport);
     }
 }

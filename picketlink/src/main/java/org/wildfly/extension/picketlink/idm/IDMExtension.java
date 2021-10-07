@@ -22,17 +22,21 @@
 
 package org.wildfly.extension.picketlink.idm;
 
-import static org.wildfly.extension.picketlink.federation.Namespace.CURRENT;
-import static org.wildfly.extension.picketlink.idm.Namespace.PICKETLINK_IDENTITY_MANAGEMENT_1_1;
+import static org.wildfly.extension.picketlink.idm.Namespace.CURRENT;
 import static org.wildfly.extension.picketlink.idm.Namespace.PICKETLINK_IDENTITY_MANAGEMENT_1_0;
+import static org.wildfly.extension.picketlink.idm.Namespace.PICKETLINK_IDENTITY_MANAGEMENT_1_1;
 
-import org.jboss.as.controller.Extension;
+import java.util.Collections;
+import java.util.Set;
+
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -45,7 +49,7 @@ import org.wildfly.extension.picketlink.idm.model.PartitionManagerResourceDefini
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
-public class IDMExtension implements Extension {
+public class IDMExtension extends AbstractLegacyExtension {
 
     public static final String SUBSYSTEM_NAME = "picketlink-identity-management";
     private static final String RESOURCE_NAME = IDMExtension.class.getPackage().getName() + ".LocalDescriptions";
@@ -55,20 +59,25 @@ public class IDMExtension implements Extension {
     //deprecated in EAP 6.4
     public static final ModelVersion DEPRECATED_SINCE = ModelVersion.create(2,0,0);
 
+    public IDMExtension() {
+        super("org.wildfly.extension.picketlink", SUBSYSTEM_NAME);
+    }
+
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new DeprecatedResourceDescriptionResolver(SUBSYSTEM_NAME, keyPrefix, RESOURCE_NAME, IDMExtension.class.getClassLoader(), true, true);
     }
 
     @Override
-    public void initialize(ExtensionContext context) {
+    protected Set<ManagementResourceRegistration> initializeLegacyModel(ExtensionContext context) {
         SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION, true);
 
-        subsystem.registerSubsystemModel(IDMSubsystemRootResourceDefinition.INSTANCE);
+        ManagementResourceRegistration mrr = subsystem.registerSubsystemModel(IDMSubsystemRootResourceDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(Namespace.CURRENT.getXMLWriter());
 
         if (context.isRegisterTransformers()) {
             registerTransformers_1_0(context, subsystem);
         }
+        return Collections.singleton(mrr);
     }
 
     private void registerTransformers_1_0(ExtensionContext context, SubsystemRegistration subsystemRegistration) {
@@ -92,9 +101,10 @@ public class IDMExtension implements Extension {
     }
 
     @Override
-    public void initializeParsers(ExtensionParsingContext context) {
+    protected void initializeLegacyParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUri(), Namespace.CURRENT::getXMLReader);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, PICKETLINK_IDENTITY_MANAGEMENT_1_1.getUri(), PICKETLINK_IDENTITY_MANAGEMENT_1_1::getXMLReader);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, PICKETLINK_IDENTITY_MANAGEMENT_1_0.getUri(), PICKETLINK_IDENTITY_MANAGEMENT_1_0::getXMLReader);
+
     }
 }

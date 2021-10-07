@@ -23,19 +23,20 @@ package org.jboss.as.test.clustering.cluster;
 
 import static org.wildfly.common.Assert.checkNotNullArrayParam;
 
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.infinispan.client.hotrod.ProtocolVersion;
-import org.infinispan.commons.test.skip.OS;
-import org.infinispan.commons.test.skip.SkipJunit;
 import org.infinispan.server.test.core.ServerRunMode;
 import org.infinispan.server.test.core.TestSystemPropertyNames;
+import org.infinispan.server.test.junit4.InfinispanServerRule;
 import org.infinispan.server.test.junit4.InfinispanServerRuleBuilder;
 import org.jboss.arquillian.container.spi.Container;
 import org.jboss.arquillian.container.spi.ContainerRegistry;
@@ -45,7 +46,6 @@ import org.jboss.as.arquillian.api.WildFlyContainerController;
 import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
-import org.jgroups.util.Util;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.rules.TestRule;
@@ -99,19 +99,35 @@ public abstract class AbstractClusteringTestCase {
 
     // Infinispan Server
     public static final String INFINISPAN_SERVER_HOME = System.getProperty("infinispan.server.home");
-    public static final String INFINISPAN_SERVER_PROFILE = "infinispan-server/infinispan.xml";
-    public static final String INFINISPAN_SERVER_PROTOCOL_VERSION = ProtocolVersion.DEFAULT_PROTOCOL_VERSION.toString();
+    public static final String INFINISPAN_SERVER_PROFILE = System.getProperty("infinispan.server.profile");
+    public static final String INFINISPAN_SERVER_PROFILE_DEFAULT = "infinispan-13_0.xml";
     public static final String INFINISPAN_SERVER_ADDRESS = "127.0.0.1";
     public static final int INFINISPAN_SERVER_PORT = 11222;
+    public static final String INFINISPAN_APPLICATION_USER = "testsuite-application-user";
+    public static final String INFINISPAN_APPLICATION_PASSWORD = "testsuite-application-password";
+    public static final InfinispanServerRule INFINISPAN_SERVER_RULE;
 
-    public static TestRule infinispanServerTestRule() {
-        // Disable on Windows until https://issues.redhat.com/browse/ISPN-12041 is fixed
-        return Util.checkForWindows() ? new SkipJunit(OS.WINDOWS) : InfinispanServerRuleBuilder
-                .config(INFINISPAN_SERVER_PROFILE)
-                .property(TestSystemPropertyNames.INFINISPAN_SERVER_HOME, INFINISPAN_SERVER_HOME)
+    static {
+        String profile = (INFINISPAN_SERVER_PROFILE == null || INFINISPAN_SERVER_PROFILE.isEmpty()) ? INFINISPAN_SERVER_PROFILE_DEFAULT : INFINISPAN_SERVER_PROFILE;
+        // Workaround for "ISPN-13107 ServerRunMode.FORKED yields InvalidPathException with relative server config paths on Windows platform" by using absolute file path which won't get mangled.
+        String absoluteConfigurationFile = null;
+        try {
+            absoluteConfigurationFile = Paths.get(Objects.requireNonNull(AbstractClusteringTestCase.class.getClassLoader().getResource(profile)).toURI()).toFile().toString();
+        } catch (URISyntaxException ignore) {
+        }
+
+        INFINISPAN_SERVER_RULE = InfinispanServerRuleBuilder
+                .config(absoluteConfigurationFile)
+                .property(TestSystemPropertyNames.INFINISPAN_TEST_SERVER_DIR, INFINISPAN_SERVER_HOME)
+                .property("infinispan.client.rest.auth_username", "testsuite-driver-user")
+                .property("infinispan.client.rest.auth_password", "testsuite-driver-password")
                 .numServers(1)
                 .runMode(ServerRunMode.FORKED)
                 .build();
+    }
+
+    public static TestRule infinispanServerTestRule() {
+        return INFINISPAN_SERVER_RULE;
     }
 
     // Undertow-based WildFly load-balancer

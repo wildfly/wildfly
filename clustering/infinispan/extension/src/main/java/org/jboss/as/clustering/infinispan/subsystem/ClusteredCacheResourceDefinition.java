@@ -38,15 +38,12 @@ import org.jboss.as.clustering.controller.ResourceCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -173,23 +170,6 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         public PathAddress apply(PathAddress address) {
             return address.getParent().append(CacheRuntimeResourceDefinition.pathElement(address.getLastElement().getValue()));
         }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-
-        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(Mode.SYNC.name())), DeprecatedAttribute.MODE.getDefinition())
-                    .end();
-        }
-
-        if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.REMOTE_TIMEOUT.getName())
-                    .end();
-        }
-
-        CacheResourceDefinition.buildTransformation(version, builder);
     }
 
     private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {

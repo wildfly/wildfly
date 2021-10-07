@@ -17,7 +17,6 @@
         <feature-group name="ha-sockets"/>
     </feature>
 
-    <feature-group name="servlet-security-realms"/>
     <feature-group name="management-audit"/>
     <feature-group name="management-interfaces"/>
     <feature-group name="access-control"/>
@@ -29,5 +28,6 @@
     <feature-group name="microprofile-opentracing-jaeger"/>
     <feature spec="subsystem.microprofile-config-smallrye"/>
     <feature spec="subsystem.microprofile-jwt-smallrye"/>
+    <feature spec="subsystem.elytron-oidc-client"/>
 
 </feature-group-spec>

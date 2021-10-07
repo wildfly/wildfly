@@ -48,14 +48,23 @@ public class LayersTestCase {
         // Un-used
         "javax.sql.api",
         // Un-used
+        "javax.xml.stream.api",
+        // Un-used
         "javax.validation.api",
         // Un-used
         "javax.activation.api",
+        // Un-used
+        "javax.transaction.api",
         // No patching modules in layers
         "org.jboss.as.patching",
         "org.jboss.as.patching.cli",
         // Not currently used internally
-        "org.wildfly.event.logger"
+        "org.wildfly.event.logger",
+        // Removed legacy security
+        "org.jboss.as.security",
+        "org.jboss.as.security-integration",
+        "org.jboss.as.security-plugins",
+        "org.picketbox"
     };
     // Packages that are not referenced from the module graph but needed.
     // This is the expected set of un-referenced modules found when scanning
@@ -69,10 +78,6 @@ public class LayersTestCase {
         "org.jboss.logging.jul-to-slf4j-stub",
         // injected by logging
         "org.jboss.logmanager.log4j2",
-        // injected by logging
-        "org.slf4j.ext",
-        // injected by logging
-        "ch.qos.cal10n",
         // tooling
         "org.jboss.as.domain-add-user",
         // Brought by galleon FP config
@@ -88,7 +93,9 @@ public class LayersTestCase {
         // Brought by galleon ServerRootResourceDefinition
         "wildflyee.api",
         // bootable jar runtime
-        "org.wildfly.bootable-jar"
+        "org.wildfly.bootable-jar",
+        // May be needed by deployments if running on IBM JDK.
+        "ibm.jdk"
         };
 
     /**

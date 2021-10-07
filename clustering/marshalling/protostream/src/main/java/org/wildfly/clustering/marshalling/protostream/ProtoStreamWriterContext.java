@@ -24,38 +24,68 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author Paul Ferraro
  */
-public interface ProtoStreamWriterContext extends AutoCloseable {
+interface ProtoStreamWriterContext extends ProtoStreamOperation.Context, AutoCloseable {
 
-    ThreadLocal<ProtoStreamWriterContext> INSTANCE = new ThreadLocal<ProtoStreamWriterContext>() {
+    interface Factory extends Function<ProtoStreamWriter, ProtoStreamWriterContext>, AutoCloseable {
         @Override
-        protected ProtoStreamWriterContext initialValue() {
-            return new ProtoStreamWriterContext() {
-                private final Map<Object, Integer> references = new IdentityHashMap<>();
+        default void close() {
+            FACTORY.remove();
+        }
+    }
+
+    ThreadLocal<Factory> FACTORY = new ThreadLocal<Factory>() {
+        @Override
+        protected Factory initialValue() {
+            return new DefaultFactory();
+        }
+
+        class DefaultFactory implements Factory {
+            final Map<Class<?>, ProtoStreamWriterContext> contexts = new IdentityHashMap<>(2);
+
+            @Override
+            public ProtoStreamWriterContext apply(ProtoStreamWriter writer) {
+                return this.contexts.computeIfAbsent(writer.getClass(), DefaultProtoStreamWriterContext::new);
+            }
+
+            class DefaultProtoStreamWriterContext implements ProtoStreamWriterContext, Function<Object, Integer> {
+                private final Class<?> writerClass;
+                private final Map<Object, Integer> references = new IdentityHashMap<>(64);
                 private int index = 0;
 
+                DefaultProtoStreamWriterContext(Class<?> targetClass) {
+                    this.writerClass = targetClass;
+                }
+
                 @Override
-                public Integer getReferenceId(Object object) {
+                public Integer getReference(Object object) {
                     return this.references.get(object);
                 }
 
                 @Override
-                public void setReference(Object object) {
-                    this.references.put(object, this.index++);
+                public void addReference(Object object) {
+                    this.references.computeIfAbsent(object, this);
                 }
-            };
+
+                @Override
+                public Integer apply(Object key) {
+                    return this.index++;
+                }
+
+                @Override
+                public void close() {
+                    DefaultFactory.this.contexts.remove(this.writerClass);
+                }
+            }
         }
     };
 
-    Integer getReferenceId(Object object);
-
-    void setReference(Object object);
+    Integer getReference(Object object);
 
     @Override
-    default void close() {
-        INSTANCE.remove();
-    }
+    void close();
 }

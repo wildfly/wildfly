@@ -31,7 +31,6 @@
         <artifact name="${org.apache.wss4j:wss4j-ws-security-dom}"/>
         <artifact name="${org.apache.wss4j:wss4j-ws-security-policy-stax}"/>
         <artifact name="${org.apache.wss4j:wss4j-ws-security-stax}"/>
-        <artifact name="${org.jasypt:jasypt}"/>
     </resources>
 
     <dependencies>
@@ -43,6 +42,7 @@
       <module name="org.apache.commons.codec"/>
       <module name="org.apache.commons.logging"/>
       <module name="org.apache.neethi"/>
+      <module name="org.jasypt"/>
       <module name="org.apache.santuario.xmlsec"/>
       <module name="org.apache.xalan"/>
       <module name="org.joda.time"/>

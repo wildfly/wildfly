@@ -24,17 +24,13 @@ package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SubsystemRegistration;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.modcluster.ModClusterServiceMBean;
 
 /**
@@ -70,13 +66,5 @@ class ModClusterSubsystemResourceDefinition extends SubsystemResourceDefinition<
         if (parent.isRuntimeOnlyRegistrationValid()) {
             new LegacyProxyHandler(registry).register(registration);
         }
-    }
-
-    static TransformationDescription buildTransformation(ModelVersion version) {
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-
-        ProxyConfigurationResourceDefinition.buildTransformation(version, builder);
-
-        return builder.build();
     }
 }

@@ -1,0 +1,10 @@
+[[Introduction]]
+= Introduction
+
+Since the initial development of JBoss AS7 the features added to WildFly have been continuing to
+increase, some of the older features are now being removed to make way for new features.  This
+guide contains information about the removed features and their alternatives.
+
+
+
+

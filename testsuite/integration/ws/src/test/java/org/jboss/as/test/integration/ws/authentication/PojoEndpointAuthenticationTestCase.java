@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.ws.authentication;
 
 import java.net.URL;
 import java.util.Map;
+
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
@@ -32,21 +33,18 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.runner.RunWith;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests for authentication against POJO endpoint
  *
  * @author Rostislav Svoboda
  */
-@ServerSetup({EjbSecurityDomainSetup.class})
 @RunWith(Arquillian.class)
 @RunAsClient
 public class PojoEndpointAuthenticationTestCase {
@@ -59,8 +57,6 @@ public class PojoEndpointAuthenticationTestCase {
     @Deployment(testable = false)
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "jaxws-authentication-pojo.war")
-                .addAsResource(PojoEndpointAuthenticationTestCase.class.getPackage(), "users.properties", "users.properties")
-                .addAsResource(PojoEndpointAuthenticationTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addClasses(PojoEndpointIface.class, PojoEndpoint.class)
                 .addAsWebInfResource(PojoEndpointAuthenticationTestCase.class.getPackage(), "web.xml", "web.xml")
                 .addAsWebInfResource(PojoEndpointAuthenticationTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
@@ -142,8 +138,8 @@ public class PojoEndpointAuthenticationTestCase {
         PojoEndpointIface proxy = service.getPort(PojoEndpointIface.class);
 
         Map<String, Object> reqContext = ((BindingProvider) proxy).getRequestContext();
-        reqContext.put(BindingProvider.USERNAME_PROPERTY, "user3");
-        reqContext.put(BindingProvider.PASSWORD_PROPERTY, "password3");
+        reqContext.put(BindingProvider.USERNAME_PROPERTY, "guest");
+        reqContext.put(BindingProvider.PASSWORD_PROPERTY, "guest");
 
         try {
             proxy.hello("World");

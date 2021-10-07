@@ -24,7 +24,7 @@
 
 <module xmlns="urn:jboss:module:1.9" name="io.undertow.servlet">
     <resources>
-        <artifact name="${io.undertow:undertow-servlet}"/>
+        <artifact name="\${io.undertow:undertow-servlet@module.jakartaee9.suffix@}"/>
     </resources>
 
     <dependencies>

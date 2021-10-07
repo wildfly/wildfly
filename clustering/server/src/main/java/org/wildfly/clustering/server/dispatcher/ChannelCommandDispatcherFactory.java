@@ -248,12 +248,6 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
         }
     }
 
-    @Deprecated
-    @Override
-    public void removeListener(Listener listener) {
-        this.unregister(listener);
-    }
-
     @Override
     public String getName() {
         return this.dispatcher.getChannel().getClusterName();

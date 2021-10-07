@@ -24,7 +24,10 @@ package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.seria
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.PropertyPermission;
 import java.util.concurrent.TimeUnit;
 
@@ -75,16 +78,45 @@ public class ReactiveMessagingKafkaSerializerTestCase {
     public void test() throws InterruptedException {
         boolean wait = bean.getLatch().await(TIMEOUT, TimeUnit.MILLISECONDS);
         Assert.assertTrue("Timed out", wait);
+
         List<Person> list = bean.getReceived();
         Assert.assertEquals(3, list.size());
+        // Kafka messages only have order per partition, so do some massaging of the data
+        Map<Integer, List<Person>> map = new HashMap<>();
+        for (int i = 0; i < list.size(); i++) {
+            List<Person> persons = map.computeIfAbsent(bean.getPartitionReceived().get(i), ind -> new ArrayList<>());
+            persons.add(list.get(i));
 
-        Assert.assertEquals("Kabir", list.get(0).getName());
-        Assert.assertEquals(101, list.get(0).getAge());
+        }
 
-        Assert.assertEquals("Bob", list.get(1).getName());
-        Assert.assertEquals(18, list.get(1).getAge());
 
-        Assert.assertEquals("Roger", list.get(2).getName());
-        Assert.assertEquals(21, list.get(2).getAge());
+        Person kabir = assertPersonNextOnAPartition(map, "Kabir");
+        Person bob = assertPersonNextOnAPartition(map, "Bob");
+        Person roger = assertPersonNextOnAPartition(map, "Roger");
+
+
+        Assert.assertEquals(101, kabir.getAge());
+        Assert.assertEquals(18, bob.getAge());
+        Assert.assertEquals(21, roger.getAge());
     }
+
+    private Person assertPersonNextOnAPartition(Map<Integer, List<Person>> map, String name) {
+        Person found = null;
+        int remove = -1;
+        for (Map.Entry<Integer, List<Person>> entry : map.entrySet()) {
+            List<Person> persons = entry.getValue();
+            Person p = persons.get(0);
+            if (p.getName().equals(name)) {
+                found = p;
+                persons.remove(0);
+                if (persons.size() == 0) {
+                    remove = entry.getKey();
+                }
+            }
+        }
+        map.remove(remove);
+        Assert.assertNotNull("Could not find " + name, found);
+        return found;
+    }
+
 }

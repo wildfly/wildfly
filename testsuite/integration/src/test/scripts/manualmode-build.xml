@@ -109,24 +109,6 @@
             <fileset dir="target/wildfly"/>
         </copy>
 
-        <xslt destdir="target/jbossas-custom/docs/examples/configs"
-              style="${jbossas.ts.integ.dir}/src/test/xslt/changeLdapStore.xsl"
-              extension=".xml.mod"
-              useImplicitFileset="false">
-            <fileset dir="target/jbossas-custom/docs/examples/configs">
-                <include name="**/standalone-picketlink.xml"/>
-            </fileset>
-        </xslt>
-
-        <!-- Move processed files back. -->
-        <move todir="target/jbossas-custom/docs/examples/configs">
-            <fileset dir="target/jbossas-custom/docs/examples/configs">
-                <include name="**/standalone-picketlink.xml.mod"/>
-            </fileset>
-            <mapper type="glob" from="*.mod" to="*"/>
-        </move>
-
-
         <ts.config-as.change-transport-stack name="jbossas-dwm-manual-0"
                                              stack="tcp"/>
         <ts.config-as.change-transport-stack name="jbossas-dwm-manual-1"
@@ -134,9 +116,9 @@
 
         <!-- Connects back to original host (node0) -->
         <ts.config-as.add-remote-outbound-connection name="jbossas-with-remote-outbound-connection" node="${node0}"
-                                                     remotePort="8080" protocol="remote+http" securityRealm="PasswordRealm" userName="user1"/>
-        <ts.config-as.add-identity-realm name="jbossas-with-remote-outbound-connection" realmName="PasswordRealm"
-                                         secret="cGFzc3dvcmQx"/>
+                                                     remotePort="8080" protocol="remote+http" />
+        <!--<ts.config-as.add-identity-realm name="jbossas-with-remote-outbound-connection" realmName="PasswordRealm"
+                                         secret="cGFzc3dvcmQx"/>-->
 
         <ts.config-as.ip-with-multicast name="jbossas-with-remote-outbound-connection"
             node="${node1}"

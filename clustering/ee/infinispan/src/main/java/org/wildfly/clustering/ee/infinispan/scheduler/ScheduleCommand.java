@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,34 +25,31 @@ package org.wildfly.clustering.ee.infinispan.scheduler;
 import org.wildfly.clustering.dispatcher.Command;
 
 /**
- * Command that scheduled an item.
+ * Command that scheduled an element.
  * @author Paul Ferraro
  */
-public class ScheduleCommand<I, M> implements Command<Void, Scheduler<I, M>> {
-    private static final long serialVersionUID = 6254782388444864112L;
+public interface ScheduleCommand<I, M> extends Command<Void, Scheduler<I, M>> {
 
-    private final I id;
-    private final transient M metaData;
+    /**
+     * Returns the identifier of the element to be scheduled.
+     * @return the identifier of the element to be scheduled.
+     */
+    I getId();
 
-    public ScheduleCommand(I id, M metaData) {
-        this.id = id;
-        this.metaData = metaData;
-    }
-
-    ScheduleCommand(I id) {
-        this(id, null);
-    }
-
-    I getId() {
-        return this.id;
-    }
+    /**
+     * Returns the meta data of the element to be scheduled.
+     * @return the meta data of the element to be scheduled.
+     */
+    M getMetaData();
 
     @Override
-    public Void execute(Scheduler<I, M> scheduler) {
-        if (this.metaData != null) {
-            scheduler.schedule(this.id, this.metaData);
+    default Void execute(Scheduler<I, M> scheduler) throws Exception {
+        I id = this.getId();
+        M metaData = this.getMetaData();
+        if (metaData != null) {
+            scheduler.schedule(id, metaData);
         } else {
-            scheduler.schedule(this.id);
+            scheduler.schedule(id);
         }
         return null;
     }

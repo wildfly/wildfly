@@ -29,10 +29,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import org.springframework.kafka.test.core.BrokerAddress;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
@@ -40,21 +48,40 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker;
 public class RunKafkaSetupTask implements ServerSetupTask {
     EmbeddedKafkaBroker broker;
     Path kafkaDir;
+    final boolean ipv6 = WildFlySecurityManager.doChecked(
+            (PrivilegedAction<Boolean>) () -> System.getProperties().containsKey("ipv6"));
+    protected final String LOOPBACK = ipv6 ? "[::1]" : "127.0.0.1";
+
     @Override
     public void setup(ManagementClient managementClient, String s) throws Exception {
         Path target = Paths.get("target").toAbsolutePath().normalize();
-        kafkaDir = Files.createTempDirectory(target, "kafka");
+        kafkaDir = Files.createTempDirectory(target, "kafka").toAbsolutePath();
 
         Files.createDirectories(kafkaDir);
 
-        broker = new EmbeddedKafkaBroker(1, true)
+        broker = new WildFlyEmbeddedKafkaBroker(1, true, getPartitions(), getTopics())
                 .zkPort(2181)
                 .kafkaPorts(9092)
-                .brokerProperty("log.dir", kafkaDir.toString())
-                .brokerProperty("num.partitions", 1)
-                .brokerProperty("offsets.topic.num.partitions", 5);
+                .brokerProperty("log.dir", kafkaDir.toString());
 
+        broker = augmentKafkaBroker((WildFlyEmbeddedKafkaBroker)broker);
         broker.afterPropertiesSet();
+    }
+
+    protected WildFlyEmbeddedKafkaBroker augmentKafkaBroker(WildFlyEmbeddedKafkaBroker broker) {
+        return broker;
+    }
+
+    protected Map<String, String> additionalBrokerProperties() {
+        return Collections.emptyMap();
+    }
+
+    protected String[] getTopics() {
+        return new String[]{"testing"};
+    }
+
+    protected int getPartitions() {
+        return 1;
     }
 
     @Override
@@ -65,24 +92,61 @@ public class RunKafkaSetupTask implements ServerSetupTask {
             }
         } finally {
             try {
-                Files.walkFileTree(kafkaDir, new SimpleFileVisitor<Path>() {
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                        if (!Files.isDirectory(file)) {
-                            Files.delete(file);
+                System.out.println("======> Exists " + kafkaDir + ": " + Files.exists(kafkaDir));
+                if (Files.exists(kafkaDir)) {
+                    Files.walkFileTree(kafkaDir, new SimpleFileVisitor<Path>() {
+                        @Override
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                            if (!Files.isDirectory(file)) {
+                                Files.delete(file);
+                            }
+                            return super.visitFile(file, attrs);
                         }
-                        return super.visitFile(file, attrs);
-                    }
 
-                    @Override
-                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                        Files.delete(dir);
-                        return super.postVisitDirectory(dir, exc);
-                    }
-                });
+                        @Override
+                        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                            Files.delete(dir);
+                            return super.postVisitDirectory(dir, exc);
+                        }
+                    });
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    protected class WildFlyEmbeddedKafkaBroker extends EmbeddedKafkaBroker {
+        final int count;
+        private int[] kafkaPorts;
+
+        protected WildFlyEmbeddedKafkaBroker(int count) {
+            this(count, false);
+        }
+
+        protected WildFlyEmbeddedKafkaBroker(int count, boolean controlledShutdown, String... topics) {
+            this(count, controlledShutdown, 2, topics);
+        }
+
+        protected WildFlyEmbeddedKafkaBroker(int count, boolean controlledShutdown, int partitions, String... topics) {
+            super(count, controlledShutdown, partitions, topics);
+            this.count = count;
+        }
+
+        public EmbeddedKafkaBroker kafkaPorts(int... ports) {
+            super.kafkaPorts(ports);
+            // Override so we have our own copy
+            this.kafkaPorts = Arrays.copyOf(ports, ports.length);
+            return this;
+        }
+
+        public BrokerAddress[] getBrokerAddresses() {
+            List<BrokerAddress> addresses = new ArrayList<BrokerAddress>();
+
+            for (int kafkaPort : kafkaPorts) {
+                addresses.add(new BrokerAddress(LOOPBACK, kafkaPort));
+            }
+            return addresses.toArray(new BrokerAddress[0]);
         }
     }
 }

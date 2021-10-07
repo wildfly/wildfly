@@ -48,12 +48,13 @@ recommended as it allows the Administration Console to work:
 [source,xml,options="nowrap"]
 ----
 <management-interfaces>
-  <native-interface security-realm="ManagementRealm">
-    <socket interface="management" port="${jboss.management.native.port:9999}"/>
-  </native-interface>
-  <http-interface security-realm="ManagementRealm">
-    <socket interface="management" port="${jboss.management.http.port:9990}"/>
-  </http-interface>
+    <native-interface sasl-authentication-factory="management-sasl-authentication">
+        <socket interface="management" port="9999"/>
+    </native-interface>
+    <http-interface http-authentication-factory="management-http-authentication">
+        <http-upgrade enabled="true" sasl-authentication-factory="management-sasl-authentication"/>
+        <socket interface="management" port="${jboss.management.http.port:9990}"/>
+    </http-interface>
 </management-interfaces>
 ----
 
@@ -87,19 +88,6 @@ am adding a new user called slave.
 `add-user` MUST be run on the master domain controller and NOT the
 slave.
 
-When you reach the final question of the interactive flow answer `y` or
-`yes` to indicate that the new user will be used for a process e.g.
-
-
-----
-Is this new user going to be used for one AS process to connect to another AS process e.g. slave domain controller?
-yes/no? y
-To represent the user add the following to the server-identities definition <secret value="cE3EBEkE=" />
-----
-
-Make a note of the XML Element output as that is going to be required
-within the slave configuration.
-
 [[host-controller-configuration]]
 == Host Controller Configuration
 
@@ -130,22 +118,26 @@ will be used, one of which will be set on most operating systems. If
 neither is set the name will be the value of
 `InetAddress.getLocalHost().getHostName()`.
 
-A security realm needs to be defined to hold the identity of the slave.
-Since it is performing a specific purpose I would suggest a new realm is
-defined although it is possible to combine this with an existing realm.
+An `authentication-context` needs to be defined in the `elytron` subsystem
+to contain the identity of the host controller.
 
 [source,xml,options="nowrap"]
 ----
-<security-realm name="SlaveRealm">
-  <server-identities>
-    <secret value="cE3EBEkE=" />
-  </server-identities>
-</security-realm>
+<subsystem xmlns="urn:wildfly:elytron:14.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+    <authentication-client>
+        <authentication-configuration sasl-mechanism-selector="DIGEST-MD5"
+                                      name="hostAuthConfig"
+                                      authentication-name="slave"
+                                      realm="ManagementRealm">
+            <credential-reference clear-text="host_us3r_password"/>
+        </authentication-configuration>
+        <authentication-context name="hcAuthContext">
+            <match-rule match-host="${jboss.test.host.master.address}" 
+                        authentication-configuration="hostAuthConfig"/>
+        </authentication-context>
+    </authentication-client>
+....
 ----
-
-The `<secret />` element here is the one output from `add-user`
-previously. To create the `<secret />` element yourself the `value`
-needs to be the password encoded using Base64.
 
 Tell it how to find the domain controller so it can register itself with
 the domain:
@@ -153,7 +145,7 @@ the domain:
 [source,xml,options="nowrap"]
 ----
 <domain-controller>
-   <remote protocol="remote" host="192.168.0.101" port="9999" username="slave" security-realm="SlaveRealm"/>
+   <remote protocol="remote" host="192.168.0.101" port="9999" authentication-context="hcAuthContext"/>
 </domain-controller>
 ----
 
@@ -163,15 +155,11 @@ use :
 [source,xml,options="nowrap"]
 ----
 <domain-controller>
-   <remote protocol="http-remoting" host="192.168.0.101" port="9990" username="slave" security-realm="SlaveRealm"/>
+   <remote protocol="http-remoting" host="192.168.0.101" port="9990" username="slave" authentication-context="hcAuthContext"/>
 </domain-controller>
 ----
 
 ~(See domain/configuration/host.xml)~
-
-The username attribute here is optional, if it is omitted then the name
-of the host will be used instead, in this example that was already set
-to name.
 
 [TIP]
 
@@ -179,11 +167,6 @@ The name of each host needs to be unique when registering with the
 domain controller, however the username does not - using the username
 attribute allows the same account to be used by multiple hosts if this
 makes sense in your environment.
-
-The `<remote />` element is also associated with the security realm
-`SlaveRealm`, this is how it picks up the password from the `<secret />`
-element. +
-
 
 === Ignoring domain wide resources
 
@@ -280,7 +263,7 @@ file and setting the `ignore-unused-configuration` attribute:
 [source,xml,options="nowrap"]
 ----
 <domain-controller>
-    <remote security-realm="ManagementRealm" ignore-unused-configuration="false">
+    <remote authentication-context="hcAuthContext" ignore-unused-configuration="false">
         <discovery-options>
             <static-discovery name="primary" protocol="${jboss.domain.master.protocol:remote}" host="${jboss.domain.master.address}" port="${jboss.domain.master.port:9999}"/>
         </discovery-options>
@@ -298,7 +281,7 @@ installed on the Domain Controller and on some slaves, but not this one:
 [source,xml,options="nowrap"]
 ----
 <domain-controller>
-    <remote security-realm="ManagementRealm" ignore-unused-configuration="true">
+    <remote authentication-context="hcAuthContext" ignore-unused-configuration="true">
         <ignored-resources type="extension">
             <instance name="org.example.foo"/>
         </ignored-resources>

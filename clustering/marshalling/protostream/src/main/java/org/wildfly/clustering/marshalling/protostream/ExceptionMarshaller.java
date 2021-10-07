@@ -71,13 +71,13 @@ public class ExceptionMarshaller<E extends Throwable> implements ProtoStreamMars
                     message = reader.readString();
                     break;
                 case CAUSE_INDEX:
-                    cause = (Throwable) reader.readObject(Any.class).get();
+                    cause = reader.readAny(Throwable.class);
                     break;
                 case STACK_TRACE_ELEMENT_INDEX:
                     stackTrace.add(reader.readObject(StackTraceElement.class));
                     break;
                 case SUPPRESSED_INDEX:
-                    suppressed.add((Throwable) reader.readObject(Any.class).get());
+                    suppressed.add(reader.readAny(Throwable.class));
                     break;
                 default:
                     reader.skipField(tag);
@@ -105,13 +105,13 @@ public class ExceptionMarshaller<E extends Throwable> implements ProtoStreamMars
             writer.writeString(MESSAGE_INDEX, message);
         }
         if (cause != null) {
-            writer.writeObject(CAUSE_INDEX, new Any(cause));
+            writer.writeAny(CAUSE_INDEX, cause);
         }
         for (StackTraceElement element : exception.getStackTrace()) {
             writer.writeObject(STACK_TRACE_ELEMENT_INDEX, element);
         }
         for (Throwable suppressed : exception.getSuppressed()) {
-            writer.writeObject(SUPPRESSED_INDEX, new Any(suppressed));
+            writer.writeAny(SUPPRESSED_INDEX, suppressed);
         }
     }
 

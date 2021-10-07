@@ -23,6 +23,9 @@
 package org.jboss.as.test.multinode.clientinterceptor;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.io.File;
+import java.io.FilePermission;
 import java.security.SecurityPermission;
 import java.util.Collections;
 import java.util.List;
@@ -73,7 +76,8 @@ public class RemoteCallClientInterceptorTestCase {
         jar.addAsManifestResource("META-INF/jboss-ejb-client-receivers.xml", "jboss-ejb-client.xml");
         jar.addAsManifestResource(
                 createPermissionsXmlAsset(
-                        new SecurityPermission("putProviderProperty.WildFlyElytron")),
+                        new SecurityPermission("putProviderProperty.WildFlyElytron"),
+                        new FilePermission(System.getProperty("jboss.home") + File.separatorChar + "standalone" + File.separatorChar + "tmp" + File.separatorChar + "auth" + File.separatorChar + "-", "read")),
                 "permissions.xml");
         return jar;
     }

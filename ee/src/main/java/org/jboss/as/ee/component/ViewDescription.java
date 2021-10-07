@@ -314,4 +314,8 @@ public class ViewDescription {
     public String getMarkupClassName() {
         return markupClassName;
     }
+
+    public boolean requiresSuperclassInProxy() {
+        return true;
+    }
 }

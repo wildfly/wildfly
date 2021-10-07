@@ -52,6 +52,6 @@ public class AttributeManagerResourceDefinition extends AbstractFederationResour
     public static final AttributeManagerResourceDefinition INSTANCE = new AttributeManagerResourceDefinition();
 
     private AttributeManagerResourceDefinition() {
-        super(ModelElement.IDENTITY_PROVIDER_ATTRIBUTE_MANAGER, new IdentityProviderConfigAddStepHandler(ATTRIBUTE_DEFINITIONS), IdentityProviderConfigRemoveStepHandler.INSTANCE, ATTRIBUTE_DEFINITIONS);
+        super(ModelElement.IDENTITY_PROVIDER_ATTRIBUTE_MANAGER, new IdentityProviderConfigAddStepHandler(ATTRIBUTE_DEFINITIONS), ATTRIBUTE_DEFINITIONS);
     }
 }

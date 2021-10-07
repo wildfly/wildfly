@@ -3,7 +3,7 @@
 <feature-group-spec name="servlet-domain-profile" xmlns="urn:jboss:galleon:feature-group:1.0">
 
     <feature-group name="servlet-unsecured-domain-profile"/>
-    <feature-group name="undertow-legacy-security"/>
-    <feature-group name="servlet-picketbox-security"/>
+
+    <feature-group name="undertow-https"/>
 
 </feature-group-spec>

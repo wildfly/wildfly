@@ -47,7 +47,6 @@ import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.WebSecurityPasswordBasedBase;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
-import org.jboss.as.test.integration.web.security.jaspi.WebSecurityJaspiTestCase;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -65,7 +64,7 @@ import org.junit.runner.RunWith;
 @ServerSetup(WebTestsSecurityDomainSetup.class)
 @Category(CommonCriteria.class)
 public class WebSecurityBASICTestCase extends WebSecurityPasswordBasedBase {
-    private static final Logger log = Logger.getLogger(WebSecurityJaspiTestCase.class);
+    private static final Logger log = Logger.getLogger(WebSecurityBASICTestCase.class);
 
     private static final String JBOSS_WEB_CONTENT = "<?xml version=\"1.0\"?>\n" +
             "<jboss-web>\n" +

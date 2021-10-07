@@ -306,9 +306,9 @@ the DLQ and redelivery settings.
 [[security-domain-for-users]]
 == Security Domain for Users
 
-By default, Artemis will use the " `other`" JAAS security domain. This
-domain is used to authenticate users making connections to Artemis and
-then they are authorized to perform specific functions based on their
+By default, Artemis will use the " `ApplicationDomain`" Elytron security 
+domain. This domain is used to authenticate users making connections to Artemis
+and then they are authorized to perform specific functions based on their
 role(s) and the `security-settings` described above. This domain can be
 changed by using the `security-domain`, e.g.:
 
@@ -316,37 +316,9 @@ changed by using the `security-domain`, e.g.:
 ----
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0">
    <server name="default">
-       <security domain="mySecurityDomain" />
+       <security elytron-domain="mySecurityDomain" />
       [...]
 ----
-
-[[using-the-elytron-subsystem]]
-== Using the Elytron Subsystem
-
-You can also use the elytron subsystem to secure the messaging-activemq
-subsystem.
-
-To use an Elytron security domain:
-
-. Undefine the legacy security domain.
-+
-[source,options="nowrap"]
-----
-/subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
-----
-. Set an Elytron security domain.
-+
-[source,options="nowrap"]
-----
-/subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=myElytronSecurityDomain)
-----
-
-[IMPORTANT]
-
-You can only define either `security-domain` or `elytron-domain`, but
-you cannot have both defined at the same time. If neither is defined,
-WildFly will use the `security-domain` default value of `other`, which
-maps to the `other` legacy security domain.
 
 [[cluster-authentication]]
 == Cluster Authentication
@@ -364,9 +336,8 @@ HQ224018: Failed to create session: HornetQExceptionerrorType=CLUSTER_SECURITY_E
 ----
 
 To prevent this error, you must specify a value for
-`<cluster-password>`. It is possible to encrypt this value by following
-https://access.redhat.com/site/documentation/en-US/JBoss_Enterprise_Application_Platform/6.1/html/Security_Guide/sect-Password_Vaults_for_Sensitive_Strings.html[this
-guide].
+`<cluster-password>`. It is possible to encrypt this value by as an encrypted
+expression by referring to the Elytron documentation.
 
 Alternatively, you can use the system property
 jboss.messaging.cluster.password to specify the cluster password from
@@ -452,7 +423,7 @@ We define the module in `module.xml`:
 [source,xml,options="nowrap"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<module xmlns="urn:jboss:module:1.1" name="org.acmemq">
+<module xmlns="urn:jboss:module:1.9" name="org.acmemq">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -468,7 +439,7 @@ We define the module in `module.xml`:
  
     <dependencies>
        <!-- add the dependencies required by messaging Bridge code                -->
-       <module name="javax.api" />
+       <module name="javax.api" /> <!-- deprecated -->
        <module name="javax.jms.api" />
        <module name="javax.transaction.api"/>
        <module name="org.jboss.remote-naming"/>

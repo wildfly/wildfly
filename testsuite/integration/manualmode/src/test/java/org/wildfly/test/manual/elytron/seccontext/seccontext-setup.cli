@@ -1,13 +1,14 @@
 # enable Elytron across the server
 /subsystem=undertow/server=default-server/https-listener=https:remove()
-/subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain)
-/subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
+if (outcome != success) of /subsystem=undertow/application-security-domain=other:read-resource
+  /subsystem=undertow/application-security-domain=other:add(security-domain=ApplicationDomain)
+end-if
+if (outcome != success) of /subsystem=ejb3/application-security-domain=other:read-resource
+  /subsystem=ejb3/application-security-domain=other:add(security-domain=ApplicationDomain)
+end-if
 /subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
-/subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
 
 /subsystem=undertow/server=default-server/host=default-host/setting=http-invoker:remove
-
-/core-service=management/security-realm=ApplicationRealm:remove
 
 /subsystem=elytron/properties-realm=SeccontextRealm:add( \
     groups-properties={path=seccontext.properties, relative-to=jboss.server.config.dir}, \

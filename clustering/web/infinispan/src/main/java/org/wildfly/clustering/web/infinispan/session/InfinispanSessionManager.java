@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,11 +46,11 @@ import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.cache.IdentifierFactory;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.infinispan.spi.PredicateKeyFilter;
 import org.wildfly.clustering.infinispan.spi.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.spi.distribution.Locality;
-import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
 import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
@@ -59,6 +60,7 @@ import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
+import org.wildfly.clustering.web.session.SessionExpirationMetaData;
 import org.wildfly.clustering.web.session.SessionManager;
 
 /**
@@ -79,7 +81,7 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
     private final CacheProperties properties;
     private final SessionFactory<SC, MV, AV, LC> factory;
     private final IdentifierFactory<String> identifierFactory;
-    private final Scheduler<String, ImmutableSessionMetaData> expirationScheduler;
+    private final Scheduler<String, SessionExpirationMetaData> expirationScheduler;
     private final Recordable<ImmutableSessionMetaData> recorder;
     private final SC context;
     private final Runnable startTask;
@@ -107,7 +109,7 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
             @Override
             public void accept(ImmutableSession session) {
                 if (session.isValid()) {
-                    configuration.getExpirationScheduler().schedule(session.getId(), session.getMetaData());
+                    configuration.getExpirationScheduler().schedule(session.getId(), new SimpleSessionExpirationMetaData(session.getMetaData()));
                 }
             }
         };
@@ -165,8 +167,8 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
     }
 
     @Override
-    public String createIdentifier() {
-        return this.identifierFactory.createIdentifier();
+    public Supplier<String> getIdentifierFactory() {
+        return this.identifierFactory;
     }
 
     @Override

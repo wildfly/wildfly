@@ -22,26 +22,11 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
-import org.picketlink.idm.model.Account;
-import org.picketlink.idm.model.IdentityType;
-import org.picketlink.idm.model.Partition;
-import org.picketlink.idm.model.Relationship;
-import org.picketlink.idm.model.basic.Agent;
-import org.picketlink.idm.model.basic.Grant;
-import org.picketlink.idm.model.basic.Group;
-import org.picketlink.idm.model.basic.GroupMembership;
-import org.picketlink.idm.model.basic.GroupRole;
-import org.picketlink.idm.model.basic.Realm;
-import org.picketlink.idm.model.basic.Role;
-import org.picketlink.idm.model.basic.Tier;
-import org.picketlink.idm.model.basic.User;
-import org.picketlink.idm.permission.Permission;
-
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>Enum defining alias for each supported built-in {@link org.picketlink.idm.model.AttributedType} provided by PicketLink. The
+ * <p>Enum defining alias for each supported built-in {@code org.picketlink.idm.model.AttributedType} provided by PicketLink. The
  * alias is used in the configuration without using the full qualified name of a type.</p>
  *
  * @author Pedro Igor
@@ -49,22 +34,22 @@ import java.util.Map;
 public enum AttributedTypeEnum {
 
     // base types
-    PARTITION("Partition", Partition.class.getName()),
-    IDENTITY_TYPE("IdentityType", IdentityType.class.getName()),
-    ACCOUNT("Account", Account.class.getName()),
-    RELATIONSHIP("Relationship", Relationship.class.getName()),
-    PERMISSION("Permission", Permission.class.getName()),
+    PARTITION("Partition", "org.picketlink.idm.model.Partition"),
+    IDENTITY_TYPE("IdentityType", "org.picketlink.idm.model.IdentityType"),
+    ACCOUNT("Account", "org.picketlink.idm.model.Account"),
+    RELATIONSHIP("Relationship", "org.picketlink.idm.model.Relationship"),
+    PERMISSION("Permission", "org.picketlink.idm.permission.Permission"),
 
     // basic model types
-    REALM("Realm", Realm.class.getName()),
-    TIER("Tier", Tier.class.getName()),
-    AGENT("Agent", Agent.class.getName()),
-    USER("User", User.class.getName()),
-    ROLE("Role", Role.class.getName()),
-    GROUP("Group", Group.class.getName()),
-    GRANT("Grant", Grant.class.getName()),
-    GROUP_ROLE("GroupRole", GroupRole.class.getName()),
-    GROUP_MEMBERSHIP("GroupMembership", GroupMembership.class.getName());
+    REALM("Realm", "org.picketlink.idm.model.basic.Realm"),
+    TIER("Tier", "org.picketlink.idm.model.basic.Tier"),
+    AGENT("Agent", "org.picketlink.idm.model.basic.Agent"),
+    USER("User", "org.picketlink.idm.model.basic.User"),
+    ROLE("Role", "org.picketlink.idm.model.basic.Role"),
+    GROUP("Group", "org.picketlink.idm.model.basic.Group"),
+    GRANT("Grant", "org.picketlink.idm.model.basic.Grant"),
+    GROUP_ROLE("GroupRole", "org.picketlink.idm.model.basic.GroupRole"),
+    GROUP_MEMBERSHIP("GroupMembership", "org.picketlink.idm.model.basic.GroupMembership");
 
     private static final Map<String, AttributedTypeEnum> types = new HashMap<String, AttributedTypeEnum>();
 
@@ -77,7 +62,7 @@ public enum AttributedTypeEnum {
     private final String alias;
     private final String type;
 
-    private AttributedTypeEnum(String alias, String type) {
+    AttributedTypeEnum(String alias, String type) {
         this.alias = alias;
         this.type = type;
     }

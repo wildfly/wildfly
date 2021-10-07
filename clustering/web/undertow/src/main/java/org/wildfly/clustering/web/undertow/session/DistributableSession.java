@@ -25,6 +25,7 @@ import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener.SessionDestroyedReason;
+import io.undertow.servlet.UndertowServletMessages;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 
 import java.time.Duration;
@@ -267,12 +268,13 @@ public class DistributableSession implements io.undertow.server.session.Session 
         if (session.isValid()) {
             // Invoke listeners outside of the context of the batch associated with this session
             // Trigger attribute listeners
+            this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
+
             ImmutableSessionAttributes attributes = session.getAttributes();
             for (String name : attributes.getAttributeNames()) {
                 Object value = attributes.getAttribute(name);
                 this.manager.getSessionListeners().attributeRemoved(this, name, value);
             }
-            this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
         }
         try (BatchContext context = this.resumeBatch()) {
             session.invalidate();
@@ -297,9 +299,13 @@ public class DistributableSession implements io.undertow.server.session.Session 
 
     @Override
     public String changeSessionId(HttpServerExchange exchange, SessionConfig config) {
+        // Workaround for UNDERTOW-1902
+        if (exchange.isResponseStarted()) { // Should match the condition in io.undertow.servlet.spec.HttpServletResponseImpl#isCommitted()
+            throw UndertowServletMessages.MESSAGES.responseAlreadyCommited();
+        }
         Session<Map<String, Object>> oldSession = this.getSessionEntry().getKey();
         SessionManager<Map<String, Object>, Batch> manager = this.manager.getSessionManager();
-        String id = manager.createIdentifier();
+        String id = manager.getIdentifierFactory().get();
         try (BatchContext context = this.resumeBatch()) {
             Session<Map<String, Object>> newSession = manager.createSession(id);
             try {

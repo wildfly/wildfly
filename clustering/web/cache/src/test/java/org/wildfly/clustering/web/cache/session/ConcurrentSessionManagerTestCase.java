@@ -28,6 +28,7 @@ import static org.mockito.Mockito.*;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.junit.Test;
 import org.wildfly.clustering.ee.Batch;
@@ -178,16 +179,16 @@ public class ConcurrentSessionManagerTestCase {
     }
 
     @Test
-    public void createIdentifier() {
+    public void getIdentifierFactory() {
         SessionManager<Void, Batch> manager = mock(SessionManager.class);
         SessionManager<Void, Batch> subject = new ConcurrentSessionManager<>(manager, SimpleManager::new);
-        String expected = "foo";
+        Supplier<String> expected = mock(Supplier.class);
 
-        when(manager.createIdentifier()).thenReturn(expected);
+        when(manager.getIdentifierFactory()).thenReturn(expected);
 
-        String result = subject.createIdentifier();
+        Supplier<String> result = subject.getIdentifierFactory();
 
-        assertEquals(expected, result);
+        assertSame(expected, result);
     }
 
     @Test

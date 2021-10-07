@@ -77,10 +77,6 @@ public class BasicAuthMechanismServerSetupTask extends SnapshotRestoreSetupTask 
         updateRemotingConnector.get(ClientConstants.NAME).set("sasl-authentication-factory");
         updateRemotingConnector.get(ClientConstants.VALUE).set(getSecurityDomainName());
         operations.add(updateRemotingConnector);
-        // subsystem=remoting/http-connector=http-remoting-connector:undefine-attribute(name=security-realm)
-        ModelNode undefineAttrOp2 = createOpNode("subsystem=remoting/http-connector=http-remoting-connector", UNDEFINE_ATTRIBUTE_OPERATION);
-        undefineAttrOp2.get(ClientConstants.NAME).set("security-realm");
-        operations.add(undefineAttrOp2);
 
         // /subsystem=ejb3/application-security-domain=auth-test:add(security-domain=auth-test)
         ModelNode addEjbDomain = createOpNode("subsystem=ejb3/application-security-domain=" + getSecurityDomainName(), ADD);
@@ -103,10 +99,6 @@ public class BasicAuthMechanismServerSetupTask extends SnapshotRestoreSetupTask 
         writeAttrOp5.get(ClientConstants.NAME).set("http-authentication-factory");
         writeAttrOp5.get(ClientConstants.VALUE).set(getSecurityDomainName());
         operations.add(writeAttrOp5);
-        // core-service=management/management-interface=http-interface:undefine-attribute(name=security-realm)
-        ModelNode undefineAttrOp3 = createOpNode("core-service=management/management-interface=http-interface", UNDEFINE_ATTRIBUTE_OPERATION);
-        undefineAttrOp3.get(ClientConstants.NAME).set("security-realm");
-        operations.add(undefineAttrOp3);
 
         ModelNode updateOp = Operations.createCompositeOperation(operations);
         updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);

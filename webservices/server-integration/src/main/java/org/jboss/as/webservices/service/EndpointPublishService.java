@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.as.webservices.logging.WSLogger;
@@ -94,13 +95,15 @@ public final class EndpointPublishService implements Service {
     static ServiceBuilder createServiceBuilder(final ServiceTarget serviceTarget, final String context,
             final ClassLoader loader, final String hostName, final Map<String, String> urlPatternToClassName,
             JBossWebMetaData jbwmd, WebservicesMetaData wsmd, JBossWebservicesMetaData jbwsmd) {
-        return createServiceBuilder(serviceTarget, context, loader, hostName, urlPatternToClassName, jbwmd, wsmd, jbwsmd, null);
+        return createServiceBuilder(serviceTarget, context, loader, hostName, urlPatternToClassName, jbwmd, wsmd, jbwsmd, null, null);
     }
 
     public static ServiceBuilder createServiceBuilder(final ServiceTarget serviceTarget, final String context,
             final ClassLoader loader, final String hostName, final Map<String, String> urlPatternToClassName,
-            JBossWebMetaData jbwmd, WebservicesMetaData wsmd, JBossWebservicesMetaData jbwsmd, Map<Class<?>, Object> deploymentAttachments) {
-        final DeploymentUnit unit = EndpointDeployService.install(serviceTarget, context, loader, hostName, urlPatternToClassName, jbwmd, wsmd, jbwsmd, deploymentAttachments);
+            JBossWebMetaData jbwmd, WebservicesMetaData wsmd, JBossWebservicesMetaData jbwsmd, Map<Class<?>, Object> deploymentAttachments,
+            CapabilityServiceSupport capabilityServiceSupport) {
+        final DeploymentUnit unit = EndpointDeployService.install(serviceTarget, context, loader, hostName, urlPatternToClassName, jbwmd, wsmd,
+                                                                  jbwsmd, deploymentAttachments, capabilityServiceSupport);
         final ServiceName serviceName = WSServices.ENDPOINT_PUBLISH_SERVICE.append(context);
         final ServiceBuilder<?> builder = serviceTarget.addService(serviceName);
         builder.requires(WSServices.CONFIG_SERVICE);

@@ -31,20 +31,14 @@ import org.jboss.as.clustering.controller.AttributeValueTranslator;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
-import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -109,38 +103,8 @@ public class OffHeapMemoryResourceDefinition extends MemoryResourceDefinition {
         }
     }
 
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
-            parent.rejectChildResource(PATH);
-        } else {
-            ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
-            // We cannot convert these size values - as there is not guarantee that such a converter would run before the sizeUnitConverter
-            for (MemorySizeUnit unit : EnumSet.complementOf(EnumSet.of(MemorySizeUnit.ENTRIES, MemorySizeUnit.BYTES))) {
-                builder.getAttributeBuilder().addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(unit.name())), Attribute.SIZE_UNIT.getName());
-            }
-            SimpleAttributeConverter.Converter sizeUnitConverter = new SimpleAttributeConverter.Converter() {
-                @SuppressWarnings("deprecation")
-                @Override
-                public void convert(PathAddress address, String name, ModelNode value, ModelNode model, TransformationContext context) {
-                    if (value.isDefined()) {
-                        MemorySizeUnit unit = MemorySizeUnit.valueOf(value.asString());
-                        if (unit == MemorySizeUnit.ENTRIES) {
-                            value.clear();
-                        } else {
-                            value.set(org.infinispan.eviction.EvictionType.MEMORY.name());
-                        }
-                    }
-                }
-            };
-            builder.getAttributeBuilder()
-                    .setValueConverter(new SimpleAttributeConverter(sizeUnitConverter), Attribute.SIZE_UNIT.getName())
-                    .addRename(Attribute.SIZE_UNIT.getName(), DeprecatedAttribute.EVICTION_TYPE.getName())
-                    .end();
-        }
-    }
-
     @SuppressWarnings("deprecation")
-    static enum EvictionTypeTranslator implements AttributeTranslation {
+    enum EvictionTypeTranslator implements AttributeTranslation {
         INSTANCE;
 
         private final AttributeValueTranslator readTranslator = new AttributeValueTranslator() {

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -74,9 +75,13 @@ public abstract class SessionExpirationTestCase extends AbstractClusteringTestCa
     public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
                      @ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
                              throws IOException, URISyntaxException, InterruptedException {
+
+        HttpResponse response;
+        String sessionId;
+
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             // This should trigger session creation event, but not added attribute event
-            HttpResponse response = client.execute(new HttpGet(SessionOperationServlet.createSetURI(baseURL1, "a")));
+            response = client.execute(new HttpGet(SessionOperationServlet.createSetURI(baseURL1, "a")));
             try {
                 Assert.assertTrue(response.containsHeader(SessionOperationServlet.CREATED_SESSIONS));
                 Assert.assertFalse(response.containsHeader(SessionOperationServlet.DESTROYED_SESSIONS));
@@ -347,7 +352,7 @@ public abstract class SessionExpirationTestCase extends AbstractClusteringTestCa
                 Assert.assertFalse(response.containsHeader(SessionOperationServlet.BOUND_ATTRIBUTES));
                 Assert.assertTrue(response.containsHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES));
                 Assert.assertEquals(response.getFirstHeader(SessionOperationServlet.SESSION_ID).getValue(), response.getFirstHeader(SessionOperationServlet.DESTROYED_SESSIONS).getValue());
-                Assert.assertEquals("a",response.getFirstHeader(SessionOperationServlet.REMOVED_ATTRIBUTES).getValue());
+                Assert.assertEquals("a", response.getFirstHeader(SessionOperationServlet.REMOVED_ATTRIBUTES).getValue());
                 Assert.assertEquals("5", response.getFirstHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
@@ -418,7 +423,6 @@ public abstract class SessionExpirationTestCase extends AbstractClusteringTestCa
 
             // Trigger session timeout in 1 second
             response = client.execute(new HttpGet(SessionOperationServlet.createTimeoutURI(baseURL1, 1)));
-            String sessionId = null;
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertFalse(response.containsHeader(SessionOperationServlet.RESULT));
@@ -434,43 +438,57 @@ public abstract class SessionExpirationTestCase extends AbstractClusteringTestCa
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
+        }
 
-            // Trigger timeout of sessionId
-            Thread.sleep(AbstractClusteringTestCase.GRACE_TIME_TO_REPLICATE);
+        // Trigger timeout of sessionId - accounts for session timeout (1s) and infinispan reaper thread interval (1s)
+        // so that test conditions are typically met within the first attempt
+        Thread.sleep(TimeUnit.SECONDS.toMillis(2));
+
+        // Use a new session for awaiting expiration notification of the previous session scheduled to expire
+        try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
 
             boolean destroyed = false;
             String newSessionId = null;
-            // Timeout should trigger session destroyed event, attribute removed event, and valueUnbound binding event
-            for (URL baseURL : Arrays.asList(baseURL1, baseURL2)) {
-                if (!destroyed) {
-                    response = client.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL, "a", sessionId)));
-                    try {
-                        Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                        Assert.assertFalse(response.containsHeader(SessionOperationServlet.RESULT));
-                        Assert.assertTrue(response.containsHeader(SessionOperationServlet.SESSION_ID));
-                        Assert.assertEquals(newSessionId == null, response.containsHeader(SessionOperationServlet.CREATED_SESSIONS));
-                        if (newSessionId == null) {
-                            newSessionId = response.getFirstHeader(SessionOperationServlet.SESSION_ID).getValue();
-                        } else {
-                            Assert.assertEquals(newSessionId, response.getFirstHeader(SessionOperationServlet.SESSION_ID).getValue());
+            int maxAttempts = 30;
+
+            // Retry a couple of times since expiration in the remote case expiration depends on timing of the reaper thread
+            for (int attempt = 1; attempt <= maxAttempts && !destroyed; attempt++) {
+
+                // Timeout should trigger session destroyed event, attribute removed event, and valueUnbound binding event
+                for (URL baseURL : Arrays.asList(baseURL1, baseURL2)) {
+                    if (!destroyed) {
+                        response = client.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL, "a", sessionId)));
+                        try {
+                            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                            Assert.assertFalse(response.containsHeader(SessionOperationServlet.RESULT));
+                            Assert.assertTrue(response.containsHeader(SessionOperationServlet.SESSION_ID));
+                            Assert.assertEquals(newSessionId == null, response.containsHeader(SessionOperationServlet.CREATED_SESSIONS));
+                            if (newSessionId == null) {
+                                newSessionId = response.getFirstHeader(SessionOperationServlet.SESSION_ID).getValue();
+                            } else {
+                                Assert.assertEquals(newSessionId, response.getFirstHeader(SessionOperationServlet.SESSION_ID).getValue());
+                            }
+                            destroyed = response.containsHeader(SessionOperationServlet.DESTROYED_SESSIONS);
+                            Assert.assertFalse(response.containsHeader(SessionOperationServlet.ADDED_ATTRIBUTES));
+                            Assert.assertFalse(response.containsHeader(SessionOperationServlet.REPLACED_ATTRIBUTES));
+                            Assert.assertEquals(destroyed, response.containsHeader(SessionOperationServlet.REMOVED_ATTRIBUTES));
+                            Assert.assertFalse(response.containsHeader(SessionOperationServlet.BOUND_ATTRIBUTES));
+                            Assert.assertEquals(destroyed, response.containsHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES));
+                            if (destroyed) {
+                                Assert.assertEquals(sessionId, response.getFirstHeader(SessionOperationServlet.DESTROYED_SESSIONS).getValue());
+                                Assert.assertEquals("a", response.getFirstHeader(SessionOperationServlet.REMOVED_ATTRIBUTES).getValue());
+                                Assert.assertEquals("7", response.getFirstHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES).getValue());
+                                log.infof("Session destroyed within %d attempts.", attempt);
+                            }
+                        } finally {
+                            HttpClientUtils.closeQuietly(response);
                         }
-                        destroyed = response.containsHeader(SessionOperationServlet.DESTROYED_SESSIONS);
-                        Assert.assertFalse(response.containsHeader(SessionOperationServlet.ADDED_ATTRIBUTES));
-                        Assert.assertFalse(response.containsHeader(SessionOperationServlet.REPLACED_ATTRIBUTES));
-                        Assert.assertEquals(destroyed, response.containsHeader(SessionOperationServlet.REMOVED_ATTRIBUTES));
-                        Assert.assertFalse(response.containsHeader(SessionOperationServlet.BOUND_ATTRIBUTES));
-                        Assert.assertEquals(destroyed, response.containsHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES));
-                        if (destroyed) {
-                            Assert.assertEquals(sessionId, response.getFirstHeader(SessionOperationServlet.DESTROYED_SESSIONS).getValue());
-                            Assert.assertEquals("a", response.getFirstHeader(SessionOperationServlet.REMOVED_ATTRIBUTES).getValue());
-                            Assert.assertEquals("7", response.getFirstHeader(SessionOperationServlet.UNBOUND_ATTRIBUTES).getValue());
-                        }
-                    } finally {
-                        HttpClientUtils.closeQuietly(response);
                     }
                 }
+
+                Thread.sleep(TimeUnit.SECONDS.toMillis(1));
             }
-            Assert.assertTrue(destroyed);
+            Assert.assertTrue("Session has not been destroyed following expiration within " + maxAttempts + " attempts.", destroyed);
         }
     }
 }

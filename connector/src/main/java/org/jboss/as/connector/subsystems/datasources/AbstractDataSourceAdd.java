@@ -23,6 +23,7 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ELYTRON_ENABLED;
@@ -255,8 +256,13 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
          }
 
          if (requireLegacySecurity) {
-             dataSourceServiceBuilder.addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class, dataSourceService.getSubjectFactoryInjector())
-                     .addDependency(SECURITY_MANAGER_SERVICE, ServerSecurityManager.class, dataSourceService.getServerSecurityManager());
+             if (context.hasOptionalCapability("org.wildfly.legacy-security", null, null)) {
+                 dataSourceServiceBuilder.addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class, dataSourceService.getSubjectFactoryInjector())
+                         .addDependency(SECURITY_MANAGER_SERVICE, ServerSecurityManager.class, dataSourceService.getServerSecurityManager());
+             } else {
+                 context.setRollbackOnly();
+                 throw SUBSYSTEM_RA_LOGGER.legacySecurityNotAvailable(dsName);
+             }
          }
 
          ModelNode credentialReference = Constants.CREDENTIAL_REFERENCE.resolveModelAttribute(context, model);

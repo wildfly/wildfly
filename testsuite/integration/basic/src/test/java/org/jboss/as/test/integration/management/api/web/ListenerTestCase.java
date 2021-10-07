@@ -73,6 +73,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.x500.cert.SelfSignedX509CertificateAndSigningKey;
@@ -85,6 +86,7 @@ import io.undertow.util.FileUtils;
 @RunWith(Arquillian.class)
 @ServerSetup(ListenerTestCase.SecurityRealmsSetup.class)
 @RunAsClient
+@Ignore("[WFLY-15172] Update ListenerTestCase to use Elytron defined SSLContext.")
 public class ListenerTestCase extends ContainerResourceMgmtTestBase {
 
     /**

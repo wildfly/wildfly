@@ -434,7 +434,7 @@ public interface ConnectionFactoryAttributes {
                             writer.writeAttribute(Element.MODE.getLocalName(), resourceModel.get(attribute.getName()).asString());
                             writer.writeEndElement();
                         }
-                    };
+                    }
                 })
                 .setRestartAllServices()
                 .build();

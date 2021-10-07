@@ -37,11 +37,17 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
+import io.undertow.UndertowOptions;
+import io.undertow.connector.ByteBufferPool;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.protocol.http.HttpServerConnection;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
+import io.undertow.util.Protocols;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -53,6 +59,13 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionMetaData;
+import org.xnio.OptionMap;
+import org.xnio.StreamConnection;
+import org.xnio.channels.Configurable;
+import org.xnio.conduits.ConduitStreamSinkChannel;
+import org.xnio.conduits.ConduitStreamSourceChannel;
+import org.xnio.conduits.StreamSinkConduit;
+import org.xnio.conduits.StreamSourceConduit;
 
 public class DistributableSessionManagerTestCase {
     private final String deploymentName = "mydeployment.war";
@@ -61,10 +74,19 @@ public class DistributableSessionManagerTestCase {
     private final SessionListeners listeners = new SessionListeners();
     private final RecordableSessionManagerStatistics statistics = mock(RecordableSessionManagerStatistics.class);
 
-    private final DistributableSessionManager adapter = new DistributableSessionManager(this.deploymentName, this.manager, this.listeners, this.statistics);
+    private DistributableSessionManager adapter;
 
     @Before
     public void init() {
+        DistributableSessionManagerConfiguration config = mock(DistributableSessionManagerConfiguration.class);
+
+        when(config.getDeploymentName()).thenReturn(this.deploymentName);
+        when(config.getSessionListeners()).thenReturn(this.listeners);
+        when(config.getSessionManager()).thenReturn(this.manager);
+        when(config.getStatistics()).thenReturn(this.statistics);
+        when(config.isOrphanSessionAllowed()).thenReturn(false);
+
+        this.adapter = new DistributableSessionManager(config);
         this.adapter.registerSessionListener(this.listener);
     }
 
@@ -98,8 +120,34 @@ public class DistributableSessionManagerTestCase {
     }
 
     @Test
+    public void createSessionResponseCommitted() {
+        // Ugh - all this, just to get HttpServerExchange.isResponseStarted() to return true
+        Configurable configurable = mock(Configurable.class);
+        StreamSourceConduit sourceConduit = mock(StreamSourceConduit.class);
+        ConduitStreamSourceChannel sourceChannel = new ConduitStreamSourceChannel(configurable, sourceConduit);
+        StreamSinkConduit sinkConduit = mock(StreamSinkConduit.class);
+        ConduitStreamSinkChannel sinkChannel = new ConduitStreamSinkChannel(configurable, sinkConduit);
+        StreamConnection stream = mock(StreamConnection.class);
+
+        when(stream.getSourceChannel()).thenReturn(sourceChannel);
+        when(stream.getSinkChannel()).thenReturn(sinkChannel);
+
+        ByteBufferPool bufferPool = mock(ByteBufferPool.class);
+        HttpHandler handler = mock(HttpHandler.class);
+        HttpServerConnection connection = new HttpServerConnection(stream, bufferPool, handler, OptionMap.create(UndertowOptions.ALWAYS_SET_DATE, false), 0, null);
+        HttpServerExchange exchange = new HttpServerExchange(connection);
+        exchange.setProtocol(Protocols.HTTP_1_1);
+        exchange.getResponseChannel();
+
+        SessionConfig config = mock(SessionConfig.class);
+
+        Assert.assertThrows(IllegalStateException.class, () -> this.adapter.createSession(exchange, config));
+    }
+
+    @Test
     public void createSessionNoSessionId() {
         HttpServerExchange exchange = new HttpServerExchange(null);
+        Supplier<String> identifierFactory = mock(Supplier.class);
         Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         SessionConfig config = mock(SessionConfig.class);
@@ -107,7 +155,8 @@ public class DistributableSessionManagerTestCase {
         SessionMetaData metaData = mock(SessionMetaData.class);
         String sessionId = "session";
 
-        when(this.manager.createIdentifier()).thenReturn(sessionId);
+        when(this.manager.getIdentifierFactory()).thenReturn(identifierFactory);
+        when(identifierFactory.get()).thenReturn(sessionId);
         when(this.manager.createSession(sessionId)).thenReturn(session);
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);

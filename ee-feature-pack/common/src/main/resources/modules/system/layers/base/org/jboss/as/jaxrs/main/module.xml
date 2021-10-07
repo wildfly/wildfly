@@ -62,15 +62,16 @@
         <module name="org.jboss.resteasy.resteasy-atom-provider" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-cdi" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-crypto" optional="true"/>
-        <module name="org.jboss.resteasy.resteasy-jaxrs" optional="true"/>
+        <module name="org.jboss.resteasy.resteasy-client"/>
+        <module name="org.jboss.resteasy.resteasy-client-api"/>
+        <module name="org.jboss.resteasy.resteasy-core"/>
+        <module name="org.jboss.resteasy.resteasy-core-spi"/>
         <module name="org.jboss.resteasy.resteasy-jaxb-provider" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-jackson2-provider" optional="true"/>
-        <module name="org.jboss.resteasy.resteasy-jettison-provider" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-jsapi" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-multipart-provider" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-spring" optional="true" />
         <module name="org.jboss.resteasy.resteasy-validator-provider-11" optional="true"/>
-        <module name="org.jboss.resteasy.resteasy-yaml-provider" optional="true"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
         <module name="java.xml"/>

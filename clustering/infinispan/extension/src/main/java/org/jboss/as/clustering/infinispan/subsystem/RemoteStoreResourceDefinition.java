@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
@@ -30,16 +29,12 @@ import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -88,31 +83,6 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
-
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
-                        @Override
-                        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                            if (attributeValue.isDefined()) {
-                                List<ModelNode> remoteServers = attributeValue.clone().asList();
-                                ModelNode legacyListObject = new ModelNode();
-                                for (ModelNode server : remoteServers) {
-                                    ModelNode legacyListItem = new ModelNode();
-                                    legacyListItem.get("outbound-socket-binding").set(server);
-                                    legacyListObject.add(legacyListItem);
-                                }
-                                attributeValue.set(legacyListObject);
-                            }
-                        }
-                    }, Attribute.SOCKET_BINDINGS.getDefinition());
-        }
-
-        StoreResourceDefinition.buildTransformation(version, builder, PATH);
     }
 
     RemoteStoreResourceDefinition() {

@@ -51,17 +51,7 @@
         <module name="org.jboss.as.domain-management"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.server"/>
-        <module name="org.jboss.as.security-plugins" export="true">
-            <exports>
-                <include-set>
-                    <!-- 
-                        The LoginModule could have been referenced by name in configuration
-                        that also specifies the module.
-                     -->
-                    <path name="org/jboss/as/security/remoting"/>
-                </include-set>
-            </exports>
-        </module>
+        <module name="org.jboss.as.security-plugins" export="true" />
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.metadata.common"/>
@@ -70,9 +60,7 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.remoting"/>
-        <module name="org.jboss.security.negotiation" optional="true"/>
         <module name="org.jboss.staxmapper"/>
-        <module name="org.picketbox"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.clustering.infinispan.spi" optional="true"/>
         <module name="org.wildfly.clustering.service" optional="true"/>

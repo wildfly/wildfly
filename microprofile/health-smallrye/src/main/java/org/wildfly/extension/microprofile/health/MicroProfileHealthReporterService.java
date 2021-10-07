@@ -54,29 +54,39 @@ public class MicroProfileHealthReporterService implements Service<MicroProfileHe
     private Supplier<ServerProbesService> serverProbesService;
     private String emptyLivenessChecksStatus;
     private String emptyReadinessChecksStatus;
+    private String emptyStartupChecksStatus;
 
-    static void install(OperationContext context, String emptyLivenessChecksStatus, String emptyReadinessChecksStatus) {
+    static void install(OperationContext context, String emptyLivenessChecksStatus, String emptyReadinessChecksStatus, String emptyStartupChecksStatus) {
 
         CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget()
                 .addCapability(RuntimeCapability.Builder.of(MICROPROFILE_HEALTH_REPORTER_CAPABILITY, SmallRyeHealthReporter.class).build());
 
         Supplier<ServerProbesService> serverProbesService = serviceBuilder.requires(ServiceName.parse(HEALTH_SERVER_PROBE_CAPABILITY));
 
-        serviceBuilder.setInstance(new MicroProfileHealthReporterService(serverProbesService, emptyLivenessChecksStatus, emptyReadinessChecksStatus))
+        serviceBuilder.setInstance(new MicroProfileHealthReporterService(serverProbesService, emptyLivenessChecksStatus,
+            emptyReadinessChecksStatus, emptyStartupChecksStatus))
                 .install();
     }
 
-    private MicroProfileHealthReporterService(Supplier<ServerProbesService> serverProbesService, String emptyLivenessChecksStatus, String emptyReadinessChecksStatus) {
+    private MicroProfileHealthReporterService(Supplier<ServerProbesService> serverProbesService, String emptyLivenessChecksStatus,
+                                              String emptyReadinessChecksStatus, String emptyStartupChecksStatus) {
         this.serverProbesService = serverProbesService;
         this.emptyLivenessChecksStatus = emptyLivenessChecksStatus;
         this.emptyReadinessChecksStatus = emptyReadinessChecksStatus;
+        this.emptyStartupChecksStatus = emptyStartupChecksStatus;
     }
 
     @Override
     public void start(StartContext context) {
         // MicroProfile Health supports the mp.health.disable-default-procedures to let users disable any vendor procedures
         final boolean defaultServerProceduresDisabled = ConfigProvider.getConfig().getOptionalValue("mp.health.disable-default-procedures", Boolean.class).orElse(false);
-        healthReporter = new MicroProfileHealthReporter(emptyLivenessChecksStatus, emptyReadinessChecksStatus, defaultServerProceduresDisabled);
+        // MicroProfile Health supports the mp.health.default.readiness.empty.response to let users specify default empty readiness responses
+        final String defaultReadinessEmptyResponse = ConfigProvider.getConfig().getOptionalValue("mp.health.default.readiness.empty.response", String.class).orElse("DOWN");
+        // MicroProfile Health supports the mp.health.default.startup.empty.response to let users specify default empty startup responses
+        final String defaultStartupEmptyResponse = ConfigProvider.getConfig().getOptionalValue("mp.health.default.startup.empty.response", String.class).orElse("DOWN");
+        healthReporter = new MicroProfileHealthReporter(emptyLivenessChecksStatus, emptyReadinessChecksStatus,
+            emptyStartupChecksStatus, defaultServerProceduresDisabled,
+            defaultReadinessEmptyResponse, defaultStartupEmptyResponse);
 
         if (!defaultServerProceduresDisabled) {
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();

@@ -35,7 +35,6 @@ import org.wildfly.clustering.service.Requirement;
 public enum ClusteringRequirement implements DefaultableUnaryRequirement, DefaultableUnaryServiceNameFactoryProvider {
     COMMAND_DISPATCHER_FACTORY("org.wildfly.clustering.command-dispatcher-factory", ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY),
     GROUP("org.wildfly.clustering.group", ClusteringDefaultRequirement.GROUP),
-    @Deprecated NODE_FACTORY("org.wildfly.clustering.node-factory", ClusteringDefaultRequirement.NODE_FACTORY),
     ;
     private final String name;
     private final UnaryServiceNameFactory factory = new UnaryRequirementServiceNameFactory(this);

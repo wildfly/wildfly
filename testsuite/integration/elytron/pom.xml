@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>25.0.0.Beta1-SNAPSHOT</version>
+        <version>26.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -137,6 +137,27 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-batch-jberet</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Jakarta RESTful Web Services Client implementation -->
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-core-spi</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -567,7 +588,7 @@
                                             <name>standalone-full.xml</name>
                                             <layers>
                                                 <layer>cloud-server</layer>
-                                                <layer>undertow-legacy-https</layer>
+                                                <layer>undertow-https</layer>
                                                 <layer>h2-default-datasource</layer>
                                             </layers>
                                         </config>
@@ -736,7 +757,7 @@
                                     </feature-packs>
                                     <layers>
                                         <layer>cloud-server</layer>
-                                        <layer>undertow-legacy-https</layer>
+                                        <layer>undertow-https</layer>
                                         <layer>h2-default-datasource</layer>
                                     </layers>
                                 </configuration>

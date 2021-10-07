@@ -34,7 +34,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
@@ -45,7 +44,6 @@ import org.jboss.as.test.integration.security.jacc.propagation.BridgeBean;
 import org.jboss.as.test.integration.security.jacc.propagation.Manage;
 import org.jboss.as.test.integration.security.jacc.propagation.PropagationTestServlet;
 import org.jboss.as.test.integration.security.jacc.propagation.TargetBean;
-import org.jboss.as.test.integration.security.loginmodules.UsersRolesLoginModuleTestCase;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -60,7 +58,6 @@ import org.junit.runner.RunWith;
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({JACCAuthzPropagationTestCase.SecurityDomainsSetup.class})
 @RunAsClient
 @Ignore("See WFLY-4989")
 public class JACCAuthzPropagationTestCase {
@@ -83,7 +80,7 @@ public class JACCAuthzPropagationTestCase {
         war.addAsResource(usersRolesAsset, "users.properties");
         war.addAsResource(usersRolesAsset, "roles.properties");
 
-        war.addAsWebInfResource(UsersRolesLoginModuleTestCase.class.getPackage(), "web-basic-authn.xml", "web.xml");
+        //war.addAsWebInfResource(UsersRolesLoginModuleTestCase.class.getPackage(), "web-basic-authn.xml", "web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(TEST_NAME), "jboss-web.xml");
         war.addAsWebInfResource(Utils.getJBossEjb3XmlAsset(TEST_NAME), "jboss-ejb3.xml");
         return war;

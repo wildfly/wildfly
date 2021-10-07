@@ -1,0 +1,9 @@
+{
+    "client-id" : "WrongProviderUrlOidcApp",
+    "public-client" : "false",
+    "provider-url" : "${wrong.oidc.provider.url}",
+    "ssl-required" : "EXTERNAL",
+    "credentials" : {
+        "secret" : "secret"
+    }
+}

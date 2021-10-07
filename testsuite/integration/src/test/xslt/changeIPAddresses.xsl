@@ -29,9 +29,6 @@
     <xsl:variable name="jboss" select="'urn:jboss:domain:'"/>
     <xsl:variable name="webservices" select="'urn:jboss:domain:webservices:'"/>
     <xsl:variable name="xts" select="'urn:jboss:domain:xts:'"/>
-    <xsl:variable name="pl-fed" select="'urn:jboss:domain:picketlink-federation:'"/>
-    <xsl:variable name="pl-idm" select="'urn:jboss:domain:picketlink-identity-management:'"/>
-    <xsl:variable name="pl-default-ip" select="'${jboss.bind.address:127.0.0.1}'"/>
 
     <!-- IP addresses  select="..." is default value. -->
     <xsl:param name="managementIPAddress" select="'127.0.0.1'"/>
@@ -90,84 +87,6 @@
     				 	  /*[local-name()='socket-binding' and @name='modcluster']/@multicast-address">
         <xsl:attribute name="multicast-address">
             <xsl:value-of select="$modclusterMcastAddress"/>
-        </xsl:attribute>
-    </xsl:template>
-
-    <!-- Change PicketLink Federation -->
-    <xsl:template match="//*[local-name()='identity-provider' and starts-with(namespace-uri(), $pl-fed)]/@url">
-        <xsl:variable name="origin" select="current()"/>
-        <xsl:attribute name="url">
-            <xsl:choose>
-              <xsl:when test="contains($origin, $pl-default-ip)">
-	            <xsl:choose>
-	                <xsl:when test="contains($publicIPAddress,':')">
-	                    <xsl:value-of select="concat(substring-before($origin, $pl-default-ip), '[', $publicIPAddress, ']', substring-after($origin, $pl-default-ip))"/>
-	                </xsl:when>
-	                <xsl:otherwise>
-	                    <xsl:value-of select="concat(substring-before($origin, $pl-default-ip), $publicIPAddress, substring-after($origin, $pl-default-ip))"/>
-	                </xsl:otherwise>
-	            </xsl:choose>
-              </xsl:when>
-              <xsl:otherwise>
-              	<xsl:value-of select="$origin"/>
-              </xsl:otherwise>
-            </xsl:choose>
-        </xsl:attribute>
-    </xsl:template>
-
-    <xsl:template match="//*[local-name()='service-provider' and starts-with(namespace-uri(), $pl-fed)]/@url">
-        <xsl:variable name="origin" select="current()"/>
-        <xsl:attribute name="url">
-            <xsl:choose>
-              <xsl:when test="contains($origin, $pl-default-ip)">
-	            <xsl:choose>
-	                <xsl:when test="contains($publicIPAddress,':')">
-	                    <xsl:value-of select="concat(substring-before($origin, $pl-default-ip), '[', $publicIPAddress, ']', substring-after($origin, $pl-default-ip))"/>
-	                </xsl:when>
-	                <xsl:otherwise>
-	                    <xsl:value-of select="concat(substring-before($origin, $pl-default-ip), $publicIPAddress, substring-after($origin, $pl-default-ip))"/>
-	                </xsl:otherwise>
-	            </xsl:choose>
-              </xsl:when>
-              <xsl:otherwise>
-              	<xsl:value-of select="$origin"/>
-              </xsl:otherwise>
-            </xsl:choose>
-        </xsl:attribute>
-    </xsl:template>
-
-    <xsl:template match="//*[local-name()='trust-domain' and starts-with(namespace-uri(), $pl-fed)]/@name">
-        <xsl:attribute name="name">
-            <xsl:choose>
-                <xsl:when test="contains($publicIPAddress,':')">
-                    <xsl:value-of select="concat('[', $publicIPAddress, ']')"/>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="$publicIPAddress"/>
-                </xsl:otherwise>
-            </xsl:choose>
-        </xsl:attribute>
-    </xsl:template>
-
-	<!-- PicketLink Identity Management -->
-    <xsl:template match="//*[local-name()='ldap-store' and starts-with(namespace-uri(), $pl-idm)]/@url">
-        <xsl:variable name="origin" select="current()"/>
-        <xsl:attribute name="url">
-            <xsl:choose>
-              <xsl:when test="contains($origin, $pl-default-ip)">
-	            <xsl:choose>
-	                <xsl:when test="contains($publicIPAddress,':')">
-	                    <xsl:value-of select="concat(substring-before($origin, $pl-default-ip), '[', $publicIPAddress, ']', substring-after($origin, $pl-default-ip))"/>
-	                </xsl:when>
-	                <xsl:otherwise>
-	                    <xsl:value-of select="concat(substring-before($origin, $pl-default-ip), $publicIPAddress, substring-after($origin, $pl-default-ip))"/>
-	                </xsl:otherwise>
-	            </xsl:choose>
-              </xsl:when>
-              <xsl:otherwise>
-              	<xsl:value-of select="$origin"/>
-              </xsl:otherwise>
-            </xsl:choose>
         </xsl:attribute>
     </xsl:template>
 

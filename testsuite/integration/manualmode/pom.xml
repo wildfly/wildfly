@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>25.0.0.Beta1-SNAPSHOT</version>
+        <version>26.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -28,6 +28,8 @@
         <!-- Byteman -->
         <byteman.host>127.0.0.1</byteman.host>
         <byteman.port>17091</byteman.port>
+        <!-- JVM args -->
+        <microprofile.server.jvm.args>${server.jvm.args} -Djboss.node.name=microprofile</microprofile.server.jvm.args>
     </properties>
 
     <dependencies>
@@ -128,6 +130,12 @@
             <artifactId>jboss-jms-api_2.0_spec</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Required for MicroProfile Tests -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.health</groupId>
+            <artifactId>microprofile-health-api</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Required for Java 11 -->
         <dependency>
             <groupId>org.jboss.spec.javax.xml.ws</groupId>
@@ -152,6 +160,46 @@
         <dependency>
             <groupId>org.jboss.byteman</groupId>
             <artifactId>byteman-bmunit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Jakarta RESTful Web Services Client implementation -->
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-core-spi</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jackson2-provider</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-context</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -189,7 +237,7 @@
                 <executions>
                     <execution>
                         <id>ts.config-as.configure-wildfly</id>
-                        <phase>process-test-resources</phase>
+                        <phase>generate-test-resources</phase>
                         <goals>
                             <goal>execute-commands</goal>
                         </goals>
@@ -273,8 +321,10 @@
                         <byteman.port>${byteman.port}</byteman.port>
                         <jvm.args>${jvm.args.ip.server} ${modular.jdk.args} -Dmaven.repo.local=${settings.localRepository}</jvm.args>
                         <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1} -Dnode0=${node0} -Dnode1=${node1} ${modular.jdk.args}</server.jvm2.args>
+                        <microprofile.server.jvm.args>${microprofile.server.jvm.args}</microprofile.server.jvm.args>
                         <arquillian.launch>manual-mode</arquillian.launch>
                         <jboss.config.file.name>standalone-ha.xml</jboss.config.file.name>
+                        <ryuk.container.timeout>60</ryuk.container.timeout>
                         <!-- needed for SSLEJBRemoteClientTestCase only, however setting them from within the test itself isn't possible -->
                         <javax.net.ssl.trustStore>${basedir}/target/test-classes/ejb3/ssl/jbossClient.truststore</javax.net.ssl.trustStore>
                         <javax.net.ssl.keyStore>${basedir}/target/test-classes/ejb3/ssl/jbossClient.keystore</javax.net.ssl.keyStore>
@@ -376,39 +426,10 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <excludes>
-		                <exclude>org/wildfly/test/manual/management/MPScriptTestCase.java</exclude>
-		            </excludes> 
+		                            <exclude>org/wildfly/test/manual/management/MPScriptTestCase.java</exclude>
+		                            <exclude>org/wildfly/test/manual/microprofile/**/*TestCase.java</exclude>
+                            </excludes>
                         </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <!-- profile to configure WildFly to use Elytron instead of legacy security: -Delytron -->
-        <profile>
-            <id>elytron.profile</id>
-            <activation>
-                <property>
-                    <name>elytron</name>
-                </property>
-                <file>
-                    <exists>${ts.elytron.cli}</exists>
-                </file>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>default</id>
-                                <!-- run in test-compile instead of process-test-resources
-                                     as we want this to run after build-manual-mode-servers
-                                     has created all the servers other than target/wildfly -->
-                                <phase>test-compile</phase>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>

@@ -30,12 +30,7 @@ import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.transform.PathAddressTransformer;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * Definition of a backups resource.
@@ -47,18 +42,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class BackupsResourceDefinition extends ComponentResourceDefinition {
 
     static final PathElement PATH = pathElement("backups");
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        PathAddressTransformer addressTransformer = new PathAddressTransformer() {
-            @Override
-            public PathAddress transform(PathElement current, Builder builder) {
-                return builder.next();
-            }
-        };
-        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, addressTransformer, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN) : parent.addChildResource(PATH);
-
-        BackupResourceDefinition.buildTransformation(version, builder);
-    }
 
     private final FunctionExecutorRegistry<Cache<?, ?>> executors;
 

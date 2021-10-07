@@ -1,1 +1,0 @@
-<subsystem xmlns="urn:jboss:domain:weld:4.0" require-bean-descriptor="false" development-mode="true" thread-pool-size="5000" />

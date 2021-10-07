@@ -32,12 +32,10 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * @author Paul Ferraro
@@ -68,11 +66,6 @@ public class SocketDiscoveryProtocolResourceDefinition<A> extends ProtocolResour
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-
-        ProtocolResourceDefinition.addTransformations(version, builder);
     }
 
     private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {

@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>25.0.0.Beta1-SNAPSHOT</version>
+        <version>26.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-microprofile</artifactId>
@@ -166,6 +166,11 @@
 
         <!-- MicroProfile Reactive Messaging Kafka Connector Test Dependencies -->
         <dependency>
+            <groupId>io.smallrye.reactive</groupId>
+            <artifactId>smallrye-reactive-messaging-kafka-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka-test</artifactId>
             <scope>test</scope>
@@ -228,6 +233,11 @@
         <dependency>
             <groupId>org.eclipse.microprofile.openapi</groupId>
             <artifactId>microprofile-openapi-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-core-spi</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -596,7 +606,7 @@
                                 <module.path>${project.build.directory}/wildfly/modules</module.path>
                                 <!-- -Dnode0 is present in the parent definition of server.jvm.args, it is
                                         expected by microprofile-config tests -->
-                                <server.jvm.args>-Dnode0=${node0} -Dmaven.repo.local=${wildfly.transformed.repo.dir}</server.jvm.args>
+                                <server.jvm.args>${surefire.jpda.args} -Dnode0=${node0} -Dmaven.repo.local=${wildfly.transformed.repo.dir}</server.jvm.args>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>

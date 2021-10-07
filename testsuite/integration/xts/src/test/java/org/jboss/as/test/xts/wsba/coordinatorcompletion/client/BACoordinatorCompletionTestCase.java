@@ -22,12 +22,24 @@
 
 package org.jboss.as.test.xts.wsba.coordinatorcompletion.client;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.xts.util.EventLogEvent.CANCEL;
+import static org.jboss.as.test.xts.util.EventLogEvent.CLOSE;
+import static org.jboss.as.test.xts.util.EventLogEvent.COMPENSATE;
+import static org.jboss.as.test.xts.util.EventLogEvent.COMPLETE;
+import static org.jboss.as.test.xts.util.EventLogEvent.CONFIRM_COMPLETED;
+import static org.jboss.as.test.xts.util.ServiceCommand.APPLICATION_EXCEPTION;
+import static org.jboss.as.test.xts.util.ServiceCommand.CANNOT_COMPLETE;
+import static org.jboss.as.test.xts.util.ServiceCommand.SYSTEM_EXCEPTION_ON_COMPLETE;
+
+import java.io.File;
+import java.io.FilePermission;
+import java.lang.reflect.ReflectPermission;
+import java.util.PropertyPermission;
+
 import javax.inject.Inject;
 
-import com.arjuna.mw.wst11.UserBusinessActivity;
-import com.arjuna.mw.wst11.UserBusinessActivityFactory;
-
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.xts.base.BaseFunctionalTest;
@@ -47,15 +59,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.test.xts.util.ServiceCommand.*;
-
-import java.io.FilePermission;
-import java.io.File;
-import java.lang.reflect.ReflectPermission;
-import java.util.PropertyPermission;
-
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-import static org.jboss.as.test.xts.util.EventLogEvent.*;
+import com.arjuna.mw.wst11.UserBusinessActivity;
+import com.arjuna.mw.wst11.UserBusinessActivityFactory;
 
 /**
  * XTS business activities - coordinator completition test case

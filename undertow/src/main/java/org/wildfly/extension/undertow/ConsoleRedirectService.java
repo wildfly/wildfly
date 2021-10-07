@@ -152,7 +152,8 @@ final class ConsoleRedirectService implements Service {
             }
 
             // Host names don't match, use the IP address of the management host if both are loopback
-            if (managementAddress.isLoopbackAddress() && destinationAddress.isLoopbackAddress()) {
+            if (managementAddress.isLoopbackAddress()
+                    && destinationAddress != null && destinationAddress.isLoopbackAddress()) {
                 String hostname = managementAddress.getHostAddress();
                 final int zonePos = hostname.indexOf('%');
                 if (zonePos > 0) {

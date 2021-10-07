@@ -52,6 +52,9 @@ import org.junit.runner.RunWith;
 import javax.ejb.EJBException;
 import javax.naming.NamingException;
 import javax.transaction.HeuristicMixedException;
+
+import java.io.File;
+import java.io.FilePermission;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -93,7 +96,8 @@ public class TransactionPropagationFailureTestCase {
                 createFilePermission("read,write", "basedir",
                     Arrays.asList("target", CLIENT_SERVER_JBOSS_HOME, "standalone", "data", WFTC_DATA_DIRECTORY_NAME)),
                 createFilePermission("read,write", "basedir",
-                    Arrays.asList("target", CLIENT_SERVER_JBOSS_HOME, "standalone", "data", WFTC_DATA_DIRECTORY_NAME, "-"))
+                    Arrays.asList("target", CLIENT_SERVER_JBOSS_HOME, "standalone", "data", WFTC_DATA_DIRECTORY_NAME, "-")),
+                new FilePermission(System.getProperty("jboss.home") + File.separatorChar + "standalone" + File.separatorChar + "tmp" + File.separatorChar + "auth" + File.separatorChar + "-", "read")
                 ), "permissions.xml")
             .addAsManifestResource(new StringAsset("Dependencies: org.jboss.jts\n"), "MANIFEST.MF");
         return jar;

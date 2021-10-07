@@ -43,7 +43,7 @@ public class IDMSubsystem_1_0_UnitTestCase extends AbstractSubsystemTest {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml = readResource("identity-management-subsystem-1.0.xml");
 
-        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC)
                 .setSubsystemXml(subsystemXml)
                 .build();
         //Get the model and the persisted xml from the first controller
@@ -52,7 +52,7 @@ public class IDMSubsystem_1_0_UnitTestCase extends AbstractSubsystemTest {
         servicesA.shutdown();
 
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServices servicesB = createKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC)
                 .setSubsystemXml(marshalled)
                 .build();
         ModelNode modelB = servicesB.readWholeModel();

@@ -18,6 +18,7 @@
 
 package org.wildfly.test.integration.elytron.certs.ocsp;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
@@ -42,6 +43,7 @@ import org.junit.Assert;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.matchers.Times;
 import org.mockserver.model.Header;
+import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.NottableString;
 import org.wildfly.common.iteration.ByteIterator;
@@ -126,32 +128,48 @@ public class TestingOcspServer {
                         .withMethod("POST")
                         .withPath("/ocsp"),
                 Times.unlimited())
-                .respond(request -> {
-                    ByteBuf buffer = Unpooled.wrappedBuffer(request.getBody().getRawBytes());
-                    FullHttpRequest nettyRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_0, HttpMethod.POST, request.getPath().getValue(), buffer);
-                    for (Header header : request.getHeaderList()) {
-                        for (NottableString value : header.getValues()) {
-                            nettyRequest.headers().add(header.getName().getValue(), value.getValue());
-                        }
-                    }
+                .respond(request -> getHttpResponse(request, servlet));
+        server.when(
+                request()
+                        .withMethod("GET")
+                        .withPath("/ocsp/.*"),
+                Times.unlimited())
+                .respond(request -> getHttpResponse(request, servlet));
+    }
 
-                    FullHttpResponse nettyResponse;
-                    try {
-                        nettyResponse = servlet.service(nettyRequest, new ServletURI(request.getPath().getValue()), null, SslReverseProxyMode.NONE);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+    public HttpResponse getHttpResponse(HttpRequest request, HttpOcspServlet servlet){
+        byte[] body;
+        HttpMethod method;
+        if (request.getBody() == null) {
+            method = HttpMethod.GET;
+            body = request.getPath().getValue().split("/ocsp/", 2)[1].getBytes(UTF_8);
+        } else {
+            method = HttpMethod.POST;
+            body = request.getBody().getRawBytes();
+        }
+        ByteBuf buffer = Unpooled.wrappedBuffer(body);
+        FullHttpRequest nettyRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_0, method, request.getPath().getValue(), buffer);
+        for (Header header : request.getHeaderList()) {
+            for (NottableString value : header.getValues()) {
+                nettyRequest.headers().add(header.getName().getValue(), value.getValue());
+            }
+        }
 
-                    HttpResponse response = response()
-                            .withStatusCode(nettyResponse.status().code())
-                            .withBody(nettyResponse.content().array());
+        FullHttpResponse nettyResponse;
+        try {
+            nettyResponse = servlet.service(nettyRequest, new ServletURI(request.getPath().getValue()), null, SslReverseProxyMode.NONE);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
-                    for (Map.Entry<String, String> header : nettyResponse.headers()) {
-                        response.withHeader(header.getKey(), header.getValue());
-                    }
+        HttpResponse response = response()
+                .withStatusCode(nettyResponse.status().code())
+                .withBody(nettyResponse.content().array());
 
-                    return response;
-                });
+        for (Map.Entry<String, String> header : nettyResponse.headers()) {
+            response.withHeader(header.getKey(), header.getValue());
+        }
+        return response;
     }
 
     public void stop() throws SQLException {

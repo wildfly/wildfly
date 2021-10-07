@@ -23,6 +23,7 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import org.infinispan.protostream.SerializationContextInitializer;
+import org.wildfly.clustering.ejb.client.EJBClientSerializationContextInitializer;
 import org.wildfly.clustering.ejb.infinispan.bean.BeanSerializationContextInitializer;
 import org.wildfly.clustering.ejb.infinispan.group.BeanGroupSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ProviderSerializationContextInitializer;
@@ -35,7 +36,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public enum EJBSerializationContextInitializerProvider implements SerializationContextInitializerProvider {
 
     NETWORK(new ProviderSerializationContextInitializer<>("org.jboss.as.network.proto", NetworkMarshallingProvider.class)),
-    EJB_CLIENT(new ProviderSerializationContextInitializer<>("org.jboss.ejb.client.proto", EJBClientMarshallingProvider.class)),
+    EJB_CLIENT(new EJBClientSerializationContextInitializer()),
     INFINISPAN(new InfinispanEJBSerializationContextInitializer()),
     BEAN(new BeanSerializationContextInitializer()),
     GROUP(new BeanGroupSerializationContextInitializer()),

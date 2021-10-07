@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.hotrod.session;
 
 import java.time.Duration;
+import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.Registrar;
@@ -30,7 +31,6 @@ import org.wildfly.clustering.ee.cache.ConcurrentManager;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.hotrod.tx.HotRodBatcher;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
-import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
 import org.wildfly.clustering.web.cache.session.ConcurrentSessionManager;
 import org.wildfly.clustering.web.cache.session.MarshalledValueSessionAttributesFactoryConfiguration;
@@ -86,7 +86,7 @@ public class HotRodSessionManagerFactory<S, SC, AL, MC, LC> implements SessionMa
             }
 
             @Override
-            public IdentifierFactory<String> getIdentifierFactory() {
+            public Supplier<String> getIdentifierFactory() {
                 return configuration.getIdentifierFactory();
             }
 

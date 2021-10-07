@@ -559,7 +559,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if ("".equals(value.trim())) {
             return false;
         }
-        return !value.equals(attribute.getDefaultValue());
+        return !value.equals(attribute.getDefaultValue() != null ? attribute.getDefaultValue().asString() : null);
     }
 
     /**

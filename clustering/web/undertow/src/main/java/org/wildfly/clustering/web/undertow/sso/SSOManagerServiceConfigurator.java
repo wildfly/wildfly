@@ -46,7 +46,6 @@ import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerConfiguration;
@@ -98,7 +97,7 @@ public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceName
     }
 
     @Override
-    public IdentifierFactory<String> getIdentifierFactory() {
+    public Supplier<String> getIdentifierFactory() {
         return new IdentifierFactoryAdapter(this.generator.get());
     }
 

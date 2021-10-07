@@ -264,8 +264,6 @@ public class UndertowSSLv2HelloTestCase {
 
         try(CLIWrapper cli = new CLIWrapper(true)) {
             cli.sendLine("batch");
-            cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:undefine-attribute" +
-                    "(name=security-realm)", HTTPS));
             cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:write-attribute" +
                     "(name=ssl-context,value=%s)", HTTPS, sslContextName));
             cli.sendLine("run-batch");
@@ -276,10 +274,8 @@ public class UndertowSSLv2HelloTestCase {
     private void restoreConfiguration() throws Exception {
         try (CLIWrapper cli = new CLIWrapper(true)) {
             cli.sendLine("batch");
-            cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:undefine-attribute" +
-                    "(name=ssl-context)", HTTPS));
             cli.sendLine(String.format("/subsystem=undertow/server=default-server/https-listener=%s:write-attribute" +
-                    "(name=security-realm,value=ApplicationRealm)", HTTPS));
+                    "(name=ssl-context,value=%s)", HTTPS, "applicationSSC"));
             cli.sendLine("run-batch");
             cli.sendLine("reload");
         }

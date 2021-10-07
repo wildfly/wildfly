@@ -21,7 +21,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.8" name="io.smallrye.reactive.messaging.connector.kafka">
+<module xmlns="urn:jboss:module:1.9" name="io.smallrye.reactive.messaging.connector.kafka">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -29,13 +29,16 @@
     <resources>
         <artifact name="${io.smallrye.reactive:smallrye-reactive-messaging-kafka}"/>
     </resources>
+
     <dependencies>
         <module name="io.opentelemetry.api"/>
         <module name="io.opentelemetry.context"/>
         <module name="io.reactivex.rxjava2.rxjava"/>
         <module name="io.smallrye.config" services="import"/>
+        <module name="io.smallrye.common.annotation"/>
         <module name="io.smallrye.reactive.converters.api"/>
         <module name="io.smallrye.reactive.messaging"/>
+        <module name="io.smallrye.reactive.messaging.connector.kafka.api"/>
         <module name="io.smallrye.reactive.mutiny"/>
         <module name="io.smallrye.reactive.mutiny.reactive-streams-operators"/>
         <module name="io.smallrye.reactive.mutiny.vertx-core"/>

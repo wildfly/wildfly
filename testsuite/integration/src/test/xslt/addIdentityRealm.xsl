@@ -22,12 +22,29 @@
     <xsl:template match="//*[local-name()='management' and starts-with(namespace-uri(), $jboss)]
    						  /*[local-name()='security-realms']">
         <xsl:copy>
-            <xsl:apply-templates select="node()|@*"/>            
+            <xsl:apply-templates select="node()|@*"/>
             <xsl:element name="security-realm" namespace="{namespace-uri()}">
                 <xsl:attribute name="name"><xsl:value-of select="$realmName"/></xsl:attribute>
                 <xsl:element name="server-identities"  namespace="{namespace-uri()}">
                     <xsl:element name="secret" namespace="{namespace-uri()}">
                         <xsl:attribute name="value"><xsl:value-of select="$secret"/></xsl:attribute>
+                    </xsl:element>
+                </xsl:element>
+            </xsl:element>
+        </xsl:copy>
+    </xsl:template>
+
+    <!-- No security-realms so add the wrapper as well. -->
+    <xsl:template match="//*[local-name()='management' and starts-with(namespace-uri(), $jboss)]">
+        <xsl:copy>
+            <xsl:apply-templates select="node()|@*"/>
+            <xsl:element name="security-realms" namespace="{namespace-uri()}">
+                <xsl:element name="security-realm" namespace="{namespace-uri()}">
+                    <xsl:attribute name="name"><xsl:value-of select="$realmName"/></xsl:attribute>
+                    <xsl:element name="server-identities"  namespace="{namespace-uri()}">
+                        <xsl:element name="secret" namespace="{namespace-uri()}">
+                            <xsl:attribute name="value"><xsl:value-of select="$secret"/></xsl:attribute>
+                        </xsl:element>
                     </xsl:element>
                 </xsl:element>
             </xsl:element>

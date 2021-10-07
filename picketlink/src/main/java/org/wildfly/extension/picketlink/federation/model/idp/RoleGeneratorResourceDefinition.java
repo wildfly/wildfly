@@ -40,7 +40,7 @@ public class RoleGeneratorResourceDefinition extends AbstractFederationResourceD
         .setAlternatives(ModelElement.COMMON_CODE.getName())
         .build();
     public static final SimpleAttributeDefinition CODE = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_CODE.getName(), ModelType.STRING, true)
-        .setValidator(new EnumValidator<RoleGeneratorTypeEnum>(RoleGeneratorTypeEnum.class, true, true))
+        .setValidator(new EnumValidator<>(RoleGeneratorTypeEnum.class, true, true))
         .setAllowExpression(true)
         .setAlternatives(ModelElement.COMMON_CLASS_NAME.getName())
         .build();
@@ -52,6 +52,6 @@ public class RoleGeneratorResourceDefinition extends AbstractFederationResourceD
     public static final RoleGeneratorResourceDefinition INSTANCE = new RoleGeneratorResourceDefinition();
 
     private RoleGeneratorResourceDefinition() {
-        super(ModelElement.IDENTITY_PROVIDER_ROLE_GENERATOR, new IdentityProviderConfigAddStepHandler(ATTRIBUTE_DEFINITIONS), IdentityProviderConfigRemoveStepHandler.INSTANCE, ATTRIBUTE_DEFINITIONS);
+        super(ModelElement.IDENTITY_PROVIDER_ROLE_GENERATOR, new IdentityProviderConfigAddStepHandler(ATTRIBUTE_DEFINITIONS), ATTRIBUTE_DEFINITIONS);
     }
 }

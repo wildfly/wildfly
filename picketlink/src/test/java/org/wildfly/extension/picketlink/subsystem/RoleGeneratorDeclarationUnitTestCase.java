@@ -22,18 +22,16 @@
 
 package org.wildfly.extension.picketlink.subsystem;
 
-import org.jboss.as.controller.RunningMode;
+import static org.junit.Assert.assertFalse;
+
+import java.io.IOException;
+
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Test;
 import org.wildfly.extension.picketlink.federation.FederationExtension;
-
-import java.io.IOException;
-
-import static org.junit.Assert.assertFalse;
 
 /**
  * @author Pedro Igor
@@ -55,21 +53,14 @@ public class RoleGeneratorDeclarationUnitTestCase extends AbstractSubsystemBaseT
         System.setProperty("jboss.home.dir", System.getProperty("java.io.tmpdir"));
         System.setProperty("jboss.server.server.dir", System.getProperty("java.io.tmpdir"));
 
-        KernelServicesBuilder builder = createKernelServicesBuilder(new AdditionalInitialization() {
-            @Override
-            protected RunningMode getRunningMode() {
-                return RunningMode.NORMAL;
-            }
-
-            @Override
-            protected void setupController(ControllerInitializer controllerInitializer) {
-                super.setupController(controllerInitializer);
-                controllerInitializer.addPath("jboss.server.data.dir", System.getProperty("java.io.tmpdir"), null);
-            }
-        }).setSubsystemXml(getSubsystemXml());
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(getSubsystemXml());
 
         KernelServices mainServices = builder.build();
 
         assertFalse(mainServices.isSuccessfulBoot());
+    }
+
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.ADMIN_ONLY_HC;
     }
 }

@@ -101,22 +101,22 @@ public class RaServicesFactory {
             }
         }
 
-        if (registration != null && deploymentResource != null) {
-            if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnitName) == null) {
-                registration.registerOverrideModel(deploymentUnitName, new OverrideDescriptionProvider() {
-                    @Override
-                    public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
-                        return Collections.emptyMap();
-                    }
+        if (registration != null && deploymentResource != null
+                && registration.isAllowsOverride()
+                && registration.getOverrideModel(deploymentUnitName) == null) {
 
-                    @Override
-                    public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                        return Collections.emptyMap();
-                    }
-                });
-            }
+            registration.registerOverrideModel(deploymentUnitName, new OverrideDescriptionProvider() {
+                @Override
+                public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
+                    return Collections.emptyMap();
+                }
+
+                @Override
+                public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
+                    return Collections.emptyMap();
+                }
+            });
         }
-
 
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();

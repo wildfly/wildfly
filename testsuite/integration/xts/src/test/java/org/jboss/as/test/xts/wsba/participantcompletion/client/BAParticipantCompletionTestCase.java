@@ -22,11 +22,15 @@
 
 package org.jboss.as.test.xts.wsba.participantcompletion.client;
 
-import javax.inject.Inject;
+import static org.jboss.as.test.xts.util.EventLogEvent.CANCEL;
+import static org.jboss.as.test.xts.util.EventLogEvent.CLOSE;
+import static org.jboss.as.test.xts.util.EventLogEvent.COMPENSATE;
+import static org.jboss.as.test.xts.util.EventLogEvent.CONFIRM_COMPLETED;
+import static org.jboss.as.test.xts.util.ServiceCommand.APPLICATION_EXCEPTION;
+import static org.jboss.as.test.xts.util.ServiceCommand.CANNOT_COMPLETE;
+import static org.jboss.as.test.xts.util.ServiceCommand.DO_COMPLETE;
 
-import com.arjuna.mw.wst11.UserBusinessActivity;
-import com.arjuna.mw.wst11.UserBusinessActivityFactory;
-import com.arjuna.wst.TransactionRolledBackException;
+import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -51,8 +55,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.test.xts.util.ServiceCommand.*;
-import static org.jboss.as.test.xts.util.EventLogEvent.*;
+import com.arjuna.mw.wst11.UserBusinessActivity;
+import com.arjuna.mw.wst11.UserBusinessActivityFactory;
+import com.arjuna.wst.TransactionRolledBackException;
 
 /**
  * XTS business activities - participant completition test case

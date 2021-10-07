@@ -24,6 +24,7 @@ package org.wildfly.clustering.ee.infinispan.scheduler;
 
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.wildfly.clustering.dispatcher.Command;
@@ -46,17 +47,23 @@ public class PrimaryOwnerScheduler<I, K, M> implements org.wildfly.clustering.ee
     private final Function<K, Node> primaryOwnerLocator;
     private final Function<I, K> keyFactory;
     private final CommandDispatcher<Scheduler<I, M>> dispatcher;
+    private final BiFunction<I, M, ScheduleCommand<I, M>> scheduleCommandFactory;
 
     public <C, L> PrimaryOwnerScheduler(CommandDispatcherFactory dispatcherFactory, String name, Scheduler<I, M> scheduler, Function<K, Node> primaryOwnerLocator, Function<I, K> keyFactory) {
-        this.dispatcher = dispatcherFactory.createCommandDispatcher(name, scheduler, this.getClass().getClassLoader());
+        this(dispatcherFactory, name, scheduler, primaryOwnerLocator, keyFactory, ScheduleWithTransientMetaDataCommand::new);
+    }
+
+    public <C, L> PrimaryOwnerScheduler(CommandDispatcherFactory dispatcherFactory, String name, Scheduler<I, M> scheduler, Function<K, Node> primaryOwnerLocator, Function<I, K> keyFactory, BiFunction<I, M, ScheduleCommand<I, M>> scheduleCommandFactory) {
+        this.dispatcher = dispatcherFactory.createCommandDispatcher(name, scheduler, keyFactory.apply(null).getClass().getClassLoader());
         this.primaryOwnerLocator = primaryOwnerLocator;
         this.keyFactory = keyFactory;
+        this.scheduleCommandFactory = scheduleCommandFactory;
     }
 
     @Override
     public void schedule(I id, M metaData) {
         try {
-            this.executeOnPrimaryOwner(id, new ScheduleCommand<>(id, metaData));
+            this.executeOnPrimaryOwner(id, this.scheduleCommandFactory.apply(id, metaData));
         } catch (Exception e) {
             Logger.ROOT_LOGGER.failedToSchedule(e, id);
         }

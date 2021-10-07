@@ -46,8 +46,14 @@ public class SmokeStandaloneTestCase extends TestBase {
         assertContains(errorMessages, "OPVDX001: Validation error in duplicate-attribute.xml");
         assertContains(errorMessages, "<jdbc data-source=\"foo\"");
         assertContains(errorMessages, "data-source=\"bar\"/>");
-        assertContains(errorMessages, "     ^^^^ 'data-source' can't appear more than once on this element");
-        assertContains(errorMessages, "A 'data-source' attribute first appears here:");
+        if (errorMessages.contains("first appears")) {
+            // Apache JAXP impl
+            assertContains(errorMessages, "^^^^ 'data-source' can't appear more than once on this element");
+            assertContains(errorMessages, "A 'data-source' attribute first appears here:");
+        } else {
+            // JDK JAXP impl
+            assertContains(errorMessages, "^^^^ http://www.w3.org/TR/1999/REC-xml-names-19990114#AttributeNotUnique?jdbc&data-source");
+        }
     }
 
     @Test
@@ -57,11 +63,7 @@ public class SmokeStandaloneTestCase extends TestBase {
         ensureTypoInExtensions(container().getErrorMessageFromServerStart());
     }
     public static void ensureTypoInExtensions(String errorMessages) {
-        assertContains(errorMessages, "-to-damage.xml");
-        assertContains(errorMessages, "<extension modules=\"org.aaajboss.as.clustering.infinispan\"/>");
-        assertContains(errorMessages, "^^^^ 'modules' isn't an allowed attribute for the 'extension' element");
-        assertContains(errorMessages, "Did you mean 'module'?");
-        assertContains(errorMessages, "Attributes allowed here are: module");
+        assertContains(errorMessages, "WFLYCTL0197: Unexpected attribute 'modules' encountered");
     }
 
     @Test
@@ -72,12 +74,7 @@ public class SmokeStandaloneTestCase extends TestBase {
         ensureNonExistingElementToMessagingSubsystem(container().getErrorMessageFromServerStart());
     }
     public static void ensureNonExistingElementToMessagingSubsystem(String errorMessages) {
-        assertContains(errorMessages, "<cluster id=\"3\"/>");
         assertContains(errorMessages, "^^^^ 'id' isn't an allowed attribute for the 'cluster' element");
-        assertContains(errorMessages, "Attributes allowed here are: ");
-        assertContains(errorMessages, "credential-reference");
-        assertContains(errorMessages, "name, password");
-        assertContains(errorMessages, "user");
         assertContains(errorMessages, "| 'id' is allowed on elements:");
         assertContains(errorMessages, "resource-adapters > resource-adapter");
         assertContains(errorMessages, "resource-adapters > resource-adapter > module");

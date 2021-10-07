@@ -30,13 +30,11 @@ import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.jgroups.auth.CipherAuthToken;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -93,17 +91,6 @@ public class CipherAuthTokenResourceDefinition extends AuthTokenResourceDefiniti
         public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
             return builder;
         }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
-        if (JGroupsModel.VERSION_8_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .addRejectCheck(CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, CipherAuthTokenResourceDefinition.Attribute.KEY_CREDENTIAL.getName())
-                    .end();
-        }
-
-        AuthTokenResourceDefinition.addTransformations(version, builder);
     }
 
     static class ResourceDescriptorTransformer implements UnaryOperator<ResourceDescriptor> {

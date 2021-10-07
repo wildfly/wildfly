@@ -59,6 +59,13 @@ public class CheckOperations extends AbstractRuntimeOnlyHandler {
             .setReplyValueType(ModelType.OBJECT)
             .setRuntimeOnly()
             .build();
+    private static final OperationDefinition CHECK_STARTED_DEFINITION = new SimpleOperationDefinitionBuilder("check-started", MicroProfileHealthExtension.getResourceDescriptionResolver(MicroProfileHealthExtension.SUBSYSTEM_NAME))
+        .setRuntimeOnly()
+        .setReplyType(ModelType.OBJECT)
+        .setReplyValueType(ModelType.OBJECT)
+        .setRuntimeOnly()
+        .build();
+
 
     private final Function<MicroProfileHealthReporter, SmallRyeHealth> healthOperation;
 
@@ -70,6 +77,7 @@ public class CheckOperations extends AbstractRuntimeOnlyHandler {
         resourceRegistration.registerOperationHandler(CHECK_DEFINITION, new CheckOperations((MicroProfileHealthReporter h) -> h.getHealth()));
         resourceRegistration.registerOperationHandler(CHECK_LIVE_DEFINITION, new CheckOperations((MicroProfileHealthReporter h) -> h.getLiveness()));
         resourceRegistration.registerOperationHandler(CHECK_READY_DEFINITION, new CheckOperations((MicroProfileHealthReporter h) -> h.getReadiness()));
+        resourceRegistration.registerOperationHandler(CHECK_STARTED_DEFINITION, new CheckOperations((MicroProfileHealthReporter h) -> h.getStartup()));
     }
 
     @Override

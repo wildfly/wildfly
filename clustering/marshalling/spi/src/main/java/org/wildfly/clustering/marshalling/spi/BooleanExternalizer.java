@@ -48,12 +48,12 @@ public class BooleanExternalizer<T> implements Externalizer<T> {
 
     @Override
     public void writeObject(ObjectOutput output, T object) throws IOException {
-        output.writeBoolean(this.writer.apply(object).booleanValue());
+        output.writeBoolean(this.writer.apply(object));
     }
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return this.reader.apply(Boolean.valueOf(input.readBoolean()));
+        return this.reader.apply(input.readBoolean());
     }
 
     @Override

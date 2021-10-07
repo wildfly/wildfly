@@ -69,16 +69,6 @@ public class JBossWSTestCase extends TestBase {
         assertContains(errorLog, "OPVDX001: Validation error in standalone.xml");
         assertContains(errorLog, "<mmodify-wsdl-address>true</mmodify-wsdl-address>");
         assertContains(errorLog, "^^^^ 'mmodify-wsdl-address' isn't an allowed element here");
-        assertContains(errorLog, " Did you mean 'modify-wsdl-address'?");
-        assertContains(errorLog, "Elements allowed here are:");
-        assertContains(errorLog, "client-config");
-        assertContains(errorLog, "wsdl-path-rewrite-rule");
-        assertContains(errorLog, "endpoint-config");
-        assertContains(errorLog, "wsdl-port");
-        assertContains(errorLog, "modify-wsdl-address");
-        assertContains(errorLog, "wsdl-secure-port");
-        assertContains(errorLog, "wsdl-host");
-        assertContains(errorLog, "wsdl-uri-scheme");
     }
 
     /*
@@ -122,8 +112,6 @@ public class JBossWSTestCase extends TestBase {
         String errorLog = container().getErrorMessageFromServerStart();
         assertContains(errorLog, "OPVDX001: Validation error in standalone.xml");
         assertContains(errorLog, "^^^^ 'client-config' isn't an allowed element here");
-        assertContains(errorLog, "Elements allowed here are: endpoint-config, modify-wsdl-address,");
-        assertContains(errorLog, "wsdl-host, wsdl-port, wsdl-secure-port");
     }
 
     /*
@@ -138,8 +126,6 @@ public class JBossWSTestCase extends TestBase {
                         .build()));
         String errorLog = container().getErrorMessageFromServerStart();
         assertContains(errorLog, "OPVDX001: Validation error in standalone.xml");
-        assertContains(errorLog, "^^^^ 'wsdl-host' can't appear more than once within the subsystem element");
-        assertContains(errorLog, "A 'wsdl-host' element first appears here:");
     }
 
 }

@@ -65,7 +65,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * <li>Uses a worker thread per address for which to generate keys.</li>
  * <li>Minimal CPU utilization when key queues are full.</li>
  * <li>Non-blocking topology change event handler.</li>
- * <li>{@link #getKeyForAddress(Address)} calls will block during topology change events.</li>
+ * <li>{@link #getKeyForAddress(Address)} calls will not block during topology change events.</li>
  * </ul>
  * @author Paul Ferraro
  */

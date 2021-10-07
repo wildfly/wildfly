@@ -974,81 +974,8 @@ realm.
 [[default-management-authentication-configuration]]
 == Default Management Authentication Configuration
 
-By default, the WildFly management interfaces are secured by the legacy
-core management authentication.
-
-*Default Configuration*
-
-[source,json,options="nowrap"]
-----
-/core-service=management/management-interface=http-interface:read-resource()
-{
-    "outcome" => "success",
-    "result" => {
-        "allowed-origins" => undefined,
-        "console-enabled" => true,
-        "http-authentication-factory" => undefined,
-        "http-upgrade" => {"enabled" => true},
-        "http-upgrade-enabled" => true,
-        "sasl-protocol" => "remote",
-        "secure-socket-binding" => undefined,
-        "security-realm" => "ManagementRealm",
-        "server-name" => undefined,
-        "socket-binding" => "management-http",
-        "ssl-context" => undefined
-    }
-----
-
-WildFly does provide _management-http-authentication_ and
-_management-sasl-authentication_ in the _elytron_ subsystem for securing
-the management interfaces as well.
-
-[[update-wildfly-to-use-the-default-elytron-components-for-management-authentication]]
-=== Update WildFly to Use the Default Elytron Components for Management
-Authentication
-
-[[set-http-authentication-factory-to-use-management-http-authentication]]
-==== Set http-authentication-factory to use
-management-http-authentication
-
-[source,java,options="nowrap"]
-----
-/core-service=management/management-interface=http-interface:write-attribute( \
-  name=http-authentication-factory, \
-  value=management-http-authentication \
-)
-----
-
-[[set-sasl-authentication-factory-to-use-management-sasl-authentication]]
-==== Set sasl-authentication-factory to use
-management-sasl-authentication
-
-[source,java,options="nowrap"]
-----
-/core-service=management/management-interface=http-interface:write-attribute( \
-  name=http-upgrade.sasl-authentication-factory, \
-  value=management-sasl-authentication \
-)
-----
-
-[[undefine-security-realm]]
-==== Undefine security-realm
-
-[source,java,options="nowrap"]
-----
-/core-service=management/management-interface=http-interface:undefine-attribute(name=security-realm)
-----
-
-[[reload-wildfly-for-the-changes-to-take-affect.]]
-==== Reload WildFly for the changes to take effect.
-
-[source,options="nowrap"]
-----
-reload
-----
-
-The management interfaces are now secured using the default components
-provided by the 'elytron' subsystem.
+By default, the WildFly management interfaces are secured using WildFly
+Elytron capabilities.
 
 [[default-elytron-management-http-authentication-configuration]]
 === Default Elytron Management HTTP Authentication Configuration

@@ -51,7 +51,8 @@ public class DefaultContextServiceTestCase {
                 .addClasses(DefaultContextServiceTestCase.class, DefaultContextServiceTestEJB.class, TestEJBRunnable.class, Util.class)
                 .addAsManifestResource(createPermissionsXmlAsset(
                         new RuntimePermission("modifyThread"),
-                        new ElytronPermission("getSecurityDomain")
+                        new ElytronPermission("getSecurityDomain"),
+                        new ElytronPermission("authenticate")
                         ), "permissions.xml");
     }
 

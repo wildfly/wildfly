@@ -21,7 +21,8 @@
 */
 package org.wildfly.test.extension.rts;
 
-import org.codehaus.jettison.json.JSONArray;
+import javax.json.JsonArray;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -44,7 +45,7 @@ import org.wildfly.test.extension.rts.common.LoggingXAResource;
 @RunAsClient
 @RunWith(Arquillian.class)
 public final class InboundBridgeTestCase extends AbstractTestCase {
-    private static final String DEPENDENCIES = "Dependencies: org.jboss.narayana.rts, org.jboss.jts, org.codehaus.jettison\n";
+    private static final String DEPENDENCIES = "Dependencies: org.jboss.narayana.rts, org.jboss.jts\n";
     private InboundBridgeUtilities utils;
 
     @ArquillianResource
@@ -74,7 +75,7 @@ public final class InboundBridgeTestCase extends AbstractTestCase {
         utils.enlistInboundBridgeResource();
         txSupport.commitTx();
 
-        final JSONArray jsonArray = utils.getInboundBridgeResourceInvocations();
+        final JsonArray jsonArray = utils.getInboundBridgeResourceInvocations();
 
         utils.assertJsonArray(jsonArray, "LoggingXAResource.start", 1);
         utils.assertJsonArray(jsonArray, "LoggingXAResource.end", 1);
@@ -89,7 +90,7 @@ public final class InboundBridgeTestCase extends AbstractTestCase {
         utils.enlistInboundBridgeResource();
         txSupport.rollbackTx();
 
-        JSONArray jsonArray = utils.getInboundBridgeResourceInvocations();
+        JsonArray jsonArray = utils.getInboundBridgeResourceInvocations();
 
         utils.assertJsonArray(jsonArray, "LoggingXAResource.start", 1);
         utils.assertJsonArray(jsonArray, "LoggingXAResource.end", 1);
@@ -105,14 +106,14 @@ public final class InboundBridgeTestCase extends AbstractTestCase {
         utils.enlistInboundBridgeResource();
         txSupport.commitTx();
 
-        JSONArray participantResourceInvocations = utils.getLoggingRestATParticipantInvocations();
-        JSONArray xaResourceInvocations = utils.getInboundBridgeResourceInvocations();
+        JsonArray participantResourceInvocations = utils.getLoggingRestATParticipantInvocations();
+        JsonArray xaResourceInvocations = utils.getInboundBridgeResourceInvocations();
 
-        Assert.assertEquals(2, participantResourceInvocations.length());
+        Assert.assertEquals(2, participantResourceInvocations.size());
         Assert.assertEquals("LoggingRestATResource.terminateParticipant(" + TxStatusMediaType.TX_PREPARED + ")",
-                participantResourceInvocations.get(0));
+                participantResourceInvocations.getString(0));
         Assert.assertEquals("LoggingRestATResource.terminateParticipant(" + TxStatusMediaType.TX_COMMITTED + ")",
-                participantResourceInvocations.get(1));
+                participantResourceInvocations.getString(1));
 
         utils.assertJsonArray(xaResourceInvocations, "LoggingXAResource.start", 1);
         utils.assertJsonArray(xaResourceInvocations, "LoggingXAResource.end", 1);
@@ -128,12 +129,12 @@ public final class InboundBridgeTestCase extends AbstractTestCase {
         utils.enlistInboundBridgeResource();
         txSupport.rollbackTx();
 
-        JSONArray participantResourceInvocations = utils.getLoggingRestATParticipantInvocations();
-        JSONArray xaResourceInvocations = utils.getInboundBridgeResourceInvocations();
+        JsonArray participantResourceInvocations = utils.getLoggingRestATParticipantInvocations();
+        JsonArray xaResourceInvocations = utils.getInboundBridgeResourceInvocations();
 
-        Assert.assertEquals(1, participantResourceInvocations.length());
+        Assert.assertEquals(1, participantResourceInvocations.size());
         Assert.assertEquals("LoggingRestATResource.terminateParticipant(" + TxStatusMediaType.TX_ROLLEDBACK + ")",
-                participantResourceInvocations.get(0));
+                participantResourceInvocations.getString(0));
 
         utils.assertJsonArray(xaResourceInvocations, "LoggingXAResource.start", 1);
         utils.assertJsonArray(xaResourceInvocations, "LoggingXAResource.end", 1);

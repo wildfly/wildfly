@@ -49,7 +49,7 @@ public class SynchronizedDecoratorMarshaller<T> extends DecoratorMarshaller<T> {
         T decorated = WildFlySecurityManager.doUnchecked(value, this);
         if (decorated != null) {
             synchronized (value) {
-                writer.writeObject(DECORATED_INDEX, new Any(decorated));
+                writer.writeAny(DECORATED_INDEX, decorated);
             }
         }
     }

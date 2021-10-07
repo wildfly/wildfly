@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>25.0.0.Beta1-SNAPSHOT</version>
+        <version>26.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-servlet-galleon-pack</artifactId>
@@ -88,13 +88,6 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
-            <type>pom</type>
-            <scope>provided</scope>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-core-feature-pack-galleon-pruned</artifactId>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
@@ -174,13 +167,8 @@
                                     <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
                                     <type>zip</type>
                                 </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.wildfly.core</groupId>
-                                    <artifactId>wildfly-core-feature-pack-galleon-pruned</artifactId>
-                                    <type>zip</type>
-                                </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <outputDirectory>${basedir}/target/unpacked-wildfly-core-galleon-resources</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -193,6 +181,23 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>copy-unpacked-wildfly-core-galleon-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <escapeString>\</escapeString>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/target/unpacked-wildfly-core-galleon-resources</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>copy-common-feature-pack-resources</id>
                         <phase>process-resources</phase>
                         <goals>
@@ -200,9 +205,11 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <escapeString>\</escapeString>
                             <resources>
                                 <resource>
                                     <directory>${common.resources.directory}</directory>
+                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                         </configuration>

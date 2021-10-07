@@ -34,7 +34,6 @@ import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.StartContext;
@@ -77,7 +76,6 @@ public class ModClusterService extends FilterService {
     private final Supplier<SocketBinding> managementSocketBinding;
     private final Supplier<SocketBinding> advertiseSocketBinding;
     private final Supplier<SSLContext> sslContext;
-    private final Supplier<SecurityRealm> securityRealm;
     private final long healthCheckInterval;
     private final int maxRequestTime;
     private final long removeBrokenNodes;
@@ -105,7 +103,6 @@ public class ModClusterService extends FilterService {
                       final Supplier<SocketBinding> managementSocketBinding,
                       final Supplier<SocketBinding> advertiseSocketBinding,
                       final Supplier<SSLContext> sslContext,
-                      final Supplier<SecurityRealm> securityRealm,
                       ModelNode model,
                       long healthCheckInterval,
                       int maxRequestTime,
@@ -130,7 +127,6 @@ public class ModClusterService extends FilterService {
         this.managementSocketBinding = managementSocketBinding;
         this.advertiseSocketBinding = advertiseSocketBinding;
         this.sslContext = sslContext;
-        this.securityRealm = securityRealm;
         this.healthCheckInterval = healthCheckInterval;
         this.maxRequestTime = maxRequestTime;
         this.removeBrokenNodes = removeBrokenNodes;
@@ -156,12 +152,6 @@ public class ModClusterService extends FilterService {
         super.start(context);
 
         SSLContext sslContext = this.sslContext != null ? this.sslContext.get() : null;
-        if (sslContext == null) {
-            SecurityRealm realm = securityRealm != null ? securityRealm.get() : null;
-            if (realm != null) {
-                sslContext = realm.getSSLContext();
-            }
-        }
 
         //TODO: SSL support for the client
         final ModCluster.Builder modClusterBuilder;
@@ -322,8 +312,7 @@ public class ModClusterService extends FilterService {
         final Supplier<SocketBinding> msbSupplier = sb.requiresCapability(Capabilities.REF_SOCKET_BINDING, SocketBinding.class, mgmtSocketBindingRef);
         final Supplier<SocketBinding> asbSupplier = advertiseSocketBindingRef.isDefined() ? sb.requiresCapability(Capabilities.REF_SOCKET_BINDING, SocketBinding.class, advertiseSocketBindingRef.asString()) : null;
         final Supplier<SSLContext> scSupplier = sslContext.isDefined() ? sb.requiresCapability(REF_SSL_CONTEXT, SSLContext.class, sslContext.asString()) : null;
-        final Supplier<SecurityRealm> srSupplier = securityRealm.isDefined() ? SecurityRealm.ServiceUtil.requires(sb, securityRealm.asString()) : null;
-        ModClusterService service = new ModClusterService(serviceConsumer, xwSupplier, msbSupplier, asbSupplier, scSupplier, srSupplier, model,
+        ModClusterService service = new ModClusterService(serviceConsumer, xwSupplier, msbSupplier, asbSupplier, scSupplier, model,
                 ModClusterDefinition.HEALTH_CHECK_INTERVAL.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.MAX_REQUEST_TIME.resolveModelAttribute(operationContext, model).asInt(),
                 ModClusterDefinition.BROKEN_NODE_TIMEOUT.resolveModelAttribute(operationContext, model).asInt(),

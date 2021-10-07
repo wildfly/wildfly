@@ -42,17 +42,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionActivationListener;
 
+import io.undertow.UndertowOptions;
+import io.undertow.connector.ByteBufferPool;
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.security.idm.Account;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.protocol.http.HttpServerConnection;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListener.SessionDestroyedReason;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
+import io.undertow.util.Protocols;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -64,6 +71,13 @@ import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionMetaData;
+import org.xnio.OptionMap;
+import org.xnio.StreamConnection;
+import org.xnio.channels.Configurable;
+import org.xnio.conduits.ConduitStreamSinkChannel;
+import org.xnio.conduits.ConduitStreamSourceChannel;
+import org.xnio.conduits.StreamSinkConduit;
+import org.xnio.conduits.StreamSourceConduit;
 
 /**
  * Unit test for {@link DistributableSession}.
@@ -531,7 +545,7 @@ public class DistributableSessionTestCase {
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.batch, this.closeTask);
 
         String name = "name";
-        Integer value = Integer.valueOf(1);
+        Integer value = 1;
 
         SessionManager<Map<String, Object>, Batch> manager = mock(SessionManager.class);
         Batcher<Batch> batcher = mock(Batcher.class);
@@ -580,7 +594,7 @@ public class DistributableSessionTestCase {
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.batch, this.closeTask);
 
         String name = "name";
-        Integer value = Integer.valueOf(1);
+        Integer value = 1;
 
         SessionManager<Map<String, Object>, Batch> manager = mock(SessionManager.class);
         Batcher<Batch> batcher = mock(Batcher.class);
@@ -652,7 +666,7 @@ public class DistributableSessionTestCase {
         io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.batch, this.closeTask);
 
         String name = "name";
-        Integer value = Integer.valueOf(1);
+        Integer value = 1;
 
         SessionManager<Map<String, Object>, Batch> manager = mock(SessionManager.class);
         Batcher<Batch> batcher = mock(Batcher.class);
@@ -1055,6 +1069,7 @@ public class DistributableSessionTestCase {
         SessionConfig config = mock(SessionConfig.class);
 
         SessionManager<Map<String, Object>, Batch> manager = mock(SessionManager.class);
+        Supplier<String> identifierFactory = mock(Supplier.class);
         Batcher<Batch> batcher = mock(Batcher.class);
         BatchContext context = mock(BatchContext.class);
         Session<Map<String, Object>> newSession = mock(Session.class);
@@ -1078,7 +1093,8 @@ public class DistributableSessionTestCase {
         when(this.manager.getSessionManager()).thenReturn(manager);
         when(manager.getBatcher()).thenReturn(batcher);
         when(batcher.resumeBatch(this.batch)).thenReturn(context);
-        when(manager.createIdentifier()).thenReturn(newSessionId);
+        when(manager.getIdentifierFactory()).thenReturn(identifierFactory);
+        when(identifierFactory.get()).thenReturn(newSessionId);
         when(manager.createSession(newSessionId)).thenReturn(newSession);
         when(this.session.getAttributes()).thenReturn(oldAttributes);
         when(this.session.getMetaData()).thenReturn(oldMetaData);
@@ -1110,6 +1126,36 @@ public class DistributableSessionTestCase {
         verify(context).close();
     }
 
+    public void changeSessionIdResponseCommitted() {
+        when(this.session.getMetaData()).thenReturn(this.metaData);
+        when(this.metaData.isNew()).thenReturn(false);
+        when(this.session.isValid()).thenReturn(true);
+
+        io.undertow.server.session.Session session = new DistributableSession(this.manager, this.session, this.config, this.batch, this.closeTask);
+
+        // Ugh - all this, just to get HttpServerExchange.isResponseStarted() to return true
+        Configurable configurable = mock(Configurable.class);
+        StreamSourceConduit sourceConduit = mock(StreamSourceConduit.class);
+        ConduitStreamSourceChannel sourceChannel = new ConduitStreamSourceChannel(configurable, sourceConduit);
+        StreamSinkConduit sinkConduit = mock(StreamSinkConduit.class);
+        ConduitStreamSinkChannel sinkChannel = new ConduitStreamSinkChannel(configurable, sinkConduit);
+        StreamConnection stream = mock(StreamConnection.class);
+
+        when(stream.getSourceChannel()).thenReturn(sourceChannel);
+        when(stream.getSinkChannel()).thenReturn(sinkChannel);
+
+        ByteBufferPool bufferPool = mock(ByteBufferPool.class);
+        HttpHandler handler = mock(HttpHandler.class);
+        HttpServerConnection connection = new HttpServerConnection(stream, bufferPool, handler, OptionMap.create(UndertowOptions.ALWAYS_SET_DATE, false), 0, null);
+        HttpServerExchange exchange = new HttpServerExchange(connection);
+        exchange.setProtocol(Protocols.HTTP_1_1);
+        exchange.getResponseChannel();
+
+        SessionConfig config = mock(SessionConfig.class);
+
+        Assert.assertThrows(IllegalStateException.class, () -> session.changeSessionId(exchange, config));
+    }
+
     @Test
     public void changeSessionIdConcurrentInvalidate() {
         when(this.session.getMetaData()).thenReturn(this.metaData);
@@ -1121,6 +1167,7 @@ public class DistributableSessionTestCase {
         SessionConfig config = mock(SessionConfig.class);
 
         SessionManager<Map<String, Object>, Batch> manager = mock(SessionManager.class);
+        Supplier<String> identifierFactory = mock(Supplier.class);
         Batcher<Batch> batcher = mock(Batcher.class);
         BatchContext context = mock(BatchContext.class);
         Session<Map<String, Object>> newSession = mock(Session.class);
@@ -1144,7 +1191,8 @@ public class DistributableSessionTestCase {
         when(this.manager.getSessionManager()).thenReturn(manager);
         when(manager.getBatcher()).thenReturn(batcher);
         when(batcher.resumeBatch(this.batch)).thenReturn(context);
-        when(manager.createIdentifier()).thenReturn(newSessionId);
+        when(manager.getIdentifierFactory()).thenReturn(identifierFactory);
+        when(identifierFactory.get()).thenReturn(newSessionId);
         when(manager.createSession(newSessionId)).thenReturn(newSession);
         when(this.session.getAttributes()).thenReturn(oldAttributes);
         when(this.session.getMetaData()).thenReturn(oldMetaData);

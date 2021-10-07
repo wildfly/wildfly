@@ -24,8 +24,6 @@ package org.jboss.as.ejb3.timerservice.persistence;
 import java.io.Closeable;
 import java.util.List;
 
-import javax.transaction.TransactionManager;
-
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.msc.service.ServiceName;
@@ -54,16 +52,15 @@ public interface TimerPersistence {
     /**
      * Invoked before running a timer in order to determine if this node should run the timer.
      * @param timer The timer
-     * @param txManager ignored
      * @return true if the timer should be run
      */
-    boolean shouldRun(TimerImpl timer, @Deprecated TransactionManager txManager);
+    boolean shouldRun(TimerImpl timer);
 
     /**
      * Signals that the timer is being deployed and any internal structured required should be added.
      * @param timedObjectId
      */
-    default void timerDeployed(String timedObjectId) {};
+    default void timerDeployed(String timedObjectId) {}
 
     /**
      * Signals that a timer is being undeployed, and all cached data relating to this object should

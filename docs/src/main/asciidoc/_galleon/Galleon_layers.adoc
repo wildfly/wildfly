@@ -74,7 +74,6 @@ link:#gal.resource-adapters[resource-adapters] (optional) +
 specialized WildFly that doesn't need the capabilities provided by the other foundational layers.
 |
 link:#gal.core-management[core-management] (optional) +
-link:#gal.core-security-realms[core-security-realms] (optional) +
 link:#gal.jmx-remoting[jmx-remoting] (optional) +
 link:#gal.logging[logging] (optional) +
 link:#gal.management[management] (optional) +
@@ -89,11 +88,6 @@ link:#gal.security-manager[security-manager] (optional) +
 [cols="1,2,1"]
 |===
 |Name |Description |Dependencies
-|[[gal.application-security-realm]]application-security-realm
-|Security realm meant for securing applications.
-|
-link:#gal.base-server[base-server] +
-
 |[[gal.base-server]]base-server
 |Empty runnable server.
 |
@@ -137,13 +131,6 @@ link:#gal.web-server[web-server] +
 |
 link:#gal.base-server[base-server] +
 
-|[[gal.core-security-realms]]core-security-realms
-|Support for core Application and Management security realms.
-|
-link:#gal.application-security-realm[application-security-realm] (optional) +
-link:#gal.base-server[base-server] +
-link:#gal.management-security-realm[management-security-realm] (optional) +
-
 |[[gal.core-tools]]core-tools
 |Support for _jboss-cli_, _add-user_ and _elytron-tool_ launch scripts and configuration files.
 |
@@ -174,6 +161,13 @@ link:#gal.naming[naming] +
 |Support for EE Security.
 |
 link:#gal.cdi[cdi] +
+
+|[[gal.ejb]]ejb-http-invoker
+|Support for invoking Jakarta Enterprise Beans over HTTP.
+|
+link:#gal.ejb-lite[ejb-lite] +
+link:#gal.elytron[elytron] +
+link:#gal.undertow[undertow] +
 
 |[[gal.ejb]]ejb
 |Support for Jakarta Enterprise Beans, excluding the IIOP protocol.
@@ -296,23 +290,6 @@ link:#gal.base-server[base-server] +
 |
 link:#gal.base-server[base-server] +
 
-|[[gal.legacy-management]]legacy-management
-|Support for remote access to management interfaces secured with the core ManagementRealm.
-|
-link:#gal.management-security-realm[management-security-realm] +
-
-|[[gal.legacy-remoting]]legacy-remoting
-|Support for inbound and outbound JBoss Remoting connections, secured using legacy security realms.
-|
-link:#gal.application-security-realm[application-security-realm] +
-link:#gal.io[io] +
-
-|[[gal.legacy-security]]legacy-security
-|Support for legacy Picketbox-based web security.
-|
-link:#gal.naming[naming] +
-link:#gal.vault[vault] +
-
 |[[gal.logging]]logging
 |Support for the logging subsystem.
 |
@@ -328,11 +305,6 @@ link:#gal.naming[naming] +
 |Support for remote access to management interfaces secured using Elytron.
 |
 link:#gal.elytron[elytron] +
-
-|[[gal.management-security-realm]]management-security-realm
-|Security realm meant for securing server management interfaces.
-|
-link:#gal.base-server[base-server] +
 
 |[[gal.messaging-activemq]]messaging-activemq
 |Support for connections to a remote Jakarta Messaging broker.
@@ -484,12 +456,11 @@ Use link:#gal.web-server[web-server] for a servlet container with EE integration
 |
 link:#gal.base-server[base-server] +
 link:#gal.io[io] +
-link:#gal.vault[vault] +
 
-|[[gal.undertow-legacy-https]]undertow-legacy-https
-|Support for the Undertow HTTPS server secured using the legacy security ApplicationRealm.
+|[[gal.undertow-https]]undertow-https
+|Support for the Undertow HTTPS server secured using the applicationSSC SSLContext.
 |
-link:#gal.core-security-realms[core-security-realms] +
+link:#gal.elytron[elytron] +
 link:#gal.undertow[undertow] +
 
 |[[gal.undertow-load-balancer]]undertow-load-balancer
@@ -497,12 +468,7 @@ link:#gal.undertow[undertow] +
 |
 link:#gal.base-server[base-server] +
 link:#gal.io[io] +
-link:#gal.vault[vault] +
 
-|[[gal.vault]]vault
-|Support for Picketbox security vaults.
-|
-link:#gal.base-server[base-server] +
 
 |[[gal.web-clustering]]web-clustering
 |Support for distributable web applications. Configures a non-local Infinispan-based container web cache for data session handling suitable to clustering environments.

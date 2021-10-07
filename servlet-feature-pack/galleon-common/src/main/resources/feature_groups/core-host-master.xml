@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="core-host-master" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <!-- TODO Temporary fork to remove security realms. -->
+    <feature spec="host">
+        <param name="host" value="master"/>
+        <param name="persist-name" value="true"/>
+
+        <feature spec="core-service.management"/>
+        <feature-group name="host-audit"/>
+        <feature-group name="host-profile"/>
+
+        <feature spec="host.interface">
+            <param name="interface" value="management"/>
+            <param name="inet-address" value="${jboss.bind.address.management:127.0.0.1}"/>
+        </feature>
+
+        <feature-group name="host-management-interfaces"/>
+        <feature-group name="host-jvm"/>
+    </feature>
+</feature-group-spec>

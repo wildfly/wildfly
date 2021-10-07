@@ -82,7 +82,8 @@ public class ServletUnitTestCase {
         war.addAsWebInfResource(ServletUnitTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         war.addAsWebInfResource(ServletUnitTestCase.class.getPackage(), "web.xml", "web.xml");
         war.addAsManifestResource(new StringAsset("Dependencies: deployment.ejb3-servlet-ejbs.jar \n"), "MANIFEST.MF");
-        war.addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
+        war.addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
+                                                            new ElytronPermission("authenticate")), "permissions.xml");
         return war;
     }
 
@@ -102,7 +103,8 @@ public class ServletUnitTestCase {
         war.addAsWebInfResource(ServletUnitTestCase.class.getPackage(), "web-ear.xml", "web.xml");
         war.addClass(EJBServletEar.class);
         war.addClass(Util.class);
-        ear.addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain")), "permissions.xml");
+        ear.addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
+                                                            new ElytronPermission("authenticate")), "permissions.xml");
         ear.addAsModule(war);
 
         ear.addAsManifestResource(ServletUnitTestCase.class.getPackage(), "application.xml", "application.xml");

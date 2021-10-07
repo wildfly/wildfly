@@ -49,7 +49,7 @@ public class IndexedKeyFormatMapper implements TwoWayKey2StringMapper {
             this.indexes.put(this.keyFormats.get(i).getTargetClass(), i);
         }
         // Determine number of characters to reserve for index
-        this.padding = (int) (Math.log( (double) this.keyFormats.size() - 1) / Math.log( (double) HEX_RADIX)) + 1;
+        this.padding = (int) (Math.log( (double) this.keyFormats.size() - 1) / Math.log(HEX_RADIX)) + 1;
     }
 
     @Override

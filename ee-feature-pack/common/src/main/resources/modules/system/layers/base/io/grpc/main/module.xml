@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2021, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="io.grpc">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${io.grpc:grpc-api}"/>
+        <artifact name="${io.grpc:grpc-context}"/>
+        <artifact name="${io.grpc:grpc-protobuf}"/>
+        <artifact name="${io.grpc:grpc-okhttp}"/>
+        <artifact name="${io.grpc:grpc-core}"/>
+        <artifact name="${io.grpc:grpc-protobuf-lite}"/>
+        <artifact name="${io.grpc:grpc-stub}"/>
+    </resources>
+
+    <dependencies>
+        <module name="com.google.code.gson"/>
+        <module name="com.google.protobuf" export="true"/>
+        <module name="com.squareup.okhttp3"/>
+        <module name="com.google.guava"/>
+        <module name="java.logging"/>
+    </dependencies>
+</module>

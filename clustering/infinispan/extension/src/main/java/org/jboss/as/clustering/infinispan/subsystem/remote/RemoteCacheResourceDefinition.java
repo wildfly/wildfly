@@ -27,11 +27,8 @@ import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
-import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 
 /**
@@ -42,12 +39,6 @@ public class RemoteCacheResourceDefinition extends ChildResourceDefinition<Manag
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
     static PathElement pathElement(String name) {
         return PathElement.pathElement("remote-cache", name);
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
-            parent.discardChildResource(WILDCARD_PATH);
-        }
     }
 
     private final FunctionExecutorRegistry<RemoteCacheContainer> executors;

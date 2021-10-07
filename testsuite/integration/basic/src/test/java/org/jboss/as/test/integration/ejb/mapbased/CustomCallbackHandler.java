@@ -37,7 +37,7 @@ import javax.security.sasl.RealmCallback;
  */
 public class CustomCallbackHandler implements CallbackHandler {
 
-    static final String USER_NAME = System.getProperty("elytron") == null ? "foo-bar" : "$local";
+    static final String USER_NAME = "$local";
 
     @Override
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {

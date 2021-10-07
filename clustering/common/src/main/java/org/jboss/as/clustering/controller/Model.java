@@ -38,7 +38,7 @@ public interface Model {
     /**
      * Indicates whether this model is more recent than the specified version and thus requires transformation
      * @param version a model version
-     * @return true this this model is more recent than the specified version, false otherwise
+     * @return true if this model is more recent than the specified version, false otherwise
      */
     default boolean requiresTransformation(ModelVersion version) {
         return ModelVersion.compare(this.getVersion(), version) < 0;

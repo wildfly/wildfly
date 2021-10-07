@@ -26,12 +26,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
 import org.wildfly.clustering.web.cache.session.ValidSession;
@@ -54,7 +54,7 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
     private final Registrar<SessionExpirationListener> expirationRegistrar;
     private final SessionExpirationListener expirationListener;
     private final SessionFactory<SC, MV, AV, LC> factory;
-    private final IdentifierFactory<String> identifierFactory;
+    private final Supplier<String> identifierFactory;
     private final SC context;
     private final Batcher<TransactionBatch> batcher;
     private final Duration stopTimeout;
@@ -104,8 +104,8 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
     }
 
     @Override
-    public String createIdentifier() {
-        return this.identifierFactory.createIdentifier();
+    public Supplier<String> getIdentifierFactory() {
+        return this.identifierFactory;
     }
 
     @Override

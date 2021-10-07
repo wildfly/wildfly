@@ -43,12 +43,12 @@ public enum AnyField implements Field<Object> {
     REFERENCE(new ScalarMarshaller<Integer>() {
         @Override
         public Integer readFrom(ProtoStreamReader reader) throws IOException {
-            return Integer.valueOf(reader.readUInt32());
+            return reader.readUInt32();
         }
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Integer value) throws IOException {
-            writer.writeVarint32(value.intValue());
+            writer.writeVarint32(value);
         }
 
         @Override

@@ -49,12 +49,14 @@ import org.jboss.msc.service.StopContext;
 public class HealthContextService implements Service {
 
     private static final String CONTEXT_NAME = "health";
+    public static final String MICROPROFILE_HEALTH_REPORTER_CAPABILITY = "org.wildfly.extension.microprofile.health.reporter";
 
     private final Consumer<HealthContextService> consumer;
     private final Supplier<ExtensibleHttpManagement> extensibleHttpManagement;
     private final Supplier<Boolean> securityEnabled;
     private Supplier<ServerProbesService> serverProbesService;
     private HttpHandler overrideableHealthHandler;
+    private static boolean mpHealthSubsystemActive = false;
 
 
     static void install(OperationContext context, boolean securityEnabled) {
@@ -73,6 +75,10 @@ public class HealthContextService implements Service {
                     return securityEnabled;
                 }
             };
+        }
+        // check if we will be also booting the MP Health subsystem. In that case, this subsystem should not be responding.
+        if (context.getCapabilityServiceSupport().hasCapability(MICROPROFILE_HEALTH_REPORTER_CAPABILITY)) {
+            mpHealthSubsystemActive = true;
         }
         serviceBuilder.setInstance(new HealthContextService(extensibleHttpManagement, consumer, securityEnabledSupplier, serverProbesService))
                 .install();
@@ -106,6 +112,7 @@ public class HealthContextService implements Service {
         public static final String HEALTH = "/" + CONTEXT_NAME;
         public static final String HEALTH_LIVE = HEALTH + "/live";
         public static final String HEALTH_READY = HEALTH + "/ready";
+        public static final String HEALTH_STARTED = HEALTH + "/started";
         private ServerProbesService serverProbes;
 
         public HealthCheckHandler(ServerProbesService serverProbesService) {
@@ -119,8 +126,17 @@ public class HealthContextService implements Service {
                 return;
             }
 
+            if (mpHealthSubsystemActive) {
+                // if MP Health subsystem is present but not started yet we can't respond with management operation
+                // as the clients expect JSON which is an object not an array. So respond with 404 status code to
+                // not confuse consumers with wrong responses. This will still be correctly rejected in kubernetes.
+                exchange.setStatusCode(404);
+                return;
+            }
+
             String requestPath = exchange.getRequestPath();
-            if (!HEALTH.equals(requestPath) && !HEALTH_LIVE.equals(requestPath) && !HEALTH_READY.equals(requestPath)) {
+            if (!HEALTH.equals(requestPath) && !HEALTH_LIVE.equals(requestPath) &&
+                !HEALTH_READY.equals(requestPath) && !HEALTH_STARTED.equals(requestPath)) {
                 exchange.setStatusCode(404);
                 return;
             }
@@ -150,11 +166,22 @@ public class HealthContextService implements Service {
                 probeOutcome.get(OUTCOME).set(true);
                 response.add(probeOutcome);
             }
+            if (HEALTH.equals(requestPath) || HEALTH_STARTED.equals(requestPath)) {
+                // always respond to the /health/started positively
+                ModelNode probeOutcome = new ModelNode();
+                probeOutcome.get(NAME).set("started-server");
+                probeOutcome.get(OUTCOME).set(true);
+                response.add(probeOutcome);
+            }
             response.add(OUTCOME, globalOutcome);
 
-            exchange.setStatusCode(globalOutcome ? 200: 503)
-                    .getResponseHeaders().add(Headers.CONTENT_TYPE, "application/json");
-            exchange.getResponseSender().send(response.toJSONString(true));
+            buildHealthResponse(exchange, globalOutcome ? 200: 503, response.toJSONString(true));
+        }
+
+        private void buildHealthResponse(HttpServerExchange exchange, int status, String response) {
+            exchange.setStatusCode(status)
+                .getResponseHeaders().add(Headers.CONTENT_TYPE, "application/json");
+            exchange.getResponseSender().send(response);
         }
     }
 }

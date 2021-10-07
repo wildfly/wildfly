@@ -34,6 +34,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -44,6 +45,7 @@ import org.junit.Test;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
+@Ignore("[WFLY-15178] Rework ParseAndMarshalModelsTestCase.")
 public class ParseAndMarshalModelsTestCase {
 
     private enum Version {
@@ -58,7 +60,8 @@ public class ParseAndMarshalModelsTestCase {
         EAP_7_0_0(true, "7-0-0"),
         EAP_7_1_0(true, "7-1-0"),
         EAP_7_2_0(true, "7-2-0"),
-        EAP_7_3_0(true, "7-3-0");
+        EAP_7_3_0(true, "7-3-0"),
+        EAP_7_4_0(true, "7-4-0");
 
         final boolean eap;
         final String versionQualifier;
@@ -90,8 +93,8 @@ public class ParseAndMarshalModelsTestCase {
 
 
     private static final Version[] EAP_VERSIONS = {
-            Version.EAP_6_0_0, Version.EAP_6_1_0, Version.EAP_6_2_0,
-            Version.EAP_6_3_0, Version.EAP_6_4_0, Version.EAP_7_0_0, Version.EAP_7_1_0, Version.EAP_7_2_0, Version.EAP_7_3_0};
+            Version.EAP_6_0_0, Version.EAP_6_1_0, Version.EAP_6_2_0, Version.EAP_6_3_0, Version.EAP_6_4_0,
+            Version.EAP_7_0_0, Version.EAP_7_1_0, Version.EAP_7_2_0, Version.EAP_7_3_0, Version.EAP_7_4_0};
 
     private static final Version[] AS_VERSIONS = {Version.AS_7_1_3, Version.AS_7_2_0};
 
@@ -122,11 +125,6 @@ public class ParseAndMarshalModelsTestCase {
     @Test
     public void testStandaloneMinimalisticXml() throws Exception {
         standaloneXmlTest(getDocsExampleConfigFile("standalone-minimalistic.xml"));
-    }
-
-    @Test
-    public void testStandalonePicketLinkXml() throws Exception {
-        standaloneXmlTest(getDocsExampleConfigFile("standalone-picketlink.xml"));
     }
 
     @Test
@@ -274,20 +272,6 @@ public class ParseAndMarshalModelsTestCase {
     public void testEAPStandaloneMinimalisticXml() throws Exception {
         for (Version version : EAP_VERSIONS) {
             standaloneXmlTest(getLegacyConfigFile("standalone", version, "minimalistic"));
-        }
-    }
-
-    @Test
-    public void testEAPStandalonePicketLinkXml() throws Exception {
-
-        Assume.assumeFalse(altDistTest);
-
-        for (Version version : EAP_VERSIONS) {
-            if (version.is6x()) {
-                // Did not exist until 6.3, where the tech preview was abandoned and redone
-            } else {
-                standaloneXmlTest(getLegacyConfigFile("standalone", version, "picketlink"));
-            }
         }
     }
 

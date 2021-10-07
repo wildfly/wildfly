@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+~ JBoss, Home of Professional Open Source.
+~ Copyright 2021 Red Hat, Inc., and individual contributors
+~ as indicated by the @author tags.
+~
+~ Licensed under the Apache License, Version 2.0 (the "License");
+~ you may not use this file except in compliance with the License.
+~ You may obtain a copy of the License at
+~
+~     http://www.apache.org/licenses/LICENSE-2.0
+~
+~ Unless required by applicable law or agreed to in writing, software
+~ distributed under the License is distributed on an "AS IS" BASIS,
+~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~ See the License for the specific language governing permissions and
+~ limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-ee-9-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>26.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>wildfly-ee-9-source-transform-parent</artifactId>
+    <description>Parent for EE 9 Source Transformation related modules</description>
+    <packaging>pom</packaging>
+
+    <properties>
+        <!-- Directory from which source is obtained. Child modules will override this -->
+        <transformer-input-dir>${project.basedir}</transformer-input-dir>
+        <!-- Plugin dependency versions -->
+        <version.org.wildfly.extras.batavia>1.0.10.Final</version.org.wildfly.extras.batavia>
+    </properties>
+
+    <modules>
+        <module>mail</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.wildfly.extras.batavia</groupId>
+                <artifactId>transformer-tools-mvn</artifactId>
+                <version>${version.org.wildfly.extras.batavia}</version>
+                <executions>
+                    <execution>
+                        <id>transform-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>transform-sources</goal>
+                        </goals>
+                        <configuration>
+                            <source-project>${transformer-input-dir}</source-project>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.wildfly.extras.batavia</groupId>
+                        <artifactId>transformer-impl-eclipse</artifactId>
+                        <version>${version.org.wildfly.extras.batavia}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

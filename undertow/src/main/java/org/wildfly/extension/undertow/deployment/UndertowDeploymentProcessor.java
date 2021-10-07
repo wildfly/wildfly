@@ -25,7 +25,9 @@ package org.wildfly.extension.undertow.deployment;
 import static org.jboss.as.ee.component.Attachments.STARTUP_COUNTDOWN;
 import static org.jboss.as.server.security.SecurityMetaData.ATTACHMENT_KEY;
 import static org.jboss.as.server.security.VirtualDomainMarkerUtility.isVirtualDomainRequired;
+import static org.jboss.as.web.common.VirtualHttpServerMechanismFactoryMarkerUtility.isVirtualMechanismFactoryRequired;
 import static org.wildfly.extension.undertow.Capabilities.REF_LEGACY_SECURITY;
+import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 
 import java.net.MalformedURLException;
 import java.time.Duration;
@@ -65,7 +67,6 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.deployers.StartupCountdown;
 import org.jboss.as.ee.security.JaccService;
 import org.jboss.as.security.plugins.SecurityDomainContext;
-import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
@@ -80,6 +81,7 @@ import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.security.SecurityMetaData;
 import org.jboss.as.server.suspend.SuspendController;
+import org.jboss.as.web.common.AdvancedSecurityMetaData;
 import org.jboss.as.web.common.CachingWebInjectionContainer;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.ServletContextAttribute;
@@ -127,6 +129,7 @@ import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
 import org.wildfly.extension.undertow.session.NonDistributableSessionManagementProvider;
 import org.wildfly.extension.undertow.session.SessionManagementProviderFactory;
 import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.http.HttpServerAuthenticationMechanismFactory;
 
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.SessionManagerFactory;
@@ -333,14 +336,15 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final Supplier<SuspendController> scSupplier = udisBuilder.requires(capabilitySupport.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER));
         final Supplier<ServerEnvironment> serverEnvSupplier = udisBuilder.requires(ServerEnvironmentService.SERVICE_NAME);
         Supplier<SecurityDomain> sdSupplier = null;
+        Supplier<HttpServerAuthenticationMechanismFactory> mechanismFactorySupplier = null;
         Supplier<BiFunction> bfSupplier = null;
 
         for (final ServiceName additionalDependency : additionalDependencies) {
             udisBuilder.requires(additionalDependency);
         }
 
-        if (isVirtualDomainRequired(deploymentUnit)) {
-            final SecurityMetaData securityMetaData = deploymentUnit.getAttachment(ATTACHMENT_KEY);
+        final SecurityMetaData securityMetaData = deploymentUnit.getAttachment(ATTACHMENT_KEY);
+        if (isVirtualDomainRequired(deploymentUnit) || isVirtualMechanismFactoryRequired(deploymentUnit)) {
             sdSupplier = udisBuilder.requires(securityMetaData.getSecurityDomain());
         } else if(securityDomain != null) {
             if (mappedSecurityDomain.test(securityDomain)) {
@@ -348,7 +352,12 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                         deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
                                 .getCapabilityServiceName(Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN, securityDomain));
             } else {
-                sdcSupplier = udisBuilder.requires(SecurityDomainService.SERVICE_NAME.append(securityDomain));
+                throw ROOT_LOGGER.deploymentConfiguredForLegacySecurity();
+            }
+        }
+        if (isVirtualMechanismFactoryRequired(deploymentUnit)) {
+            if (securityMetaData instanceof AdvancedSecurityMetaData) {
+                mechanismFactorySupplier = udisBuilder.requires(((AdvancedSecurityMetaData) securityMetaData).getHttpServerAuthenticationMechanismFactory());
             }
         }
 
@@ -437,7 +446,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 .setExternalResources(deploymentUnit.getAttachmentList(UndertowAttachments.EXTERNAL_RESOURCES))
                 .setAllowSuspendedRequests(deploymentUnit.getAttachmentList(UndertowAttachments.ALLOW_REQUEST_WHEN_SUSPENDED))
                 .createUndertowDeploymentInfoService(diConsumer, usSupplier, smfSupplier, sicSupplier, sdcSupplier,
-                        scsSupplier, crSupplier, hostSupplier, cpSupplier, scSupplier, serverEnvSupplier, sdSupplier, bfSupplier);
+                        scsSupplier, crSupplier, hostSupplier, cpSupplier, scSupplier, serverEnvSupplier, sdSupplier, mechanismFactorySupplier, bfSupplier);
         udisBuilder.setInstance(undertowDeploymentInfoService);
 
         final Set<String> seenExecutors = new HashSet<String>();

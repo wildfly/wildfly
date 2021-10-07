@@ -29,6 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.as.connector.annotations.repository.jandex.JandexAnnotationRepositoryImpl;
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.resourceadapter.ActivationSecurityUtil;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
@@ -82,9 +83,6 @@ import org.jboss.security.SubjectFactory;
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
-
-    private static final ServiceName SECURITY_MANAGER_SERVICE = ServiceName.JBOSS.append("security", "simple-security-manager");
-    private static final ServiceName SUBJECT_FACTORY_SERVICE = ServiceName.JBOSS.append("security", "subject-factory");
 
     public ParsedRaDeploymentProcessor() {
     }
@@ -224,8 +222,12 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 builder.addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, raDeploymentService.getCcmInjector());
             }
             if (activation != null && ActivationSecurityUtil.isLegacySecurityRequired(activation)) {
-                builder.addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class, raDeploymentService.getSubjectFactoryInjector())
-                        .addDependency(SECURITY_MANAGER_SERVICE, ServerSecurityManager.class, raDeploymentService.getServerSecurityManager());
+                if (support.hasCapability("org.wildfly.legacy-security")) {
+                    builder.addDependency(support.getCapabilityServiceName("org.wildfly.legacy-security.subject-factory"), SubjectFactory.class, raDeploymentService.getSubjectFactoryInjector())
+                            .addDependency(support.getCapabilityServiceName("org.wildfly.legacy-security.server-security-manager"), ServerSecurityManager.class, raDeploymentService.getServerSecurityManager());
+                } else {
+                    throw ConnectorLogger.DS_DEPLOYER_LOGGER.legacySecurityNotAvailableForRa(connectorXmlDescriptor.getDeploymentName());
+                }
             }
 
             return builder;

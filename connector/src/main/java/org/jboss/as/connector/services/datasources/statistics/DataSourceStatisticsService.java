@@ -78,25 +78,23 @@ public class DataSourceStatisticsService implements Service<ManagementResourceRe
 
             int jdbcStatsSize = jdbcStats.getNames().size();
             int poolStatsSize = poolStats.getNames().size();
-            if (jdbcStatsSize > 0 || poolStatsSize > 0) {
-                if (registration != null) {
-                    if (jdbcStatsSize > 0) {
-                        if (registration.getSubModel(PathAddress.pathAddress(JDBC_STATISTICS)) == null) {
-                            // TODO WFLY-5285 get rid of redundant .setRuntimeOnly once WFCORE-959 is integrated
-                            ManagementResourceRegistration jdbcRegistration = registration.registerSubModel(new StatisticsResourceDefinition(JDBC_STATISTICS, DataSourcesSubsystemProviders.RESOURCE_NAME, jdbcStats));
-                            jdbcRegistration.setRuntimeOnly(true);
-                        }
-                    }
+            if ((jdbcStatsSize > 0 || poolStatsSize > 0) && registration != null) {
 
-                    if (poolStatsSize > 0) {
-                        if (registration.getSubModel(PathAddress.pathAddress(POOL_STATISTICS)) == null) {
-                            // TODO WFLY-5285 get rid of redundant .setRuntimeOnly once WFCORE-959 is integrated
-                            ManagementResourceRegistration poolRegistration = registration.registerSubModel(new StatisticsResourceDefinition(POOL_STATISTICS, DataSourcesSubsystemProviders.RESOURCE_NAME, poolStats));
-                            poolRegistration.setRuntimeOnly(true);
-                        }
-                    }
+                if (jdbcStatsSize > 0 && registration.getSubModel(PathAddress.pathAddress(JDBC_STATISTICS)) == null) {
+                    // TODO WFLY-5285 get rid of redundant .setRuntimeOnly once WFCORE-959 is integrated
+                    ManagementResourceRegistration jdbcRegistration = registration
+                            .registerSubModel(new StatisticsResourceDefinition(JDBC_STATISTICS,
+                                    DataSourcesSubsystemProviders.RESOURCE_NAME, jdbcStats));
+                    jdbcRegistration.setRuntimeOnly(true);
                 }
 
+                if (poolStatsSize > 0 && registration.getSubModel(PathAddress.pathAddress(POOL_STATISTICS)) == null) {
+                    // TODO WFLY-5285 get rid of redundant .setRuntimeOnly once WFCORE-959 is integrated
+                    ManagementResourceRegistration poolRegistration = registration
+                            .registerSubModel(new StatisticsResourceDefinition(POOL_STATISTICS,
+                                    DataSourcesSubsystemProviders.RESOURCE_NAME, poolStats));
+                    poolRegistration.setRuntimeOnly(true);
+                }
             }
         }
     }

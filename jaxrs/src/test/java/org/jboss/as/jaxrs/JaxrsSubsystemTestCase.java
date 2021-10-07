@@ -50,6 +50,4 @@ public class JaxrsSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testSubsystem() throws Exception {
         standardSubsystemTest(null, false);
     }
-
-    //no point in testing 1.0.0 (current) --> 1.0.0 (all previous) for transformers
 }

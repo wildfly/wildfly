@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.xts.annotation.client;
 
-import com.arjuna.mw.wst11.UserBusinessActivity;
-
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.File;
@@ -30,7 +28,7 @@ import java.io.FilePermission;
 import java.lang.reflect.ReflectPermission;
 import java.util.PropertyPermission;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
@@ -41,6 +39,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.arjuna.mw.wst11.UserBusinessActivity;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>

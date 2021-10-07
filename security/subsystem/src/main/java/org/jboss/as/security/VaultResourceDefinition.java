@@ -21,11 +21,7 @@
  */
 package org.jboss.as.security;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -34,10 +30,8 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.security.service.SecurityVaultService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Jason T. Greene
@@ -76,26 +70,6 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
             OPTIONS.validateAndSet(operation, model);
         }
 
-        @Override
-        protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            Map<String, Object> vaultOptions = new HashMap<String, Object>();
-            ModelNode vaultClassNode = CODE.resolveModelAttribute(context, model);
-            String vaultClass = vaultClassNode.getType() == ModelType.UNDEFINED ? null : vaultClassNode.asString();
-
-            if (operation.hasDefined(Constants.VAULT_OPTIONS)) {
-                for (Map.Entry<String,String> vaultOption : OPTIONS.unwrap(context,model).entrySet()) {
-                    vaultOptions.put(vaultOption.getKey(), vaultOption.getValue());
-                }
-            }
-            // add security vault service
-            if (vaultClass != null || !vaultOptions.isEmpty()) {
-                final SecurityVaultService vaultService = new SecurityVaultService(vaultClass, vaultOptions);
-                context.getServiceTarget()
-                        .addService(SecurityVaultService.SERVICE_NAME, vaultService)
-                        .setInitialMode(ServiceController.Mode.ACTIVE).install();
-            }
-
-        }
     }
 
 }

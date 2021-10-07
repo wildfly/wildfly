@@ -36,6 +36,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -43,7 +44,6 @@ import javax.ejb.EJBException;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
-import javax.ejb.TimerHandle;
 import javax.ejb.TimerService;
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
@@ -155,19 +155,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     private static final Integer MAX_RETRY = Integer.getInteger("jboss.timer.TaskPostPersist.maxRetry", 10);
-
-    /**
-     * Creates a {@link TimerServiceImpl}
-     *
-     * @param autoTimers
-     * @param serviceName
-     * @throws IllegalArgumentException If either of the passed param is null
-     * @deprecated Use {@link #TimerServiceImpl(java.util.Map, org.jboss.msc.service.ServiceName, org.jboss.as.ejb3.component.TimerServiceRegistry)} instead
-     */
-    @Deprecated
-    public TimerServiceImpl(final Map<Method, List<AutoTimer>> autoTimers, final ServiceName serviceName) {
-        this(autoTimers, serviceName, null);
-    }
 
     /**
      * Creates a {@link TimerServiceImpl}
@@ -584,20 +571,30 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     /**
-     * Returns the {@link javax.ejb.Timer} corresponding to the passed {@link javax.ejb.TimerHandle}
+     * Returns the timer corresponding to the passed timer id and timed object id.
      *
-     * @param handle The {@link javax.ejb.TimerHandle} for which the {@link javax.ejb.Timer} is being looked for
+     * @param timerId timer id
+     * @param timedObjectId timed object id
+     * @return the {@code TimerImpl} corresponding to the passed timer id and timed object id
      */
-    public TimerImpl getTimer(TimerHandle handle) {
-        TimerHandleImpl timerHandle = (TimerHandleImpl) handle;
-        TimerImpl timer = null;
+    public TimerImpl getTimer(final String timerId, final String timedObjectId) {
+        TimerImpl timer;
         synchronized (this.timers) {
-            timer = this.timers.get(timerHandle.getId());
+            timer = this.timers.get(timerId);
         }
         if (timer != null) {
             return timer;
         }
-        return getWaitingOnTxCompletionTimers().get(timerHandle.getId());
+        timer = getWaitingOnTxCompletionTimers().get(timerId);
+        if (timer != null) {
+            return timer;
+        }
+        final TimerPersistence persistence = timerPersistence.getOptionalValue();
+        if (persistence instanceof DatabaseTimerPersistence) {
+            timer = ((DatabaseTimerPersistence) persistence).loadTimer(
+                    timedObjectId, timerId, this);
+        }
+        return timer;
     }
 
     /**
@@ -622,7 +619,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         if (timer == null) {
             return;
         }
-        if (timer.isTimerPersistent()) {
+        if (timer.persistent) {
             try {
                 if (timerPersistence.getOptionalValue() == null) {
                     EJB3_TIMER_LOGGER.timerPersistenceNotEnable();
@@ -766,9 +763,11 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                     if (doesTimeoutMethodMatch(calendarTimer.getTimeoutMethod(), methodName, params)) {
 
                         //the timers have the same method.
-                        //now lets make sure the schedule is the same
+                        //now lets make sure the schedule is the same, info is the same,
                         // and the timer does not change the persistence
-                        if (this.doesScheduleMatch(calendarTimer.getScheduleExpression(), timer.getScheduleExpression()) && timer.getTimerConfig().isPersistent()) {
+                        if (this.doesScheduleMatch(calendarTimer.getScheduleExpression(), timer.getScheduleExpression())
+                                && Objects.equals(calendarTimer.info, timer.getTimerConfig().getInfo())
+                                && timer.getTimerConfig().isPersistent()) {
                             it.remove();
                             found = true;
                             break;
@@ -924,27 +923,34 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             // create the timer task
             final TimerTask<?> timerTask = timer.getTimerTask();
             // find out how long is it away from now
-            long delay = nextExpiration.getTime() - System.currentTimeMillis();
-            // if in past, then trigger immediately
-            if (delay < 0) {
-                delay = 0;
-            }
+            final long currentTime = System.currentTimeMillis();
+            long delay = nextExpiration.getTime() - currentTime;
             long intervalDuration = timer.getInterval();
             final Task task = new Task(timerTask, ejbComponentInjectedValue.getValue().getControlPoint());
             if (intervalDuration > 0) {
                 EJB3_TIMER_LOGGER.debugv("Scheduling timer {0} at fixed rate, starting at {1} milliseconds from now with repeated interval={2}",
                         timer, delay, intervalDuration);
+                // if in past, then trigger immediately
+                if (delay < 0) {
+                    delay = 0;
+                }
                 // schedule the task
                 this.timerInjectedValue.getValue().scheduleAtFixedRate(task, delay, intervalDuration);
                 // maintain it in timerservice for future use (like cancellation)
                 this.scheduledTimerFutures.put(timer.getId(), task);
             } else {
                 EJB3_TIMER_LOGGER.debugv("Scheduling a single action timer {0} starting at {1} milliseconds from now", timer, delay);
+                // if in past, then trigger immediately; if overdue by 5 minutes, set next expiration to current time
+                if (delay < 0) {
+                    if (delay < -300000) {
+                        timer.nextExpiration = new Date(currentTime);
+                    }
+                    delay = 0;
+                }
                 // schedule the task
                 this.timerInjectedValue.getValue().schedule(task, delay);
                 // maintain it in timerservice for future use (like cancellation)
                 this.scheduledTimerFutures.put(timer.getId(), task);
-
             }
         }
     }
@@ -1187,7 +1193,23 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      */
     public boolean shouldRun(TimerImpl timer) {
         // check peristent without further check to prevent from Exception (WFLY-6152)
-        return !timer.isTimerPersistent() || timerPersistence.getValue().shouldRun(timer, ContextTransactionManager.getInstance());
+        return !timer.persistent || timerPersistence.getValue().shouldRun(timer);
+    }
+
+    /**
+     * Safely closes some resource without throwing an exception.
+     * Any exception will be logged at TRACE level.
+     *
+     * @param resource the resource to close
+     */
+    public static void safeClose(final AutoCloseable resource) {
+        if (resource != null) {
+            try {
+                resource.close();
+            } catch (Throwable t) {
+                EjbLogger.EJB3_TIMER_LOGGER.tracef(t, "Closing resource failed");
+            }
+        }
     }
 
     private class TimerCreationTransactionSynchronization implements Synchronization {

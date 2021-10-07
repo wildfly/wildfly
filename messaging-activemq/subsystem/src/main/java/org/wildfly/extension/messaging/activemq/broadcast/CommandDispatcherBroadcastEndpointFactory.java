@@ -22,12 +22,9 @@
 
 package org.wildfly.extension.messaging.activemq.broadcast;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.activemq.artemis.api.core.BroadcastEndpoint;
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
-import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 
 /**
  * A {@link BroadcastEndpointFactory} based on a {@link CommandDispatcherFactory}.
@@ -36,20 +33,16 @@ import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 @SuppressWarnings("serial")
 public class CommandDispatcherBroadcastEndpointFactory implements BroadcastEndpointFactory {
 
-    private static final Map<String, BroadcastManager> BROADCAST_MANAGERS = new ConcurrentHashMap<>();
-
-    private final CommandDispatcherFactory factory;
+    private final BroadcastCommandDispatcherFactory factory;
     private final String name;
-    private final BroadcastManager manager;
 
-    public CommandDispatcherBroadcastEndpointFactory(CommandDispatcherFactory factory, String name) {
+    public CommandDispatcherBroadcastEndpointFactory(BroadcastCommandDispatcherFactory factory, String name) {
         this.factory = factory;
         this.name = name;
-        this.manager = BROADCAST_MANAGERS.computeIfAbsent(name, key -> new QueueBroadcastManager());
     }
 
     @Override
     public BroadcastEndpoint createBroadcastEndpoint() throws Exception {
-        return new CommandDispatcherBroadcastEndpoint(this.factory, this.name, this.manager);
+        return new CommandDispatcherBroadcastEndpoint(this.factory, this.name, this.factory, QueueBroadcastManager::new);
     }
 }

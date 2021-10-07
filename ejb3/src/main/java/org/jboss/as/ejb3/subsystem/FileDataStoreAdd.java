@@ -61,7 +61,7 @@ public class FileDataStoreAdd extends AbstractAddStepHandler {
 
         // add the TimerPersistence instance
         final CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
-        final CapabilityServiceBuilder<FileTimerPersistence> builder = serviceTarget.addCapability(FileDataStoreResourceDefinition.TIMER_PERSISTENCE_CAPABILITY, fileTimerPersistence);
+        final CapabilityServiceBuilder<FileTimerPersistence> builder = serviceTarget.addCapability(TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY, fileTimerPersistence);
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, fileTimerPersistence.getModuleLoader());
         builder.addCapabilityRequirement(PATH_MANAGER_CAPABILITY_NAME, PathManager.class, fileTimerPersistence.getPathManager());
         builder.addCapabilityRequirement(TRANSACTION_GLOBAL_DEFAULT_LOCAL_PROVIDER_CAPABILITY_NAME, Void.class);

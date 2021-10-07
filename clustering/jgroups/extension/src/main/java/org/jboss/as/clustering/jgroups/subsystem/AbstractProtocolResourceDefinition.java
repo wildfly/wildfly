@@ -25,30 +25,18 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
-import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -119,46 +107,6 @@ public class AbstractProtocolResourceDefinition extends ChildResourceDefinition<
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    /**
-     * Builds transformations common to both stack protocols and transport.
-     */
-    @SuppressWarnings("deprecation")
-    static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-
-        if (JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
-                    .end();
-        }
-
-        if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
-            AttributeConverter typeConverter = new AttributeConverter.DefaultAttributeConverter() {
-                @Override
-                protected void convertAttribute(PathAddress address, String name, ModelNode value, TransformationContext context) {
-                    if (!value.isDefined()) {
-                        value.set(address.getLastElement().getValue());
-                    }
-                }
-            };
-            builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.MODULE.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.MODULE.getDefinition())
-                    .setValueConverter(typeConverter, DeprecatedAttribute.TYPE.getDefinition())
-                    .end();
-
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(new LegacyPropertyMapGetOperationTransformer()));
-
-            for (String opName : Operations.getAllWriteAttributeOperationNames()) {
-                builder.addOperationTransformationOverride(opName)
-                        .inheritResourceAttributeDefinitions()
-                        .setCustomOperationTransformer(new LegacyPropertyWriteOperationTransformer());
-            }
-        }
-
-        PropertyResourceDefinition.buildTransformation(version, builder);
     }
 
     private final UnaryOperator<ResourceDescriptor> configurator;

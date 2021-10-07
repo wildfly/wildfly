@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="host-management-interfaces" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <!-- TODO Temporary fork to remove security realms. -->
+
+    <feature spec="core-service.management.access.identity">
+        <param name="security-domain" value="ManagementDomain"/>
+    </feature>
+
+
+    <feature spec="host.core-service.management.management-interface.http-interface">
+        <param name="interface" value="management"/>
+        <param name="port" value="${jboss.management.http.port:9990}"/>
+        <param name="http-authentication-factory" value="management-http-authentication"/>
+         <feature spec="host.core-service.management.management-interface.http-interface.http-upgrade">
+            <param name="enabled" value="true"/>
+            <param name="sasl-authentication-factory" value="management-sasl-authentication"/>
+        </feature>
+    </feature>
+</feature-group-spec>

@@ -25,7 +25,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
@@ -44,16 +43,11 @@ import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.transform.DiscardSingletonListAttributeChecker;
-import org.jboss.as.clustering.controller.transform.RejectNonSingletonListAttributeChecker;
-import org.jboss.as.clustering.controller.transform.SingletonListAttributeConverter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -61,10 +55,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.ResourceTransformationContext;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
@@ -301,62 +291,6 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
                 .setAllowExpression(true)
                 .setRequired(false)
                 ;
-    }
-
-    @SuppressWarnings("deprecation")
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-
-        if (InfinispanModel.VERSION_14_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setValueConverter(new SingletonListAttributeConverter(ListAttribute.MODULES), DeprecatedAttribute.MODULE.getDefinition())
-                    .setDiscard(DiscardSingletonListAttributeChecker.INSTANCE, ListAttribute.MODULES.getDefinition())
-                    .addRejectCheck(RejectNonSingletonListAttributeChecker.INSTANCE, ListAttribute.MODULES.getDefinition())
-                    .end();
-        }
-
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            builder.discardChildResource(NoStoreResourceDefinition.PATH);
-        } else {
-            NoStoreResourceDefinition.buildTransformation(version, builder);
-        }
-
-        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
-            // Set batching=true if transaction mode=BATCH
-            ResourceTransformer batchingTransformer = new ResourceTransformer() {
-                @Override
-                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-                    PathAddress transactionAddress = address.append(TransactionResourceDefinition.PATH);
-                    try {
-                        ModelNode transaction = context.readResourceFromRoot(transactionAddress).getModel();
-                        if (transaction.hasDefined(TransactionResourceDefinition.Attribute.MODE.getName())) {
-                            ModelNode mode = transaction.get(TransactionResourceDefinition.Attribute.MODE.getName());
-                            if ((mode.getType() == ModelType.STRING) && (TransactionMode.valueOf(mode.asString()) == TransactionMode.BATCH)) {
-                                resource.getModel().get(DeprecatedAttribute.BATCHING.getName()).set(true);
-                            }
-                        }
-                    } catch (NoSuchElementException e) {
-                        // Ignore, nothing to convert
-                    }
-                    context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource).processChildren(resource);
-                }
-            };
-            builder.setCustomResourceTransformer(batchingTransformer);
-        }
-
-        HeapMemoryResourceDefinition.buildTransformation(version, builder);
-        OffHeapMemoryResourceDefinition.buildTransformation(version, builder);
-        HotRodStoreResourceDefinition.buildTransformation(version, builder);
-
-        LockingResourceDefinition.buildTransformation(version, builder);
-        ExpirationResourceDefinition.buildTransformation(version, builder);
-        TransactionResourceDefinition.buildTransformation(version, builder);
-
-        FileStoreResourceDefinition.buildTransformation(version, builder);
-        BinaryKeyedJDBCStoreResourceDefinition.buildTransformation(version, builder);
-        MixedKeyedJDBCStoreResourceDefinition.buildTransformation(version, builder);
-        StringKeyedJDBCStoreResourceDefinition.buildTransformation(version, builder);
-        RemoteStoreResourceDefinition.buildTransformation(version, builder);
-        CustomStoreResourceDefinition.buildTransformation(version, builder);
     }
 
     private final UnaryOperator<ResourceDescriptor> configurator;

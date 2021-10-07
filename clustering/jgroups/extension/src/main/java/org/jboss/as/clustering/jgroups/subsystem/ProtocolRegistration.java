@@ -32,10 +32,7 @@ import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.RuntimeResourceRegistration;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jgroups.Global;
 import org.jgroups.PhysicalAddress;
 import org.jgroups.protocols.MERGE3;
@@ -105,56 +102,6 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
             this.name = (name != null) ? name : this.name();
             this.targetName = targetProtocol.getName().substring(Global.PREFIX.length());
             this.deprecation = deprecation;
-        }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ProtocolResourceDefinition.addTransformations(version, parent.addChildResource(ProtocolResourceDefinition.WILDCARD_PATH));
-
-        for (SocketProtocol protocol : EnumSet.allOf(SocketProtocol.class)) {
-            PathElement path = ProtocolResourceDefinition.pathElement(protocol.name());
-            SocketProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
-        }
-
-        for (MulticastProtocol protocol : EnumSet.allOf(MulticastProtocol.class)) {
-            PathElement path = ProtocolResourceDefinition.pathElement(protocol.name());
-            MulticastProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
-        }
-
-        for (JdbcProtocol protocol : EnumSet.allOf(JdbcProtocol.class)) {
-            PathElement path = ProtocolResourceDefinition.pathElement(protocol.name());
-            if (JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
-                parent.rejectChildResource(path);
-            } else {
-                JDBCProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
-            }
-        }
-
-        for (EncryptProtocol protocol : EnumSet.allOf(EncryptProtocol.class)) {
-            PathElement path = ProtocolResourceDefinition.pathElement(protocol.name());
-            if (JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
-                parent.rejectChildResource(path);
-            } else {
-                EncryptProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
-            }
-        }
-
-        for (InitialHostsProtocol protocol : EnumSet.allOf(InitialHostsProtocol.class)) {
-            PathElement path = ProtocolResourceDefinition.pathElement(protocol.name());
-            if (JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
-                parent.rejectChildResource(path);
-            } else {
-                SocketDiscoveryProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
-            }
-        }
-
-        for (AuthProtocol protocol : EnumSet.allOf(AuthProtocol.class)) {
-            PathElement path = ProtocolResourceDefinition.pathElement(protocol.name());
-            if (JGroupsModel.VERSION_5_0_0.requiresTransformation(version)) {
-                parent.rejectChildResource(path);
-            } else {
-                AuthProtocolResourceDefinition.addTransformations(version, parent.addChildResource(path));
-            }
         }
     }
 
