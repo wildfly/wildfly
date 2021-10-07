@@ -128,9 +128,9 @@ public class HealthContextService implements Service {
 
             if (mpHealthSubsystemActive) {
                 // if MP Health subsystem is present but not started yet we can't respond with management operation
-                // as the clients expect JSON which is an object not an array. So respond with empty MP DOWN check
-                // until the MP Health subsystem takes over.
-                buildHealthResponse(exchange, 503, "{\"status\":\"DOWN\",\"checks\":[]}");
+                // as the clients expect JSON which is an object not an array. So respond with 404 status code to
+                // not confuse consumers with wrong responses. This will still be correctly rejected in kubernetes.
+                exchange.setStatusCode(404);
                 return;
             }
 
