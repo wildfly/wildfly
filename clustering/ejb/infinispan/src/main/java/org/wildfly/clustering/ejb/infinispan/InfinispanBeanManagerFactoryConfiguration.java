@@ -24,7 +24,7 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.ejb.BeanContext;
+import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
@@ -36,7 +36,7 @@ import org.wildfly.clustering.spi.group.Group;
  */
 public interface InfinispanBeanManagerFactoryConfiguration {
     String getName();
-    BeanContext getBeanContext();
+    StatefulBeanConfiguration getBeanConfiguration();
     <K, V> Cache<K, V> getCache();
     KeyAffinityServiceFactory getKeyAffinityServiceFactory();
     MarshallingConfigurationRepository getMarshallingConfigurationRepository();

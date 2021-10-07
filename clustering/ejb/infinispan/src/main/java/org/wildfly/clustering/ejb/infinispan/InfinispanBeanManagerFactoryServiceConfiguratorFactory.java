@@ -37,7 +37,7 @@ import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ee.CompositeIterable;
-import org.wildfly.clustering.ejb.BeanContext;
+import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactory;
@@ -124,7 +124,7 @@ public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implement
     }
 
     @Override
-    public CapabilityServiceConfigurator getBeanManagerFactoryServiceConfigurator(BeanContext context) {
+    public CapabilityServiceConfigurator getBeanManagerFactoryServiceConfigurator(StatefulBeanConfiguration context) {
         return new InfinispanBeanManagerFactoryServiceConfigurator<>(this.name, context, this.config);
     }
 }

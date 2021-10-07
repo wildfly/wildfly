@@ -23,38 +23,12 @@ package org.wildfly.clustering.ejb;
 
 import java.time.Duration;
 
-import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.service.ServiceName;
-
 /**
- * Specifies the deployment/environmental context of a bean.
+ * Specifies the configuration of a stateful EJB.
  *
  * @author Paul Ferraro
  */
-public interface BeanContext {
-    /**
-     * Returns the name of the bean..
-     * @return a bean name
-     */
-    String getBeanName();
-
-    /**
-     * Returns the service name of the deployment unit to which this bean is associated.
-     * @return a service name
-     */
-    ServiceName getDeploymentUnitServiceName();
-
-    /**
-     * Returns the module loader of this bean's deployment module.
-     * @return
-     */
-    ModuleLoader getModuleLoader();
-
-    /**
-     * Returns the class loader of this bean's deployment module.
-     * @return
-     */
-    ClassLoader getClassLoader();
+public interface StatefulBeanConfiguration extends BeanConfiguration {
 
     /**
      * Returns the duration of time this bean can be idle after which it will expire.

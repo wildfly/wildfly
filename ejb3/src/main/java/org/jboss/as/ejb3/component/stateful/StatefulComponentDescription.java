@@ -217,16 +217,16 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         this.getConfigurators().add(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                CapabilityServiceSupport support = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
+                DeploymentUnit unit = context.getDeploymentUnit();
+                CapabilityServiceSupport support = unit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
                 StatefulComponentDescription statefulDescription = (StatefulComponentDescription) description;
-                ServiceName cacheFactoryServiceName = statefulDescription.getCacheFactoryServiceName();
                 ServiceTarget target = context.getServiceTarget();
-                ServiceBuilder<?> builder = target.addService(cacheFactoryServiceName.append("installer"));
+                ServiceBuilder<?> builder = target.addService(statefulDescription.getCacheFactoryServiceName().append("installer"));
                 Supplier<CacheFactoryBuilder<SessionID, StatefulSessionComponentInstance>> cacheFactoryBuilder = builder.requires(this.getCacheFactoryBuilderRequirement(statefulDescription));
                 Service service = new ChildTargetService(new Consumer<ServiceTarget>() {
                     @Override
                     public void accept(ServiceTarget target) {
-                        cacheFactoryBuilder.get().getServiceConfigurator(cacheFactoryServiceName, statefulDescription, configuration).configure(support).build(target).install();
+                        cacheFactoryBuilder.get().getServiceConfigurator(unit, statefulDescription, configuration).configure(support).build(target).install();
                     }
                 });
                 builder.setInstance(service).install();
