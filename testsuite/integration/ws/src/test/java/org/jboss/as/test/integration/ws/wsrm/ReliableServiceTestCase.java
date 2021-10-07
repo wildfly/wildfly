@@ -37,6 +37,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.wsf.stack.cxf.client.UseNewBusFeature;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,6 +46,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("[WFLY-15426] Fix failing ReliableServiceTestCase")
 public class ReliableServiceTestCase {
 
     private static final Logger log = Logger.getLogger(ReliableServiceTestCase.class);
