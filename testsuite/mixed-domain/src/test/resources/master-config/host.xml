@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<host name="master" xmlns="urn:jboss:domain:18.0">
+<host name="master" xmlns="urn:jboss:domain:19.0">
 
     <extensions>
         <extension module="org.wildfly.extension.elytron"/>
