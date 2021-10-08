@@ -28,7 +28,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectMapAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -196,19 +195,19 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
         if (componentType.equals(EJBComponentType.STATEFUL)) {
             resourceRegistration.registerMetric(CACHE_SIZE, new AbstractRuntimeMetricsHandler() {
                 @Override
-                protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+                protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) {
                     context.getResult().set(((StatefulSessionComponent) component).getCache().getCacheSize());
                 }
             });
             resourceRegistration.registerMetric(PASSIVATED_SIZE, new AbstractRuntimeMetricsHandler() {
                 @Override
-                protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+                protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) {
                     context.getResult().set(((StatefulSessionComponent) component).getCache().getPassivatedCount());
                 }
             });
             resourceRegistration.registerMetric(TOTAL_SIZE, new AbstractRuntimeMetricsHandler() {
                 @Override
-                protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+                protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) {
                     context.getResult().set(((StatefulSessionComponent) component).getCache().getTotalSize());
                 }
             });
@@ -216,31 +215,31 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
 
         resourceRegistration.registerMetric(EXECUTION_TIME, new AbstractRuntimeMetricsHandler() {
             @Override
-            protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+            protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) {
                 context.getResult().set(component.getInvocationMetrics().getExecutionTime());
             }
         });
         resourceRegistration.registerMetric(INVOCATIONS, new AbstractRuntimeMetricsHandler() {
             @Override
-            protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+            protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) {
                 context.getResult().set(component.getInvocationMetrics().getInvocations());
             }
         });
         resourceRegistration.registerMetric(PEAK_CONCURRENT_INVOCATIONS, new AbstractRuntimeMetricsHandler() {
             @Override
-            protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+            protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) {
                 context.getResult().set(component.getInvocationMetrics().getPeakConcurrent());
             }
         });
         resourceRegistration.registerMetric(WAIT_TIME, new AbstractRuntimeMetricsHandler() {
             @Override
-            protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+            protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) {
                 context.getResult().set(component.getInvocationMetrics().getWaitTime());
             }
         });
         resourceRegistration.registerMetric(METHODS, new AbstractRuntimeMetricsHandler() {
             @Override
-            protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) throws OperationFailedException {
+            protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) {
                 context.getResult().setEmptyObject();
                 for (final Map.Entry<String, InvocationMetrics.Values> entry : component.getInvocationMetrics().getMethods().entrySet()) {
                     final InvocationMetrics.Values values = entry.getValue();
@@ -260,8 +259,11 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
-        // /deployment=DU/**/subsystem=ejb3/*=EJBName/service=timer-service
-        final AbstractEJBComponentRuntimeHandler<?> handler = componentType.getRuntimeHandler();
-        resourceRegistration.registerSubModel(new TimerServiceResourceDefinition(handler));
+
+        if (componentType.hasTimer()) {
+            // /deployment=DU/**/subsystem=ejb3/*=EJBName/service=timer-service
+            final AbstractEJBComponentRuntimeHandler<?> handler = componentType.getRuntimeHandler();
+            resourceRegistration.registerSubModel(new TimerServiceResourceDefinition(handler));
+        }
     }
 }
