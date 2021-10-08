@@ -385,7 +385,12 @@
                             <!--<jakarta-transform-configs-dir>EXTERNAL_FOLDER</jakarta-transform-configs-dir>-->
                             <!--<jakarta-transform-verbose>true</jakarta-transform-verbose>-->
                             <jakarta-transform-excluded-artifacts>
+                                <!-- Don't transform libs that use javax.servlet to provide side
+                                     functionality (e.g. consoles or similar) that we do not support. -->
                                 <exclude>com.h2database:h2\z</exclude>
+                                <exclude>org.apache.thrift:libthrift\z</exclude>
+                                <!-- Don't transform libraries that use the javax.annotation package but
+                                     not the Jakarta Annotations APIs that share it with other APIs. -->
                                 <exclude>com.google.guava:guava\z</exclude>
                                 <exclude>io.grpc:grpc-api\z</exclude>
                                 <exclude>io.grpc:grpc-context\z</exclude>
