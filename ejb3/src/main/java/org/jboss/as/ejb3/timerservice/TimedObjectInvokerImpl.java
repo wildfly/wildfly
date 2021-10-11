@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import static org.jboss.as.ejb3.util.MethodInfoHelper.EMPTY_STRING_ARRAY;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -28,9 +30,9 @@ import java.util.Map;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.interceptors.InvocationType;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -86,7 +88,7 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Serializable,
         context.setContextData(new HashMap<String, Object>());
         context.setMethod(timeoutMethod);
         if(timeoutMethod.getParameterTypes().length == 0) {
-            context.setParameters(new Object[0]);
+            context.setParameters(EMPTY_STRING_ARRAY);
         } else {
             final Object[] params = new Object[1];
             params[0] = timer;

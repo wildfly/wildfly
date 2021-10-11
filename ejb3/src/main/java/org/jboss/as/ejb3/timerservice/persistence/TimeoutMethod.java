@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.timerservice.persistence;
 
+import static org.jboss.as.ejb3.util.MethodInfoHelper.EMPTY_STRING_ARRAY;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +65,7 @@ public class TimeoutMethod implements Serializable {
         if (this.methodParams == null) {
             return null;
         }
-        return methodParams.toArray(new String[]{});
+        return methodParams.toArray(EMPTY_STRING_ARRAY);
     }
 
     public String getDeclaringClass() {

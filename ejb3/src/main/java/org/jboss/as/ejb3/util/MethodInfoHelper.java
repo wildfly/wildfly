@@ -33,8 +33,7 @@ import java.lang.reflect.Method;
  *
  */
 public final class MethodInfoHelper {
-
-    private static final String[] NO_STRINGS = new String[0];
+    public static final String[] EMPTY_STRING_ARRAY = new String[0];
 
     private MethodInfoHelper() {}
 
@@ -48,13 +47,13 @@ public final class MethodInfoHelper {
      * <p>Example: For the method <code>f(String[] arg0, String arg1, int)</code> this method will return
      * <code>{"java.lang.String[]", "java.lang.String", "int"}</code>
      *
-     * @param viewMethod
-     * @return
+     * @param viewMethod the method to extract its parameter types
+     * @return string array of parameter types
      */
     public static String[] getCanonicalParameterTypes(Method viewMethod) {
         Class<?>[] parameterTypes = viewMethod.getParameterTypes();
-        if (parameterTypes == null) {
-            return NO_STRINGS;
+        if (parameterTypes.length == 0) {
+            return EMPTY_STRING_ARRAY;
         }
         String[] canonicalNames = new String[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
