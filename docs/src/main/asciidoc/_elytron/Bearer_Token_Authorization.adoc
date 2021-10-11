@@ -9,6 +9,7 @@ Elytron supports bearer token authorization by providing a `BEARER_TOKEN` HTTP a
 an specific `realm` implementation, the `token-realm`, to validate tokens using the JWT format (for instance, OpenID Connect ID Tokens) or opaque tokens issued by any OAuth2 compliant
 authorization server.
 
+[[how-it-works]]
 == How it Works
 
 When a HTTP request arrives to your application, the `BEARER_TOKEN` mechanism will check if a bearer token was provided by checking the existence of an `Authorization` HTTP header with the following format:
@@ -38,6 +39,7 @@ the mechanism will respond with a `403` HTTP status code as follows:
 HTTP/1.1 403 Forbidden
 ```
 
+[[validating-JWT-tokens]]
 == Validating JWT Tokens
 
 Elytron provides built-in support for JWT tokens, which can be enabled by defining a `realm` in the Elytron subsystem as follows:
@@ -123,6 +125,7 @@ using provided `client-ssl-context`. You can skip token signature verification b
 
 It is strongly recommended that you use signed JWTs in order to guarantee authenticity of tokens and make sure they were not tampered.
 
+[[validating-OAuth2-bearer-tokens]]
 == Validating OAuth2 Bearer Tokens
 
 Elytron provides built-in support for tokens issued by an OAuth2 compliant authorization server, where these tokens are validated
@@ -161,10 +164,12 @@ The SSL context to be used if the introspection endpoint is using HTTPS.
 +
 A policy that defines how host names should be verified when using HTTPS. Allowed values: "ANY", "DEFAULT".
 
+[[quickstarts]]
 == Quickstarts
 
 * https://github.com/wildfly/quickstart/tree/master/jaxrs-jwt[Jakarta RESTful Web Services secured using JSON Web Tokens]
 
+[[CLI-examples-on-how-to-create-a-token-realm]]
 == CLI Examples on How to Create a Token Realm
 
 .Create a Token Realm to validate JWT tokens using a key store to retrieve the public key

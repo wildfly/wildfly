@@ -2,10 +2,10 @@
 = Elytron and Java Authentication SPI for Containers (JASPI)
 
 [abstract]
-== Introduction
 
 Starting from WildFly 15 an implementation of the Servlet profile from the Java Authentication SPI for Containers (JSR-196 / JASPI) is also provided by the WildFly Elytron subsystem allowing tighter integration with the security features provided by WildFly Elytron.  This JASPI implementation is available out of the box with minimal steps required to use it for deployments, this section of the documentation describes how to make use of it and the features it provides.
 
+[[activation]]
 == Activation
 
 Presently it is the Servlet profile from the JASPI specification which is supported by this integration, the following information applies to web applications deployed to WildFly.
@@ -48,6 +48,7 @@ All deployments that do not specify their own security domain will be assigned t
 
 The security domain associated with a deployment in these steps is the security domain that will be wrapped in a CallbackHandler to be passed into the `ServerAuthModule` instances used for authentication.
 
+[[additional-options]]
 === Additional Options
 
 On the `application-security-domain` resource two additional attributes have been added to allow some further control of the JASPI behaviour.
@@ -55,6 +56,7 @@ On the `application-security-domain` resource two additional attributes have bee
  * *enable-jaspi* - Can be set to `false` to disable JASPI support for all deployments using this mapping.
  * *integrated-jaspi* - By default all identities are loaded from the security domain, if set to `false` ad-hoc identities will be created instead.
 
+[[subsystem-configuration]]
 == Subsystem Configuration
 
 One way to register a configuration which will result in an `AuthConfigProvider` being returned for a deployment is to register a `jaspi-configuration` in the Elytron subsystem.
@@ -100,7 +102,8 @@ Within the configuration one or more `server-auth-module` instances can be defin
 
 Configuration defined in this way is immediately registered with the `AuthConfigFactory` so any existing deployments using the WildFly Elytron security framework that match against the `layer` and `application-context` will immediately start to make use of the configuration.
 
-== Programatic Configuration
+[[programmatic-configuration]]
+== Programmatic Configuration
 
 The APIs defined within the JASPI specification allow for applications to dynamically register custom `AuthConfigProvider` instances, however the specification does not provide the actual implementations to use or a standard way to create instances of the implementations, the WildFly Elytron project contains a simple utility that can be used by deployments to help with this: -
 
@@ -122,6 +125,7 @@ The register method returns the resulting registration ID that can also be used 
 
 As with the subsystem configuration this call has an immediate effect and will be live for all web applications using the WildFly Elytron security framework immediately.
 
+[[authentication-process]]
 == Authentication Process
 
 === CallbackHandler

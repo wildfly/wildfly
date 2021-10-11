@@ -5,6 +5,7 @@ When securing deployments using a Keycloak server a set of client side adapters 
 installed to WildFly including a new subsystem to support configuring the client side adapters.  Depending on how
 you are installing WildFly you have some different options available to install the adapters.
 
+[[zip-installation]]
 == Zip Installation
 
 If you have installed a zip distribution of WildFly you can obtain a zip containing the Keycloak adapters directly 
@@ -15,6 +16,7 @@ Please follow the instructions at the previous link for the installation and con
 unzip the adapter distribution on top of your WildFly installation and to execute a CLI script to complete the set
 up and define the Keycloak subsystem.
 
+[[galleon-installation]]
 == Galleon Installation
 
 The Keycloak project now also publishes a Galleon feature pack which can be used to install the Keycloak client
@@ -47,6 +49,7 @@ From this point applications can be configured as described on
 https://www.keycloak.org/docs/latest/securing_apps/index.html#_jboss_adapter[www.keycloak.org]
 in exactly the same way as if you had used the zip approach to install WildFly and the adapters.
 
+[[bootable-jar]]
 == Bootable Jar
 
 The third installation option is if you are creating a bootable jar for your deployment and wish to add the Keycloak
