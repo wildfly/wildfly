@@ -384,6 +384,8 @@
                                 <!-- Don't transform libraries that use the javax.annotation package but
                                      not the Jakarta Annotations APIs that share it with other APIs. -->
                                 <exclude>com.google.guava:guava\z</exclude>
+                                <exclude>com.squareup.okhttp3:okhttp\z</exclude>
+                                <exclude>com.squareup.okio:okio\z</exclude>
                                 <exclude>io.grpc:grpc-api\z</exclude>
                                 <exclude>io.grpc:grpc-context\z</exclude>
                                 <exclude>io.grpc:grpc-protobuf\z</exclude>
