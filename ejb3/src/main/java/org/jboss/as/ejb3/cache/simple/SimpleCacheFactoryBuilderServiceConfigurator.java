@@ -67,8 +67,8 @@ public class SimpleCacheFactoryBuilderServiceConfigurator<K, V extends Identifia
     }
 
     @Override
-    public CapabilityServiceConfigurator getServiceConfigurator(ServiceName name, StatefulComponentDescription description, ComponentConfiguration configuration) {
-        return new SimpleCacheFactoryServiceConfigurator<>(name, description);
+    public CapabilityServiceConfigurator getServiceConfigurator(DeploymentUnit unit, StatefulComponentDescription description, ComponentConfiguration configuration) {
+        return new SimpleCacheFactoryServiceConfigurator<>(description);
     }
 
     @Override

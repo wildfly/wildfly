@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.ejb;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 
-public interface BeanManagerFactoryServiceConfiguratorFactory {
+/**
+ * Specifies the configuration of an EJB component.
+ * @author Paul Ferraro
+ */
+public interface BeanConfiguration {
 
     /**
-     * Installs dependencies for a deployment unit
-     * @param name the service name of the deployment unit
+     * Returns the name of the EJB component.
+     * @return the component name
      */
-    Iterable<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(ServiceName name);
+    String getName();
 
     /**
-     * Builds a bean manager factory for an Jakarta Enterprise Beans within a deployment.
-     * @param context the bean context
-     * @return a service builder
+     * Returns the service name of the deployment unit containing the EJB.
+     * @return a deployment unit
      */
-    CapabilityServiceConfigurator getBeanManagerFactoryServiceConfigurator(StatefulBeanConfiguration context);
+    ServiceName getDeploymentUnitServiceName();
+
+    /**
+     * Returns the module of the deployment.
+     * @return a module
+     */
+    Module getModule();
 }

@@ -34,7 +34,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.ejb.BeanContext;
+import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
@@ -58,7 +58,7 @@ import org.wildfly.clustering.spi.group.Group;
 public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanBeanManagerFactoryConfiguration {
 
     private final String name;
-    private final BeanContext context;
+    private final StatefulBeanConfiguration beanConfiguration;
     private final BeanManagerFactoryServiceConfiguratorConfiguration configuration;
 
     private final SupplierDependency<MarshallingConfigurationRepository> repository;
@@ -68,19 +68,19 @@ public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends Simpl
     private volatile SupplierDependency<Group<Address>> group;
     private volatile SupplierDependency<CommandDispatcherFactory> dispatcherFactory;
 
-    public InfinispanBeanManagerFactoryServiceConfigurator(String name, BeanContext context, BeanManagerFactoryServiceConfiguratorConfiguration configuration) {
-        super(context.getDeploymentUnitServiceName().append(context.getBeanName()).append("bean-manager"));
+    public InfinispanBeanManagerFactoryServiceConfigurator(String name, StatefulBeanConfiguration beanConfiguration, BeanManagerFactoryServiceConfiguratorConfiguration configuration) {
+        super(beanConfiguration.getDeploymentUnitServiceName().append(beanConfiguration.getName()).append("bean-manager"));
         this.name = name;
-        this.context = context;
+        this.beanConfiguration = beanConfiguration;
         this.configuration = configuration;
-        ServiceName deploymentUnitServiceName = context.getDeploymentUnitServiceName();
+        ServiceName deploymentUnitServiceName = beanConfiguration.getDeploymentUnitServiceName();
         this.repository = new ServiceSupplierDependency<>(deploymentUnitServiceName.append("marshalling"));
     }
 
     @Override
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
         String containerName = this.configuration.getContainerName();
-        ServiceName deploymentUnitServiceName = this.context.getDeploymentUnitServiceName();
+        ServiceName deploymentUnitServiceName = this.beanConfiguration.getDeploymentUnitServiceName();
         String cacheName = InfinispanBeanManagerFactoryServiceConfiguratorFactory.getCacheName(deploymentUnitServiceName, this.name);
         this.cache = new ServiceSupplierDependency<>(InfinispanCacheRequirement.CACHE.getServiceName(support, containerName, cacheName));
         this.affinityFactory = new ServiceSupplierDependency<>(InfinispanRequirement.KEY_AFFINITY_FACTORY.getServiceName(support, containerName));
@@ -104,8 +104,8 @@ public class InfinispanBeanManagerFactoryServiceConfigurator<I, T> extends Simpl
     }
 
     @Override
-    public BeanContext getBeanContext() {
-        return this.context;
+    public StatefulBeanConfiguration getBeanConfiguration() {
+        return this.beanConfiguration;
     }
 
     @SuppressWarnings("unchecked")
