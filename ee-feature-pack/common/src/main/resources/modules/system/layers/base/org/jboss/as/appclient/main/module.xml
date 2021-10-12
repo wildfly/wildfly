@@ -77,6 +77,7 @@
         <module name="org.picketbox" optional="true"/>
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.metadata.appclient"/>
+        <module name="org.jboss.xnio"/>
         <module name="org.wildfly.common"/>
         <module name="java.xml"/>
     </dependencies>

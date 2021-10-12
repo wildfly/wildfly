@@ -21,6 +21,8 @@
  */
 package org.jboss.as.appclient.deployment;
 
+import static org.xnio.IoUtils.safeClose;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -111,21 +113,20 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
         }
         if (descriptor.exists()) {
             InputStream is = null;
+            XMLStreamReader xmlStreamReader = null;
             try {
                 is = descriptor.openStream();
-                ApplicationClientMetaData data = new ApplicationClientMetaDataParser().parse(getXMLStreamReader(is), propertyReplacer);
+                xmlStreamReader = getXMLStreamReader(is);
+                ApplicationClientMetaData data = new ApplicationClientMetaDataParser().parse(xmlStreamReader, propertyReplacer);
                 return data;
             } catch (XMLStreamException e) {
                 throw AppClientLogger.ROOT_LOGGER.failedToParseXml(e, descriptor, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
             } catch (IOException e) {
                 throw new DeploymentUnitProcessingException("Failed to parse " + descriptor, e);
             } finally {
-                try {
-                    if (is != null) {
-                        is.close();
-                    }
-                } catch (IOException e) {
-                    // Ignore
+                safeClose(is);
+                if (xmlStreamReader != null) {
+                    safeClose((AutoCloseable) xmlStreamReader::close);
                 }
             }
         } else {
@@ -138,9 +139,11 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
         final VirtualFile appXml = deploymentRoot.getChild(JBOSS_CLIENT_XML);
         if (appXml.exists()) {
             InputStream is = null;
+            XMLStreamReader xmlStreamReader = null;
             try {
                 is = appXml.openStream();
-                JBossClientMetaData data = new JBossClientMetaDataParser().parse(getXMLStreamReader(is), propertyReplacer);
+                xmlStreamReader = getXMLStreamReader(is);
+                JBossClientMetaData data = new JBossClientMetaDataParser().parse(xmlStreamReader, propertyReplacer);
                 return data;
             } catch (XMLStreamException e) {
                 throw AppClientLogger.ROOT_LOGGER.failedToParseXml(e, appXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
@@ -148,12 +151,9 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
             } catch (IOException e) {
                 throw AppClientLogger.ROOT_LOGGER.failedToParseXml(e, appXml);
             } finally {
-                try {
-                    if (is != null) {
-                        is.close();
-                    }
-                } catch (IOException e) {
-                    // Ignore
+                safeClose(is);
+                if (xmlStreamReader != null) {
+                    safeClose((AutoCloseable) xmlStreamReader::close);
                 }
             }
         } else {
