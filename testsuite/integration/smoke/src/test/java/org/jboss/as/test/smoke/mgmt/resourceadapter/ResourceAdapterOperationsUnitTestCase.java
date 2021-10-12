@@ -45,8 +45,10 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.jca.ConnectionSecurityType;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -66,6 +68,15 @@ import org.junit.runner.RunWith;
 public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmtTestBase {
     private static final Deque<ModelNode> REMOVE_ADDRESSES = new LinkedList<>();
 
+    private static final ModelNode RAR_ADDRESS;
+    static {
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "resource-adapters");
+        address.add("resource-adapter", "some.rar");
+        address.protect();
+        RAR_ADDRESS = address;
+    }
+
     @BeforeClass
     public static void configureElytron() throws Exception {
         try (ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient()) {
@@ -81,6 +92,16 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
             while ((address = REMOVE_ADDRESSES.pollFirst()) != null) {
                 execute(client, Operations.createRemoveOperation(address));
             }
+        }
+    }
+
+    @After
+    public void removeRar() throws IOException {
+        // Don't let failure in one test leave cruft behind to break the rest
+        try {
+            remove(RAR_ADDRESS);
+        } catch (MgmtOperationException ignored) {
+            // ignore -- assume it's the usual case where the test method already removed this
         }
     }
 
@@ -216,10 +237,7 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
 
     private void complexResourceAdapterAddTest(ConnectionSecurityType connectionSecurityType,
             ConnectionSecurityType connectionRecoverySecurityType) throws Exception {
-        final ModelNode address = new ModelNode();
-        address.add("subsystem", "resource-adapters");
-        address.add("resource-adapter", "some.rar");
-        address.protect();
+        final ModelNode address = RAR_ADDRESS;
 
         Properties params = raCommonProperties();
 

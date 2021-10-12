@@ -19,7 +19,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>25.0.0.Final-SNAPSHOT</version>
+        <version>26.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -269,11 +269,11 @@
             </activation>
             <build>
                 <plugins>
-                    <!-- Disable the standard copy-based provisioning -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
                         <executions combine.children="append">
+                            <!-- Disable the standard copy-based provisioning -->
                             <execution>
                                 <id>ts.copy-wildfly</id>
                                 <goals>
@@ -281,14 +281,6 @@
                                 </goals>
                                 <phase>none</phase>
                             </execution>
-                        </executions>
-                    </plugin>
-                    
-                    <!-- application-users.properties copying -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions combine.children="append">
                            <!-- Copy users and roles config from shared resources. -->
                             <execution>
                                 <id>ts.config-as.copy-mgmt-users</id>
@@ -550,18 +542,6 @@
                             <execution>
                                 <id>default-test</id>
                                 <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <id>ws-integration-default.surefire</id>
-                                <configuration>
-                                    <excludes>
-                                        <!-- Other security issues -->
-                                        <exclude>org/jboss/as/test/integration/ws/authentication/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/authentication/policy/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/wsse/trust/WSBearerSecurityPropagationTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/wsse/trust/WSTrustTestCase.java</exclude>
-                                    </excludes>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

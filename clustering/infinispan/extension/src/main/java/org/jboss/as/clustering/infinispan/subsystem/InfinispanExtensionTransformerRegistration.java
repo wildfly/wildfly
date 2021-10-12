@@ -22,13 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.transform.description.TransformationDescription.Tools.register;
-
 import java.util.EnumSet;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -47,7 +46,7 @@ public class InfinispanExtensionTransformerRegistration implements ExtensionTran
         // Register transformers for all but the current model
         for (InfinispanModel model : EnumSet.complementOf(EnumSet.of(InfinispanModel.CURRENT))) {
             ModelVersion version = model.getVersion();
-            register(InfinispanSubsystemResourceDefinition.buildTransformation(version), registration, version);
+            TransformationDescription.Tools.register(new InfinispanSubsystemResourceTransformer().apply(version), registration, version);
         }
     }
 }

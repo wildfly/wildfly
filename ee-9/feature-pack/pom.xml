@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>25.0.0.Final-SNAPSHOT</version>
+        <version>26.0.0.Beta1-SNAPSHOT</version>
     </parent>
     
     <artifactId>wildfly-preview-feature-pack</artifactId>
@@ -55,17 +55,13 @@
         <module.jakartaee9.suffix>-jakartaee9</module.jakartaee9.suffix>
 
         <version.com.sun.faces>3.0.0.SP04</version.com.sun.faces>
-        <version.jakarta.annotation.jakarta-annotation-api>2.0.0</version.jakarta.annotation.jakarta-annotation-api>
         <version.com.sun.activation.jakarta.activation>2.0.0</version.com.sun.activation.jakarta.activation>
         <version.jakarta.authentication.jakarta-authentication-api>2.0.0</version.jakarta.authentication.jakarta-authentication-api>
-        <version.jakarta.authorization.jakarta-authorization-api>2.0.0</version.jakarta.authorization.jakarta-authorization-api>
         <version.jakarta.batch.jakarta.batch-api>2.0.0</version.jakarta.batch.jakarta.batch-api>
         <version.jakarta.ejb.jakarta-ejb-api>4.0.0</version.jakarta.ejb.jakarta-ejb-api>
         <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
-        <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <version.jakarta.faces.jakarta-faces-api>3.0.0</version.jakarta.faces.jakarta-faces-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
-        <version.jakarta.interceptor.jakarta-interceptors-api>2.0.0</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.jms.jakarta-jms-api>3.0.0</version.jakarta.jms.jakarta-jms-api>
         <version.jakarta.json.bind.api>2.0.0</version.jakarta.json.bind.api>
         <version.jakarta.json.jakarta-json-api>2.0.0</version.jakarta.json.jakarta-json-api>
@@ -74,7 +70,6 @@
         <version.jakarta.security.enterprise>2.0.0</version.jakarta.security.enterprise>
         <version.jakarta.servlet.jakarta-servlet-api>5.0.0</version.jakarta.servlet.jakarta-servlet-api>
         <version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.0.0</version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
-        <version.jakarta.transaction.jakarta-transaction-api>2.0.0</version.jakarta.transaction.jakarta-transaction-api>
         <version.jakarta.validation.jakarta-validation-api>3.0.0</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.0.0</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>3.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
@@ -84,15 +79,12 @@
 		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version --> 
         <version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</version.org.glassfish.jaxb.jaxb-xjc>
         <version.org.apache.activemq.artemis>2.17.0</version.org.apache.activemq.artemis>
-        <version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>3.0.0</version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>
         <version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>
         <version.org.glassfish.jakarta.el>4.0.0</version.org.glassfish.jakarta.el>
-        <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
         <version.org.hibernate.validator>7.0.1.Final</version.org.hibernate.validator>
         <version.org.jberet>2.0.2.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>1.0.5</version.org.jboss.activemq.artemis.integration>
-        <version.org.jboss.invocation>1.7.0.Final</version.org.jboss.invocation>
         <version.org.jboss.weld.weld>4.0.2.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>4.0.SP1</version.org.jboss.weld.weld-api>
         <version.org.wildfly.transaction.client>2.0.0.Final</version.org.wildfly.transaction.client>
@@ -384,6 +376,34 @@
                             <jakarta-transform>true</jakarta-transform>
                             <!--<jakarta-transform-configs-dir>EXTERNAL_FOLDER</jakarta-transform-configs-dir>-->
                             <!--<jakarta-transform-verbose>true</jakarta-transform-verbose>-->
+                            <jakarta-transform-excluded-artifacts>
+                                <!-- Don't transform libs that use javax.servlet to provide side
+                                     functionality (e.g. consoles or similar) that we do not support. -->
+                                <exclude>com.h2database:h2\z</exclude>
+                                <exclude>org.apache.thrift:libthrift\z</exclude>
+                                <!-- Don't transform libraries that use the javax.annotation package but
+                                     not the Jakarta Annotations APIs that share it with other APIs. -->
+                                <exclude>com.google.guava:guava\z</exclude>
+                                <exclude>com.squareup.okhttp3:okhttp\z</exclude>
+                                <exclude>com.squareup.okio:okio\z</exclude>
+                                <exclude>io.grpc:grpc-api\z</exclude>
+                                <exclude>io.grpc:grpc-context\z</exclude>
+                                <exclude>io.grpc:grpc-protobuf\z</exclude>
+                                <exclude>io.grpc:grpc-okhttp\z</exclude>
+                                <exclude>io.grpc:grpc-core\z</exclude>
+                                <exclude>io.grpc:grpc-protobuf-lite\z</exclude>
+                                <exclude>io.grpc:grpc-stub\z</exclude>
+                                <exclude>io.opentelemetry:opentelemetry-api\z</exclude>
+                                <exclude>io.opentelemetry:opentelemetry-api-metrics\z</exclude>
+                                <exclude>io.opentelemetry:opentelemetry-context\z</exclude>
+                                <exclude>io.opentelemetry:opentelemetry-exporter-jaeger\z</exclude>
+                                <exclude>io.opentelemetry:opentelemetry-exporter-otlp-common\z</exclude>
+                                <exclude>io.opentelemetry:opentelemetry-exporter-otlp-trace\z</exclude>
+                                <exclude>io.opentelemetry:opentelemetry-sdk\z</exclude>
+                                <exclude>io.opentelemetry:opentelemetry-sdk-common\z</exclude>
+                                <exclude>io.opentelemetry:opentelemetry-sdk-trace\z</exclude>
+                                <exclude>io.opentelemetry:opentelemetry-semconv\z</exclude>
+                            </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
                 </executions>
@@ -422,6 +442,10 @@
                 <exclusion>
                     <groupId>org.glassfish</groupId>
                     <artifactId>jakarta.json</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.invocation</groupId>
+                    <artifactId>jboss-invocation</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.wildfly.security</groupId>
@@ -464,48 +488,10 @@
             <type>pom</type>
             <scope>provided</scope>
             <exclusions>
-                <!-- Exclude deps that have been replaced with different artifacts in this FP
-                     TODO perhaps put these in a different maven module that we don't pull in -->
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                    <artifactId>jackson-jaxrs-base</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                    <artifactId>jackson-jaxrs-json-provider</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.module</groupId>
-                    <artifactId>jackson-module-jaxb-annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.activemq</groupId>
-                    <artifactId>artemis-jms-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.activemq</groupId>
-                    <artifactId>artemis-jms-server</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.activemq</groupId>
-                    <artifactId>artemis-ra</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.activemq</groupId>
-                    <artifactId>artemis-service-extensions</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.bouncycastle</groupId>
-                    <artifactId>bcmail-jdk15on</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.glassfish.jaxb</groupId>
-                    <artifactId>jaxb-xjc</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.metadata</groupId>
-                    <artifactId>jboss-metadata-ejb</artifactId>
-                </exclusion>
+                <!-- Exclude non-EE9+ wildfly module deps that have been replaced with -jakarta variant in this FP
+                     We could put these in pruned so they don't get pulled in but then when we change
+                     the standard module source to use jakarta.* and drop the -jakarta artifacts we'll just
+                     have to move back. -->
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-mail</artifactId>
@@ -528,6 +514,8 @@
             <type>pom</type>
             <scope>provided</scope>
             <exclusions>
+                <!-- Exclude deps that have been replaced with different artifacts in this FP
+                     TODO perhaps put these in a different maven module that we don't pull in -->
                 <exclusion>
                     <groupId>io.undertow</groupId>
                     <artifactId>undertow-servlet</artifactId>
@@ -539,6 +527,10 @@
                 <exclusion>
                     <groupId>org.jboss.metadata</groupId>
                     <artifactId>jboss-metadata-common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-ee</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -581,14 +573,7 @@
         <dependency>
             <groupId>jakarta.interceptor</groupId>
             <artifactId>jakarta.interceptor-api</artifactId>
-            <version>${version.jakarta.interceptor.jakarta-interceptors-api}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>jakarta.annotation</groupId>
-                    <artifactId>jakarta.annotation-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!--<dependency>
@@ -617,14 +602,7 @@
         <dependency>
             <groupId>jakarta.authorization</groupId>
             <artifactId>jakarta.authorization-api</artifactId>
-            <version>${version.jakarta.authorization.jakarta-authorization-api}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>jakarta.servlet</groupId>
-                    <artifactId>jakarta.servlet-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- EE 9 API - Servlet -->
@@ -690,7 +668,6 @@
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
-            <version>${version.jakarta.annotation.jakarta-annotation-api}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -745,7 +722,6 @@
         <dependency>
             <groupId>jakarta.transaction</groupId>
             <artifactId>jakarta.transaction-api</artifactId>
-            <version>${version.jakarta.transaction.jakarta-transaction-api}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -762,49 +738,6 @@
         </dependency>
 
         <!-- EE 9 API - Full -->
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-base</artifactId>
-            <version>${version.com.fasterxml.jackson}</version>
-            <classifier>jakarta</classifier>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <version>${version.com.fasterxml.jackson}</version>
-            <classifier>jakarta</classifier>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                    <artifactId>jackson-jaxrs-base</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.module</groupId>
-                    <artifactId>jackson-module-jaxb-annotations</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- also need JAXB annotation support -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-jaxb-annotations</artifactId>
-            <version>${version.com.fasterxml.jackson}</version>
-            <classifier>jakarta</classifier>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>jakarta.xml.bind</groupId>
-                    <artifactId>jakarta.xml.bind-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jakarta.activation</groupId>
-                    <artifactId>jakarta.activation-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
 
         <dependency>
             <groupId>com.sun.mail</groupId>
@@ -900,23 +833,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.jberet</groupId>
-            <artifactId>jberet-core</artifactId>
-            <version>${version.org.jberet}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jboss.logging</groupId>
-                    <artifactId>jboss-logging-processor</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.marshalling</groupId>
-                    <artifactId>jboss-marshalling</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
         <!--<dependency>
             <groupId>org.jboss.spec.javax.jms</groupId>
             <artifactId>jboss-jms-api_2.0_spec</artifactId>
@@ -999,6 +915,50 @@
         <!-- EE 9 Impls -->
 
         <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-base</artifactId>
+            <version>${version.com.fasterxml.jackson}</version>
+            <classifier>jakarta</classifier>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+            <version>${version.com.fasterxml.jackson}</version>
+            <classifier>jakarta</classifier>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                    <artifactId>jackson-jaxrs-base</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-jaxb-annotations</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
+            <version>${version.com.fasterxml.jackson}</version>
+            <classifier>jakarta</classifier>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>jakarta.xml.bind</groupId>
+                    <artifactId>jakarta.xml.bind-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jakarta.activation</groupId>
+                    <artifactId>jakarta.activation-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>com.sun.faces</groupId>
             <artifactId>jsf-impl</artifactId>
             <version>${version.com.sun.faces}</version>
@@ -1069,18 +1029,7 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.enterprise.concurrent</artifactId>
-            <version>${version.org.glassfish.jakarta.enterprise.concurrent}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>jakarta.enterprise.concurrent</groupId>
-                    <artifactId>jakarta.enterprise.concurrent-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jakarta.platform</groupId>
-                    <artifactId>jakarta.jakartaee-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -1131,6 +1080,36 @@
             <artifactId>hibernate-validator-cdi</artifactId>
             <version>${version.org.hibernate.validator}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jberet</groupId>
+            <artifactId>jberet-core</artifactId>
+            <version>${version.org.jberet}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.logging</groupId>
+                    <artifactId>jboss-logging-processor</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.marshalling</groupId>
+                    <artifactId>jboss-marshalling</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-transaction-spi-jakarta</artifactId>
+            <version>${version.org.jboss.jboss-transaction-spi}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -1540,6 +1519,12 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-jakarta</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

@@ -30,15 +30,12 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -79,16 +76,6 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = InfinispanModel.VERSION_4_0_0.requiresTransformation(version) ? parent.addChildRedirection(PATH, LEGACY_PATH) : parent.addChildResource(PATH);
-
-        if (InfinispanModel.VERSION_5_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attribute.RELATIVE_TO.getName());
-        }
-
-        StoreResourceDefinition.buildTransformation(version, builder, PATH);
     }
 
     FileStoreResourceDefinition() {

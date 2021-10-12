@@ -59,6 +59,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.subsystem.TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY_NAME;
 
 /**
  * Deployment processor that sets up the timer service for singletons and stateless session beans
@@ -199,6 +200,6 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
     }
 
     private ServiceName getTimerPersistenceServiceName(CapabilityServiceSupport support, String dynamicName) {
-        return support.getCapabilityServiceName("org.wildfly.ejb3.timer-service.timer-persistence-service", dynamicName);
+        return support.getCapabilityServiceName(TIMER_PERSISTENCE_CAPABILITY_NAME, dynamicName);
     }
 }

@@ -30,18 +30,12 @@ import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
-import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
-import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -101,53 +95,6 @@ public class HeapMemoryResourceDefinition extends MemoryResourceDefinition {
         public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
             return builder;
         }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = addChild(version, parent);
-
-        if (InfinispanModel.VERSION_13_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attribute.SIZE_UNIT.getName());
-        }
-        if (InfinispanModel.VERSION_12_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                .setValueConverter(AttributeConverter.DEFAULT_VALUE, DeprecatedAttribute.MAX_ENTRIES.getDefinition())
-                .end();
-        }
-        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                .addRename(MemoryResourceDefinition.Attribute.SIZE.getDefinition(), DeprecatedAttribute.MAX_ENTRIES.getName())
-                .setValueConverter(new SimpleAttributeConverter((address, name, value, model, context) -> {
-                    // Set legacy eviction strategy to NONE if size is negative, otherwise set to LRU
-                    if (!model.hasDefined(MemoryResourceDefinition.Attribute.SIZE.getName()) || (model.get(MemoryResourceDefinition.Attribute.SIZE.getName()).asLong() <= 0)) {
-                        value.set(EvictionStrategy.NONE.name());
-                    } else {
-                        value.set("LRU");
-                    }
-                }), DeprecatedAttribute.STRATEGY.getName())
-                .end();
-        }
-
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(new SimpleAttributeConverter((address, name, value, model, context) -> {
-                if (value.isDefined()) {
-                    value.set(value.asInt());
-                }
-            }), MemoryResourceDefinition.Attribute.SIZE.getDefinition(), DeprecatedAttribute.MAX_ENTRIES.getDefinition());
-        }
-    }
-
-    static ResourceTransformationDescriptionBuilder addChild(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            return parent.addChildRedirection(PATH, LEGACY_PATH, RequiredChildResourceDiscardPolicy.NEVER);
-        }
-        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
-            return parent.addChildRedirection(PATH, EVICTION_PATH, RequiredChildResourceDiscardPolicy.NEVER);
-        }
-        if (InfinispanModel.VERSION_13_0_0.requiresTransformation(version)) {
-            return parent.addChildRedirection(PATH, OBJECT_PATH);
-        }
-        return parent.addChildResource(PATH);
     }
 
     static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {

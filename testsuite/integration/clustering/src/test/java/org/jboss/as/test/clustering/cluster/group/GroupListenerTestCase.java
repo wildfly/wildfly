@@ -79,7 +79,6 @@ public class GroupListenerTestCase extends AbstractClusteringTestCase {
             assertEquals(topology.getCurrentMembers().toString(), 2, topology.getCurrentMembers().size());
             assertTrue(topology.getCurrentMembers().toString(), topology.getCurrentMembers().contains(NODE_1));
             assertTrue(topology.getCurrentMembers().toString(), topology.getCurrentMembers().contains(NODE_2));
-            assertEquals(topology.getPreviousMembers().toString(), 0, topology.getPreviousMembers().size());
 
             stop(NODE_2);
 

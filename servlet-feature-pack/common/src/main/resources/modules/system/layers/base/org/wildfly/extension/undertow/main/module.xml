@@ -85,6 +85,7 @@
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.as.version"/>
         <module name="org.jboss.logging"/>
+        <module name="org.picketbox" optional="true"/> <!-- Needed to keep JACC working for now. -->
         <module name="javax.security.jacc.api"/>
         <module name="org.jboss.xnio"/>
         <module name="org.jboss.xnio.nio" services="import"/>

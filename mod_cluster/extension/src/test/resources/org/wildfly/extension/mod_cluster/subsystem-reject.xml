@@ -86,8 +86,8 @@
              password="${modcluster.password:mypassword}"
              protocol="${modcluster.protocol:TLS}"/>
     </proxy>
-    <!--<proxy name="other"-->
-           <!--connector="default">-->
-        <!--<simple-load-provider factor="${modcluster.simple-load-provider.factor:15}"/>-->
-    <!--</proxy>-->
+    <proxy name="other"
+           listener="default">
+        <simple-load-provider factor="${modcluster.simple-load-provider.factor:15}"/>
+    </proxy>
 </subsystem>

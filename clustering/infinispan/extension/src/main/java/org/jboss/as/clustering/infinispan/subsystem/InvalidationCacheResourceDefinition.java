@@ -26,9 +26,7 @@ import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/invalidation-cache=*
@@ -40,12 +38,6 @@ public class InvalidationCacheResourceDefinition extends ClusteredCacheResourceD
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
     static final PathElement pathElement(String name) {
         return PathElement.pathElement("invalidation-cache", name);
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
-
-        ClusteredCacheResourceDefinition.buildTransformation(version, builder);
     }
 
     InvalidationCacheResourceDefinition(FunctionExecutorRegistry<Cache<?, ?>> executors) {

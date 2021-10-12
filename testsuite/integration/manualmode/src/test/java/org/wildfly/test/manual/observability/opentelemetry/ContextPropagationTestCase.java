@@ -24,12 +24,10 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.FilePermission;
 import java.io.IOException;
+import java.net.NetPermission;
 import java.net.SocketPermission;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
@@ -49,6 +47,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -57,15 +56,10 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.InternetProtocol;
-import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
-import org.testcontainers.images.PullPolicy;
 import org.wildfly.test.manual.observability.opentelemetry.deployment1.TestApplication1;
 import org.wildfly.test.manual.observability.opentelemetry.deployment2.TestApplication2;
 
@@ -82,30 +76,11 @@ public class ContextPropagationTestCase {
     private static final String CONTAINER = "otel";
     public static final String DEPLOYMENTA = "otel-service1";
     public static final String DEPLOYMENTB = "otel-service2";
-    public static final String JAEGER_IMAGE = "jaegertracing/all-in-one:latest";
 
     @ArquillianResource
     protected static ContainerController containerController;
 
-    public static GenericContainer jaeger = new FixedHostPortGenericContainer(JAEGER_IMAGE)
-            .withFixedExposedPort(5775, 5775, InternetProtocol.UDP)
-            .withFixedExposedPort(5778, 5778)
-            .withFixedExposedPort(6831, 6831, InternetProtocol.UDP)
-            .withFixedExposedPort(6832, 6832, InternetProtocol.UDP)
-            .withFixedExposedPort(9411, 9411)
-            .withFixedExposedPort(14250, 14250)
-            .withFixedExposedPort(14268, 14268)
-            .withFixedExposedPort(16686, 16686)
-            .withImagePullPolicy(PullPolicy.alwaysPull())
-            .withEnv("COLLECTOR_ZIPKIN_HOST_PORT", "9411")
-            .waitingFor(new HostPortWaitStrategy() {
-                @Override
-                protected Set<Integer> getLivenessCheckPorts() {
-                    Set<Integer> ports = new HashSet<>(1);
-                    ports.addAll(Arrays.asList(9411, 5778, 14250, 14268, 16686));
-                    return ports;
-                }
-            });
+    private static GenericContainer jaeger = new JaegerContainer();
 
     private static final String WEB_XML
             = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -146,7 +121,10 @@ public class ContextPropagationTestCase {
                         // Required for com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider. During <init> there is a
                         // reflection test to check for JAXRS 2.0.
                         new RuntimePermission("accessDeclaredMembers"),
+                        new NetPermission("getProxySelector"),
                         // Required for the client to connect
+                        new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":14250", "connect,resolve"),
+                        new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":16686", "connect,resolve"),
                         new SocketPermission(TestSuiteEnvironment.getHttpAddress() + ":" +
                                 TestSuiteEnvironment.getHttpPort(), "connect,resolve")
                 ), "permissions.xml");
@@ -154,7 +132,7 @@ public class ContextPropagationTestCase {
 
     @Before
     public void setup() throws Exception {
-        Assume.assumeTrue(System.getProperty("os.name").equalsIgnoreCase("Linux"));
+        AssumeTestGroupUtil.assumeDockerAvailable();
         jaeger.start();
         containerController.start(CONTAINER);
 
@@ -239,10 +217,16 @@ public class ContextPropagationTestCase {
     }
 
     static class OpenTelemetrySetupTask implements ServerSetupTask {
+
+        private final String WILDFLY_EXTENSION_OPENTELEMETRY = "org.wildfly.extension.opentelemetry";
+        private final ModelNode address = Operations.createAddress("subsystem", "opentelemetry");
+
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            // Enable debug logging for org.wildfly.extension.batch
-            final ModelNode address = Operations.createAddress("subsystem", "opentelemetry");
+            execute(managementClient, Operations.createAddOperation(Operations.createAddress("extension",
+                    WILDFLY_EXTENSION_OPENTELEMETRY)), true);
+            execute(managementClient, Operations.createAddOperation(address), true);
+
             execute(managementClient, Operations.createWriteAttributeOperation(address,
                     "span-processor-type", "simple"), true);
             execute(managementClient, Operations.createWriteAttributeOperation(address,
@@ -252,6 +236,11 @@ public class ContextPropagationTestCase {
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            final ModelNode address = Operations.createAddress("subsystem", "opentelemetry");
+            execute(managementClient, Operations.createRemoveOperation(address), true);
+            execute(managementClient, Operations.createRemoveOperation(Operations.createAddress("extension",
+                    WILDFLY_EXTENSION_OPENTELEMETRY)), true);
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         private ModelNode execute(final ManagementClient managementClient,
@@ -269,7 +258,3 @@ public class ContextPropagationTestCase {
         }
     }
 }
-
-
-
-

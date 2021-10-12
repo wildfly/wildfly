@@ -44,7 +44,6 @@ import javax.ejb.EJBException;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
-import javax.ejb.TimerHandle;
 import javax.ejb.TimerService;
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
@@ -156,19 +155,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     private static final Integer MAX_RETRY = Integer.getInteger("jboss.timer.TaskPostPersist.maxRetry", 10);
-
-    /**
-     * Creates a {@link TimerServiceImpl}
-     *
-     * @param autoTimers
-     * @param serviceName
-     * @throws IllegalArgumentException If either of the passed param is null
-     * @deprecated Use {@link #TimerServiceImpl(java.util.Map, org.jboss.msc.service.ServiceName, org.jboss.as.ejb3.component.TimerServiceRegistry)} instead
-     */
-    @Deprecated
-    public TimerServiceImpl(final Map<Method, List<AutoTimer>> autoTimers, final ServiceName serviceName) {
-        this(autoTimers, serviceName, null);
-    }
 
     /**
      * Creates a {@link TimerServiceImpl}
@@ -585,20 +571,30 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     /**
-     * Returns the {@link javax.ejb.Timer} corresponding to the passed {@link javax.ejb.TimerHandle}
+     * Returns the timer corresponding to the passed timer id and timed object id.
      *
-     * @param handle The {@link javax.ejb.TimerHandle} for which the {@link javax.ejb.Timer} is being looked for
+     * @param timerId timer id
+     * @param timedObjectId timed object id
+     * @return the {@code TimerImpl} corresponding to the passed timer id and timed object id
      */
-    public TimerImpl getTimer(TimerHandle handle) {
-        TimerHandleImpl timerHandle = (TimerHandleImpl) handle;
-        TimerImpl timer = null;
+    public TimerImpl getTimer(final String timerId, final String timedObjectId) {
+        TimerImpl timer;
         synchronized (this.timers) {
-            timer = this.timers.get(timerHandle.getId());
+            timer = this.timers.get(timerId);
         }
         if (timer != null) {
             return timer;
         }
-        return getWaitingOnTxCompletionTimers().get(timerHandle.getId());
+        timer = getWaitingOnTxCompletionTimers().get(timerId);
+        if (timer != null) {
+            return timer;
+        }
+        final TimerPersistence persistence = timerPersistence.getOptionalValue();
+        if (persistence instanceof DatabaseTimerPersistence) {
+            timer = ((DatabaseTimerPersistence) persistence).loadTimer(
+                    timedObjectId, timerId, this);
+        }
+        return timer;
     }
 
     /**

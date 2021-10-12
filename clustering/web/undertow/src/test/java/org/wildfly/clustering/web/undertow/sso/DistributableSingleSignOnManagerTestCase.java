@@ -32,6 +32,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.function.Supplier;
+
 import javax.servlet.http.HttpServletRequest;
 
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
@@ -60,6 +62,7 @@ public class DistributableSingleSignOnManagerTestCase {
     @Test
     public void createSingleSignOn() {
         String id = "sso";
+        Supplier<String> identifierFactory = mock(Supplier.class);
         Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         Account account = mock(Account.class);
@@ -67,7 +70,8 @@ public class DistributableSingleSignOnManagerTestCase {
         SSO<AuthenticatedSession, String, String, Void> sso = mock(SSO.class);
         ArgumentCaptor<AuthenticatedSession> authenticationCaptor = ArgumentCaptor.forClass(AuthenticatedSession.class);
 
-        when(this.manager.createIdentifier()).thenReturn(id);
+        when(this.manager.getIdentifierFactory()).thenReturn(identifierFactory);
+        when(identifierFactory.get()).thenReturn(id);
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.createBatch()).thenReturn(batch);
         when(this.manager.createSSO(same(id), authenticationCaptor.capture())).thenReturn(sso);

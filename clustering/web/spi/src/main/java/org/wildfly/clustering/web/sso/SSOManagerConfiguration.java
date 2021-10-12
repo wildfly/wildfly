@@ -22,8 +22,9 @@
 
 package org.wildfly.clustering.web.sso;
 
+import java.util.function.Supplier;
+
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
-import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 
 /**
@@ -32,7 +33,7 @@ import org.wildfly.clustering.web.LocalContextFactory;
  * @param <L> local context type
  */
 public interface SSOManagerConfiguration<C, L> {
-    IdentifierFactory<String> getIdentifierFactory();
+    Supplier<String> getIdentifierFactory();
     MarshalledValueFactory<C> getMarshalledValueFactory();
     LocalContextFactory<L> getLocalContextFactory();
 }

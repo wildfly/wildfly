@@ -27,9 +27,7 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * @author Paul Ferraro
@@ -37,12 +35,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class StoreWriteThroughResourceDefinition extends StoreWriteResourceDefinition {
 
     static final PathElement PATH = pathElement("through");
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            parent.discardChildResource(StoreWriteThroughResourceDefinition.PATH);
-        }
-    }
 
     StoreWriteThroughResourceDefinition() {
         super(PATH);

@@ -22,16 +22,16 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.transform.description.TransformationDescription.Tools.register;
-
 import java.util.EnumSet;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.kohsuke.MetaInfServices;
 
 /**
+ * Registration for JGroups subsystem transformers.
  * @author Paul Ferraro
  */
 @MetaInfServices(ExtensionTransformerRegistration.class)
@@ -47,7 +47,7 @@ public class JGroupsExtensionTransformerRegistration implements ExtensionTransfo
         // Register transformers for all but the current model
         for (JGroupsModel model : EnumSet.complementOf(EnumSet.of(JGroupsModel.CURRENT))) {
             ModelVersion version = model.getVersion();
-            register(JGroupsSubsystemResourceDefinition.buildTransformers(version), registration, version);
+            TransformationDescription.Tools.register(new JGroupsSubsystemResourceTransformer().apply(version), registration, version);
         }
     }
 }

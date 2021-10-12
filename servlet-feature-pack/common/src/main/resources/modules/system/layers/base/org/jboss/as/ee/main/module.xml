@@ -32,7 +32,7 @@
     <!-- /exports -->
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-ee}"/>
+        <artifact name="\${org.wildfly:wildfly-ee@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>

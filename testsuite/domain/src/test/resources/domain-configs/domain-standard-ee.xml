@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<domain xmlns="urn:jboss:domain:18.0">
+<domain xmlns="urn:jboss:domain:19.0">
 
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
@@ -39,7 +39,6 @@
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.remoting"/>
         <extension module="org.jboss.as.sar"/>
-        <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.webservices"/>
         <extension module="org.jboss.as.weld"/>
@@ -255,23 +254,6 @@
                 </deployment-permissions>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:security:1.0">
-                <security-domains>
-                    <security-domain name="other" cache-type="default">
-                        <authentication>
-                            <login-module code="Remoting" flag="optional">
-                                <module-option name="password-stacking" value="useFirstPass"/>
-                            </login-module>
-                            <login-module code="RealmUsersRoles" flag="required">
-                                <module-option name="usersProperties" value="${jboss.domain.config.dir}/application-users.properties"/>
-                                <module-option name="rolesProperties" value="${jboss.domain.config.dir}/application-roles.properties"/>
-                                <module-option name="realm" value="ApplicationRealm"/>
-                                <module-option name="password-stacking" value="useFirstPass"/>
-                            </login-module>
-                        </authentication>
-                    </security-domain>
-                </security-domains>
-            </subsystem>
             <subsystem xmlns="urn:jboss:domain:transactions:1.3">
                 <core-environment>
                     <process-id>
@@ -555,23 +537,6 @@
                     </maximum-set>
                 </deployment-permissions>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:security:1.0">
-                <security-domains>
-                    <security-domain name="other">
-                        <authentication>
-                            <login-module code="UsersRoles" flag="required"/>
-                        </authentication>
-                    </security-domain>
-                    <security-domain name="messaging" cache-type="default">
-                        <authentication>
-                            <login-module code="UsersRoles" flag="required">
-                                <module-option name="usersProperties" value="${jboss.domain.config.dir}/messaging-users.properties"/>
-                                <module-option name="rolesProperties" value="${jboss.domain.config.dir}/messaging-roles.properties"/>
-                            </login-module>
-                        </authentication>
-                    </security-domain>
-                </security-domains>
-            </subsystem>
             <subsystem xmlns="urn:jboss:domain:transactions:1.3">
                 <core-environment>
                     <process-id>
@@ -630,10 +595,11 @@
                 </datasources>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:1.1"/>
-            <subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0">
+            <subsystem xmlns="urn:jboss:domain:messaging-activemq:13.0">
                 <server name="default"
                         persistence-enabled="false">
                     <journal file-size="1024" />
+                    <security elytron-domain="ApplicationDomain"/>
                     <security-setting name="#">
                         <role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
                     </security-setting>

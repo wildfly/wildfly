@@ -140,7 +140,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                         .addService(raServiceName,
                                 new ResourceAdapterService(raServiceName, value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
                         .install();
-                final ServiceName deployerServiceName = ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName());
+                final ServiceName deployerServiceName = ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(deploymentName);
 
                 IronJacamarActivationResourceService ijResourceService = new IronJacamarActivationResourceService(registration, deploymentResource, false);
 

@@ -25,7 +25,6 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.UnaryOperator;
@@ -38,21 +37,8 @@ import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.WriteAttributeStepHandler;
 import org.jboss.as.clustering.controller.WriteAttributeStepHandlerDescriptor;
-import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
-import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
-import org.jboss.as.clustering.controller.transform.RequiredChildResourceDiscardPolicy;
-import org.jboss.as.clustering.controller.transform.SimpleDescribeOperationTransformer;
-import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
-import org.jboss.as.clustering.controller.transform.SimplePathOperationTransformer;
-import org.jboss.as.clustering.controller.transform.SimpleReadAttributeOperationTransformer;
-import org.jboss.as.clustering.controller.transform.SimpleRemoveOperationTransformer;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -62,16 +48,10 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.ResourceTransformationContext;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -179,58 +159,6 @@ public class TransportResourceDefinition extends AbstractProtocolResourceDefinit
             return this.definition;
         }
     }
-
-    static void addTransformations(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        AbstractProtocolResourceDefinition.addTransformations(version, builder);
-
-        if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.SHARED.getName());
-
-            builder.setCustomResourceTransformer(new ResourceTransformer() {
-                @Override
-                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-                    new LegacyPropertyResourceTransformer().transformResource(context, LEGACY_ADDRESS_TRANSFORMER.transform(address), resource);
-                }
-            });
-            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleOperationTransformer(new org.jboss.as.clustering.controller.transform.OperationTransformer() {
-                @Override
-                public ModelNode transformOperation(final ModelNode operation) {
-                    operation.get(ModelDescriptionConstants.OP_ADDR).set(LEGACY_ADDRESS_TRANSFORMER.transform(Operations.getPathAddress(operation)).toModelNode());
-                    return new LegacyPropertyAddOperationTransformer().transformOperation(operation);
-                }
-            })).inheritResourceAttributeDefinitions();
-            builder.addOperationTransformationOverride(ModelDescriptionConstants.REMOVE).setCustomOperationTransformer(new SimpleRemoveOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
-            builder.addOperationTransformationOverride(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION).setCustomOperationTransformer(new SimpleReadAttributeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
-            builder.addOperationTransformationOverride(ModelDescriptionConstants.DESCRIBE).setCustomOperationTransformer(new SimpleDescribeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
-
-            List<OperationTransformer> getOpTransformerChain = new LinkedList<>();
-            getOpTransformerChain.add(new SimplePathOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
-            getOpTransformerChain.add(new SimpleOperationTransformer(new LegacyPropertyMapGetOperationTransformer()));
-            ChainedOperationTransformer getOpChainedTransformer = new ChainedOperationTransformer(getOpTransformerChain, false);
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), getOpChainedTransformer);
-
-            List<OperationTransformer> writeOpTransformerChain = new LinkedList<>();
-            writeOpTransformerChain.add(new SimplePathOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
-            writeOpTransformerChain.add(new LegacyPropertyWriteOperationTransformer());
-            ChainedOperationTransformer writeOpChainedTransformer = new ChainedOperationTransformer(writeOpTransformerChain, false);
-            for (String opName : Operations.getAllWriteAttributeOperationNames()) {
-                builder.addOperationTransformationOverride(opName)
-                        .inheritResourceAttributeDefinitions()
-                        .setCustomOperationTransformer(writeOpChainedTransformer);
-            }
-
-            // Reject thread pool configuration, discard if undefined, support EAP 6.x slaves using deprecated attributes
-            builder.addChildResource(ThreadPoolResourceDefinition.WILDCARD_PATH, RequiredChildResourceDiscardPolicy.REJECT_AND_WARN);
-        }
-    }
-
-    // Transform /subsystem=jgroups/stack=*/transport=* -> /subsystem=jgroups/stack=*/transport=TRANSPORT
-    static final PathAddressTransformer LEGACY_ADDRESS_TRANSFORMER = new PathAddressTransformer() {
-        @Override
-        public PathAddress transform(PathAddress address) {
-            return address.subAddress(0, address.size() - 1).append(LEGACY_PATH);
-        }
-    };
 
     @Deprecated
     static class WriteThreadingAttributeStepHandlerDescriptor implements WriteAttributeStepHandlerDescriptor {

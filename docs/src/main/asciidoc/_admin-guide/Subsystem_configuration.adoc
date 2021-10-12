@@ -62,8 +62,6 @@ include::subsystem-configuration/MicroProfile_Reactive_Streams_Operators_SmallRy
 
 include::subsystem-configuration/MicroProfile_Reactive_Messsaging_SmallRye.adoc[]
 
-include::subsystem-configuration/Security.adoc[]
-
 include::subsystem-configuration/Web_services.adoc[]
 
 include::subsystem-configuration/Resource_adapters.adoc[]
@@ -79,6 +77,8 @@ include::subsystem-configuration/Deployment_Scanner.adoc[]
 include::subsystem-configuration/Core_Management.adoc[]
 
 include::subsystem-configuration/Jakarta_RESTful_Web_Services.adoc[]
+
+include::subsystem-configuration/Elytron_OIDC_Client.adoc[]
 
 include::subsystem-configuration/Simple_configuration_subsystems.adoc[]
 

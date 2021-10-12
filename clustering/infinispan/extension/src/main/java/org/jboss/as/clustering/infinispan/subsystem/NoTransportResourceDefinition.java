@@ -24,21 +24,13 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * @author Paul Ferraro
  */
 public class NoTransportResourceDefinition extends TransportResourceDefinition {
     static final PathElement PATH = pathElement("none");
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        if (InfinispanModel.VERSION_4_0_0.requiresTransformation(version)) {
-            parent.discardChildResource(NoTransportResourceDefinition.PATH);
-        }
-    }
 
     NoTransportResourceDefinition() {
         super(PATH, UnaryOperator.identity(), new NoTransportServiceHandler());

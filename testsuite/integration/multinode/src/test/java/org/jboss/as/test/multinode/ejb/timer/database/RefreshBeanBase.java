@@ -22,6 +22,11 @@
 
 package org.jboss.as.test.multinode.ejb.timer.database;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -31,6 +36,7 @@ import javax.ejb.SessionContext;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
+import javax.ejb.TimerHandle;
 import javax.ejb.TimerService;
 import javax.interceptor.Interceptors;
 
@@ -41,6 +47,7 @@ public abstract class RefreshBeanBase implements RefreshIF {
     @Resource
     SessionContext sessionContext;
 
+    @SuppressWarnings("unused")
     @Timeout
     void timeout(Timer timer) {
         //noop, all timers will be cancelled before expiry.
@@ -50,8 +57,22 @@ public abstract class RefreshBeanBase implements RefreshIF {
      * {@inheritDoc}
      */
     @Override
-    public void createTimer(final long delay, final Serializable info) {
-        timerService.createSingleActionTimer(delay, new TimerConfig(info, true));
+    public byte[] createTimer(final long delay, final Serializable info) {
+        final Timer timer = timerService.createSingleActionTimer(delay, new TimerConfig(info, true));
+
+        if (info == Info.RETURN_HANDLE) {
+            final TimerHandle handle = timer.getHandle();
+            try (final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                 final ObjectOutputStream out = new ObjectOutputStream(bos)) {
+                out.writeObject(handle);
+                out.flush();
+                return bos.toByteArray();
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to serialize timer handle for timer: " + timer, e);
+            }
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -93,6 +114,26 @@ public abstract class RefreshBeanBase implements RefreshIF {
             } catch (Exception e) {
                 //ignore
             }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void cancelTimer(final byte[] handle) {
+        final TimerHandle timerHandle;
+        try (final ByteArrayInputStream bis = new ByteArrayInputStream(handle);
+             final ObjectInputStream in = new ObjectInputStream(bis)) {
+            timerHandle = (TimerHandle) in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Failed to deserialize byte[] to timer handle.", e);
+        }
+        final Timer timer = timerHandle.getTimer();
+        if (timer != null) {
+            timer.cancel();
+        } else {
+            throw new RuntimeException("Failed to get timer from timer handle byte[].");
         }
     }
 }

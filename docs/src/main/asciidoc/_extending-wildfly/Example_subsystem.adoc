@@ -1868,9 +1868,8 @@ which means that the value should be taken from a system property named
 `java.lang.System.getProperty(String key)`
 * Environment properties, which are resolved using
 `java.lang.System.getEnv(String name)`.
-* Security vault expressions, resolved against the security vault
-configured for the server or Host Controller that needs to resolve the
-expression.
+* Encrypted expressions, resolved against the expression
+resolver in the `elytron` subsystem.
 
 In all cases, the syntax for the expression is
 
@@ -1883,7 +1882,7 @@ the `expression_to_resolve` must be prefixed with `env.`. The portion
 after `env.` will be the name passed to
 `java.lang.System.getEnv(String name)`.
 
-Security vault expressions do not support default values (i.e. the
+Encrypted expressions do not support default values (i.e. the
 `127.0.0.1` in the `jboss.bind.address.management:127.0.0.1` example
 above.)
 

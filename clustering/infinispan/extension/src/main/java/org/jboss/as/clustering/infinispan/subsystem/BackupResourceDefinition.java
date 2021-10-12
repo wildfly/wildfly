@@ -37,12 +37,10 @@ import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -122,10 +120,6 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
         public AttributeDefinition getDefinition() {
             return this.definition;
         }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        // Nothing to transform
     }
 
     private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;

@@ -40,7 +40,12 @@ public interface RefreshIF {
         /**
          * The timer is created in the server node and by bean 1.
          */
-        SERVER1
+        SERVER1,
+
+        /**
+         * Indicates that a timer handle should be returned
+         */
+        RETURN_HANDLE
     }
 
     /**
@@ -49,8 +54,9 @@ public interface RefreshIF {
      *
      * @param delay number of milliseconds after which the timer is set to expire
      * @param info timer info
+     * @return timer handle for the new timer
      */
-    void createTimer(long delay, Serializable info);
+    byte[] createTimer(long delay, Serializable info);
 
     /**
      * Gets all timers after programmatic refresh. Any implementation method
@@ -87,4 +93,10 @@ public interface RefreshIF {
      * Cancels timers of this bean.
      */
     void cancelTimers();
+
+    /**
+     * Cancels a timer by its timer handle.
+     * @param handle the timer handle for the timer to be cancelled
+     */
+    void cancelTimer(byte[] handle);
 }

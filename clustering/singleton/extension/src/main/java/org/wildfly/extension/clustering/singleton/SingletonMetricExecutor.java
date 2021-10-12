@@ -23,6 +23,7 @@
 package org.wildfly.extension.clustering.singleton;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.FunctionExecutor;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
@@ -61,8 +62,9 @@ public class SingletonMetricExecutor implements MetricExecutor<Singleton> {
     private static class LegacySingletonFunctionExecutor implements FunctionExecutor<Singleton> {
         private final Singleton singleton;
 
+        @SuppressWarnings("unchecked")
         LegacySingletonFunctionExecutor(OperationContext context, ServiceName name) {
-            this.singleton = (Singleton) ((org.wildfly.clustering.service.AsynchronousServiceBuilder<?>) context.getServiceRegistry(false).getRequiredService(name).getService()).getService();
+            this.singleton = (Singleton) ((Supplier<org.jboss.msc.service.Service<?>>) context.getServiceRegistry(false).getRequiredService(name).getService()).get();
         }
 
         @Override

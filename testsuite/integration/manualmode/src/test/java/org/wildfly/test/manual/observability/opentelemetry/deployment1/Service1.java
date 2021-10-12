@@ -27,6 +27,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -66,13 +67,17 @@ public class Service1 {
         String endpoint2 = uriInfo.getRequestUri().toString()
                 .replace(ContextPropagationTestCase.DEPLOYMENTA, ContextPropagationTestCase.DEPLOYMENTB);
 
-        final Response response = ClientBuilder.newClient()
+        Client client = ClientBuilder.newClient();
+        final Response response = client
                 .target(endpoint2)
                 .request(MediaType.TEXT_PLAIN)
                 .get();
         if (response.getStatus() != 200) {
             throw new WebApplicationException(response.getStatus());
         }
-        return response.readEntity(String.class);
+        String body = response.readEntity(String.class);
+        client.close();
+
+        return body;
     }
 }

@@ -12,7 +12,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>25.0.0.Final-SNAPSHOT</version>
+        <version>26.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
 
@@ -99,10 +99,6 @@
                                     <environmentVariables>
                                         <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
                                     </environmentVariables>
-                                    <excludes>
-                                        <!-- Requires legacy security -->
-                                        <exclude>org/jboss/as/testsuite/integration/secman/PBStaticMethodsTestCase.java</exclude>
-                                    </excludes>
                                 </configuration>
                             </execution>
                         </executions>

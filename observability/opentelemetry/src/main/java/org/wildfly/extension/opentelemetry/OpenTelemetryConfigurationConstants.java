@@ -31,7 +31,7 @@ public final class OpenTelemetryConfigurationConstants {
     public static final String MAX_EXPORT_BATCH_SIZE = "max-export-batch-size";
     public static final String EXPORT_TIMEOUT = "export-timeout";
     public static final String SAMPLER_TYPE = "sampler-type";
-    public static final String ratio = "ratio";
+    public static final String RATIO = "ratio";
     public static final String TYPE = "type";
 
     // Groups

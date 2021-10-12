@@ -162,7 +162,7 @@ The sub-packages at the time of writing are `affinity`, `cdi`, `dispatcher`, `ej
 For instance, to parallelize testsuite execution on two machines (e.g. when using GitHub actions scripting or alike) the following commands
 could be used to split the clustering tests into two executions of similar execution time, the first node can run the first half of the tests in sub-packages, e.g.:
 
-    $ ./integration-tests.sh clean install -Dts.noSmoke -Dts.clustering -P \!ts.clustering.cluster.fullha.profile,\!ts.clustering.single.profile,\!ts.clustering.byteman.profile -Dts.surefire.clustering.ha.additionalExcludes=affinity\|cdi\|dispatcher\|ejb\|ejb2\|group\|jms\|jpa
+    $ ./integration-tests.sh clean install -Dts.noSmoke -Dts.clustering -P="-ts.clustering.cluster.fullha.profile,-ts.clustering.cluster.ha-infinispan-server.profile,-ts.clustering.byteman.profile,-ts.clustering.single.profile" -Dts.surefire.clustering.ha.additionalExcludes=affinity\|cdi\|dispatcher\|ejb\|ejb2\|group\|jms\|jpa
 
 while another node can concurrently run all the other profiles and the other half of sub-packages:
 
@@ -174,10 +174,20 @@ If the test packages get out of sync with the excludes this will result in a tes
 
 To run a single test, specifying `-Dtest=foo` is the standard way to do this. However, this overrides the includes/excludes
 section of the surefire maven plugin execution. So, in case of the clustering testsuite, the profile which this test belongs
-to needs to be specified as well. For instance, to run a single test from the 'single' tests execution, exclude the other
+to, needs to be specified as well. For instance, to run a single test from the 'single' test execution, exclude the other
 test profiles:
 
-    $ ./integration-tests.sh clean install -Dts.noSmoke -Dts.clustering -P \!ts.clustering.cluster.ha.profile,\!ts.clustering.cluster.fullha.profile,\!ts.clustering.byteman.profile -Dtest=org.jboss.as.test.clustering.single.dispatcher.CommandDispatcherTestCase
+    $ ./integration-tests.sh clean install -Dts.noSmoke -Dts.clustering -P="-ts.clustering.cluster.ha.profile,-ts.clustering.cluster.fullha.profile,-ts.clustering.cluster.ha-infinispan-server.profile,-ts.clustering.byteman.profile,-ts.clustering.single.profile" -Dtest=org.jboss.as.test.clustering.single.dispatcher.CommandDispatcherTestCase
+
+=== Running Infinispan Server tests against custom distribution
+
+To run the Infinispan Server-based tests against a custom distribution, a custom location can be specified with `-Dinfinispan.server.home.override=/foo/bar`
+and `-Dinfinispan.server.profile.override=infinispan-13.0.xml` to use a corresponding server profile.
+The distribution is then copied over to the build directories and patched with user credentials.
+
+    $ ./integration-tests.sh clean install -Dts.noSmoke -Dts.clustering -P="-ts.clustering.cluster.ha.profile,-ts.clustering.cluster.fullha.profile,-ts.clustering.single.profile,-ts.clustering.byteman.profile,-ts.clustering.single.profile" -Dinfinispan.server.home.override=/Users/rhusar/Downloads/redhat-datagrid-8.3.0-server
+
+Should it be required, the Infinispan Server driver version can be also overridden by `-Dversion.org.infinispan.server.driver=13.0.0.Dev03`.
 
 ==== Skipping clustering tests
 

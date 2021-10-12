@@ -26,6 +26,7 @@ import java.time.Duration;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
@@ -92,8 +93,8 @@ public class ConcurrentSessionManager<L, B extends Batch> implements SessionMana
     }
 
     @Override
-    public String createIdentifier() {
-        return this.manager.createIdentifier();
+    public Supplier<String> getIdentifierFactory() {
+        return this.manager.getIdentifierFactory();
     }
 
     @Override

@@ -52,12 +52,6 @@ Note, that only JNDI bindings under java:/ or java:jboss/ are supported.
 
 ~(See~ `standalone/configuration/standalone.xml` ~)~
 
-[[ra-using-security-domains]]
-== Using security domains
-
-Information about using security domains can be found at
-https://community.jboss.org/wiki/JBossAS7SecurityDomainModel
-
 [[automatic-activation-of-resource-adapter-archives]]
 == Automatic activation of resource adapter archives
 

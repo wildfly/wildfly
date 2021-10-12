@@ -98,9 +98,9 @@ public class TimerHandleImpl implements TimerHandle {
                 throw EjbLogger.EJB3_TIMER_LOGGER.timerServiceWithIdNotRegistered(timedObjectId);
             }
         }
-        final TimerImpl timer = this.service.getTimer(this);
+        final TimerImpl timer = this.service.getTimer(id, timedObjectId);
         if (timer == null || !timer.isActive()) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.timerHandleIsNotActive(this);
+            throw EjbLogger.EJB3_TIMER_LOGGER.timerHandleIsNotActive(id, timedObjectId);
         }
         return timer;
     }

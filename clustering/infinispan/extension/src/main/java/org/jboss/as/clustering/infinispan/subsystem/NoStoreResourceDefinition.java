@@ -28,9 +28,7 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * @author Paul Ferraro
@@ -38,10 +36,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class NoStoreResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     static final PathElement PATH = StoreResourceDefinition.pathElement("none");
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        // Nothing to do yet
-    }
 
     public NoStoreResourceDefinition() {
         super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH));

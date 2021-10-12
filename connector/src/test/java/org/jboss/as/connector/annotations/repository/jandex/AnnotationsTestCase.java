@@ -139,6 +139,8 @@ public class AnnotationsTestCase {
             annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
 
             fail("Success");
+        } catch (AssertionError ae) {
+            throw ae;
         } catch (Throwable t) {
             // Ok
         }

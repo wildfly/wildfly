@@ -65,11 +65,11 @@ public final class AttributeMarshallers {
     public static final AttributeMarshaller NOOP_MARSHALLER = new AttributeMarshaller() {
         public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
             // do nothing
-        };
+        }
 
         public void marshallAsAttribute(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
             // do nothing
-        };
+        }
     };
 
     public static final AttributeMarshaller CONNECTORS_MARSHALLER = new AttributeMarshaller() {
@@ -83,7 +83,7 @@ public final class AttributeMarshallers {
                 }
                 writer.writeEndElement();
             }
-        };
+        }
     };
 
     public static final AttributeMarshaller SELECTOR_MARSHALLER = new AttributeMarshaller() {

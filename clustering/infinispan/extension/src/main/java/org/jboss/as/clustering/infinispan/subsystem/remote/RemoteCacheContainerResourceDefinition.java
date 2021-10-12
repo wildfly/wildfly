@@ -41,9 +41,6 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
-import org.jboss.as.clustering.controller.transform.DiscardSingletonListAttributeChecker;
-import org.jboss.as.clustering.controller.transform.RejectNonSingletonListAttributeChecker;
-import org.jboss.as.clustering.controller.transform.SingletonListAttributeConverter;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
@@ -51,7 +48,6 @@ import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -60,11 +56,6 @@ import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
@@ -241,56 +232,6 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         @Override
         public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
             return builder;
-        }
-    }
-
-    @SuppressWarnings("deprecation")
-    public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        if (InfinispanModel.VERSION_7_0_0.requiresTransformation(version)) {
-            parent.rejectChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
-        } else {
-            ResourceTransformationDescriptionBuilder builder = parent.addChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
-
-            if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder()
-                        .setDiscard(DiscardAttributeChecker.ALWAYS, Attribute.TRANSACTION_TIMEOUT.getDefinition())
-                        .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.MARSHALLER.getDefinition())
-                        .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.MARSHALLER.getDefinition().getDefaultValue()), Attribute.MARSHALLER.getDefinition())
-                        .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getName())
-                        .end();
-            }
-            if (InfinispanModel.VERSION_14_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder()
-                        .setValueConverter(new SingletonListAttributeConverter(ListAttribute.MODULES), DeprecatedAttribute.MODULE.getDefinition())
-                        .setDiscard(DiscardSingletonListAttributeChecker.INSTANCE, ListAttribute.MODULES.getDefinition())
-                        .addRejectCheck(RejectNonSingletonListAttributeChecker.INSTANCE, ListAttribute.MODULES.getDefinition())
-                        .end();
-            }
-            if (InfinispanModel.VERSION_13_0_0.requiresTransformation(version) || (InfinispanModel.VERSION_11_1_0.requiresTransformation(version) && !InfinispanModel.VERSION_12_0_0.requiresTransformation(version))) {
-                builder.getAttributeBuilder()
-                        .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.PROPERTIES.getDefinition())
-                        .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.PROPERTIES.getDefinition())
-                        .end();
-            }
-            if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder()
-                        .setDiscard(new DiscardAttributeValueChecker(false, true, ModelNode.FALSE), Attribute.STATISTICS_ENABLED.getDefinition())
-                        .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.STATISTICS_ENABLED.getDefinition())
-                        .end();
-            }
-
-            RemoteCacheContainerMetric.buildTransformation(version, builder);
-
-            ConnectionPoolResourceDefinition.buildTransformation(version, builder);
-            SecurityResourceDefinition.buildTransformation(version, builder);
-            RemoteTransactionResourceDefinition.buildTransformation(version, builder);
-            NoNearCacheResourceDefinition.buildTransformation(version, builder);
-            InvalidationNearCacheResourceDefinition.buildTransformation(version, builder);
-            RemoteClusterResourceDefinition.buildTransformation(version, builder);
-
-            ThreadPoolResourceDefinition.CLIENT.buildTransformation(builder, version);
-
-            RemoteCacheResourceDefinition.buildTransformation(version, builder);
         }
     }
 

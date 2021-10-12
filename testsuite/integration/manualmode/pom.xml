@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>25.0.0.Final-SNAPSHOT</version>
+        <version>26.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -324,6 +324,7 @@
                         <microprofile.server.jvm.args>${microprofile.server.jvm.args}</microprofile.server.jvm.args>
                         <arquillian.launch>manual-mode</arquillian.launch>
                         <jboss.config.file.name>standalone-ha.xml</jboss.config.file.name>
+                        <ryuk.container.timeout>60</ryuk.container.timeout>
                         <!-- needed for SSLEJBRemoteClientTestCase only, however setting them from within the test itself isn't possible -->
                         <javax.net.ssl.trustStore>${basedir}/target/test-classes/ejb3/ssl/jbossClient.truststore</javax.net.ssl.trustStore>
                         <javax.net.ssl.keyStore>${basedir}/target/test-classes/ejb3/ssl/jbossClient.keystore</javax.net.ssl.keyStore>

@@ -11,10 +11,13 @@ management interfaces are accidentally exposed on a public IP address
 authentication is required to connect - for this reason there is no
 default user in the distribution.
 
+////
+  TODO https://issues.redhat.com/browse/WFCORE-5532
 If you attempt to connect to the admin console before you have added a
 user to the server you will be presented with the following screen.
 
 image:no-users.png[images/no-users.png]
+////
 
 The user are stored in a properties file called mgmt-users.properties
 under standalone/configuration and domain/configuration depending on the
@@ -52,7 +55,12 @@ the admin console just answer 'n' - this option will be described later
 for adding slave host controllers that authenticate against a master
 domain controller but that is a later topic.
 
-Updates to the properties file are picked up in real time so either
-click 'Try Again' on the error page that was displayed in the browser or
-navigate to the console again and you should then be prompted to enter
-the username and password to connect to the server.
+After a new user has been added the server should be restarted or the
+`load` operation should be executed on the `ManagementRealm` or
+`ApplicationRealm` resource in the `elytron` subsystem as appropriate.
+
+[source]
+----
+[standalone@localhost:9990 /] /subsystem=elytron/properties-realm=ManagementRealm:load
+{"outcome" => "success"}
+----

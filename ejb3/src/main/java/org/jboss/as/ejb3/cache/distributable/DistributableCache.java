@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.cache.distributable;
 
+import java.util.function.Supplier;
+
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ejb3.cache.Cache;
@@ -73,8 +75,8 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
     }
 
     @Override
-    public K createIdentifier() {
-        return this.manager.getIdentifierFactory().createIdentifier();
+    public Supplier<K> getIdentifierFactory() {
+        return this.manager.getIdentifierFactory();
     }
 
     @SuppressWarnings("unchecked")

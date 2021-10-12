@@ -29,7 +29,6 @@ import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ReadAttributeTranslationHandler;
 import org.jboss.as.clustering.controller.Registration;
@@ -39,23 +38,13 @@ import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyAddOperationTransformer;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyMapGetOperationTransformer;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyResourceTransformer;
-import org.jboss.as.clustering.controller.transform.LegacyPropertyWriteOperationTransformer;
-import org.jboss.as.clustering.controller.transform.SimpleOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.global.MapOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -178,32 +167,6 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
             PathAddress cacheAddress = address.getParent();
             return cacheAddress.getParent().append(CacheRuntimeResourceDefinition.pathElement(cacheAddress.getLastElement().getValue()), PersistenceRuntimeResourceDefinition.PATH);
         }
-    }
-
-    public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder, PathElement path) {
-        if (InfinispanModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attribute.MAX_BATCH_SIZE.getDefinition());
-        }
-
-        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
-            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD)
-                    .setCustomOperationTransformer(new SimpleOperationTransformer(new LegacyPropertyAddOperationTransformer()))
-                    .inheritResourceAttributeDefinitions()
-                    .end();
-
-            builder.setCustomResourceTransformer(new LegacyPropertyResourceTransformer());
-
-            builder.addRawOperationTransformationOverride(MapOperations.MAP_GET_DEFINITION.getName(), new SimpleOperationTransformer(new LegacyPropertyMapGetOperationTransformer()));
-            for (String name : Operations.getAllWriteAttributeOperationNames()) {
-                builder.addOperationTransformationOverride(name)
-                        .inheritResourceAttributeDefinitions()
-                        .setCustomOperationTransformer(new LegacyPropertyWriteOperationTransformer(address -> address.getParent().append(path)))
-                        .end();
-            }
-        }
-
-        StoreWriteThroughResourceDefinition.buildTransformation(version, builder);
-        StoreWriteBehindResourceDefinition.buildTransformation(version, builder);
     }
 
     private final PathElement legacyPath;

@@ -24,6 +24,7 @@ package org.wildfly.clustering.ejb.infinispan;
 import java.time.Duration;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
@@ -33,7 +34,6 @@ import org.wildfly.clustering.ee.infinispan.InfinispanCacheProperties;
 import org.wildfly.clustering.ejb.BeanManager;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
-import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.RemoveListener;
 import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanFactory;
@@ -63,7 +63,7 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
     }
 
     @Override
-    public BeanManager<I, T, TransactionBatch> createBeanManager(IdentifierFactory<I> identifierFactory, PassivationListener<T> passivationListener, RemoveListener<T> removeListener) {
+    public BeanManager<I, T, TransactionBatch> createBeanManager(Supplier<I> identifierFactory, PassivationListener<T> passivationListener, RemoveListener<T> removeListener) {
         ByteBufferMarshaller marshaller = new JBossByteBufferMarshaller(this.configuration.getMarshallingConfigurationRepository(), this.configuration.getBeanContext().getClassLoader());
         MarshalledValueFactory<ByteBufferMarshaller> factory = new ByteBufferMarshalledValueFactory(marshaller);
         Cache<BeanKey<I>, BeanEntry<I>> beanCache = this.configuration.getCache();

@@ -22,11 +22,11 @@
 package org.wildfly.clustering.web.hotrod.session;
 
 import java.time.Duration;
+import java.util.function.Supplier;
 
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 
 /**
@@ -38,7 +38,7 @@ public interface HotRodSessionManagerConfiguration<C> {
     C getServletContext();
     SessionExpirationListener getExpirationListener();
     Registrar<SessionExpirationListener> getExpirationRegistrar();
-    IdentifierFactory<String> getIdentifierFactory();
+    Supplier<String> getIdentifierFactory();
     Batcher<TransactionBatch> getBatcher();
     Duration getStopTimeout();
 }

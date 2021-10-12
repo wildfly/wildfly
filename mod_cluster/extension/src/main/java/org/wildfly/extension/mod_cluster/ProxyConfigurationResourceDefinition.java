@@ -40,7 +40,6 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -60,16 +59,6 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.PathAddressTransformer;
-import org.jboss.as.controller.transform.ResourceTransformationContext;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
-import org.jboss.as.controller.transform.description.DiscardPolicy;
-import org.jboss.as.controller.transform.description.DynamicDiscardPolicy;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.ModClusterServiceMBean;
@@ -473,76 +462,4 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         }
     };
 
-    @SuppressWarnings("deprecation")
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = ModClusterModel.VERSION_6_0_0.requiresTransformation(version) ? parent.addChildRedirection(WILDCARD_PATH, new PathAddressTransformer.BasicPathAddressTransformer(LEGACY_PATH), new ProxyConfigurationDynamicDiscardPolicy()) : parent.addChildResource(WILDCARD_PATH);
-
-        if (ModClusterModel.VERSION_6_0_0.requiresTransformation(version)) {
-            builder.setCustomResourceTransformer(new ResourceTransformer() {
-                @Override
-                public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
-                    if (resource.hasChild(SimpleLoadProviderResourceDefinition.PATH)) {
-                        ModelNode model = resource.getModel();
-
-                        ModelNode simpleModel = Resource.Tools.readModel(resource.removeChild(SimpleLoadProviderResourceDefinition.PATH));
-                        model.get(DeprecatedAttribute.SIMPLE_LOAD_PROVIDER.getName()).set(simpleModel.get(SimpleLoadProviderResourceDefinition.Attribute.FACTOR.getName()));
-                    }
-                    context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource).processChildren(resource);
-                }
-            });
-
-            builder.getAttributeBuilder()
-                    .addRename(Attribute.LISTENER.getDefinition(), DeprecatedAttribute.CONNECTOR.getName())
-                    .end();
-        }
-
-        if (ModClusterModel.VERSION_5_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.SSL_CONTEXT.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.SSL_CONTEXT.getDefinition())
-                    .end();
-        }
-
-        if (ModClusterModel.VERSION_4_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
-                        @Override
-                        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                            if (!attributeValue.isDefined()) {
-                                // Workaround legacy slaves not accepting null/empty values
-                                // JBAS014704: '' is an invalid value for parameter excluded-contexts. Values must have a minimum length of 1 characters
-                                attributeValue.set(" ");
-                            }
-                        }
-                    }, Attribute.EXCLUDED_CONTEXTS.getDefinition())
-                    .end();
-        }
-
-        if (ModClusterModel.VERSION_3_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder()
-                    // Discard if using default value, reject if set to other than previously hard-coded default of 10 seconds
-                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.STATUS_INTERVAL.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.STATUS_INTERVAL.getDefinition())
-                    // Reject if using proxies, discard if undefined
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, Attribute.PROXIES.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, Attribute.PROXIES.getDefinition())
-                    .end();
-        }
-
-        SimpleLoadProviderResourceDefinition.buildTransformation(version, builder);
-        DynamicLoadProviderResourceDefinition.buildTransformation(version, builder);
-
-        SSLResourceDefinition.buildTransformation(version, builder);
-    }
-
-    private static class ProxyConfigurationDynamicDiscardPolicy implements DynamicDiscardPolicy {
-        @Override
-        public DiscardPolicy checkResource(TransformationContext context, PathAddress address) {
-            Resource resource = context.readResourceFromRoot(address.getParent());
-            if (resource.hasChildren(ProxyConfigurationResourceDefinition.WILDCARD_PATH.getKey()) && resource.getChildren(ProxyConfigurationResourceDefinition.WILDCARD_PATH.getKey()).size() > 1) {
-                return DiscardPolicy.REJECT_AND_WARN;
-            }
-            return DiscardPolicy.NEVER;
-        }
-    }
 }

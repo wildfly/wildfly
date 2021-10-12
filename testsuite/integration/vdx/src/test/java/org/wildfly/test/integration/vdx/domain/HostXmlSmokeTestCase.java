@@ -51,7 +51,6 @@ public class HostXmlSmokeTestCase extends TestBase {
 
         String errorLog = container().getErrorMessageFromServerStart();
         assertContains(errorLog, "^^^^ 'foo' isn't an allowed element here");
-        assertContains(errorLog, "Unexpected element '{urn:jboss:domain:18.0}foo");
     }
 
     @Test
@@ -92,7 +91,7 @@ public class HostXmlSmokeTestCase extends TestBase {
         String errorLog = addElementAndStart( Subtree.jvms(), simpleXml);
         assertContains(errorLog, "'unexpectedElement' isn't an allowed element here");
         assertContains(errorLog, "WFLYCTL0198: Unexpected element");
-        assertContains(errorLog, "'{urn:jboss:domain:18.0}unexpectedElement' encountered");
+        assertContains(errorLog, "unexpectedElement' encountered");
     }
 
     @Test
@@ -101,7 +100,7 @@ public class HostXmlSmokeTestCase extends TestBase {
         String errorLog = addElementAndStart( Subtree.servers(), simpleXml);
         assertContains(errorLog, "'unexpectedElement' isn't an allowed element here");
         assertContains(errorLog, "WFLYCTL0198: Unexpected element");
-        assertContains(errorLog, "'{urn:jboss:domain:18.0}unexpectedElement' encountered");
+        assertContains(errorLog, "unexpectedElement' encountered");
     }
 
     @Test
@@ -110,7 +109,7 @@ public class HostXmlSmokeTestCase extends TestBase {
         String errorLog = addElementAndStart( Subtree.domainController(), simpleXml);
         assertContains(errorLog, "'unexpectedElement' isn't an allowed element here");
         assertContains(errorLog, "WFLYCTL0198: Unexpected element");
-        assertContains(errorLog, "'{urn:jboss:domain:18.0}unexpectedElement' encountered");
+        assertContains(errorLog, "unexpectedElement' encountered");
     }
     @Test
     @ServerConfig(configuration = "host.xml")
@@ -118,7 +117,7 @@ public class HostXmlSmokeTestCase extends TestBase {
         String errorLog = addElementAndStart( Subtree.interfaces(), simpleXml);
         assertContains(errorLog, "'unexpectedElement' isn't an allowed element here");
         assertContains(errorLog, "WFLYCTL0198: Unexpected element");
-        assertContains(errorLog, "'{urn:jboss:domain:18.0}unexpectedElement' encountered");
+        assertContains(errorLog, "unexpectedElement' encountered");
     }
     @Test
     @ServerConfig(configuration = "host.xml")
@@ -126,7 +125,7 @@ public class HostXmlSmokeTestCase extends TestBase {
         String errorLog = addElementAndStart( Subtree.management(), simpleXml);
         assertContains(errorLog, "'unexpectedElement' isn't an allowed element here");
         assertContains(errorLog, "WFLYCTL0198: Unexpected element");
-        assertContains(errorLog, "'{urn:jboss:domain:18.0}unexpectedElement' encountered");
+        assertContains(errorLog, "unexpectedElement' encountered");
 
     }
     @Test
@@ -135,7 +134,7 @@ public class HostXmlSmokeTestCase extends TestBase {
         String errorLog = addElementAndStart( Subtree.extensions(), simpleXml);
         assertContains(errorLog, "'unexpectedElement' isn't an allowed element here");
         assertContains(errorLog, "WFLYCTL0198: Unexpected element");
-        assertContains(errorLog, "'{urn:jboss:domain:18.0}unexpectedElement' encountered");
+        assertContains(errorLog, "unexpectedElement' encountered");
     }
     @Test
     @ServerConfig(configuration = "host.xml")
@@ -143,7 +142,7 @@ public class HostXmlSmokeTestCase extends TestBase {
         String errorLog = addElementAndStart( Subtree.systemProperties(), simpleXml);
         assertContains(errorLog, "'unexpectedElement' isn't an allowed element here");
         assertContains(errorLog, "WFLYCTL0198: Unexpected element");
-        assertContains(errorLog, "'{urn:jboss:domain:18.0}unexpectedElement' encountered");
+        assertContains(errorLog, "unexpectedElement' encountered");
     }
 
 

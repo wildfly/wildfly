@@ -35,7 +35,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
     -->
-    <version>25.0.0.Final-SNAPSHOT</version>
+    <version>26.0.0.Beta1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -78,10 +78,7 @@
         <module>jpa</module>
         <module>jsf</module>
         <module>jsr77</module>
-        <module>legacy/cmp</module>
-        <module>legacy/configadmin</module>
         <module>legacy/jacorb</module>
-        <module>legacy/jaxr</module>
         <module>legacy/messaging</module>
         <module>legacy/web</module>
         <module>mail</module>
@@ -93,6 +90,7 @@
         <module>observability</module>
         <module>picketlink</module>
         <module>pojo</module>
+        <module>release</module>
         <module>sar</module>
         <module>security</module>
         <module>system-jmx</module>
@@ -142,9 +140,9 @@
         <servlet.dist.product.release.name>WildFly Servlet</servlet.dist.product.release.name>
         <servlet.dist.product.slot>wildfly-web</servlet.dist.product.slot>
         <servlet.dist.product.release.version>${ee.dist.product.release.version}</servlet.dist.product.release.version>
-        <product.docs.server.version>25</product.docs.server.version>
+        <product.docs.server.version>26</product.docs.server.version>
         <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
-        <verifier.product.release.version>25.0</verifier.product.release.version>
+        <verifier.product.release.version>26.0</verifier.product.release.version>
 
         <!-- Galleon -->
         <galleon.fork.embedded>true</galleon.fork.embedded>
@@ -257,12 +255,14 @@
         <version.commons-io>2.10.0</version.commons-io>
         <version.help.plugin>2.2</version.help.plugin>
         <version.jacoco.plugin>0.8.2</version.jacoco.plugin><!-- TODO property does not follow verion.groupId format -->
+        <version.org.codehaus.woodstox.stax2-api>4.2.1</version.org.codehaus.woodstox.stax2-api>
+        <version.org.codehaus.woodstox.woodstox-core>6.0.3</version.org.codehaus.woodstox.woodstox-core>
         <version.org.jboss.galleon>4.2.8.Final</version.org.jboss.galleon>
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.5.2.Final</version.org.wildfly.common>
         <version.org.wildfly.component-matrix-plugin>1.0.3.Final</version.org.wildfly.component-matrix-plugin>
-        <version.org.wildfly.galleon-plugins>5.2.2.Final</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>5.2.4.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>5.0.2.Final</version.org.wildfly.jar.plugin>
         <version.org.wildfly.maven.plugins>2.2.0.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>2.0.1.Final</version.org.wildfly.plugin>
@@ -342,17 +342,17 @@
         <version.io.smallrye.opentracing>2.0.0</version.io.smallrye.opentracing>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
         <version.io.smallrye.smallrye-common>1.6.0</version.io.smallrye.smallrye-common>
-        <version.io.smallrye.smallrye-config>2.4.3</version.io.smallrye.smallrye-config>
+        <version.io.smallrye.smallrye-config>2.5.1</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>5.2.1</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>3.1.1</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>3.1.1</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>3.0.3</version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.smallrye-mutiny>0.18.1</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-mutiny-vertx>2.11.0</version.io.smallrye.smallrye-mutiny-vertx>
-        <version.io.smallrye.smallrye-reactive-messaging>3.9.1</version.io.smallrye.smallrye-reactive-messaging>
+        <version.io.smallrye.smallrye-reactive-messaging>3.10.1</version.io.smallrye.smallrye-reactive-messaging>
         <version.io.undertow.jastow>2.0.9.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
-        <version.io.vertx.vertx>4.1.2</version.io.vertx.vertx>
+        <version.io.vertx.vertx>4.1.4</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
         <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
         <version.jakarta.json.bind.api>1.0.2</version.jakarta.json.bind.api>
@@ -371,24 +371,25 @@
         <version.org.apache.activemq.artemis>2.16.0</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>1.0.2</version.org.apache.activemq.artemis.native>
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
-        <version.org.apache.cxf>3.4.4</version.org.apache.cxf>
+        <version.org.apache.cxf>3.4.5</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.3.1</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M24</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.4</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.8.4</version.org.apache.james.apache-mime4j>
         <version.org.apache.jstl>1.2.6-RC1</version.org.apache.jstl>
-        <version.org.apache.kafka>2.8.0</version.org.apache.kafka>
+        <version.org.apache.kafka>2.8.1</version.org.apache.kafka>
         <version.org.apache.lucene>5.5.5</version.org.apache.lucene>
         <version.org.apache.myfaces.core>2.3.8</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
         <version.org.apache.openjpa>2.4.2</version.org.apache.openjpa>
         <version.org.apache.qpid.proton>0.33.2</version.org.apache.qpid.proton>
-        <version.org.apache.santuario>2.2.2</version.org.apache.santuario>
+        <version.org.apache.santuario>2.2.3</version.org.apache.santuario>
         <version.org.apache.thrift>0.14.1</version.org.apache.thrift>
         <version.org.apache.velocity>2.3</version.org.apache.velocity>
-        <version.org.apache.ws.security>2.3.2</version.org.apache.ws.security>
+        <version.org.apache.ws.security>2.3.3</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.2.5</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-5</version.org.apache.xalan>
+        <version.org.apache.xerces>2.12.0.SP03</version.org.apache.xerces>
         <version.org.awaitility.awaitility>4.0.2</version.org.awaitility.awaitility>
         <version.org.bitbucket.jose4j>0.7.9</version.org.bitbucket.jose4j>
         <version.org.bytebuddy>1.11.12</version.org.bytebuddy>
@@ -412,7 +413,7 @@
         <version.org.glassfish.soteria>1.0.1-jbossorg-1</version.org.glassfish.soteria>
         <version.org.hamcrest>1.3</version.org.hamcrest>
         <version.org.hamcrest.java-hamcrest>2.0.0.0</version.org.hamcrest.java-hamcrest>
-        <version.org.hibernate>5.3.22.Final</version.org.hibernate>
+        <version.org.hibernate>5.3.23.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.5.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>5.10.11.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>6.0.22.Final</version.org.hibernate.validator>
@@ -432,8 +433,8 @@
         <version.org.jboss.genericjms>2.0.10.Final</version.org.jboss.genericjms>
         <version.org.jboss.hal.console>3.3.8.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.1.Final</version.org.jboss.iiop-client>
-        <version.org.jboss.ironjacamar>1.5.1.Final</version.org.jboss.ironjacamar>
-        <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
+        <version.org.jboss.ironjacamar>1.5.2.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.jboss-transaction-spi>7.6.1.Final</version.org.jboss.jboss-transaction-spi>
         <!-- Only used for testing -->
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
         <version.org.jboss.metadata>14.0.0.Final</version.org.jboss.metadata>
@@ -494,7 +495,7 @@
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
         <version.org.testng>6.14.3</version.org.testng>
         <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>17.0.0.Beta7</version.org.wildfly.core>
+        <version.org.wildfly.core>18.0.0.Beta1</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.1.8.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.14.Final</version.org.wildfly.naming-client>
@@ -511,6 +512,30 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.fasterxml.woodstox</groupId>
+                <artifactId>woodstox-core</artifactId>
+                <version>${version.org.codehaus.woodstox.woodstox-core}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.xml.stream</groupId>
+                        <artifactId>stax-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.codehaus.woodstox</groupId>
+                <artifactId>stax2-api</artifactId>
+                <version>${version.org.codehaus.woodstox.stax2-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.xml.stream</groupId>
+                        <artifactId>stax-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <!-- Import the core parent to get all the managed dependencies from core -->
             <dependency>
                 <groupId>org.wildfly.core</groupId>
@@ -867,18 +892,6 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-cmp</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-configadmin</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-connector</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
@@ -1083,12 +1096,6 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-jacorb</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-jaxr</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
 
@@ -1404,6 +1411,13 @@
                 <artifactId>wildfly-preview-feature-pack</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-release</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
             </dependency>
 
             <dependency>
@@ -2065,12 +2079,6 @@
                 <groupId>io.agroal</groupId>
                 <artifactId>agroal-pool</artifactId>
                 <version>${version.io.agroal}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.jaegertracing</groupId>
-                <artifactId>jaeger-client</artifactId>
-                <version>${version.io.jaegertracing}</version>
             </dependency>
 
             <dependency>
@@ -9506,6 +9514,18 @@
                 <groupId>xalan</groupId>
                 <artifactId>xalan</artifactId>
                 <version>${version.org.apache.xalan}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>xerces</groupId>
+                <artifactId>xercesImpl</artifactId>
+                <version>${version.org.apache.xerces}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

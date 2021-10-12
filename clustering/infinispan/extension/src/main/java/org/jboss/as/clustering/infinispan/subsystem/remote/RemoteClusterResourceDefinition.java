@@ -35,12 +35,10 @@ import org.jboss.as.clustering.controller.RestartParentResourceRegistration;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.service.BinaryRequirement;
 
@@ -113,12 +111,6 @@ public class RemoteClusterResourceDefinition extends ChildResourceDefinition<Man
         public RuntimeCapability<Void> getDefinition() {
             return this.definition;
         }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
-
-        RemoteClusterOperation.buildTransformation(version, builder);
     }
 
     private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;

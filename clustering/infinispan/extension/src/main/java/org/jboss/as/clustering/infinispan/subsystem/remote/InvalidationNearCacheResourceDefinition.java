@@ -25,17 +25,10 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -65,20 +58,6 @@ public class InvalidationNearCacheResourceDefinition extends NearCacheResourceDe
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
-        }
-    }
-
-    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
-        if (InfinispanModel.VERSION_11_0_0.requiresTransformation(version)) {
-            builder.getAttributeBuilder().setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
-                @Override
-                protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                    if (!attributeValue.isDefined()) {
-                        attributeValue.set(-1);
-                    }
-                }
-            }, Attribute.MAX_ENTRIES.getDefinition());
         }
     }
 

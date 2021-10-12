@@ -24,16 +24,16 @@ package org.jboss.as.clustering.controller;
 
 import java.util.function.Function;
 
+import org.jboss.as.clustering.msc.InjectedValueDependency;
+import org.jboss.as.clustering.msc.ValueDependency;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
-import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
-import org.wildfly.clustering.service.ValueDependency;
 
 /**
  * Equivalent to {@link IdentityCapabilityServiceConfigurator}, but uses legacy service installation.
