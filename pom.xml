@@ -1454,12 +1454,6 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-security-integration</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-security-plugins</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
