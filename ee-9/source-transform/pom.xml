@@ -47,6 +47,9 @@
     <modules>
         <module>ee</module>
         <module>mail</module>
+        <module>weld/common</module>
+        <module>weld/spi</module>
+        <module>weld/transactions</module>
     </modules>
 
     <build>
