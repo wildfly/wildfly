@@ -21,11 +21,8 @@
  */
 package org.jboss.as.ejb3.timerservice.persistence;
 
-import static org.jboss.as.ejb3.util.MethodInfoHelper.EMPTY_STRING_ARRAY;
-
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,6 +32,24 @@ import java.util.List;
  * @author Stuart Douglas
  */
 public class TimeoutMethod implements Serializable {
+    private static final long serialVersionUID = 3306711742026221772L;
+
+    /**
+     * Constant string value to indicate that the timeout method has 1 parameter, which must be javax.ejb.Timer
+     */
+    public static final String TIMER_PARAM_1 = "1";
+
+    /**
+     * Constant string array value to indicate that the timeout method has 1
+     * parameter, which must be javax.ejb.Timer
+     */
+    public static final String[] TIMER_PARAM_1_ARRAY = new String[]{TIMER_PARAM_1};
+
+    /**
+     * Internal immutable string list to indicate that the timeout method has 1
+     * parameter, which must be javax.ejb.Timer
+     */
+    private static final List<String> TIMER_PARAM_1_LIST = Collections.singletonList("javax.ejb.Timer");
 
     private String declaringClass;
 
@@ -42,17 +57,13 @@ public class TimeoutMethod implements Serializable {
 
     private List<String> methodParams;
 
-    private transient String cachedToString;
-
-    public TimeoutMethod() {
-
-    }
-
     public TimeoutMethod(String declaringClass, String methodName, String[] methodParams) {
         this.declaringClass = declaringClass;
         this.methodName = methodName;
-        if (methodParams != null) {
-            this.methodParams = new ArrayList<String>(Arrays.asList(methodParams));
+        if (methodParams == null || methodParams.length == 0) {
+            this.methodParams = Collections.emptyList();
+        } else {
+            this.methodParams = TIMER_PARAM_1_LIST;
         }
     }
 
@@ -60,12 +71,8 @@ public class TimeoutMethod implements Serializable {
         return methodName;
     }
 
-
-    public String[] getMethodParams() {
-        if (this.methodParams == null) {
-            return null;
-        }
-        return methodParams.toArray(EMPTY_STRING_ARRAY);
+    public boolean hasTimerParameter() {
+        return methodParams == TIMER_PARAM_1_LIST;
     }
 
     public String getDeclaringClass() {
@@ -74,24 +81,15 @@ public class TimeoutMethod implements Serializable {
 
     @Override
     public String toString() {
-        if (this.cachedToString == null) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(this.declaringClass);
-            sb.append(".");
-            sb.append(this.methodName);
-            sb.append("(");
-            if (this.methodParams != null) {
-                for (int i = 0; i < this.methodParams.size(); i++) {
-                    sb.append(this.methodParams.get(i));
-                    if (i != this.methodParams.size() - 1) {
-                        sb.append(",");
-                    }
-                }
-            }
-            sb.append(")");
-            this.cachedToString = sb.toString();
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.declaringClass);
+        sb.append(".");
+        sb.append(this.methodName);
+        sb.append("(");
+        if (!this.methodParams.isEmpty()) {
+            sb.append(this.methodParams.get(0));
         }
-        return this.cachedToString;
+        sb.append(")");
+        return sb.toString();
     }
-
 }

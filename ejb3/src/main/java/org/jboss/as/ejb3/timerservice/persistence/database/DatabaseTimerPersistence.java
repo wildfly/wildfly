@@ -24,6 +24,8 @@ package org.jboss.as.ejb3.timerservice.persistence.database;
 
 import static org.jboss.as.ejb3.timerservice.TimerServiceImpl.safeClose;
 import static org.jboss.as.ejb3.util.MethodInfoHelper.EMPTY_STRING_ARRAY;
+import static org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod.TIMER_PARAM_1;
+import static org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod.TIMER_PARAM_1_ARRAY;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -101,7 +103,6 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  * @author Joerg Baesner
  */
 public class DatabaseTimerPersistence implements TimerPersistence, Service<DatabaseTimerPersistence> {
-
     private final InjectedValue<ManagedReferenceFactory> dataSourceInjectedValue = new InjectedValue<ManagedReferenceFactory>();
     private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
     private final Map<String, TimerChangeListener> changeListeners = Collections.synchronizedMap(new HashMap<String, TimerChangeListener>());
@@ -652,7 +653,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             final String methodName = resultSet.getString(22);
             if (methodName != null) {
                 final String paramString = resultSet.getString(23);
-                final String[] params = paramString == null || paramString.isEmpty() ? EMPTY_STRING_ARRAY : paramString.split(";");
+                final String[] params = paramString == null || paramString.isEmpty() ? EMPTY_STRING_ARRAY : TIMER_PARAM_1_ARRAY;
                 final Method timeoutMethod = CalendarTimer.getTimeoutMethod(new TimeoutMethod(clazz, methodName, params), timerService.getTimedObjectInvoker().getValue().getClassLoader());
                 if (timeoutMethod == null) {
                     EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), timerId, new NoSuchMethodException());
@@ -718,17 +719,11 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             statement.setString(19, c.getScheduleExpression().getTimezone());
             statement.setBoolean(20, c.isAutoTimer());
             if (c.isAutoTimer()) {
-                statement.setString(21, c.getTimeoutMethod().getDeclaringClass().getName());
-                statement.setString(22, c.getTimeoutMethod().getName());
-                StringBuilder params = new StringBuilder();
-                final Class<?>[] parameterTypes = c.getTimeoutMethod().getParameterTypes();
-                for (int i = 0; i < parameterTypes.length; ++i) {
-                    params.append(parameterTypes[i].getName());
-                    if (i != parameterTypes.length - 1) {
-                        params.append(";");
-                    }
-                }
-                statement.setString(23, params.toString());
+                final Method timeoutMethod = c.getTimeoutMethod();
+                statement.setString(21, timeoutMethod.getDeclaringClass().getName());
+                statement.setString(22, timeoutMethod.getName());
+                String paramsToPersist = timeoutMethod.getParameterCount() == 0 ? null : TIMER_PARAM_1;
+                statement.setString(23, paramsToPersist);
             } else {
                 statement.setString(21, null);
                 statement.setString(22, null);
