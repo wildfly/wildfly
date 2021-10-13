@@ -2,7 +2,6 @@
 = Elytron and Jakarta EE Security
 
 [abstract]
-== Introduction
 
 Starting from WildFly 15 an implementation of the Servlet Profile from Java Authentication SPI for Containers (JSR-196 / JASPI) specification has been included in the application server, in addition to making JASPI available for deployments using WildFly Elytron it also makes it possible to make use of EE Security with WildFly Elytron.
 
