@@ -35,7 +35,6 @@
         <module name="org.wildfly.http-client.common"/>
         <module name="org.wildfly.client.config"/>
         <module name="org.wildfly.common"/>
-        <module name="javax.transaction.api"/>
         <module name="io.undertow.core" />
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling" />

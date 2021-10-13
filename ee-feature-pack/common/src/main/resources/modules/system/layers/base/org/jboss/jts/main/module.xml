@@ -45,7 +45,6 @@
         <module name="org.jboss.jts.integration"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
-        <module name="javax.transaction.api"/>
         <module name="javax.resource.api"/>
         <module name="org.apache.activemq.artemis.journal"/>
         <module name="javax.orb.api"/>
