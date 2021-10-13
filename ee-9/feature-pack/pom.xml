@@ -56,7 +56,6 @@
 
         <version.com.sun.faces>3.0.0.SP04</version.com.sun.faces>
         <version.com.sun.activation.jakarta.activation>2.0.0</version.com.sun.activation.jakarta.activation>
-        <version.jakarta.authentication.jakarta-authentication-api>2.0.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.batch.jakarta.batch-api>2.0.0</version.jakarta.batch.jakarta.batch-api>
         <version.jakarta.ejb.jakarta-ejb-api>4.0.0</version.jakarta.ejb.jakarta-ejb-api>
         <version.jakarta.faces.jakarta-faces-api>3.0.0</version.jakarta.faces.jakarta-faces-api>
@@ -66,8 +65,6 @@
         <version.jakarta.persistence>3.0.0</version.jakarta.persistence>
         <version.jakarta.resource.jakarta-resource-api>2.0.0</version.jakarta.resource.jakarta-resource-api>
         <version.jakarta.security.enterprise>2.0.0</version.jakarta.security.enterprise>
-        <version.jakarta.servlet.jakarta-servlet-api>5.0.0</version.jakarta.servlet.jakarta-servlet-api>
-        <version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.0.0</version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.0.0</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>3.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
         <version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.0</version.jakarta.xml.bind.jakarta-xml-bind-api>
@@ -541,6 +538,10 @@
                     <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-ee</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-web-common</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -593,7 +594,6 @@
         <dependency>
             <groupId>jakarta.authentication</groupId>
             <artifactId>jakarta.authentication-api</artifactId>
-            <version>${version.jakarta.authentication.jakarta-authentication-api}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -703,7 +703,6 @@
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
-            <version>${version.jakarta.servlet.jakarta-servlet-api}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -715,7 +714,6 @@
         <dependency>
             <groupId>jakarta.servlet.jsp</groupId>
             <artifactId>jakarta.servlet.jsp-api</artifactId>
-            <version>${version.jakarta.servlet.jsp.jakarta-servlet-jsp-api}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -1485,6 +1483,12 @@
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-mail-jakarta</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-web-common-jakarta</artifactId>
             <scope>provided</scope>
         </dependency>
 
