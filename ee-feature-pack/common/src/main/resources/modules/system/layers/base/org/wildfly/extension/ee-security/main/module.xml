@@ -33,7 +33,7 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-ee-security}"/>
+        <artifact name="\${org.wildfly:wildfly-ee-security@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>

@@ -47,6 +47,7 @@
     <modules>
         <module>bean-validation</module>
         <module>ee</module>
+        <module>ee-security</module>
         <module>mail</module>
         <module>weld/bean-validation</module>
         <module>weld/common</module>
