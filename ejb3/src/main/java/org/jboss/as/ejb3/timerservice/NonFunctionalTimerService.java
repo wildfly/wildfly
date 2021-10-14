@@ -21,36 +21,35 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import javax.ejb.EJBException;
+import javax.ejb.ScheduleExpression;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
+
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.TimerServiceRegistry;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import javax.ejb.EJBException;
-import javax.ejb.ScheduleExpression;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerService;
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
 
 /**
  * Non-functional timer service that is bound when the timer service is disabled.
  */
-public class NonFunctionalTimerService implements TimerService, Service<TimerService> {
+public final class NonFunctionalTimerService implements TimerService, Service<TimerService> {
 
     public static final NonFunctionalTimerService DISABLED = new NonFunctionalTimerService(EjbLogger.EJB3_TIMER_LOGGER.timerServiceIsNotActive(), null);
 
@@ -70,52 +69,52 @@ public class NonFunctionalTimerService implements TimerService, Service<TimerSer
     }
 
     @Override
-    public Timer createCalendarTimer(ScheduleExpression schedule) throws IllegalArgumentException, IllegalStateException, EJBException {
+    public Timer createCalendarTimer(ScheduleExpression schedule) throws IllegalStateException {
         throw new IllegalStateException(message);
     }
 
     @Override
-    public Timer createCalendarTimer(ScheduleExpression schedule, TimerConfig timerConfig) throws IllegalArgumentException, IllegalStateException, EJBException {
+    public Timer createCalendarTimer(ScheduleExpression schedule, TimerConfig timerConfig) throws IllegalStateException {
         throw new IllegalStateException(message);
     }
 
     @Override
-    public Timer createIntervalTimer(Date initialExpiration, long intervalDuration, TimerConfig timerConfig) throws IllegalArgumentException, IllegalStateException, EJBException {
+    public Timer createIntervalTimer(Date initialExpiration, long intervalDuration, TimerConfig timerConfig) throws IllegalStateException {
         throw new IllegalStateException(message);
     }
 
     @Override
-    public Timer createIntervalTimer(long initialDuration, long intervalDuration, TimerConfig timerConfig) throws IllegalArgumentException, IllegalStateException, EJBException {
+    public Timer createIntervalTimer(long initialDuration, long intervalDuration, TimerConfig timerConfig) throws IllegalStateException {
         throw new IllegalStateException(message);
     }
 
     @Override
-    public Timer createSingleActionTimer(Date expiration, TimerConfig timerConfig) throws IllegalArgumentException, IllegalStateException, EJBException {
+    public Timer createSingleActionTimer(Date expiration, TimerConfig timerConfig) throws IllegalStateException {
         throw new IllegalStateException(message);
     }
 
     @Override
-    public Timer createSingleActionTimer(long duration, TimerConfig timerConfig) throws IllegalArgumentException, IllegalStateException, EJBException {
+    public Timer createSingleActionTimer(long duration, TimerConfig timerConfig) throws IllegalStateException {
         throw new IllegalStateException(message);
     }
 
     @Override
-    public Timer createTimer(long duration, Serializable info) throws IllegalArgumentException, IllegalStateException, EJBException {
+    public Timer createTimer(long duration, Serializable info) throws IllegalStateException {
         throw new IllegalStateException(message);
     }
 
     @Override
-    public Timer createTimer(long initialDuration, long intervalDuration, Serializable info) throws IllegalArgumentException, IllegalStateException, EJBException {
+    public Timer createTimer(long initialDuration, long intervalDuration, Serializable info) throws IllegalStateException {
         throw new IllegalStateException(message);
     }
 
     @Override
-    public Timer createTimer(Date expiration, Serializable info) throws IllegalArgumentException, IllegalStateException, EJBException {
+    public Timer createTimer(Date expiration, Serializable info) throws IllegalStateException {
         throw new IllegalStateException(message);
     }
 
     @Override
-    public Timer createTimer(Date initialExpiration, long intervalDuration, Serializable info) throws IllegalArgumentException, IllegalStateException, EJBException {
+    public Timer createTimer(Date initialExpiration, long intervalDuration, Serializable info) throws IllegalStateException {
         throw new IllegalStateException(message);
     }
 
@@ -127,13 +126,15 @@ public class NonFunctionalTimerService implements TimerService, Service<TimerSer
 
     @Override
     public Collection<Timer> getAllTimers() throws IllegalStateException, EJBException {
+        assertInvocationAllowed();
+
         // query the registry
         if (this.timerServiceRegistry != null) {
             return this.timerServiceRegistry.getAllActiveTimers();
         }
-        // If we don't have the timer service registry (for whatever reason), we just invoke the getTimers() so that it can
-        // do the necessary state checks before returning an empty collection (since this is a non-functional timer service)
-        return this.getTimers();
+        // If we don't have the timer service registry (for whatever reason),
+        // we just return an empty collection (since this is a non-functional timer service)
+        return Collections.emptySet();
     }
 
     private void assertInvocationAllowed() {
@@ -155,21 +156,15 @@ public class NonFunctionalTimerService implements TimerService, Service<TimerSer
     }
 
     @Override
-    public void start(StartContext startContext) throws StartException {
-        if (this.timerServiceRegistry != null) {
-            this.timerServiceRegistry.registerTimerService(this);
-        }
+    public void start(StartContext startContext) {
     }
 
     @Override
     public void stop(StopContext stopContext) {
-        if (this.timerServiceRegistry != null) {
-            this.timerServiceRegistry.unRegisterTimerService(this);
-        }
     }
 
     @Override
-    public TimerService getValue() throws IllegalStateException, IllegalArgumentException {
+    public TimerService getValue() {
         return this;
     }
 }
