@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-web-common}"/>
+        <artifact name="\${org.wildfly:wildfly-web-common@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
