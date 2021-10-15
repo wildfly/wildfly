@@ -562,6 +562,21 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     /**
+     * Retrieves the timer info from the timer database.
+     *
+     * @param timer the timer whose info to be retrieved
+     * @return the timer info from database; cached timer info if the timer persistence store is not database
+     */
+    public Serializable getPersistedTimerInfo(final TimerImpl timer) {
+        final TimerPersistence persistence = this.timerPersistence.getOptionalValue();
+        if (persistence instanceof DatabaseTimerPersistence) {
+            final DatabaseTimerPersistence databasePersistence = (DatabaseTimerPersistence) persistence;
+            return databasePersistence.getPersistedTimerInfo(timer);
+        }
+        return timer.getCachedTimerInfo();
+    }
+
+    /**
      * Returns the {@link TimedObjectInvoker} to which this timer service belongs
      *
      * @return

@@ -3246,4 +3246,8 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = DEBUG)
     @Message(id = 528, value = "Jakarta Enterprise Beans business method %s must be public")
     void ejbBusinessMethodMustBePublic(final Method method);
+
+    @LogMessage(level = WARN)
+    @Message(id = 529, value = "Failed to retrieve info from database for timer: %s")
+    void failedToRetrieveTimerInfo(final TimerImpl timer, @Cause Exception e);
 }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.subsystem.deployment;
 
+import java.io.Serializable;
 import java.util.Date;
 import javax.ejb.NoMoreTimeoutsException;
 import javax.ejb.ScheduleExpression;
@@ -341,8 +342,9 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
                 if (timer.isCanceled()) {
                     return;
                 }
-                if (timer.getInfo() != null) {
-                    toSet.set(timer.getInfo().toString());
+                final Serializable info = timer.getCachedTimerInfo();
+                if (info != null) {
+                    toSet.set(info.toString());
                 }
             }
 
