@@ -461,11 +461,6 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
             for (final Map.Entry<String, String> entry : propertiesMap.entrySet()) {
                 context.getResult().asPropertyList().add(new ModelNode().set(entry.getKey(), entry.getValue()).asProperty());
             }
-        } else if (attributeName.equals(Constants.ALLOCATION_RETRY.getName())) {
-            if (dataSource.getTimeOut() == null) {
-                return;
-            }
-            setIntIfNotNull(context, dataSource.getTimeOut().getAllocationRetry());
         } else if (attributeName.equals(Constants.QUERY_TIMEOUT.getName())) {
             if (dataSource.getTimeOut() == null) {
                 return;
