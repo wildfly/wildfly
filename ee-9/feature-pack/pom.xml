@@ -393,6 +393,7 @@
                                 <exclude>io.opentelemetry:opentelemetry-sdk-common\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-sdk-trace\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-semconv\z</exclude>
+                                <exclude>io.perfmark:perfmark\z</exclude>
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
