@@ -261,12 +261,10 @@ public class DigestAuthenticationMechanism implements AuthenticationMechanism {
             }
         }
 
-        if (parsedHeader.containsKey(DigestAuthorizationToken.OPAQUE)) {
-            if (!OPAQUE_VALUE.equals(parsedHeader.get(DigestAuthorizationToken.OPAQUE))) {
-                REQUEST_LOGGER.invalidTokenReceived(DigestAuthorizationToken.OPAQUE.getName(),
-                        parsedHeader.get(DigestAuthorizationToken.OPAQUE));
-                return AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
-            }
+        if (parsedHeader.containsKey(DigestAuthorizationToken.OPAQUE) && !OPAQUE_VALUE.equals(parsedHeader.get(DigestAuthorizationToken.OPAQUE))) {
+            REQUEST_LOGGER.invalidTokenReceived(DigestAuthorizationToken.OPAQUE.getName(),
+                    parsedHeader.get(DigestAuthorizationToken.OPAQUE));
+            return AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
         }
 
         DigestAlgorithm algorithm;

@@ -178,10 +178,9 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         //install the control point for the top level deployment no matter what
-        if(RequestControllerActivationMarker.isRequestControllerEnabled(deploymentUnit)) {
-            if(deploymentUnit.getParent() == null) {
-                ControlPointService.install(phaseContext.getServiceTarget(), deploymentUnit.getName(), UndertowExtension.SUBSYSTEM_NAME);
-            }
+        if (RequestControllerActivationMarker.isRequestControllerEnabled(deploymentUnit) && deploymentUnit.getParent() == null) {
+            ControlPointService.install(phaseContext.getServiceTarget(), deploymentUnit.getName(),
+                    UndertowExtension.SUBSYSTEM_NAME);
         }
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         if (warMetaData == null) {
@@ -604,11 +603,9 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
 
         //we also register them under the new namespaces
         for (String k : new HashSet<>(ret.keySet())) {
-            if (k != null) {
-                if (k.startsWith(OLD_URI_PREFIX)) {
-                    String newUri = k.replace(OLD_URI_PREFIX, NEW_URI_PREFIX);
-                    ret.put(newUri, ret.get(k));
-                }
+            if (k != null && k.startsWith(OLD_URI_PREFIX)) {
+                String newUri = k.replace(OLD_URI_PREFIX, NEW_URI_PREFIX);
+                ret.put(newUri, ret.get(k));
             }
         }
 
