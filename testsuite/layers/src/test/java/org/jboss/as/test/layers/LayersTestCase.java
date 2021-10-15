@@ -42,6 +42,10 @@ public class LayersTestCase {
         // deprecated
         "org.jboss.as.threads",
         // Un-used
+        "org.apache.xerces",
+        // Un-used
+        "org.codehaus.woodstox",
+        // Un-used
         "org.apache.xml-resolver",
         // Un-used
         "org.jboss.metadata",
