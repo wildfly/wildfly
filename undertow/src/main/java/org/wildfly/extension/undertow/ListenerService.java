@@ -134,7 +134,7 @@ public abstract class ListenerService implements Service<UndertowListener>, Unde
         return this.serverService.get();
     }
 
-    public boolean isEnabled() {
+    public synchronized boolean isEnabled() {
         return enabled;
     }
 

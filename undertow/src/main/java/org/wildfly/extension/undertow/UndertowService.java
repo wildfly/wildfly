@@ -261,7 +261,7 @@ public class UndertowService implements Service<UndertowService> {
         return obfuscateSessionRoute;
     }
 
-    public boolean isStatisticsEnabled() {
+    public synchronized boolean isStatisticsEnabled() {
         return statisticsEnabled;
     }
 
