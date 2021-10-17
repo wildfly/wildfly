@@ -117,7 +117,7 @@ public class TransactionRollbackSetupAction implements SetupAction, Service<Tran
 
         holder.depth += increment;
         if (holder.depth == 0) {
-            depth.set(null);
+            depth.remove();
             return holder.actuallyCleanUp;
         }
         return false;
