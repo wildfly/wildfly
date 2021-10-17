@@ -73,6 +73,7 @@ public class CreatedEntityManagers {
             }
         } finally {
             store.clear();
+            deferToPostConstruct.remove();
         }
     }
 
