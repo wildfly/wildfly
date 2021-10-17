@@ -37,9 +37,9 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 /**
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
-public class MyFacesLifecycleProvider implements LifecycleProvider2 {
+public class MyFacesLifecycleProvider implements LifecycleProvider2, AutoCloseable {
 
-    private final WebInjectionContainer injectionContainer;
+    private WebInjectionContainer injectionContainer;
 
     public MyFacesLifecycleProvider() {
         this.injectionContainer = StartupContext.getInjectionContainer();
@@ -78,4 +78,9 @@ public class MyFacesLifecycleProvider implements LifecycleProvider2 {
         injectionContainer.destroyInstance(obj);
     }
 
+    @Override
+    public void close()  {
+        this.injectionContainer = null;
+        StartupContext.removeInjectionContainer();
+    }
 }
