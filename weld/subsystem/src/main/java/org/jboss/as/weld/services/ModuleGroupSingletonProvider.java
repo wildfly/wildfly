@@ -71,7 +71,7 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
         private volatile Map<ClassLoader, T> store = Collections.emptyMap();
         private volatile Map<String, T> contextIdStore = Collections.emptyMap();
 
-        public T get() {
+        public synchronized T get() {
             T instance = store.get(findParentModuleCl(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged()));
             if (instance == null) {
                 throw WeldLogger.ROOT_LOGGER.singletonNotSet(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
