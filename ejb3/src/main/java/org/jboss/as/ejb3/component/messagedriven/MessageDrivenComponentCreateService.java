@@ -89,7 +89,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public synchronized void start(StartContext context) throws StartException {
         super.start(context);
         // AS7-3073 just log a message about the MDB being started
         EjbLogger.ROOT_LOGGER.logMDBStart(this.getComponentName(), this.resourceAdapterName);

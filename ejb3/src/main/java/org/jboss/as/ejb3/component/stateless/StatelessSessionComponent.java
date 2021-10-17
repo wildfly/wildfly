@@ -106,7 +106,7 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
     }
 
     @Override
-    public void init() {
+    public synchronized void init() {
         super.init();
         if(this.pool!=null){
             this.pool.start();

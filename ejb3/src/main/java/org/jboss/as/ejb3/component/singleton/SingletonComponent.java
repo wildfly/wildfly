@@ -132,7 +132,7 @@ public class SingletonComponent extends SessionBeanComponent {
     }
 
     @Override
-    public void start() {
+    public synchronized void start() {
         super.start();
         if (this.initOnStartup) {
             // Do not call createInstance() because we can't ever assume that the singleton instance
