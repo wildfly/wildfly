@@ -69,7 +69,7 @@ public class RemotingContext {
     public static void clear() {
         checkPermission(CLEAR_CONNECTION);
 
-        connection.set(null);
+        connection.remove();
     }
 
     public static Connection getConnection() {
