@@ -3016,11 +3016,11 @@ public interface EjbLogger extends BasicLogger {
     void timerUpdateFailedAndRollbackNotPossible(@Cause Throwable rbe);
 
     /**
-     * Logs a warning message indicating that the database dialect can not detected automatically
+     * Logs a warning message indicating that the database dialect cannot be detected automatically.
      */
     @LogMessage(level = WARN)
-    @Message(id = 462, value = "Unable to detect database dialect from connection metadata or JDBC driver name. Please configure this manually using the 'datasource' property in your configuration.  Known database dialect strings are %s")
-    void jdbcDatabaseDialectDetectionFailed(String validDialects);
+    @Message(id = 462, value = "Timer service database-data-store database attribute is not configured, and is not detected from connection metadata or JDBC driver name.")
+    void databaseDialectNotConfiguredOrDetected();
 
     @LogMessage(level = WARN)
     @Message(id = 463, value = "Invalid transaction attribute type %s on SFSB lifecycle method %s of class %s, valid types are REQUIRES_NEW and NOT_SUPPORTED. Method will be treated as NOT_SUPPORTED.")

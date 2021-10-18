@@ -48,6 +48,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -110,8 +111,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
 
     /** Identifier for the database dialect to be used for the timer-sql.properties */
     private String database;
-    /** List of extracted known dialects*/
-    private final HashSet<String> databaseDialects = new HashSet<String>();
     /** Name of the configured partition name*/
     private final String partition;
     /** Current node name*/
@@ -189,7 +188,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         } finally {
             safeClose(stream);
         }
-        extractDialects();
         investigateDialect();
         checkDatabase();
         refreshTask = new RefreshTask();
@@ -205,18 +203,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         managedReference.release();
         managedReference = null;
         dataSource = null;
-    }
-
-    /**
-     * Read the properties from the timer-sql and extract the database dialects.
-     */
-    private void extractDialects() {
-        for (Object prop : sql.keySet()) {
-            int dot = ((String)prop).indexOf('.');
-            if (dot > 0) {
-                databaseDialects.add(((String)prop).substring(dot+1));
-            }
-        }
     }
 
     /**
@@ -244,9 +230,9 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 safeClose(connection);
             }
             if (database == null) {
-                EjbLogger.EJB3_TIMER_LOGGER.jdbcDatabaseDialectDetectionFailed(databaseDialects.toString());
+                EjbLogger.EJB3_TIMER_LOGGER.databaseDialectNotConfiguredOrDetected();
             } else {
-                EjbLogger.EJB3_TIMER_LOGGER.debugf("Detect database dialect as '%s'.  If this is incorrect, please specify the correct dialect using the 'database' attribute in your configuration.  Supported database dialect strings are %s", database, databaseDialects);
+                EjbLogger.EJB3_TIMER_LOGGER.debugf("Detect database dialect as '%s'.  If this is incorrect, please specify the correct dialect using the 'database' attribute in your configuration.", database);
             }
         } else {
             EjbLogger.EJB3_TIMER_LOGGER.debugf("Database dialect '%s' read from configuration, adjusting it to match the final database valid value.", database);
@@ -265,23 +251,24 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         String unified = null;
 
         if (name != null) {
-            if (name.toLowerCase().contains("postgres")) {
+            name = name.toLowerCase(Locale.ROOT);
+            if (name.contains("postgres")) {
                unified = "postgresql";
-            } else if (name.toLowerCase().contains("mysql")) {
+            } else if (name.contains("mysql")) {
                 unified = "mysql";
-            } else if (name.toLowerCase().contains("mariadb")) {
+            } else if (name.contains("mariadb")) {
                 unified = "mariadb";
-            } else if (name.toLowerCase().contains("db2")) {
+            } else if (name.contains("db2")) {
                 unified = "db2";
-            } else if (name.toLowerCase().contains("hsql") || name.toLowerCase().contains("hypersonic")) {
+            } else if (name.contains("hsql") || name.contains("hypersonic")) {
                 unified = "hsql";
-            } else if (name.toLowerCase().contains("h2")) {
+            } else if (name.contains("h2")) {
                 unified = "h2";
-            } else if (name.toLowerCase().contains("oracle")) {
+            } else if (name.contains("oracle")) {
                 unified = "oracle";
-            } else if (MSSQL_PATTERN.matcher(name.toLowerCase()).find()) {
+            } else if (MSSQL_PATTERN.matcher(name).find()) {
                 unified = "mssql";
-            } else if (name.toLowerCase().contains("jconnect")) {
+            } else if (name.contains("sybase") || name.contains("jconnect")) {
                 unified = "sybase";
             }
          }
