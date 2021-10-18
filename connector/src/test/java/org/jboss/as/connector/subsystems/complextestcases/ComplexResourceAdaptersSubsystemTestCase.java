@@ -50,8 +50,8 @@ public class ComplexResourceAdaptersSubsystemTestCase extends AbstractComplexSub
         ParseUtils.checkModelParams(raCommonModel, params);
         Assert.assertEquals(raCommonModel.asString(), "A", raCommonModel.get("config-properties", "Property", "value")
                 .asString());
-        Assert.assertEquals(raCommonModel.get("beanvalidationgroups").asString(), raCommonModel.get("beanvalidationgroups")
-                .asString(), "[\"Class0\",\"Class00\"]");
+        Assert.assertEquals(raCommonModel.get("beanvalidationgroups").asString(), "[\"Class0\",\"Class00\"]",
+                raCommonModel.get("beanvalidationgroups").asString());
 
         params = ParseUtils.raAdminProperties();
         ModelNode raAdminModel = raCommonModel.get("admin-objects", "Pool2");
