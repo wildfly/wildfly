@@ -58,6 +58,7 @@
         <version.jakarta.mail>2.0.0</version.jakarta.mail>
         <version.jakarta.json.bind.api>2.0.0</version.jakarta.json.bind.api>
         <version.jakarta.json.jakarta-json-api>2.0.0</version.jakarta.json.jakarta-json-api>
+        <version.jakarta.jws.jakarta-jws-api>3.0.0</version.jakarta.jws.jakarta-jws-api>
         <version.jakarta.persistence>3.0.0</version.jakarta.persistence>
         <version.jakarta.resource.jakarta-resource-api>2.0.0</version.jakarta.resource.jakarta-resource-api>
         <version.jakarta.security.enterprise>2.0.0</version.jakarta.security.enterprise>
@@ -93,7 +94,6 @@
 
         <!-- TODO Glassfish 6.0.0.M1 used org.glassfish.metro:webservices-api-osgi for these; see if there is another API jar -->
         <!--
-        <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>2.0.0.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>1.0.2.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>
         -->
@@ -320,6 +320,18 @@
                 <groupId>jakarta.json</groupId>
                 <artifactId>jakarta.json-api</artifactId>
                 <version>${version.jakarta.json.jakarta-json-api}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.jws</groupId>
+                <artifactId>jakarta.jws-api</artifactId>
+                <version>${version.jakarta.jws.jakarta-jws-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

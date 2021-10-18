@@ -25,6 +25,6 @@
 <module xmlns="urn:jboss:module:1.9" name="jakarta.jws.api">
 
     <resources>
-        <artifact name="${javax.jws:jsr181-api}"/>
+        <artifact name="${jakarta.jws:jakarta.jws-api}"/>
     </resources>
 </module>
