@@ -372,7 +372,9 @@
                                 <exclude>com.h2database:h2\z</exclude>
                                 <exclude>org.apache.thrift:libthrift\z</exclude>
                                 <!-- Don't transform libraries that use the javax.annotation package but
-                                     not the Jakarta Annotations APIs that share it with other APIs. -->
+                                     not the Jakarta Annotations APIs that share it with other APIs.
+                                     Generally (perhaps always), this is from use of JSR 305 annotations -->
+                                <exclude>com.github.fge:msg-simple\z</exclude>
                                 <exclude>com.google.guava:guava\z</exclude>
                                 <exclude>com.squareup.okhttp3:okhttp\z</exclude>
                                 <exclude>com.squareup.okio:okio\z</exclude>
@@ -394,6 +396,7 @@
                                 <exclude>io.opentelemetry:opentelemetry-sdk-trace\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-semconv\z</exclude>
                                 <exclude>io.perfmark:perfmark\z</exclude>
+                                <!-- end javax.annotations excludes -->
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
