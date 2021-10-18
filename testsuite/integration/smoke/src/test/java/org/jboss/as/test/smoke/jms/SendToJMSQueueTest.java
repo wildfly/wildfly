@@ -270,7 +270,7 @@ public class SendToJMSQueueTest {
             Assert.fail("Message should have been re-delivered, but subsequent attempt to receive it returned null");
         }
         Assert.assertTrue("received a " + receivedMessage.getClass().getName() + " instead of a TextMessage", receivedMessage instanceof TextMessage);
-        Assert.assertEquals(((TextMessage) receivedMessage).getText(), "Hello world!");
+        Assert.assertEquals("Hello world!", ((TextMessage) receivedMessage).getText());
         Assert.assertTrue("Redelivered header should have been set to true", receivedMessage.getJMSRedelivered());
     }
 
