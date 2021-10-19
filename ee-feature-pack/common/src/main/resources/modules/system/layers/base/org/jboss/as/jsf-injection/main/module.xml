@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-jsf-injection}"/>
+        <artifact name="\${org.wildfly:wildfly-jsf-injection@module.jakarta.suffix@}"/>
         <artifact name="${org.jboss.weld.module:weld-jsf}"/>
     </resources>
 

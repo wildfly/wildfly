@@ -150,7 +150,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>make-jsf-instller</id>
+                        <id>make-jsf-installer</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
