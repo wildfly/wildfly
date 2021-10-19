@@ -22,9 +22,13 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Properties;
+import java.util.function.Function;
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionNotMostRecentException;
 import javax.batch.operations.JobExecutionNotRunningException;
@@ -86,7 +90,7 @@ public class BatchJobExecutionResourceDefinition extends SimpleResourceDefinitio
             .setStorageRuntime()
             .build();
 
-    static final String ISO_8601_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    private static final ZoneId DEFAULT_ZONE_ID = ZoneId.systemDefault();
 
     private static final ResourceDescriptionResolver DEFAULT_RESOLVER = BatchResourceDescriptionResolver.getResourceDescriptionResolver("deployment", "job", "execution");
 
@@ -134,30 +138,10 @@ public class BatchJobExecutionResourceDefinition extends SimpleResourceDefinitio
                 }
             }
         });
-        resourceRegistration.registerReadOnlyAttribute(CREATE_TIME, new DateTimeFormatterOperationStepHandler() {
-            @Override
-            protected Date getDateTime(final JobExecution jobExecution) {
-                return jobExecution.getCreateTime();
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(START_TIME, new DateTimeFormatterOperationStepHandler() {
-            @Override
-            protected Date getDateTime(final JobExecution jobExecution) {
-                return jobExecution.getStartTime();
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(LAST_UPDATED_TIME, new DateTimeFormatterOperationStepHandler() {
-            @Override
-            protected Date getDateTime(final JobExecution jobExecution) {
-                return jobExecution.getLastUpdatedTime();
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(END_TIME, new DateTimeFormatterOperationStepHandler() {
-            @Override
-            protected Date getDateTime(final JobExecution jobExecution) {
-                return jobExecution.getEndTime();
-            }
-        });
+        resourceRegistration.registerReadOnlyAttribute(CREATE_TIME, new DateTimeFormatterOperationStepHandler(JobExecution::getCreateTime));
+        resourceRegistration.registerReadOnlyAttribute(START_TIME, new DateTimeFormatterOperationStepHandler(JobExecution::getStartTime));
+        resourceRegistration.registerReadOnlyAttribute(LAST_UPDATED_TIME, new DateTimeFormatterOperationStepHandler(JobExecution::getLastUpdatedTime));
+        resourceRegistration.registerReadOnlyAttribute(END_TIME, new DateTimeFormatterOperationStepHandler(JobExecution::getEndTime));
     }
 
     @Override
@@ -204,16 +188,21 @@ public class BatchJobExecutionResourceDefinition extends SimpleResourceDefinitio
         protected abstract void updateModel(ModelNode model, JobExecution jobExecution) throws OperationFailedException;
     }
 
-    abstract static class DateTimeFormatterOperationStepHandler extends JobExecutionOperationStepHandler {
+    static class DateTimeFormatterOperationStepHandler extends JobExecutionOperationStepHandler {
 
-        protected void updateModel(final ModelNode model, final JobExecution jobExecution) throws OperationFailedException {
-            final Date date = getDateTime(jobExecution);
-            if (date != null) {
-                final SimpleDateFormat formatter = new SimpleDateFormat(ISO_8601_FORMAT);
-                model.set(formatter.format(date));
-            }
+        private final Function<JobExecution, Date> dateGetter;
+
+        public DateTimeFormatterOperationStepHandler(final Function<JobExecution, Date> dateGetter) {
+            this.dateGetter = dateGetter;
         }
 
-        protected abstract Date getDateTime(JobExecution jobExecution);
+        protected void updateModel(final ModelNode model, final JobExecution jobExecution) throws OperationFailedException {
+            final Date date = dateGetter.apply(jobExecution);
+            if (date != null) {
+                // use OffsetDateTime and ISO_OFFSET_DATE_TIME if we want to include offset in the formatting output
+                model.set(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
+                        LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()), DEFAULT_ZONE_ID)));
+            }
+        }
     }
 }
