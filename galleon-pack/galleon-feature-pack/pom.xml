@@ -84,6 +84,7 @@
                             <resources>
                                 <resource>
                                     <directory>${mp.galleon.common.resources.directory}</directory>
+                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -100,6 +101,7 @@
                             <resources>
                                 <resource>
                                     <directory>${oidc.galleon.common.resources.directory}</directory>
+                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>

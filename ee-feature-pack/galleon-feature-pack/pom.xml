@@ -203,6 +203,7 @@
                             <resources>
                                 <resource>
                                     <directory>${pruned.resources.directory}</directory>
+                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
