@@ -39,6 +39,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import javax.ejb.EJBException;
 import javax.ejb.ScheduleExpression;
@@ -123,7 +125,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     /**
      * All timers which were created by this {@link TimerService}
      */
-    private final Map<String, TimerImpl> timers = new HashMap<String, TimerImpl>();
+    private final ConcurrentMap<String, TimerImpl> timers = new ConcurrentHashMap<>();
 
     /**
      * Holds the {@link java.util.concurrent.Future} of each of the timer tasks that have been scheduled
@@ -390,17 +392,17 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     public Collection<Timer> getTimers() throws IllegalStateException, EJBException {
         assertTimerServiceState();
         Object pk = currentPrimaryKey();
-        final Set<Timer> activeTimers = new HashSet<Timer>();
         // get all active timers for this timerservice
-        synchronized (this.timers) {
-            for (final TimerImpl timer : this.timers.values()) {
-                // Less disruptive way to get WFLY-8457 fixed.
-                if ((timer.isActive() || timer.getState() == TimerState.ACTIVE)
-                        && (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk))) {
-                    activeTimers.add(timer);
-                }
+        final Collection<TimerImpl> values = this.timers.values();
+        final List<Timer> activeTimers = new ArrayList<>(values.size() + 10);
+        for (final TimerImpl timer : values) {
+            // Less disruptive way to get WFLY-8457 fixed.
+            if ((timer.isActive() || timer.getState() == TimerState.ACTIVE)
+                    && (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk))) {
+                activeTimers.add(timer);
             }
         }
+
         // get all active timers which are persistent, but haven't yet been
         // persisted (waiting for tx to complete) that are in the current transaction
         for (final TimerImpl timer : getWaitingOnTxCompletionTimers().values()) {
@@ -556,9 +558,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     public TimerImpl getTimer(final String timerId) {
-        synchronized (this.timers) {
-            return this.timers.get(timerId);
-        }
+        return this.timers.get(timerId);
     }
 
     /**
@@ -594,9 +594,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      */
     public TimerImpl getTimer(final String timerId, final String timedObjectId) {
         TimerImpl timer;
-        synchronized (this.timers) {
-            timer = this.timers.get(timerId);
-        }
+        timer = this.timers.get(timerId);
         if (timer != null) {
             return timer;
         }
@@ -1181,21 +1179,17 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     private boolean registerTimerResource(final TimerImpl timer) {
-        synchronized (this.timers) {
-            if (this.timers.containsKey(timer.getId())) {
-                return false;
-            }
-            this.timers.put(timer.getId(), timer);
-            this.resource.timerCreated(timer.getId());
-            return true;
+        final TimerImpl previousValue = this.timers.putIfAbsent(timer.getId(), timer);
+        if (previousValue != null) {
+            return false;
         }
+        this.resource.timerCreated(timer.getId());
+        return true;
     }
 
     private void unregisterTimerResource(final String timerId) {
-        synchronized (this.timers) {
-            this.timers.remove(timerId);
-            this.resource.timerRemoved(timerId);
-        }
+        this.timers.remove(timerId);
+        this.resource.timerRemoved(timerId);
     }
 
     /**
