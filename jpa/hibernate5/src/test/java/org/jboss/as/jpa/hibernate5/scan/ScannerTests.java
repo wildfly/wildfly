@@ -169,7 +169,7 @@ public class ScannerTests {
         }
         InputStream emptyStream = new BufferedInputStream(emptyTxtUrl.openStream());
         int length = ArchiveHelper.getBytesFromInputStream(emptyStream).length;
-        assertEquals(length, 0);
+        assertEquals(0, length);
         emptyStream.close();
     }
 }
