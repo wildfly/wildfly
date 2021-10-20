@@ -63,7 +63,7 @@ public class SocketBindingBoundPortsTestCase {
         ModelNode response = execute(operation);
         ModelNode result = response.get(RESULT);
         Assert.assertTrue("http socket binding is not set as bound.", result.get(BOUND).asBoolean());
-        Assert.assertEquals(result.get(BOUND_PORT).asInt(), 8080);
+        Assert.assertEquals(8080, result.get(BOUND_PORT).asInt());
     }
 
     @Test
@@ -78,7 +78,7 @@ public class SocketBindingBoundPortsTestCase {
         ModelNode response = execute(operation);
         ModelNode result = response.get(RESULT);
         Assert.assertTrue("https socket binding is not set as bound.", result.get(BOUND).asBoolean());
-        Assert.assertEquals(result.get(BOUND_PORT).asInt(), 8443);
+        Assert.assertEquals(8443, result.get(BOUND_PORT).asInt());
     }
 
     @Test
@@ -93,7 +93,7 @@ public class SocketBindingBoundPortsTestCase {
         ModelNode response = execute(operation);
         ModelNode result = response.get(RESULT);
         Assert.assertTrue("iiop socket binding is not set as bound.", result.get(BOUND).asBoolean());
-        Assert.assertEquals(result.get(BOUND_PORT).asInt(), 3528);
+        Assert.assertEquals(3528, result.get(BOUND_PORT).asInt());
     }
 
     /**

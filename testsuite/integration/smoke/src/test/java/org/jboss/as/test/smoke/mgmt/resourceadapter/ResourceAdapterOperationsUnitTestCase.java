@@ -317,8 +317,8 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
         ModelNode node = findNodeWithProperty(newList, "archive", "some.rar");
         Assert.assertNotNull("There is no archive element:" + newList, node);
         Assert.assertTrue("compare failed, node:"+node.asString()+"\nparams:"+params,checkModelParams(node,params));
-        Assert.assertEquals("beanvalidationgroups element is incorrect:" + node.get("beanvalidationgroups").asString(), node
-                .get("beanvalidationgroups").asString(), "[\"Class0\",\"Class00\"]");
+        Assert.assertEquals("beanvalidationgroups element is incorrect:" + node.get("beanvalidationgroups").asString(),
+                "[\"Class0\",\"Class00\"]", node.get("beanvalidationgroups").asString());
 
         node = findNodeWithProperty(newList, "jndi-name", "java:jboss/name1");
         Assert.assertNotNull("There is no connection jndi-name element:" + newList, node);
@@ -333,22 +333,22 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
         Assert.assertNotNull("There is no admin-object config-property element:" + newList, node);
 
         Map<String, ModelNode> parseChildren = getChildren(node.get("address"));
-        Assert.assertEquals(parseChildren.get("admin-objects").asString(), "Pool2");
-        Assert.assertEquals(parseChildren.get("config-properties").asString(), "Property");
+        Assert.assertEquals("Pool2", parseChildren.get("admin-objects").asString());
+        Assert.assertEquals("Property", parseChildren.get("config-properties").asString());
 
         node = findNodeWithProperty(newList, "value", "A");
         Assert.assertNotNull("There is no resource-adapter config-property element:" + newList, node);
 
         parseChildren = getChildren(node.get("address"));
-        Assert.assertEquals(parseChildren.get("resource-adapter").asString(), "some.rar");
-        Assert.assertEquals(parseChildren.get("config-properties").asString(), "Property");
+        Assert.assertEquals("some.rar", parseChildren.get("resource-adapter").asString());
+        Assert.assertEquals("Property", parseChildren.get("config-properties").asString());
 
         node = findNodeWithProperty(newList, "value", "B");
         Assert.assertNotNull("There is no connection config-property element:" + newList, node);
 
         parseChildren = getChildren(node.get("address"));
-        Assert.assertEquals(parseChildren.get("connection-definitions").asString(), "Pool1");
-        Assert.assertEquals(parseChildren.get("config-properties").asString(), "Property");
+        Assert.assertEquals("Pool1", parseChildren.get("connection-definitions").asString());
+        Assert.assertEquals("Property", parseChildren.get("config-properties").asString());
     }
 
     public List<ModelNode> marshalAndReparseRaResources(final String childType) throws Exception {
