@@ -40,7 +40,6 @@
         <module name="javax.transaction.api"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.resource.api"/>
-        <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>
         <module name="org.hibernate.validator"/>
         <module name="org.jboss.as.naming"/>

@@ -37,7 +37,6 @@
         <module name="org.wildfly.client.config"/>
         <module name="org.wildfly.naming-client" />
         <module name="org.jboss.ejb-client" />
-        <module name="javax.transaction.api"/>
         <module name="io.undertow.core" />
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling" />

@@ -59,14 +59,13 @@
         <module name="javax.jws.api"/>
         <!-- this is needed to ensure @Resource annotations on the JaxWS endpoint classes are in the
              classloader scope-->
-        <module name="javax.annotation.api"/>
+        <module name="javax.annotation.api"  export="true" />
         <!-- this is needed to ensure the JaxWS endpoint classes canb refer to HttpServletRequest etc -->
         <module name="javax.servlet.api"/>
         <module name="org.jboss.weld.core" />
         <module name="org.jboss.logging" />
         <module name="org.jboss.narayana.compensations" export="true" />
         <module name="org.jboss.narayana.txframework" export="true" />
-        <module name="javax.annotation.api"  export="true" />
         <module name="javax.interceptor.api"  export="true" />
 
         <!-- This dependency is required only if the

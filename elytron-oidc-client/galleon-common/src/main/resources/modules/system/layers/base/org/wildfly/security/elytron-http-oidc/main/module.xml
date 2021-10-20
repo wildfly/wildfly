@@ -35,7 +35,6 @@
         <module name="org.wildfly.security.elytron-jose-jwk"/>
         <module name="org.wildfly.security.elytron-jose-util"/>
         <module name="org.wildfly.security.elytron-private"/>
-        <module name="org.wildfly.security.elytron-jose-util"/>
         <module name="org.apache.httpcomponents.core"/>
         <module name="org.bitbucket.jose4j"/>
         <module name="org.jboss.logging"/>
