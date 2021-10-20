@@ -48,55 +48,10 @@
         <servlet.galleon-common.resources.directory>${basedir}/../../servlet-feature-pack/galleon-common/src/main/resources</servlet.galleon-common.resources.directory>
         <full.ee-9-api.license.directory>${basedir}/src/license</full.ee-9-api.license.directory>
 
-
         <!-- WildFly Preview vs standard WildFly GAV expression properties. -->
         <module.jakarta.classifier>::jakarta</module.jakarta.classifier>
         <module.jakarta.suffix>-jakarta</module.jakarta.suffix>
         <module.jakartaee9.suffix>-jakartaee9</module.jakartaee9.suffix>
-
-        <version.com.sun.faces>3.0.0.SP04</version.com.sun.faces>
-        <version.com.sun.activation.jakarta.activation>2.0.0</version.com.sun.activation.jakarta.activation>
-        <version.jakarta.batch.jakarta.batch-api>2.0.0</version.jakarta.batch.jakarta.batch-api>
-        <version.jakarta.ejb.jakarta-ejb-api>4.0.0</version.jakarta.ejb.jakarta-ejb-api>
-        <version.jakarta.faces.jakarta-faces-api>3.0.0</version.jakarta.faces.jakarta-faces-api>
-        <version.jakarta.jms.jakarta-jms-api>3.0.0</version.jakarta.jms.jakarta-jms-api>
-        <version.jakarta.json.bind.api>2.0.0</version.jakarta.json.bind.api>
-        <version.jakarta.json.jakarta-json-api>2.0.0</version.jakarta.json.jakarta-json-api>
-        <version.jakarta.persistence>3.0.0</version.jakarta.persistence>
-        <version.jakarta.resource.jakarta-resource-api>2.0.0</version.jakarta.resource.jakarta-resource-api>
-        <version.jakarta.security.enterprise>2.0.0</version.jakarta.security.enterprise>
-        <version.jakarta.websocket.jakarta-websocket-api>2.0.0</version.jakarta.websocket.jakarta-websocket-api>
-        <version.jakarta.ws.rs.jakarta-ws-rs-api>3.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
-        <version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.0</version.jakarta.xml.bind.jakarta-xml-bind-api>
-        <version.org.eclipse.yasson>2.0.1</version.org.eclipse.yasson>
-        <!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
-		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version --> 
-        <version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</version.org.glassfish.jaxb.jaxb-xjc>
-        <version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>
-        <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
-        <version.org.hibernate.validator>7.0.1.Final</version.org.hibernate.validator>
-        <version.org.jberet>2.0.2.Final</version.org.jberet>
-        <version.org.jboss.activemq.artemis.integration>1.0.5</version.org.jboss.activemq.artemis.integration>
-        <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta1</version.org.wildfly.security.jakarta.elytron-ee>
-
-        <!-- TODO Glassfish uses org.glassfish:jakarta-el for this, which we use for the impl
-             but we have a separate API jar -->
-        <!--
-        <version.jakarta.el.jakarta-el-api>4.0.0-RC1</version.jakarta.el.jakarta-el-api>
-        -->
-
-        <!-- TODO Glassfish 6.0.0.M1 used org.glassfish.metro:webservices-api-osgi for these; see if there is another API jar -->
-        <!--
-        <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
-        <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>2.0.0.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>
-        <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>1.0.2.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>
-        -->
-
-        <!-- TODO Glassfish 6.0.0.M1 uses jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api for this
-             but we use Apache Tomcat Taglibs for both spec and impl -->
-        <!--
-        <version.org.apache.jstl>1.2.6-RC1</version.org.apache.jstl>
-        -->
 
     </properties>
 
@@ -582,43 +537,21 @@
         <dependency>
             <groupId>jakarta.json</groupId>
             <artifactId>jakarta.json-api</artifactId>
-            <version>${version.jakarta.json.jakarta-json-api}</version>
             <scope>provided</scope>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.jboss.spec.javax.interceptor</groupId>
-            <artifactId>jboss-interceptors-api_1.2_spec</artifactId>
-            <scope>provided</scope>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.interceptor</groupId>
             <artifactId>jakarta.interceptor-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.jboss.spec.javax.security.auth.message</groupId>
-            <artifactId>jboss-jaspi-api_1.1_spec</artifactId>
-            <scope>provided</scope>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.authentication</groupId>
             <artifactId>jakarta.authentication-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.jboss.spec.javax.security.jacc</groupId>
-            <artifactId>jboss-jacc-api_1.5_spec</artifactId>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jboss.spec.javax.servlet</groupId>
-                    <artifactId>jboss-servlet-api_3.1_spec</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.authorization</groupId>
             <artifactId>jakarta.authorization-api</artifactId>
@@ -630,7 +563,6 @@
         <dependency>
             <groupId>com.sun.activation</groupId>
             <artifactId>jakarta.activation</artifactId>
-            <version>${version.com.sun.activation.jakarta.activation}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -673,30 +605,18 @@
         <dependency>
             <groupId>jakarta.json.bind</groupId>
             <artifactId>jakarta.json.bind-api</artifactId>
-            <version>${version.jakarta.json.bind.api}</version>
             <scope>provided</scope>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.jboss.spec.javax.annotation</groupId>
-            <artifactId>jboss-annotations-api_1.3_spec</artifactId>
-            <scope>provided</scope>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
-            <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
-            <scope>provided</scope>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.enterprise.concurrent</groupId>
             <artifactId>jakarta.enterprise.concurrent-api</artifactId>
-            <version>${version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -706,48 +626,27 @@
             <scope>provided</scope>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.jboss.spec.javax.servlet</groupId>
-            <artifactId>jboss-servlet-api_4.0_spec</artifactId>
-            <scope>provided</scope>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.jboss.spec.javax.servlet.jsp</groupId>
-            <artifactId>jboss-jsp-api_2.3_spec</artifactId>
-            <scope>provided</scope>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.servlet.jsp</groupId>
             <artifactId>jakarta.servlet.jsp-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.jboss.spec.javax.transaction</groupId>
-            <artifactId>jboss-transaction-api_1.3_spec</artifactId>
-            <scope>provided</scope>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.transaction</groupId>
             <artifactId>jakarta.transaction-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.jboss.spec.javax.websocket</groupId>
-            <artifactId>jboss-websocket-api_1.1_spec</artifactId>
-            <scope>provided</scope>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.websocket</groupId>
             <artifactId>jakarta.websocket-api</artifactId>
-            <version>${version.jakarta.websocket.jakarta-websocket-api}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -762,20 +661,12 @@
         <dependency>
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
-            <version>${version.jakarta.persistence}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>jakarta.security.enterprise</groupId>
             <artifactId>jakarta.security.enterprise-api</artifactId>
-            <version>${version.jakarta.security.enterprise}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -785,134 +676,47 @@
             <scope>provided</scope>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.jboss.spec.javax.batch</groupId>
-            <artifactId>jboss-batch-api_1.0_spec</artifactId>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.batch</groupId>
             <artifactId>jakarta.batch-api</artifactId>
-            <version>${version.jakarta.batch.jakarta.batch-api}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.jboss.spec.javax.ejb</groupId>
-            <artifactId>jboss-ejb-api_3.2_spec</artifactId>
-            <scope>provided</scope>-->
-            <!-- Exclude dependencies declared in the servlet-feature-pack-ee-8-api module -->
-            <!--<exclusions>
-                <exclusion>
-                    <artifactId>*</artifactId>
-                    <groupId>*</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.ejb</groupId>
             <artifactId>jakarta.ejb-api</artifactId>
-            <version>${version.jakarta.ejb.jakarta-ejb-api}</version>
             <scope>provided</scope>
-            <!-- Exclude dependencies declared in the servlet-feature-pack-ee-8-api module -->
-            <exclusions>
-                <exclusion>
-                    <artifactId>*</artifactId>
-                    <groupId>*</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.jboss.spec.javax.faces</groupId>
-            <artifactId>jboss-jsf-api_2.3_spec</artifactId>
-            <scope>provided</scope>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.faces</groupId>
             <artifactId>jakarta.faces-api</artifactId>
-            <version>${version.jakarta.faces.jakarta-faces-api}</version>
             <scope>provided</scope>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.jboss.spec.javax.jms</groupId>
-            <artifactId>jboss-jms-api_2.0_spec</artifactId>
-            <scope>provided</scope>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.jms</groupId>
             <artifactId>jakarta.jms-api</artifactId>
-            <version>${version.jakarta.jms.jakarta-jms-api}</version>
             <scope>provided</scope>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.jboss.spec.javax.resource</groupId>
-            <artifactId>jboss-connector-api_1.7_spec</artifactId>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>-->
         <dependency>
             <groupId>jakarta.resource</groupId>
             <artifactId>jakarta.resource-api</artifactId>
-            <version>${version.jakarta.resource.jakarta-resource-api}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.ws.rs</groupId>
             <artifactId>jboss-jaxrs-api_3.0_spec</artifactId>
-            <version>${version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec}</version>
             <scope>provided</scope>
         </dependency>
-        <!--<dependency>
-            <groupId>jakarta.ws.rs</groupId>
-            <artifactId>jakarta.ws.rs-api</artifactId>
-            <version>${version.jakarta.ws.rs.jakarta-ws-rs-api}</version>
-            <scope>provided</scope>
-        </dependency>-->
 
         <dependency>
             <groupId>org.jboss.spec.javax.xml.bind</groupId>
             <artifactId>jboss-jaxb-api_2.3_spec</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!--<dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>${version.jakarta.xml.bind.jakarta-xml-bind-api}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>-->
 
         <dependency>
             <groupId>org.jboss.spec.javax.xml.soap</groupId>
@@ -931,7 +735,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-base</artifactId>
-            <version>${version.com.fasterxml.jackson}</version>
             <classifier>jakarta</classifier>
             <scope>provided</scope>
         </dependency>
@@ -939,50 +742,21 @@
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <version>${version.com.fasterxml.jackson}</version>
             <classifier>jakarta</classifier>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                    <artifactId>jackson-jaxrs-base</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.module</groupId>
-                    <artifactId>jackson-module-jaxb-annotations</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-jaxb-annotations</artifactId>
-            <version>${version.com.fasterxml.jackson}</version>
             <classifier>jakarta</classifier>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>jakarta.xml.bind</groupId>
-                    <artifactId>jakarta.xml.bind-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jakarta.activation</groupId>
-                    <artifactId>jakarta.activation-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>com.sun.faces</groupId>
             <artifactId>jsf-impl</artifactId>
-            <version>${version.com.sun.faces}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>jakarta.annotation</groupId>
-                    <artifactId>jakarta.annotation-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -994,6 +768,30 @@
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-websockets-jsr-jakartaee9</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jakarta-client</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jakarta-server</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jakarta-ra</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jakarta-service-extensions</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -1012,19 +810,7 @@
         <dependency>
             <groupId>org.eclipse</groupId>
             <artifactId>yasson</artifactId>
-            <version>${version.org.eclipse.yasson}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <!-- This seems to require an explicit exclusion for yasson 1.0.4 -->
-                <exclusion>
-                    <groupId>org.glassfish</groupId>
-                    <artifactId>jakarta.json</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -1042,27 +828,13 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.json</artifactId>
-            <version>${version.org.glassfish.jakarta.json}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>jakarta.json</groupId>
-                    <artifactId>jakarta.json-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-xjc</artifactId>
-            <version>${version.org.glassfish.jaxb.jaxb-xjc}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.sun.xml.dtd-parser</groupId>
-                    <artifactId>dtd-parser</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -1080,31 +852,30 @@
         <dependency>
             <groupId>org.jberet</groupId>
             <artifactId>jberet-core</artifactId>
-            <version>${version.org.jberet}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jboss.logging</groupId>
-                    <artifactId>jboss-logging-processor</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.marshalling</groupId>
-                    <artifactId>jboss-marshalling</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-transaction-spi-jakarta</artifactId>
-            <version>${version.org.jboss.jboss-transaction-spi}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.activemq.artemis.integration</groupId>
+            <artifactId>artemis-wildfly-jakarta-integration</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.genericjms</groupId>
+            <artifactId>generic-jakarta-messaging-ra-jar</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.invocation</groupId>
+            <artifactId>jboss-invocation-jakarta</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -1116,13 +887,6 @@
         <dependency>
             <groupId>org.jboss.metadata</groupId>
             <artifactId>jboss-metadata-ejb-jakarta</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.invocation</groupId>
-            <artifactId>jboss-invocation-jakarta</artifactId>
-            <version>${version.org.jboss.invocation}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -1147,27 +911,13 @@
         <dependency>
             <groupId>org.jboss.weld.module</groupId>
             <artifactId>weld-jsf</artifactId>
-            <version>${version.org.jboss.weld.weld}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.weld.module</groupId>
             <artifactId>weld-jta</artifactId>
-            <version>${version.org.jboss.weld.weld}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -1179,253 +929,13 @@
         <dependency>
             <groupId>org.jboss.weld.module</groupId>
             <artifactId>weld-web</artifactId>
-            <version>${version.org.jboss.weld.weld}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.weld.probe</groupId>
             <artifactId>weld-probe-core</artifactId>
-            <version>${version.org.jboss.weld.weld}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <!-- Artemis -->
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-amqp-protocol</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-cli</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-commons</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-core-client</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-dto</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-hornetq-protocol</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-hqclient-protocol</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-jdbc-store</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-jakarta-client</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-jakarta-server</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-journal</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-jakarta-ra</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-selector</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-server</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-jakarta-service-extensions</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-stomp-protocol</artifactId>
-            <version>${version.org.apache.activemq.artemis}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.activemq.artemis.integration</groupId>
-            <artifactId>artemis-wildfly-jakarta-integration</artifactId>
-            <version>${version.org.jboss.activemq.artemis.integration}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.genericjms</groupId>
-            <artifactId>generic-jakarta-messaging-ra-jar</artifactId>
         </dependency>
 
         <!-- Misc -->
@@ -1438,26 +948,13 @@
         <dependency>
             <groupId>org.wildfly.security.jakarta</groupId>
             <artifactId>jakarta-authentication</artifactId>
-            <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
+
         <dependency>
             <groupId>org.wildfly.security.jakarta</groupId>
             <artifactId>jakarta-authorization</artifactId>
-            <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
             <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
