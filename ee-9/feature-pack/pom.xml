@@ -442,6 +442,10 @@
                      have to move back. -->
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
+                    <artifactId>jipijapa-spi</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-bean-validation</artifactId>
                 </exclusion>
                 <exclusion>
@@ -960,6 +964,12 @@
         <dependency>
             <groupId>org.wildfly.transaction</groupId>
             <artifactId>wildfly-transaction-client-jakarta</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>jipijapa-spi-jakarta</artifactId>
             <scope>provided</scope>
         </dependency>
 

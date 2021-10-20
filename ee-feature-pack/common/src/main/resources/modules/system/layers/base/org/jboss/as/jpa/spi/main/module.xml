@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:jipijapa-spi}"/>
+        <artifact name="\${org.wildfly:jipijapa-spi@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>

@@ -48,6 +48,7 @@
         <module>bean-validation</module>
         <module>ee</module>
         <module>ee-security</module>
+        <module>jpa/spi</module>
         <module>mail</module>
         <module>web-common</module>
         <module>weld/bean-validation</module>
