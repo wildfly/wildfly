@@ -360,7 +360,7 @@ Manifest-Version: 1.0
 Dependencies: org.jboss.jts export services
 ----
 
-[[troubleshooting]]
+[[jakarta_transactions_troubleshooting]]
 == Transactions troubleshooting
 
 The Narayana component is configured to log only messages with level `WARN`

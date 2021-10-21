@@ -41,7 +41,7 @@ If you need to use destinations without those prefixes, you can configure your c
 /subsystem=messaging-activemq/pooled-connection-factory=remote-artemis:write-attribute(name="enable-amq1-prefix", value="false")
 ----
 
-[[configuration-of-a-mdb-using-a-pooled-connection-factory]]
+[[jakarta_messaging_queues_topics_on_remote_artemis_server]]
 == Jakarta Messaging Queues and Topics on a remote Artemis Server
 
 You can also add queues and topics defined on a remote Artemis server to be used as if they were local to the server. This means that you can make those remote destinations available viza JNDI just like local destinations. Those destinations are defined out-of the server element:
