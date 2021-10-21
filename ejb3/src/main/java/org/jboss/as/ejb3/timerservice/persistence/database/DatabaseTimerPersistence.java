@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.timerservice.persistence.database;
 
 import static org.jboss.as.ejb3.timerservice.TimerServiceImpl.safeClose;
+import static org.jboss.as.ejb3.util.MethodInfoHelper.EMPTY_STRING_ARRAY;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -651,7 +652,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             final String methodName = resultSet.getString(22);
             if (methodName != null) {
                 final String paramString = resultSet.getString(23);
-                final String[] params = paramString == null || paramString.isEmpty() ? new String[0] : paramString.split(";");
+                final String[] params = paramString == null || paramString.isEmpty() ? EMPTY_STRING_ARRAY : paramString.split(";");
                 final Method timeoutMethod = CalendarTimer.getTimeoutMethod(new TimeoutMethod(clazz, methodName, params), timerService.getTimedObjectInvoker().getValue().getClassLoader());
                 if (timeoutMethod == null) {
                     EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), timerId, new NoSuchMethodException());

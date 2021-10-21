@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.timerservice;
 
 import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
+import static org.jboss.as.ejb3.util.MethodInfoHelper.EMPTY_STRING_ARRAY;
 
 import java.io.Closeable;
 import java.io.Serializable;
@@ -1053,7 +1054,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     private boolean doesTimeoutMethodMatch(final Method timeoutMethod, final String timeoutMethodName, final String[] methodParams) {
-        if (timeoutMethod.getName().equals(timeoutMethodName) == false) {
+        if (!timeoutMethod.getName().equals(timeoutMethodName)) {
             return false;
         }
         final Class<?>[] timeoutMethodParams = timeoutMethod.getParameterTypes();
@@ -1110,7 +1111,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
     private boolean methodParamsMatch(Class<?>[] methodParams, String[] otherMethodParams) {
         if (otherMethodParams == null) {
-            otherMethodParams = new String[0];
+            otherMethodParams = EMPTY_STRING_ARRAY;
         }
         if (methodParams.length != otherMethodParams.length) {
             return false;
