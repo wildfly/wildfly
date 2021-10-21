@@ -117,7 +117,7 @@ public final class EEModuleClassDescription {
         invalidMessageBuilder.append(message);
     }
 
-    public boolean isInvalid() {
+    public synchronized boolean isInvalid() {
         return invalid;
     }
 
