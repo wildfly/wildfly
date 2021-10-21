@@ -1,4 +1,4 @@
-[[MicroProfile_Metrics_SmallRye]]
+[[MicroProfile_Metrics_SmallRye_Subsystem_Config]]
 = MicroProfile Metrics Subsystem Configuration
 
 Support for https://microprofile.io/project/eclipse/microprofile-metrics[MicroProfile Metrics] is provided by

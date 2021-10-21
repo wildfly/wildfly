@@ -233,7 +233,7 @@ then Narayana saves the transaction data into the same database table.
 By default, Narayana persists transaction log in database table named `JBossTSTxTable`.
 
 .jboss cli example to setup JDBC object store
-[source,sh,subs="+quotes,attributes+",options="nowrap"]
+[source,sh,subs="+quotes,+attributes",options="nowrap"]
 ----
 # PostgreSQL driver module
 ./bin/jboss-cli.sh "embed-server, module add --name=org.postgresql --resources=/tmp/postgresql.jar \
@@ -289,7 +289,7 @@ The SQL select that has to be working for `xids` table can be found
 https://github.com/jbosstm/narayana/blob/master/ArjunaJTA/jta/classes/com/arjuna/ats/internal/jta/recovery/arjunacore/CommitMarkableResourceRecordRecoveryModule.java[in the Narayana code].
 
 .example of SQL statement to create the `xids` table to store CMR metadata
-[source,sql,subs="+quotes,attributes+",options="nowrap"]
+[source,sql,subs="+quotes,+attributes",options="nowrap"]
 ----
 -- PostgreSQL
 CREATE TABLE xids (
@@ -311,7 +311,7 @@ CREATE UNIQUE INDEX index_xid ON xids (xid);
 ----
 
 .example of CMR datasource configuration in subsystem
-[source,sh,subs="+quotes,attributes+",options="nowrap"]
+[source,sh,subs="+quotes,+attributes",options="nowrap"]
 ----
 # parameter 'connectable' is true for datasource
 ./bin/jboss-cli.sh "embed-server --server-config=standalone.xml,\
@@ -329,7 +329,7 @@ CREATE UNIQUE INDEX index_xid ON xids (xid);
 ----
 
 .XML configuration example for commit-markable-resources
-[source,xml,subs="+attributes+",options="nowrap"]
+[source,xml,subs="+attributes",options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:transactions:6.0">
   ...
