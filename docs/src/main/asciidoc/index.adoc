@@ -84,7 +84,9 @@ through creating a new WildFly subsystem extension, in order to add more
 functionality to WildFly, and shows how to test it before plugging it
 into WildFly.
 
-* The link:Testsuite{outfilesuffix}[WildFly Testsuite] guide walks you through testing WildFly
+* The link:Testsuite{outfilesuffix}[WildFly Testsuite] guide walks you through testing WildFly.
+
+* The link:Hacking_On_WildFly{outfilesuffix}[Hacking on WildFly] guide walks you through contributing to WildFly.
 
 == Migration Guide
 

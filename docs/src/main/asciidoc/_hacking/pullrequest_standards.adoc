@@ -1,0 +1,74 @@
+[[WildFly_PR_Standard]]
+= WildFly Pull Request Standards and Guidelines
+
+== Describe the pull request adequately
+The PR title should include a JIRA number directly from the project in question, whose corresponding JIRA issue will in turn have been linked to the pull request you are just now creating. The description should include a link to the JIRA. The description should also include a decent, human-readable summary of what is changing. Proper spelling and grammar is a plus!
+
+*Sample PR*
+[WFLY-815] This is the sample title
+
+Fixes: https://issues.redhat.com/browse/WFLY-815
+
+=== Commit message
+The commit message for each commit should also reference a JIRA number.
+
+== Make sure it builds and tests pass first
+It is highly annoying to reviewers when they find they've spent a great deal of time reviewing some code only to discover that it doesn't even compile. In particular, it's common for a patch to trip CheckStyle if it hadn't been previously compile-tested at the least.
+
+While it is tempting to rely on the automated CI/GitHub integration to do our build and test for us (and I'm guilty of having done this too), it generally just causes trouble, so please don't do it!
+
+== Separate your changes - but not too much
+
+This comes directly from [1], and I agree with it 100% (where the source document says "patch", think "commit"):
+
+> Separate each logical change into a separate patch.
+> For example, if your changes include both bug fixes and performance enhancements for a single driver, separate those changes into two or more patches. If your changes include an API update, and a new driver which uses that new API, separate those into two patches.
+> On the other hand, if you make a single change to numerous files, group those changes into a single patch. Thus a single logical change is contained within a single patch.
+> The point to remember is that each patch should make an easily understood change that can be verified by reviewers. Each patch should be justifiable on its own merits.
+> If one patch depends on another patch in order for a change to be complete, that is OK. Simply note "this patch depends on patch X" in your patch description.
+> When dividing your change into a series of patches, take special care to ensure that [WildFly] builds and runs properly after each patch in the series. Developers using "git bisect" to track down a problem can end up splitting your patch series at any point; they will not thank you if you introduce bugs in the middle. If you cannot condense your patch set into a smaller set of patches, then only post say 15 or so at a time and wait for review and integration.
+
+I also want to emphasize how important it is to separate functional and *non-functional* changes. The latter category includes reformatting (which generally should *not* be done without a strong justification).
+
+=== Creating per maven-module subtasks and doing one subtask per PR
+If you have one logical change (for example you're removing manual null checks and put a JDK or utility method instead) which affects more than one top-level maven module, please split them by top-level maven module.
+For the logical change description use a top level JIRA (Bug, task, enhancement) and add sub-task for each top-level maven module.
+
+Reason behind: WildFly and WildFly Core have a really huge codebase with several different full-time maintainers to review and approve the code. Afterward different project leads and/or release stewards do merge and Jira management work.
+
+If there is a serious reason to deviate from this rule, please ask _before_ on Zulip.
+
+[[prstandards_avoid_massive]]
+== Avoid massive and/or "stream of consciousness" branches
+We all know that development can sometimes be an iterative process, and we learn as we go. Nonetheless, we do not need or want a complete record of all the highs and lows in the history of every change (for example, an "add foobar" commit followed later by a "remove foobar" commit in the same PR) - particularly for large changes or in large projects (like WildFly proper). It is good practice for such change authors to go back and rearrange and/or restructure the commits of a pull request such that they incrementally introduce the change in a logical manner, as one single conceptual change per PR.
+
+Note that this advice is not meant to discourage multiple commits in a single PR that are all steps on the way to an overall complex change. To the contrary, multiple well structured commits are sometimes critical to getting proper review of complex changes. For example a PR to refactor code away from an ill-fitting set of abstractions and to a new set can be difficult to review in a single commit. But doing so can be quite straightforward when broken up into, for example, four commits, one to make some small change to clean up something that would get in the way of the overall change, one introducing the new abstractions, one moving the implementation to the new abstractions, and one removing the old abstractions.
+
+If a PR consists of dozens or hundreds of nontrivial commits, you will want to strongly consider dividing it up into multiple PRs, as PRs of this size simply cannot be effectively reviewed. They will either be merged without adequate review, or outright ignored or closed. Which one is worse, I leave to your imagination.
+
+[[prstandards_pay_attention]]
+== Pay attention and respond to review comments
+While in general it is my experience that WildFly contributors are good about this, I'm going to quote this passage from [1] regardless:
+
+> Your patch will almost certainly get comments from reviewers on ways in which the patch can be improved. You must respond to those comments; ignoring reviewers is a good way to get ignored in return. [...]
+> Be sure to tell the reviewers what changes you are making and to thank them for their time. Code review is a tiring and time-consuming process, and reviewers sometimes get grumpy. Even in that case, though, respond politely and address the problems they have pointed out.
+
+In addition, when something needs to be changed, the proper manner to do so is generally to modify the original commit, not to add more commits to the chain to fix issues as they're reported. See link:#prstandards_avoid_massive[Avoid massive and/or "stream of consciousness" branches].
+
+== Don't get discouraged
+It may come to pass that you have to iterate on your pull request many times before it is considered acceptable. Don't be discouraged by this - instead, consider that to be a sign that the reviewers care highly about the quality of the code base. At the same time though, consider that it is frustrating for reviewers to have to say the same things over and over again, so please do take care to provide as high-quality submissions as possible, and see link:#prstandards_pay_attention[Pay attention and respond to review comments]!
+
+== You can review code too!
+You don't have to be an official reviewer in order to review a pull request. If you see a pull request dealing with an area you are familiar with, feel free to examine it and comment as needed. In addition, *all* pull requests need to be reviewed for basic (non-machine-verifiable) correctness, including noticing bad code, NPE risks, and anti-patterns as well as "boring stuff" like spelling and grammar and documentation.
+
+If you review a PR and you feel you understand it in total and that it is correct, it is helpful to the WildFly mergers if you use the 'Approve' option discussed in the https://docs.github.com/en/github/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/reviewing-proposed-changes-in-a-pull-request[Github pull request review documentation]. Don't worry that your approval will trigger automatic merging; it won't. It's just easier for others to see that you regard the PR as correct if you use the Github workflow. (Please don't, however, use the 'Approve' option if you are not expressing an approval of the PR overall; e.g. if you only looked at one part and made some comments that were addressed. Use comments for that kind of input.)
+
+If you do review a pull request and make suggestions for changes, please do pay attention to the PR and try to acknowledge if your suggestions have been resolved. This is particularly important if it won't be quickly obvious to others if your input was addressed.
+
+== On major refactorings
+When doing major and/or long-term refactors, while rare, it is possible that the above constraints become impractical, especially with regard to grouping changes. In this case, you can use a work branch on a (GitHub) fork of WildFly, applying the above rules in micro-scale to just that branch. In this case you could possibly ask a reviewer to also review some or all of the pull requests to that branch. Merge commits would then be used to periodically synchronize with upstream.
+
+In this way, when the long-term branch is ready to "come home" to the main branch, the reviewers may have a good idea that the (potentially quite numerous) changes in the work branch have been reviewed already.
+
+[1]: https://www.kernel.org/doc/Documentation/process/submitting-patches.rst
+
