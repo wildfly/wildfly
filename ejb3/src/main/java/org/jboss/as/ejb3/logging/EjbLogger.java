@@ -680,8 +680,8 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 105, value = "%s is not an Jakarta Enterprise Beans component")
     IllegalArgumentException notAnEJBComponent(Component component);
 
-    @Message(id = 106, value = "Could not load method param class %s of timeout method")
-    RuntimeException failedToLoadTimeoutMethodParamClass(@Cause Exception cause, String className);
+//    @Message(id = 106, value = "Could not load method param class %s of timeout method")
+//    RuntimeException failedToLoadTimeoutMethodParamClass(@Cause Exception cause, String className);
 
     @Message(id = 107, value = "Timer invocation failed, invoker is not started")
     IllegalStateException timerInvocationFailedDueToInvokerNotBeingStarted();

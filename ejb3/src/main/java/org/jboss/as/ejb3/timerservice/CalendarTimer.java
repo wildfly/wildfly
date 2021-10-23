@@ -26,6 +26,7 @@ import java.util.Calendar;
 import java.util.Date;
 import javax.ejb.EJBException;
 import javax.ejb.ScheduleExpression;
+import javax.ejb.Timer;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
@@ -262,63 +263,35 @@ public class CalendarTimer extends TimerImpl {
      *
      * @param timeoutMethodInfo  The timeout method
      * @param classLoader The class loader
-     * @return
+     * @return timeout method matching {@code timeoutMethodInfo}
      */
     public static Method getTimeoutMethod(TimeoutMethod timeoutMethodInfo, ClassLoader classLoader) {
         if(timeoutMethodInfo == null) {
             return null;
         }
-        String declaringClass = timeoutMethodInfo.getDeclaringClass();
-        Class<?> timeoutMethodDeclaringClass = null;
+        Class<?> timeoutMethodDeclaringClass;
         try {
-            timeoutMethodDeclaringClass = Class.forName(declaringClass, false, classLoader);
+            timeoutMethodDeclaringClass = Class.forName(timeoutMethodInfo.getDeclaringClass(), false, classLoader);
         } catch (ClassNotFoundException cnfe) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.failToLoadDeclaringClassOfTimeOut(declaringClass);
+            throw EjbLogger.EJB3_TIMER_LOGGER.failToLoadDeclaringClassOfTimeOut(timeoutMethodInfo.getDeclaringClass());
         }
 
-        String timeoutMethodName = timeoutMethodInfo.getMethodName();
-        String[] timeoutMethodParams = timeoutMethodInfo.getMethodParams();
-        // load the method param classes
-        Class<?>[] timeoutMethodParamTypes = new Class<?>[]
-                {};
-        if (timeoutMethodParams != null) {
-            timeoutMethodParamTypes = new Class<?>[timeoutMethodParams.length];
-            int i = 0;
-            for (String paramClassName : timeoutMethodParams) {
-                Class<?> methodParamClass = null;
-                try {
-                    methodParamClass = Class.forName(paramClassName, false, classLoader);
-                } catch (ClassNotFoundException cnfe) {
-                    throw EjbLogger.EJB3_TIMER_LOGGER.failedToLoadTimeoutMethodParamClass(cnfe, paramClassName);
-                }
-                timeoutMethodParamTypes[i++] = methodParamClass;
-            }
-        }
         // now start looking for the method
+        String timeoutMethodName = timeoutMethodInfo.getMethodName();
         Class<?> klass = timeoutMethodDeclaringClass;
         while (klass != null) {
             Method[] methods = klass.getDeclaredMethods();
             for (Method method : methods) {
                 if (method.getName().equals(timeoutMethodName)) {
-                    Class<?>[] methodParamTypes = method.getParameterTypes();
-                    // param length doesn't match
-                    if (timeoutMethodParamTypes.length != methodParamTypes.length) {
-                        continue;
-                    }
-                    boolean match = true;
-                    for (int i = 0; i < methodParamTypes.length; i++) {
-                        // param type doesn't match
-                        if (!timeoutMethodParamTypes[i].equals(methodParamTypes[i])) {
-                            match = false;
-                            break;
+                    if (timeoutMethodInfo.hasTimerParameter()) {
+                        if (method.getParameterCount() == 1 && method.getParameterTypes()[0] == Timer.class) {
+                            return method;
                         }
-                    }
-                    if (match) {
-                        // match found
+                    } else if (method.getParameterCount() == 0) {
                         return method;
                     }
-                }
-            }
+                } // end: method name matching
+            } // end: all methods in current klass
             klass = klass.getSuperclass();
 
         }
