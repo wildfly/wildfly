@@ -39,7 +39,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.Operations;
-import org.jboss.as.ee.subsystem.EeExtension;
 import org.jboss.as.subsystem.test.SubsystemOperations;
 import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
@@ -68,7 +67,7 @@ import org.junit.runner.RunWith;
 public class PropertyPermissionExpressionsTestCase {
     private static final String PROPERTY_NAME = "ENVIRONMENT_PROP_NAME";
     private static final String PROPERTY_VALUE = "java.home";
-    private static final PathAddress EE_SUBSYSTEM_PATH_ADDRESS = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EeExtension.SUBSYSTEM_NAME));
+    private static final PathAddress EE_SUBSYSTEM_PATH_ADDRESS = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, "ee"));
     private static final String VERIFY_JSM_DEPLOYMENT = "verify-jsm-deployment";
     private static final String SPEC_PRINT_PROP_SERVLET_DEPLOYMENT = "spec_print-prop-servlet_deployment";
     private static final String JBOSS_PRINT_PROP_SERVLET_DEPLOYMENT = "jboss_print-prop-servlet_deployment";

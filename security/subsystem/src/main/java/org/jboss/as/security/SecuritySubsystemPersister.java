@@ -38,7 +38,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-public class SecuritySubsystemPersister implements XMLElementWriter<SubsystemMarshallingContext> {
+class SecuritySubsystemPersister implements XMLElementWriter<SubsystemMarshallingContext> {
 
     public static final SecuritySubsystemPersister INSTANCE = new SecuritySubsystemPersister();
 

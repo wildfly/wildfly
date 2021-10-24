@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelType;
  * @author Jason T. Greene
  * @author Tomaz Cerar
  */
-public class ComplexAttributes {
+class ComplexAttributes {
 
     static final SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinitionBuilder(Constants.PASSWORD, ModelType.STRING)
             .setRequired(true)
@@ -119,7 +119,7 @@ public class ComplexAttributes {
 
     protected static final class KeyStoreAttributeValidator implements ParameterValidator {
 
-        private String name;
+        private final String name;
 
         public KeyStoreAttributeValidator(String name) {
             this.name = name;
@@ -127,18 +127,6 @@ public class ComplexAttributes {
 
         @Override
         public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-            if (name.equals(parameterName)) {
-                ModelNode parameters = value.clone();
-                if (isConfigured(parameters)) {
-                    for (SimpleAttributeDefinition attribute : KEY_STORE_FIELDS) {
-                        attribute.getValidator().validateParameter(attribute.getName(), parameters.get(attribute.getName()));
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
             if (name.equals(parameterName)) {
                 ModelNode parameters = value.clone();
                 if (isConfigured(parameters)) {

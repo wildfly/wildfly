@@ -34,7 +34,7 @@ import org.jboss.as.controller.PathElement;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  * @author <a href="https://github.com/ppalaga">Peter Palaga</a>
  */
-public class MappingProviderModuleDefinition extends MappingModuleDefinition {
+class MappingProviderModuleDefinition extends MappingModuleDefinition {
     protected static final PathElement PATH_PROVIDER_MODULE = PathElement.pathElement(Constants.PROVIDER_MODULE);
     private static final AttributeDefinition[] ATTRIBUTES = { CODE, MODULE, MODULE_OPTIONS };
 

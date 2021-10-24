@@ -20,14 +20,16 @@ import static org.jboss.as.security.elytron.Capabilities.KEY_STORE_RUNTIME_CAPAB
 import static org.jboss.as.security.elytron.Capabilities.SECURITY_REALM_RUNTIME_CAPABILITY;
 import static org.jboss.as.security.elytron.Capabilities.TRUST_MANAGER_RUNTIME_CAPABILITY;
 
+import java.util.Collections;
+import java.util.HashSet;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.security.Constants;
@@ -77,7 +79,7 @@ public class ElytronIntegrationResourceDefinitions {
     public static ResourceDefinition getElytronRealmResourceDefinition() {
 
         final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JAAS_CONFIG, APPLY_ROLE_MAPPERS};
-        final AbstractAddStepHandler addHandler = new BasicAddHandler(attributes, SECURITY_REALM_RUNTIME_CAPABILITY);
+        final AbstractAddStepHandler addHandler = createAddHandler(attributes, SECURITY_REALM_RUNTIME_CAPABILITY);
 
         return new BasicResourceDefinition(Constants.ELYTRON_REALM, addHandler, attributes, SECURITY_REALM_RUNTIME_CAPABILITY);
     }
@@ -96,7 +98,7 @@ public class ElytronIntegrationResourceDefinitions {
      */
     public static ResourceDefinition getElytronKeyStoreResourceDefinition() {
         final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JSSE_CONFIG};
-        final AbstractAddStepHandler addHandler = new BasicAddHandler(attributes, KEY_STORE_RUNTIME_CAPABILITY);
+        final AbstractAddStepHandler addHandler = createAddHandler(attributes, KEY_STORE_RUNTIME_CAPABILITY);
 
         return new BasicResourceDefinition(Constants.ELYTRON_KEY_STORE, addHandler, attributes, KEY_STORE_RUNTIME_CAPABILITY);
     }
@@ -124,7 +126,7 @@ public class ElytronIntegrationResourceDefinitions {
      */
     public static ResourceDefinition getElytronTrustStoreResourceDefinition() {
         final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JSSE_CONFIG};
-        final AbstractAddStepHandler addHandler = new BasicAddHandler(attributes, KEY_STORE_RUNTIME_CAPABILITY);
+        final AbstractAddStepHandler addHandler = createAddHandler(attributes, KEY_STORE_RUNTIME_CAPABILITY);
 
         return new BasicResourceDefinition(Constants.ELYTRON_TRUST_STORE, addHandler, attributes, KEY_STORE_RUNTIME_CAPABILITY);
     }
@@ -143,7 +145,7 @@ public class ElytronIntegrationResourceDefinitions {
      */
     public static ResourceDefinition getElytronKeyManagersResourceDefinition() {
         final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JSSE_CONFIG};
-        final AbstractAddStepHandler addHandler = new BasicAddHandler(attributes, KEY_MANAGER_RUNTIME_CAPABILITY);
+        final AbstractAddStepHandler addHandler = createAddHandler(attributes, KEY_MANAGER_RUNTIME_CAPABILITY);
 
         return new BasicResourceDefinition(Constants.ELYTRON_KEY_MANAGER, addHandler, attributes, KEY_MANAGER_RUNTIME_CAPABILITY);
     }
@@ -167,16 +169,15 @@ public class ElytronIntegrationResourceDefinitions {
      */
     public static ResourceDefinition getElytronTrustManagersResourceDefinition() {
         final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JSSE_CONFIG};
-        final AbstractAddStepHandler addHandler = new BasicAddHandler(attributes, TRUST_MANAGER_RUNTIME_CAPABILITY);
+        final AbstractAddStepHandler addHandler = createAddHandler(attributes, TRUST_MANAGER_RUNTIME_CAPABILITY);
 
         return new BasicResourceDefinition(Constants.ELYTRON_TRUST_MANAGER, addHandler, attributes, TRUST_MANAGER_RUNTIME_CAPABILITY);
     }
 
-    static String asStringIfDefined(OperationContext context, SimpleAttributeDefinition attributeDefinition, ModelNode model) throws OperationFailedException {
-        ModelNode value = attributeDefinition.resolveModelAttribute(context, model);
-        if (value.isDefined()) {
-            return value.asString();
-        }
-        return null;
+    private static AbstractAddStepHandler createAddHandler(AttributeDefinition[] attributes, RuntimeCapability<?> runtimeCapability) {
+        // Don't use wildfly-common for these as it would be the only use in the entire maven module
+        assert attributes != null;
+        assert runtimeCapability != null;
+        return new AbstractAddStepHandler(new HashSet<>(Collections.singletonList(runtimeCapability)), attributes);
     }
 }

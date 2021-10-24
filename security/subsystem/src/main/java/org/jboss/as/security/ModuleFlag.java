@@ -34,7 +34,7 @@ enum ModuleFlag {
 
     private final String name;
 
-    private ModuleFlag(String name) {
+    ModuleFlag(String name) {
         this.name = name;
     }
 

@@ -45,7 +45,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Jason T. Greene
  */
-public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefinition {
+class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
     private static final RuntimeCapability<Void> SECURITY_SUBSYSTEM = RuntimeCapability.Builder.of("org.wildfly.legacy-security").build();
     private static final RuntimeCapability<Void> SERVER_SECURITY_MANAGER = RuntimeCapability.Builder.of("org.wildfly.legacy-security.server-security-manager")
