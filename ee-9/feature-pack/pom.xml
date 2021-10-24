@@ -116,6 +116,15 @@
                             <resources>
                                 <resource>
                                     <directory>${basedir}/target/unpacked-wildfly-core-galleon-resources</directory>
+                                    <excludes>
+                                        <exclude>modules/**/module.xml</exclude>
+                                    </excludes>
+                                </resource>
+                                <resource>
+                                    <directory>${basedir}/target/unpacked-wildfly-core-galleon-resources</directory>
+                                    <includes>
+                                        <include>modules/**/module.xml</include>
+                                    </includes>
                                     <filtering>true</filtering>
                                 </resource>
                             </resources>
@@ -134,6 +143,17 @@
                             <resources>
                                 <resource>
                                     <directory>${servlet.common.resources.directory}</directory>
+                                    <excludes>
+                                        <exclude>modules/**/module.xml</exclude>
+                                        <exclude>license/*.xml</exclude>
+                                    </excludes>
+                                </resource>
+                                <resource>
+                                    <directory>${servlet.common.resources.directory}</directory>
+                                    <includes>
+                                        <include>modules/**/module.xml</include>
+                                        <include>license/*.xml</include>
+                                    </includes>
                                     <excludes>
                                         <exclude>**/org/jboss/as/security/main/module.xml</exclude>
                                     </excludes>
@@ -171,6 +191,17 @@
                             <resources>
                                 <resource>
                                     <directory>${full.common.resources.directory}</directory>
+                                    <excludes>
+                                        <exclude>modules/**/module.xml</exclude>
+                                        <exclude>license/*.xml</exclude>
+                                    </excludes>
+                                </resource>
+                                <resource>
+                                    <directory>${full.common.resources.directory}</directory>
+                                    <includes>
+                                        <include>modules/**/module.xml</include>
+                                        <include>license/*.xml</include>
+                                    </includes>
                                     <filtering>true</filtering>
                                 </resource>
                             </resources>
