@@ -34,7 +34,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Jason T. Greene
  */
-public class ClassicAuthenticationResourceDefinition extends SimpleResourceDefinition {
+class ClassicAuthenticationResourceDefinition extends SimpleResourceDefinition {
 
     public static final ClassicAuthenticationResourceDefinition INSTANCE = new ClassicAuthenticationResourceDefinition();
 

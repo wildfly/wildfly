@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Jason T. Greene
  */
-public class ACLResourceDefinition extends SimpleResourceDefinition {
+class ACLResourceDefinition extends SimpleResourceDefinition {
 
     public static final ACLResourceDefinition INSTANCE = new ACLResourceDefinition();
 

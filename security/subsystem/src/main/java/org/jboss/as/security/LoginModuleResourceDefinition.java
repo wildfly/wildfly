@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class LoginModuleResourceDefinition extends SimpleResourceDefinition {
+class LoginModuleResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition CODE = new SimpleAttributeDefinitionBuilder(Constants.CODE, ModelType.STRING)
             .setRequired(true)
             .setMinSize(1)

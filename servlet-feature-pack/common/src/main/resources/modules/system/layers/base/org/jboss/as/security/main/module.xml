@@ -36,36 +36,11 @@
     </resources>
 
     <dependencies>
-        <module name="java.naming"/>
-        <module name="java.security.sasl"/>
         <module name="java.xml"/>
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
-        <module name="javax.security.jacc.api"/>
-        <module name="javax.servlet.api"/>
-        <module name="javax.transaction.api"/>
-        <module name="org.apache.commons.cli" optional="true"/>
-        <module name="org.infinispan" optional="true"/>
-        <module name="org.infinispan.commons" optional="true"/>
-        <module name="org.jboss.as.core-security"/>
         <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.domain-management"/>
-        <module name="org.jboss.as.ee"/>
-        <module name="org.jboss.as.server"/>
-        <module name="org.jboss.as.security-plugins" export="true" />
-        <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.dmr"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.metadata.common"/>
-        <module name="org.jboss.metadata.web"/>
-        <module name="org.jboss.metadata.ear"/>
-        <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
-        <module name="org.jboss.remoting"/>
         <module name="org.jboss.staxmapper"/>
-        <module name="org.wildfly.common"/>
-        <module name="org.wildfly.clustering.infinispan.spi" optional="true"/>
-        <module name="org.wildfly.clustering.service" optional="true"/>
-        <module name="org.wildfly.security.elytron-private"/>
-        <module name="org.wildfly.extension.undertow" />
-        <module name="sun.jdk"/>
     </dependencies>
 </module>

@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Jason T. Greene
  */
-public class AuthorizationResourceDefinition extends SimpleResourceDefinition {
+class AuthorizationResourceDefinition extends SimpleResourceDefinition {
 
     public static final AuthorizationResourceDefinition INSTANCE = new AuthorizationResourceDefinition();
 

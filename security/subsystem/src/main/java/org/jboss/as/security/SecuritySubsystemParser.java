@@ -85,7 +85,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * @author Anil Saldhana
  * @author Tomaz Cerar
  */
-public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, ModulesMap {
+class SecuritySubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
     private Map<String, Integer> moduleNames;
 

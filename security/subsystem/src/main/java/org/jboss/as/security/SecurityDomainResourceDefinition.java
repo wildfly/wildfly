@@ -43,6 +43,7 @@ import org.jboss.dmr.ModelType;
  */
 class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
+    static final String CACHE_CONTAINER_BASE_CAPABILTIY = "org.wildfly.clustering.infinispan.cache-container";
     static final String CACHE_CONTAINER_NAME = "security";
     static final String INFINISPAN_CACHE_TYPE = "infinispan";
     static final RuntimeCapability<Void> LEGACY_SECURITY_DOMAIN = RuntimeCapability.Builder.of("org.wildfly.security.legacy-security-domain", true)

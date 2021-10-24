@@ -23,15 +23,16 @@
 package org.jboss.as.security;
 
 import static org.jboss.as.security.Constants.CACHE_TYPE;
+import static org.jboss.as.security.SecurityDomainResourceDefinition.CACHE_CONTAINER_BASE_CAPABILTIY;
 import static org.jboss.as.security.SecurityDomainResourceDefinition.CACHE_CONTAINER_NAME;
 import static org.jboss.as.security.SecurityDomainResourceDefinition.LEGACY_SECURITY_DOMAIN;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 
 /**
  * Add a security domain configuration.
@@ -56,7 +57,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
         super.recordCapabilitiesAndRequirements(context, operation, resource);
         String cacheType = getAuthenticationCacheType(resource.getModel());
         if (SecurityDomainResourceDefinition.INFINISPAN_CACHE_TYPE.equals(cacheType)) {
-            context.registerAdditionalCapabilityRequirement(InfinispanRequirement.CONTAINER.resolve(CACHE_CONTAINER_NAME),
+            context.registerAdditionalCapabilityRequirement(
+                    RuntimeCapability.buildDynamicCapabilityName(CACHE_CONTAINER_BASE_CAPABILTIY, CACHE_CONTAINER_NAME),
                     LEGACY_SECURITY_DOMAIN.getDynamicName(context.getCurrentAddressValue()),
                     SecurityDomainResourceDefinition.CACHE_TYPE.getName());
         }

@@ -81,7 +81,7 @@ class LegacySupport {
     /**
      * @author Jason T. Greene
      */
-    public static class JASPIAuthenticationModulesAttributeDefinition extends ListAttributeDefinition {
+    static class JASPIAuthenticationModulesAttributeDefinition extends ListAttributeDefinition {
 
         private static final ParameterValidator validator;
 

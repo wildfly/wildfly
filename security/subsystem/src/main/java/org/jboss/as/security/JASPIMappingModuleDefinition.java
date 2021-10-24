@@ -34,7 +34,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class JASPIMappingModuleDefinition extends MappingModuleDefinition {
+class JASPIMappingModuleDefinition extends MappingModuleDefinition {
 
     static final SimpleAttributeDefinition LOGIN_MODULE_STACK_REF = new SimpleAttributeDefinitionBuilder(Constants.LOGIN_MODULE_STACK_REF, ModelType.STRING)
             .setRequired(false)

@@ -40,7 +40,7 @@ import org.jboss.dmr.ModelType;
  * @author Jason T. Greene
  * @author Tomaz Cerar
  */
-public class JSSEResourceDefinition extends SimpleResourceDefinition {
+class JSSEResourceDefinition extends SimpleResourceDefinition {
 
     static final ObjectTypeAttributeDefinition KEYSTORE = new ObjectTypeAttributeDefinition.Builder(Constants.KEYSTORE, ComplexAttributes.KEY_STORE_FIELDS)
             .setValidator(new ComplexAttributes.KeyStoreAttributeValidator(Constants.KEYSTORE)).setAttributeMarshaller(new ComplexAttributes.KeyStoreAttributeMarshaller()).build();
