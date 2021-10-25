@@ -115,7 +115,6 @@
 
         <module name="javax.rmi.api"/>
 
-        <module name="org.wildfly.common"/>
         <module name="org.wildfly.transaction.client"/>
 
         <!-- Those are needed for integration with hibernate validator -->

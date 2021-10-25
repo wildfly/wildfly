@@ -22,6 +22,18 @@
 package org.jboss.as.ejb3.remote;
 
 
+import static org.jboss.as.ejb3.util.MethodInfoHelper.EMPTY_STRING_ARRAY;
+
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.deployers.StartupCountdown;
@@ -57,16 +69,6 @@ import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-
 /**
  * {@link EJBReceiver} for local same-VM invocations. This handles all invocations on remote interfaces
  * within the server JVM.
@@ -75,8 +77,6 @@ import java.util.concurrent.Future;
  * @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
  */
 public class LocalEjbReceiver extends EJBReceiver {
-
-    private static final Object[] EMPTY_OBJECT_ARRAY = {};
     private static final EJBReceiverInvocationContext.ResultProducer.Immediate NULL_RESULT = new EJBReceiverInvocationContext.ResultProducer.Immediate(null);
     private static final AttachmentKey<CancellationFlag> CANCELLATION_FLAG_ATTACHMENT_KEY = new AttachmentKey<>();
 
@@ -115,7 +115,7 @@ public class LocalEjbReceiver extends EJBReceiver {
 
         final Object[] parameters;
         if (invocation.getParameters() == null) {
-            parameters = EMPTY_OBJECT_ARRAY;
+            parameters = EMPTY_STRING_ARRAY;
         } else {
             parameters = new Object[invocation.getParameters().length];
             for (int i = 0; i < parameters.length; ++i) {

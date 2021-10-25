@@ -45,7 +45,16 @@
     </properties>
 
     <modules>
+        <module>bean-validation</module>
+        <module>ee</module>
+        <module>ee-security</module>
+        <module>jpa/spi</module>
         <module>mail</module>
+        <module>web-common</module>
+        <module>weld/bean-validation</module>
+        <module>weld/common</module>
+        <module>weld/spi</module>
+        <module>weld/transactions</module>
     </modules>
 
     <build>

@@ -307,12 +307,10 @@ public class WarJACCService extends JaccService<WarMetaData> {
             //there are totally 7 http methods from the jacc spec (See WebResourceCollectionMetaData.ALL_HTTP_METHOD_NAMES)
             final int NUMBER_OF_HTTP_METHODS = 7;
             // JACC 1.1: create !(httpmethods) in unchecked perms
-            if(jbossWebMetaData.getDenyUncoveredHttpMethods() == null) {
-                if (seenMethods.size() != NUMBER_OF_HTTP_METHODS) {
-                    WebResourcePermission wrpUnchecked = seenMethods.isEmpty() ? new WebResourcePermission(qurl, (String) null)
-                            : new WebResourcePermission(qurl, "!" + getCommaSeparatedString(seenMethods.toArray(new String[seenMethods.size()])));
-                    pc.addToUncheckedPolicy(wrpUnchecked);
-                }
+            if(jbossWebMetaData.getDenyUncoveredHttpMethods() == null && seenMethods.size() != NUMBER_OF_HTTP_METHODS) {
+                WebResourcePermission wrpUnchecked = seenMethods.isEmpty() ? new WebResourcePermission(qurl, (String) null)
+                        : new WebResourcePermission(qurl, "!" + getCommaSeparatedString(seenMethods.toArray(new String[seenMethods.size()])));
+                pc.addToUncheckedPolicy(wrpUnchecked);
             }
             if (jbossWebMetaData.getDenyUncoveredHttpMethods() == null) {
                 // Create the unchecked permissions

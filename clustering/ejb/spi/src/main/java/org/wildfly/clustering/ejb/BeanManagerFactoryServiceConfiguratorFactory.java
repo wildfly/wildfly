@@ -37,5 +37,5 @@ public interface BeanManagerFactoryServiceConfiguratorFactory {
      * @param context the bean context
      * @return a service builder
      */
-    CapabilityServiceConfigurator getBeanManagerFactoryServiceConfigurator(BeanContext context);
+    CapabilityServiceConfigurator getBeanManagerFactoryServiceConfigurator(StatefulBeanConfiguration context);
 }

@@ -135,7 +135,7 @@ public class SendToJMSTopicTest {
         }
 
         Assert.assertTrue("received a " + receivedMessage.getClass().getName() + " instead of a TextMessage", receivedMessage instanceof TextMessage);
-        Assert.assertEquals(((TextMessage) receivedMessage).getText(), "Hello world!");
+        Assert.assertEquals("Hello world!", ((TextMessage) receivedMessage).getText());
     }
 
 

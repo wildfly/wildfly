@@ -23,6 +23,7 @@
 package org.wildfly.clustering.web.cache.routing;
 
 import org.junit.Assert;
+import org.junit.Test;
 import org.wildfly.clustering.web.routing.RouteLocator;
 
 /**
@@ -30,6 +31,7 @@ import org.wildfly.clustering.web.routing.RouteLocator;
  */
 public class NullRouteLocatorTestCase {
 
+    @Test
     public void test() {
         RouteLocator locator = new NullRouteLocator();
 

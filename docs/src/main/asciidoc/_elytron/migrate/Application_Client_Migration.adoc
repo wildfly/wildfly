@@ -79,7 +79,7 @@ Bar bar = (Bar) context.lookup("foo/bar");
 ...
 ----
 
-[[programmatic-approach]]
+[[application_client_programmatic-approach]]
 ==== Programmatic Approach
 
 The user credentials to use when establishing a connection to the naming

@@ -1,0 +1,38 @@
+[[Hacking_On_WildFly]]
+= Hacking on WildFly
+WildFly developer team;
+:revnumber: {version}
+:revdate: {localdate}
+:toc: macro
+:toclevels: 2
+:toc-title: Hacking on WildFly
+:doctype: book
+:icons: font
+:source-highlighter: coderay
+:wildflyVersion: 26
+:sectlinks:
+:idseparator: -
+:include-depth: 2
+
+ifdef::env-github[:outfilesuffix: .adoc]
+
+
+ifndef::ebook-format[:leveloffset: 1]
+
+(C) 2021 The original authors.
+
+ifdef::basebackend-html[toc::[]]
+
+:numbered:
+
+
+////
+:leveloffset: 1
+////
+
+
+
+include::_hacking/github_setup.adoc[]
+include::_hacking/contributing.adoc[]
+include::_hacking/pullrequest_standards.adoc[]
+

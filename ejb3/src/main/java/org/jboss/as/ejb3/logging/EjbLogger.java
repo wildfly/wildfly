@@ -680,8 +680,8 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 105, value = "%s is not an Jakarta Enterprise Beans component")
     IllegalArgumentException notAnEJBComponent(Component component);
 
-    @Message(id = 106, value = "Could not load method param class %s of timeout method")
-    RuntimeException failedToLoadTimeoutMethodParamClass(@Cause Exception cause, String className);
+//    @Message(id = 106, value = "Could not load method param class %s of timeout method")
+//    RuntimeException failedToLoadTimeoutMethodParamClass(@Cause Exception cause, String className);
 
     @Message(id = 107, value = "Timer invocation failed, invoker is not started")
     IllegalStateException timerInvocationFailedDueToInvokerNotBeingStarted();
@@ -3016,11 +3016,11 @@ public interface EjbLogger extends BasicLogger {
     void timerUpdateFailedAndRollbackNotPossible(@Cause Throwable rbe);
 
     /**
-     * Logs a warning message indicating that the database dialect can not detected automatically
+     * Logs a warning message indicating that the database dialect cannot be detected automatically.
      */
     @LogMessage(level = WARN)
-    @Message(id = 462, value = "Unable to detect database dialect from connection metadata or JDBC driver name. Please configure this manually using the 'datasource' property in your configuration.  Known database dialect strings are %s")
-    void jdbcDatabaseDialectDetectionFailed(String validDialects);
+    @Message(id = 462, value = "Timer service database-data-store database attribute is not configured, and is not detected from connection metadata or JDBC driver name.")
+    void databaseDialectNotConfiguredOrDetected();
 
     @LogMessage(level = WARN)
     @Message(id = 463, value = "Invalid transaction attribute type %s on SFSB lifecycle method %s of class %s, valid types are REQUIRES_NEW and NOT_SUPPORTED. Method will be treated as NOT_SUPPORTED.")
@@ -3246,4 +3246,8 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = DEBUG)
     @Message(id = 528, value = "Jakarta Enterprise Beans business method %s must be public")
     void ejbBusinessMethodMustBePublic(final Method method);
+
+    @LogMessage(level = WARN)
+    @Message(id = 529, value = "Failed to retrieve info from database for timer: %s")
+    void failedToRetrieveTimerInfo(final TimerImpl timer, @Cause Exception e);
 }

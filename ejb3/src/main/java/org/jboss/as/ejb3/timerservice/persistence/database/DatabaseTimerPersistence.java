@@ -23,6 +23,9 @@
 package org.jboss.as.ejb3.timerservice.persistence.database;
 
 import static org.jboss.as.ejb3.timerservice.TimerServiceImpl.safeClose;
+import static org.jboss.as.ejb3.util.MethodInfoHelper.EMPTY_STRING_ARRAY;
+import static org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod.TIMER_PARAM_1;
+import static org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod.TIMER_PARAM_1_ARRAY;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -48,11 +51,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import javax.sql.DataSource;
@@ -85,6 +90,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
@@ -97,7 +103,6 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  * @author Joerg Baesner
  */
 public class DatabaseTimerPersistence implements TimerPersistence, Service<DatabaseTimerPersistence> {
-
     private final InjectedValue<ManagedReferenceFactory> dataSourceInjectedValue = new InjectedValue<ManagedReferenceFactory>();
     private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
     private final Map<String, TimerChangeListener> changeListeners = Collections.synchronizedMap(new HashMap<String, TimerChangeListener>());
@@ -108,8 +113,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
 
     /** Identifier for the database dialect to be used for the timer-sql.properties */
     private String database;
-    /** List of extracted known dialects*/
-    private final HashSet<String> databaseDialects = new HashSet<String>();
     /** Name of the configured partition name*/
     private final String partition;
     /** Current node name*/
@@ -133,10 +136,33 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private static final String LOAD_TIMER = "load-timer";
     private static final String DELETE_TIMER = "delete-timer";
     private static final String UPDATE_RUNNING = "update-running";
+    private static final String GET_TIMER_INFO = "get-timer-info";
     /** The format for scheduler start and end date*/
     private static final String SCHEDULER_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
     /** Pattern to pickout MSSQL */
     private static final Pattern MSSQL_PATTERN = Pattern.compile("(sqlserver|microsoft|mssql)");
+
+    /**
+     * System property {@code jboss.ejb.timer.database.clearTimerInfoCacheBeyond}
+     * to configure the threshold (in minutes) to clear timer info cache
+     * when database is used as the data store for the ejb timer service.
+     * The default value is 15 minutes.
+     * <p>
+     * For example, if it is set to 10, and a timer is about to expire in
+     * more than 10 minutes from now, its in-memory timer info is cleared;
+     * if the timer is to expire within 10 minutes, its info is retained.
+     * <p>
+     * Timer info of the following types are always retained, regardless of the value of this property:
+     * <ul>
+     *     <li>java.lang.String
+     *     <li>java.lang.Number
+     *     <li>java.util.Date
+     *     <li>java.lang.Character
+     *     <li>enum
+     * </ul>
+     */
+    private final long clearTimerInfoCacheBeyond = TimeUnit.MINUTES.toMillis(Long.parseLong(
+            WildFlySecurityManager.getPropertyPrivileged("jboss.ejb.timer.database.clearTimerInfoCacheBeyond", "15")));
 
     public DatabaseTimerPersistence(final String database, String partition, String nodeName, int refreshInterval, boolean allowExecution) {
         this.database = database;
@@ -164,7 +190,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         } finally {
             safeClose(stream);
         }
-        extractDialects();
         investigateDialect();
         checkDatabase();
         refreshTask = new RefreshTask();
@@ -180,18 +205,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         managedReference.release();
         managedReference = null;
         dataSource = null;
-    }
-
-    /**
-     * Read the properties from the timer-sql and extract the database dialects.
-     */
-    private void extractDialects() {
-        for (Object prop : sql.keySet()) {
-            int dot = ((String)prop).indexOf('.');
-            if (dot > 0) {
-                databaseDialects.add(((String)prop).substring(dot+1));
-            }
-        }
     }
 
     /**
@@ -219,9 +232,9 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 safeClose(connection);
             }
             if (database == null) {
-                EjbLogger.EJB3_TIMER_LOGGER.jdbcDatabaseDialectDetectionFailed(databaseDialects.toString());
+                EjbLogger.EJB3_TIMER_LOGGER.databaseDialectNotConfiguredOrDetected();
             } else {
-                EjbLogger.EJB3_TIMER_LOGGER.debugf("Detect database dialect as '%s'.  If this is incorrect, please specify the correct dialect using the 'database' attribute in your configuration.  Supported database dialect strings are %s", database, databaseDialects);
+                EjbLogger.EJB3_TIMER_LOGGER.debugf("Detect database dialect as '%s'.  If this is incorrect, please specify the correct dialect using the 'database' attribute in your configuration.", database);
             }
         } else {
             EjbLogger.EJB3_TIMER_LOGGER.debugf("Database dialect '%s' read from configuration, adjusting it to match the final database valid value.", database);
@@ -240,23 +253,24 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         String unified = null;
 
         if (name != null) {
-            if (name.toLowerCase().contains("postgres")) {
+            name = name.toLowerCase(Locale.ROOT);
+            if (name.contains("postgres")) {
                unified = "postgresql";
-            } else if (name.toLowerCase().contains("mysql")) {
+            } else if (name.contains("mysql")) {
                 unified = "mysql";
-            } else if (name.toLowerCase().contains("mariadb")) {
+            } else if (name.contains("mariadb")) {
                 unified = "mariadb";
-            } else if (name.toLowerCase().contains("db2")) {
+            } else if (name.contains("db2")) {
                 unified = "db2";
-            } else if (name.toLowerCase().contains("hsql") || name.toLowerCase().contains("hypersonic")) {
+            } else if (name.contains("hsql") || name.contains("hypersonic")) {
                 unified = "hsql";
-            } else if (name.toLowerCase().contains("h2")) {
+            } else if (name.contains("h2")) {
                 unified = "h2";
-            } else if (name.toLowerCase().contains("oracle")) {
+            } else if (name.contains("oracle")) {
                 unified = "oracle";
-            } else if (MSSQL_PATTERN.matcher(name.toLowerCase()).find()) {
+            } else if (MSSQL_PATTERN.matcher(name).find()) {
                 unified = "mssql";
-            } else if (name.toLowerCase().contains("jconnect")) {
+            } else if (name.contains("sybase") || name.contains("jconnect")) {
                 unified = "sybase";
             }
          }
@@ -381,7 +395,13 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             statement = connection.prepareStatement(createTimer);
             statementParameters(timerEntity, statement);
             statement.execute();
+
+            if (isClearTimerInfoCache(timerEntity)) {
+                timerEntity.setCachedTimerInfo(Object.class);
+                EjbLogger.EJB3_TIMER_LOGGER.debugf("Cleared timer info for timer: %s", timerEntity.getId());
+            }
         } catch (SQLException e) {
+            timerEntity.setCachedTimerInfo(null);
             throw new RuntimeException(e);
         } finally {
             safeClose(statement);
@@ -633,7 +653,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             final String methodName = resultSet.getString(22);
             if (methodName != null) {
                 final String paramString = resultSet.getString(23);
-                final String[] params = paramString == null || paramString.isEmpty() ? new String[0] : paramString.split(";");
+                final String[] params = paramString == null || paramString.isEmpty() ? EMPTY_STRING_ARRAY : TIMER_PARAM_1_ARRAY;
                 final Method timeoutMethod = CalendarTimer.getTimeoutMethod(new TimeoutMethod(clazz, methodName, params), timerService.getTimedObjectInvoker().getValue().getClassLoader());
                 if (timeoutMethod == null) {
                     EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), timerId, new NoSuchMethodException());
@@ -658,6 +678,11 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         builder.setPersistent(true);
 
         TimerImpl ret =  builder.build(timerService);
+        if (isClearTimerInfoCache(ret)) {
+            ret.setCachedTimerInfo(Object.class);
+            EjbLogger.EJB3_TIMER_LOGGER.debugf("Cleared timer info for timer: %s", timerId);
+        }
+
         if (nodeName != null
                 && nodeName.equals(this.nodeName)
                 && (ret.getState() == TimerState.IN_TIMEOUT ||
@@ -694,17 +719,11 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             statement.setString(19, c.getScheduleExpression().getTimezone());
             statement.setBoolean(20, c.isAutoTimer());
             if (c.isAutoTimer()) {
-                statement.setString(21, c.getTimeoutMethod().getDeclaringClass().getName());
-                statement.setString(22, c.getTimeoutMethod().getName());
-                StringBuilder params = new StringBuilder();
-                final Class<?>[] parameterTypes = c.getTimeoutMethod().getParameterTypes();
-                for (int i = 0; i < parameterTypes.length; ++i) {
-                    params.append(parameterTypes[i].getName());
-                    if (i != parameterTypes.length - 1) {
-                        params.append(";");
-                    }
-                }
-                statement.setString(23, params.toString());
+                final Method timeoutMethod = c.getTimeoutMethod();
+                statement.setString(21, timeoutMethod.getDeclaringClass().getName());
+                statement.setString(22, timeoutMethod.getName());
+                String paramsToPersist = timeoutMethod.getParameterCount() == 0 ? null : TIMER_PARAM_1;
+                statement.setString(23, paramsToPersist);
             } else {
                 statement.setString(21, null);
                 statement.setString(22, null);
@@ -730,6 +749,63 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         }
         statement.setString(25, partition);
         setNodeName(timerEntity.getState(), statement, 26);
+    }
+
+    /**
+     * Retrieves the timer info from the timer database.
+     *
+     * @param timer the timer whose info to be retrieved
+     * @return the timer info from database; null if {@code SQLException}
+     */
+    public Serializable getPersistedTimerInfo(final TimerImpl timer) {
+        String getTimerInfo = sql(GET_TIMER_INFO);
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        Serializable result = null;
+        try {
+            connection = dataSource.getConnection();
+            statement = connection.prepareStatement(getTimerInfo);
+            statement.setString(1, timer.getTimedObjectId());
+            statement.setString(2, timer.getId());
+            resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                result = (Serializable) deSerialize(resultSet.getString(1));
+            }
+        } catch (SQLException e) {
+            EjbLogger.EJB3_TIMER_LOGGER.failedToRetrieveTimerInfo(timer, e);
+        } finally {
+            safeClose(resultSet);
+            safeClose(statement);
+            safeClose(connection);
+        }
+        return result;
+    }
+
+    /**
+     * Determines if the cached info in the timer should be cleared.
+     * @param timer the timer to check
+     * @return true if the cached info in the timer should be cleared; otherwise false
+     */
+    private boolean isClearTimerInfoCache(final TimerImpl timer) {
+        if (timer.isAutoTimer()) {
+            return false;
+        }
+        final Serializable info = timer.getCachedTimerInfo();
+        if (info == null || info instanceof String || info instanceof Number
+                || info instanceof Enum || info instanceof java.util.Date
+                || info instanceof Character) {
+            return false;
+        }
+        final Date nextExpiration = timer.getNextExpiration();
+        if (nextExpiration == null) {
+            return true;
+        }
+        final long howLongTillExpiry = nextExpiration.getTime() - System.currentTimeMillis();
+        if (howLongTillExpiry <= clearTimerInfoCacheBeyond) {
+            return false;
+        }
+        return true;
     }
 
     private String serialize(final Serializable serializable) {
@@ -760,9 +836,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             Object ret = unmarshaller.readObject();
             unmarshaller.finish();
             return ret;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         } finally {
             safeClose(in);

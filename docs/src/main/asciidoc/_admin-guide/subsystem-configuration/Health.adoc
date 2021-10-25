@@ -8,7 +8,7 @@ Support for https://microprofile.io/project/eclipse/microprofile-health[MicroPro
 the _microprofile-health-smallrye_ subsystem.
 ====
 
-[[required-extension-metrics]]
+[[health_required-extension-metrics]]
 == Extension
 
 This `org.wildfly.extension.health` extension is included in all the standalone configurations included in the

@@ -64,12 +64,12 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
 
     @Override
     public BeanManager<I, T, TransactionBatch> createBeanManager(Supplier<I> identifierFactory, PassivationListener<T> passivationListener, RemoveListener<T> removeListener) {
-        ByteBufferMarshaller marshaller = new JBossByteBufferMarshaller(this.configuration.getMarshallingConfigurationRepository(), this.configuration.getBeanContext().getClassLoader());
+        ByteBufferMarshaller marshaller = new JBossByteBufferMarshaller(this.configuration.getMarshallingConfigurationRepository(), this.configuration.getBeanConfiguration().getModule().getClassLoader());
         MarshalledValueFactory<ByteBufferMarshaller> factory = new ByteBufferMarshalledValueFactory(marshaller);
         Cache<BeanKey<I>, BeanEntry<I>> beanCache = this.configuration.getCache();
         Cache<BeanGroupKey<I>, BeanGroupEntry<I, T, ByteBufferMarshaller>> groupCache = this.configuration.getCache();
         CacheProperties properties = new InfinispanCacheProperties(groupCache.getCacheConfiguration());
-        String beanName = this.configuration.getBeanContext().getBeanName();
+        String beanName = this.configuration.getBeanConfiguration().getName();
         BeanPassivationConfiguration passivationConfig = this.configuration.getPassivationConfiguration();
         PassivationConfiguration<T> passivation = new PassivationConfiguration<T>() {
             @Override
@@ -85,12 +85,12 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
         Predicate<Map.Entry<? super BeanKey<I>, ? super BeanEntry<I>>> beanFilter = new BeanFilter<>(beanName);
         BeanGroupFactory<I, T, ByteBufferMarshaller> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, beanCache, beanFilter, factory, properties, passivation);
         Configuration<BeanGroupKey<I>, BeanGroupEntry<I, T, ByteBufferMarshaller>, BeanGroupFactory<I, T, ByteBufferMarshaller>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory);
-        BeanFactory<I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, properties, this.configuration.getBeanContext().getTimeout(), properties.isPersistent() ? passivationListener : null);
+        BeanFactory<I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, properties, this.configuration.getBeanConfiguration().getTimeout(), properties.isPersistent() ? passivationListener : null);
         Configuration<BeanKey<I>, BeanEntry<I>, BeanFactory<I, T>> beanConfiguration = new SimpleConfiguration<>(beanCache, beanFactory);
         Group<Address> group = this.configuration.getGroup();
         KeyAffinityServiceFactory affinityFactory = this.configuration.getKeyAffinityServiceFactory();
         CommandDispatcherFactory dispatcherFactory = this.configuration.getCommandDispatcherFactory();
-        Duration timeout = this.configuration.getBeanContext().getTimeout();
+        Duration timeout = this.configuration.getBeanConfiguration().getTimeout();
         ExpirationConfiguration<T> expiration = new ExpirationConfiguration<T>() {
             @Override
             public Duration getTimeout() {

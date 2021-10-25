@@ -80,10 +80,8 @@ public class DiskBasedModularPersistentSessionManager extends AbstractPersistent
             callbackHandle = pathManager.get().registerCallback(pathRelativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
         }
         baseDir = new File(pathManager.get().resolveRelativePathEntry(path, pathRelativeTo));
-        if (!baseDir.exists()) {
-            if (!baseDir.mkdirs()) {
-                throw UndertowLogger.ROOT_LOGGER.failedToCreatePersistentSessionDir(baseDir);
-            }
+        if (!baseDir.exists() && !baseDir.mkdirs()) {
+            throw UndertowLogger.ROOT_LOGGER.failedToCreatePersistentSessionDir(baseDir);
         }
         if (!baseDir.isDirectory()) {
             throw UndertowLogger.ROOT_LOGGER.invalidPersistentSessionDir(baseDir);

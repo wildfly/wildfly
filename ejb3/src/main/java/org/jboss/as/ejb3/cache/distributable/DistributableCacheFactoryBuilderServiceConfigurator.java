@@ -35,14 +35,15 @@ import org.jboss.as.ejb3.cache.Contextual;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.Module;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ejb.BeanContext;
+import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactoryProvider;
@@ -108,26 +109,21 @@ public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Id
     }
 
     @Override
-    public CapabilityServiceConfigurator getServiceConfigurator(ServiceName name, StatefulComponentDescription description, ComponentConfiguration configuration) {
-        BeanContext context = new BeanContext() {
+    public CapabilityServiceConfigurator getServiceConfigurator(DeploymentUnit unit, StatefulComponentDescription description, ComponentConfiguration configuration) {
+        StatefulBeanConfiguration context = new StatefulBeanConfiguration() {
             @Override
-            public String getBeanName() {
+            public String getName() {
                 return configuration.getComponentName();
             }
 
             @Override
             public ServiceName getDeploymentUnitServiceName() {
-                return description.getDeploymentUnitServiceName();
+                return unit.getServiceName();
             }
 
             @Override
-            public ModuleLoader getModuleLoader() {
-                return configuration.getModuleLoader();
-            }
-
-            @Override
-            public ClassLoader getClassLoader() {
-                return configuration.getModuleClassLoader();
+            public Module getModule() {
+                return unit.getAttachment(Attachments.MODULE);
             }
 
             @Override
@@ -143,7 +139,7 @@ public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Id
             }
         };
         CapabilityServiceConfigurator configurator = this.factory.getBeanManagerFactoryServiceConfigurator(context);
-        return new DistributableCacheFactoryServiceConfigurator<K, V>(name, configurator);
+        return new DistributableCacheFactoryServiceConfigurator<K, V>(description.getCacheFactoryServiceName(), configurator);
     }
 
     @Override

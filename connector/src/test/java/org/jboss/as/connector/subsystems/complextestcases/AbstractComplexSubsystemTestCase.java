@@ -33,7 +33,7 @@ import org.junit.Assert;
  *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
-public class AbstractComplexSubsystemTestCase extends AbstractSubsystemTest {
+public abstract class AbstractComplexSubsystemTestCase extends AbstractSubsystemTest {
 
     public AbstractComplexSubsystemTestCase(final String mainSubsystemName, final Extension mainExtension) {
         super(mainSubsystemName, mainExtension);

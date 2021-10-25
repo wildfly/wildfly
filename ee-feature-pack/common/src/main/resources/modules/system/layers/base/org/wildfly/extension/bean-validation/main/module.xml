@@ -33,7 +33,7 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-bean-validation}"/>
+        <artifact name="\${org.wildfly:wildfly-bean-validation@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>

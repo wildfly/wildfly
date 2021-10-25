@@ -58,7 +58,7 @@ By default, if your application does not define any specific _security-domain_ i
 In order to create a _key-store_ in Elytron subsystem, first create a Java Key Store as follows:
 [source,options="nowrap"]
 ----
-keytool -genkeypair -alias localhost -keyalg RSA -keysize 1024 -validity 365 -keystore keystore.jks -dname "CN=localhost" -keypass secret -storepass secret
+keytool -genkeypair -alias localhost -keyalg RSA -keysize 2048 -validity 365 -keystore keystore.jks -dname "CN=localhost" -keypass secret -storepass secret
 ----
 
 Once the _keystore.jks_ file is created, execute the following CLI commands to create a _key-store_ definition in Elytron:

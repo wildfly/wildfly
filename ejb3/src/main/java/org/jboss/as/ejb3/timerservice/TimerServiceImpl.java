@@ -562,6 +562,21 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     /**
+     * Retrieves the timer info from the timer database.
+     *
+     * @param timer the timer whose info to be retrieved
+     * @return the timer info from database; cached timer info if the timer persistence store is not database
+     */
+    public Serializable getPersistedTimerInfo(final TimerImpl timer) {
+        final TimerPersistence persistence = this.timerPersistence.getOptionalValue();
+        if (persistence instanceof DatabaseTimerPersistence) {
+            final DatabaseTimerPersistence databasePersistence = (DatabaseTimerPersistence) persistence;
+            return databasePersistence.getPersistedTimerInfo(timer);
+        }
+        return timer.getCachedTimerInfo();
+    }
+
+    /**
      * Returns the {@link TimedObjectInvoker} to which this timer service belongs
      *
      * @return
@@ -755,17 +770,12 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 ListIterator<ScheduleTimer> it = newAutoTimers.listIterator();
                 while (it.hasNext()) {
                     ScheduleTimer timer = it.next();
-                    final String methodName = timer.getMethod().getName();
-                    final String[] params = new String[timer.getMethod().getParameterTypes().length];
-                    for (int i = 0; i < timer.getMethod().getParameterTypes().length; ++i) {
-                        params[i] = timer.getMethod().getParameterTypes()[i].getName();
-                    }
-                    if (doesTimeoutMethodMatch(calendarTimer.getTimeoutMethod(), methodName, params)) {
+                    if (doesTimeoutMethodMatch(calendarTimer.getTimeoutMethod(), timer.getMethod())) {
 
                         //the timers have the same method.
                         //now lets make sure the schedule is the same, info is the same,
                         // and the timer does not change the persistence
-                        if (this.doesScheduleMatch(calendarTimer.getScheduleExpression(), timer.getScheduleExpression())
+                        if (doesScheduleMatch(calendarTimer.getScheduleExpression(), timer.getScheduleExpression())
                                 && Objects.equals(calendarTimer.info, timer.getTimerConfig().getInfo())
                                 && timer.getTimerConfig().isPersistent()) {
                             it.remove();
@@ -1037,15 +1047,19 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         return activeTimers;
     }
 
-    private boolean doesTimeoutMethodMatch(final Method timeoutMethod, final String timeoutMethodName, final String[] methodParams) {
-        if (timeoutMethod.getName().equals(timeoutMethodName) == false) {
-            return false;
+    private static boolean doesTimeoutMethodMatch(final Method timeoutMethod, final Method method2) {
+        if (timeoutMethod.getName().equals(method2.getName())) {
+            if (timeoutMethod.getParameterCount() == 0 && method2.getParameterCount() == 0) {
+                return true;
+            }
+            if (timeoutMethod.getParameterCount() == 1 && method2.getParameterCount() == 1) {
+                return timeoutMethod.getParameterTypes()[0] == method2.getParameterTypes()[0];
+            }
         }
-        final Class<?>[] timeoutMethodParams = timeoutMethod.getParameterTypes();
-        return this.methodParamsMatch(timeoutMethodParams, methodParams);
+        return false;
     }
 
-    private boolean doesScheduleMatch(final ScheduleExpression expression1, final ScheduleExpression expression2) {
+    private static boolean doesScheduleMatch(final ScheduleExpression expression1, final ScheduleExpression expression2) {
         if (!same(expression1.getDayOfMonth(), expression2.getDayOfMonth())) {
             return false;
         }
@@ -1079,7 +1093,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         return true;
     }
 
-    private boolean same(Object i1, Object i2) {
+    private static boolean same(Object i1, Object i2) {
         if (i1 == null && i2 != null) {
             return false;
         }
@@ -1090,22 +1104,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             return true;
         }
         return i1.equals(i2);
-    }
-
-
-    private boolean methodParamsMatch(Class<?>[] methodParams, String[] otherMethodParams) {
-        if (otherMethodParams == null) {
-            otherMethodParams = new String[0];
-        }
-        if (methodParams.length != otherMethodParams.length) {
-            return false;
-        }
-        for (int i = 0; i < methodParams.length; i++) {
-            if (!methodParams[i].getName().equals(otherMethodParams[i])) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**

@@ -92,8 +92,8 @@ public class MailSubsystem30TestCase extends MailSubsystemTestBase {
 
         MailSessionService service = (MailSessionService) customMailService.getService();
         Credentials credentials = service.getConfig().getCustomServers()[0].getCredentials();
-        Assert.assertEquals(credentials.getUsername(), "username");
-        Assert.assertEquals(credentials.getPassword(), "password");
+        Assert.assertEquals("username", credentials.getUsername());
+        Assert.assertEquals("password", credentials.getPassword());
 
 
     }

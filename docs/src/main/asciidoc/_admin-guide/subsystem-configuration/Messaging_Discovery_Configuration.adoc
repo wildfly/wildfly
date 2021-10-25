@@ -89,7 +89,7 @@ WARN  [org.apache.activemq.artemis.logs] (ServerService Thread Pool -- 84) AMQ20
 INFO  [org.apache.activemq.artemis.logs] (Network-Checker-0 (NetworkChecker)) AMQ201001: Network is unhealthy, stopping service ActiveMQServerImpl::serverUUID=76e64326-f78e-11ea-b7a5-3ce1a1c35439
 ----
 
-==== Warning
+=== Warning
 
 Make sure you understand your network topology as this is meant to validate your network. Using IPs that could eventually disappear or be partially visible may defeat the purpose. You can use a list of multiple IPs. Any successful ping will make the server OK to continue running
 

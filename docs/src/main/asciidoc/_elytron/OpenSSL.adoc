@@ -1,10 +1,12 @@
 [[OpenSSL]]
 = OpenSSL
 
+[[configuring-WildFly-to-use-the-OpenSSL-TLS-provider]]
 == Configuring WildFly to use the OpenSSL TLS provider
 
 There are a couple ways you can configure WildFly to use the OpenSSL TLS provider.
 
+[[configure-the-Elytron-subsystem-to-use-the-OpenSSL-TLS-provider-by-default]]
 === Configure the Elytron subsystem to use the OpenSSL TLS provider by default
 
 The following commands can be used to configure the Elytron subsystem so that the OpenSSL TLS
@@ -17,6 +19,7 @@ provider is used by default:
 reload
 ----
 
+[[configure-the-OpenSSL-TLS-provider-on-an-SSL-context]]
 === Configure the OpenSSL TLS provider on an SSL context
 
 Instead of configuring the Elytron subsystem to use the OpenSSL TLS provider by default,
@@ -42,6 +45,7 @@ If OpenSSL was loaded successfully, a message similar to the one below will occu
 15:37:59,814 INFO [org.wildfly.openssl.SSL] (MSC service thread 1-7) WFOPENSSL0002 OpenSSL Version OpenSSL 1.1.1d FIPS  10 Sep 2019
 ----
 
+[[enabling-TLSv1.3]]
 == Enabling TLSv1.3
 
 *WARNING* It is possible to use TLSv1.3 with the OpenSSL TLS provider when using OpenSSL 1.1.1 or higher and
@@ -53,6 +57,7 @@ by configuring the `cipher-suite-names` attribute for an SSL context. See the se
 <<configuring-a-client-sslcontext,Configuring a client SSLContext>> for more details. It is recommended to test
 for performance degradation prior to enabling TLSv1.3 in a production environment.
 
+[[adding-additional-native-libraries]]
 == Adding Additional Native Libraries
 
 By default, WildFly includes WildFly OpenSSL native libraries for commonly used platforms (Linux x86_64, Windows x86_64,
@@ -60,6 +65,7 @@ Mac OS X x86_64, and Linux s390). However, the https://github.com/wildfly-securi
 contains modules that can be used to build WildFly OpenSSL native libraries for other platforms as well. The steps needed to build and make
 use of a WildFly OpenSSL native library for a different platform than the ones provided by default will be described below.
 
+[[building-the-native-library]]
 === Building the Native Library
 
 Make sure you have cloned the https://github.com/wildfly-security/wildfly-openssl-natives[WildFly OpenSSL Natives] project
@@ -76,6 +82,7 @@ mvn clean install
 Notice that this now results in a `wildfly-openssl-linux-i386-VERSION.jar` in the `$WILDFLY_OPENSSL_NATIVES/linux-i386/target` directory.
 We'll make use of this in the next step.
 
+[[overriding-the-existing-WildFly-OpenSSL-module]]
 === Overriding the Existing WildFly OpenSSL Module
 
 We're going to add a new module that will override the existing WildFly OpenSSL module that's found in the

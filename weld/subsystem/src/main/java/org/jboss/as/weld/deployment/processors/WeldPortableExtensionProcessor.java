@@ -38,7 +38,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
 import org.jboss.as.weld._private.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.as.weld.logging.WeldLogger;
@@ -58,16 +57,10 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         // for war modules we require a beans.xml to load portable extensions
-        if (PrivateSubDeploymentMarker.isPrivate(deploymentUnit)) {
-            if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-                return;
-            }
-        } else {
+        if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             // if any deployments have a beans.xml we need to load portable extensions
             // even if this one does not.
-            if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-                return;
-            }
+            return;
         }
 
         WeldPortableExtensions extensions = WeldPortableExtensions.getPortableExtensions(deploymentUnit);

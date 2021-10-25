@@ -3,7 +3,7 @@
 
 The mod_cluster integration is done via the `mod_cluster` subsystem.
 
-[[configuration]]
+[[mod_cluster_subsystem_configuration]]
 == Configuration
 
 [[instance-id-or-jvmroute]]

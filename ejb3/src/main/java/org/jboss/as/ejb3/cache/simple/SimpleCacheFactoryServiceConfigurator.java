@@ -53,8 +53,8 @@ public class SimpleCacheFactoryServiceConfigurator<K, V extends Identifiable<K>>
     private final StatefulComponentDescription componentDescription;
     private final SupplierDependency<ServerEnvironment> environment = new ServiceSupplierDependency<>(ServerEnvironmentService.SERVICE_NAME);
 
-    public SimpleCacheFactoryServiceConfigurator(ServiceName name, StatefulComponentDescription description) {
-        super(name);
+    public SimpleCacheFactoryServiceConfigurator(StatefulComponentDescription description) {
+        super(description.getCacheFactoryServiceName());
         this.componentDescription = description;
     }
 
