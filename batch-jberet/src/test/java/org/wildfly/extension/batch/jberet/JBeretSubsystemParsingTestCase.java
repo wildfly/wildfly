@@ -59,7 +59,7 @@ public class JBeretSubsystemParsingTestCase extends AbstractBatchTestCase {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-batch-jberet_2_0.xsd";
+        return "schema/wildfly-batch-jberet_3_0.xsd";
     }
 
     @Test
