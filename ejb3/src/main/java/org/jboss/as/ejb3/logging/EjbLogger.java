@@ -677,8 +677,8 @@ public interface EjbLogger extends BasicLogger {
 //    @Message(id = 104, value = "Could not find marshaller factory for marshaller strategy %s")
 //    RuntimeException failedToFindMarshallerFactoryForStrategy(String marshallerStrategy);
 
-    @Message(id = 105, value = "%s is not an Jakarta Enterprise Beans component")
-    IllegalArgumentException notAnEJBComponent(Component component);
+//    @Message(id = 105, value = "%s is not an Jakarta Enterprise Beans component")
+//    IllegalArgumentException notAnEJBComponent(Component component);
 
     @Message(id = 106, value = "Could not load method param class %s of timeout method")
     RuntimeException failedToLoadTimeoutMethodParamClass(@Cause Exception cause, String className);
@@ -1202,13 +1202,13 @@ public interface EjbLogger extends BasicLogger {
 //    @Message(id = 200, value = "found more than one RA registered as %s")
 //    IllegalStateException multipleResourceAdapterRegistered(String resourceAdapterName);
 
-    /**
-     * Creates an exception indicating security is not enabled
-     *
-     * @return a {@link UnsupportedOperationException} for the error.
-     */
-    @Message(id = 201, value = "Security is not enabled")
-    UnsupportedOperationException securityNotEnabled();
+//    /**
+//     * Creates an exception indicating security is not enabled
+//     *
+//     * @return a {@link UnsupportedOperationException} for the error.
+//     */
+//    @Message(id = 201, value = "Security is not enabled")
+//    UnsupportedOperationException securityNotEnabled();
 
     /**
      * Creates an exception indicating it fail to complete task before time out
@@ -1704,11 +1704,11 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 262, value = "Could not load component class for component %s")
     DeploymentUnitProcessingException failToLoadComponentClass(@Cause Throwable t, String componentName);
 
-    /**
-     * Creates an exception indicating Could not load Jakarta Enterprise Beans view class
-     *
-     * @return a {@link RuntimeException} for the error.
-     */
+//    /**
+//     * Creates an exception indicating Could not load Jakarta Enterprise Beans view class
+//     *
+//     * @return a {@link RuntimeException} for the error.
+//     */
 //    @Message(id = 263, value = "Could not load Jakarta Enterprise Beans view class ")
 //    RuntimeException failToLoadEjbViewClass(@Cause Throwable e);
 
@@ -2053,132 +2053,132 @@ public interface EjbLogger extends BasicLogger {
     IllegalArgumentException executorIsNull();
 
     /**
-     * Creates an exception indicating the initialExpiration cannot be null while creating a timer
+     * Creates an exception indicating the invalid parameter name and value while creating a timer
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 306, value = "initialExpiration cannot be null while creating a timer")
-    IllegalArgumentException initialExpirationIsNullCreatingTimer();
+    @Message(id = 306, value = "Invalid timer parameter: %s = %s")
+    IllegalArgumentException invalidTimerParameter(String name, String valueAsString);
 
-    /**
-     * Creates an exception indicating the value cannot be negative while creating a timer
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 307, value = "%s cannot be negative while creating a timer")
-    IllegalArgumentException invalidInitialExpiration(String type);
+//    /**
+//     * Creates an exception indicating the value cannot be negative while creating a timer
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 307, value = "%s cannot be negative while creating a timer")
+//    IllegalArgumentException invalidInitialExpiration(String type);
 
-    /**
-     * Creates an exception indicating the expiration cannot be null while creating a single action timer
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 308, value = "expiration cannot be null while creating a single action timer")
-    IllegalArgumentException expirationIsNull();
+//    /**
+//     * Creates an exception indicating the expiration cannot be null while creating a single action timer
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 308, value = "expiration cannot be null while creating a single action timer")
+//    IllegalArgumentException expirationIsNull();
 
-    /**
-     * Creates an exception indicating the expiration.getTime() cannot be negative while creating a single action timer
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 309, value = "expiration.getTime() cannot be negative while creating a single action timer")
-    IllegalArgumentException invalidExpirationActionTimer();
+//    /**
+//     * Creates an exception indicating the expiration.getTime() cannot be negative while creating a single action timer
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 309, value = "expiration.getTime() cannot be negative while creating a single action timer")
+//    IllegalArgumentException invalidExpirationActionTimer();
 
-    /**
-     * Creates an exception indicating duration cannot be negative while creating single action timer
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 310, value = "duration cannot be negative while creating single action timer")
-    IllegalArgumentException invalidDurationActionTimer();
+//    /**
+//     * Creates an exception indicating duration cannot be negative while creating single action timer
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 310, value = "duration cannot be negative while creating single action timer")
+//    IllegalArgumentException invalidDurationActionTimer();
 
-    /**
-     * Creates an exception indicating Duration cannot negative while creating the timer
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 311, value = "Duration cannot negative while creating the timer")
-    IllegalArgumentException invalidDurationTimer();
+//    /**
+//     * Creates an exception indicating Duration cannot negative while creating the timer
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 311, value = "Duration cannot negative while creating the timer")
+//    IllegalArgumentException invalidDurationTimer();
 
-    /**
-     * Creates an exception indicating the expiration date cannot be null while creating a timer
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 312, value = "Expiration date cannot be null while creating a timer")
-    IllegalArgumentException expirationDateIsNull();
+//    /**
+//     * Creates an exception indicating the expiration date cannot be null while creating a timer
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 312, value = "Expiration date cannot be null while creating a timer")
+//    IllegalArgumentException expirationDateIsNull();
 
-    /**
-     * Creates an exception indicating the expiration.getTime() cannot be negative while creating a timer
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 313, value = "expiration.getTime() cannot be negative while creating a timer")
-    IllegalArgumentException invalidExpirationTimer();
+//    /**
+//     * Creates an exception indicating the expiration.getTime() cannot be negative while creating a timer
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 313, value = "expiration.getTime() cannot be negative while creating a timer")
+//    IllegalArgumentException invalidExpirationTimer();
 
-    /**
-     * Creates an exception indicating the initial duration cannot be negative while creating timer
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 314, value = "Initial duration cannot be negative while creating timer")
-    IllegalArgumentException invalidInitialDurationTimer();
+//    /**
+//     * Creates an exception indicating the initial duration cannot be negative while creating timer
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 314, value = "Initial duration cannot be negative while creating timer")
+//    IllegalArgumentException invalidInitialDurationTimer();
 
-    /**
-     * Creates an exception indicating the interval cannot be negative while creating timer
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 315, value = "Interval cannot be negative while creating timer")
-    IllegalArgumentException invalidIntervalTimer();
+//    /**
+//     * Creates an exception indicating the interval cannot be negative while creating timer
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 315, value = "Interval cannot be negative while creating timer")
+//    IllegalArgumentException invalidIntervalTimer();
 
-    /**
-     * Creates an exception indicating the initial expiration date cannot be null while creating a timer
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 316, value = "initial expiration date cannot be null while creating a timer")
-    IllegalArgumentException initialExpirationDateIsNull();
+//    /**
+//     * Creates an exception indicating the initial expiration date cannot be null while creating a timer
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 316, value = "initial expiration date cannot be null while creating a timer")
+//    IllegalArgumentException initialExpirationDateIsNull();
 
-    /**
-     * Creates an exception indicating the interval duration cannot be negative while creating timer
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 317, value = "interval duration cannot be negative while creating timer")
-    IllegalArgumentException invalidIntervalDurationTimer();
+//    /**
+//     * Creates an exception indicating the interval duration cannot be negative while creating timer
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 317, value = "interval duration cannot be negative while creating timer")
+//    IllegalArgumentException invalidIntervalDurationTimer();
 
-    /**
-     * Creates an exception indicating the creation of timers is not allowed during lifecycle callback of non-singleton Jakarta Enterprise Beans
-     *
-     * @return an {@link IllegalStateException} for the error.
-     */
-    @Message(id = 318, value = "Creation of timers is not allowed during lifecycle callback of non-singleton Jakarta Enterprise Beans")
-    IllegalStateException failToCreateTimerDoLifecycle();
+//    /**
+//     * Creates an exception indicating the creation of timers is not allowed during lifecycle callback of non-singleton Jakarta Enterprise Beans
+//     *
+//     * @return an {@link IllegalStateException} for the error.
+//     */
+//    @Message(id = 318, value = "Creation of timers is not allowed during lifecycle callback of non-singleton Jakarta Enterprise Beans")
+//    IllegalStateException failToCreateTimerDoLifecycle();
 
-    /**
-     * Creates an exception indicating initial expiration is null
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 319, value = "initial expiration is null")
-    IllegalArgumentException initialExpirationIsNull();
+//    /**
+//     * Creates an exception indicating initial expiration is null
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 319, value = "initial expiration is null")
+//    IllegalArgumentException initialExpirationIsNull();
 
-    /**
-     * Creates an exception indicating the interval duration is negative
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 320, value = "interval duration is negative")
-    IllegalArgumentException invalidIntervalDuration();
+//    /**
+//     * Creates an exception indicating the interval duration is negative
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 320, value = "interval duration is negative")
+//    IllegalArgumentException invalidIntervalDuration();
 
-    /**
-     * Creates an exception indicating the schedule is null
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 321, value = "schedule is null")
-    IllegalArgumentException scheduleIsNull();
+//    /**
+//     * Creates an exception indicating the schedule is null
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 321, value = "schedule is null")
+//    IllegalArgumentException scheduleIsNull();
 
 //    /**
 //     * Creates an exception indicating it could not start transaction
@@ -2943,8 +2943,8 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 443, value = "Enterprise Beans 3.1 FR 13.3.3: BMT bean %s should complete transaction before returning.")
     String transactionNotComplete(String componentName);
 
-    @Message(id = 444, value = "Timer service resource %s is not suitable for the target. Only a configuration with a single file-store and no other configured data-store is supported on target")
-    String untransformableTimerService(PathAddress address);
+//    @Message(id = 444, value = "Timer service resource %s is not suitable for the target. Only a configuration with a single file-store and no other configured data-store is supported on target")
+//    String untransformableTimerService(PathAddress address);
 
     @Deprecated
     @Message(id = 445, value = "Detected asymmetric usage of cache")
@@ -3107,8 +3107,8 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 487, value = "Unexpected invocation state %s")
     void unexpectedInvocationState(int state);
 
-    @Message(id = 488, value = "Unauthenticated (anonymous) access to this Jakarta Enterprise Beans method is not authorized")
-    SecurityException ejbAuthenticationRequired();
+//    @Message(id = 488, value = "Unauthenticated (anonymous) access to this Jakarta Enterprise Beans method is not authorized")
+//    SecurityException ejbAuthenticationRequired();
 
     @LogMessage(level = ERROR)
     @Message(id = 489, value = "Timer %s not running as transaction could not be started")

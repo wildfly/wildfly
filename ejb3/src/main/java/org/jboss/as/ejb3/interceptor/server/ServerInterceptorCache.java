@@ -22,6 +22,17 @@
 
 package org.jboss.as.ejb3.interceptor.server;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.AroundTimeout;
+import javax.interceptor.InvocationContext;
+
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.ejb3.component.ContainerInterceptorMethodInterceptorFactory;
@@ -42,23 +53,10 @@ import org.jboss.msc.value.CachedValue;
 import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.Value;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.AroundTimeout;
-import javax.interceptor.InvocationContext;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public class ServerInterceptorCache {
-
-    private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class[0];
 
     private final List<ServerInterceptorMetaData> serverInterceptorMetaData;
 
@@ -130,7 +128,7 @@ public class ServerInterceptorCache {
                 final MethodInfo methodInfo = annotation.target().asMethod();
                 final Constructor<?> constructor;
                 try {
-                    constructor = interceptorClass.getConstructor(EMPTY_CLASS_ARRAY);
+                    constructor = interceptorClass.getConstructor();
                 } catch (NoSuchMethodException e) {
                     throw EjbLogger.ROOT_LOGGER.serverInterceptorNoEmptyConstructor(interceptorClass.toString(), e);
                 }
@@ -139,7 +137,7 @@ public class ServerInterceptorCache {
                     final InterceptorFactory interceptorFactory = createInterceptorFactoryForServerInterceptor(annotatedMethod, constructor);
                     interceptorFactories.add(interceptorFactory);
                 } catch (NoSuchMethodException e) {
-                    EjbLogger.ROOT_LOGGER.serverInterceptorInvalidMethod(methodInfo.name(), interceptorClass.toString(), annotationClass.toString(), e);
+                    throw EjbLogger.ROOT_LOGGER.serverInterceptorInvalidMethod(methodInfo.name(), interceptorClass.toString(), annotationClass.toString(), e);
                 }
             }
         }
