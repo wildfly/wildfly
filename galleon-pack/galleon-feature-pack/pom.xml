@@ -84,6 +84,18 @@
                             <resources>
                                 <resource>
                                     <directory>${mp.galleon.common.resources.directory}</directory>
+                                    <excludes>
+                                        <exclude>modules/**/module.xml</exclude>
+                                        <exclude>license/*.xml</exclude>
+                                    </excludes>
+                                </resource>
+                                <resource>
+                                    <directory>${mp.galleon.common.resources.directory}</directory>
+                                    <includes>
+                                        <include>modules/**/module.xml</include>
+                                        <include>license/*.xml</include>
+                                    </includes>
+                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -100,6 +112,18 @@
                             <resources>
                                 <resource>
                                     <directory>${oidc.galleon.common.resources.directory}</directory>
+                                    <excludes>
+                                        <exclude>modules/**/module.xml</exclude>
+                                        <exclude>license/*.xml</exclude>
+                                    </excludes>
+                                </resource>
+                                <resource>
+                                    <directory>${oidc.galleon.common.resources.directory}</directory>
+                                    <includes>
+                                        <include>modules/**/module.xml</include>
+                                        <include>license/*.xml</include>
+                                    </includes>
+                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
