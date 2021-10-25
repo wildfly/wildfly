@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:batch-jberet:2.0">
+<subsystem xmlns="urn:jboss:domain:batch-jberet:3.0">
     <default-job-repository name="in-memory"/>
     <default-thread-pool name="batch"/>
     <job-repository name="in-memory">
