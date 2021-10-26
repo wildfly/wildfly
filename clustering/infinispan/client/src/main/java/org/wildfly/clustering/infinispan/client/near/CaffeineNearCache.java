@@ -32,8 +32,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 
 /**
  * Near cache implementation based on a Caffeine cache.
- * Workaround for ISPN-10248, {@link NearCache} is package protected.
- * To be refactored into org.wildfly.clustering.infinispan.client.near package once Infinispan increases visibility of {@link NearCache}.
  * @author Paul Ferraro
  */
 public class CaffeineNearCache<K, V> implements NearCache<K, V> {
