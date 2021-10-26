@@ -38,7 +38,8 @@ enum Namespace {
 
     private static final Map<String, Namespace> MAP = Map.of(
             BATCH_1_0.name, BATCH_1_0,
-            BATCH_2_0.name, BATCH_2_0
+            BATCH_2_0.name, BATCH_2_0,
+            BATCH_3_0.name, BATCH_3_0
     );
 
     /**

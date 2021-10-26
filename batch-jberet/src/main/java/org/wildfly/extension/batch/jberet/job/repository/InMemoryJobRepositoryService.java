@@ -38,6 +38,10 @@ public class InMemoryJobRepositoryService extends JobRepositoryService implement
 
     private volatile InMemoryRepository repository;
 
+    public InMemoryJobRepositoryService(Integer executionRecordsLimit) {
+        super(executionRecordsLimit);
+    }
+
     @Override
     public void startJobRepository(final StartContext context) throws StartException {
         repository = new InMemoryRepository();

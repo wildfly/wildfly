@@ -53,6 +53,7 @@ public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, 
         String dataSourceName = null;
         String jobExecutorName = null;
         Boolean restartJobsOnResume = null;
+        Integer executionRecordsLimit = null;
         boolean empty = true;
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -61,6 +62,8 @@ public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, 
 
             // Process the job repository
             if (element == Element.JOB_REPOSITORY) {
+                executionRecordsLimit = parseExecutionRecordsLimit(reader);
+
                 // Only one repository can be defined
                 if (jobRepository != null || jobRepositoryName != null) {
                     BatchLogger.LOGGER.multipleJobRepositoriesFound();
@@ -104,11 +107,19 @@ public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, 
             BatchLogger.LOGGER.debugf("An empty batch element in the deployment descriptor was found for %s.", deploymentUnit.getName());
             return null;
         }
-        return new BatchEnvironmentMetaData(jobRepository, jobRepositoryName, dataSourceName, jobExecutorName, restartJobsOnResume);
+        return new BatchEnvironmentMetaData(jobRepository, jobRepositoryName, dataSourceName, jobExecutorName,
+                restartJobsOnResume, executionRecordsLimit);
     }
 
     String parseJdbcJobRepository(final XMLExtendedStreamReader reader) throws XMLStreamException {
         throw ParseUtils.unexpectedElement(reader);
+    }
+
+    Integer parseExecutionRecordsLimit(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        if (reader.getAttributeCount() > 0) {
+            throw ParseUtils.unexpectedAttribute(reader, 0);
+        }
+        return null;
     }
 
     static String readRequiredAttribute(final XMLExtendedStreamReader reader, final Attribute attribute) throws XMLStreamException {

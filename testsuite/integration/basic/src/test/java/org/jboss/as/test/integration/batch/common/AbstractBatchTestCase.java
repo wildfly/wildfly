@@ -125,7 +125,7 @@ public abstract class AbstractBatchTestCase {
         return new StringAsset(xml);
     }
 
-    protected static void waitForTermination(final JobExecution jobExecution, final int timeout) {
+    public static void waitForTermination(final JobExecution jobExecution, final int timeout) {
         long waitTimeout = TimeoutUtil.adjust(timeout * 1000);
         long sleep = 100L;
         while (true) {
