@@ -21,15 +21,14 @@
  */
 package org.wildfly.clustering.web.infinispan.sso;
 
-import org.infinispan.Cache;
+import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 
 /**
  * Configuration for an SSO manager factory.
  * @author Paul Ferraro
  */
-public interface InfinispanSSOManagerFactoryConfiguration {
-    <K, V> Cache<K, V> getCache();
+public interface InfinispanSSOManagerFactoryConfiguration extends InfinispanConfiguration {
 
     KeyAffinityServiceFactory getKeyAffinityServiceFactory();
 }
