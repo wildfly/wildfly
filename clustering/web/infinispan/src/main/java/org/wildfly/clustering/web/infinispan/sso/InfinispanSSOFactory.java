@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.infinispan.Cache;
-import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.LocalContextFactory;
@@ -46,16 +45,14 @@ import org.wildfly.clustering.web.sso.Sessions;
 public class InfinispanSSOFactory<AV, SV, A, D, S, L> implements SSOFactory<Map.Entry<A, AtomicReference<L>>, SV, A, D, S, L> {
 
     private final SessionsFactory<SV, D, S> sessionsFactory;
-    private final Cache<AuthenticationKey, AuthenticationEntry<AV, L>> cache;
     private final Cache<AuthenticationKey, AuthenticationEntry<AV, L>> findCache;
     private final Cache<AuthenticationKey, AuthenticationEntry<AV, L>> writeCache;
     private final Marshaller<A, AV> marshaller;
     private final LocalContextFactory<L> localContextFactory;
 
     public InfinispanSSOFactory(InfinispanConfiguration configuration, Marshaller<A, AV> marshaller, LocalContextFactory<L> localContextFactory, SessionsFactory<SV, D, S> sessionsFactory) {
-        this.cache = configuration.getCache();
         this.writeCache = configuration.getWriteOnlyCache();
-        this.findCache = configuration.getCacheProperties().isLockOnRead() ? this.cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.cache;
+        this.findCache = configuration.getReadForUpdateCache();
         this.marshaller = marshaller;
         this.localContextFactory = localContextFactory;
         this.sessionsFactory = sessionsFactory;

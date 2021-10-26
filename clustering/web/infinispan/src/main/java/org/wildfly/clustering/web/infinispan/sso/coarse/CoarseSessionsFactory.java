@@ -45,12 +45,14 @@ public class CoarseSessionsFactory<D, S> implements SessionsFactory<Map<D, S>, D
 
     private final SessionsFilter<D, S> filter = new SessionsFilter<>();
     private final Cache<CoarseSessionsKey, Map<D, S>> cache;
+    private final Cache<CoarseSessionsKey, Map<D, S>> findCache;
     private final Cache<CoarseSessionsKey, Map<D, S>> createCache;
     private final CacheProperties properties;
 
     public CoarseSessionsFactory(InfinispanConfiguration configuration) {
         this.cache = configuration.getCache();
         this.createCache = configuration.getWriteOnlyCache();
+        this.findCache = configuration.getReadForUpdateCache();
         this.properties = configuration.getCacheProperties();
     }
 
@@ -70,7 +72,7 @@ public class CoarseSessionsFactory<D, S> implements SessionsFactory<Map<D, S>, D
 
     @Override
     public Map<D, S> findValue(String id) {
-        return this.cache.get(new CoarseSessionsKey(id));
+        return this.findCache.get(new CoarseSessionsKey(id));
     }
 
     @Override

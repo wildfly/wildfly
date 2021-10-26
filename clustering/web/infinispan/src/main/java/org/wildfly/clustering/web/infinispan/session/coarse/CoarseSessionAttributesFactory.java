@@ -64,6 +64,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
     private final Cache<SessionAttributesKey, V> cache;
     private final Cache<SessionAttributesKey, V> writeCache;
     private final Cache<SessionAttributesKey, V> silentCache;
+    private final Cache<SessionAttributesKey, V> findCache;
     private final Marshaller<Map<String, Object>, V> marshaller;
     private final CacheProperties properties;
     private final Immutability immutability;
@@ -78,6 +79,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
         this.cache = configuration.getCache();
         this.writeCache = configuration.getWriteOnlyCache();
         this.silentCache = configuration.getSilentWriteCache();
+        this.findCache = configuration.getReadForUpdateCache();
         this.marshaller = configuration.getMarshaller();
         this.immutability = configuration.getImmutability();
         this.properties = configuration.getCacheProperties();
@@ -121,16 +123,16 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
 
     @Override
     public Map<String, Object> findValue(String id) {
-        return this.getValue(id, true);
+        return this.getValue(this.findCache, id, true);
     }
 
     @Override
     public Map<String, Object> tryValue(String id) {
-        return this.getValue(id, false);
+        return this.getValue(this.cache, id, false);
     }
 
-    private Map<String, Object> getValue(String id, boolean purgeIfInvalid) {
-        V value = this.cache.get(new SessionAttributesKey(id));
+    private Map<String, Object> getValue(Cache<SessionAttributesKey, V> cache, String id, boolean purgeIfInvalid) {
+        V value = cache.get(new SessionAttributesKey(id));
         if (value != null) {
             try {
                 return this.marshaller.read(value);
