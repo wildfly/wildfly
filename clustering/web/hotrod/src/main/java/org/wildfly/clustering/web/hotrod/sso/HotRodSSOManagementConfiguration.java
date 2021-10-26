@@ -22,11 +22,11 @@
 
 package org.wildfly.clustering.web.hotrod.sso;
 
-import org.wildfly.clustering.web.hotrod.HotRodConfiguration;
+import org.wildfly.clustering.web.hotrod.RemoteCacheConfiguration;
 
 /**
  * @author Paul Ferraro
  */
-public interface HotRodSSOManagementConfiguration extends HotRodConfiguration {
+public interface HotRodSSOManagementConfiguration extends RemoteCacheConfiguration {
 
 }

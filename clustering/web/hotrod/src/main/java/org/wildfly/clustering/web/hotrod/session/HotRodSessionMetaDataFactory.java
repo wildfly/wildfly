@@ -33,6 +33,7 @@ import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.hotrod.HotRodConfiguration;
 import org.wildfly.clustering.ee.hotrod.RemoteCacheMutatorFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaData;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
@@ -59,7 +60,7 @@ public class HotRodSessionMetaDataFactory<L> implements SessionMetaDataFactory<C
     private final MutatorFactory<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataMutatorFactory;
     private final CacheProperties properties;
 
-    public HotRodSessionMetaDataFactory(HotRodSessionMetaDataFactoryConfiguration configuration) {
+    public HotRodSessionMetaDataFactory(HotRodConfiguration configuration) {
         this.cache = configuration.getCache();
         this.creationMetaDataCache = configuration.getCache();
         this.creationMetaDataMutatorFactory = new RemoteCacheMutatorFactory<>(this.creationMetaDataCache, new Function<SessionCreationMetaDataEntry<L>, Duration>() {

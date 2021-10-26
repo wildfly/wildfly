@@ -23,9 +23,10 @@
 package org.wildfly.clustering.web.hotrod;
 
 /**
+ * Configuration identifying a remote cache.
  * @author Paul Ferraro
  */
-public interface HotRodConfiguration {
+public interface RemoteCacheConfiguration {
     String getContainerName();
 
     String getConfigurationName();
