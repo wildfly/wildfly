@@ -519,6 +519,14 @@
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-jsf</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-jsf-injection</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-mail</artifactId>
                 </exclusion>
                 <exclusion>
@@ -1053,6 +1061,18 @@
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-ee-security-jakarta</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-jsf-injection-jakarta</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-jsf-jakarta</artifactId>
             <scope>provided</scope>
         </dependency>
 
