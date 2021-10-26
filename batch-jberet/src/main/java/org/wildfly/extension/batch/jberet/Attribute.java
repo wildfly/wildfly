@@ -31,12 +31,14 @@ public enum Attribute {
     UNKNOWN(null),
     DATA_SOURCE("data-source"),
     NAME("name"),
-    VALUE("value");
+    VALUE("value"),
+    EXECUTION_RECORDS_LIMIT("execution-records-limit");
 
     private static final Map<String, Attribute> MAP = Map.of(
             DATA_SOURCE.name, DATA_SOURCE,
             NAME.name, NAME,
-            VALUE.name, VALUE);
+            VALUE.name, VALUE,
+            EXECUTION_RECORDS_LIMIT.name, EXECUTION_RECORDS_LIMIT);
 
     private final String name;
 

@@ -37,8 +37,12 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.SubsystemOperations;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.extension.batch.jberet.job.repository.CommonAttributes;
 import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 public class SubsystemOperationsTestCase extends AbstractBatchTestCase {
 
@@ -182,5 +186,20 @@ public class SubsystemOperationsTestCase extends AbstractBatchTestCase {
             assertEquals(e, Namespace.forUri(e.getUriString()));
         }
         assertEquals(Namespace.UNKNOWN, Namespace.forUri("yyy"));
+    }
+
+    @Test
+    public void testWriteExecutionRecordsLimit() throws Exception {
+        String[] resourcePath = new String[] {SUBSYSTEM, BatchSubsystemDefinition.NAME, InMemoryJobRepositoryDefinition.NAME, "in-memory"};
+
+        final KernelServices kernelServices = boot();
+        Assert.assertEquals(200, kernelServices.readWholeModel().get(resourcePath).get("execution-records-limit").asInt());
+
+        final ModelNode address = createAddress(InMemoryJobRepositoryDefinition.NAME, "in-memory");
+        ModelNode operation = SubsystemOperations.createWriteAttributeOperation(address, CommonAttributes.EXECUTION_RECORDS_LIMIT, 250);
+
+        executeOperation(kernelServices, operation);
+
+        Assert.assertEquals(250, kernelServices.readWholeModel().get(resourcePath).get("execution-records-limit").asInt());
     }
 }

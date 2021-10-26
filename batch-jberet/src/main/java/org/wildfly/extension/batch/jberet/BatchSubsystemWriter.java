@@ -31,6 +31,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.wildfly.extension.batch.jberet.job.repository.CommonAttributes;
 import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.job.repository.JdbcJobRepositoryDefinition;
 import org.wildfly.extension.batch.jberet.thread.pool.BatchThreadPoolResourceDefinition;
@@ -56,6 +57,7 @@ public class BatchSubsystemWriter implements XMLElementWriter<SubsystemMarshalli
             for (Property property : repositories) {
                 writer.writeStartElement(Element.JOB_REPOSITORY.getLocalName());
                 writeNameAttribute(writer, property.getName());
+                CommonAttributes.EXECUTION_RECORDS_LIMIT.marshallAsAttribute(property.getValue(), writer);
                 writer.writeEmptyElement(Element.IN_MEMORY.getLocalName());
                 writer.writeEndElement(); // end job-repository
             }
@@ -67,6 +69,7 @@ public class BatchSubsystemWriter implements XMLElementWriter<SubsystemMarshalli
             for (Property property : repositories) {
                 writer.writeStartElement(Element.JOB_REPOSITORY.getLocalName());
                 writeNameAttribute(writer, property.getName());
+                CommonAttributes.EXECUTION_RECORDS_LIMIT.marshallAsAttribute(property.getValue(), writer);
                 writer.writeStartElement(Element.JDBC.getLocalName());
                 JdbcJobRepositoryDefinition.DATA_SOURCE.marshallAsAttribute(property.getValue(), writer);
                 writer.writeEndElement();

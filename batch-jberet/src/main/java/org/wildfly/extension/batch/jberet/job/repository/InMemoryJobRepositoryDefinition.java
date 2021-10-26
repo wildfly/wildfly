@@ -28,7 +28,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.batch.jberet.BatchResourceDescriptionResolver;
 import org.wildfly.extension.batch.jberet._private.Capabilities;
@@ -52,17 +54,26 @@ public class InMemoryJobRepositoryDefinition extends SimpleResourceDefinition {
         );
     }
 
+    @Override
+    public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
+        super.registerAttributes(resourceRegistration);
+        resourceRegistration.registerReadWriteAttribute(CommonAttributes.EXECUTION_RECORDS_LIMIT, null,
+                new ReloadRequiredWriteAttributeHandler(CommonAttributes.EXECUTION_RECORDS_LIMIT));
+    }
+
     private static class InMemoryAddHandler extends AbstractAddStepHandler {
         InMemoryAddHandler() {
-            super(Capabilities.JOB_REPOSITORY_CAPABILITY);
+            super(Capabilities.JOB_REPOSITORY_CAPABILITY, CommonAttributes.EXECUTION_RECORDS_LIMIT);
         }
 
         @Override
         protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
             super.performRuntime(context, operation, model);
             final String name = context.getCurrentAddressValue();
-            context.getServiceTarget().addService(context.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), name, JobRepository.class),
-                    new InMemoryJobRepositoryService()).install();
+            final Integer executionRecordsLimit = CommonAttributes.EXECUTION_RECORDS_LIMIT.resolveModelAttribute(context, model).asIntOrNull();
+            context.getServiceTarget().addService(context.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), name, JobRepository.class))
+                    .setInstance(new InMemoryJobRepositoryService(executionRecordsLimit))
+                    .install();
         }
     }
 }

@@ -24,7 +24,7 @@
     <default-job-repository name="in-memory"/>
     <default-thread-pool name="batch"/>
     <restart-jobs-on-resume value="false"/>
-    <job-repository name="in-memory">
+    <job-repository name="in-memory" execution-records-limit="200">
         <in-memory/>
     </job-repository>
 

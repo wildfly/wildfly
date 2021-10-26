@@ -99,6 +99,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             String dataSourceName = null;
             String jobExecutorName = null;
             Boolean restartJobsOnResume = null;
+            Integer executionRecordsLimit = null;
 
             // Check for a deployment descriptor
             BatchEnvironmentMetaData metaData = deploymentUnit.getAttachment(BatchAttachments.BATCH_ENVIRONMENT_META_DATA);
@@ -115,6 +116,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                 dataSourceName = metaData.getDataSourceName();
                 jobExecutorName = metaData.getExecutorName();
                 restartJobsOnResume = metaData.getRestartJobsOnResume();
+                executionRecordsLimit = metaData.getExecutionRecordsLimit();
             }
 
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
@@ -161,7 +163,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                 serviceBuilder.addDependency(support.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), jobRepositoryName), JobRepository.class, service.getJobRepositoryInjector());
             } else if (dataSourceName != null) {
                 // Register a jdbc job repository with data-source
-                final JdbcJobRepositoryService jdbcJobRepositoryService = new JdbcJobRepositoryService();
+                final JdbcJobRepositoryService jdbcJobRepositoryService = new JdbcJobRepositoryService(executionRecordsLimit);
                 final ServiceName jobRepositoryServiceName = support.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), deploymentName);
                 final ServiceBuilder<JobRepository> jobRepositoryServiceBuilder =
                         Services.addServerExecutorDependency(serviceTarget.addService(jobRepositoryServiceName, jdbcJobRepositoryService),

@@ -23,7 +23,7 @@
 <subsystem xmlns="urn:jboss:domain:batch-jberet:3.0">
     <default-job-repository name="jdbc"/>
     <default-thread-pool name="batch"/>
-    <job-repository name="jdbc">
+    <job-repository name="jdbc" execution-records-limit="200">
         <jdbc data-source="ExampleDS"/>
     </job-repository>
 
