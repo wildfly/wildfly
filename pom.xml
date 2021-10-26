@@ -307,7 +307,7 @@
         <version.com.ibm.async.asyncutil>0.1.0</version.com.ibm.async.asyncutil>
         <version.com.microsoft.azure>8.6.5</version.com.microsoft.azure>
         <version.com.nimbus.jose-jwt>8.11</version.com.nimbus.jose-jwt>
-        <version.com.squareup.okhttp3>3.9.0</version.com.squareup.okhttp3>
+        <version.com.squareup.okhttp3>3.14.9</version.com.squareup.okhttp3>
         <version.com.squareup.okio>1.17.5</version.com.squareup.okio>
         <version.com.sun.activation.jakarta.activation>1.2.2</version.com.sun.activation.jakarta.activation>
         <version.com.sun.faces>2.3.14.SP04</version.com.sun.faces>
