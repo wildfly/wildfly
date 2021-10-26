@@ -562,11 +562,10 @@
 
 	<!-- False positive, from RedHat analyze (https://access.redhat.com/security/cve/CVE-2021-31917) only DataGrid is affected but not JBoss EAP. -->
     <suppress>
-       <notes><![CDATA[
-       file name: infinispan-core-11.0.4.Final.jar
-       ]]></notes>
-       <packageUrl regex="true">^pkg:maven/org\.infinispan/infinispan\-core@.*$</packageUrl>
-       <cve>CVE-2021-31917</cve>
+        <notes><![CDATA[
+    file name: infinispan-core-11.0.4.Final.jar
+    ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.infinispan/infinispan\-.*@.*$</packageUrl>
+        <cve>CVE-2021-31917</cve>
     </suppress>
-
 </suppressions>
