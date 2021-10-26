@@ -212,8 +212,8 @@
     <!-- [wildfly] Used only in tests, not deployed  -->
     <suppress>
         <notes><![CDATA[
-	   file name: apacheds-all-2.0.0-M24.jar (shaded: org.apache.directory.api:api-ldap-net-mina:1.0.0)
-	   ]]></notes>
+       file name: apacheds-all-2.0.0-M24.jar (shaded: org.apache.directory.api:api-ldap-net-mina:1.0.0)
+       ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.directory\.api/api\-.*@.*$</packageUrl>
         <cve>CVE-2015-3250</cve>
         <cve>CVE-2018-1337</cve>
@@ -310,8 +310,8 @@
     <!-- Vulnerabilities do not apply to xjc plugins -->
     <suppress>
         <notes><![CDATA[
-	   file name: cxf-xjc-dv-3.2.3.jar
-	   ]]></notes>
+       file name: cxf-xjc-dv-3.2.3.jar
+       ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.cxf\.xjcplugins/cxf\-xjc\-dv@.*$</packageUrl>
         <cve>CVE-2019-12406</cve>
         <cve>CVE-2019-12419</cve>
@@ -322,8 +322,8 @@
     <!-- Vulnerabilities do not apply to xjc plugins -->
     <suppress>
         <notes><![CDATA[
-	   file name: cxf-xjc-ts-3.2.3.jar
-	   ]]></notes>
+       file name: cxf-xjc-ts-3.2.3.jar
+       ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.cxf\.xjcplugins/cxf\-xjc\-ts@.*$</packageUrl>
         <cve>CVE-2019-12406</cve>
         <cve>CVE-2019-12419</cve>
@@ -334,8 +334,8 @@
     <!-- Vulnerabilities do not apply to xjc plugins -->
     <suppress>
         <notes><![CDATA[
-	   file name: cxf-xjc-bug986-3.2.3.jar
-	   ]]></notes>
+       file name: cxf-xjc-bug986-3.2.3.jar
+       ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.cxf\.xjcplugins/cxf\-xjc\-bug986@.*$</packageUrl>
         <cve>CVE-2019-12406</cve>
         <cve>CVE-2019-12419</cve>
@@ -346,8 +346,8 @@
     <!-- Vulnerabilities do not apply to xjc plugins -->
     <suppress>
         <notes><![CDATA[
-	   file name: cxf-xjc-boolean-3.2.3.jar
-	   ]]></notes>
+       file name: cxf-xjc-boolean-3.2.3.jar
+       ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.cxf\.xjcplugins/cxf\-xjc\-boolean@.*$</packageUrl>
         <cve>CVE-2019-12406</cve>
         <cve>CVE-2019-12419</cve>
@@ -358,8 +358,8 @@
     <!-- This vulnerability affects all versions of Apache CXF prior to 3.3.5 and 3.2.12. -->
     <suppress>
         <notes><![CDATA[
-	   file name: cxf-rt-databinding-aegis-3.2.12.jar
-	   ]]></notes>
+       file name: cxf-rt-databinding-aegis-3.2.12.jar
+       ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.cxf/cxf\-rt\-databinding\-aegis@.*$</packageUrl>
         <cve>CVE-2019-17573</cve>
     </suppress>
@@ -367,8 +367,8 @@
     <!-- This vulnerability affects all versions of Apache CXF prior to 3.3.5 and 3.2.12. -->
     <suppress>
         <notes><![CDATA[
-	   file name: cxf-core-3.2.12.jar
-	   ]]></notes>
+       file name: cxf-core-3.2.12.jar
+       ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.cxf/cxf\-core@.*$</packageUrl>
         <cve>CVE-2019-17573</cve>
     </suppress>
@@ -558,6 +558,15 @@
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.cxf\.xjcplugins.*$</packageUrl>
         <cve>CVE-2021-30468</cve>
+    </suppress>
+
+	<!-- False positive, from RedHat analyze (https://access.redhat.com/security/cve/CVE-2021-31917) only DataGrid is affected but not JBoss EAP. -->
+    <suppress>
+       <notes><![CDATA[
+       file name: infinispan-core-11.0.4.Final.jar
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.infinispan/infinispan\-core@.*$</packageUrl>
+       <cve>CVE-2021-31917</cve>
     </suppress>
 
 </suppressions>
