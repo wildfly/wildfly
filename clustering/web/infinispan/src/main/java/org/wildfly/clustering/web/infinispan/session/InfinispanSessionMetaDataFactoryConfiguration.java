@@ -24,6 +24,8 @@ package org.wildfly.clustering.web.infinispan.session;
 
 import java.util.concurrent.Executor;
 
+import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
+
 /**
  * @author Paul Ferraro
  */

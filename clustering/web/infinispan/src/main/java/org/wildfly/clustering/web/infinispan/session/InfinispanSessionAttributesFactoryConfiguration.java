@@ -26,6 +26,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Function;
 
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
 import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactoryConfiguration;
 
