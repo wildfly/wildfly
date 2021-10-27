@@ -36,8 +36,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 
 /**
  * Near cache service that constructs its near cache using a generic factory.
- * Workaround for ISPN-10248, {@link NearCache} is package protected.
- * To be refactored into org.wildfly.clustering.infinispan.client.near package once Infinispan increases visibility of {@link NearCache}.
  * @author Paul Ferraro
  */
 public class CaffeineNearCacheService<K, V> extends NearCacheService<K, V> {
