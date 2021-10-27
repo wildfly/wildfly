@@ -22,8 +22,6 @@
     <modules>
         <module>subsystem</module>
         <module>spi</module>
-        <module>hibernate4_1</module>
-        <module>hibernate4_3</module>
         <module>hibernate5</module>
         <module>hibernate5_3</module>
         <module>hibernate-transformer</module>
