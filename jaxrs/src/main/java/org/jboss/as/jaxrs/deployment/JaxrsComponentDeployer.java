@@ -73,6 +73,10 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
         if (resteasy == null) {
             return;
         }
+
+        // Set up the context for managed threads
+        phaseContext.getDeploymentUnit().addToAttachmentList(Attachments.ADDITIONAL_FACTORIES, ResteasyContextHandleFactory.INSTANCE);
+
         // right now I only support resources
         if (!resteasy.isScanResources()) return;
 
