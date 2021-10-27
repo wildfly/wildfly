@@ -1,0 +1,171 @@
+<subsystem xmlns="urn:wildfly:elytron-oidc-client:1.0">
+    <realm name="master-expressions">
+        <realm-public-key>${exp.realm-public-key:MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB}</realm-public-key>
+        <auth-server-url>${exp.auth-server-url:http://localhost:8080/auth}</auth-server-url>
+        <truststore>${exp.truststore:truststore.jks}</truststore>
+        <truststore-password>${exp.truststore-secret:secret}</truststore-password>
+        <ssl-required>${exp.ssl-required:EXTERNAL}</ssl-required>
+        <confidential-port>${exp.confidential-port:443}</confidential-port>
+        <allow-any-hostname>${exp.allow-any-hostname:false}</allow-any-hostname>
+        <disable-trust-manager>${exp.disable-trust-manager:true}</disable-trust-manager>
+        <connection-pool-size>${exp.connection-pool-size:20}</connection-pool-size>
+        <enable-cors>${exp.enable-cors:true}</enable-cors>
+        <client-keystore>${exp.client-keystore:keys.jks}</client-keystore>
+        <client-keystore-password>${exp.client-keystore-password:secret}</client-keystore-password>
+        <client-key-password>${exp.client-key-password:secret}</client-key-password>
+        <cors-max-age>${exp.cors-max-age:600}</cors-max-age>
+        <cors-allowed-headers>${exp.cors-allowed-headers:X-Custom}</cors-allowed-headers>
+        <cors-allowed-methods>${exp.cors-allowed-methods:PUT,POST,DELETE,GET}</cors-allowed-methods>
+        <expose-token>${exp.expose-token:false}</expose-token>
+        <always-refresh-token>${exp.always-refresh-token:false}</always-refresh-token>
+        <register-node-at-startup>${exp.register-node-at-startup:true}</register-node-at-startup>
+        <register-node-period>${exp.register-node-period:60}</register-node-period>
+        <token-store>${exp.token-store:session}</token-store>
+        <principal-attribute>${exp.principal-attribute:sub}</principal-attribute>
+        <proxy-url>${exp.proxy-url:http://localhost:9000}</proxy-url>
+    </realm>
+    <realm name="realm2-expressions">
+        <auth-server-url>${exp.auth-server-url:http://localhost:8080/auth}</auth-server-url>
+        <cors-exposed-headers>${exp.cores-exposed-headers:Content-Encoding}</cors-exposed-headers>
+        <autodetect-bearer-only>${exp.autodetect-bearer-only:true}</autodetect-bearer-only>
+        <ignore-oauth-query-parameter>${exp.ignore-oauth-query-parameter:false}</ignore-oauth-query-parameter>
+        <verify-token-audience>${exp.verify-token-audience:false}</verify-token-audience>
+        <socket-timeout-millis>${exp.socket-timeout-millis:1000}</socket-timeout-millis>
+        <connection-ttl-millis>${exp.connection-ttl-millis:1000}</connection-ttl-millis>
+        <connection-timeout-millis>${exp.connection-timeout-millis:1000}</connection-timeout-millis>
+        <token-signature-algorithm>${exp.token-signature-algorithm:HS256}</token-signature-algorithm>
+    </realm>
+    <provider name="google-expressions">
+        <provider-url>${exp.provider-url:https://accounts.google.com}</provider-url>
+        <ssl-required>${exp.ssl-required:EXTERNAL}</ssl-required>
+        <principal-attribute>${exp.principal-attribute:sub}</principal-attribute>
+    </provider>
+    <provider name="redhat-sso-expressions">
+        <provider-url>${exp.provider-url:https://sso.redhat.com}</provider-url>
+        <cors-allowed-headers>${exp.cors-allowed-headers:X-Custom}</cors-allowed-headers>
+        <cors-allowed-methods>${exp.cors-allowed-methods:PUT,POST,DELETE,GET}</cors-allowed-methods>
+        <cors-exposed-headers>${exp.cors-exposed-headers:Content-Encoding}</cors-exposed-headers>
+        <client-keystore>${exp.client-keystore:keys.jks}</client-keystore>
+        <client-keystore-password>${exp.client-keystore-password:secret}</client-keystore-password>
+        <client-key-password>${exp.client-key-password:secret}</client-key-password>
+        <truststore>${exp.truststore:truststore.jks}</truststore>
+        <truststore-password>${exp.truststore-secret:secret}</truststore-password>
+        <enable-cors>${exp.enable-cors:true}</enable-cors>
+        <allow-any-hostname>${exp.allow-any-hostname:false}</allow-any-hostname>
+        <connection-pool-size>${exp.connection-pool-size:20}</connection-pool-size>
+        <cors-max-age>${exp.cors-max-age:600}</cors-max-age>
+        <expose-token>${exp.expose-token:false}</expose-token>
+        <disable-trust-manager>${exp.disable-trust-manager:false}</disable-trust-manager>
+        <confidential-port>${exp.confidential-port:443}</confidential-port>
+        <always-refresh-token>${exp.always-refresh-token:false}</always-refresh-token>
+        <autodetect-bearer-only>${exp.autodetect-bearer-only:false}</autodetect-bearer-only>
+        <ignore-oauth-query-parameter>${exp.ignore-oauth-query-parameter:true}</ignore-oauth-query-parameter>
+        <realm-public-key>${exp.realm-public-key:MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB}</realm-public-key>
+        <register-node-at-startup>${exp.register-node-at-startup:true}</register-node-at-startup>
+        <register-node-period>${exp.register-node-period:60}</register-node-period>
+        <token-store>${exp.token-store:session}</token-store>
+        <proxy-url>${exp.proxy-url:http://localhost:9000}</proxy-url>
+        <verify-token-audience>${exp.verify-token-audience:false}</verify-token-audience>
+        <socket-timeout-millis>${exp.socket-timeout-millis:1000}</socket-timeout-millis>
+        <connection-ttl-millis>${exp.connection-ttl-millis:1000}</connection-ttl-millis>
+        <connection-timeout-millis>${exp.connection-timeout-millis:1000}</connection-timeout-millis>
+        <token-signature-algorithm>${exp.token-signature-algorithm:HS256}</token-signature-algorithm>
+    </provider>
+
+    <secure-deployment name="myAppWithSecret-expressions">
+        <realm>${exp.realm:master}</realm>
+        <resource>${exp.resource:myAppId}</resource>
+        <use-resource-role-mappings>${exp.use-resource-role-mappings:true}</use-resource-role-mappings>
+        <turn-off-change-session-id-on-login>${exp.turn-off-change-session-id-on-login:false}</turn-off-change-session-id-on-login>
+        <token-minimum-time-to-live>${exp.token-minimum-time-to-live:10}</token-minimum-time-to-live>
+        <min-time-between-jwks-requests>${exp.min-time-between-jwks-requests:20}</min-time-between-jwks-requests>
+        <public-key-cache-ttl>${exp.public-key-cache-ttl:3600}</public-key-cache-ttl>
+        <realm-public-key>
+            ${realm-public-key:MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB}
+        </realm-public-key>
+        <auth-server-url>${exp.auth-server-url:http://localhost:8080/auth}</auth-server-url>
+        <ssl-required>${exp.ssl-required:EXTERNAL}</ssl-required>
+        <confidential-port>${exp.confidential-port:443}</confidential-port>
+        <proxy-url>${exp.proxy-url:http://localhost:9000}</proxy-url>
+        <verify-token-audience>${exp.verify-token-audience:true}</verify-token-audience>
+        <credential name="secret" secret="${exp.credential-secret:0aa31d98-e0aa-404c-b6e0-e771dba1e798}" />
+        <redirect-rewrite-rule name="^/wsmaster/api/(.*)$" replacement="${exp.rewrite-replacement:/api/$1/}" />
+    </secure-deployment>
+    <secure-deployment name="myAppWithJwt-expressions">
+        <realm>${exp.realm:master}</realm>
+        <resource>${exp.resource:http-endpoint}</resource>
+        <use-resource-role-mappings>${exp.use-resource-role-mappings:true}</use-resource-role-mappings>
+        <adapter-state-cookie-path>${exp.adapter-state-cookie-path:/}</adapter-state-cookie-path>
+        <realm-public-key>
+            ${exp.realm-public-key:MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB}
+        </realm-public-key>
+        <auth-server-url>${exp.auth-server-url:http://localhost:8080/auth}</auth-server-url>
+        <ssl-required>${exp.ssl-required:EXTERNAL}</ssl-required>
+        <credential name="jwt" client-key-password="${exp.jwt-key-password:keyPassword}" client-keystore-file="${exp.jwt-keystore-file:/tmp/keystore.jks}"
+                    client-keystore-password="${exp.jwt-keystore-password:keystorePassword}" client-key-alias="${exp.jwt-key-alias:keyAlias}" token-timeout="${exp.token-timeout:10}"
+                    client-keystore-type="${exp.jwt-keystore-type:jks}" />
+        <redirect-rewrite-rule name="^/wsmaster/api/(.*)$" replacement="${exp.rewrite-replacement:/api/$1/}" />
+    </secure-deployment>
+    <secure-deployment name="myAppWithSecretJwt-expressions">
+        <realm>${exp.realm:master}</realm>
+        <resource>some-${exp.resource>some:endpoint}</resource>
+        <use-resource-role-mappings>${exp.use-resource-role-mappings:true}</use-resource-role-mappings>
+        <adapter-state-cookie-path>${exp.adapter-state-cookie-path:/}</adapter-state-cookie-path>
+        <realm-public-key>
+            ${exp.realm-public-key:MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB}
+        </realm-public-key>
+        <auth-server-url>${exp.auth-server-url:http://localhost:8080/auth}</auth-server-url>
+        <ssl-required>${exp.ssl-required:EXTERNAL}</ssl-required>
+        <credential name="secret-jwt" secret="${exp.credential-secret:fd8f54e1-6994-413a-acf8-90bc67f05412}" algorithm="${exp.credential-algorithm:HS512}"/>
+        <redirect-rewrite-rule name="^/wsmaster/api/(.*)$" replacement="${exp.rewrite-replacement:/api/$1/}" />
+    </secure-deployment>
+    <secure-deployment name="myAppWithRealmInline-expressions">
+        <realm>${exp.realm:demo}</realm>
+        <auth-server-url>${exp.auth-server-url:http://localhost:8081/auth}</auth-server-url>
+        <ssl-required>${exp.ssl-required:external}</ssl-required>
+        <resource>${exp.resource:customer-portal}</resource>
+        <credential name="secret" secret="${exp.credential-password:password}" />
+    </secure-deployment>
+    <secure-deployment name="myAppWithProvider-expressions">
+        <provider>${exp.provider:google}</provider>
+        <ssl-required>${exp.ssl-required:external}</ssl-required>
+        <client-id>${exp.client-id:customer-portal}</client-id>
+        <principal-attribute>${exp.principal-attribute:firstName}</principal-attribute>
+        <credential name="secret" secret="${exp.credential-password:password}" />
+    </secure-deployment>
+    <secure-deployment name="wildfly-management-expressions">
+        <realm>${exp.realm:jboss-infra}</realm>
+        <resource>${exp.resource:wildfly-management}</resource>
+        <bearer-only>${exp.bearer-only:true}</bearer-only>
+        <ssl-required>${exp.ssl-required:EXTERNAL}</ssl-required>
+        <socket-timeout-millis>${exp.socket-timeout-millis:10000}</socket-timeout-millis>
+        <connection-ttl-millis>${exp.connection-ttl-millis:40000}</connection-ttl-millis>
+        <connection-timeout-millis>${exp.connection-timeout-millis:50000}</connection-timeout-millis>
+        <principal-attribute>${exp.principal-attribute:preferred_username}</principal-attribute>
+        <client-keystore-password>${exp.client-keystore-password:secret}</client-keystore-password>
+        <client-keystore>${exp.client-keystore:keys.jks}</client-keystore>
+        <enable-cors>${exp.enable-cors:true}</enable-cors>
+        <allow-any-hostname>${exp.allow-any-hostname:true}</allow-any-hostname>
+        <cors-max-age>${exp.cors-max-age:600}</cors-max-age>
+        <provider-url>${exp.provider-url:https://management.wildfly.org}</provider-url>
+        <disable-trust-manager>${exp.disable-trust-manager:false}</disable-trust-manager>
+        <cors-allowed-headers>${exp.cors-allowed-headers:X-Custom}</cors-allowed-headers>
+        <cors-allowed-methods>${exp.cors-allowed-methods:PUT,POST,DELETE,GET}</cors-allowed-methods>
+        <cors-exposed-headers>${exp.cores-exposed-headers:Content-Encoding}</cors-exposed-headers>
+        <truststore>${exp.truststore:truststore.jks}</truststore>
+        <truststore-password>${exp.truststore-secret:secret}</truststore-password>
+        <client-key-password>${exp.client-key-password:secret}</client-key-password>
+        <expose-token>${exp.expose-token:false}</expose-token>
+        <always-refresh-token>${exp.always-refresh-token:false}</always-refresh-token>
+        <register-node-at-startup>${exp.register-node-at-startup:true}</register-node-at-startup>
+        <register-node-period>${exp.register-node-period:60}</register-node-period>
+        <token-store>${exp.token-store:session}</token-store>
+        <autodetect-bearer-only>${exp.autodetect-bearer-only:true}</autodetect-bearer-only>
+        <ignore-oauth-query-parameter>${exp.ignore-oauth-query-parameter:true}</ignore-oauth-query-parameter>
+        <token-signature-algorithm>${exp.token-signature-algorithm:HS256}</token-signature-algorithm>
+        <enable-basic-auth>${exp.enable-basic-auth:false}</enable-basic-auth>
+        <public-client>${exp.public-client:false}</public-client>
+        <connection-pool-size>${exp.connection-pool-size:20}</connection-pool-size>
+    </secure-deployment>
+</subsystem>
+
