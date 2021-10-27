@@ -69,8 +69,8 @@
                 The "recovery-listener" attribute sets if recovery system should listen on a network socket or not.
                 The "recovery-period" attribute is used to set number of seconds between two executions of the periodic recovery scans.
                 The "recovery-backoff-period" attribute is used to set number of seconds between first and second part of the period recovery scan.
-                The "stop-recovery-when-suspended" attribute stops the periodic recovery when the container is suspended.
-                The "stop-transactions-when-suspended" attribute does not permit to start a new transaction when the container is suspended.
+                The "disable-recovery-before-suspend" attribute stops the periodic recovery when the container is suspended.
+                When then the recovery does not permit the container to be suspended until any in-doubt transaction exits in the object store.
             ]]>
             </xs:documentation>
         </xs:annotation>
@@ -79,8 +79,7 @@
         <xs:attribute name="recovery-listener" type="xs:boolean" default="false" />
         <xs:attribute name="recovery-period" type="xs:int" default="120" />
         <xs:attribute name="recovery-backoff-period" type="xs:int" default="10" />
-        <xs:attribute name="stop-recovery-when-suspended" type="xs:boolean" default="true" />
-        <xs:attribute name="stop-transactions-when-suspended" type="xs:boolean" default="false" />
+        <xs:attribute name="disable-recovery-before-suspend" type="xs:boolean" default="true" />
     </xs:complexType>
 
     <xs:complexType name="core-environment">

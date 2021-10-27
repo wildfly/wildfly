@@ -69,7 +69,7 @@ interface CommonAttributes {
     String RECOVERY_LISTENER = "recovery-listener";
     String RECOVERY_PERIOD = "recovery-period";
     String RECOVERY_BACKOFF_PERIOD = "recovery-backoff-period";
-    String STOP_RECOVERY_WHEN_SUSPENDED = "stop-recovery-when-suspended";
+    String DISABLE_RECOVERY_BEFORE_SUSPEND = "disable-recovery-before-suspend";
     /** The process-id/socket element */
     String SOCKET = "socket";
     /** The process-id/socket attribute for max ports */

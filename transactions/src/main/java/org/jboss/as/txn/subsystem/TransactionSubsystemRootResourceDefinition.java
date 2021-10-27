@@ -140,10 +140,10 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setXmlName(Attribute.RECOVERY_BACKOFF_PERIOD.getLocalName())
             .setAllowExpression(true).build();
 
-    public static final SimpleAttributeDefinition STOP_RECOVERY_WHEN_SUSPENDED = new SimpleAttributeDefinitionBuilder(CommonAttributes.STOP_RECOVERY_WHEN_SUSPENDED, ModelType.BOOLEAN, true)
+    public static final SimpleAttributeDefinition DISABLE_RECOVERY_BEFORE_SUSPEND = new SimpleAttributeDefinitionBuilder(CommonAttributes.DISABLE_RECOVERY_BEFORE_SUSPEND, ModelType.BOOLEAN, true)
             .setDefaultValue(ModelNode.TRUE)
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
-            .setXmlName(Attribute.STOP_RECOVERY_WHEN_SUSPENDED.getLocalName())
+            .setXmlName(Attribute.DISABLE_RECOVERY_BEFORE_SUSPEND.getLocalName())
             .setAllowExpression(true).build();
 
     //core environment
@@ -347,7 +347,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
             JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX,
             JOURNAL_STORE_ENABLE_ASYNC_IO, ENABLE_STATISTICS, HORNETQ_STORE_ENABLE_ASYNC_IO, STALE_TRANSACTION_TIME,
-            RECOVERY_PERIOD, RECOVERY_BACKOFF_PERIOD, ORPHAN_SAFETY_INTERVAL, STOP_RECOVERY_WHEN_SUSPENDED,
+            RECOVERY_PERIOD, RECOVERY_BACKOFF_PERIOD, ORPHAN_SAFETY_INTERVAL, DISABLE_RECOVERY_BEFORE_SUSPEND,
     };
 
     static final AttributeDefinition[] attributes_1_2 = new AttributeDefinition[] {USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
@@ -379,7 +379,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         attributesWithoutMutuals.remove(ORPHAN_SAFETY_INTERVAL);
         attributesWithoutMutuals.remove(RECOVERY_PERIOD);
         attributesWithoutMutuals.remove(RECOVERY_BACKOFF_PERIOD);
-        attributesWithoutMutuals.remove(STOP_RECOVERY_WHEN_SUSPENDED);
+        attributesWithoutMutuals.remove(DISABLE_RECOVERY_BEFORE_SUSPEND);
 
         OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(attributesWithoutMutuals);
         for(final AttributeDefinition def : attributesWithoutMutuals) {
@@ -412,7 +412,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         resourceRegistration.registerReadWriteAttribute(ORPHAN_SAFETY_INTERVAL, null, new OrphanSafetyIntervalWriteHandler(ORPHAN_SAFETY_INTERVAL));
         resourceRegistration.registerReadWriteAttribute(RECOVERY_PERIOD, null, new RecoveryPeriodWriteHandler(RECOVERY_PERIOD));
         resourceRegistration.registerReadWriteAttribute(RECOVERY_BACKOFF_PERIOD, null, new RecoveryBackoffPeriodWriteHandler(RECOVERY_BACKOFF_PERIOD));
-        resourceRegistration.registerReadWriteAttribute(STOP_RECOVERY_WHEN_SUSPENDED, null, new StopRecoveryWhenSuspendedHandler(STOP_RECOVERY_WHEN_SUSPENDED));
+        resourceRegistration.registerReadWriteAttribute(DISABLE_RECOVERY_BEFORE_SUSPEND, null, new DisableRecoveryBeforeSuspendHandler(DISABLE_RECOVERY_BEFORE_SUSPEND));
 
         AliasedHandler hsh = new AliasedHandler(USE_JOURNAL_STORE.getName());
         resourceRegistration.registerReadWriteAttribute(USE_HORNETQ_STORE, hsh, hsh);
@@ -711,8 +711,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         }
     }
 
-    private static class StopRecoveryWhenSuspendedHandler extends AbstractWriteAttributeHandler<Void> {
-        public StopRecoveryWhenSuspendedHandler(final AttributeDefinition... definitions) {
+    private static class DisableRecoveryBeforeSuspendHandler extends AbstractWriteAttributeHandler<Void> {
+        public DisableRecoveryBeforeSuspendHandler(final AttributeDefinition... definitions) {
             super(definitions);
         }
 
@@ -721,10 +721,10 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                                                final String attributeName, final ModelNode resolvedValue,
                                                final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
                 throws OperationFailedException {
-            boolean isStopRecoveryWhenSuspendedValue = resolvedValue.asBoolean();
+            boolean isDisableRecoveryBeforeSuspendValue = resolvedValue.asBoolean();
             TransactionRuntimeConfigurator configurator =
                     context.getCapabilityRuntimeAPI(TRANSACTION_RUNTIME_CONFIGURATOR_CAPABILITY.getName(), TransactionRuntimeConfigurator.class);
-            configurator.setStopRecoveryManagerOnSuspend(isStopRecoveryWhenSuspendedValue);
+            configurator.setDisableRecoveryBeforeSuspend(isDisableRecoveryBeforeSuspendValue);
             return false;
         }
 
@@ -736,7 +736,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             boolean isStopRecoveryWhenSuspendedRevertValue = valueToRevert.asBoolean();
             TransactionRuntimeConfigurator configurator =
                     context.getCapabilityRuntimeAPI(TRANSACTION_RUNTIME_CONFIGURATOR_CAPABILITY.getName(), TransactionRuntimeConfigurator.class);
-            configurator.setStopRecoveryManagerOnSuspend(isStopRecoveryWhenSuspendedRevertValue);
+            configurator.setDisableRecoveryBeforeSuspend(isStopRecoveryWhenSuspendedRevertValue);
         }
     }
 

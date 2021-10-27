@@ -72,7 +72,7 @@ public class TransactionRecoverOperationTestCase extends AbstractCliTestBase {
     private static final String ORPHAN_SAFETY_INTERVAL_ATTRIBUTE_NAME = "orphan-safety-interval";
     private static final String RECOVERY_PERIOD_ATTRIBUTE_NAME = "recovery-period";
     private static final String RECOVERY_BACKOFF_PERIOD_ATTRIBUTE_NAME = "recovery-backoff-period";
-    private static final String STOP_RECOVERY_WHEN_SUSPENDED_ATTRIBUTE_NAME = "stop-recovery-when-suspended";
+    private static final String DISABLE_RECOVERY_BEFORE_SUSPEND_ATTRIBUTE_NAME = "disable-recovery-before-suspend";
     private static final String RECOVERY_INITIALIZATION_OFFSET_SYSTEM_PROPERTY_NAME = "RecoveryEnvironmentBean.periodicRecoveryInitilizationOffset";
 
     private static final String CLI_OPERATION_READ_SERVER_STATE = ":read-attribute(name=server-state)";
@@ -155,14 +155,12 @@ public class TransactionRecoverOperationTestCase extends AbstractCliTestBase {
 
         container.start(CONTAINER);
         assertState("running", CLI_INIT_TIMEOUT, CLI_OPERATION_READ_SERVER_STATE);
-        // at this time there should unfinished transaction in the object store
+        // at this time there should be unfinished transaction in the object store
+        // no reload required for the value being applied
         writeAttribute(RECOVERY_PERIOD_ATTRIBUTE_NAME, 1);
         writeAttribute(RECOVERY_BACKOFF_PERIOD_ATTRIBUTE_NAME, 1);
-        writeAttribute(STOP_RECOVERY_WHEN_SUSPENDED_ATTRIBUTE_NAME, false);
-        // reload to activate the recovery period attributes (requiring reload)
-        cli.sendLine(":reload(start-mode=suspend)");
+        writeAttribute(ORPHAN_SAFETY_INTERVAL_ATTRIBUTE_NAME, 1);
         assertState("running", CLI_INIT_TIMEOUT, CLI_OPERATION_READ_SERVER_STATE);
-        writeAttribute(ORPHAN_SAFETY_INTERVAL_ATTRIBUTE_NAME, 1); // no reload required for the value being applied
 
         // let's recover and expecting to finish with it faster than 10 seconds which is the default backoff period and which defines the shortest time for recovery processing
         long startTimeStamp = System.currentTimeMillis();
@@ -179,6 +177,10 @@ public class TransactionRecoverOperationTestCase extends AbstractCliTestBase {
                 recoveryTimeProcessing < recoveryProcessingTimeout );
         Assert.assertEquals("XA resource is expected to be recovered with rollback",0, xidsPersister.recoverFromDisk().size());
     }
+
+    // ----
+    // TODO: add a test working with suspension
+    // ----
 
     private ModelNode writeSystemProperty(String systemProperty, int value) {
         try {

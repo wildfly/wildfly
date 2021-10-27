@@ -22,13 +22,19 @@
 
 package org.jboss.as.txn.suspend;
 
+import com.arjuna.ats.arjuna.recovery.RecoveryManager;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.as.txn.service.TransactionRuntimeConfigurator;
+import org.jboss.as.txn.subsystem.LogStoreConstants;
+import org.jboss.as.txn.subsystem.LogStoreProbeHandler;
 import org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition;
-
+import org.jboss.as.controller.registry.Resource;
+import javax.management.MBeanServer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -39,8 +45,9 @@ import java.beans.PropertyChangeListener;
  * the {@link RecoveryManagerService}.
  * </p>
  * <p>
- * If the {@link TransactionSubsystemRootResourceDefinition#STOP_RECOVERY_WHEN_SUSPENDED} is configured with value {@code false}
- * then the {@code suspend()} method execution is omitted and the recovery manager is not suspended.
+ * If the {@link TransactionSubsystemRootResourceDefinition#DISABLE_RECOVERY_BEFORE_SUSPEND} is configured with value {@code false}
+ * then the {@code preSuspend()} method execution executes the recovery and verifies if there is no in-doubt transaction.
+ * If there is some then it's not permitted to proceed with suspending.
  * </p>
  *
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
@@ -58,19 +65,33 @@ public class RecoverySuspendController implements ServerActivity, PropertyChange
     }
 
     /**
-     * {@link RecoveryManagerService#suspend() Suspends} the {@link RecoveryManagerService}
-     * when not disallowed by attribute {@link TransactionSubsystemRootResourceDefinition#STOP_RECOVERY_WHEN_SUSPENDED}
-     * being set to {@code true}.
+     * {@link RecoveryManagerService#suspend() Suspends} the {@link RecoveryManagerService} and make the suspend method to proceed.
+     * When recovery is not disabled before suspend call by attribute {@link TransactionSubsystemRootResourceDefinition#DISABLE_RECOVERY_BEFORE_SUSPEND}
+     * being set to {@code false} then the recovery handler does not permit server suspension until all in-doubt transactions
+     * are recovered.
      */
     @Override
     public void preSuspend(ServerActivityCallback serverActivityCallback) {
+        if (configurator.isDisableRecoveryBeforeSuspend()) {
+            recoveryManagerService.suspend();
+        } else {
+            try {
+                MBeanServer mBeanServer = configurator.getMBeanServer();
+                Resource txnResource = LogStoreProbeHandler.probeTransactions(mBeanServer, false);
+                // in-doubt transactions in the log store, recovery scan is needed and check will be retried next time
+                if (txnResource.hasChildren(LogStoreConstants.TRANSACTIONS)) {
+                    RecoveryManager.manager().scan();
+                    return;
+                }
+            } catch (OperationFailedException ofe) {
+                TransactionLogger.ROOT_LOGGER.cannotProbeObjectStoreOnSuspension(ofe);
+                // suspension activity got a trouble, let's try again in a while
+                return;
+            }
+        }
         synchronized (this) {
             suspended = true;
         }
-        if (configurator.isStopRecoveryManagerOnSuspend()) {
-            recoveryManagerService.suspend();
-        }
-
         serverActivityCallback.done();
     }
 

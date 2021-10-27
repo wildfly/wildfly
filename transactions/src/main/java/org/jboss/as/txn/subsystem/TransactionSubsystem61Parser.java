@@ -102,8 +102,8 @@ class TransactionSubsystem61Parser extends TransactionSubsystem60Parser {
                 case RECOVERY_BACKOFF_PERIOD:
                     TransactionSubsystemRootResourceDefinition.RECOVERY_BACKOFF_PERIOD.parseAndSetParameter(value, operation, reader);
                     break;
-                case STOP_RECOVERY_WHEN_SUSPENDED:
-                    TransactionSubsystemRootResourceDefinition.STOP_RECOVERY_WHEN_SUSPENDED.parseAndSetParameter(value, operation, reader);
+                case DISABLE_RECOVERY_BEFORE_SUSPEND:
+                    TransactionSubsystemRootResourceDefinition.DISABLE_RECOVERY_BEFORE_SUSPEND.parseAndSetParameter(value, operation, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);

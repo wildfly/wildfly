@@ -71,7 +71,7 @@ class TransactionSubsystemXMLPersister implements XMLElementWriter<SubsystemMars
                 TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.isMarshallable(node) ||
                 TransactionSubsystemRootResourceDefinition.RECOVERY_PERIOD.isMarshallable(node) ||
                 TransactionSubsystemRootResourceDefinition.RECOVERY_BACKOFF_PERIOD.isMarshallable(node) ||
-                TransactionSubsystemRootResourceDefinition.STOP_RECOVERY_WHEN_SUSPENDED.isMarshallable(node) ) {
+                TransactionSubsystemRootResourceDefinition.DISABLE_RECOVERY_BEFORE_SUSPEND.isMarshallable(node) ) {
 
             writer.writeStartElement(Element.RECOVERY_ENVIRONMENT.getLocalName());
 
@@ -80,7 +80,7 @@ class TransactionSubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.marshallAsAttribute(node, writer);
             TransactionSubsystemRootResourceDefinition.RECOVERY_PERIOD.marshallAsAttribute(node, writer);
             TransactionSubsystemRootResourceDefinition.RECOVERY_BACKOFF_PERIOD.marshallAsAttribute(node, writer);
-            TransactionSubsystemRootResourceDefinition.STOP_RECOVERY_WHEN_SUSPENDED.marshallAsAttribute(node, writer);
+            TransactionSubsystemRootResourceDefinition.DISABLE_RECOVERY_BEFORE_SUSPEND.marshallAsAttribute(node, writer);
 
             writer.writeEndElement();
         }

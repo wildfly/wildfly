@@ -45,7 +45,7 @@ enum Attribute {
     RECOVERY_LISTENER("recovery-listener"),
     RECOVERY_PERIOD("recovery-period"),
     RECOVERY_BACKOFF_PERIOD("recovery-backoff-period"),
-    STOP_RECOVERY_WHEN_SUSPENDED("stop-recovery-when-suspended"),
+    DISABLE_RECOVERY_BEFORE_SUSPEND("disable-recovery-before-suspend"),
     RELATIVE_TO("relative-to"),
     STATISTICS_ENABLED("statistics-enabled"),
     PATH("path"),
@@ -77,7 +77,7 @@ enum Attribute {
     private static final Map<String, Attribute> MAP;
 
     static {
-        final Map<String, Attribute> map = new HashMap<String, Attribute>();
+        final Map<String, Attribute> map = new HashMap<>();
         for (Attribute element : values()) {
             final String name = element.getLocalName();
             if (name != null) map.put(name, element);

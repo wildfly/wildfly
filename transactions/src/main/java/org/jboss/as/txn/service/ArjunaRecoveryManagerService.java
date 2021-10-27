@@ -37,12 +37,14 @@ import com.arjuna.ats.internal.jts.recovery.transactions.TopLevelTransactionReco
 import com.arjuna.ats.internal.txoj.recovery.TORecoveryModule;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import com.arjuna.orbportability.internal.utils.PostInitLoader;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.txn.logging.TransactionLogger;
+import org.jboss.as.txn.subsystem.TransactionExtension;
 import org.jboss.as.txn.suspend.RecoverySuspendController;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -53,6 +55,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.omg.CORBA.ORB;
 
+import javax.management.MBeanServer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -84,14 +87,16 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
     private final boolean recoveryListener, jts;
     private final int recoveryPeriod, recoveryBackoffPeriod;
     private final TransactionRuntimeConfigurator transactionConfigurator;
+    private final OperationContext creationOperationContext;
 
     public ArjunaRecoveryManagerService(final boolean recoveryListener, final boolean jts, final int recoveryPeriod, final int recoveryBackoffPeriod,
-                                        final TransactionRuntimeConfigurator transactionConfigurator) {
+                                        final OperationContext creationOperationContext, final TransactionRuntimeConfigurator transactionConfigurator) {
         this.recoveryListener = recoveryListener;
         this.jts = jts;
         this.recoveryPeriod = recoveryPeriod;
         this.recoveryBackoffPeriod = recoveryBackoffPeriod;
         this.transactionConfigurator = transactionConfigurator;
+        this.creationOperationContext = creationOperationContext;
     }
 
     public synchronized void start(StartContext context) throws StartException {
@@ -169,6 +174,9 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
                 throw TransactionLogger.ROOT_LOGGER.managerStartFailure(e, "Recovery");
             }
         }
+
+        MBeanServer mBeanServer = TransactionExtension.getMBeanServer(creationOperationContext);
+        transactionConfigurator.setmBeanServer(mBeanServer);
 
         recoverySuspendController = new RecoverySuspendController(recoveryManagerService, transactionConfigurator);
         processStateInjector.getValue().addPropertyChangeListener(recoverySuspendController);

@@ -61,7 +61,7 @@ public class LogStoreProbeHandler implements OperationStepHandler {
     static final String JNDI_PROPNAME =
             LogStoreConstants.MODEL_TO_JMX_PARTICIPANT_NAMES.get(LogStoreConstants.JNDI_ATTRIBUTE);
 
-    private Map<String, String> getMBeanValues(MBeanServerConnection cnx, ObjectName on, String ... attributeNames)
+    private static Map<String, String> getMBeanValues(MBeanServerConnection cnx, ObjectName on, String ... attributeNames)
             throws InstanceNotFoundException, IOException, ReflectionException, IntrospectionException {
 
         if (attributeNames == null) {
@@ -86,7 +86,7 @@ public class LogStoreProbeHandler implements OperationStepHandler {
         return values;
     }
 
-    private void addAttributes(ModelNode node, Map<String, String> model2JmxNames, Map<String, String> attributes) {
+    private static void addAttributes(ModelNode node, Map<String, String> model2JmxNames, Map<String, String> attributes) {
         for (Map.Entry<String, String> e : model2JmxNames.entrySet()) {
             String attributeValue = attributes.get(e.getValue());
 
@@ -95,7 +95,7 @@ public class LogStoreProbeHandler implements OperationStepHandler {
         }
     }
 
-    private void addParticipants(final Resource parent, Set<ObjectInstance> participants, MBeanServer mbs)
+    private static void addParticipants(final Resource parent, Set<ObjectInstance> participants, MBeanServer mbs)
             throws IntrospectionException, InstanceNotFoundException, IOException, ReflectionException {
         int i = 1;
 
@@ -119,7 +119,7 @@ public class LogStoreProbeHandler implements OperationStepHandler {
         }
     }
 
-    private void addTransactions(final Resource parent, Set<ObjectInstance> transactions, MBeanServer mbs)
+    private static void addTransactions(final Resource parent, Set<ObjectInstance> transactions, MBeanServer mbs)
             throws IntrospectionException, InstanceNotFoundException, IOException,
             ReflectionException, MalformedObjectNameException {
 
@@ -148,12 +148,12 @@ public class LogStoreProbeHandler implements OperationStepHandler {
         }
     }
 
-    private Resource probeTransactions(MBeanServer mbs, boolean exposeAllLogs)
+    public static Resource probeTransactions(MBeanServer mbs, boolean exposeAllLogs)
             throws OperationFailedException {
         try {
             ObjectName on = new ObjectName(osMBeanName);
 
-            mbs.setAttribute(on, new javax.management.Attribute("ExposeAllRecordsAsMBeans", Boolean.valueOf(exposeAllLogs)));
+            mbs.setAttribute(on, new javax.management.Attribute("ExposeAllRecordsAsMBeans", exposeAllLogs));
             mbs.invoke(on, "probe", null, null);
 
             Set<ObjectInstance> transactions = mbs.queryMBeans(new ObjectName(osMBeanName +  ",*"), null);

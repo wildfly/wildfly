@@ -94,6 +94,7 @@ import org.wildfly.iiop.openjdk.service.CorbaNamingService;
 import org.wildfly.transaction.client.ContextTransactionManager;
 import org.wildfly.transaction.client.LocalTransactionContext;
 
+import javax.management.MBeanServer;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
@@ -224,7 +225,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.validateAndSet(operation, model);
         TransactionSubsystemRootResourceDefinition.RECOVERY_PERIOD.validateAndSet(operation, model);
         TransactionSubsystemRootResourceDefinition.RECOVERY_BACKOFF_PERIOD.validateAndSet(operation, model);
-        TransactionSubsystemRootResourceDefinition.STOP_RECOVERY_WHEN_SUSPENDED.validateAndSet(operation, model);
+        TransactionSubsystemRootResourceDefinition.DISABLE_RECOVERY_BEFORE_SUSPEND.validateAndSet(operation, model);
     }
 
     private void validateStoreConfig(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -429,14 +430,14 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean recoveryListener = TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.resolveModelAttribute(context, model).asBoolean();
         final int recoveryPeriod = TransactionSubsystemRootResourceDefinition.RECOVERY_PERIOD.resolveModelAttribute(context, model).asInt();
         final int recoveryBackoffPeriod = TransactionSubsystemRootResourceDefinition.RECOVERY_BACKOFF_PERIOD.resolveModelAttribute(context, model).asInt();
-        final boolean isStopRecoveryWhenSuspended = TransactionSubsystemRootResourceDefinition.STOP_RECOVERY_WHEN_SUSPENDED.resolveModelAttribute(context, model).asBoolean();
+        final boolean isDisableRecoveryBeforeSuspend = TransactionSubsystemRootResourceDefinition.DISABLE_RECOVERY_BEFORE_SUSPEND.resolveModelAttribute(context, model).asBoolean();
 
         TransactionRuntimeConfigurator configurator =
                 context.getCapabilityRuntimeAPI(TransactionSubsystemRootResourceDefinition.TRANSACTION_RUNTIME_CONFIGURATOR_CAPABILITY.getName(),
                         TransactionRuntimeConfigurator.class);
-        configurator.setStopRecoveryManagerOnSuspend(isStopRecoveryWhenSuspended);
 
-        final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService(recoveryListener, jts, recoveryPeriod, recoveryBackoffPeriod, configurator);
+        final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService(recoveryListener, jts, recoveryPeriod, recoveryBackoffPeriod,
+                context, configurator);
         final ServiceBuilder<?> recoveryManagerServiceServiceBuilder = serviceTarget
                 .addCapability(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY)
                 .setInstance(recoveryManagerService)
@@ -447,6 +448,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addCapabilityRequirement("org.wildfly.management.process-state-notifier", ProcessStateNotifier.class, recoveryManagerService.getProcessStateInjector());
         recoveryManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
         recoveryManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT);
+        recoveryManagerServiceServiceBuilder.requires(TransactionExtension.MBEAN_SERVER_SERVICE_NAME);
         recoveryManagerServiceServiceBuilder.addAliases(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);
         recoveryManagerServiceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
 

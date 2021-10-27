@@ -22,21 +22,33 @@
 
 package org.jboss.as.txn.service;
 
+import javax.management.MBeanServer;
+
 /**
  * Transaction subsystem runtime configuration provided by capability
  * {@link org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition#TRANSACTION_RUNTIME_CONFIGURATOR_CAPABILITY}.
  *
- * May be used to set up transaction subsystem runtime operations.
+ * May be used to set up transaction subsystem runtime configuration
+ * that could be passed to different runtime handlers.
  */
 public class TransactionRuntimeConfigurator {
-    private boolean isStopRecoveryManagerOnSuspend = false;
+    private MBeanServer mBeanServer;
+    private boolean isDisableRecoveryBeforeSuspend = false;
 
-    public boolean isStopRecoveryManagerOnSuspend() {
-        return isStopRecoveryManagerOnSuspend;
+    public boolean isDisableRecoveryBeforeSuspend() {
+        return isDisableRecoveryBeforeSuspend;
     }
 
-    public TransactionRuntimeConfigurator setStopRecoveryManagerOnSuspend(boolean stopOnSuspend) {
-        isStopRecoveryManagerOnSuspend = stopOnSuspend;
+    public TransactionRuntimeConfigurator setDisableRecoveryBeforeSuspend(boolean disableRecoveryBeforeSuspend) {
+        isDisableRecoveryBeforeSuspend = disableRecoveryBeforeSuspend;
         return this;
+    }
+
+    public MBeanServer getMBeanServer() {
+        return mBeanServer;
+    }
+
+    public void setmBeanServer(MBeanServer mBeanServer) {
+        this.mBeanServer = mBeanServer;
     }
 }
