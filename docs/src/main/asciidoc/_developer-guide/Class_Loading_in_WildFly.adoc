@@ -529,7 +529,7 @@ The following output shows an example of a detailed view:
                   "import-services" => false
               },
               {
-                  "name" => "org.hibernate:4.1",
+                  "name" => "org.hibernate:5.3",
                   "optional" => false,
                   "export" => false,
                   "import-services" => false

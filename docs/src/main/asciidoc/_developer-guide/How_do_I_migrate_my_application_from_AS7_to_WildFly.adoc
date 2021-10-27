@@ -702,12 +702,13 @@ Jakarta Messaging Resources are remotely looked up using JNDI, and looking up re
 === Jakarta Persistence (and Hibernate)
 
 [[applications-that-plan-to-use-hibernate-orm-5.0]]
-==== Applications That Plan to Use Hibernate ORM 5.0
+==== Applications That Plan to Use Hibernate ORM 5.3.x
 
-{ProductName} ships with Hibernate ORM 5.0 and those libraries are implicitly added to the application classpath when a `persistence.xml` is detected during deployment. If your application uses Jakarta Persistence, it will default to using the Hibernate ORM 5.0 libraries.
+{ProductName} ships with Hibernate ORM 5.3.x and those libraries are implicitly added to the application classpath when a `persistence.xml` is detected during deployment. If your application uses Jakarta Persistence, it will default to using the Hibernate ORM 5.3.x libraries.
 
-Hibernate ORM 5.0 introduces:
+Hibernate ORM 5.3.x introduces:
 
+* Jakarta Persistence 2.2 support
 * Redesigned metamodel - Complete replacement for the current `org.hibernate.mapping` code
 * Query parser - Improved query parser based on Antlr 3/4
 * Multi-tenancy improvements - Discriminator-based multi-tenancy
@@ -716,7 +717,7 @@ Hibernate ORM 5.0 introduces:
 [[applications-that-currently-use-hibernate-orm-4.0---4.3]]
 ==== Applications that currently use Hibernate ORM 4.0 - 4.3
 
-If your application needs second-level cache enabled, you should migrate to Hibernate ORM 5.0, which is integrated with Infinispan 8.0. Applications written with Hibernate ORM 4.x can still use Hibernate 4.x if you define a custom JBoss module with Hibernate 4.x JARs and exclude the Hibernate 5 classes from your application. It is recommended that you migrate your application to use Hibernate 5.
+You should migrate to Hibernate ORM 5.3.x.
 
 For information about the changes implemented between Hibernate 4 and Hibernate 5, see
 https://github.com/hibernate/hibernate-orm/blob/master/migration-guide.adoc
@@ -724,8 +725,7 @@ https://github.com/hibernate/hibernate-orm/blob/master/migration-guide.adoc
 [[applications-that-currently-use-hibernate-3]]
 ==== Applications that currently use Hibernate 3
 
-The integration classes that made it easier to use Hibernate 3 in {PrevProductName} {PrevProductVersion} were removed from {ProductName} {ProductVersion}. If your application still uses Hibernate 3 libraries, it is strongly recommended that you migrate your application to use Hibernate 5 as Hibernate 3 will no longer work in {ProductName} without
-a lot of effort. If you can not migrate to Hibernate 5, you must define a custom JBoss Module for the Hibernate 3 classes and exclude the Hibernate 5 classes from your application.
+You should migrate to Hibernate ORM 5.3.x.
 
 [[web-applications]]
 === Web Applications
