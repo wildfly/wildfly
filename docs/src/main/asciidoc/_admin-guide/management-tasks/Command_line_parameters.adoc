@@ -439,9 +439,7 @@ configurations to be communicate over multicast address `230.0.1.2`.
 $JBOSS_HOME/bin/standalone.sh -u=230.0.1.2
 ----
 
-Be Careful
-
-[NOTE]
+[IMPORTANT]
 
 As with the `-b` switch, the `-u` switch only controls the multicast
 address used because the standard config files that ship with WildFly
