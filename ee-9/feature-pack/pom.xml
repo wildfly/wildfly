@@ -560,6 +560,14 @@
                     <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-weld-transactions</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.sun.istack</groupId>
+                    <artifactId>istack-commons-runtime</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.istack</groupId>
+                    <artifactId>istack-commons-tools</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -852,6 +860,18 @@
         <dependency>
             <groupId>com.sun.faces</groupId>
             <artifactId>jsf-impl</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.istack</groupId>
+            <artifactId>istack-commons-runtime</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.istack</groupId>
+            <artifactId>istack-commons-tools</artifactId>
             <scope>provided</scope>
         </dependency>
 

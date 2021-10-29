@@ -44,6 +44,7 @@
         <!-- Version properties for dependency management items -->
         <version.com.sun.faces>3.0.0.SP04</version.com.sun.faces>
         <version.com.sun.activation.jakarta.activation>2.0.0</version.com.sun.activation.jakarta.activation>
+        <version.com.sun.istack>4.0.1</version.com.sun.istack>
         <version.jakarta.annotation.jakarta-annotation-api>2.0.0</version.jakarta.annotation.jakarta-annotation-api>
         <version.jakarta.authentication.jakarta-authentication-api>2.0.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>2.0.0</version.jakarta.authorization.jakarta-authorization-api>
@@ -165,6 +166,30 @@
                 <groupId>com.sun.faces</groupId>
                 <artifactId>jsf-impl</artifactId>
                 <version>${version.com.sun.faces}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.istack</groupId>
+                <artifactId>istack-commons-runtime</artifactId>
+                <version>${version.com.sun.istack}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.istack</groupId>
+                <artifactId>istack-commons-tools</artifactId>
+                <version>${version.com.sun.istack}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
