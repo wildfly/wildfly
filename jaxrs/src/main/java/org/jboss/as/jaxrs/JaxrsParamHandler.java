@@ -105,10 +105,18 @@ final class JaxrsParamHandler extends AbstractWriteAttributeHandler<Void> {
             config.setResteasyJndiResources(value);
         } else if (JaxrsConstants.RESTEASY_LANGUAGE_MAPPINGS.equals(attributeName)) {
             config.setResteasyLanguageMappings(value);
+        } else if (JaxrsConstants.RESTEASY_MATCH_CACHE_ENABLED.equals(attributeName)) {
+            config.setResteasyMatchCacheEnabled(value);
+        } else if (JaxrsConstants.RESTEASY_MATCH_CACHE_SIZE.equals(attributeName)) {
+            config.setResteasyMatchCacheSize(value);
         } else if (JaxrsConstants.RESTEASY_MEDIA_TYPE_MAPPINGS.equals(attributeName)) {
             config.setResteasyMediaTypeMappings(value);
         } else if (JaxrsConstants.RESTEASY_MEDIA_TYPE_PARAM_MAPPING.equals(attributeName)) {
             config.setResteasyMediaTypeParamMapping(value);
+        } else if (JaxrsConstants.RESTEASY_PATCH_FILTER_DISABLED.equals(attributeName)) {
+            config.setResteasyPatchfilterDisabled(value);
+        } else if (JaxrsConstants.RESTEASY_PATCH_FILTER_LEGACY.equals(attributeName)) {
+            config.setResteasyPatchfilterLegacy(value);
         } else if (JaxrsConstants.RESTEASY_PREFER_JACKSON_OVER_JSONB.equals(attributeName)) {
             config.setResteasyPreferJacksonOverJsonB(value);
         } else if (JaxrsConstants.RESTEASY_PROVIDERS.equals(attributeName)) {

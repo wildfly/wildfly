@@ -39,8 +39,12 @@ public class JaxrsConstants {
     public static final String RESTEASY_GZIP_MAX_INPUT = "resteasy-gzip-max-input";
     public static final String RESTEASY_JNDI_RESOURCES = "resteasy-jndi-resources";
     public static final String RESTEASY_LANGUAGE_MAPPINGS = "resteasy-language-mappings";
+    public static final String RESTEASY_MATCH_CACHE_ENABLED = "resteasy-match-cache-enabled";
+    public static final String RESTEASY_MATCH_CACHE_SIZE = "resteasy-match-cache-size";
     public static final String RESTEASY_MEDIA_TYPE_MAPPINGS = "resteasy-media-type-mappings";
     public static final String RESTEASY_MEDIA_TYPE_PARAM_MAPPING = "resteasy-media-type-param-mapping";
+    public static final String RESTEASY_PATCH_FILTER_DISABLED = "resteasy-patch-filter-disabled";
+    public static final String RESTEASY_PATCH_FILTER_LEGACY = "resteasy-patch-filter-legacy";
     public static final String RESTEASY_PREFER_JACKSON_OVER_JSONB = "resteasy-prefer-jackson-over-jsonb";
     public static final String RESTEASY_PROVIDERS = "resteasy-providers";
     public static final String RESTEASY_RFC7232_PRECONDITIONS = "resteasy-rfc7232preconditions";
@@ -63,8 +67,12 @@ public class JaxrsConstants {
         nameToAttributeMap.put(RESTEASY_GZIP_MAX_INPUT, JaxrsAttribute.RESTEASY_GZIP_MAX_INPUT);
         nameToAttributeMap.put(RESTEASY_JNDI_RESOURCES, JaxrsAttribute.RESTEASY_JNDI_RESOURCES);
         nameToAttributeMap.put(RESTEASY_LANGUAGE_MAPPINGS, JaxrsAttribute.RESTEASY_LANGUAGE_MAPPINGS);
+        nameToAttributeMap.put(RESTEASY_MATCH_CACHE_ENABLED, JaxrsAttribute.RESTEASY_MATCH_CACHE_ENABLED);
+        nameToAttributeMap.put(RESTEASY_MATCH_CACHE_SIZE, JaxrsAttribute.RESTEASY_MATCH_CACHE_SIZE);
         nameToAttributeMap.put(RESTEASY_MEDIA_TYPE_MAPPINGS, JaxrsAttribute.RESTEASY_MEDIA_TYPE_MAPPINGS);
         nameToAttributeMap.put(RESTEASY_MEDIA_TYPE_PARAM_MAPPING, JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING);
+        nameToAttributeMap.put(RESTEASY_PATCH_FILTER_DISABLED, JaxrsAttribute.RESTEASY_PATCH_FILTER_DISABLED);
+        nameToAttributeMap.put(RESTEASY_PATCH_FILTER_LEGACY, JaxrsAttribute.RESTEASY_PATCH_FILTER_LEGACY);
         nameToAttributeMap.put(RESTEASY_PREFER_JACKSON_OVER_JSONB, JaxrsAttribute.RESTEASY_PREFER_JACKSON_OVER_JSONB);
         nameToAttributeMap.put(RESTEASY_PROVIDERS, JaxrsAttribute.RESTEASY_PROVIDERS);
         nameToAttributeMap.put(RESTEASY_RFC7232_PRECONDITIONS, JaxrsAttribute.RESTEASY_RFC7232_PRECONDITIONS);

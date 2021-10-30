@@ -38,8 +38,12 @@ public class JaxrsServerConfig {
     private ModelNode resteasyGzipMaxInput;
     private ModelNode resteasyJndiResources;
     private ModelNode resteasyLanguageMappings;
+    private ModelNode resteasyMatchCacheEnabled;
+    private ModelNode resteasyMatchCacheSize;
     private ModelNode resteasyMediaTypeMappings;
     private ModelNode resteasyMediaTypeParamMapping;
+    private ModelNode resteasyPatchfilterDisabled;
+    private ModelNode resteasyPatchfilterLegacy;
     private ModelNode resteasyPreferJacksonOverJsonB;
     private ModelNode resteasyProviders;
     private ModelNode resteasyRFC7232Preconditions;
@@ -110,6 +114,18 @@ public class JaxrsServerConfig {
     public void setResteasyLanguageMappings(ModelNode resteasyLanguageMappings) {
         this.resteasyLanguageMappings = resteasyLanguageMappings;
     }
+    public ModelNode isResteasyMatchCacheEnabled() {
+        return resteasyMatchCacheEnabled;
+    }
+    public void setResteasyMatchCacheEnabled(ModelNode resteasyMatchCacheEnabled) {
+        this.resteasyMatchCacheEnabled = resteasyMatchCacheEnabled;
+    }
+    public ModelNode getResteasyMatchCacheSize() {
+        return resteasyMatchCacheSize;
+    }
+    public void setResteasyMatchCacheSize(ModelNode resteasyMatchCacheSize) {
+        this.resteasyMatchCacheSize = resteasyMatchCacheSize;
+    }
     public ModelNode getResteasyMediaTypeMappings() {
         return resteasyMediaTypeMappings;
     }
@@ -121,6 +137,18 @@ public class JaxrsServerConfig {
     }
     public void setResteasyMediaTypeParamMapping(ModelNode resteasyMediaTypeParamMapping) {
         this.resteasyMediaTypeParamMapping = resteasyMediaTypeParamMapping;
+    }
+    public ModelNode isResteasyPatchfilterDisabled() {
+        return resteasyPatchfilterDisabled;
+    }
+    public void setResteasyPatchfilterDisabled(ModelNode resteasyPatchfilterDisabled) {
+        this.resteasyPatchfilterDisabled = resteasyPatchfilterDisabled;
+    }
+    public ModelNode isResteasyPatchfilterLegacy() {
+        return resteasyPatchfilterLegacy;
+    }
+    public void setResteasyPatchfilterLegacy(ModelNode resteasyPatchfilterLegacy) {
+        this.resteasyPatchfilterLegacy = resteasyPatchfilterLegacy;
     }
     public ModelNode isResteasyPreferJacksonOverJsonB() {
         return resteasyPreferJacksonOverJsonB;
