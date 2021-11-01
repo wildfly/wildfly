@@ -24,10 +24,15 @@ package org.jboss.as.connector.annotations.repository.jandex;
 
 import org.jboss.jca.common.annotations.Annotations;
 import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.jca.common.spi.annotations.repository.Annotation;
 import org.jboss.jca.common.spi.annotations.repository.AnnotationRepository;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
 
 import org.jboss.jandex.Index;
@@ -39,11 +44,17 @@ import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import com.google.common.io.Files;
+import com.google.common.io.MoreFiles;
+import com.google.common.io.RecursiveDeleteOption;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 /**
@@ -51,7 +62,6 @@ import static org.junit.Assert.fail;
  *
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @author <a href="mailto:jeff.zhang@jboss.org">Jeff Zhang</a>
- * @version $Revision: $
  */
 public class AnnotationsTestCase {
     /**
@@ -59,14 +69,19 @@ public class AnnotationsTestCase {
      */
     private Annotations annotations;
 
-    /**
-     * Process: Null arguemnts
-     *
-     * @throws Throwable throwable exception
-     */
-    @Test(expected = ValidateException.class)
-    public void testProcessNullArguments() throws Throwable {
-        annotations.process(null, null, null);
+    private static final String MULTIANNO_TARGET = "./target/test-classes/ra16inoutmultianno.rar";
+
+    @Before
+    public void setup() throws IOException {
+        Files.createParentDirs(
+                new File(MULTIANNO_TARGET + "/org/jboss/as/connector/deployers/spec/rars/ra16inoutmultianno/sample.file"));
+        annotations = new Annotations();
+    }
+
+    @After
+    public void tearDown() throws IOException {
+        MoreFiles.deleteRecursively(Paths.get(MULTIANNO_TARGET, "org"), RecursiveDeleteOption.ALLOW_INSECURE);
+        annotations = null;
     }
 
     /**
@@ -86,24 +101,46 @@ public class AnnotationsTestCase {
      */
     @Test
     public void testProcessConnector() throws Throwable {
-        try {
-            URI uri = getURI("/ra16inoutanno.rar");
-            final VirtualFile virtualFile = VFS.getChild(uri);
-            final Indexer indexer = new Indexer();
-            final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
-                    VisitorAttributes.RECURSE_LEAVES_ONLY));
-            for (VirtualFile classFile : classChildren) {
-                InputStream inputStream = null;
-                try {
-                    inputStream = classFile.openStream();
-                    indexer.index(inputStream);
-                } finally {
-                    VFSUtils.safeClose(inputStream);
-                }
+        // Test prep
+        File srcRars = new File("./target/test-classes/org/jboss/as/connector/deployers/spec/rars");
+        File srcRa16 = new File("./target/test-classes/org/jboss/as/connector/deployers/spec/rars/ra16inoutmultianno");
+        final String destRars = MULTIANNO_TARGET + "/org/jboss/as/connector/deployers/spec/rars";
+        final String destRa16 = MULTIANNO_TARGET + "/org/jboss/as/connector/deployers/spec/rars/ra16inoutmultianno";
+        for (File srcFile : srcRars.listFiles()) {
+            if (!srcFile.isDirectory()) {
+                Files.copy(srcFile, new File(destRars + "/" + srcFile.getName()));
             }
-            final Index index = indexer.complete();
-            AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
+        }
+        for (File srcFile : srcRa16.listFiles()) {
+            if (!srcFile.isDirectory()) {
+                Files.copy(srcFile, new File(destRa16 + "/" + srcFile.getName()));
+            }
+        }
 
+        URI uri = getURI("/ra16inoutmultianno.rar");
+        final VirtualFile virtualFile = VFS.getChild(uri);
+        final Indexer indexer = new Indexer();
+        final List<VirtualFile> classChildren = virtualFile
+                .getChildren(new SuffixMatchFilter(".class", VisitorAttributes.RECURSE_LEAVES_ONLY));
+        for (VirtualFile classFile : classChildren) {
+            System.out.println("testProcessConnector: adding " + classFile.getPathName());
+            InputStream inputStream = null;
+            try {
+                inputStream = classFile.openStream();
+                indexer.index(inputStream);
+            } finally {
+                VFSUtils.safeClose(inputStream);
+            }
+        }
+        final Index index = indexer.complete();
+        AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
+
+        Collection<Annotation> values = ar.getAnnotation(javax.resource.spi.Connector.class);
+        assertNotNull(values);
+        assertEquals(1, values.size());
+
+        // Test run
+        try {
             annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
         } catch (Throwable t) {
             t.printStackTrace();
@@ -116,15 +153,41 @@ public class AnnotationsTestCase {
      *
      * @throws Throwable throwable exception
      */
-    @Test
-    public void testProcessConnectorFail() throws Throwable {
+    @Test(expected = ValidateException.class)
+    public void testProcessConnectorFailTooManyConnectors() throws Throwable {
+        // Test prep
+        AnnotationRepository ar = null;
         try {
-            URI uri = getURI("/rafail2connector.rar");
+            File srcRars = new File("./target/test-classes/org/jboss/as/connector/deployers/spec/rars");
+            File srcRa16 = new File("./target/test-classes/org/jboss/as/connector/deployers/spec/rars/ra16inoutmultianno");
+            File srcStandalone = new File("./target/test-classes/org/jboss/as/connector/deployers/spec/rars/rastandalone");
+            final String destRars = MULTIANNO_TARGET + "/org/jboss/as/connector/deployers/spec/rars";
+            final String destRa16 = MULTIANNO_TARGET + "/org/jboss/as/connector/deployers/spec/rars/ra16inoutmultianno";
+            final String destStandalone = MULTIANNO_TARGET + "/org/jboss/as/connector/deployers/spec/rars/rastandalone";
+            Files.createParentDirs(new File(destStandalone + "/sample.file"));
+            for (File srcFile : srcRars.listFiles()) {
+                if (!srcFile.isDirectory()) {
+                    Files.copy(srcFile, new File(destRars + "/" + srcFile.getName()));
+                }
+            }
+            for (File srcFile : srcRa16.listFiles()) {
+                if (!srcFile.isDirectory()) {
+                    Files.copy(srcFile, new File(destRa16 + "/" + srcFile.getName()));
+                }
+            }
+            for (File srcFile : srcStandalone.listFiles()) {
+                if (!srcFile.isDirectory()) {
+                    Files.copy(srcFile, new File(destStandalone + "/" + srcFile.getName()));
+                }
+            }
+
+            URI uri = getURI("/ra16inoutmultianno.rar");
             final VirtualFile virtualFile = VFS.getChild(uri);
             final Indexer indexer = new Indexer();
-            final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
-                    VisitorAttributes.RECURSE_LEAVES_ONLY));
+            final List<VirtualFile> classChildren = virtualFile
+                    .getChildren(new SuffixMatchFilter(".class", VisitorAttributes.RECURSE_LEAVES_ONLY));
             for (VirtualFile classFile : classChildren) {
+                System.out.println("testProcessConnectorFailTooManyConnectors: adding " + classFile.getPathName());
                 InputStream inputStream = null;
                 try {
                     inputStream = classFile.openStream();
@@ -134,33 +197,52 @@ public class AnnotationsTestCase {
                 }
             }
             final Index index = indexer.complete();
-            AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
-
-            annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
-
-            fail("Success");
-        } catch (AssertionError ae) {
-            throw ae;
-        } catch (Throwable t) {
-            // Ok
+            ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
+        } catch (Throwable e) {
+            e.printStackTrace();
+            fail("Test preparation error " + e.getMessage());
         }
+        Collection<Annotation> values = ar.getAnnotation(javax.resource.spi.Connector.class);
+        assertNotNull(values);
+        assertEquals(2, values.size());
+
+        // Test run
+        annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
     }
 
     /**
-     * Process: ConnectionDefinitions -- verification of the
-     * processConnectionDefinitions method
+     * Process: Connector -- verification of the processConnector method
      *
      * @throws Throwable throwable exception
      */
-    @Test
-    public void testProcessConnectionDefinitions() throws Throwable {
+    @Ignore("JBJCA-1435: The current validation in IronJacamar is not correct, the testcase here is.")
+    @Test(expected = ValidateException.class)
+    public void testProcessConnectorFailNoConnector() throws Throwable {
+        // Test prep
+        AnnotationRepository ar = null;
         try {
-            URI uri = getURI("/ra16annoconndefs.rar");
+            File srcRars = new File("./target/test-classes/org/jboss/as/connector/deployers/spec/rars");
+            File srcRa16 = new File("./target/test-classes/org/jboss/as/connector/deployers/spec/rars/ra16inoutmultianno");
+            final String destRars = MULTIANNO_TARGET + "/org/jboss/as/connector/deployers/spec/rars";
+            final String destRa16 = MULTIANNO_TARGET + "/org/jboss/as/connector/deployers/spec/rars/ra16inoutmultianno";
+            for (File srcFile : srcRars.listFiles()) {
+                if (!srcFile.isDirectory() && !"BaseResourceAdapter.class".equals(srcFile.getName())) {
+                    Files.copy(srcFile, new File(destRars + "/" + srcFile.getName()));
+                }
+            }
+            for (File srcFile : srcRa16.listFiles()) {
+                if (!srcFile.isDirectory() && !"TestResourceAdapter.class".equals(srcFile.getName())) {
+                    Files.copy(srcFile, new File(destRa16 + "/" + srcFile.getName()));
+                }
+            }
+
+            URI uri = getURI("/ra16inoutmultianno.rar");
             final VirtualFile virtualFile = VFS.getChild(uri);
             final Indexer indexer = new Indexer();
-            final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
-                    VisitorAttributes.RECURSE_LEAVES_ONLY));
+            final List<VirtualFile> classChildren = virtualFile
+                    .getChildren(new SuffixMatchFilter(".class", VisitorAttributes.RECURSE_LEAVES_ONLY));
             for (VirtualFile classFile : classChildren) {
+                System.out.println("testProcessConnectorFailNoConnector: adding " + classFile.getPathName());
                 InputStream inputStream = null;
                 try {
                     inputStream = classFile.openStream();
@@ -170,29 +252,49 @@ public class AnnotationsTestCase {
                 }
             }
             final Index index = indexer.complete();
-            AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
-            annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
-        } catch (Throwable t) {
-            t.printStackTrace();
-            fail(t.getMessage());
+            ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
+        } catch (Throwable e) {
+            e.printStackTrace();
+            fail("Test preparation error " + e.getMessage());
         }
+        Collection<Annotation> values = ar.getAnnotation(javax.resource.spi.Connector.class);
+        assertNull(values);
+
+        // Test run
+        annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
     }
 
     /**
-     * Process: ConnectionDefinition -- verification of the
-     * processConnectionDefinition method
+     * Process: Connector -- verification of the processConnector method
      *
      * @throws Throwable throwable exception
      */
-    @Test
-    public void testProcessConnectionDefinition() throws Throwable {
+    public void testProcessConnectorManualSpecConnector() throws Throwable {
+        // Test prep
+        AnnotationRepository ar = null;
         try {
-            URI uri = getURI("/ra16annoconndef.rar");
+            File srcRars = new File("./target/test-classes/org/jboss/as/connector/deployers/spec/rars");
+            File srcRa16 = new File("./target/test-classes/org/jboss/as/connector/deployers/spec/rars/ra16inoutmultianno");
+            final String destRars = MULTIANNO_TARGET + "/org/jboss/as/connector/deployers/spec/rars";
+            final String destRa16 = MULTIANNO_TARGET + "/org/jboss/as/connector/deployers/spec/rars/ra16inoutmultianno";
+            for (File srcFile : srcRars.listFiles()) {
+                if (!srcFile.isDirectory()) {
+                    Files.copy(srcFile, new File(destRars + "/" + srcFile.getName()));
+                }
+            }
+            for (File srcFile : srcRa16.listFiles()) {
+                if (!srcFile.isDirectory() && !"TestResourceAdapter.class".equals(srcFile.getName())) {
+                    Files.copy(srcFile, new File(destRa16 + "/" + srcFile.getName()));
+                }
+            }
+
+            URI uri = getURI("/ra16inoutmultianno.rar");
             final VirtualFile virtualFile = VFS.getChild(uri);
             final Indexer indexer = new Indexer();
-            final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
-                    VisitorAttributes.RECURSE_LEAVES_ONLY));
+            final List<VirtualFile> classChildren = virtualFile
+                    .getChildren(new SuffixMatchFilter(".class", VisitorAttributes.RECURSE_LEAVES_ONLY));
             for (VirtualFile classFile : classChildren) {
+                System.out.println("testProcessConnectorFailNoConnector: adding " + classFile.getPathName());
                 InputStream inputStream = null;
                 try {
                     inputStream = classFile.openStream();
@@ -202,172 +304,16 @@ public class AnnotationsTestCase {
                 }
             }
             final Index index = indexer.complete();
-            AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
-            annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
-        } catch (Throwable t) {
-            fail(t.getMessage());
+            ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
+        } catch (Throwable e) {
+            e.printStackTrace();
+            fail("Test preparation error " + e.getMessage());
         }
-    }
+        Collection<Annotation> values = ar.getAnnotation(javax.resource.spi.Connector.class);
+        assertNull(values);
 
-    /**
-     * Process: Activation -- verification of the processActivation method
-     *
-     * @throws Throwable throwable exception
-     */
-    @Test
-    public void testProcessActivation() throws Throwable {
-        try {
-            URI uri = getURI("/ra16annoactiv.rar");
-            final VirtualFile virtualFile = VFS.getChild(uri);
-            final Indexer indexer = new Indexer();
-            final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
-                    VisitorAttributes.RECURSE_LEAVES_ONLY));
-            for (VirtualFile classFile : classChildren) {
-                InputStream inputStream = null;
-                try {
-                    inputStream = classFile.openStream();
-                    indexer.index(inputStream);
-                } finally {
-                    VFSUtils.safeClose(inputStream);
-                }
-            }
-            final Index index = indexer.complete();
-            AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
-            annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
-        } catch (Throwable t) {
-            fail(t.getMessage());
-        }
-    }
-
-    /**
-     * Process: AuthenticationMechanism -- verification of the
-     * processAuthenticationMechanism method
-     *
-     * @throws Throwable throwable exception
-     */
-    @Test
-    public void testProcessAuthenticationMechanism() throws Throwable {
-        try {
-            URI uri = getURI("/ra16annoauthmech.rar");
-            final VirtualFile virtualFile = VFS.getChild(uri);
-            final Indexer indexer = new Indexer();
-            final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
-                    VisitorAttributes.RECURSE_LEAVES_ONLY));
-            for (VirtualFile classFile : classChildren) {
-                InputStream inputStream = null;
-                try {
-                    inputStream = classFile.openStream();
-                    indexer.index(inputStream);
-                } finally {
-                    VFSUtils.safeClose(inputStream);
-                }
-            }
-            final Index index = indexer.complete();
-            AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
-            annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
-        } catch (Throwable t) {
-            fail(t.getMessage());
-        }
-    }
-
-    /**
-     * Process: AdministeredObject -- verification of the
-     * processAdministeredObject method
-     *
-     * @throws Throwable throwable exception
-     */
-    @Test
-    public void testProcessAdministeredObject() throws Throwable {
-        try {
-            URI uri = getURI("/ra16annoadminobj.rar");
-            final VirtualFile virtualFile = VFS.getChild(uri);
-            final Indexer indexer = new Indexer();
-            final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
-                    VisitorAttributes.RECURSE_LEAVES_ONLY));
-            for (VirtualFile classFile : classChildren) {
-                InputStream inputStream = null;
-                try {
-                    inputStream = classFile.openStream();
-                    indexer.index(inputStream);
-                } finally {
-                    VFSUtils.safeClose(inputStream);
-                }
-            }
-            final Index index = indexer.complete();
-            AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
-            annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
-        } catch (Throwable t) {
-            fail(t.getMessage());
-        }
-    }
-
-    /**
-     * Process: ConfigProperty -- verification of the processConfigProperty
-     * method
-     *
-     * @throws Throwable throwable exception
-     */
-    @Test
-    public void testProcessConfigProperty() throws Throwable {
-        try {
-            URI uri = getURI("/ra16annoconfprop.rar");
-            final VirtualFile virtualFile = VFS.getChild(uri);
-            final Indexer indexer = new Indexer();
-            final List<VirtualFile> classChildren = virtualFile.getChildren(new SuffixMatchFilter(".class",
-                    VisitorAttributes.RECURSE_LEAVES_ONLY));
-            for (VirtualFile classFile : classChildren) {
-                InputStream inputStream = null;
-                try {
-                    inputStream = classFile.openStream();
-                    indexer.index(inputStream);
-                } finally {
-                    VFSUtils.safeClose(inputStream);
-                }
-            }
-            final Index index = indexer.complete();
-            AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
-            annotations.process(ar, null, Thread.currentThread().getContextClassLoader());
-        } catch (Throwable t) {
-            fail(t.getMessage());
-        }
-    }
-
-    /**
-     * be run before the Test method.
-     *
-     * @throws Throwable throwable exception
-     */
-    @Before
-    public void setup() throws Throwable {
-        annotations = new Annotations();
-    }
-
-    /**
-     * causes that method to be run after the Test method.
-     *
-     * @throws Throwable throwable exception
-     */
-    @After
-    public void tearDown() throws Throwable {
-        annotations = null;
-    }
-
-    /**
-     * Lifecycle start, before the suite is executed
-     *
-     * @throws Throwable throwable exception
-     */
-    @BeforeClass
-    public static void beforeClass() throws Throwable {
-    }
-
-    /**
-     * Lifecycle stop, after the suite is executed
-     *
-     * @throws Throwable throwable exception
-     */
-    @AfterClass
-    public static void afterClass() throws Throwable {
+        // Test run
+        annotations.process(ar, "org.jboss.as.connector.deployers.spec.rars.BaseResourceAdapter", Thread.currentThread().getContextClassLoader());
     }
 
     /**
@@ -379,11 +325,5 @@ public class AnnotationsTestCase {
      */
     public URI getURI(String archive) throws Throwable {
         return this.getClass().getResource(archive).toURI();
-        // File f = new File(fileName);
-        //
-        // if (!f.exists())
-        // throw new IOException("Archive: " + fileName + " doesn't exists");
-        //
-        // return f.toURI().toURL();
     }
 }
