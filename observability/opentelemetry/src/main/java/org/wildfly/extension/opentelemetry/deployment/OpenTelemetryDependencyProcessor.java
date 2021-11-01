@@ -19,6 +19,7 @@
 
 package org.wildfly.extension.opentelemetry.deployment;
 
+import static org.wildfly.extension.opentelemetry.OpenTelemetrySubsystemDefinition.API_MODULE;
 import static org.wildfly.extension.opentelemetry.OpenTelemetrySubsystemDefinition.EXPORTED_MODULES;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -46,22 +47,28 @@ public class OpenTelemetryDependencyProcessor implements DeploymentUnitProcessor
     }
 
     private void addDependencies(DeploymentUnit deploymentUnit) {
-        ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         try {
             CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
             WeldCapability weldCapability = support.getCapabilityRuntimeAPI(Capabilities.WELD_CAPABILITY_NAME,
                     WeldCapability.class);
-            weldCapability.registerExtensionInstance(new OpenTelemetryCdiExtension(), deploymentUnit);
+            if (weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
+                weldCapability.registerExtensionInstance(new OpenTelemetryCdiExtension(), deploymentUnit);
+
+                // Export the -api module only if CDI is available
+                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, API_MODULE,
+                        false, true, true, false));
+            }
+
+            // Export all other modules regardless of CDI availability
+            for (String module : EXPORTED_MODULES) {
+                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, false, true,
+                        true, false));
+            }
         } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
             throw new IllegalStateException();
-        }
-
-        ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        for (String module : EXPORTED_MODULES) {
-            ModuleDependency modDep = new ModuleDependency(moduleLoader, module, false, true,
-                    true, false);
-            moduleSpecification.addSystemDependency(modDep);
         }
     }
 }

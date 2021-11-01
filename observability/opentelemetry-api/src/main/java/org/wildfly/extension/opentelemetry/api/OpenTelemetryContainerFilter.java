@@ -50,7 +50,8 @@ public class OpenTelemetryContainerFilter implements ContainerRequestFilter, Con
     @Override
     public void filter(ContainerRequestContext requestContext) {
         if (tracer != null) {
-            final boolean remoteContext = requestContext.getHeaders().keySet().stream().anyMatch(k -> W3CTraceContextPropagator.getInstance().fields().contains(k));
+            final boolean remoteContext = requestContext.getHeaders().keySet().stream()
+                    .anyMatch(k -> W3CTraceContextPropagator.getInstance().fields().contains(k));
 
             final UriInfo uriInfo = requestContext.getUriInfo();
             final URI requestUri = uriInfo.getRequestUri();

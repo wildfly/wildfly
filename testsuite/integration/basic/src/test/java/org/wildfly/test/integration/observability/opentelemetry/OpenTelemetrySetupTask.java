@@ -11,7 +11,6 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 
 public class OpenTelemetrySetupTask implements ServerSetupTask {
-
     private final String WILDFLY_EXTENSION_OPENTELEMETRY = "org.wildfly.extension.opentelemetry";
     private final ModelNode address = Operations.createAddress("subsystem", "opentelemetry");
 
