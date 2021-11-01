@@ -26,7 +26,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-microprofile-reactive-streams-operators-cdi-provider}"/>
+        <artifact name="\${org.wildfly:wildfly-microprofile-reactive-streams-operators-cdi-provider@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
