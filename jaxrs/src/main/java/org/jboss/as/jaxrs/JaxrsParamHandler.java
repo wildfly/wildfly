@@ -21,6 +21,8 @@
  */
 package org.jboss.as.jaxrs;
 
+import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -83,56 +85,110 @@ final class JaxrsParamHandler extends AbstractWriteAttributeHandler<Void> {
         @SuppressWarnings("deprecation")
         JaxrsServerConfig config = (JaxrsServerConfig) registry.getRequiredService(name).getValue();
 
-        if (JaxrsConstants.JAXRS_2_0_REQUEST_MATCHING.equals(attributeName)) {
-            config.setJaxrs20RequestMatching(value);
-        } else if (JaxrsConstants.RESTEASY_ADD_CHARSET.equals(attributeName)) {
-            config.setResteasyAddCharset(value);
-        } else if (JaxrsConstants.RESTEASY_BUFFER_EXCEPTION_ENTITY.equals(attributeName)) {
-            config.setResteasyBufferExceptionEntity(value);
-        } else if (JaxrsConstants.RESTEASY_DISABLE_HTML_SANITIZER.equals(attributeName)) {
-            config.setResteasyDisableHtmlSanitizer(value);
-        } else if (JaxrsConstants.RESTEASY_DISABLE_PROVIDERS.equals(attributeName)) {
-            config.setResteasyDisableProviders(value);
-        } else if (JaxrsConstants.RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES.equals(attributeName)) {
-            config.setResteasyDocumentExpandEntityReferences(value);
-        } else if (JaxrsConstants.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS.equals(attributeName)) {
-            config.setResteasySecureDisableDTDs(value);
-        } else if (JaxrsConstants.RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE.equals(attributeName)) {
-            config.setResteasyDocumentSecureProcessingFeature(value);
-        } else if (JaxrsConstants.RESTEASY_GZIP_MAX_INPUT.equals(attributeName)) {
-            config.setResteasyGzipMaxInput(value);
-        } else if (JaxrsConstants.RESTEASY_JNDI_RESOURCES.equals(attributeName)) {
-            config.setResteasyJndiResources(value);
-        } else if (JaxrsConstants.RESTEASY_LANGUAGE_MAPPINGS.equals(attributeName)) {
-            config.setResteasyLanguageMappings(value);
-        } else if (JaxrsConstants.RESTEASY_MATCH_CACHE_ENABLED.equals(attributeName)) {
-            config.setResteasyMatchCacheEnabled(value);
-        } else if (JaxrsConstants.RESTEASY_MATCH_CACHE_SIZE.equals(attributeName)) {
-            config.setResteasyMatchCacheSize(value);
-        } else if (JaxrsConstants.RESTEASY_MEDIA_TYPE_MAPPINGS.equals(attributeName)) {
-            config.setResteasyMediaTypeMappings(value);
-        } else if (JaxrsConstants.RESTEASY_MEDIA_TYPE_PARAM_MAPPING.equals(attributeName)) {
-            config.setResteasyMediaTypeParamMapping(value);
-        } else if (JaxrsConstants.RESTEASY_PATCH_FILTER_DISABLED.equals(attributeName)) {
-            config.setResteasyPatchfilterDisabled(value);
-        } else if (JaxrsConstants.RESTEASY_PATCH_FILTER_LEGACY.equals(attributeName)) {
-            config.setResteasyPatchfilterLegacy(value);
-        } else if (JaxrsConstants.RESTEASY_PREFER_JACKSON_OVER_JSONB.equals(attributeName)) {
-            config.setResteasyPreferJacksonOverJsonB(value);
-        } else if (JaxrsConstants.RESTEASY_PROVIDERS.equals(attributeName)) {
-            config.setResteasyProviders(value);
-        } else if (JaxrsConstants.RESTEASY_RFC7232_PRECONDITIONS.equals(attributeName)) {
-            config.setResteasyRFC7232Preconditions(value);
-        } else if (JaxrsConstants.RESTEASY_ROLE_BASED_SECURITY.equals(attributeName)) {
-            config.setResteasyRoleBasedSecurity(value);
-        } else if (JaxrsConstants.RESTEASY_SECURE_RANDOM_MAX_USE.equals(attributeName)) {
-            config.setResteasySecureRandomMaxUse(value);
-        } else if (JaxrsConstants.RESTEASY_USE_BUILTIN_PROVIDERS.equals(attributeName)) {
-            config.setResteasyUseBuiltinProviders(value);
-        } else if (JaxrsConstants.RESTEASY_USE_CONTAINER_FORM_PARAMS.equals(attributeName)) {
-            config.setResteasyUseContainerFormParams(value);
-        } else if (JaxrsConstants.RESTEASY_WIDER_REQUEST_MATCHING.equals(attributeName)) {
-            config.setResteasyWiderRequestMatching(value);
+        final JaxrsElement attribute = JaxrsElement.forName(attributeName);
+        switch (attribute) {
+            case JAXRS_2_0_REQUEST_MATCHING:
+                config.setJaxrs20RequestMatching(value);
+                break;
+
+            case RESTEASY_ADD_CHARSET:
+                config.setResteasyAddCharset(value);
+                break;
+
+            case RESTEASY_BUFFER_EXCEPTION_ENTITY:
+                config.setResteasyBufferExceptionEntity(value);
+                break;
+
+            case RESTEASY_DISABLE_HTML_SANITIZER:
+                config.setResteasyDisableHtmlSanitizer(value);
+                break;
+
+            case RESTEASY_DISABLE_PROVIDERS:
+                config.setResteasyDisableProviders(value);
+                break;
+
+            case RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES:
+                config.setResteasyDocumentExpandEntityReferences(value);
+                break;
+
+            case RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS:
+                config.setResteasySecureDisableDTDs(value);
+                break;
+
+            case RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE:
+                config.setResteasyDocumentSecureProcessingFeature(value);
+                break;
+
+            case RESTEASY_GZIP_MAX_INPUT:
+                config.setResteasyGzipMaxInput(value);
+                break;
+
+            case RESTEASY_JNDI_RESOURCES:
+                config.setResteasyJndiResources(value);
+                break;
+
+            case RESTEASY_LANGUAGE_MAPPINGS:
+                config.setResteasyLanguageMappings(value);
+                break;
+
+            case RESTEASY_MATCH_CACHE_ENABLED:
+                config.setResteasyMatchCacheEnabled(value);
+                break;
+
+            case RESTEASY_MATCH_CACHE_SIZE:
+                config.setResteasyMatchCacheSize(value);
+                break;
+
+            case RESTEASY_MEDIA_TYPE_MAPPINGS:
+                config.setResteasyMediaTypeMappings(value);
+                break;
+
+            case RESTEASY_MEDIA_TYPE_PARAM_MAPPING:
+                config.setResteasyMediaTypeParamMapping(value);
+                break;
+
+            case RESTEASY_PATCH_FILTER_DISABLED:
+                config.setResteasyPatchfilterDisabled(value);
+                break;
+
+            case RESTEASY_PATCH_FILTER_LEGACY:
+                config.setResteasyPatchfilterLegacy(value);
+                break;
+
+            case RESTEASY_PREFER_JACKSON_OVER_JSONB:
+                config.setResteasyPreferJacksonOverJsonB(value);
+                break;
+
+            case RESTEASY_PROVIDERS:
+                config.setResteasyProviders(value);
+                break;
+
+            case RESTEASY_RFC7232_PRECONDITIONS:
+                config.setResteasyRFC7232Preconditions(value);
+                break;
+
+            case RESTEASY_ROLE_BASED_SECURITY:
+                config.setResteasyRoleBasedSecurity(value);
+                break;
+
+            case RESTEASY_SECURE_RANDOM_MAX_USE:
+                config.setResteasySecureRandomMaxUse(value);
+                break;
+
+            case RESTEASY_USE_BUILTIN_PROVIDERS:
+                config.setResteasyUseBuiltinProviders(value);
+                break;
+
+            case RESTEASY_USE_CONTAINER_FORM_PARAMS:
+                config.setResteasyUseContainerFormParams(value);
+                break;
+
+            case RESTEASY_WIDER_REQUEST_MATCHING:
+                config.setResteasyWiderRequestMatching(value);
+                break;
+
+            default:
+                JAXRS_LOGGER.debug("Unknown parameter: " + attribute.getLocalName());
         }
     }
 }
