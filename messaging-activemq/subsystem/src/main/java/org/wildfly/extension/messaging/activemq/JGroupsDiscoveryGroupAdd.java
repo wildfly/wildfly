@@ -32,17 +32,14 @@ import java.util.Map;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
 import org.wildfly.extension.messaging.activemq.broadcast.CommandDispatcherBroadcastEndpointFactory;
 
@@ -50,7 +47,7 @@ import org.wildfly.extension.messaging.activemq.broadcast.CommandDispatcherBroad
  * Handler for adding a discovery group using JGroups.
  * @author Emmanuel Hugonnet (c) 2019 Red Hat, Inc.
  */
-public class JGroupsDiscoveryGroupAdd extends AbstractAddStepHandler {
+public class JGroupsDiscoveryGroupAdd extends ReloadRequiredAddStepHandler {
 
     public static final JGroupsDiscoveryGroupAdd INSTANCE = new JGroupsDiscoveryGroupAdd(true);
     public static final JGroupsDiscoveryGroupAdd LEGACY_INSTANCE = new JGroupsDiscoveryGroupAdd(false);
@@ -91,18 +88,6 @@ public class JGroupsDiscoveryGroupAdd extends AbstractAddStepHandler {
             ModelNode op = operation.clone();
             op.get(OP_ADDR).set(target.toModelNode());
             context.addStep(op, DiscoveryGroupAdd.LEGACY_INSTANCE, OperationContext.Stage.MODEL, true);
-        }
-    }
-
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        ServiceRegistry registry = context.getServiceRegistry(false);
-        ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-        ServiceController<?> service = serviceName == null ? null : registry.getService(serviceName);
-        if (service != null) {
-            context.reloadRequired();
         }
     }
 

@@ -27,8 +27,8 @@ import static org.apache.activemq.artemis.api.core.client.ActiveMQClient.THREAD_
 import static org.jboss.as.server.services.net.SocketBindingResourceDefinition.SOCKET_BINDING_CAPABILITY;
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.BROADCAST_GROUP;
-import static org.wildfly.extension.messaging.activemq.CommonAttributes.DISCOVERY_GROUP;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_BROADCAST_GROUP;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_DISCOVERY_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition.CONFIGURATION_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE;
@@ -197,9 +197,9 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 for (final BroadcastGroupConfiguration config : broadcastGroupConfigurations) {
                     final String name = config.getName();
                     final String key = "broadcast" + name;
-                    ModelNode broadcastGroupModel = model.get(BROADCAST_GROUP, name);
 
-                    if (broadcastGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
+                    if (model.hasDefined(JGROUPS_BROADCAST_GROUP, name)) {
+                        ModelNode broadcastGroupModel = model.get(JGROUPS_BROADCAST_GROUP, name);
                         String channelName = JGroupsBroadcastGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel).asStringOrNull();
                         MessagingSubsystemAdd.this.broadcastCommandDispatcherFactoryInstaller.accept(context, channelName);
                         commandDispatcherFactories.put(key, MessagingServices.getBroadcastCommandDispatcherFactoryServiceName(channelName));
@@ -216,8 +216,9 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 for (final DiscoveryGroupConfiguration config : discoveryGroupConfigurations.values()) {
                     final String name = config.getName();
                     final String key = "discovery" + name;
-                    ModelNode discoveryGroupModel = model.get(DISCOVERY_GROUP, name);
-                    if (discoveryGroupModel.hasDefined(JGROUPS_CLUSTER.getName())) {
+
+                    if (model.hasDefined(JGROUPS_DISCOVERY_GROUP, name)) {
+                        ModelNode discoveryGroupModel = model.get(JGROUPS_DISCOVERY_GROUP, name);
                         String channelName = JGroupsDiscoveryGroupDefinition.JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel).asStringOrNull();
                         MessagingSubsystemAdd.this.broadcastCommandDispatcherFactoryInstaller.accept(context, channelName);
                         commandDispatcherFactories.put(key, MessagingServices.getBroadcastCommandDispatcherFactoryServiceName(channelName));
