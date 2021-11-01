@@ -511,6 +511,11 @@
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-jpa</artifactId>
+                </exclusion>
+    
+		<exclusion>
+                    <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-bean-validation</artifactId>
                 </exclusion>
                 <exclusion>
@@ -1043,6 +1048,12 @@
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>jipijapa-spi-jakarta</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+       <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-jpa-jakarta</artifactId>
             <scope>provided</scope>
         </dependency>
 
