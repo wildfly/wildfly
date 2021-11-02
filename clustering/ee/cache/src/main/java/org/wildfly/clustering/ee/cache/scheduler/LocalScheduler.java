@@ -83,6 +83,11 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
     }
 
     @Override
+    public boolean contains(T id) {
+        return this.entries.contains(id);
+    }
+
+    @Override
     public Stream<T> stream() {
         return this.entries.stream().map(Map.Entry::getKey);
     }
@@ -154,5 +159,10 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
                 }
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return this.entries.toString();
     }
 }

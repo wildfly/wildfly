@@ -56,6 +56,11 @@ public class LinkedScheduledEntries<K, V> implements ScheduledEntries<K, V> {
     }
 
     @Override
+    public boolean contains(K key) {
+        return this.tokens.containsKey(key);
+    }
+
+    @Override
     public Map.Entry<K, V> peek() {
         return this.queue.peekFirst();
     }

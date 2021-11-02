@@ -52,6 +52,13 @@ public interface ScheduledEntries<K, V> extends Iterable<Map.Entry<K, V>> {
     void remove(K key);
 
     /**
+     * Indicates whether specified key exists among the scheduled entries.
+     * @param key an entry key
+     * @return true, if the key is a scheduled entry, false otherwise
+     */
+    boolean contains(K key);
+
+    /**
      * Returns, but does not remove, the first entry.
      */
     default Map.Entry<K, V> peek() {

@@ -49,6 +49,14 @@ public interface Scheduler<I, M> extends AutoCloseable {
     Stream<I> stream();
 
     /**
+     * Indicates whether the object with the specified identifier is scheduled.
+     * @param id an object identifier
+     */
+    default boolean contains(I id) {
+        return this.stream().anyMatch(id::equals);
+    }
+
+    /**
      * Closes any resources used by this scheduler.
      */
     @Override

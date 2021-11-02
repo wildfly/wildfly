@@ -86,6 +86,18 @@ public class PrimaryOwnerScheduler<I, K, M> implements Scheduler<I, M>, Function
         }
     }
 
+    @Override
+    public boolean contains(I id) {
+        try {
+            return this.executeOnPrimaryOwner(id, new ContainsCommand<>(id)).toCompletableFuture().join();
+        } catch (CommandDispatcherException | CompletionException e) {
+            Logger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+            return false;
+        } catch (CancellationException e) {
+            return false;
+        }
+    }
+
     private <R> CompletionStage<R> executeOnPrimaryOwner(I id, Command<R, CacheEntryScheduler<I, M>> command) throws CommandDispatcherException {
         K key = this.keyFactory.apply(id);
         Function<K, Node> primaryOwnerLocator = this.primaryOwnerLocator;

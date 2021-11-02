@@ -29,3 +29,10 @@ message ScheduleWithMetaDataCommand {
  */
 message EntriesCommand {
 }
+
+/**
+ * @TypeId(184)
+ */
+message ContainsCommand {
+	optional	bytes	id	 = 1;
+}

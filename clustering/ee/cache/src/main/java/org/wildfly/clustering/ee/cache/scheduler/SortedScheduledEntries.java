@@ -91,6 +91,11 @@ public class SortedScheduledEntries<K, V extends Comparable<? super V>> implemen
     }
 
     @Override
+    public boolean contains(K key) {
+        return this.entries.containsKey(key);
+    }
+
+    @Override
     public Map.Entry<K, V> peek() {
         try {
             return this.sorted.first();
@@ -139,6 +144,11 @@ public class SortedScheduledEntries<K, V extends Comparable<? super V>> implemen
     @Override
     public Spliterator<Map.Entry<K, V>> spliterator() {
         return this.sorted.spliterator();
+    }
+
+    @Override
+    public String toString() {
+        return this.sorted.toString();
     }
 
     /**
