@@ -38,6 +38,8 @@ import static org.wildfly.extension.undertow.HttpListenerResourceDefinition.PROX
 import static org.wildfly.extension.undertow.HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11;
 import static org.wildfly.extension.undertow.HttpsListenerResourceDefinition.SSL_CONTEXT;
 import static org.wildfly.extension.undertow.ListenerResourceDefinition.ALLOW_UNESCAPED_CHARACTERS_IN_URL;
+import static org.wildfly.extension.undertow.ListenerResourceDefinition.READ_TIMEOUT;
+import static org.wildfly.extension.undertow.ListenerResourceDefinition.WRITE_TIMEOUT;
 import static org.wildfly.extension.undertow.ListenerResourceDefinition.RFC6265_COOKIE_VALIDATION;
 import static org.wildfly.extension.undertow.ServletContainerDefinition.DEFAULT_COOKIE_VERSION;
 import static org.wildfly.extension.undertow.ServletContainerDefinition.DISABLE_FILE_WATCH_SERVICE;
@@ -111,6 +113,28 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
         subsystemBuilder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, OBFUSCATE_SESSION_ROUTE)
                 .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, OBFUSCATE_SESSION_ROUTE)
                 .end();
+        final ResourceTransformationDescriptionBuilder serverBuilder = subsystemBuilder.addChildResource(UndertowExtension.SERVER_PATH);
+
+        final AttributeTransformationDescriptionBuilder http = serverBuilder.addChildResource(UndertowExtension.HTTP_LISTENER_PATH).getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, WRITE_TIMEOUT)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, READ_TIMEOUT)
+                .addRejectCheck(new SimpleRejectAttributeChecker(ModelNode.TRUE), WRITE_TIMEOUT.getName())
+                .addRejectCheck(new SimpleRejectAttributeChecker(ModelNode.TRUE), READ_TIMEOUT.getName());
+        http.end();
+
+        final AttributeTransformationDescriptionBuilder https = serverBuilder.addChildResource(UndertowExtension.HTTPS_LISTENER_PATH).getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, WRITE_TIMEOUT)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, READ_TIMEOUT)
+                .addRejectCheck(new SimpleRejectAttributeChecker(ModelNode.TRUE), WRITE_TIMEOUT.getName())
+                .addRejectCheck(new SimpleRejectAttributeChecker(ModelNode.TRUE), READ_TIMEOUT.getName());
+        https.end();
+
+        final AttributeTransformationDescriptionBuilder ajp = serverBuilder.addChildResource(UndertowExtension.AJP_LISTENER_PATH).getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, WRITE_TIMEOUT)
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, READ_TIMEOUT)
+                .addRejectCheck(new SimpleRejectAttributeChecker(ModelNode.TRUE), WRITE_TIMEOUT.getName())
+                .addRejectCheck(new SimpleRejectAttributeChecker(ModelNode.TRUE), READ_TIMEOUT.getName());
+        ajp.end();
     }
 
     private static void registerTransformersWildFly18(ResourceTransformationDescriptionBuilder subsystemBuilder) {
@@ -142,7 +166,7 @@ public class UndertowTransformers implements ExtensionTransformerRegistration {
                     .setDiscard(DiscardAttributeChecker.ALWAYS, ENABLE_JASPI, INTEGRATED_JASPI) // Discard so we don't send over the defaults.
                 .end();
 
-        ResourceTransformationDescriptionBuilder builder = subsystemBuilder.addChildResource(UndertowExtension.PATH_FILTERS)
+        final ResourceTransformationDescriptionBuilder builder = subsystemBuilder.addChildResource(UndertowExtension.PATH_FILTERS)
                 .addChildResource(PathElement.pathElement(Constants.MOD_CLUSTER));
 
         builder.rejectChildResource(NoAffinityResourceDefinition.PATH);
