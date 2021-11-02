@@ -29,28 +29,23 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Test;
 
 /**
- * Test for UndertowSubsystem with subsystem schema version 12.0.
+ * Test for UndertowSubsystem with subsystem schema version 13.0.
  *
  * @author Flavia Rainone
  */
-public class UndertowSubsystem120TestCase extends AbstractUndertowSubsystemTestCase {
+public class UndertowSubsystem130TestCase extends AbstractUndertowSubsystemTestCase {
 
-    private static final int SCHEMA_VERSION = 12;
+    private static final int SCHEMA_VERSION = 13;
     private final String virtualHostName = "some-server";
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-12.0.xml");
+        return readResource("undertow-13.0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_12_0.xsd";
-    }
-
-    @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
+        return "schema/wildfly-undertow_13_0.xsd";
     }
 
     @Test
