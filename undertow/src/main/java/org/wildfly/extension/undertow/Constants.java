@@ -130,6 +130,7 @@ public interface Constants {
     String CERTIFICATE_FORWARDING = "certificate-forwarding";
     String OPTIONS = "options";
     String IGNORE_FLUSH = "ignore-flush";
+    String ALLOWED_REQUEST_ATTRIBUTES_PATTERN = "allowed-request-attributes-pattern";
 
     String WEBSOCKETS = "websockets";
     //mod_cluster
