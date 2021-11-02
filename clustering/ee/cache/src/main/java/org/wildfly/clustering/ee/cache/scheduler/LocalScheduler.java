@@ -31,8 +31,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.DefaultThreadFactory;
@@ -43,7 +43,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * Scheduler that uses a single scheduled task in concert with an {@link ScheduledEntries}.
  * @author Paul Ferraro
  */
-public class LocalScheduler<T> implements Scheduler<T, Instant>, Iterable<T>, Runnable {
+public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 
     private final ScheduledExecutorService executor;
     private final ScheduledEntries<T, Instant> entries;
@@ -83,35 +83,8 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Iterable<T>, Ru
     }
 
     @Override
-    public Iterator<T> iterator() {
-        Iterator<Map.Entry<T, Instant>> entries = this.entries.iterator();
-        return new Iterator<T>() {
-            @Override
-            public boolean hasNext() {
-                return entries.hasNext();
-            }
-
-            @Override
-            public T next() {
-                return entries.next().getKey();
-            }
-
-            @Override
-            public void remove() {
-                entries.remove();
-            }
-
-            @Override
-            public void forEachRemaining(Consumer<? super T> action) {
-                Consumer<Map.Entry<T, Instant>> entryAction = new Consumer<Map.Entry<T, Instant>>() {
-                    @Override
-                    public void accept(Map.Entry<T, Instant> entry) {
-                        action.accept(entry.getKey());
-                    }
-                };
-                entries.forEachRemaining(entryAction);
-            }
-        };
+    public Stream<T> stream() {
+        return this.entries.stream().map(Map.Entry::getKey);
     }
 
     @Override

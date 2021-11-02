@@ -24,10 +24,12 @@ package org.wildfly.clustering.ee.infinispan.scheduler;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Iterator;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
-import org.wildfly.clustering.ee.cache.scheduler.LocalScheduler;
+import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.infinispan.distribution.Locality;
 
@@ -37,14 +39,14 @@ import org.wildfly.clustering.infinispan.distribution.Locality;
  */
 public abstract class AbstractCacheEntryScheduler<I, M> implements CacheEntryScheduler<I, M> {
 
-    private final LocalScheduler<I> scheduler;
+    private final Scheduler<I, Instant> scheduler;
     private final Function<M, Instant> instant;
 
-    protected AbstractCacheEntryScheduler(LocalScheduler<I> scheduler, Function<M, Duration> duration, Predicate<Duration> skip, Function<M, Instant> basis) {
+    protected AbstractCacheEntryScheduler(Scheduler<I, Instant> scheduler, Function<M, Duration> duration, Predicate<Duration> skip, Function<M, Instant> basis) {
         this(scheduler, new AdditionFunction<>(duration, skip, basis));
     }
 
-    protected AbstractCacheEntryScheduler(LocalScheduler<I> scheduler, Function<M, Instant> instant) {
+    protected AbstractCacheEntryScheduler(Scheduler<I, Instant> scheduler, Function<M, Instant> instant) {
         this.scheduler = scheduler;
         this.instant = instant;
     }
@@ -64,12 +66,21 @@ public abstract class AbstractCacheEntryScheduler<I, M> implements CacheEntrySch
 
     @Override
     public void cancel(Locality locality) {
-        for (I id: this.scheduler) {
-            if (Thread.currentThread().isInterrupted()) break;
-            if (!locality.isLocal(new GroupedKey<>(id))) {
-                this.scheduler.cancel(id);
+        try (Stream<I> stream = this.scheduler.stream()) {
+            Iterator<I> entries = stream.iterator();
+            while (entries.hasNext()) {
+                if (Thread.currentThread().isInterrupted()) break;
+                I id = entries.next();
+                if (!locality.isLocal(new GroupedKey<>(id))) {
+                    this.scheduler.cancel(id);
+                }
             }
         }
+    }
+
+    @Override
+    public Stream<I> stream() {
+        return this.scheduler.stream();
     }
 
     @Override

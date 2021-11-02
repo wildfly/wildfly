@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,37 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ee;
+package org.wildfly.clustering.ee.infinispan.scheduler;
 
-import java.util.stream.Stream;
+import java.util.Collection;
+import java.util.stream.Collectors;
+
+import org.wildfly.clustering.dispatcher.Command;
 
 /**
- * A task scheduler.
  * @author Paul Ferraro
  */
-public interface Scheduler<I, M> extends AutoCloseable {
-    /**
-     * Schedules a task for the object with the specified identifier, using the specified metaData
-     * @param id an object identifier
-     * @param metaData the object meta-data
-     */
-    void schedule(I id, M metaData);
+public class EntriesCommand<I, M> implements Command<Collection<I>, CacheEntryScheduler<I, M>> {
+    private static final long serialVersionUID = -7918056022234250133L;
 
-    /**
-     * Cancels a previously scheduled task for the object with the specified identifier.
-     * @param id an object identifier
-     */
-    void cancel(I id);
-
-    /**
-     * Returns a stream of scheduled item identifiers.
-     * @return a stream of scheduled item identifiers.
-     */
-    Stream<I> stream();
-
-    /**
-     * Closes any resources used by this scheduler.
-     */
     @Override
-    void close();
+    public Collection<I> execute(CacheEntryScheduler<I, M> scheduler) throws Exception {
+        return scheduler.stream().collect(Collectors.toList());
+    }
 }

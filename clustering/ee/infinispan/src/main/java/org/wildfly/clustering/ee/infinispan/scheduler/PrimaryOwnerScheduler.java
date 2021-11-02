@@ -23,11 +23,14 @@
 package org.wildfly.clustering.ee.infinispan.scheduler;
 
 import java.time.Duration;
+import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
@@ -44,7 +47,7 @@ import org.wildfly.common.function.ExceptionSupplier;
  * Scheduler decorator that schedules/cancels a given object on the primary owner.
  * @author Paul Ferraro
  */
-public class PrimaryOwnerScheduler<I, K, M> implements Scheduler<I, M> {
+public class PrimaryOwnerScheduler<I, K, M> implements Scheduler<I, M>, Function<CompletionStage<Collection<I>>, Stream<I>> {
     private static final Invoker INVOKER = new RetryingInvoker(Duration.ZERO, Duration.ofMillis(10), Duration.ofMillis(100));
 
     private final Function<K, Node> primaryOwnerLocator;
@@ -96,6 +99,28 @@ public class PrimaryOwnerScheduler<I, K, M> implements Scheduler<I, M> {
             }
         };
         return INVOKER.invoke(action);
+    }
+
+    @Override
+    public Stream<I> stream() {
+        try {
+            Map<Node, CompletionStage<Collection<I>>> results = this.dispatcher.executeOnGroup(new EntriesCommand<>());
+            return results.isEmpty() ? Stream.empty() : results.values().stream().map(this).flatMap(Function.identity()).distinct();
+        } catch (CommandDispatcherException e) {
+            return Stream.empty();
+        }
+    }
+
+    @Override
+    public Stream<I> apply(CompletionStage<Collection<I>> stage) {
+        try {
+            return stage.toCompletableFuture().join().stream();
+        } catch (CompletionException e) {
+            Logger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+            return Stream.empty();
+        } catch (CancellationException e) {
+            return Stream.empty();
+        }
     }
 
     @Override
