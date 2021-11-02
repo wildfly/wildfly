@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -32,25 +32,21 @@ import org.junit.Test;
  * Test for UndertowSubsystem with subsystem schema version 13.0.
  *
  * @author Flavia Rainone
+ * @author Bartosz Baranowski
  */
-public class UndertowSubsystem130TestCase extends AbstractUndertowSubsystemTestCase {
+public class UndertowSubsystem140TestCase extends AbstractUndertowSubsystemTestCase {
 
-    private static final int SCHEMA_VERSION = 13;
+    private static final int SCHEMA_VERSION = 14;
     private final String virtualHostName = "some-server";
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-13.0.xml");
+        return readResource("undertow-14.0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_13_0.xsd";
-    }
-
-    @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
+        return "schema/wildfly-undertow_14_0.xsd";
     }
 
     @Test

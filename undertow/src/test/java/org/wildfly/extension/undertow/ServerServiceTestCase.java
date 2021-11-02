@@ -56,12 +56,12 @@ public class ServerServiceTestCase extends AbstractUndertowSubsystemTestCase {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-13.0.xml");
+        return readResource("undertow-14.0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_13_0.xsd";
+        return "schema/wildfly-undertow_14_0.xsd";
     }
 
     @Before
