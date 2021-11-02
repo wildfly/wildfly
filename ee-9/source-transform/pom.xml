@@ -49,7 +49,7 @@
         <module>ee</module>
         <module>ee-security</module>
         <module>jpa/spi</module>
-	<module>jpa/subsystem</module>
+        <module>jpa/subsystem</module>
         <module>jsf/injection</module>
         <module>jsf/subsystem</module>
         <module>mail</module>
