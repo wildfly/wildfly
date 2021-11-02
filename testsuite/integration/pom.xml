@@ -443,7 +443,12 @@
             <artifactId>wildfly-transaction-client</artifactId>
             <scope>test</scope>
         </dependency>
-      
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-test-runner</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-model-test</artifactId>

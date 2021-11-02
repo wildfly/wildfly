@@ -103,6 +103,11 @@
         </dependency>
         <!-- End @WrapThreadContextClassLoader -->
         <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-ws-security</artifactId>
             <scope>test</scope>
