@@ -24,6 +24,7 @@ package org.wildfly.clustering.ee.infinispan.scheduler;
 
 import java.util.Iterator;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -41,12 +42,16 @@ import org.wildfly.clustering.infinispan.distribution.Locality;
 public class ScheduleLocalKeysTask<I, K extends Key<I>> implements BiConsumer<Locality, Locality> {
     private final Cache<K, ?> cache;
     private final Predicate<? super K> filter;
-    private final CacheEntryScheduler<I, ?> scheduler;
+    private final Consumer<I> scheduleTask;
 
     public ScheduleLocalKeysTask(Cache<K, ?> cache, Predicate<? super K> filter, CacheEntryScheduler<I, ?> scheduler) {
+        this(cache, filter, scheduler::schedule);
+    }
+
+    public ScheduleLocalKeysTask(Cache<K, ?> cache, Predicate<? super K> filter, Consumer<I> scheduleTask) {
         this.cache = cache;
         this.filter = filter;
-        this.scheduler = scheduler;
+        this.scheduleTask = scheduleTask;
     }
 
     @Override
@@ -59,7 +64,7 @@ public class ScheduleLocalKeysTask<I, K extends Key<I>> implements BiConsumer<Lo
                 K key = keys.next();
                 // If we are the new primary owner of this entry then schedule it locally
                 if (!oldLocality.isLocal(key) && newLocality.isLocal(key)) {
-                    this.scheduler.schedule(key.getId());
+                    this.scheduleTask.accept(key.getId());
                 }
             }
         }
