@@ -51,7 +51,6 @@ import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleWithMetaDataComman
 import org.wildfly.clustering.ee.infinispan.scheduler.Scheduler;
 import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerListener;
 import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerTopologyChangeListener;
-import org.wildfly.clustering.ee.infinispan.tx.InfinispanBatcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.distribution.CacheLocality;
@@ -106,7 +105,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, MC, LC> implements Sessi
     public InfinispanSessionManagerFactory(InfinispanSessionManagerFactoryConfiguration<S, SC, AL, MC, LC> config) {
         this.affinityFactory = config.getKeyAffinityServiceFactory();
         this.cache = config.getCache();
-        this.batcher = new InfinispanBatcher(this.cache);
+        this.batcher = config.getBatcher();
         this.properties = config.getCacheProperties();
         this.provider = config.getSpecificationProvider();
         this.notifierFactory = new SessionAttributeActivationNotifierFactory<>(this.provider);

@@ -65,12 +65,11 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  */
 public abstract class AbstractInfinispanSessionMetaDataFactory<L> implements SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>>, BiFunction<String, Set<Flag>, CompositeSessionMetaDataEntry<L>> {
 
-    private static final Set<Flag> SKIP_LISTENER_NOTIFICATION_FLAGS = EnumSet.of(Flag.SKIP_LISTENER_NOTIFICATION);
     private static final Set<Flag> TRY_LOCK_FLAGS = EnumSet.of(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY);
-    private static final Set<Flag> IGNORE_RETURN_VALUES_FLAGS = EnumSet.of(Flag.IGNORE_RETURN_VALUES);
-    private static final Set<Flag> PURGE_FLAGS = EnumSet.of(Flag.IGNORE_RETURN_VALUES, Flag.SKIP_LISTENER_NOTIFICATION);
 
     private final Cache<Key<String>, Object> cache;
+    private final Cache<Key<String>, Object> writeCache;
+    private final Cache<Key<String>, Object> silentCache;
     private final Cache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataCache;
     private final MutatorFactory<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<L>> creationMetaDataMutatorFactory;
     private final Cache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache;
@@ -80,6 +79,8 @@ public abstract class AbstractInfinispanSessionMetaDataFactory<L> implements Ses
 
     public AbstractInfinispanSessionMetaDataFactory(InfinispanSessionMetaDataFactoryConfiguration configuration) {
         this.cache = configuration.getCache();
+        this.writeCache = configuration.getWriteOnlyCache();
+        this.silentCache = configuration.getSilentWriteCache();
         this.properties = configuration.getCacheProperties();
         this.creationMetaDataCache = configuration.getCache();
         this.creationMetaDataMutatorFactory = new InfinispanMutatorFactory<>(this.creationMetaDataCache, this.properties);
@@ -101,7 +102,7 @@ public abstract class AbstractInfinispanSessionMetaDataFactory<L> implements Ses
         entries.put(new SessionCreationMetaDataKey(id), creationMetaDataEntry);
         SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();
         entries.put(new SessionAccessMetaDataKey(id), accessMetaData);
-        this.cache.getAdvancedCache().withFlags(IGNORE_RETURN_VALUES_FLAGS).putAll(entries);
+        this.writeCache.putAll(entries);
         return new CompositeSessionMetaDataEntry<>(creationMetaDataEntry, accessMetaData);
     }
 
@@ -140,7 +141,7 @@ public abstract class AbstractInfinispanSessionMetaDataFactory<L> implements Ses
         SessionCreationMetaDataKey key = new SessionCreationMetaDataKey(id);
         try {
             if (!this.properties.isLockOnWrite() || (this.creationMetaDataCache.getAdvancedCache().getTransactionManager().getTransaction() == null) || this.creationMetaDataCache.getAdvancedCache().withFlags(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY).lock(key)) {
-                return this.delete(id, IGNORE_RETURN_VALUES_FLAGS);
+                return delete(this.writeCache, id);
             }
             return false;
         } catch (SystemException e) {
@@ -150,16 +151,16 @@ public abstract class AbstractInfinispanSessionMetaDataFactory<L> implements Ses
 
     @Override
     public boolean purge(String id) {
-        return this.delete(id, PURGE_FLAGS);
+        return delete(this.silentCache, id);
     }
 
-    private boolean delete(String id, Set<Flag> flags) {
-        this.accessMetaDataCache.getAdvancedCache().withFlags(flags).remove(new SessionAccessMetaDataKey(id));
-        this.creationMetaDataCache.getAdvancedCache().withFlags(flags).remove(new SessionCreationMetaDataKey(id));
+    private static boolean delete(Cache<Key<String>, Object> cache, String id) {
+        cache.remove(new SessionAccessMetaDataKey(id));
+        cache.remove(new SessionCreationMetaDataKey(id));
         return true;
     }
 
     private void cascadeEvict(SessionCreationMetaDataKey key, SessionCreationMetaDataEntry<L> value) {
-        this.accessMetaDataCache.getAdvancedCache().withFlags(SKIP_LISTENER_NOTIFICATION_FLAGS).evict(new SessionAccessMetaDataKey(key.getId()));
+        this.silentCache.evict(new SessionAccessMetaDataKey(key.getId()));
     }
 }

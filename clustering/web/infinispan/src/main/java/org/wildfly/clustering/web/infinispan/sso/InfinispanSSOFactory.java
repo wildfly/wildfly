@@ -28,8 +28,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.infinispan.Cache;
-import org.infinispan.context.Flag;
-import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.cache.sso.AuthenticationEntry;
@@ -46,14 +45,14 @@ import org.wildfly.clustering.web.sso.Sessions;
 public class InfinispanSSOFactory<AV, SV, A, D, S, L> implements SSOFactory<Map.Entry<A, AtomicReference<L>>, SV, A, D, S, L> {
 
     private final SessionsFactory<SV, D, S> sessionsFactory;
-    private final Cache<AuthenticationKey, AuthenticationEntry<AV, L>> cache;
     private final Cache<AuthenticationKey, AuthenticationEntry<AV, L>> findCache;
+    private final Cache<AuthenticationKey, AuthenticationEntry<AV, L>> writeCache;
     private final Marshaller<A, AV> marshaller;
     private final LocalContextFactory<L> localContextFactory;
 
-    public InfinispanSSOFactory(Cache<AuthenticationKey, AuthenticationEntry<AV, L>> cache, CacheProperties properties, Marshaller<A, AV> marshaller, LocalContextFactory<L> localContextFactory, SessionsFactory<SV, D, S> sessionsFactory) {
-        this.cache = cache;
-        this.findCache = properties.isLockOnRead() ? cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : cache;
+    public InfinispanSSOFactory(InfinispanConfiguration configuration, Marshaller<A, AV> marshaller, LocalContextFactory<L> localContextFactory, SessionsFactory<SV, D, S> sessionsFactory) {
+        this.writeCache = configuration.getWriteOnlyCache();
+        this.findCache = configuration.getReadForUpdateCache();
         this.marshaller = marshaller;
         this.localContextFactory = localContextFactory;
         this.sessionsFactory = sessionsFactory;
@@ -70,7 +69,7 @@ public class InfinispanSSOFactory<AV, SV, A, D, S, L> implements SSOFactory<Map.
     public Map.Entry<Map.Entry<A, AtomicReference<L>>, SV> createValue(String id, A authentication) {
         try {
             AuthenticationEntry<AV, L> entry = new AuthenticationEntry<>(this.marshaller.write(authentication));
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(new AuthenticationKey(id), entry);
+            this.writeCache.put(new AuthenticationKey(id), entry);
             SV sessions = this.sessionsFactory.createValue(id, null);
             return new AbstractMap.SimpleImmutableEntry<>(new AbstractMap.SimpleImmutableEntry<>(authentication, entry.getLocalContext()), sessions);
         } catch (IOException e) {
@@ -98,7 +97,7 @@ public class InfinispanSSOFactory<AV, SV, A, D, S, L> implements SSOFactory<Map.
 
     @Override
     public boolean remove(String id) {
-        this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(new AuthenticationKey(id));
+        this.writeCache.remove(new AuthenticationKey(id));
         this.sessionsFactory.remove(id);
         return true;
     }

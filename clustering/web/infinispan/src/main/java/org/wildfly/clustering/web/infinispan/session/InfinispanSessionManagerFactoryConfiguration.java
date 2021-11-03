@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import org.infinispan.remoting.transport.Address;
+import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;

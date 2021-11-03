@@ -24,7 +24,6 @@ package org.wildfly.clustering.web.infinispan.session.fine;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -33,8 +32,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
-import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.Immutability;
+import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
@@ -66,7 +65,11 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, AtomicReference<Map<String, UUID>>> {
 
     private final Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache;
+    private final Cache<SessionAttributeNamesKey, Map<String, UUID>> namesFindCache;
     private final Cache<SessionAttributeKey, V> attributeCache;
+    private final Cache<SessionAttributeKey, V> attributeFindCache;
+    private final Cache<Key<String>, Object> writeCache;
+    private final Cache<Key<String>, Object> silentCache;
     private final Marshaller<Object, V> marshaller;
     private final Immutability immutability;
     private final CacheProperties properties;
@@ -80,7 +83,11 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 
     public FineSessionAttributesFactory(InfinispanSessionAttributesFactoryConfiguration<S, C, L, Object, V> configuration) {
         this.namesCache = configuration.getCache();
+        this.namesFindCache = configuration.getReadForUpdateCache();
         this.attributeCache = configuration.getCache();
+        this.attributeFindCache = configuration.getReadForUpdateCache();
+        this.writeCache = configuration.getWriteOnlyCache();
+        this.silentCache = configuration.getSilentWriteCache();
         this.marshaller = configuration.getMarshaller();
         this.immutability = configuration.getImmutability();
         this.properties = configuration.getCacheProperties();
@@ -120,23 +127,23 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 
     @Override
     public AtomicReference<Map<String, UUID>> findValue(String id) {
-        return this.getValue(id, true);
+        return this.getValue(this.namesFindCache, this.attributeFindCache, id, true);
     }
 
     @Override
     public AtomicReference<Map<String, UUID>> tryValue(String id) {
-        return this.getValue(id, false);
+        return this.getValue(this.namesCache, this.attributeCache, id, false);
     }
 
-    private AtomicReference<Map<String, UUID>> getValue(String id, boolean purgeIfInvalid) {
-        Map<String, UUID> names = this.namesCache.get(new SessionAttributeNamesKey(id));
+    private AtomicReference<Map<String, UUID>> getValue(Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache, Cache<SessionAttributeKey, V> attributeCache, String id, boolean purgeIfInvalid) {
+        Map<String, UUID> names = namesCache.get(new SessionAttributeNamesKey(id));
         if (names != null) {
             // Validate all attributes
             Map<SessionAttributeKey, String> attributes = new TreeMap<>();
             for (Map.Entry<String, UUID> entry : names.entrySet()) {
                 attributes.put(new SessionAttributeKey(id, entry.getValue()), entry.getKey());
             }
-            Map<SessionAttributeKey, V> entries = this.attributeCache.getAdvancedCache().getAll(attributes.keySet());
+            Map<SessionAttributeKey, V> entries = attributeCache.getAdvancedCache().getAll(attributes.keySet());
             for (Map.Entry<SessionAttributeKey, String> attribute : attributes.entrySet()) {
                 V value = entries.get(attribute.getKey());
                 if (value != null) {
@@ -161,22 +168,22 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 
     @Override
     public boolean remove(String id) {
-        return this.delete(id);
+        return this.delete(this.writeCache, id);
     }
 
     @Override
     public boolean purge(String id) {
-        return this.delete(id, Flag.SKIP_LISTENER_NOTIFICATION);
+        return this.delete(this.silentCache, id);
     }
 
-    private boolean delete(String id, Flag... flags) {
+    private boolean delete(Cache<Key<String>, Object> cache, String id) {
         SessionAttributeNamesKey key = new SessionAttributeNamesKey(id);
         Map<String, UUID> names = this.namesCache.get(key);
         if (names != null) {
             for (UUID attributeId : names.values()) {
-                this.attributeCache.getAdvancedCache().withFlags(EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags)).remove(new SessionAttributeKey(id, attributeId));
+                cache.remove(new SessionAttributeKey(id, attributeId));
             }
-            this.namesCache.getAdvancedCache().withFlags(EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags)).remove(key);
+            cache.remove(key);
         }
         return true;
     }
@@ -184,7 +191,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     @Override
     public SessionAttributes createSessionAttributes(String id, AtomicReference<Map<String, UUID>> names, ImmutableSessionMetaData metaData, C context) {
         SessionAttributeActivationNotifier notifier = new ImmutableSessionAttributeActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, names)), context);
-        return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), this.attributeCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS), this.marshaller, this.mutatorFactory, this.immutability, this.properties, notifier);
+        return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), this.attributeCache, this.marshaller, this.mutatorFactory, this.immutability, this.properties, notifier);
     }
 
     @Override

@@ -23,7 +23,6 @@
 package org.wildfly.clustering.web.infinispan.session.coarse;
 
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,7 +30,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
-import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
@@ -64,6 +62,9 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map<String, Object>> {
 
     private final Cache<SessionAttributesKey, V> cache;
+    private final Cache<SessionAttributesKey, V> writeCache;
+    private final Cache<SessionAttributesKey, V> silentCache;
+    private final Cache<SessionAttributesKey, V> findCache;
     private final Marshaller<Map<String, Object>, V> marshaller;
     private final CacheProperties properties;
     private final Immutability immutability;
@@ -76,6 +77,9 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
 
     public CoarseSessionAttributesFactory(InfinispanSessionAttributesFactoryConfiguration<S, C, L, Map<String, Object>, V> configuration) {
         this.cache = configuration.getCache();
+        this.writeCache = configuration.getWriteOnlyCache();
+        this.silentCache = configuration.getSilentWriteCache();
+        this.findCache = configuration.getReadForUpdateCache();
         this.marshaller = configuration.getMarshaller();
         this.immutability = configuration.getImmutability();
         this.properties = configuration.getCacheProperties();
@@ -110,7 +114,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
         Map<String, Object> attributes = this.properties.isLockOnRead() ? new HashMap<>() : new ConcurrentHashMap<>();
         try {
             V value = this.marshaller.write(attributes);
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(new SessionAttributesKey(id), value);
+            this.writeCache.put(new SessionAttributesKey(id), value);
             return attributes;
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -119,16 +123,16 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
 
     @Override
     public Map<String, Object> findValue(String id) {
-        return this.getValue(id, true);
+        return this.getValue(this.findCache, id, true);
     }
 
     @Override
     public Map<String, Object> tryValue(String id) {
-        return this.getValue(id, false);
+        return this.getValue(this.cache, id, false);
     }
 
-    private Map<String, Object> getValue(String id, boolean purgeIfInvalid) {
-        V value = this.cache.get(new SessionAttributesKey(id));
+    private Map<String, Object> getValue(Cache<SessionAttributesKey, V> cache, String id, boolean purgeIfInvalid) {
+        V value = cache.get(new SessionAttributesKey(id));
         if (value != null) {
             try {
                 return this.marshaller.read(value);
@@ -144,16 +148,16 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
 
     @Override
     public boolean remove(String id) {
-        return this.delete(id);
+        return this.delete(this.writeCache, id);
     }
 
     @Override
     public boolean purge(String id) {
-        return this.delete(id, Flag.SKIP_LISTENER_NOTIFICATION);
+        return this.delete(this.silentCache, id);
     }
 
-    private boolean delete(String id, Flag... flags) {
-        this.cache.getAdvancedCache().withFlags(EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags)).remove(new SessionAttributesKey(id));
+    private boolean delete(Cache<SessionAttributesKey, V> cache, String id) {
+        cache.remove(new SessionAttributesKey(id));
         return true;
     }
 

@@ -22,12 +22,12 @@
 
 package org.wildfly.clustering.web.hotrod.session;
 
-import org.wildfly.clustering.web.hotrod.HotRodConfiguration;
+import org.wildfly.clustering.web.hotrod.RemoteCacheConfiguration;
 import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 
 /**
  * Configuration of an {@link InfinispanSessionManagementProvider}.
  * @author Paul Ferraro
  */
-public interface HotRodSessionManagementConfiguration extends DistributableSessionManagementConfiguration, HotRodConfiguration {
+public interface HotRodSessionManagementConfiguration extends DistributableSessionManagementConfiguration, RemoteCacheConfiguration {
 }
