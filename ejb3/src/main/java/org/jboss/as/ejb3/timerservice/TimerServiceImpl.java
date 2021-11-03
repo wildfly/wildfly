@@ -39,6 +39,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Predicate;
 
 import javax.ejb.EJBException;
 import javax.ejb.ScheduleExpression;
@@ -101,6 +102,7 @@ public class TimerServiceImpl implements ManagedTimerService {
     private final TimerPersistence persistence;
     private final TimerServiceRegistry timerServiceRegistry;
     private final TimerListener timerListener;
+    private final Predicate<TimerConfig> timerFilter;
 
     private Closeable listenerHandle;
 
@@ -119,6 +121,7 @@ public class TimerServiceImpl implements ManagedTimerService {
         this.persistence = configuration.getTimerPersistence();
         this.timerServiceRegistry = configuration.getTimerServiceRegistry();
         this.timerListener = configuration.getTimerListener();
+        this.timerFilter = configuration.getTimerFilter();
     }
 
     @Override
@@ -147,7 +150,9 @@ public class TimerServiceImpl implements ManagedTimerService {
             timers = new ArrayList<>();
             for (Map.Entry<Method, List<AutoTimer>> entry : autoTimers.entrySet()) {
                 for (AutoTimer timer : entry.getValue()) {
-                    timers.add(new AutoTimer(timer.getScheduleExpression(), timer.getTimerConfig(), entry.getKey()));
+                    if (this.timerFilter.test(timer.getTimerConfig())) {
+                        timers.add(new AutoTimer(timer.getScheduleExpression(), timer.getTimerConfig(), entry.getKey()));
+                    }
                 }
             }
         }

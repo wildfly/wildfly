@@ -22,6 +22,10 @@
 
 package org.jboss.as.ejb3.timerservice;
 
+import java.util.function.Predicate;
+
+import javax.ejb.TimerConfig;
+
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceConfiguration;
@@ -83,6 +87,11 @@ public class NonFunctionalTimerServiceFactoryServiceConfigurator extends SimpleS
             @Override
             public TimerListener getTimerListener() {
                 return listener;
+            }
+
+            @Override
+            public Predicate<TimerConfig> getTimerFilter() {
+                return TimerFilter.ALL;
             }
         });
     }

@@ -23,9 +23,13 @@
 package org.jboss.as.ejb3.timerservice.composite;
 
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+
+import javax.ejb.TimerConfig;
 
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
+import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceConfiguration.TimerFilter;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceFactory;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceFactoryConfiguration;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
@@ -39,6 +43,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
 
@@ -53,12 +58,12 @@ public class CompositeTimerServiceFactoryServiceConfigurator extends SimpleServi
     private final SupplierDependency<ManagedTimerServiceFactory> transientFactory;
     private final SupplierDependency<ManagedTimerServiceFactory> persistentFactory;
 
-    public CompositeTimerServiceFactoryServiceConfigurator(ServiceName name, ManagedTimerServiceFactoryConfiguration configuration, SupplierDependency<ManagedTimerServiceFactory> transientFactory, SupplierDependency<ManagedTimerServiceFactory> persistentFactory) {
+    public CompositeTimerServiceFactoryServiceConfigurator(ServiceName name, ManagedTimerServiceFactoryConfiguration configuration) {
         super(name);
         this.invokerFactory = configuration.getInvokerFactory();
         this.registry = configuration.getTimerServiceRegistry();
-        this.transientFactory = transientFactory;
-        this.persistentFactory = persistentFactory;
+        this.transientFactory = new ServiceSupplierDependency<>(TimerFilter.TRANSIENT.apply(name));
+        this.persistentFactory = new ServiceSupplierDependency<>(TimerFilter.PERSISTENT.apply(name));
     }
 
     @Override
@@ -99,6 +104,11 @@ public class CompositeTimerServiceFactoryServiceConfigurator extends SimpleServi
             @Override
             public ManagedTimerService getPersistentTimerService() {
                 return persistentTimerService;
+            }
+
+            @Override
+            public Predicate<TimerConfig> getTimerFilter() {
+                return TimerFilter.ALL;
             }
         });
     }
