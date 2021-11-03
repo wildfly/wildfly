@@ -94,12 +94,14 @@ public class CalendarBasedTimeout {
      * The first timeout relative to the time when this {@link CalendarBasedTimeout} was created
      * from a {@link javax.ejb.ScheduleExpression}
      */
-    private Calendar firstTimeout;
+    private final Calendar firstTimeout;
 
     /**
      * The timezone being used for this {@link CalendarBasedTimeout}
      */
-    private TimeZone timezone;
+    private final TimeZone timezone;
+
+    private final Date start;
 
     /**
      * Creates a {@link CalendarBasedTimeout} from the passed <code>schedule</code>.
@@ -128,25 +130,28 @@ public class CalendarBasedTimeout {
         this.dayOfMonth = new DayOfMonth(schedule.getDayOfMonth());
         this.month = new Month(schedule.getMonth());
         this.year = new Year(schedule.getYear());
-        String timezoneId = schedule.getTimezone();
-
-        if (timezoneId != null) {
-            // If the timezone ID wasn't valid, then Timezone.getTimeZone returns
-            // GMT, which may not always be desirable.
-            this.timezone = TimeZone.getTimeZone(timezoneId);
-            if (this.timezone.getID().equals("GMT") && !timezoneId.equalsIgnoreCase("GMT")) {
-                // use server's timezone
-                this.timezone = DEFAULT_TIMEZONE;
-                EJB3_TIMER_LOGGER.unknownTimezoneId(timezoneId, DEFAULT_TIMEZONE.getID());
-            }
-        } else {
-            this.timezone = DEFAULT_TIMEZONE;
-        }
+        this.timezone = getTimeZone(schedule.getTimezone());
+        this.start = schedule.getStart();
 
         // Now that we have parsed the values from the ScheduleExpression,
         // determine and set the first timeout (relative to the current time)
         // of this CalendarBasedTimeout
-        setFirstTimeout();
+        this.firstTimeout = this.calculateFirstTimeout();
+    }
+
+    private static TimeZone getTimeZone(String id) {
+        if (id != null) {
+            TimeZone zone = TimeZone.getTimeZone(id);
+            // If the timezone ID wasn't valid, then Timezone.getTimeZone returns
+            // GMT, which may not always be desirable.
+            if (zone.getID().equals("GMT") && !id.equalsIgnoreCase("GMT")) {
+                EJB3_TIMER_LOGGER.unknownTimezoneId(id, DEFAULT_TIMEZONE.getID());
+            } else {
+                return zone;
+            }
+        }
+        // use server's timezone
+        return DEFAULT_TIMEZONE;
     }
 
     public static boolean doesScheduleMatch(final ScheduleExpression expression1, final ScheduleExpression expression2) {
@@ -173,15 +178,14 @@ public class CalendarBasedTimeout {
         return this.firstTimeout;
     }
 
-    private void setFirstTimeout() {
+    private Calendar calculateFirstTimeout() {
         Calendar currentCal = new GregorianCalendar(this.timezone);
-        Date start = this.scheduleExpression.getStart();
-        if (start != null) {
-            currentCal.setTime(start);
+        if (this.start != null) {
+            currentCal.setTime(this.start);
         } else {
             resetTimeToFirstValues(currentCal);
         }
-        this.firstTimeout = getNextTimeout(currentCal, false);
+        return getNextTimeout(currentCal, false);
     }
 
     /**
