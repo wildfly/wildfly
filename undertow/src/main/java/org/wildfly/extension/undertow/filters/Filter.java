@@ -74,7 +74,7 @@ abstract class Filter extends AbstractHandlerDefinition {
         }
         try {
             Constructor<?> c = handlerClass.getDeclaredConstructor(getConstructorSignature());
-            if (c.getParameterTypes().length == numOfParams) {
+            if (c.getParameterCount() == numOfParams) {
                 boolean match = true;
                 Object[] params = new Object[numOfParams];
                 Class[] parameterTypes = c.getParameterTypes();
