@@ -84,6 +84,8 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        if (!EjbDeploymentMarker.isEjbDeployment(deploymentUnit)) return;
+
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
 
@@ -97,7 +99,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
         final Map<String, ServiceName> timerPersistenceServices = new HashMap<String, ServiceName>();
         // if this is an EJB deployment then create an EJB module level TimerServiceRegistry which can be used by the timer services
         // of all EJB components that belong to this EJB module.
-        final TimerServiceRegistry timerServiceRegistry = EjbDeploymentMarker.isEjbDeployment(deploymentUnit) ? new TimerServiceRegistryImpl() : null;
+        final TimerServiceRegistry timerServiceRegistry = new TimerServiceRegistryImpl();
 
         // determine the per-EJB timer persistence service names required
         if (ejbJarMetaData != null && ejbJarMetaData.getAssemblyDescriptor() != null) {

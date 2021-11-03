@@ -170,18 +170,15 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         started = true;
         timerPersistence.getValue().timerDeployed(timedObjectInvoker.getValue().getTimedObjectId());
         // register ourselves to the TimerServiceRegistry (if any)
-        if (timerServiceRegistry != null) {
-            timerServiceRegistry.registerTimerService(this);
-        }
+        timerServiceRegistry.registerTimerService(this);
+
         listenerHandle = timerPersistence.getValue().registerChangeListener(getInvoker().getTimedObjectId(), new TimerRefreshListener());
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
         // un-register ourselves to the TimerServiceRegistry (if any)
-        if (timerServiceRegistry != null) {
-            timerServiceRegistry.unregisterTimerService(this);
-        }
+        timerServiceRegistry.unregisterTimerService(this);
 
         timerPersistence.getValue().timerUndeployed(timedObjectInvoker.getValue().getTimedObjectId());
         started = false;
@@ -444,14 +441,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             }
         }
 
-        // query the registry
-        if (this.timerServiceRegistry != null) {
-            return this.timerServiceRegistry.getAllTimers();
-        }
-
-        // if we don't have the registry (shouldn't really happen) which stores the timer services applicable for the Jakarta Enterprise Beans module to which
-        // this timer service belongs, then let's at least return the active timers that are applicable only for this timer service
-        return this.getTimers();
+        return this.timerServiceRegistry.getAllTimers();
     }
 
     /**

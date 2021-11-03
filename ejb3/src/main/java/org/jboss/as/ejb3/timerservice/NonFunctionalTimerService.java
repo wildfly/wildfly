@@ -129,13 +129,7 @@ public final class NonFunctionalTimerService implements TimerService, Service<Ti
     public Collection<Timer> getAllTimers() throws IllegalStateException, EJBException {
         assertInvocationAllowed();
 
-        // query the registry
-        if (this.timerServiceRegistry != null) {
-            return this.timerServiceRegistry.getAllTimers();
-        }
-        // If we don't have the timer service registry (for whatever reason),
-        // we just return an empty collection (since this is a non-functional timer service)
-        return Collections.emptySet();
+        return this.timerServiceRegistry.getAllTimers();
     }
 
     private void assertInvocationAllowed() {
