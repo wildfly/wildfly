@@ -61,6 +61,7 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.persistence.database.DatabaseTimerPersistence;
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
+import org.jboss.as.ejb3.timerservice.spi.AutoTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.spi.TimerListener;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
