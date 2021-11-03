@@ -46,6 +46,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.requestcontroller.ControlPoint;
+import org.wildfly.extension.requestcontroller.RunResult;
 
 /**
  * Timed object invoker for an enterprise bean. This is analogous to a view service for timer invocations
@@ -58,7 +60,6 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Service<Timed
 
     private final InjectedValue<EJBComponent> ejbComponent = new InjectedValue<EJBComponent>();
     private final Module module;
-    private boolean started = false;
 
     /**
      * String that uniquely identifies a deployment
@@ -73,30 +74,33 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Service<Timed
     }
 
     @Override
-    public void callTimeout(final Timer timer, final Method timeoutMethod) throws Exception {
-        final Interceptor interceptor;
-        synchronized (this) {
-            if (!started) {
-                //this can happen if an invocation has been triggered as the deployment is shutting down
-                throw EjbLogger.EJB3_TIMER_LOGGER.timerInvocationFailedDueToInvokerNotBeingStarted();
+    public void callTimeout(Timer timer, Method method) throws Exception {
+        ControlPoint controlPoint = this.ejbComponent.getValue().getControlPoint();
+        if (controlPoint != null) {
+            if (controlPoint.beginRequest() == RunResult.REJECTED) {
+                throw EjbLogger.EJB3_TIMER_LOGGER.containerSuspended();
             }
-            interceptor = timeoutInterceptors.get(timeoutMethod);
-        }
-        if(interceptor == null) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.failToInvokeTimeout(timeoutMethod);
-        }
-        final InterceptorContext context = new InterceptorContext();
-        context.setContextData(new HashMap<String, Object>());
-        context.setMethod(timeoutMethod);
-        if(timeoutMethod.getParameterCount() == 0) {
-            context.setParameters(EMPTY_STRING_ARRAY);
+            try {
+                this.invoke(timer, method);
+            } finally {
+                controlPoint.requestComplete();
+            }
         } else {
-            final Object[] params = new Object[1];
-            params[0] = timer;
-            context.setParameters(params);
+            this.invoke(timer, method);
         }
+    }
+
+    private void invoke(Timer timer, Method method) throws Exception {
+        Interceptor interceptor = this.timeoutInterceptors.get(method);
+        if (interceptor == null) {
+            throw EjbLogger.EJB3_TIMER_LOGGER.failToInvokeTimeout(method);
+        }
+        InterceptorContext context = new InterceptorContext();
+        context.setContextData(new HashMap<String, Object>());
+        context.setMethod(method);
+        context.setParameters(method.getParameterCount() == 0 ? EMPTY_STRING_ARRAY : new Object[] { timer });
         context.setTimer(timer);
-        context.putPrivateData(Component.class, ejbComponent.getValue());
+        context.putPrivateData(Component.class, this.ejbComponent.getValue());
         context.putPrivateData(MethodInterfaceType.class, MethodInterfaceType.Timer);
         context.putPrivateData(InvocationType.class, InvocationType.TIMER);
         interceptor.processInvocation(context);
@@ -126,12 +130,10 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Service<Timed
             interceptors.put(entry.getKey(), entry.getValue().create(factoryContext));
         }
         this.timeoutInterceptors = interceptors;
-        started = true;
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
-        started = false;
         this.timeoutInterceptors = null;
     }
 
