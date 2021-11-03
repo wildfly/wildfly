@@ -41,7 +41,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import javax.ejb.EJBLocalObject;
-import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import javax.transaction.TransactionSynchronizationRegistry;
@@ -92,7 +91,6 @@ import org.jboss.as.ejb3.security.SecurityDomainInterceptorFactory;
 import org.jboss.as.ejb3.security.SecurityRolesAddingInterceptor;
 import org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
-import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
 import org.jboss.as.ejb3.timerservice.spi.AutoTimer;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -204,12 +202,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * The ejb local home view
      */
     private EjbHomeViewDescription ejbHomeView;
-
-    /**
-     * TODO: this should not be part of the description
-     * The management resource for the associated timer service
-     */
-    private TimerService timerService = NonFunctionalTimerService.DISABLED;
 
     /**
      * The management resource for the associated timer service, if present
@@ -979,14 +971,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             }
             return "Proxy for view class: " + componentView.getViewClass().getName() + " of EJB: " + name;
         }
-    }
-
-    public TimerService getTimerService() {
-        return this.timerService;
-    }
-
-    public void setTimerService(final TimerService timerService) {
-        this.timerService = timerService;
     }
 
     public Resource getTimerServiceResource() {

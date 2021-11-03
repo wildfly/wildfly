@@ -33,10 +33,9 @@ import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 
 /**
- * Implementation of Enterprise Beans 3.1 {@link ManagedTimer}
+ * Local implementation of {@link ManagedTimer}.
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
- * @version $Revision: $
  */
 public class TimerImpl implements ManagedTimer {
     /**
@@ -155,6 +154,7 @@ public class TimerImpl implements ManagedTimer {
      *
      * @return
      */
+    @Override
     public String getId() {
         return this.id;
     }
@@ -182,7 +182,7 @@ public class TimerImpl implements ManagedTimer {
         if (!persistent) {
             throw EjbLogger.EJB3_TIMER_LOGGER.invalidTimerHandlersForPersistentTimers("Enterprise Beans 3.1 Spec 18.2.6");
         }
-        return new TimerHandleImpl(id, timedObjectId, timerService);
+        return new TimerHandleImpl(this, timedObjectInvoker.getComponent());
     }
 
     /**

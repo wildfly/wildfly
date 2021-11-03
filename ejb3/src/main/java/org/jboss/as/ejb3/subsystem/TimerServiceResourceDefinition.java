@@ -48,7 +48,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
 
     // this is an unregistered copy of the capability defined and registered in /subsystem=ejb3/thread-pool=*
     // needed due to the unorthodox way in which the thread pools are defined in ejb3 subsystem
-    protected static final String THREAD_POOL_CAPABILITY_NAME = ThreadsServices.createCapability(EJB3SubsystemModel.BASE_EJB_THREAD_POOL_NAME, ExecutorService.class).getName();
+    public static final String THREAD_POOL_CAPABILITY_NAME = ThreadsServices.createCapability(EJB3SubsystemModel.BASE_EJB_THREAD_POOL_NAME, ExecutorService.class).getName();
 
     public static final String TIMER_PERSISTENCE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service.timer-persistence-service";
     public static final RuntimeCapability<Void> TIMER_PERSISTENCE_CAPABILITY =

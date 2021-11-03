@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.subsystem.deployment;
 import java.io.Serializable;
 import java.util.Date;
 import javax.ejb.NoMoreTimeoutsException;
+import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.ScheduleExpression;
 
 import org.jboss.as.controller.ModelVersion;
@@ -47,8 +48,8 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
-import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
+import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -216,7 +217,6 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
 
         resourceRegistration.registerReadOnlyAttribute(TIME_REMAINING, new AbstractReadAttributeHandler() {
 
@@ -233,6 +233,8 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
                     // the same will occur for next-timeout attribute, but let's log it only once
                     if (EjbLogger.ROOT_LOGGER.isDebugEnabled())
                         EjbLogger.ROOT_LOGGER.debug("No more timeouts for timer " + timer);
+                } catch (NoSuchObjectLocalException e) {
+                    // Ignore
                 }
             }
 
@@ -251,6 +253,8 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
                     }
                 } catch (NoMoreTimeoutsException ignored) {
                     // leave undefined
+                } catch (NoSuchObjectLocalException e) {
+                    // Ignore
                 }
             }
 
@@ -262,8 +266,12 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
                 if (timer.isCanceled()) {
                     return;
                 }
-                final boolean calendarTimer = timer.isCalendarTimer();
-                toSet.set(calendarTimer);
+                try {
+                    final boolean calendarTimer = timer.isCalendarTimer();
+                    toSet.set(calendarTimer);
+                } catch (NoSuchObjectLocalException e) {
+                    // Ignore
+                }
             }
 
         });
@@ -274,8 +282,12 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
                 if (timer.isCanceled()) {
                     return;
                 }
-                final boolean persistent = timer.isPersistent();
-                toSet.set(persistent);
+                try {
+                    final boolean persistent = timer.isPersistent();
+                    toSet.set(persistent);
+                } catch (NoSuchObjectLocalException e) {
+                    // Ignore
+                }
             }
 
         });
@@ -295,17 +307,21 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
                 if (timer.isCanceled() || !timer.isCalendarTimer()) {
                     return;
                 }
-                ScheduleExpression sched = timer.getSchedule();
-                addString(toSet, sched.getYear(), YEAR.getName());
-                addString(toSet, sched.getMonth(), MONTH.getName());
-                addString(toSet, sched.getDayOfMonth(), DAY_OF_MONTH.getName());
-                addString(toSet, sched.getDayOfWeek(), DAY_OF_WEEK.getName());
-                addString(toSet, sched.getHour(), HOUR.getName());
-                addString(toSet, sched.getMinute(), MINUTE.getName());
-                addString(toSet, sched.getSecond(), SECOND.getName());
-                addString(toSet, sched.getTimezone(), TIMEZONE.getName());
-                addDate(toSet, sched.getStart(), START.getName());
-                addDate(toSet, sched.getEnd(), END.getName());
+                try {
+                    ScheduleExpression sched = timer.getSchedule();
+                    addString(toSet, sched.getYear(), YEAR.getName());
+                    addString(toSet, sched.getMonth(), MONTH.getName());
+                    addString(toSet, sched.getDayOfMonth(), DAY_OF_MONTH.getName());
+                    addString(toSet, sched.getDayOfWeek(), DAY_OF_WEEK.getName());
+                    addString(toSet, sched.getHour(), HOUR.getName());
+                    addString(toSet, sched.getMinute(), MINUTE.getName());
+                    addString(toSet, sched.getSecond(), SECOND.getName());
+                    addString(toSet, sched.getTimezone(), TIMEZONE.getName());
+                    addDate(toSet, sched.getStart(), START.getName());
+                    addDate(toSet, sched.getEnd(), END.getName());
+                } catch (NoSuchObjectLocalException e) {
+                    // Ignore
+                }
             }
 
             private void addString(ModelNode schedNode, String value, String name) {
@@ -335,9 +351,13 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
                 if (timer.isCanceled()) {
                     return;
                 }
-                final Serializable info = timer.getInfo();
-                if (info != null) {
-                    toSet.set(info.toString());
+                try {
+                    final Serializable info = timer.getInfo();
+                    if (info != null) {
+                        toSet.set(info.toString());
+                    }
+                } catch (NoSuchObjectLocalException e) {
+                    // Ignore
                 }
             }
 
@@ -365,12 +385,11 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
         protected ManagedTimer getTimer(final OperationContext context, final ModelNode operation, final boolean notNull) throws OperationFailedException {
             final T ejbcomponent = parentHandler.getComponent(context, operation);
-            final TimerServiceImpl timerService = (TimerServiceImpl) ejbcomponent.getTimerService();
+            final ManagedTimerService timerService = ejbcomponent.getTimerService();
 
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
             final String timerId = address.getLastElement().getValue();
-            final String timedInvokerObjectId = timerService.getInvoker().getTimedObjectId();
-            ManagedTimer timer = timerService.getTimer(timerId, timedInvokerObjectId);
+            ManagedTimer timer = timerService.findTimer(timerId);
             if (timer == null && notNull) {
                 throw EjbLogger.ROOT_LOGGER.timerNotFound(timerId);
             }

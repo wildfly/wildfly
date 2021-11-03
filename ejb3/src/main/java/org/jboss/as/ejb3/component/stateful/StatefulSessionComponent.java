@@ -36,7 +36,6 @@ import javax.ejb.EJBException;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.RemoveException;
-import javax.ejb.TimerService;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.ComponentInstance;
@@ -113,8 +112,6 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
      */
     private final Set<Object> serialiableInterceptorContextKeys;
 
-    private final TimerService timerService;
-
     /**
      * Construct a new instance.
      *
@@ -136,7 +133,6 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         this.defaultAccessTimeoutProvider = ejbComponentCreateService.getDefaultAccessTimeoutService();
         this.ejb2XRemoveMethod = ejbComponentCreateService.getEjb2XRemoveMethod();
         this.serialiableInterceptorContextKeys = ejbComponentCreateService.getSerializableInterceptorContextKeys();
-        this.timerService = ejbComponentCreateService.getTimerService();
         this.cacheFactory = ejbComponentCreateService.getCacheFactory();
     }
 
@@ -219,11 +215,6 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         } else {
             return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), this.getCache().getStrictAffinity()));
         }
-    }
-
-    @Override
-    public TimerService getTimerService() throws IllegalStateException {
-        return this.timerService;
     }
 
     /**
