@@ -368,7 +368,7 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
             final String timerId = address.getLastElement().getValue();
-            final String timedInvokerObjectId = timerService.getTimedObjectInvoker().getValue().getTimedObjectId();
+            final String timedInvokerObjectId = timerService.getInvoker().getTimedObjectId();
             TimerImpl timer;
             try {
                 timer = timerService.getTimer(timerId, timedInvokerObjectId);

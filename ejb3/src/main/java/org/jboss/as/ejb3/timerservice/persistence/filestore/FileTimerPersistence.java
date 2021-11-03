@@ -397,7 +397,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
 
     private XMLMapper createMapper(TimerServiceImpl timerService) {
         final XMLMapper mapper = XMLMapper.Factory.create();
-        mapper.registerRootElement(new QName(EjbTimerXmlParser_1_0.NAMESPACE, EjbTimerXmlPersister.TIMERS), new EjbTimerXmlParser_1_0(timerService, factory, configuration, timerService.getTimedObjectInvoker().getValue().getClassLoader()));
+        mapper.registerRootElement(new QName(EjbTimerXmlParser_1_0.NAMESPACE, EjbTimerXmlPersister.TIMERS), new EjbTimerXmlParser_1_0(timerService, factory, configuration, timerService.getInvoker().getClassLoader()));
         return mapper;
     }
 

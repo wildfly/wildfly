@@ -63,6 +63,7 @@ import org.jboss.as.ejb3.timerservice.persistence.database.DatabaseTimerPersiste
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.as.ejb3.timerservice.spi.AutoTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
+import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvokerFactory;
 import org.jboss.as.ejb3.timerservice.spi.TimerListener;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
 import org.jboss.invocation.InterceptorContext;
@@ -132,6 +133,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     private TransactionSynchronizationRegistry tsr;
     private final TimerServiceRegistry timerServiceRegistry;
     private final TimerListener timerListener;
+    private final TimedObjectInvokerFactory invokerFactory;
 
     private Closeable listenerHandle;
 
@@ -148,11 +150,12 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      *                    timer service belongs.
      * @param timerListener Listener for timer additions/removals
      */
-    public TimerServiceImpl(final Map<Method, List<AutoTimer>> autoTimers, final ServiceName serviceName, final TimerServiceRegistry registry, TimerListener timerListener) {
+    public TimerServiceImpl(final Map<Method, List<AutoTimer>> autoTimers, final ServiceName serviceName, final TimerServiceRegistry registry, TimerListener timerListener, TimedObjectInvokerFactory invokerFactory) {
         this.autoTimers = autoTimers;
         this.serviceName = serviceName;
         this.timerServiceRegistry = registry;
         this.timerListener = timerListener;
+        this.invokerFactory = invokerFactory;
     }
 
     @Override
@@ -163,10 +166,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         }
         final EJBComponent component = ejbComponentInjectedValue.getValue();
         this.tsr = component.getTransactionSynchronizationRegistry();
-        final TimedObjectInvoker invoker = timedObjectInvoker.getValue();
-        if (invoker == null) {
-            throw EJB3_TIMER_LOGGER.invokerIsNull();
-        }
+        this.timedObjectInvoker.inject(this.invokerFactory.createInvoker(component));
 
         started = true;
         timerPersistence.getValue().timerDeployed(timedObjectInvoker.getValue().getTimedObjectId());
@@ -1073,10 +1073,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
     public boolean isStarted() {
         return started;
-    }
-
-    public InjectedValue<TimedObjectInvoker> getTimedObjectInvoker() {
-        return timedObjectInvoker;
     }
 
     private boolean registerTimerResource(final TimerImpl timer) {
