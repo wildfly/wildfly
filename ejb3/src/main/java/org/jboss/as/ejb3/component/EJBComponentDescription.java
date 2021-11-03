@@ -47,6 +47,7 @@ import javax.ejb.TransactionManagementType;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.Component;
@@ -203,10 +204,17 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * The ejb local home view
      */
     private EjbHomeViewDescription ejbHomeView;
+
     /**
      * TODO: this should not be part of the description
+     * The management resource for the associated timer service
      */
     private TimerService timerService = NonFunctionalTimerService.DISABLED;
+
+    /**
+     * The management resource for the associated timer service, if present
+     */
+    private Resource timerServiceResource;
 
     /**
      * If true this component is accessible via CORBA
@@ -973,13 +981,20 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         }
     }
 
-
     public TimerService getTimerService() {
-        return timerService;
+        return this.timerService;
     }
 
     public void setTimerService(final TimerService timerService) {
         this.timerService = timerService;
+    }
+
+    public Resource getTimerServiceResource() {
+        return this.timerServiceResource;
+    }
+
+    public void setTimerServiceResource(Resource timerServiceResource) {
+        this.timerServiceResource = timerServiceResource;
     }
 
     public EnterpriseBeanMetaData getDescriptorData() {

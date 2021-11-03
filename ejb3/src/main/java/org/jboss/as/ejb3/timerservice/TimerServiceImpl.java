@@ -59,11 +59,11 @@ import org.jboss.as.ejb3.component.singleton.SingletonComponent;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.subsystem.deployment.TimerServiceResource;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.persistence.database.DatabaseTimerPersistence;
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
+import org.jboss.as.ejb3.timerservice.spi.TimerListener;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -130,11 +130,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
     private TransactionSynchronizationRegistry tsr;
     private final TimerServiceRegistry timerServiceRegistry;
-
-    /**
-     * Dynamic resource. Exposed under service=timer-service.
-     */
-    private TimerServiceResource resource = new TimerServiceResource();
+    private final TimerListener timerListener;
 
     private Closeable listenerHandle;
 
@@ -149,11 +145,13 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * @param serviceName The service name of this timer service
      * @param registry    The {@link TimerServiceRegistry} which has the knowledge of other timer services belonging to the EJB module to which this
      *                    timer service belongs.
+     * @param timerListener Listener for timer additions/removals
      */
-    public TimerServiceImpl(final Map<Method, List<AutoTimer>> autoTimers, final ServiceName serviceName, final TimerServiceRegistry registry) {
+    public TimerServiceImpl(final Map<Method, List<AutoTimer>> autoTimers, final ServiceName serviceName, final TimerServiceRegistry registry, TimerListener timerListener) {
         this.autoTimers = autoTimers;
         this.serviceName = serviceName;
         this.timerServiceRegistry = registry;
+        this.timerListener = timerListener;
     }
 
     @Override
@@ -1089,22 +1087,18 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         return timedObjectInvoker;
     }
 
-    public TimerServiceResource getResource() {
-        return resource;
-    }
-
     private boolean registerTimerResource(final TimerImpl timer) {
         final TimerImpl previousValue = this.timers.putIfAbsent(timer.getId(), timer);
         if (previousValue != null) {
             return false;
         }
-        this.resource.timerCreated(timer.getId());
+        this.timerListener.timerAdded(timer.getId());
         return true;
     }
 
     private void unregisterTimerResource(final String timerId) {
         this.timers.remove(timerId);
-        this.resource.timerRemoved(timerId);
+        this.timerListener.timerRemoved(timerId);
     }
 
     /**

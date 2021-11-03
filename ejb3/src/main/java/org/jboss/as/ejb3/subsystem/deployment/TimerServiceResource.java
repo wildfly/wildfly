@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -32,13 +32,14 @@ import org.jboss.as.clustering.controller.SimpleChildResourceProvider;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
+import org.jboss.as.ejb3.timerservice.spi.TimerListener;
 
 /**
  * Dynamic management resource for a timer service.
  * @author baranowb
  * @author Paul Ferraro
  */
-public class TimerServiceResource extends ComplexResource {
+public class TimerServiceResource extends ComplexResource implements TimerListener {
 
     private static final String CHILD_TYPE = EJB3SubsystemModel.TIMER_PATH.getKey();
 
@@ -50,11 +51,13 @@ public class TimerServiceResource extends ComplexResource {
         super(resource, providers, TimerServiceResource::new);
     }
 
-    public void timerCreated(String id) {
+    @Override
+    public void timerAdded(String id) {
         ChildResourceProvider handler = this.apply(CHILD_TYPE);
         handler.getChildren().add(id);
     }
 
+    @Override
     public void timerRemoved(String id) {
         ChildResourceProvider handler = this.apply(CHILD_TYPE);
         handler.getChildren().remove(id);
