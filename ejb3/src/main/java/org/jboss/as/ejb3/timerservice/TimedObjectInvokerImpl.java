@@ -27,6 +27,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.ejb.Timer;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.EJBComponent;
@@ -71,7 +73,7 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Service<Timed
     }
 
     @Override
-    public void callTimeout(final TimerImpl timer, final Method timeoutMethod) throws Exception {
+    public void callTimeout(final Timer timer, final Method timeoutMethod) throws Exception {
         final Interceptor interceptor;
         synchronized (this) {
             if (!started) {
@@ -101,15 +103,14 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Service<Timed
     }
 
     @Override
-    public String getTimedObjectId() {
-        return deploymentString + "." + ejbComponent.getValue().getComponentName();
+    public EJBComponent getComponent() {
+        return this.ejbComponent.getValue();
     }
 
     @Override
-    public void callTimeout(final TimerImpl timer) throws Exception {
-        callTimeout(timer, ejbComponent.getValue().getTimeoutMethod());
+    public String getTimedObjectId() {
+        return deploymentString + "." + ejbComponent.getValue().getComponentName();
     }
-
 
     @Override
     public ClassLoader getClassLoader() {

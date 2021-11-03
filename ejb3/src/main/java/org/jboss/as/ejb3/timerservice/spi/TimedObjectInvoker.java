@@ -23,7 +23,9 @@ package org.jboss.as.ejb3.timerservice.spi;
 
 import java.lang.reflect.Method;
 
-import org.jboss.as.ejb3.timerservice.TimerImpl;
+import javax.ejb.Timer;
+
+import org.jboss.as.ejb3.component.EJBComponent;
 
 /**
  * An implementation can invoke the ejbTimeout method on a TimedObject.
@@ -35,6 +37,13 @@ import org.jboss.as.ejb3.timerservice.TimerImpl;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public interface TimedObjectInvoker {
+
+    /**
+     * Return the EJB component associated with this invoker
+     * @return an EJB component
+     */
+    EJBComponent getComponent();
+
     /**
      * The globally unique identifier for this timed object invoker.
      *
@@ -47,7 +56,9 @@ public interface TimedObjectInvoker {
      *
      * @param timer the Timer that is passed to ejbTimeout
      */
-    void callTimeout(TimerImpl timer) throws Exception;
+    default void callTimeout(Timer timer) throws Exception {
+        this.callTimeout(timer, this.getComponent().getTimeoutMethod());
+    }
 
     /**
      * Responsible for invoking the timeout method on the target object.
@@ -61,11 +72,10 @@ public interface TimedObjectInvoker {
      * @param timer         the Timer that is passed to ejbTimeout
      * @param timeoutMethod The timeout method
      */
-    void callTimeout(TimerImpl timer, Method timeoutMethod) throws Exception;
+    void callTimeout(Timer timer, Method timeoutMethod) throws Exception;
 
     /**
      * @return The class loader that should be used to load restore any timers for this object
      */
     ClassLoader getClassLoader();
-
 }
