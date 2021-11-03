@@ -644,7 +644,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         timer.lock();
         boolean release = true;
         try {
-            timer.assertTimerState();
+            timer.validateInvocationContext();
             // first check whether the timer has expired or has been cancelled
             if (timer.getState() != TimerState.EXPIRED) {
                 timer.setTimerState(TimerState.CANCELED, null);
