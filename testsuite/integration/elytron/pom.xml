@@ -122,6 +122,16 @@
             <artifactId>jboss-jms-api_2.0_spec</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-cli</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-elytron-integration</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Required for Java 11 -->
         <dependency>
             <groupId>org.jboss.spec.javax.xml.bind</groupId>

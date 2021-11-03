@@ -94,6 +94,11 @@
         </dependency>
         <!-- End JAXB Java 11 Requirements -->
         <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client</artifactId>
             <scope>test</scope>
@@ -111,6 +116,11 @@
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
             <artifactId>ironjacamar-core-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-cli</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Required for the DistributedResourceAdapter1 the getDwm() has to return DistributedWorkManagerImpl otherwise
@@ -191,6 +201,11 @@
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jackson2-provider</artifactId>
+        </dependency>
+        <!-- OpenTelemetry test needs -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
