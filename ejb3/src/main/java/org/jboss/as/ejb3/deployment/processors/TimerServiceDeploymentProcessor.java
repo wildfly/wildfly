@@ -38,7 +38,6 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.TimerServiceRegistry;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.subsystem.TimerServiceResourceDefinition;
@@ -47,8 +46,10 @@ import org.jboss.as.ejb3.timerservice.NonFunctionalTimerService;
 import org.jboss.as.ejb3.timerservice.TimedObjectInvokerImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceMetaData;
+import org.jboss.as.ejb3.timerservice.TimerServiceRegistryImpl;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
+import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -96,7 +97,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
         final Map<String, ServiceName> timerPersistenceServices = new HashMap<String, ServiceName>();
         // if this is an EJB deployment then create an EJB module level TimerServiceRegistry which can be used by the timer services
         // of all EJB components that belong to this EJB module.
-        final TimerServiceRegistry timerServiceRegistry = EjbDeploymentMarker.isEjbDeployment(deploymentUnit) ? new TimerServiceRegistry() : null;
+        final TimerServiceRegistry timerServiceRegistry = EjbDeploymentMarker.isEjbDeployment(deploymentUnit) ? new TimerServiceRegistryImpl() : null;
 
         // determine the per-EJB timer persistence service names required
         if (ejbJarMetaData != null && ejbJarMetaData.getAssemblyDescriptor() != null) {

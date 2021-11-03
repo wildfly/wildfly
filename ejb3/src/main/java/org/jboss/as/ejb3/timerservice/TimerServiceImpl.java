@@ -52,7 +52,6 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.TimerServiceRegistry;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.component.singleton.SingletonComponent;
@@ -64,6 +63,7 @@ import org.jboss.as.ejb3.timerservice.persistence.database.DatabaseTimerPersiste
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.spi.TimerListener;
+import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -180,7 +180,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     public synchronized void stop(final StopContext context) {
         // un-register ourselves to the TimerServiceRegistry (if any)
         if (timerServiceRegistry != null) {
-            timerServiceRegistry.unRegisterTimerService(this);
+            timerServiceRegistry.unregisterTimerService(this);
         }
 
         timerPersistence.getValue().timerUndeployed(timedObjectInvoker.getValue().getTimedObjectId());
@@ -446,8 +446,9 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
         // query the registry
         if (this.timerServiceRegistry != null) {
-            return this.timerServiceRegistry.getAllActiveTimers();
+            return this.timerServiceRegistry.getAllTimers();
         }
+
         // if we don't have the registry (shouldn't really happen) which stores the timer services applicable for the Jakarta Enterprise Beans module to which
         // this timer service belongs, then let's at least return the active timers that are applicable only for this timer service
         return this.getTimers();

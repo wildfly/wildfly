@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,14 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.component;
+package org.jboss.as.ejb3.timerservice;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+
+import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
 
 /**
  * A registry to which individual {@link javax.ejb.TimerService timer services} can register to (and un-register from). The main purpose
@@ -41,31 +47,27 @@ import java.util.Set;
  *
  * @author Jaikiran Pai
  */
-public class TimerServiceRegistry {
+public class TimerServiceRegistryImpl implements TimerServiceRegistry {
 
-    private final Set<TimerService> timerServices = Collections.synchronizedSet(new HashSet<TimerService>());
+    private static final Function<TimerService, Collection<Timer>> GET_TIMERS = TimerService::getTimers;
+    private static final Function<Collection<Timer>, Stream<Timer>> STREAM = Collection::stream;
 
-    public void registerTimerService(final TimerService timerService) {
-        if (timerService == null) {
-            return;
-        }
-        timerServices.add(timerService);
+    private final Set<TimerService> services = Collections.synchronizedSet(Collections.newSetFromMap(new IdentityHashMap<>()));
+
+    @Override
+    public void registerTimerService(TimerService service) {
+        this.services.add(service);
     }
 
-    public boolean unRegisterTimerService(final TimerService timerService) {
-        if (timerService == null) {
-            return false;
-        }
-        return timerServices.remove(timerService);
+    @Override
+    public void unregisterTimerService(TimerService service) {
+        this.services.remove(service);
     }
 
-    public Collection<Timer> getAllActiveTimers() {
-        final Collection<Timer> activeTimers = new HashSet<>();
-        synchronized (timerServices) {
-            for (final TimerService timerService : timerServices) {
-                activeTimers.addAll(timerService.getTimers());
-            }
+    @Override
+    public Collection<Timer> getAllTimers() {
+        synchronized (this.services) {
+            return Collections.unmodifiableCollection(this.services.stream().map(GET_TIMERS).flatMap(STREAM).collect(Collectors.toList()));
         }
-        return activeTimers;
     }
 }
