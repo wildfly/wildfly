@@ -1,6 +1,7 @@
 package org.jboss.as.test.integration.ejb.timerservice.count;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.ejb.Timer;
@@ -63,7 +64,7 @@ public class ActiveTimerServiceCountTestCase {
         final String infoForTimerBeanInOtherModule = "irrelevant";
         timerBeanInOtherModule.createTimerForNextDay(false, infoForTimerBeanInOtherModule);
 
-        final Collection<Timer> activeTimers = timerBean.getAllActiveTimersInEJBModule();
+        final Collection<Timer> activeTimers = new ArrayList<>(timerBean.getAllActiveTimersInEJBModule());
 
         // now start testing
         Assert.assertFalse("No active timers found in EJB module " + MODULE_ONE_NAME, activeTimers.isEmpty());
@@ -84,7 +85,7 @@ public class ActiveTimerServiceCountTestCase {
 
         // Now fetch the same info, this time from the SFSB. We expect the same number of active timers in the module.
         final StatefulBean statefulBean = InitialContext.doLookup("java:module/" + StatefulBean.class.getSimpleName() + "!" + StatefulBean.class.getName());
-        final Collection<Timer> activeTimersReturnedFromSFSB = statefulBean.getAllActiveTimersInEJBModule();
+        final Collection<Timer> activeTimersReturnedFromSFSB = new ArrayList<>(statefulBean.getAllActiveTimersInEJBModule());
 
         Assert.assertFalse("No active timers found in EJB module " + MODULE_ONE_NAME + " when queried from a stateful bean", activeTimersReturnedFromSFSB.isEmpty());
 
