@@ -46,15 +46,15 @@ import org.wildfly.extension.opentelemetry.deployment.OpenTelemetryExtensionLogg
  */
 
 public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
-    public static final String DEFAULT_ENDPOINT = "http://localhost:14250";
     private static final String[] ALLOWED_EXPORTERS = {"jaeger", "otlp"};
     private static final String[] ALLOWED_SAMPLERS = {"on", "off", "ratio"};
     private static final String[] ALLOWED_SPAN_PROCESSORS = {"batch", "simple"};
 
+    public static final String DEFAULT_ENDPOINT = "http://localhost:14250";
+    public static final String API_MODULE = "org.wildfly.extension.opentelemetry-api";
     public static final String[] EXPORTED_MODULES = {
             "io.opentelemetry.api",
-            "io.opentelemetry.context",
-            "org.wildfly.extension.opentelemetry-api"
+            "io.opentelemetry.context"
     };
 
     static final RuntimeCapability<Void> OPENTELEMETRY_CAPABILITY =

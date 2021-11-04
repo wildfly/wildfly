@@ -36,7 +36,6 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.weld.WeldCapability;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.wildfly.extension.opentelemetry.OpenTelemetryHolder;
 import org.wildfly.extension.opentelemetry.api.OpenTelemetryCdiExtension;
@@ -52,13 +51,15 @@ public class OpenTelemetrySubsystemDeploymentProcessor implements DeploymentUnit
     @Override
     public void deploy(DeploymentPhaseContext deploymentPhaseContext) throws DeploymentUnitProcessingException {
         OTEL_LOGGER.processingDeployment();
+
         final DeploymentUnit deploymentUnit = deploymentPhaseContext.getDeploymentUnit();
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+
         try {
-            final WeldCapability weldCapability = support.getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
+            final WeldCapability weldCapability = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
+                    .getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
             if (!weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
                 // Jakarta RESTful Web Services require Jakarta Contexts and Dependency Injection. Without Jakarta
                 // Contexts and Dependency Injection, there's no integration needed
@@ -70,18 +71,17 @@ public class OpenTelemetrySubsystemDeploymentProcessor implements DeploymentUnit
             throw OTEL_LOGGER.deploymentRequiresCapability(deploymentPhaseContext.getDeploymentUnit().getName(),
                     WELD_CAPABILITY_NAME);
         }
-        setupOtelCdiBeans(deploymentPhaseContext, support);
+        setupOtelCdiBeans(deploymentPhaseContext);
     }
 
     @Override
     public void undeploy(DeploymentUnit context) {
     }
 
-    private void setupOtelCdiBeans(DeploymentPhaseContext deploymentPhaseContext, CapabilityServiceSupport support) throws DeploymentUnitProcessingException {
+    private void setupOtelCdiBeans(DeploymentPhaseContext deploymentPhaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = deploymentPhaseContext.getDeploymentUnit();
         final ClassLoader initialCl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        final ModuleClassLoader moduleCL = module.getClassLoader();
+        final ModuleClassLoader moduleCL = deploymentUnit.getAttachment(Attachments.MODULE).getClassLoader();
 
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(moduleCL);
@@ -90,6 +90,7 @@ public class OpenTelemetrySubsystemDeploymentProcessor implements DeploymentUnit
             final OpenTelemetry openTelemetry =
                     OpenTelemetryCdiExtension.registerApplicationOpenTelemetryBean(moduleCL, holder.getOpenTelemetry());
             OpenTelemetryCdiExtension.registerApplicationTracer(moduleCL, openTelemetry.getTracer(serviceName));
+
             OTEL_LOGGER.registeringTracer(serviceName);
         } catch (SecurityException | IllegalArgumentException ex) {
             OTEL_LOGGER.errorResolvingTracer(ex);
