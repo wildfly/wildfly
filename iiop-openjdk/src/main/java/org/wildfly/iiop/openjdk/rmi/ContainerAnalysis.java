@@ -299,7 +299,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
                 return false;
         if (returnType == Void.TYPE)
             return false;
-        if (m.getParameterTypes().length != 0)
+        if (m.getParameterCount() != 0)
             return false;
 
         return hasNonAppExceptions(m);
@@ -315,7 +315,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
             return false;
         if (m.getReturnType() != Void.TYPE)
             return false;
-        if (m.getParameterTypes().length != 1)
+        if (m.getParameterCount() != 1)
             return false;
         return hasNonAppExceptions(m);
     }
