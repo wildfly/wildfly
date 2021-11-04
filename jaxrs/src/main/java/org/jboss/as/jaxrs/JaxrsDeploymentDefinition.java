@@ -122,7 +122,7 @@ public class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
             }
             builder.append(contextRootPath).append('/').append(servletPath).append(path);
             builder.append(" - ").append(resource.getResourceClass().getCanonicalName()).append('.').append(resource.getMethod().getName()).append('(');
-            if (resource.getMethod().getParameterTypes().length > 0) {
+            if (resource.getMethod().getParameterCount() > 0) {
                 builder.append("...");
             }
             builder.append(')');
