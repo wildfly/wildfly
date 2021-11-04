@@ -88,6 +88,11 @@ public abstract class AbstractCacheEntryScheduler<I, M> implements CacheEntrySch
         this.scheduler.close();
     }
 
+    @Override
+    public String toString() {
+        return this.scheduler.toString();
+    }
+
     private static class AdditionFunction<M> implements Function<M, Instant> {
         private final Function<M, Duration> duration;
         private final Predicate<Duration> skip;

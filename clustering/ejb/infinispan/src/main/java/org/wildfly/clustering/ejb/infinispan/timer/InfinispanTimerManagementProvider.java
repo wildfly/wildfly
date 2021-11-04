@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,22 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan.bean;
+package org.wildfly.clustering.ejb.infinispan.timer;
 
-import org.infinispan.protostream.SerializationContext;
-import org.jboss.ejb.client.SessionID;
-import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
+import org.wildfly.clustering.ejb.timer.TimerManagerFactoryConfiguration;
 
 /**
- * {@link org.infinispan.protostream.SerializationContextInitializer} for this package.
  * @author Paul Ferraro
  */
-public class BeanSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public class InfinispanTimerManagementProvider implements TimerManagementProvider {
+
+    private final InfinispanTimerManagementConfiguration configuration;
+
+    public InfinispanTimerManagementProvider(InfinispanTimerManagementConfiguration configuration) {
+        this.configuration = configuration;
+    }
 
     @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalMarshaller<>(InfinispanBeanKey.class, SessionID.class, InfinispanBeanKey<SessionID>::getId, InfinispanBeanKey::new));
-        context.registerMarshaller(new InfinispanBeanEntryMarshaller());
+    public <I> CapabilityServiceConfigurator getTimerManagerFactoryServiceConfigurator(TimerManagerFactoryConfiguration<I> configuration) {
+        return new InfinispanTimerManagerFactoryServiceConfigurator<>(this.configuration, configuration);
     }
 }

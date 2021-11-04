@@ -1,0 +1,61 @@
+package org.wildfly.clustering.ejb.infinispan.timer;
+
+import "java.lang.proto";
+import "java.time.proto";
+import "java.util.proto";
+import "org.wildfly.clustering.marshalling.spi.proto";
+
+// IDs: 340-349
+
+/**
+ * @TypeId(340)
+ */
+message TimerCreationMetaDataKey {
+	optional	java.util.UUID	id	 = 1;
+}
+
+/**
+ * @TypeId(341)
+ */
+message TimerAccessMetaDataKey {
+	optional	java.util.UUID	id	 = 1;
+}
+
+/**
+ * @TypeId(342)
+ */
+message IntervalTimerCreationMetaDataEntry {
+	optional	org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValue	info	 = 1;
+	optional	java.time.Instant	start	 = 2;
+	optional	java.time.Duration	interval	 = 3;
+}
+
+/**
+ * @TypeId(343)
+ */
+message ScheduleTimerCreationMetaDataEntry {
+	optional	org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValue	info	 = 1;
+	optional	java.time.Instant	start	 = 2;
+	optional	java.util.Date	expressionStart	 = 3;
+	optional	java.util.Date	expressionEnd	 = 4;
+	optional	string	expressionYear	 = 5;
+	optional	string	expressionMonth	 = 6;
+	optional	string	expressionDayOfMonth	 = 7;
+	optional	string	expressionDayOfWeek	 = 8;
+	optional	string	expressionZone	 = 9;
+	optional	string	expressionHour	 = 10;
+	optional	string	expressionMinute	 = 11;
+	optional	string	expressionSecond	 = 12;
+	optional	string	noParametersMethodName	 = 13;
+	optional	string	timerParametersMethodName	 = 14;
+}
+
+/**
+ * @TypeId(344)
+ */
+message TimerIndexKey {
+	optional	string	noParametersDeclaringClassName	 = 1;
+	optional	string	timerParametersDeclaringClassName	 = 2;
+	optional	string	methodName	 = 3;
+	optional	uint32	index	 = 4;
+}

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,22 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan.bean;
+package org.wildfly.clustering.ejb.infinispan.timer;
 
-import org.infinispan.protostream.SerializationContext;
-import org.jboss.ejb.client.SessionID;
-import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
+import org.infinispan.remoting.transport.Address;
+import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
+import org.wildfly.clustering.ejb.timer.TimerManagerFactoryConfiguration;
+import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.group.Group;
 
 /**
- * {@link org.infinispan.protostream.SerializationContextInitializer} for this package.
  * @author Paul Ferraro
  */
-public class BeanSerializationContextInitializer extends AbstractSerializationContextInitializer {
+public interface InfinispanTimerManagerFactoryConfiguration<I> extends TimerManagerFactoryConfiguration<I>, InfinispanConfiguration {
 
-    @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalMarshaller<>(InfinispanBeanKey.class, SessionID.class, InfinispanBeanKey<SessionID>::getId, InfinispanBeanKey::new));
-        context.registerMarshaller(new InfinispanBeanEntryMarshaller());
-    }
+    ByteBufferMarshaller getMarshaller();
+    KeyAffinityServiceFactory getKeyAffinityServiceFactory();
+    CommandDispatcherFactory getCommandDispatcherFactory();
+    Group<Address> getGroup();
 }
