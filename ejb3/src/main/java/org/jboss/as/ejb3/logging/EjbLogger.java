@@ -3255,4 +3255,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 530, value = "The deployment is configured to use a legacy security domain '%s' which is no longer supported.")
     IllegalStateException legacySecurityUnsupported(String domainName);
 
+    @LogMessage(level = WARN)
+    @Message(id = 531, value = "No client mappings registry provider found for %s; using legacy provider based on static configuration")
+    void legacyClientMappingsRegistryProviderInUse(String name);
 }

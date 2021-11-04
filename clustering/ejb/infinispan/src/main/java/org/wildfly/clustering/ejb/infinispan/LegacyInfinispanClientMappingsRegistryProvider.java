@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,12 +22,32 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import org.infinispan.commons.configuration.attributes.AttributeSet;
+import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.ClusteringConfiguration;
+import org.infinispan.configuration.cache.ClusteringConfigurationBuilder;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.StateTransferConfiguration;
+import org.infinispan.configuration.cache.StateTransferConfigurationBuilder;
+import org.infinispan.configuration.cache.StorageType;
+import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.msc.service.ServiceName;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.infinispan.spi.ConfigurationBuilderAttributesAccessor;
+import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.spi.service.TemplateConfigurationServiceConfigurator;
@@ -37,39 +57,24 @@ import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ServiceLoader;
-import java.util.Set;
-
 /**
- * The non-legacy version of the client mappings registry provider, used when the distributable-ejb subsystem is present.
+ * The legacy version of the client mappings registry provider, used when no distributable-ejb subsystem is present.
  *
  * @author Paul Ferraro
- * @author Richard Achmatowicz
  */
-public class InfinispanClientMappingsRegistryProvider implements ClientMappingsRegistryProvider {
+@MetaInfServices(ClientMappingsRegistryProvider.class)
+public class LegacyInfinispanClientMappingsRegistryProvider implements ClientMappingsRegistryProvider, Consumer<ConfigurationBuilder> {
     static final Set<ClusteringCacheRequirement> REGISTRY_REQUIREMENTS = EnumSet.of(ClusteringCacheRequirement.REGISTRY, ClusteringCacheRequirement.REGISTRY_FACTORY, ClusteringCacheRequirement.GROUP);
 
-    private final String containerName ;
-    private final String cacheName;
+    private final String containerName;
 
-    /**
-     * Creates an instance of the Infinispan-based client mappings registry provider, for local or distribute use, based on a cache-service abstraction.
-     *
-     * @param containerName name of the existing cache container to use, must be defined in the Infinispan subsystem.
-     * @param cacheName name of the existing cache configuration to use, must be defined in the Infinispan subsystem.
-     */
-    public InfinispanClientMappingsRegistryProvider(final String containerName, final String cacheName) {
+    public LegacyInfinispanClientMappingsRegistryProvider(final String containerName) {
         this.containerName = containerName;
-        this.cacheName = cacheName;
     }
 
     @Override
     public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String connectorName, SupplierDependency<List<ClientMapping>> clientMappings) {
-        CapabilityServiceConfigurator configurationConfigurator = new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(this.containerName, connectorName), this.containerName, connectorName, this.cacheName);
+        CapabilityServiceConfigurator configurationConfigurator = new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(this.containerName, connectorName), this.containerName, connectorName, null, this);
         CapabilityServiceConfigurator cacheConfigurator = new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(this.containerName, connectorName), this.containerName, connectorName);
         CapabilityServiceConfigurator registryEntryConfigurator = new ClientMappingsRegistryEntryServiceConfigurator(this.containerName, connectorName, clientMappings);
         List<Iterable<CapabilityServiceConfigurator>> configurators = new LinkedList<>();
@@ -81,10 +86,33 @@ public class InfinispanClientMappingsRegistryProvider implements ClientMappingsR
                 return REGISTRY_REQUIREMENTS.contains(requirement) ? ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, connectorName) : null;
             }
         };
-        // install the underlying cache service abstractions using the configured provider
         for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(DistributedCacheServiceConfiguratorProvider.class, DistributedCacheServiceConfiguratorProvider.class.getClassLoader())) {
             configurators.add(provider.getServiceConfigurators(routingRegistry, this.containerName, connectorName));
         }
         return new CompositeIterable<>(configurators);
+    }
+
+    @Override
+    public void accept(ConfigurationBuilder builder) {
+        ClusteringConfigurationBuilder clustering = builder.clustering();
+        CacheMode mode = clustering.cacheMode();
+        clustering.cacheMode(mode.needsStateTransfer() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
+        clustering.l1().disable();
+        // Workaround for ISPN-8722
+        AttributeSet attributes = ConfigurationBuilderAttributesAccessor.INSTANCE.apply(clustering);
+        attributes.attribute(ClusteringConfiguration.BIAS_ACQUISITION).reset();
+        attributes.attribute(ClusteringConfiguration.BIAS_LIFESPAN).reset();
+        attributes.attribute(ClusteringConfiguration.INVALIDATION_BATCH_SIZE).reset();
+        // Ensure we use the default data container
+        builder.addModule(DataContainerConfigurationBuilder.class).evictable(null);
+        // Disable expiration
+        builder.expiration().lifespan(-1).maxIdle(-1);
+        // Disable eviction
+        builder.memory().storage(StorageType.HEAP).maxCount(-1).whenFull(EvictionStrategy.NONE);
+        builder.persistence().clearStores();
+        StateTransferConfigurationBuilder stateTransfer = clustering.stateTransfer().fetchInMemoryState(mode.needsStateTransfer());
+        attributes = ConfigurationBuilderAttributesAccessor.INSTANCE.apply(stateTransfer);
+        attributes.attribute(StateTransferConfiguration.AWAIT_INITIAL_TRANSFER).reset();
+        attributes.attribute(StateTransferConfiguration.TIMEOUT).reset();
     }
 }

@@ -70,6 +70,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
             .addRequirements(REMOTING_ENDPOINT_CAPABILITY_NAME)
             .build();
 
+    @Deprecated
     static final SimpleAttributeDefinition CLIENT_MAPPINGS_CLUSTER_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CLIENT_MAPPINGS_CLUSTER_NAME, ModelType.STRING, true)
                     // Capability references should not allow expressions
@@ -78,6 +79,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode(BeanManagerFactoryServiceConfiguratorConfiguration.DEFAULT_CONTAINER_NAME))
                     // TODO: replace this with a Requirement reference when the ejb-spi module for clustering is available
                     .setCapabilityReference(INFINISPAN_CACHE_CONTAINER_CAPABILITY_NAME, EJB_REMOTE_CAPABILITY)
+                    .setDeprecated(ModelVersion.create(10,0,0))
                     .build();
 
     @Deprecated

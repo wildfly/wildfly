@@ -101,12 +101,17 @@ public class DistributableEjbResourceDefinition extends SubsystemResourceDefinit
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
+                .addRequiredSingletonChildren(LocalClientMappingsRegistryProviderResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new DistributableEjbResourceServiceHandler();
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         // register the child resource infinispan-bean-management
         new InfinispanBeanManagementResourceDefinition().register(registration);
+
+        // register the child resources for client-mappings-registry-provider
+        new LocalClientMappingsRegistryProviderResourceDefinition().register(registration);
+        new InfinispanClientMappingsRegistryProviderResourceDefinition().register(registration);
     }
 
     /**

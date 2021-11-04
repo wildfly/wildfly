@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb;
+package org.wildfly.clustering.ejb.infinispan;
 
-import java.util.List;
-
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.network.ClientMapping;
-import org.wildfly.clustering.service.SupplierDependency;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.ejb.LegacyClientMappingsRegistryProviderFactory;
 
 /**
- * interface defining ClientMappingsRegistryProvider instances, used to install configured ClientMappingsRegistry services.
+ * Factory for creating legacy version of the InfinispanClientMappingsRegistryProvider
  *
- * @author Paul Ferraro
+ * @author Richard Achmatowicz
  */
-public interface ClientMappingsRegistryProvider {
+@MetaInfServices(LegacyClientMappingsRegistryProviderFactory.class)
+public class LegacyInfinispanClientMappingsRegistryProviderFactory implements LegacyClientMappingsRegistryProviderFactory {
 
-    Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String connectorName, SupplierDependency<List<ClientMapping>> clientMappings);
+    @Override
+    public ClientMappingsRegistryProvider createClientMappingsRegistryProvider(String clusterName) {
+        // need to create and return a configured client mappings registry factory
+        return new LegacyInfinispanClientMappingsRegistryProvider(clusterName);
+    }
 }

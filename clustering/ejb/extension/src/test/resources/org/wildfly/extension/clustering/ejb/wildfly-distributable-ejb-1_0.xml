@@ -1,3 +1,4 @@
 <subsystem xmlns="urn:jboss:domain:distributable-ejb:1.0" default-bean-management="default">
     <infinispan-bean-management name="default" cache-container="foo" cache="bar" max-size="10"/>
+    <local-client-mappings-registry/>
 </subsystem>
