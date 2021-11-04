@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,7 +19,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.test.integration.microprofile.config.smallrye.management.config_source;
+
+package org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_class;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,32 +30,21 @@ import java.util.Set;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 /**
- * @author <a href="mailto:mjurc@redhat.com">Michal Jurc</a> (c) 2018 Red Hat, Inc.
+ * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
-public class CustomConfigSourceServiceLoader implements ConfigSource {
-
-    public static final String PROP_NAME = "my.prop.from.service.loader.class";
-    public static final String PROP_VALUE = "I'm from a custom config source provided by service loader mechanism!";
+public class CustomConfigSource implements ConfigSource{
+    public static final String PROP_NAME = "my.prop.from.class";
+    public static final String PROP_VALUE = "I'm from a custom config source!";
     public static final String PROP_NAME_OVERRIDEN_BY_SERVICE_LOADER = "my.prop.from.class.overriden.service.loader";
-    public static final String PROP_VALUE_OVERRIDEN_BY_SERVICE_LOADER = "I'm from a custom config source provided by service" +
-            " loader mechanism! My ordinality is higher, so I override property from custom config source without service loader.";
-    public static final String PROP_NAME_SAME_ORDINALITY_OVERRIDE = "my.prop.from.class.overriden.same.ordinality";
-    public static final String PROP_VALUE_SAME_ORDINALITY_OVERRIDE = "I'm from a custom config source provided by service " +
-            "loader! However I should be overriden by property from ConfigSource with same ordinality based on FQCN " +
-            "lexicographic ordering.";
+    public static final String PROP_VALUE_OVERRIDEN_BY_SERVICE_LOADER = "I'm from a custom config source! However I should be " +
+            "overriden by property from ConfigSource provided by service loader.";
 
     final Map<String, String> props;
 
-    public CustomConfigSourceServiceLoader() {
+    public CustomConfigSource() {
         props = new HashMap<>();
         props.put(PROP_NAME, PROP_VALUE);
         props.put(PROP_NAME_OVERRIDEN_BY_SERVICE_LOADER, PROP_VALUE_OVERRIDEN_BY_SERVICE_LOADER);
-        props.put(PROP_NAME_SAME_ORDINALITY_OVERRIDE, PROP_VALUE_SAME_ORDINALITY_OVERRIDE);
-    }
-
-    @Override
-    public int getOrdinal() {
-        return 101;
     }
 
     @Override

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.microprofile.config.smallrye.management.config_source;
+package org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_class;
 
 import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;

@@ -31,7 +31,7 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.CustomConfigSource;
+import org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_class.CustomConfigSource;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.

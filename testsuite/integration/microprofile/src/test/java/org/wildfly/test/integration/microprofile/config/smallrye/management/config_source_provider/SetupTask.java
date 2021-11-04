@@ -38,7 +38,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.CustomConfigSource;
+import org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_class.CustomConfigSource;
 
 /**
  * Add a config-source-provider with a custom class in the microprofile-config subsystem.
