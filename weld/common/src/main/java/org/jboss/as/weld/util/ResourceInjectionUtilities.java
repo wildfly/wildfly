@@ -88,11 +88,11 @@ public class ResourceInjectionUtilities {
 
     public static String getPropertyName(Method method) {
         String methodName = method.getName();
-        if (methodName.matches("^(get).*") && method.getParameterTypes().length == 0) {
+        if (methodName.matches("^(get).*") && method.getParameterCount() == 0) {
             return Introspector.decapitalize(methodName.substring(3));
-        } else if (methodName.matches("^(is).*") && method.getParameterTypes().length == 0) {
+        } else if (methodName.matches("^(is).*") && method.getParameterCount() == 0) {
             return Introspector.decapitalize(methodName.substring(2));
-        } else if (methodName.matches("^(set).*") && method.getParameterTypes().length == 1) {
+        } else if (methodName.matches("^(set).*") && method.getParameterCount() == 1) {
             return Introspector.decapitalize(methodName.substring(3));
         }
         return null;
