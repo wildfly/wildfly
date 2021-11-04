@@ -232,6 +232,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <escapeString>\</escapeString>
                             <resources>
                                 <resource>
                                     <directory>${mp.galleon.common.resources.directory}</directory>
@@ -484,6 +485,12 @@
             <version>${full.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>${full.maven.groupId}</groupId>
+                    <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -1079,6 +1086,12 @@
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-mail-jakarta</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider-jakarta</artifactId>
             <scope>provided</scope>
         </dependency>
 

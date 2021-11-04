@@ -81,6 +81,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <escapeString>\</escapeString>
                             <resources>
                                 <resource>
                                     <directory>${mp.galleon.common.resources.directory}</directory>

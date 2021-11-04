@@ -840,6 +840,18 @@
             </dependency>
 
             <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider-jakarta</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-web-common-jakarta</artifactId>
                 <version>${ee.maven.version}</version>
