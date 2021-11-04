@@ -188,7 +188,7 @@ public class Injection {
             for (int i = 0; i < methods.length; i++) {
                 final Method method = methods[i];
                 if (methodName.equals(method.getName())
-                        && method.getParameterTypes().length == 1
+                        && method.getParameterCount() == 1
                         && (propertyType == null || argumentMatches(propertyType, method.getParameterTypes()[0].getName()))) {
 
                     if (hits == null)

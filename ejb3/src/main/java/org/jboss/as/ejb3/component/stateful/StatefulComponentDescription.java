@@ -342,8 +342,8 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                 //if this is a home interface we add a different interceptor
                 if (ejbViewDescription.getMethodIntf() == MethodIntf.HOME || ejbViewDescription.getMethodIntf() == MethodIntf.LOCAL_HOME) {
                     for (Method method : viewConfiguration.getProxyFactory().getCachedMethods()) {
-                        if ((method.getName().equals("hashCode") && method.getParameterTypes().length == 0) ||
-                                method.getName().equals("equals") && method.getParameterTypes().length == 1 &&
+                        if ((method.getName().equals("hashCode") && method.getParameterCount() == 0) ||
+                                method.getName().equals("equals") && method.getParameterCount() == 1 &&
                                         method.getParameterTypes()[0] == Object.class) {
                             viewConfiguration.addClientInterceptor(method, ComponentTypeIdentityInterceptorFactory.INSTANCE, InterceptorOrder.Client.EJB_EQUALS_HASHCODE);
                         }
@@ -356,8 +356,8 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                     viewConfiguration.addClientPostConstructInterceptor(sessionIdGeneratingInterceptorFactory, InterceptorOrder.ClientPostConstruct.INSTANCE_CREATE);
 
                     for (Method method : viewConfiguration.getProxyFactory().getCachedMethods()) {
-                        if ((method.getName().equals("hashCode") && method.getParameterTypes().length == 0) ||
-                                method.getName().equals("equals") && method.getParameterTypes().length == 1 &&
+                        if ((method.getName().equals("hashCode") && method.getParameterCount() == 0) ||
+                                method.getName().equals("equals") && method.getParameterCount() == 1 &&
                                         method.getParameterTypes()[0] == Object.class) {
                             viewConfiguration.addClientInterceptor(method, StatefulIdentityInterceptor.FACTORY, InterceptorOrder.Client.EJB_EQUALS_HASHCODE);
                         }

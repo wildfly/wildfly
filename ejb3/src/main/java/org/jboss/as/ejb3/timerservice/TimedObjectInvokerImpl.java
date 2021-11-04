@@ -87,7 +87,7 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Serializable,
         final InterceptorContext context = new InterceptorContext();
         context.setContextData(new HashMap<String, Object>());
         context.setMethod(timeoutMethod);
-        if(timeoutMethod.getParameterTypes().length == 0) {
+        if(timeoutMethod.getParameterCount() == 0) {
             context.setParameters(EMPTY_STRING_ARRAY);
         } else {
             final Object[] params = new Object[1];
