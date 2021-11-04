@@ -282,7 +282,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
         Class<?> targetClass = protocolClass;
         while (Protocol.class.isAssignableFrom(targetClass)) {
             for (Method method: targetClass.getDeclaredMethods()) {
-                if ((method.getParameterTypes().length == 0) && isManagedAttribute(method)) {
+                if ((method.getParameterCount() == 0) && isManagedAttribute(method)) {
                     putIfAbsent(attributes, new MethodAttribute(method));
                 }
             }
