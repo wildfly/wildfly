@@ -649,6 +649,18 @@
 
             <dependency>
                 <groupId>org.jboss</groupId>
+                <artifactId>jboss-ejb-client-jakarta</artifactId>
+                <version>${version.org.jboss.ejb-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss</groupId>
                 <artifactId>jboss-transaction-spi-jakarta</artifactId>
                 <version>${version.org.jboss.jboss-transaction-spi}</version>
                 <exclusions>
