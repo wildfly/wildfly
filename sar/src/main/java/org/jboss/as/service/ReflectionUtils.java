@@ -69,7 +69,7 @@ final class ReflectionUtils {
             Method method;
             while (methods.hasNext()) {
                 method = methods.next();
-                if (setterName.equals(method.getName()) && method.getParameterTypes().length == 1) {
+                if (setterName.equals(method.getName()) && method.getParameterCount() == 1) {
                     return method;
                 }
             }

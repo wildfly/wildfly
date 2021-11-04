@@ -50,7 +50,7 @@ public class Callback {
     protected Method getMethod() {
         if (method == null) {
             final Method m = beanInfo.findMethod(config.getMethodName(), config.getSignature());
-            if (m.getParameterTypes().length != 1)
+            if (m.getParameterCount() != 1)
                 throw PojoLogger.ROOT_LOGGER.illegalParameterLength(m);
             method = m;
         }

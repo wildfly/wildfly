@@ -64,7 +64,7 @@ final class ManagedReferenceLifecycleMethodInterceptor implements Interceptor {
         this.method = method;
         this.changeMethod = changeMethod;
         this.lifecycleMethod = lifecycleMethod;
-        withContext = method.getParameterTypes().length == 1;
+        withContext = method.getParameterCount() == 1;
     }
 
     /**

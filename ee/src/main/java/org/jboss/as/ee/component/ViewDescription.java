@@ -230,12 +230,12 @@ public class ViewDescription {
 
         private Method findRealMethodForBridgeMethod(final Method componentMethod, final ComponentConfiguration componentConfiguration, final DeploymentReflectionIndex reflectionIndex, final MethodIdentifier methodIdentifier) {
             final ClassReflectionIndex classIndex = reflectionIndex.getClassIndex(componentMethod.getDeclaringClass()); //the non-bridge method will be on the same class as the bridge method
-            final Collection<Method> methods = classIndex.getAllMethods(componentMethod.getName(), componentMethod.getParameterTypes().length);
+            final Collection<Method> methods = classIndex.getAllMethods(componentMethod.getName(), componentMethod.getParameterCount());
             for(final Method method : methods) {
                 if (((BRIDGE & method.getModifiers()) == 0)
                         && componentMethod.getReturnType().isAssignableFrom(method.getReturnType())) {
                     boolean ok = true;
-                    for (int i = 0; i < method.getParameterTypes().length; ++i) {
+                    for (int i = 0; i < method.getParameterCount(); ++i) {
                         if (!componentMethod.getParameterTypes()[i].isAssignableFrom(method.getParameterTypes()[i])) {
                             ok = false;
                             break;
