@@ -37,6 +37,7 @@ import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.modules.Module;
@@ -61,9 +62,9 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker {
         this.timedObjectId = deploymentName + '.' + component.getComponentName();
         this.component = component;
 
-        SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
+        InterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
         factoryContext.getContextData().put(Component.class, component);
-        for(Map.Entry<Method, InterceptorFactory> entry : component.getTimeoutInterceptors().entrySet()) {
+        for (Map.Entry<Method, InterceptorFactory> entry : component.getTimeoutInterceptors().entrySet()) {
             this.interceptors.put(entry.getKey(), entry.getValue().create(factoryContext));
         }
     }
@@ -91,7 +92,7 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker {
             throw EjbLogger.EJB3_TIMER_LOGGER.failToInvokeTimeout(method);
         }
         InterceptorContext context = new InterceptorContext();
-        context.setContextData(new HashMap<String, Object>());
+        context.setContextData(new HashMap<>());
         context.setMethod(method);
         context.setParameters(method.getParameterCount() == 0 ? EMPTY_STRING_ARRAY : new Object[] { timer });
         context.setTimer(timer);
