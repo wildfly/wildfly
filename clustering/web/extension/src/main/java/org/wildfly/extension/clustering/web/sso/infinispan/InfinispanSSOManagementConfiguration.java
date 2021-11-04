@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.clustering.web.sso.infinispan;
 
-import org.wildfly.clustering.web.infinispan.InfinispanCacheConfiguration;
+import org.wildfly.clustering.ee.infinispan.InfinispanCacheConfiguration;
 
 /**
  * Configuration of an Infinispan single sign-on management provider.

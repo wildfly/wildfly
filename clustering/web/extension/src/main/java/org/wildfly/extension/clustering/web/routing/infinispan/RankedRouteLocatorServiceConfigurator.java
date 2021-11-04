@@ -22,8 +22,8 @@
 
 package org.wildfly.extension.clustering.web.routing.infinispan;
 
+import org.wildfly.clustering.ee.infinispan.InfinispanCacheConfiguration;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
-import org.wildfly.clustering.web.infinispan.InfinispanCacheConfiguration;
 import org.wildfly.clustering.web.infinispan.routing.RankedRouteLocator;
 import org.wildfly.clustering.web.infinispan.routing.RankedRouteLocatorConfiguration;
 import org.wildfly.clustering.web.infinispan.routing.RankedRoutingConfiguration;
