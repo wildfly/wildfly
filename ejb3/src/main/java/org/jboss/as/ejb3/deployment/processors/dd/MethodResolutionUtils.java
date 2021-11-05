@@ -73,7 +73,7 @@ public class MethodResolutionUtils {
                 final Collection<Method> methods = classIndex.getAllMethods(methodName, parameters.size());
                 for (final Method method : methods) {
                     boolean match = true;
-                    for (int i = 0; i < method.getParameterTypes().length; ++i) {
+                    for (int i = 0; i < method.getParameterCount(); ++i) {
                         if (!method.getParameterTypes()[i].getName().equals(parameters.get(i))) {
                             match = false;
                             break;

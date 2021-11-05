@@ -145,7 +145,7 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
             final Collection<Method> methods = classIndex.getAllMethods(methodData.getMethodName(), methodData.getMethodParams().size());
             for (final Method method : methods) {
                 boolean match = true;
-                for (int i = 0; i < method.getParameterTypes().length; ++i) {
+                for (int i = 0; i < method.getParameterCount(); ++i) {
                     if (!method.getParameterTypes()[i].getName().equals(methodData.getMethodParams().get(i))) {
                         match = false;
                         break;

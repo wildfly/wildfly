@@ -117,7 +117,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                         configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                         configuration.addViewInterceptor(method, factory, InterceptorOrder.View.HOME_METHOD_INTERCEPTOR);
 
-                    } else if (method.getName().equals("getEJBMetaData") && method.getParameterTypes().length == 0 && ((EJBViewDescription)description).getMethodIntf() == MethodIntf.HOME) {
+                    } else if (method.getName().equals("getEJBMetaData") && method.getParameterCount() == 0 && ((EJBViewDescription)description).getMethodIntf() == MethodIntf.HOME) {
 
                         final Class<?> ejbObjectClass;
                         try {
@@ -138,10 +138,10 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                         configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                         configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(factory), InterceptorOrder.View.HOME_METHOD_INTERCEPTOR);
 
-                    } else if (method.getName().equals("remove") && method.getParameterTypes().length == 1 && method.getParameterTypes()[0] == Object.class) {
+                    } else if (method.getName().equals("remove") && method.getParameterCount() == 1 && method.getParameterTypes()[0] == Object.class) {
                         configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                         configuration.addViewInterceptor(method, InvalidRemoveExceptionMethodInterceptor.FACTORY, InterceptorOrder.View.INVALID_METHOD_EXCEPTION);
-                    } else if (method.getName().equals("remove") && method.getParameterTypes().length == 1 && method.getParameterTypes()[0] == Handle.class) {
+                    } else if (method.getName().equals("remove") && method.getParameterCount() == 1 && method.getParameterTypes()[0] == Handle.class) {
                         configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                         configuration.addViewInterceptor(method, HomeRemoveInterceptor.FACTORY, InterceptorOrder.View.HOME_METHOD_INTERCEPTOR);
                     }
