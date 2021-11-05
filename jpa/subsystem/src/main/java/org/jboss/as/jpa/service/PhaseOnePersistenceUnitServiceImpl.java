@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
+import javax.enterprise.inject.spi.BeanManager;
 import javax.sql.DataSource;
 
 import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
@@ -62,7 +63,8 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
     private final InjectedValue<DataSource> nonJtaDataSource = new InjectedValue<>();
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<>();
 
-    private static final String CDI_BEAN_MANAGER = "javax.persistence.bean.manager";
+    private static final String EE_NAMESPACE = BeanManager.class.getName().startsWith("javax") ? "javax" : "jakarta";
+    private static final String CDI_BEAN_MANAGER = ".persistence.bean.manager";
 
     private final PersistenceProviderAdaptor persistenceProviderAdaptor;
     private final PersistenceUnitMetadata pu;
@@ -114,10 +116,10 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
                                     if (proxyBeanManager != null) {
                                         if (wrapperBeanManagerLifeCycle != null) {
                                           // pass the wrapper object representing the bean manager life cycle object
-                                          properties.getValue().put(CDI_BEAN_MANAGER, wrapperBeanManagerLifeCycle);
+                                          properties.getValue().put(EE_NAMESPACE + CDI_BEAN_MANAGER, wrapperBeanManagerLifeCycle);
                                         }
                                         else {
-                                          properties.getValue().put(CDI_BEAN_MANAGER, proxyBeanManager);
+                                          properties.getValue().put(EE_NAMESPACE + CDI_BEAN_MANAGER, proxyBeanManager);
                                         }
                                     }
 
@@ -180,7 +182,7 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
                                         WritableServiceBasedNamingStore.popOwner();
                                     }
                                 }
-                                properties.getValue().remove(CDI_BEAN_MANAGER);
+                                properties.getValue().remove(EE_NAMESPACE + CDI_BEAN_MANAGER);
                                 context.complete();
 
                                 return null;

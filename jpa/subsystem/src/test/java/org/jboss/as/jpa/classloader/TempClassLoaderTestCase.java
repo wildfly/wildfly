@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 
 import javax.persistence.Entity;
 
@@ -50,8 +51,16 @@ public class TempClassLoaderTestCase {
 
         assertFalse(entityClass.equals(TestEntity.class));
         assertFalse(entity instanceof TestEntity);
-        assertTrue(entity.getClass().isAnnotationPresent(Entity.class));
+        assertTrue("entity.getClass() is not a Persistence.Entity (" + annotations(entity.getClass()) + ")", entity.getClass().isAnnotationPresent(Entity.class));
         assertTrue(entityClass == tempClassLoader.loadClass(className));
+    }
+
+    private String annotations(Class<?> aClass) {
+        for(Annotation annotation : aClass.getAnnotations()) {
+            if (annotation.toString().contains(Entity.class.getName()))
+                return "found " + Entity.class.getName();
+        }
+        return aClass.getName() + " is missing annotation " + Entity.class.getName();
     }
 
     @Test

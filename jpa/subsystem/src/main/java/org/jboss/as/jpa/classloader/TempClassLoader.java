@@ -46,6 +46,9 @@ import org.jboss.modules.ConcurrentClassLoader;
  */
 public class TempClassLoader extends ConcurrentClassLoader {
 
+    public static final String STARTS_WITH_JAVAX = "javax.";
+    public static final String STARTS_WITH_JAVA = "java.";
+    public static final String STARTS_WITH_JAKARTA = "jakarta.";
     private final ClassLoader delegate;
     private static final String MANIFEST_MF = "META-INF" + File.separatorChar + "MANIFEST.MF";
 
@@ -70,7 +73,9 @@ public class TempClassLoader extends ConcurrentClassLoader {
 
         // javax.persistence classes must be loaded by module classloader, otherwise
         // the persistence provider can't read Jakarta Persistence annotations with reflection
-        if (name.startsWith("javax.") || name.startsWith("java.")) {
+        if (name.startsWith(STARTS_WITH_JAKARTA) ||
+                name.startsWith(STARTS_WITH_JAVAX) ||
+                name.startsWith(STARTS_WITH_JAVA)) {
             return Class.forName(name, resolve, delegate);
         }
 
