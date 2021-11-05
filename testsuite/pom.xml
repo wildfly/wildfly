@@ -26,7 +26,6 @@
     1. The testsuite module has a small number of submodules:
 
     integration - holds all integration tests for Wildfly.
-    compat      - holds all compatibility management tests for Wildfly.
     domain      - holds all domain management tests for Wildfly.
 
     All tests should fit into one of these four categories.
