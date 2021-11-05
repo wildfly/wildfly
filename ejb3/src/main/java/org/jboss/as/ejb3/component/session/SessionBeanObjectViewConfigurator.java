@@ -67,13 +67,13 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
         final DeploymentReflectionIndex index = context.getDeploymentUnit().getAttachment(Attachments.REFLECTION_INDEX);
         for (final Method method : configuration.getProxyFactory().getCachedMethods()) {
 
-            if (method.getName().equals("getPrimaryKey") && method.getParameterTypes().length == 0) {
+            if (method.getName().equals("getPrimaryKey") && method.getParameterCount() == 0) {
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                 configuration.addViewInterceptor(method, PRIMARY_KEY_INTERCEPTOR, InterceptorOrder.View.COMPONENT_DISPATCHER);
-            } else if (method.getName().equals("remove") && method.getParameterTypes().length == 0) {
+            } else if (method.getName().equals("remove") && method.getParameterCount() == 0) {
                 handleRemoveMethod(componentConfiguration, configuration, index, method);
 
-            } else if (method.getName().equals("getEJBLocalHome") && method.getParameterTypes().length == 0) {
+            } else if (method.getName().equals("getEJBLocalHome") && method.getParameterCount() == 0) {
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                 final GetHomeInterceptorFactory factory = new GetHomeInterceptorFactory();
                 configuration.addViewInterceptor(method, factory, InterceptorOrder.View.COMPONENT_DISPATCHER);
@@ -89,7 +89,7 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
 
                     }
                 });
-            } else if (method.getName().equals("getEJBHome") && method.getParameterTypes().length == 0) {
+            } else if (method.getName().equals("getEJBHome") && method.getParameterCount() == 0) {
                 configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                 final GetHomeInterceptorFactory factory = new GetHomeInterceptorFactory();
                 configuration.addViewInterceptor(method, factory, InterceptorOrder.View.COMPONENT_DISPATCHER);
@@ -105,9 +105,9 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
 
                     }
                 });
-            } else if (method.getName().equals("getHandle") && method.getParameterTypes().length == 0) {
+            } else if (method.getName().equals("getHandle") && method.getParameterCount() == 0) {
                 //ignore, handled client side
-            } else if (method.getName().equals("isIdentical") && method.getParameterTypes().length == 1 && (method.getParameterTypes()[0].equals(EJBObject.class) || method.getParameterTypes()[0].equals(EJBLocalObject.class))) {
+            } else if (method.getName().equals("isIdentical") && method.getParameterCount() == 1 && (method.getParameterTypes()[0].equals(EJBObject.class) || method.getParameterTypes()[0].equals(EJBLocalObject.class))) {
 
                 handleIsIdenticalMethod(componentConfiguration, configuration, index, method);
             }  else {

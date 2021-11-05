@@ -218,8 +218,8 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
 
                 //add equals/hashCode interceptor
                 for (Method method : configuration.getProxyFactory().getCachedMethods()) {
-                    if ((method.getName().equals("hashCode") && method.getParameterTypes().length == 0) ||
-                            method.getName().equals("equals") && method.getParameterTypes().length == 1 &&
+                    if ((method.getName().equals("hashCode") && method.getParameterCount() == 0) ||
+                            method.getName().equals("equals") && method.getParameterCount() == 1 &&
                                     method.getParameterTypes()[0] == Object.class) {
                         configuration.addClientInterceptor(method, ComponentTypeIdentityInterceptorFactory.INSTANCE, InterceptorOrder.Client.EJB_EQUALS_HASHCODE);
                     }

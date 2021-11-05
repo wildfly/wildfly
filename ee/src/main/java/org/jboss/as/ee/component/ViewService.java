@@ -82,7 +82,7 @@ public final class ViewService implements Service<ComponentView> {
         final IdentityHashMap<Method, InterceptorFactory> viewInterceptorFactories = new IdentityHashMap<Method, InterceptorFactory>(methodCount);
         final IdentityHashMap<Method, InterceptorFactory> clientInterceptorFactories = new IdentityHashMap<Method, InterceptorFactory>(methodCount);
         for (final Method method : methods) {
-            if (method.getName().equals("finalize") && method.getParameterTypes().length == 0) {
+            if (method.getName().equals("finalize") && method.getParameterCount() == 0) {
                 viewInterceptorFactories.put(method, Interceptors.getTerminalInterceptorFactory());
             } else {
                 viewInterceptorFactories.put(method, Interceptors.getChainedInterceptorFactory(viewConfiguration.getViewInterceptors(method)));

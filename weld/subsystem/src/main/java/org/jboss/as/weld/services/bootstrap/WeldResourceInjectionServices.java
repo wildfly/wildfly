@@ -225,7 +225,7 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
         if (!annotatedMember.isAnnotationPresent(Resource.class)) {
             throw WeldLogger.ROOT_LOGGER.annotationNotFound(Resource.class, member);
         }
-        if (member instanceof Method && ((Method) member).getParameterTypes().length != 1) {
+        if (member instanceof Method && ((Method) member).getParameterCount() != 1) {
             throw WeldLogger.ROOT_LOGGER.injectionPointNotAJavabean((Method) member);
         }
         String name = getResourceName(injectionPoint);

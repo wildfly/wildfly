@@ -62,7 +62,7 @@ public final class InjectionUtils {
         while (current != Object.class && current != null && !methodFound) {
             final Collection<Method> methods = index.getAllMethods(methodName);
             for (Method m : methods) {
-                if (m.getParameterTypes().length == 1) {
+                if (m.getParameterCount() == 1) {
                     if (m.isBridge() || m.isSynthetic()) {
                         continue;
                     }

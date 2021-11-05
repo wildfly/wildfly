@@ -193,13 +193,13 @@ public class ApplicableMethodInformation<T> {
             methodLoop:
             for (Method m : declaredMethods) {
                 if (m.getName().equals(method.getName())
-                        && m.getParameterTypes().length == method.getParameterTypes().length
+                        && m.getParameterCount() == method.getParameterCount()
                         && !m.isBridge()
                         && !m.isSynthetic()) {
                     if(!method.getReturnType().isAssignableFrom(m.getReturnType())) {
                         continue methodLoop;
                     }
-                    for(int i = 0; i < method.getParameterTypes().length; ++i) {
+                    for(int i = 0; i < method.getParameterCount(); ++i) {
                         if(!method.getParameterTypes()[i].isAssignableFrom(m.getParameterTypes()[i])) {
                             continue methodLoop;
                         }
