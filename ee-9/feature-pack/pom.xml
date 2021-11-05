@@ -592,6 +592,10 @@
                     <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-web-common</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.security.elytron-web</groupId>
+                    <artifactId>undertow-server-servlet</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -1026,6 +1030,12 @@
         <dependency>
             <groupId>org.jboss.spec.javax.xml.rpc</groupId>
             <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.security.elytron-web</groupId>
+            <artifactId>undertow-server-servlet</artifactId>
             <scope>provided</scope>
         </dependency>
 
