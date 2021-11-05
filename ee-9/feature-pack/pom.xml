@@ -518,16 +518,19 @@
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
-                    <artifactId>wildfly-jpa</artifactId>
+                    <artifactId>wildfly-batch-jberet</artifactId>
                 </exclusion>
-    
-		<exclusion>
+            		<exclusion>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-bean-validation</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-ee-security</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-jpa</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
@@ -1071,6 +1074,12 @@
        <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-jpa-jakarta</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-batch-jberet-jakarta</artifactId>
             <scope>provided</scope>
         </dependency>
 

@@ -33,7 +33,7 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-batch-jberet}"/>
+        <artifact name="\${org.wildfly:wildfly-batch-jberet@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
