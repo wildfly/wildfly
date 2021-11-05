@@ -92,7 +92,7 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
         if (ejb == null) {
             throw WeldLogger.ROOT_LOGGER.annotationNotFound(EJB.class, injectionPoint.getMember());
         }
-        if (injectionPoint.getMember() instanceof Method && ((Method) injectionPoint.getMember()).getParameterTypes().length != 1) {
+        if (injectionPoint.getMember() instanceof Method && ((Method) injectionPoint.getMember()).getParameterCount() != 1) {
             throw WeldLogger.ROOT_LOGGER.injectionPointNotAJavabean((Method) injectionPoint.getMember());
         }
         if (!ejb.lookup().equals("")) {
