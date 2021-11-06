@@ -36,7 +36,6 @@ import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.security.elytron.ElytronIntegrationResourceDefinitions;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * The security extension.
@@ -44,8 +43,6 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */public class SecurityExtension extends AbstractLegacyExtension {
-
-    public static final ServiceName JBOSS_SECURITY = ServiceName.JBOSS.append("security");
 
     public static final String SUBSYSTEM_NAME = "security";
     static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
@@ -55,7 +52,6 @@ import org.jboss.msc.service.ServiceName;
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 0, 0);
 
     static final PathElement ACL_PATH = PathElement.pathElement(Constants.ACL, Constants.CLASSIC);
-    static final PathElement PATH_IDENTITY_TRUST_CLASSIC = PathElement.pathElement(Constants.IDENTITY_TRUST, Constants.CLASSIC);
     static final PathElement PATH_JASPI_AUTH = PathElement.pathElement(Constants.AUTHENTICATION, Constants.JASPI);
     static final PathElement PATH_CLASSIC_AUTHENTICATION = PathElement.pathElement(Constants.AUTHENTICATION, Constants.CLASSIC);
     static final PathElement SECURITY_DOMAIN_PATH = PathElement.pathElement(Constants.SECURITY_DOMAIN);

@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Jason T. Greene
  */
-public class IdentityTrustResourceDefinition extends SimpleResourceDefinition {
+class IdentityTrustResourceDefinition extends SimpleResourceDefinition {
 
     public static final IdentityTrustResourceDefinition INSTANCE = new IdentityTrustResourceDefinition();
 

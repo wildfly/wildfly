@@ -170,6 +170,11 @@
             <artifactId>resteasy-core-spi</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- crl and ocsp -->
         <dependency>

@@ -44,6 +44,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization.ManagementAdditional
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -80,28 +81,16 @@ public class SecurityTransformersTestCase extends AbstractSubsystemBaseTest {
         };
     }
 
-
+    @Ignore("Figure out the set of deps needed by the legacy subsystem and add them")
     @Test
-    public void testTransformersEAP64() throws Exception {
-        testTransformers(ModelTestControllerVersion.EAP_6_4_0);
-    }
-
-    @Test
-    public void testTransformersEAP70() throws Exception {
-        testTransformers(ModelTestControllerVersion.EAP_7_0_0);
+    public void testTransformersEAP74() throws Exception {
+        testTransformers(ModelTestControllerVersion.EAP_7_4_0);
     }
 
     private void testTransformers(ModelTestControllerVersion controllerVersion) throws Exception {
-        ModelVersion version = ModelVersion.create(1, 3, 0);
+        ModelVersion version = ModelVersion.create(2, 0, 0);
 
-        final String mavenGavVersion = controllerVersion.getMavenGavVersion();
-        final String artifactId;
-        if (controllerVersion.isEap() && mavenGavVersion.equals(controllerVersion.getCoreVersion())) {
-               /* EAP 6 */
-            artifactId = "jboss-as-security";
-        } else {
-            artifactId = "wildfly-security";
-        }
+        final String artifactId = "wildfly-security";
 
         String mavenGav = String.format("%s:%s:%s", controllerVersion.getMavenGroupId(), artifactId, controllerVersion.getMavenGavVersion());
 

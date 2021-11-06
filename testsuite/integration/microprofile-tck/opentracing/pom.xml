@@ -136,6 +136,11 @@
             <artifactId>resteasy-json-binding-provider</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- These are required for the client testing. The resteasy-json-binding-provider requires them, but they are
              not transitive by default. -->

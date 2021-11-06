@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Jason T. Greene
  */
-public class VaultResourceDefinition extends SimpleResourceDefinition {
+class VaultResourceDefinition extends SimpleResourceDefinition {
 
     public static final VaultResourceDefinition INSTANCE = new VaultResourceDefinition();
 

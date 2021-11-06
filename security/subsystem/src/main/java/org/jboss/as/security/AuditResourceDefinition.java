@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Jason T. Greene
  */
-public class AuditResourceDefinition extends SimpleResourceDefinition {
+class AuditResourceDefinition extends SimpleResourceDefinition {
 
     static final AuditResourceDefinition INSTANCE = new AuditResourceDefinition();
 

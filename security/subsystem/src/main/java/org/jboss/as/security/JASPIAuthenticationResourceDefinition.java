@@ -37,7 +37,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Jason T. Greene
  */
-public class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinition {
+class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinition {
 
     public static final JASPIAuthenticationResourceDefinition INSTANCE = new JASPIAuthenticationResourceDefinition();
 

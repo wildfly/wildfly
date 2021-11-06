@@ -90,6 +90,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
+            <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.spec.javax.security.auth.message</groupId>
             <artifactId>jboss-jaspi-api_1.1_spec</artifactId>
             <scope>test</scope>
@@ -102,6 +107,11 @@
         <dependency>
             <groupId>org.jboss.spec.javax.websocket</groupId>
             <artifactId>jboss-websocket-api_1.1_spec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-naming</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

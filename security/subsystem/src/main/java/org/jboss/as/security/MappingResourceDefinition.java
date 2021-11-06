@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Jason T. Greene
  */
-public class MappingResourceDefinition extends SimpleResourceDefinition {
+class MappingResourceDefinition extends SimpleResourceDefinition {
 
     public static final MappingResourceDefinition INSTANCE = new MappingResourceDefinition();
 

@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Jason T. Greene
  */
-public class LoginModuleStackResourceDefinition extends SimpleResourceDefinition {
+class LoginModuleStackResourceDefinition extends SimpleResourceDefinition {
 
     static final LoginModuleStackResourceDefinition INSTANCE = new LoginModuleStackResourceDefinition();
 

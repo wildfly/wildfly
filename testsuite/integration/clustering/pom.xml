@@ -98,6 +98,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.jboss.spec.javax.interceptor</groupId>
+            <artifactId>jboss-interceptors-api_1.2_spec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.spec.javax.faces</groupId>
             <artifactId>jboss-jsf-api_2.3_spec</artifactId>
             <scope>test</scope>
@@ -110,6 +115,16 @@
         <dependency>
             <groupId>org.jboss.ejb3</groupId>
             <artifactId>jboss-ejb3-ext-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-clustering-common</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-clustering-marshalling-api</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Runtime dependency for test variants in org.jboss.as.test.clustering.cluster.ejb.remote.*TestCase -->
