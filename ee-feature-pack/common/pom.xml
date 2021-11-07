@@ -837,6 +837,17 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>jipijapa-eclipselink</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-hibernate5-3</artifactId>
             <exclusions>
                 <exclusion>
