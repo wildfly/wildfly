@@ -418,9 +418,16 @@
                                 <exclude>io.opentelemetry:opentelemetry-semconv\z</exclude>
                                 <exclude>io.perfmark:perfmark\z</exclude>
                                 <!-- end javax.annotations excludes -->
-                                <!-- do not transform org.dom4j:dom4j -->
+                                <!-- Don't transform org.dom4j:dom4j as we don't use its package
+                                     that uses jaxp -->
                                 <exclude>org.dom4j:dom4j\z</exclude>
-                                <!-- end org.dom4j:dom4j exclude -->
+                                <!-- Don't transform artifacts only transformed due to data in a
+                                     module-info.class or OSGi attributes in a MANIFEST.MF.
+                                     These things are irrelevant to WildFly's use of artifacts.-->
+                                <exclude>com.fasterxml.jackson.jaxrs:jackson-jaxrs-base\z</exclude>
+                                <exclude>com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider\z</exclude>
+                                <exclude>com.fasterxml.jackson.module:jackson-module-jaxb-annotations\z</exclude>
+								<!-- end JPMS or ISGi metadata excludes -->
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
