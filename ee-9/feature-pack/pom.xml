@@ -395,6 +395,7 @@
                                 <!-- Don't transform libraries that use the javax.annotation package but
                                      not the Jakarta Annotations APIs that share it with other APIs.
                                      Generally (perhaps always), this is from use of JSR 305 annotations -->
+                                <exclude>com.github.fge:jackson-coreutils\z</exclude>
                                 <exclude>com.github.fge:msg-simple\z</exclude>
                                 <exclude>com.google.guava:guava\z</exclude>
                                 <exclude>com.squareup.okhttp3:okhttp\z</exclude>
