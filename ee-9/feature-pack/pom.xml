@@ -418,6 +418,9 @@
                                 <exclude>io.opentelemetry:opentelemetry-semconv\z</exclude>
                                 <exclude>io.perfmark:perfmark\z</exclude>
                                 <!-- end javax.annotations excludes -->
+                                <!-- do not transform org.dom4j:dom4j -->
+                                <exclude>org.dom4j:dom4j\z</exclude>
+                                <!-- end org.dom4j:dom4j exclude -->
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
