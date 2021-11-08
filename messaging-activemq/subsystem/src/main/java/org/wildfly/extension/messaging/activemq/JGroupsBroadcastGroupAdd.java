@@ -34,19 +34,16 @@ import java.util.Set;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
 import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
 import org.wildfly.extension.messaging.activemq.broadcast.CommandDispatcherBroadcastEndpointFactory;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
@@ -55,7 +52,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  * Handler for adding a broadcast group using JGroups.
  * @author Emmanuel Hugonnet (c) 2019 Red Hat, Inc.
  */
-public class JGroupsBroadcastGroupAdd extends AbstractAddStepHandler {
+public class JGroupsBroadcastGroupAdd extends ReloadRequiredAddStepHandler {
 
     public static final JGroupsBroadcastGroupAdd INSTANCE = new JGroupsBroadcastGroupAdd(true);
     public static final JGroupsBroadcastGroupAdd LEGACY_INSTANCE = new JGroupsBroadcastGroupAdd(false);
@@ -104,17 +101,6 @@ public class JGroupsBroadcastGroupAdd extends AbstractAddStepHandler {
                     BroadcastGroupWriteAttributeHandler.JGROUP_INSTANCE.validateConnectors(context, operation, connectorRefs);
                 }
             }, OperationContext.Stage.MODEL);
-        }
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        ServiceRegistry registry = context.getServiceRegistry(false);
-        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-        ServiceController<?> service = registry.getService(serviceName);
-        if (service != null) {
-            context.reloadRequired();
         }
     }
 
