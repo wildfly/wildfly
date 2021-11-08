@@ -440,32 +440,6 @@
             <scope>provided</scope>
         </dependency>
 
-	<!-- module and copy artifact dependencies -->
-
-           <dependency>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4</artifactId>
-		<scope>provided</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            
-            <dependency>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-runtime</artifactId>
-		<scope>provided</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
         <!-- Deps from the source modules we copy in -->
 
         <dependency>
@@ -569,7 +543,7 @@
                     <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-weld-transactions</artifactId>
                 </exclusion>
-		<exclusion>
+                <exclusion>
                     <groupId>antlr</groupId>
                     <artifactId>antlr</artifactId>
                 </exclusion>
@@ -838,6 +812,18 @@
         <!-- EE 9 Impls -->
 
         <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-base</artifactId>
             <classifier>jakarta</classifier>
@@ -989,7 +975,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-	
+
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
