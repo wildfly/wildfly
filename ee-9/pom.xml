@@ -86,7 +86,6 @@
         <version.org.jboss.weld.weld-api>4.0.SP1</version.org.jboss.weld.weld-api>
         <version.org.wildfly.security.elytron-web>2.0.0.Beta1</version.org.wildfly.security.elytron-web>
         <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta1</version.org.wildfly.security.jakarta.elytron-ee>
-        <version.org.wildfly.transaction.client>2.0.0.Final</version.org.wildfly.transaction.client>
 
         <!-- TODO Glassfish uses org.glassfish:jakarta-el for this, which we use for the impl
              but we have a separate API jar -->
