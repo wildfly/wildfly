@@ -9,6 +9,10 @@
             <param name="cache" value="dist"/>
             <param name="max-size" value="10000"/>
         </feature>
+        <feature spec="subsystem.distributable-ejb.client-mappings-registry.infinispan">
+            <param name="cache-container" value="ejb"/>
+            <param name="cache" value="client-mappings"/>
+        </feature>
     </feature>
 
 </feature-group-spec>

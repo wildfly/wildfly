@@ -14,7 +14,9 @@
 
     <feature-group name="private-interface"/>
 
+    <!-- distributable-ejb subsystem providing distributed clustering abstractions for ejb3 subsystem-->
     <feature-group name="distributable-ejb"/>
+    <!-- Infinispan cache configuration used for distributed SFSB caching -->
     <feature-group name="infinispan-dist-ejb"/>
     <feature-group name="jgroups-all"/>
     <packages>

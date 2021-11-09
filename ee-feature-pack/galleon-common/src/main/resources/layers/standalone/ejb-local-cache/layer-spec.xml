@@ -7,6 +7,8 @@
         <param name="default-stateful-bean-access-timeout" value="5000"/>
         <param name="default-sfsb-cache" value="simple"/>
     </feature>
+    <!-- distributable-ejb subsystem providing local clustering abstractions for ejb3 subsystem-->
+    <feature-group name="distributable-ejb-local"/>
     <!-- Infinispan cache configuration used for local SFSB caching -->
     <feature-group name="infinispan-local-ejb"/>
     <packages>
