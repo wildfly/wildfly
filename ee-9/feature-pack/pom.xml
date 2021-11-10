@@ -572,6 +572,14 @@
                     <groupId>com.sun.istack</groupId>
                     <artifactId>istack-commons-tools</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.wildfly-http-client</groupId>
+                    <artifactId>wildfly-http-ejb-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.wildfly-http-client</groupId>
+                    <artifactId>wildfly-http-transaction-client</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -1176,6 +1184,18 @@
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-weld-transactions-jakarta</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.wildfly-http-client</groupId>
+            <artifactId>wildfly-http-ejb-client-jakarta</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.wildfly-http-client</groupId>
+            <artifactId>wildfly-http-transaction-client-jakarta</artifactId>
             <scope>provided</scope>
         </dependency>
 
