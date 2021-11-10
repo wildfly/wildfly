@@ -66,7 +66,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
     public void schedule(T id, Instant instant) {
         this.entries.add(id, instant);
         if (this.entries.isSorted()) {
-            this.cancelIfPresent(id);
+            this.cancelIfPresent(instant);
         }
         this.scheduleIfAbsent();
     }
@@ -142,6 +142,20 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
             synchronized (this) {
                 if (this.future == null) {
                     this.future = this.scheduleFirst();
+                }
+            }
+        }
+    }
+
+    private void cancelIfPresent(Instant instant) {
+        if (this.future != null) {
+            synchronized (this) {
+                if (this.future != null) {
+                    Map.Entry<T, Instant> entry = this.entries.peek();
+                    if ((entry != null) && instant.isBefore(entry.getValue())) {
+                        this.future.cancel(true);
+                        this.future = null;
+                    }
                 }
             }
         }
