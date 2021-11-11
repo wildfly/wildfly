@@ -591,6 +591,10 @@
                     <groupId>com.sun.istack</groupId>
                     <artifactId>istack-commons-tools</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.jboss</groupId>
+                    <artifactId>jboss-ejb-client</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -1003,6 +1007,12 @@
         <dependency>
             <groupId>org.jboss.activemq.artemis.integration</groupId>
             <artifactId>artemis-wildfly-jakarta-integration</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-ejb-client-jakarta</artifactId>
             <scope>provided</scope>
         </dependency>
 

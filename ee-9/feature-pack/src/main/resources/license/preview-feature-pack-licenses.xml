@@ -209,6 +209,17 @@
     </dependency>
     <dependency>
       <groupId>org.jboss</groupId>
+      <artifactId>jboss-ejb-client-jakarta</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss</groupId>
       <artifactId>jboss-transaction-spi-jakarta</artifactId>
       <licenses>
         <license>
