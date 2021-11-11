@@ -528,6 +528,17 @@
                     <groupId>${project.groupId}</groupId>
                     <artifactId>jipijapa-spi</artifactId>
                 </exclusion>
+                
+                <exclusion>
+                    <groupId>${ee.maven.groupId}</groupId>
+                    <artifactId>wildfly-opentelemetry-api</artifactId>
+                </exclusion>
+
+                <exclusion>
+                    <groupId>${ee.maven.groupId}</groupId>
+                    <artifactId>wildfly-opentelemetry</artifactId>
+                </exclusion>
+
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-batch-jberet</artifactId>
@@ -1154,6 +1165,18 @@
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider-jakarta</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-opentelemetry-api-jakarta</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-opentelemetry-jakarta</artifactId>
             <scope>provided</scope>
         </dependency>
 
