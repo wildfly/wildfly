@@ -29,6 +29,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
+import static org.wildfly.test.security.common.SecureExpressionUtil.getDeploymentPropertiesAsset;
+import static org.wildfly.test.security.common.SecureExpressionUtil.setupCredentialStore;
+import static org.wildfly.test.security.common.SecureExpressionUtil.setupCredentialStoreExpressions;
+import static org.wildfly.test.security.common.SecureExpressionUtil.teardownCredentialStore;
 
 import java.io.IOException;
 import java.util.PropertyPermission;
@@ -56,6 +60,8 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.security.common.SecureExpressionUtil;
+
 
 /**
  * Verify that MDB activation config properties can be vaulted.
@@ -70,13 +76,24 @@ import org.junit.runner.RunWith;
 public class MDBWithVaultedPropertiesTestCase {
 
 
+    private static final String DEPLOYMENT = "MDBWithVaultedPropertiesTestCase.jar";
+
     private static final String QUEUE_NAME = "vaultedproperties_queue";
     static final String CLEAR_TEXT_DESTINATION_LOOKUP = "java:jboss/messaging/vaultedproperties/queue";
+    static final String UNIQUE_NAME = "MDBWithVaultedPropertiesTestCase";
+    static final String CREDENTIAL_EXPRESSION_PROP = "MDBWithVaultedPropertiesTestCase.destination";
+    // Expression we use as the annotation value. We add it to META-INF/jboss.properties so it resolves
+    // to a credential expression, which in turn resolves to clear text
+    static final String DEPLOYMENT_PROP_EXPRESSION = "${MDBWithVaultedPropertiesTestCase.destination}";
+    static final SecureExpressionUtil.SecureExpressionData EXPRESSION_DATA = new SecureExpressionUtil.SecureExpressionData(CLEAR_TEXT_DESTINATION_LOOKUP, CREDENTIAL_EXPRESSION_PROP);
+    static final String STORE_LOCATION = MDBWithVaultedPropertiesTestCase.class.getResource("/").getPath() + "security/" + UNIQUE_NAME + ".cs";
 
     static class StoreVaultedPropertyTask implements ServerSetupTask {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            setupCredentialStore(managementClient, UNIQUE_NAME, STORE_LOCATION);
+
             createJMSQueue(managementClient, QUEUE_NAME, CLEAR_TEXT_DESTINATION_LOOKUP);
 
             updateAnnotationPropertyReplacement(managementClient, true);
@@ -85,7 +102,10 @@ public class MDBWithVaultedPropertiesTestCase {
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+
             removeJMSQueue(managementClient, QUEUE_NAME);
+
+            teardownCredentialStore(managementClient, UNIQUE_NAME, STORE_LOCATION);
 
             updateAnnotationPropertyReplacement(managementClient, false);
         }
@@ -114,15 +134,21 @@ public class MDBWithVaultedPropertiesTestCase {
         }
     }
 
-    @Deployment
-    public static JavaArchive createTestArchive() {
-        return ShrinkWrap.create(JavaArchive.class, "MDBWithVaultedPropertiesTestCase.jar")
+    @Deployment(name = DEPLOYMENT)
+    public static JavaArchive getDeployment() throws Exception {
+
+        // Create the credential expressions so we can store them in the deployment
+        setupCredentialStoreExpressions(UNIQUE_NAME, EXPRESSION_DATA);
+
+        return ShrinkWrap.create(JavaArchive.class, DEPLOYMENT)
                 .addClass(StoreVaultedPropertyTask.class)
                 .addClass(MDB.class)
                 .addClass(TimeoutUtil.class)
+                .addClasses(SecureExpressionUtil.getDeploymentClasses())
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(createPermissionsXmlAsset(
-                        new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")), "permissions.xml");
+                        new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")), "permissions.xml")
+                .addAsManifestResource(getDeploymentPropertiesAsset(EXPRESSION_DATA), "jboss.properties");
     }
 
     @Resource(mappedName = CLEAR_TEXT_DESTINATION_LOOKUP)
