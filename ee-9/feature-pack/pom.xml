@@ -590,6 +590,7 @@
                 <exclusion>
                     <groupId>com.sun.istack</groupId>
                     <artifactId>istack-commons-tools</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.jboss</groupId>
                     <artifactId>jboss-ejb-client</artifactId>
