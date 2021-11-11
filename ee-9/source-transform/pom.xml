@@ -60,6 +60,8 @@
         <module>weld/common</module>
         <module>weld/spi</module>
         <module>weld/transactions</module>
+        <module>observability/opentelemetry-api</module>
+        <module>observability/opentelemetry</module>
     </modules>
 
     <build>
