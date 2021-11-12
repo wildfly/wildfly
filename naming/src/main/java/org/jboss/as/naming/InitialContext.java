@@ -22,6 +22,9 @@
 
 package org.jboss.as.naming;
 
+import java.lang.reflect.Constructor;
+import java.security.AccessController;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -112,8 +115,17 @@ public class InitialContext extends InitialLdapContext {
             } else {
                 final ClassLoader classLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
-                    final Class<?> factoryClass = Class.forName(factoryClassName, true, classLoader);
-                    defaultInitCtx = ((javax.naming.spi.InitialContextFactory)factoryClass.newInstance()).getInitialContext(myProps);
+                    final Constructor<javax.naming.spi.InitialContextFactory> factoryClassConstructor;
+                    if (WildFlySecurityManager.isChecking()) {
+                        factoryClassConstructor = AccessController.doPrivileged((PrivilegedExceptionAction<Constructor<javax.naming.spi.InitialContextFactory>>) () -> {
+                            final Class<?> factoryClass = Class.forName(factoryClassName, false, classLoader);
+                            return (Constructor<javax.naming.spi.InitialContextFactory>) factoryClass.getConstructor();
+                        });
+                    } else {
+                        final Class<?> factoryClass = Class.forName(factoryClassName, false, classLoader);
+                        factoryClassConstructor = (Constructor<javax.naming.spi.InitialContextFactory>) factoryClass.getConstructor();
+                    }
+                    defaultInitCtx = factoryClassConstructor.newInstance().getInitialContext(myProps);
                 } catch (NamingException e) {
                     throw e;
                 } catch (Exception e) {
