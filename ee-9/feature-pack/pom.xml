@@ -596,6 +596,10 @@
                     <artifactId>jboss-ejb-client</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.jvnet.staxex</groupId>
+                    <artifactId>stax-ex</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.wildfly.wildfly-http-client</groupId>
                     <artifactId>wildfly-http-ejb-client</artifactId>
                 </exclusion>
@@ -1092,6 +1096,12 @@
         <dependency>
             <groupId>org.jboss.weld.probe</groupId>
             <artifactId>weld-probe-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jvnet.staxex</groupId>
+            <artifactId>stax-ex</artifactId>
             <scope>provided</scope>
         </dependency>
 
