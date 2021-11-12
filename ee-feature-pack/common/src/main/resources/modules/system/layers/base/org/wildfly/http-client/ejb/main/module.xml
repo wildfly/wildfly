@@ -25,7 +25,7 @@
 <module xmlns="urn:jboss:module:1.9" name="org.wildfly.http-client.ejb">
 
     <resources>
-        <artifact name="${org.wildfly.wildfly-http-client:wildfly-http-ejb-client}"/>
+        <artifact name="\${org.wildfly.wildfly-http-client:wildfly-http-ejb-client@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
