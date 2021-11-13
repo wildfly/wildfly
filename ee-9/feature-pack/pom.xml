@@ -780,12 +780,48 @@
                     <artifactId>istack-commons-tools</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.jboss.ironjacamar</groupId>
+                    <artifactId>ironjacamar-common-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.ironjacamar</groupId>
+                    <artifactId>ironjacamar-common-impl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.ironjacamar</groupId>
+                    <artifactId>ironjacamar-common-spi</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.ironjacamar</groupId>
+                    <artifactId>ironjacamar-core-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.ironjacamar</groupId>
+                    <artifactId>ironjacamar-core-impl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.ironjacamar</groupId>
+                    <artifactId>ironjacamar-deployers-common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.ironjacamar</groupId>
+                    <artifactId>ironjacamar-jdbc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.ironjacamar</groupId>
+                    <artifactId>ironjacamar-validator</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.jboss</groupId>
                     <artifactId>jboss-ejb-client</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.jvnet.staxex</groupId>
                     <artifactId>stax-ex</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-connector</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.wildfly.wildfly-http-client</groupId>
