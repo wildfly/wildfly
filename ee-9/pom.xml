@@ -1105,6 +1105,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.narayana.jts</groupId>
+                <artifactId>narayana-jts-idlj-jakarta</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>*</artifactId>
+                        <groupId>*</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.weld.module</groupId>
                 <artifactId>weld-jsf</artifactId>
                 <version>${version.org.jboss.weld.weld}</version>
