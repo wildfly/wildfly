@@ -73,7 +73,6 @@
         <module name="org.jboss.as.weld.common" optional="true"/>
         <module name="org.wildfly.clustering.infinispan.spi"/>
         <module name="org.wildfly.transaction.client"/>
-        <module name="org.hibernate.bytecodetransformer"/>
 
         <module name="java.xml"/>
     </dependencies>

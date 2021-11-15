@@ -24,7 +24,6 @@
         <module>spi</module>
         <module>hibernate5</module>
         <module>hibernate5_3</module>
-        <module>hibernate-transformer</module>
         <module>eclipselink</module>
         <module>openjpa</module>
     </modules>

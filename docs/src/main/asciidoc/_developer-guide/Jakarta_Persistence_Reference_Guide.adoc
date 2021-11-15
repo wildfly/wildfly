@@ -640,18 +640,11 @@ import org.hibernate.SessionFactory;
 ----
 
 [[hibernate-transformer]]
-== Hibernate ORM 5.1 native API bytecode transformer
-The *Hibernate ORM 5.1 native API bytecode transformer*, can rewrite application bytecode,
-to handle APIs that have changed between Hibernate ORM 5.1.x + 5.3.x.  For applications that use the Hibernate ORM 5.1
-native APIs, you may either rewrite them for Hibernate ORM 5.3 or use the transformer, to rewrite your application byte-code
-during application deployment (only the in-memory copy of your application is rewritten).  If your application is only using the
-JPA specification APIs, you do not need to transform your application.
+== Hibernate ORM 5.1 native API bytecode transformer was removed
+If your application references the Hibernate ORM 5.1 native API bytecode transformer, you should remove references to `org.jboss.as.hibernate.Hibernate51CompatibilityTransformer` 
+in any `jboss-deployment-structure.xml` files in your application.  The `Hibernate51CompatibilityTransformer` system property is now ignored.
 
-For details on the Hibernate 5.3 native API changes, review the https://github.com/hibernate/hibernate-orm/blob/5.2/migration-guide.adoc[ORM 5.2]
-+ https://github.com/hibernate/hibernate-orm/blob/5.3/migration-guide.adoc[ORM 5.3] migration guides.
-
-The Hibernate ORM 5.1 transformer is already deprecated, meaning it could be removed in the next release.
-For this reason, we made it easy to enable the transformer via either a system property or jboss-deployment-structure change.
+For the following example `Hibernate51CompatibilityTransformer.xml`, you need to remove each transformer:
 
 [source,xml,options="nowrap"]
 ----
@@ -672,51 +665,20 @@ For this reason, we made it easy to enable the transformer via either a system p
 </jboss-deployment-structure>
 ----
 
-
-If enabled, the following transformations will be made to application classes compiled with Hibernate 5.1: ::
-*  In user type classes, change methods with parameter type org.hibernate.engine.spi.SessionImplementor to instead use type org.hibernate.engine.spi.SharedSessionContractImplementor, this is done for implementations of:
-**  org.hibernate.usertype.UserType.
-**  org.hibernate.usertype.CompositeUserType.
-**  org.hibernate.usertype.UserCollectionType.
-**  org.hibernate.usertype.UserVersionType.
-**  org.hibernate.type.Type.
-**  org.hibernate.type.SingleColumnType.
-**  org.hibernate.type.AbstractStandardBasicType.
-**  org.hibernate.type.ProcedureParameterExtractionAware.
-**  org.hibernate.type.ProcedureParameterNamedBinder.
-**  org.hibernate.type.VersionType.
-*  In user type classes, when calling org.hibernate.* class methods, cast SessionImplementor to SharedSessionContractImplementor.
-*  Change calls to org.hibernate.BasicQueryContract.getFlushMode(), https://github.com/hibernate/hibernate-orm/blob/5.2/migration-guide.adoc#misc[to instead call BasicQueryContract.getHibernateFlushMode()].
-*  Change calls to org.hibernate.Session.getFlushMode(), https://github.com/hibernate/hibernate-orm/blob/5.2/migration-guide.adoc#misc[to instead call Session.getHibernateFlushMode()].
-*  Change calls to org.hibernate.Query.getFirstResult(), to instead call Query.getHibernateFirstResult(), so null can be returned when the value is uninitialized (note that 0 is now returned instead of negative values).
-*  Change calls to org.hibernate.Query.getMaxResults(), https://github.com/hibernate/hibernate-orm/blob/5.3/migration-guide.adoc#native-non-jpa-pagination-changes[to instead call Query.getHibernateMaxResults(), so that null will be returned when the value is uninitialized or org.hibernate.Query#setMaxResults() was called with a value <= 0].
-*  Change calls to org.hibernate.Query.setFirstResult(), https://github.com/hibernate/hibernate-orm/blob/5.3/migration-guide.adoc#native-non-jpa-pagination-changes[to instead call Query.setHibernateFirstResult(), so that calls to set a value < 0 results in pagination starting with the 0th row as was done in Hibernate ORM 5.1].
-*  Change calls to org.hibernate.Query.setMaxResults(), https://github.com/hibernate/hibernate-orm/blob/5.3/migration-guide.adoc#native-non-jpa-pagination-changes[to instead call Query.setHibernateMaxResults(), so that passed values <= 0 are treated the same as uninitialized].
-*  Change references to NEVER field in enum org.hibernate.FlushMode, to instead reference FlushMode.MANUAL.
-
-****
-TRACE + DEBUG level logging can be enabled via the "org.jboss.as.hibernate.transformer" logger category.
-Example output:
-[source, text]
-Hibernate51CompatibilityTransformer transformed application classes in 'deployment.org.jboss.as.test.compat.jpa.hibernate.transformer.VerifyHibernate51CompatibilityPropertyAndJDSEnabledTransformerTestCase.ear', class 'org/jboss/as/test/compat/jpa/hibernate/transformer/BitSetType' is calling method org/hibernate/type/AbstractSingleColumnStandardBasicType.replace, which must be changed to use SharedSessionContractImplementor as parameter.
-****
-
-
-
-[cols=",",options="header"]
-|=======================================================================
-|System Property |Purpose| Default
-
-|Hibernate51CompatibilityTransformer| if true, the transformer will transform ORM 5.1.x native calls to, ORM 5.3 native calls, in every application deployment|false
-
-|Hibernate51CompatibilityTransformer.disableAmbiguousChanges| disable transformation of org.hibernate.Query.setFirstResult(int) + org.hibernate.Query.setMaxResults(int), since these methods are in both Hibernate ORM 5.1.x + 5.3.x|false
-
-|Hibernate51CompatibilityTransformer.showTransformedClassFolder| specifies the folder name to create bytecode level description of applications run through the transformer.  The specified folder must already exist.  If the transformer actually makes a change to your application, a (boolean) class variable will be added "$_org_jboss_as_hibernate_Hibernate51CompatibilityTransformer_transformed_$", that ensures that the application is only transformed once|disabled
-| 
+Updated `jboss-deployment-structure.xml`:
+[source,xml,options="nowrap"]
 ----
+<jboss-deployment-structure>
+    <deployment>
+        <dependencies>
+            <module name="org.hibernate" export="true" />
+        </dependencies>
+    </deployment>
+</jboss-deployment-structure>
+
 ----
 
-|=======================================================================
+
 
 [[hibernate-properties]]
 == Hibernate properties
