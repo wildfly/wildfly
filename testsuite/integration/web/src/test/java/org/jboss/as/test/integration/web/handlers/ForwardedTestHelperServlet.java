@@ -50,7 +50,7 @@ public class ForwardedTestHelperServlet extends HttpServlet {
         PrintWriter out = resp.getWriter();
 
         out.print(req.getRemoteAddr() + "|" + req.getRemoteHost() + ":" + req.getRemotePort() + "|" + req.getScheme()
-                + "|" + req.getLocalName() + "|" + ForwardedTestHelperHandler.formatPossibleIpv6Address(req.getLocalAddr()) + ":" + req.getLocalPort());
+                + "|" + req.getLocalName() + "|" + req.getLocalAddr() + ":" + req.getLocalPort());
         out.close();
     }
 }
