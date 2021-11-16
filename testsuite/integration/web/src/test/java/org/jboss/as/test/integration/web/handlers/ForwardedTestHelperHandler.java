@@ -21,22 +21,9 @@ public class ForwardedTestHelperHandler implements HttpHandler {
 
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         String value = exchange.getSourceAddress() + "|" + exchange.getRequestScheme() + "|"
-                + formatPossibleIpv6Address(exchange.getDestinationAddress().toString());
+                + exchange.getDestinationAddress();
 
         exchange.getResponseHeaders().put(new HttpString(FORWARD_TEST_HEADER), value);
         next.handleRequest(exchange);
-    }
-
-    public static String formatPossibleIpv6Address(String address) {
-        if (address == null) {
-            return address;
-        }
-        if (!address.contains(":")) {
-            return address;
-        }
-        if (address.startsWith("[") && address.endsWith("]")) {
-            return address;
-        }
-        return "[" + address + "]";
     }
 }
