@@ -50,6 +50,7 @@
         <version.jakarta.authorization.jakarta-authorization-api>2.0.0</version.jakarta.authorization.jakarta-authorization-api>
         <version.jakarta.batch.jakarta.batch-api>2.0.0</version.jakarta.batch.jakarta.batch-api>
         <version.jakarta.ejb.jakarta-ejb-api>4.0.0</version.jakarta.ejb.jakarta-ejb-api>
+        <version.jakarta.el.jakarta-el-api>4.0.0</version.jakarta.el.jakarta-el-api>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
         <version.jakarta.faces.jakarta-faces-api>3.0.0</version.jakarta.faces.jakarta-faces-api>
@@ -262,6 +263,18 @@
                 <artifactId>jakarta.ejb-api</artifactId>
                 <version>${version.jakarta.ejb.jakarta-ejb-api}</version>
                 <!-- Exclude dependencies declared in the servlet-feature-pack-ee-8-api module -->
+                <exclusions>
+                    <exclusion>
+                        <artifactId>*</artifactId>
+                        <groupId>*</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.el</groupId>
+                <artifactId>jakarta.el-api</artifactId>
+                <version>${version.jakarta.el.jakarta-el-api}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>*</artifactId>
@@ -964,6 +977,30 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-weld-common-jakarta</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-weld-jakarta</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-weld-jpa-jakarta</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
