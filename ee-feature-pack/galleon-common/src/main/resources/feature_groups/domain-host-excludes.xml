@@ -81,4 +81,9 @@
         <param name="host-release" value="WildFly24.0"/>
         <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.ejb&quot;,&quot;org.wildfly.extension.opentelemetry&quot;]"/>
     </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly25.0"/>
+        <param name="host-release" value="WildFly25.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.ejb&quot;]"/>
+    </feature>
 </feature-group-spec>
