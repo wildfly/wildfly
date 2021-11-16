@@ -75,6 +75,12 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
                     .setAlternatives(ElytronOidcDescriptionConstants.RESOURCE)
                     .build();
 
+    protected static final SimpleAttributeDefinition USE_REALM_ROLE_MAPPINGS =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.USE_REALM_ROLE_MAPPINGS, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(ModelNode.TRUE)
+                    .build();
+
     protected static final SimpleAttributeDefinition USE_RESOURCE_ROLE_MAPPINGS =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.USE_RESOURCE_ROLE_MAPPINGS, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)

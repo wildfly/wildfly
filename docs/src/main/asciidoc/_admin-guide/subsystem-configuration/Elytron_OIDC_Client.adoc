@@ -41,6 +41,7 @@ Here is an example of an `oidc.json` configuration file:
   "client-id" : "customer-portal",
   "provider-url" : "http://localhost:8180/auth/realms/demo",
   "ssl-required" : "external",
+  "use-realm-role-mappings" : true,
   "use-resource-role-mappings" : false,
   "enable-cors" : true,
   "cors-max-age" : 1000,

@@ -106,6 +106,7 @@
             <xs:element name="client-keystore" type="xs:string" minOccurs="0" maxOccurs="1"/>
             <xs:element name="enable-cors" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
             <xs:element name="allow-any-hostname" type="xs:boolean" minOccurs="0" maxOccurs="1" />
+            <xs:element name="use-realm-role-mappings" type="xs:boolean" minOccurs="0" maxOccurs="1" />
             <xs:element name="use-resource-role-mappings" type="xs:boolean" minOccurs="0" maxOccurs="1" />
             <xs:element name="cors-max-age" type="xs:integer" minOccurs="0" maxOccurs="1"/>
             <xs:element name="auth-server-url" type="xs:string" minOccurs="0" maxOccurs="1"/>

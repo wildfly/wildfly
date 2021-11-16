@@ -80,6 +80,7 @@ interface ElytronOidcDescriptionConstants {
     String TRUSTSTORE = "truststore";
     String TRUSTORE_PASSWORD = "truststore-password";
     String TURN_OFF_CHANGE_SESSION_ID_ON_LOGIN = "turn-off-change-session-id-on-login";
+    String USE_REALM_ROLE_MAPPINGS = "use-realm-role-mappings";
     String USE_RESOURCE_ROLE_MAPPINGS = "use-resource-role-mappings";
     String VERIFY_TOKEN_AUDIENCE = "verify-token-audience";
 

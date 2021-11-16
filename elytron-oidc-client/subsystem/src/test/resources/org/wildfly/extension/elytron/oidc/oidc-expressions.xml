@@ -75,6 +75,7 @@
     <secure-deployment name="myAppWithSecret-expressions">
         <realm>${exp.realm:master}</realm>
         <resource>${exp.resource:myAppId}</resource>
+        <use-realm-role-mappings>${exp.use-realm-role-mappings:true}</use-realm-role-mappings>
         <use-resource-role-mappings>${exp.use-resource-role-mappings:true}</use-resource-role-mappings>
         <turn-off-change-session-id-on-login>${exp.turn-off-change-session-id-on-login:false}</turn-off-change-session-id-on-login>
         <token-minimum-time-to-live>${exp.token-minimum-time-to-live:10}</token-minimum-time-to-live>

@@ -36,6 +36,7 @@
     <secure-deployment name="web-console">
         <realm>master</realm>
         <resource>web-console</resource>
+        <use-realm-role-mappings>false</use-realm-role-mappings>
         <use-resource-role-mappings>true</use-resource-role-mappings>
         <turn-off-change-session-id-on-login>false</turn-off-change-session-id-on-login>
         <token-minimum-time-to-live>10</token-minimum-time-to-live>
