@@ -453,7 +453,7 @@ public interface ConnectorLogger extends BasicLogger {
      * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 47, value = "Connection is not valid")
-    IllegalStateException invalidConnection();
+    IllegalStateException invalidConnection(@Cause Exception e);
 
 //    /**
 //     * A message indicating the parameter name is invalid.

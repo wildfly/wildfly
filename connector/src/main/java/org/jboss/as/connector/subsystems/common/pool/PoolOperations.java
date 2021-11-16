@@ -51,6 +51,8 @@ import org.jboss.jca.core.api.management.DataSource;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.msc.service.ServiceController;
 
+import javax.resource.ResourceException;
+
 public abstract class PoolOperations implements OperationStepHandler {
 
 
@@ -232,18 +234,19 @@ public abstract class PoolOperations implements OperationStepHandler {
 
         @Override
         protected ModelNode invokeCommandOn(Pool pool, Object... parameters) throws Exception {
-            boolean returnedValue;
-            if (parameters != null) {
-                WrappedConnectionRequestInfo cri = new WrappedConnectionRequestInfo((String) parameters[0], (String) parameters[1]);
-                returnedValue = pool.testConnection(cri, null);
-            } else {
-                returnedValue = pool.testConnection();
-            }
-            if (!returnedValue)
-                throw ConnectorLogger.ROOT_LOGGER.invalidConnection();
             ModelNode result = new ModelNode();
-            result.add(returnedValue);
-            return result;
+            try {
+                if (parameters != null) {
+                    WrappedConnectionRequestInfo cri = new WrappedConnectionRequestInfo((String) parameters[0], (String) parameters[1]);
+                    pool.testConnection(cri, null);
+                } else {
+                    pool.testConnection();
+                }
+                result.add(true);
+                return result;
+            } catch (ResourceException e) {
+                throw ConnectorLogger.ROOT_LOGGER.invalidConnection(e);
+            }
         }
 
         @Override
