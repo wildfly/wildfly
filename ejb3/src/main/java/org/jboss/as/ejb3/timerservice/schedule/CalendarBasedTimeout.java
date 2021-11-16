@@ -21,12 +21,14 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule;
 
+import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
+
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Objects;
 import java.util.TimeZone;
-
 import javax.ejb.ScheduleExpression;
 
 import org.jboss.as.ejb3.timerservice.schedule.attribute.DayOfMonth;
@@ -36,8 +38,6 @@ import org.jboss.as.ejb3.timerservice.schedule.attribute.Minute;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Month;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Second;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Year;
-
-import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
 
 /**
  * CalendarBasedTimeout
@@ -156,7 +156,20 @@ public class CalendarBasedTimeout {
         // determine and set the first timeout (relative to the current time)
         // of this CalendarBasedTimeout
         setFirstTimeout();
-        }
+    }
+
+    public static boolean doesScheduleMatch(final ScheduleExpression expression1, final ScheduleExpression expression2) {
+        return Objects.equals(expression1.getHour(), expression2.getHour())
+                && Objects.equals(expression1.getMinute(), expression2.getMinute())
+                && Objects.equals(expression1.getMonth(), expression2.getMonth())
+                && Objects.equals(expression1.getSecond(), expression2.getSecond())
+                && Objects.equals(expression1.getDayOfMonth(), expression2.getDayOfMonth())
+                && Objects.equals(expression1.getDayOfWeek(), expression2.getDayOfWeek())
+                && Objects.equals(expression1.getYear(), expression2.getYear())
+                && Objects.equals(expression1.getTimezone(), expression2.getTimezone())
+                && Objects.equals(expression1.getEnd(), expression2.getEnd())
+                && Objects.equals(expression1.getStart(), expression2.getStart());
+    }
 
     public Calendar getNextTimeout() {
         return getNextTimeout(new GregorianCalendar(this.timezone), true);

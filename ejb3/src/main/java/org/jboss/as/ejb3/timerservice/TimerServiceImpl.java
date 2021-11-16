@@ -63,6 +63,7 @@ import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.subsystem.deployment.TimerServiceResource;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.persistence.database.DatabaseTimerPersistence;
+import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.invocation.InterceptorContext;
@@ -751,7 +752,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                         //the timers have the same method.
                         //now lets make sure the schedule is the same, info is the same,
                         // and the timer does not change the persistence
-                        if (doesScheduleMatch(calendarTimer.getScheduleExpression(), timer.getScheduleExpression())
+                        if (CalendarBasedTimeout.doesScheduleMatch(calendarTimer.getScheduleExpression(), timer.getScheduleExpression())
                                 && Objects.equals(calendarTimer.info, timer.getTimerConfig().getInfo())
                                 && timer.getTimerConfig().isPersistent()) {
                             it.remove();
@@ -1033,53 +1034,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             }
         }
         return false;
-    }
-
-    private static boolean doesScheduleMatch(final ScheduleExpression expression1, final ScheduleExpression expression2) {
-        if (!same(expression1.getDayOfMonth(), expression2.getDayOfMonth())) {
-            return false;
-        }
-        if (!same(expression1.getDayOfWeek(), expression2.getDayOfWeek())) {
-            return false;
-        }
-        if (!same(expression1.getEnd(), expression2.getEnd())) {
-            return false;
-        }
-        if (!same(expression1.getHour(), expression2.getHour())) {
-            return false;
-        }
-        if (!same(expression1.getMinute(), expression2.getMinute())) {
-            return false;
-        }
-        if (!same(expression1.getMonth(), expression2.getMonth())) {
-            return false;
-        }
-        if (!same(expression1.getSecond(), expression2.getSecond())) {
-            return false;
-        }
-        if (!same(expression1.getStart(), expression2.getStart())) {
-            return false;
-        }
-        if (!same(expression1.getTimezone(), expression2.getTimezone())) {
-            return false;
-        }
-        if (!same(expression1.getYear(), expression2.getYear())) {
-            return false;
-        }
-        return true;
-    }
-
-    private static boolean same(Object i1, Object i2) {
-        if (i1 == null && i2 != null) {
-            return false;
-        }
-        if (i2 == null && i1 != null) {
-            return false;
-        }
-        if (i1 == null && i2 == null) {
-            return true;
-        }
-        return i1.equals(i2);
     }
 
     /**
