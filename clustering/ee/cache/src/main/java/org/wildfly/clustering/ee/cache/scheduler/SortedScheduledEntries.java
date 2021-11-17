@@ -41,16 +41,22 @@ public class SortedScheduledEntries<K, V extends Comparable<? super V>> implemen
     private final SortedSet<Map.Entry<K, V>> sorted;
     private final Map<K, V> entries = new ConcurrentHashMap<>();
 
+    static <K, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> comparingByValue() {
+        return new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> entry1, Map.Entry<K, V> entry2) {
+                int result = entry1.getValue().compareTo(entry2.getValue());
+                // Compare using keys if necessary, as value comparison of 0 does not imply equality!
+                return (result == 0) ? Integer.compare(entry1.getKey().hashCode(), entry2.getKey().hashCode()) : result;
+            }
+        };
+    }
+
     /**
      * Creates a new entries object whose iteration order is based on the entry value.
      */
     public SortedScheduledEntries() {
-        this(Map.Entry.comparingByValue());
-    }
-
-    @Override
-    public boolean isSorted() {
-        return true;
+        this(comparingByValue());
     }
 
     /**
@@ -59,6 +65,11 @@ public class SortedScheduledEntries<K, V extends Comparable<? super V>> implemen
      */
     public SortedScheduledEntries(Comparator<Map.Entry<K, V>> comparator) {
         this.sorted = new ConcurrentSkipListSet<>(comparator);
+    }
+
+    @Override
+    public boolean isSorted() {
+        return true;
     }
 
     @Override
