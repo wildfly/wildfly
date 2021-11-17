@@ -86,12 +86,6 @@ public class EjbContextJndiBindingProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
-
-
     protected void processComponentConfig(final ComponentDescription componentDescription) throws DeploymentUnitProcessingException {
         if (!(componentDescription instanceof EJBComponentDescription)) {
             return;  // Only process Jakarta Enterprise Beans

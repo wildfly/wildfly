@@ -72,9 +72,6 @@ public class AroundTimeoutAnnotationParsingProcessor implements DeploymentUnitPr
         }
     }
 
-    public void undeploy(final DeploymentUnit context) {
-    }
-
     private void processAroundInvoke(final AnnotationTarget target, final EEModuleDescription eeModuleDescription) {
         if (!(target instanceof MethodInfo)) {
             throw EjbLogger.ROOT_LOGGER.annotationApplicableOnlyForMethods(AROUND_TIMEOUT_ANNOTATION_NAME.toString());

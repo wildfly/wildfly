@@ -132,8 +132,4 @@ public class UndertowHandlersDeploymentProcessor implements DeploymentUnitProces
             Thread.currentThread().setContextClassLoader(oldCl);
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

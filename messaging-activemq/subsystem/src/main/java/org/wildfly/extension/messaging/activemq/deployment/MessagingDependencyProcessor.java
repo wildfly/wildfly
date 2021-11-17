@@ -76,9 +76,4 @@ public class MessagingDependencyProcessor implements DeploymentUnitProcessor {
                                String moduleIdentifier) {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
 }

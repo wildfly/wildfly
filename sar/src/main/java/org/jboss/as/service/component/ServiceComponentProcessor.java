@@ -68,10 +68,4 @@ public class ServiceComponentProcessor implements DeploymentUnitProcessor {
         }
         deploymentUnit.putAttachment(ServiceAttachments.SERVICE_COMPONENT_INSTANTIATORS, serviceComponents);
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
-
 }

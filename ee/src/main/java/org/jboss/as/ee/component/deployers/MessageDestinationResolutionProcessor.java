@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
@@ -43,9 +42,5 @@ public class MessageDestinationResolutionProcessor implements DeploymentUnitProc
             injection.resolve(phaseContext);
         }
 
-    }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
     }
 }

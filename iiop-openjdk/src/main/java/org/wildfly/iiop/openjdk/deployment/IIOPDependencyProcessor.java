@@ -51,9 +51,4 @@ public class IIOPDependencyProcessor implements DeploymentUnitProcessor {
         //we need to add iiop, as the orb is initialized from the context class loader of the deployment
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, IIOP_OPENJDK_ID, false, false, false, false));
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

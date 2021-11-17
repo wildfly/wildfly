@@ -79,9 +79,4 @@ public class CdiBeanValidationFactoryProcessor implements DeploymentUnitProcesso
         sb.setInstance(new CdiValidatorFactoryService(deploymentUnit, beanManagerSupplier));
         sb.install();
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
 }

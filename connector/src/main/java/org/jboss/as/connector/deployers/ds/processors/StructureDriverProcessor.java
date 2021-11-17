@@ -55,8 +55,4 @@ public final class StructureDriverProcessor implements DeploymentUnitProcessor {
             }
         }
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

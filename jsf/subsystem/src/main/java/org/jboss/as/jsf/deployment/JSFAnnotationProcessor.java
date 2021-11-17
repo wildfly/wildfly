@@ -137,8 +137,4 @@ public class JSFAnnotationProcessor implements DeploymentUnitProcessor {
         }
         deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(FACES_ANNOTATIONS_SC_ATTR, instances));
     }
-
-    public void undeploy(DeploymentUnit context) {
-
-    }
 }

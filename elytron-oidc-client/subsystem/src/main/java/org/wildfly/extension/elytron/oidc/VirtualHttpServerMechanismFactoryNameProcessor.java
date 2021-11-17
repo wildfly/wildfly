@@ -47,8 +47,4 @@ public class VirtualHttpServerMechanismFactoryNameProcessor implements Deploymen
             deploymentUnit.putAttachment(ATTACHMENT_KEY, advancedSecurityMetaData);
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {}
-
 }

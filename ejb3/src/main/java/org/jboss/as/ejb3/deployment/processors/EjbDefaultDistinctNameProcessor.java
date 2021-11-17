@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ejb3.subsystem.DefaultDistinctNameService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
@@ -47,10 +46,5 @@ public class EjbDefaultDistinctNameProcessor implements DeploymentUnitProcessor 
         if(defaultDistinctName != null) {
             phaseContext.getDeploymentUnit().putAttachment(org.jboss.as.ee.structure.Attachments.DISTINCT_NAME, defaultDistinctName);
         }
-    }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
     }
 }

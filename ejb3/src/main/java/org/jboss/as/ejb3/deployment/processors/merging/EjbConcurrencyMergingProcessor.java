@@ -158,9 +158,4 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
         }
         return resolveMethod(index, currentClass.getSuperclass(), componentClass, methodData);
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

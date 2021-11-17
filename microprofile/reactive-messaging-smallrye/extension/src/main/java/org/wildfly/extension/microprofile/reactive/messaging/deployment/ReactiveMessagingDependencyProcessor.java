@@ -95,10 +95,6 @@ public class ReactiveMessagingDependencyProcessor implements DeploymentUnitProce
         }
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private void addModuleDependencies(DeploymentUnit deploymentUnit) {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();

@@ -61,8 +61,4 @@ public final class EEDistinctNameProcessor implements DeploymentUnitProcessor {
             return;
         }
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

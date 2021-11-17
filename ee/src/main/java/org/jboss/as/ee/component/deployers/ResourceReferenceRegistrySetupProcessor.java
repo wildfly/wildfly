@@ -66,9 +66,4 @@ public class ResourceReferenceRegistrySetupProcessor implements DeploymentUnitPr
             deploymentUnit.putAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY, deploymentUnit.getParent().getAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY));
         }
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

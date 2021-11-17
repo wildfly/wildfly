@@ -62,11 +62,6 @@ public class DefaultEarSubDeploymentsIsolationProcessor implements DeploymentUni
         moduleSpecification.setSubDeploymentModulesIsolated(earSubDeploymentsIsolated);
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
-
     public void setEarSubDeploymentsIsolated(boolean earSubDeploymentsIsolated) {
         this.earSubDeploymentsIsolated = earSubDeploymentsIsolated;
     }

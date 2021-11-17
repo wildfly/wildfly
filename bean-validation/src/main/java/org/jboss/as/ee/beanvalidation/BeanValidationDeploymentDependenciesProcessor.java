@@ -55,8 +55,4 @@ public class BeanValidationDeploymentDependenciesProcessor implements Deployment
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, true, false, true, false));
         }
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

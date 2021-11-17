@@ -72,7 +72,4 @@ public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
         // All SARs require the ability to register MBeans.
         moduleSpecification.addPermissionFactory(REGISTER_PERMISSION_FACTORY);
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

@@ -104,10 +104,4 @@ public class ApplicationClientDeploymentProcessor implements DeploymentUnitProce
             }
         }
     }
-
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
 }

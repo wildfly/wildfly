@@ -59,9 +59,4 @@ public class HibernateValidatorDeploymentUnitProcessor implements DeploymentUnit
             }
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
 }

@@ -102,9 +102,4 @@ public class ApplicationExceptionMergingProcessor implements DeploymentUnitProce
         deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.APPLICATION_EXCEPTION_DETAILS, applicationExceptions);
 
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

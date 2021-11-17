@@ -50,9 +50,4 @@ public class BatchDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, batchModule, false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, jberetModule, false, false, true, false));
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
 }

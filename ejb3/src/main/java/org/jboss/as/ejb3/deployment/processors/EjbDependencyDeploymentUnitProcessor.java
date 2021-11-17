@@ -112,8 +112,4 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.CLASSPATH, false, false, false, false));
 
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

@@ -49,10 +49,6 @@ public class EarApplicationNameProcessor implements DeploymentUnitProcessor {
         deploymentUnit.putAttachment(Attachments.EAR_APPLICATION_NAME, earApplicationName);
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     /**
      * Returns the application name for the passed deployment. If the passed deployment isn't an .ear or doesn't belong
      * to a .ear, then this method returns null. Else it returns the application-name set in the application.xml of the .ear

@@ -80,9 +80,4 @@ public class EJBComponentSuspendDeploymentUnitProcessor implements DeploymentUni
         }
 
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-        // Do nothing
-    }
 }
