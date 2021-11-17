@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,65 +21,57 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.clustering.controller.ChildResourceDefinition;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.StringListAttributeDefinition;
-import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.dmr.ModelType;
+import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 
-/**
- * Defines a CacheFactoryBuilder instance which, during deployment, is used to configure, build and install a CacheFactory for the SFSB being deployed.
- * The CacheFactory resource instances defined here produce bean caches which are either:
- * - distributed and have passivation-enabled
- * - non distributed and do not have passivation-enabled
- * For passivation enabled CacheFactoryBuilders, the PassivationStoreResourceDefinition must define a supporting passivation store.
- *
- * @author Paul Ferraro
- */
-@Deprecated
-public class CacheFactoryResourceDefinition extends SimpleResourceDefinition {
+import java.util.function.UnaryOperator;
 
-    // capabilities not required as although we install CacheFactoryBuilder services, these do not depend on any defined clustering resources
+public class CacheFactoryResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
-    @Deprecated
-    public static final StringListAttributeDefinition ALIASES = new StringListAttributeDefinition.Builder(EJB3SubsystemModel.ALIASES)
-            .setXmlName(EJB3SubsystemXMLAttribute.ALIASES.getLocalName())
-            .setRequired(false)
-            .build();
+    public static final String CACHE_FACTORY_CAPABILTY_NAME = "jboss.ejb.cache.factory";
 
-    @Deprecated
-    public static final SimpleAttributeDefinition PASSIVATION_STORE =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PASSIVATION_STORE, ModelType.STRING, true)
-                    .setXmlName(EJB3SubsystemXMLAttribute.PASSIVATION_STORE_REF.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+    enum Capability implements org.jboss.as.clustering.controller.Capability {
+        CACHE_FACTORY(CACHE_FACTORY_CAPABILTY_NAME)
+        ;
+        private final RuntimeCapability<Void> definition;
+
+        Capability(String name) {
+            this.definition = RuntimeCapability.Builder.of(CACHE_FACTORY_CAPABILTY_NAME, true, CacheFactoryBuilder.class)
+                    .setAllowMultipleRegistrations(true)
                     .build();
+        }
 
-    private static final AttributeDefinition[] ATTRIBUTES = { ALIASES, PASSIVATION_STORE };
-    private static final CacheFactoryAdd ADD_HANDLER = new CacheFactoryAdd(ATTRIBUTES);
-    private static final CacheFactoryRemove REMOVE_HANDLER = new CacheFactoryRemove(ADD_HANDLER);
+        @Override
+        public RuntimeCapability<?> getDefinition() {
+            return this.definition;
+        }
+    }
 
-    @Deprecated
-    public static final CacheFactoryResourceDefinition INSTANCE = new CacheFactoryResourceDefinition();
+    private final UnaryOperator<ResourceDescriptor> configurator;
+    private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;
 
-    private CacheFactoryResourceDefinition() {
-        super(PathElement.pathElement(EJB3SubsystemModel.CACHE),
-                EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.CACHE),
-                ADD_HANDLER, REMOVE_HANDLER,
-                OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+    public CacheFactoryResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory) {
+        super(path, EJB3Extension.getResourceDescriptionResolver(path.getKey()));
+        this.configurator = configurator;
+        this.serviceConfiguratorFactory = serviceConfiguratorFactory;
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
-        for (AttributeDefinition attribute: ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attribute,  null, handler);
-        }
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = parent.registerSubModel(this);
+        ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
+                .addCapabilities(Capability.class)
+                ;
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.serviceConfiguratorFactory);
+        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        return registration;
     }
 }

@@ -394,7 +394,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         subsystemRegistration.registerSubModel(StrictMaxPoolResourceDefinition.INSTANCE);
 
         // subsystem=ejb3/{cache=*, simple-cache=*, distributable-cache=*}
-        subsystemRegistration.registerSubModel(CacheFactoryResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(LegacyCacheFactoryResourceDefinition.INSTANCE);
         new SimpleCacheFactoryResourceDefinition().register(subsystemRegistration);
         new DistributableCacheFactoryResourceDefinition().register(subsystemRegistration);
 

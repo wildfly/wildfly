@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,16 +22,11 @@
 package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
-import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
+import org.jboss.as.ejb3.cache.distributable.DistributableCacheFactoryBuilderServiceConfigurator;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.EjbProviderRequirement;
 
@@ -42,31 +37,11 @@ import org.wildfly.clustering.ejb.EjbProviderRequirement;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class DistributableCacheFactoryResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public class DistributableCacheFactoryResourceDefinition extends CacheFactoryResourceDefinition {
 
-    public static final String CACHE_FACTORY_CAPABILITY_NAME = "org.wildfly.ejb3.cache-factory";
-
-    // capabilities provided by this resource
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
-        DISTRIBUTABLE_CACHE_FACTORY(CACHE_FACTORY_CAPABILITY_NAME)
-        ;
-        private final RuntimeCapability<Void> definition;
-
-        Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(CACHE_FACTORY_CAPABILITY_NAME, true, CacheFactoryBuilder.class)
-                    .build();
-        }
-
-        @Override
-        public RuntimeCapability<?> getDefinition() {
-            return this.definition;
-        }
-    }
-
-    // attributes defined in this resource
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         BEAN_MANAGEMENT(EJB3SubsystemModel.BEAN_MANAGEMENT, ModelType.STRING,
-                new CapabilityReference(()->Capability.DISTRIBUTABLE_CACHE_FACTORY.getDefinition(), EjbProviderRequirement.BEAN_MANAGEMENT_PROVIDER))
+                new CapabilityReference(()->Capability.CACHE_FACTORY.getDefinition(), EjbProviderRequirement.BEAN_MANAGEMENT_PROVIDER))
         ;
         private final AttributeDefinition definition;
 
@@ -86,19 +61,6 @@ public class DistributableCacheFactoryResourceDefinition extends ChildResourceDe
     }
 
     public DistributableCacheFactoryResourceDefinition() {
-        super(PathElement.pathElement(EJB3SubsystemModel.DISTRIBUTABLE_CACHE), EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.DISTRIBUTABLE_CACHE));
-    }
-
-    @Override
-    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
-        ManagementResourceRegistration registration = parent.registerSubModel(this);
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addCapabilities(Capability.class)
-                .addAttributes(Attribute.class)
-                ;
-        DistributableCacheFactoryResourceServiceHandler handler = new DistributableCacheFactoryResourceServiceHandler();
-        // register the child resource using its resource descriptor and resource service handler
-        new SimpleResourceRegistration(descriptor,handler).register(registration);
-        return registration;
+        super(EJB3SubsystemModel.DISTRIBUTABLE_CACHE_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), DistributableCacheFactoryBuilderServiceConfigurator::new);
     }
 }

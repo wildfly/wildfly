@@ -524,8 +524,8 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
                 writer.writeStartElement(EJB3SubsystemXMLElement.CACHE.getLocalName());
                 ModelNode cache = property.getValue();
                 writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
-                CacheFactoryResourceDefinition.PASSIVATION_STORE.marshallAsAttribute(cache, writer);
-                writeAttribute(writer, cache, CacheFactoryResourceDefinition.ALIASES);
+                LegacyCacheFactoryResourceDefinition.PASSIVATION_STORE.marshallAsAttribute(cache, writer);
+                writeAttribute(writer, cache, LegacyCacheFactoryResourceDefinition.ALIASES);
                 writer.writeEndElement();
             }
         }

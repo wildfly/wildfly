@@ -493,11 +493,11 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                     break;
                 }
                 case PASSIVATION_STORE_REF: {
-                    CacheFactoryResourceDefinition.PASSIVATION_STORE.parseAndSetParameter(value, operation, reader);
+                    LegacyCacheFactoryResourceDefinition.PASSIVATION_STORE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case ALIASES: {
-                    CacheFactoryResourceDefinition.ALIASES.getParser().parseAndSetParameter(CacheFactoryResourceDefinition.ALIASES, value, operation, reader);
+                    LegacyCacheFactoryResourceDefinition.ALIASES.getParser().parseAndSetParameter(LegacyCacheFactoryResourceDefinition.ALIASES, value, operation, reader);
                     break;
                 }
                 default: {

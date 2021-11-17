@@ -30,6 +30,6 @@ import org.jboss.as.ejb3.cache.CacheFactoryBuilderServiceNameProvider;
 public class DistributableCacheFactoryBuilderServiceNameProvider extends CacheFactoryBuilderServiceNameProvider {
 
     public DistributableCacheFactoryBuilderServiceNameProvider(String name) {
-        super(BASE_CACHE_FACTORY_SERVICE_NAME.append("distributable", name));
+        super(name);
     }
 }

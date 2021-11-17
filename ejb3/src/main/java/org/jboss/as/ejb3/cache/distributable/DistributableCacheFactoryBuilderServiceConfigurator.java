@@ -25,9 +25,11 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.cache.Contextual;
 import org.jboss.as.ejb3.cache.Identifiable;
@@ -60,13 +62,13 @@ import org.wildfly.clustering.service.ServiceSupplierDependency;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K> & Contextual<Batch>> extends DistributableCacheFactoryBuilderServiceNameProvider implements ServiceConfigurator, DistributableCacheFactoryBuilder<K, V> {
+public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K> & Contextual<Batch>> extends DistributableCacheFactoryBuilderServiceNameProvider implements ResourceServiceConfigurator, DistributableCacheFactoryBuilder<K, V> {
 
     private String beanManagementProviderName;
     private SupplierDependency<DistributableBeanManagementProvider> beanManagementProviderDependency;
 
-    public DistributableCacheFactoryBuilderServiceConfigurator(String name) {
-        super(name);
+    public DistributableCacheFactoryBuilderServiceConfigurator(PathAddress pathAddress) {
+        super(pathAddress.getLastElement().getValue());
     }
 
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {

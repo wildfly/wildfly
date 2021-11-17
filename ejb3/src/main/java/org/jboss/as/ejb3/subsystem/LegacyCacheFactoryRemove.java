@@ -29,10 +29,10 @@ import org.jboss.msc.service.ServiceName;
  * @author Paul Ferraro
  */
 @Deprecated
-public class CacheFactoryRemove extends ServiceRemoveStepHandler {
+public class LegacyCacheFactoryRemove extends ServiceRemoveStepHandler {
 
-    CacheFactoryRemove(CacheFactoryAdd addHandler) {
-        super(null, addHandler);
+    LegacyCacheFactoryRemove(LegacyCacheFactoryAdd addHandler) {
+        super(ServiceName.JBOSS.append("ejb","cache", "factory"), addHandler);
     }
 
     @Override

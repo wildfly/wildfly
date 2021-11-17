@@ -48,25 +48,26 @@ import org.wildfly.clustering.service.ServiceConfigurator;
  * @author Paul Ferraro
  */
 @Deprecated
-public class CacheFactoryAdd extends AbstractAddStepHandler {
+public class LegacyCacheFactoryAdd extends AbstractAddStepHandler {
 
-    CacheFactoryAdd(AttributeDefinition... attributes) {
+    LegacyCacheFactoryAdd(AttributeDefinition... attributes) {
         super(attributes);
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
+        final PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
+        final String name = pathAddress.getLastElement().getValue();
 
-        ModelNode passivationStoreModel = CacheFactoryResourceDefinition.PASSIVATION_STORE.resolveModelAttribute(context,model);
+        ModelNode passivationStoreModel = LegacyCacheFactoryResourceDefinition.PASSIVATION_STORE.resolveModelAttribute(context,model);
         String passivationStore = passivationStoreModel.isDefined() ? passivationStoreModel.asString() : null;
 
-        final Collection<String> unwrappedAliasValues = CacheFactoryResourceDefinition.ALIASES.unwrap(context,model);
+        final Collection<String> unwrappedAliasValues = LegacyCacheFactoryResourceDefinition.ALIASES.unwrap(context,model);
         final Set<String> aliases = unwrappedAliasValues != null ? new HashSet<>(unwrappedAliasValues) : Collections.<String>emptySet();
         ServiceTarget target = context.getServiceTarget();
         // set up the CacheFactoryBuilder service
         ServiceConfigurator configurator = (passivationStore != null) ? new IdentityServiceConfigurator<>(new CacheFactoryBuilderServiceNameProvider(name).getServiceName(),
-                new DistributableCacheFactoryBuilderServiceNameProvider(passivationStore).getServiceName()) : new SimpleCacheFactoryBuilderServiceConfigurator<>(name);
+                new DistributableCacheFactoryBuilderServiceNameProvider(passivationStore).getServiceName()) : new SimpleCacheFactoryBuilderServiceConfigurator<>(pathAddress);
         ServiceBuilder<?> builder = configurator.build(target);
         // set up aliases to the CacheFactoryBuilder service
         for (String alias: aliases) {

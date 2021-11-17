@@ -21,13 +21,9 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
+import java.util.function.UnaryOperator;
+
+import org.jboss.as.ejb3.cache.simple.SimpleCacheFactoryBuilderServiceConfigurator;
 
 /**
  * Defines a CacheFactoryBuilder instance which, during deployment, is used to configure, build and install a CacheFactory for the SFSB being deployed.
@@ -36,39 +32,9 @@ import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class SimpleCacheFactoryResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
-
-    public static final String CACHE_FACTORY_CAPABILITY_NAME = "org.wildfly.ejb3.cache-factory";
-
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
-        SIMPLE_CACHE_FACTORY(CACHE_FACTORY_CAPABILITY_NAME)
-        ;
-        private final RuntimeCapability<Void> definition;
-
-        Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(CACHE_FACTORY_CAPABILITY_NAME, true, CacheFactoryBuilder.class)
-                    .build();
-        }
-
-        @Override
-        public RuntimeCapability<?> getDefinition() {
-            return this.definition;
-        }
-    }
+public class SimpleCacheFactoryResourceDefinition extends CacheFactoryResourceDefinition {
 
     public SimpleCacheFactoryResourceDefinition() {
-        super(PathElement.pathElement(EJB3SubsystemModel.SIMPLE_CACHE), EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.SIMPLE_CACHE));
-    }
-
-    @Override
-    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
-        ManagementResourceRegistration registration = parent.registerSubModel(this);
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addCapabilities(Capability.class)
-                ;
-        SimpleCacheFactoryResourceServiceHandler handler = new SimpleCacheFactoryResourceServiceHandler();
-        // register the child resource using its resource descriptor and resource service handler
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
-        return registration;
+        super(EJB3SubsystemModel.SIMPLE_CACHE_PATH, UnaryOperator.identity(), SimpleCacheFactoryBuilderServiceConfigurator::new);
     }
 }
