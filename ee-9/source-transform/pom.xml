@@ -62,6 +62,7 @@
         <module>weld/transactions</module>
         <module>observability/opentelemetry-api</module>
         <module>observability/opentelemetry</module>
+        <module>webservices/server-integration</module>
     </modules>
 
     <build>

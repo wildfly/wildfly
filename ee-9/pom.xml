@@ -82,9 +82,13 @@
         <version.org.jberet>2.0.2.Final</version.org.jberet>
         <version.org.jboss.invocation>1.7.0.Final</version.org.jboss.invocation>
         <version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>3.0.0</version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>
+        <version.org.jboss.spec.jakarta.xml.ws.jboss-jakarta-xml-ws-api_3.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.ws.jboss-jakarta-xml-ws-api_3.0_spec>
         <version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>
         <version.org.jboss.weld.weld>4.0.2.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>4.0.SP1</version.org.jboss.weld.weld-api>
+        <version.org.jboss.ws.jbossws-api>2.0.0.Final</version.org.jboss.ws.jbossws-api>
+        <version.org.jboss.ws.jbossws-common>4.0.0.Final</version.org.jboss.ws.jbossws-common>
+        <version.org.jboss.ws.jbossws-spi>4.0.0.Final</version.org.jboss.ws.jbossws-spi>
         <version.org.wildfly.security.elytron-web>2.0.0.Beta1</version.org.wildfly.security.elytron-web>
         <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta1</version.org.wildfly.security.jakarta.elytron-ee>
 
@@ -660,6 +664,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
+                <artifactId>jboss-jakarta-xml-ws-api_3.0_spec</artifactId>
+                <version>${version.org.jboss.spec.jakarta.xml.ws.jboss-jakarta-xml-ws-api_3.0_spec}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.spec.javax.ws.rs</groupId>
                 <artifactId>jboss-jaxrs-api_3.0_spec</artifactId>
                 <version>${version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec}</version>
@@ -742,6 +752,30 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws</groupId>
+                <artifactId>jbossws-api</artifactId>
+                <version>${version.org.jboss.ws.jbossws-api}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws</groupId>
+                <artifactId>jbossws-common</artifactId>
+                <version>${version.org.jboss.ws.jbossws-common}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.ws</groupId>
+                        <artifactId>jbossws-spi</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.ws</groupId>
+                <artifactId>jbossws-spi</artifactId>
+                <version>${version.org.jboss.ws.jbossws-spi}</version>
             </dependency>
 
             <dependency>
