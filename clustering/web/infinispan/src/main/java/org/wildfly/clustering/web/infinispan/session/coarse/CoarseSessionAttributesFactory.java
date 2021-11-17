@@ -23,7 +23,6 @@
 package org.wildfly.clustering.web.infinispan.session.coarse;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
@@ -64,7 +63,6 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
     private final Cache<SessionAttributesKey, V> cache;
     private final Cache<SessionAttributesKey, V> writeCache;
     private final Cache<SessionAttributesKey, V> silentCache;
-    private final Cache<SessionAttributesKey, V> findCache;
     private final Marshaller<Map<String, Object>, V> marshaller;
     private final CacheProperties properties;
     private final Immutability immutability;
@@ -79,7 +77,6 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
         this.cache = configuration.getCache();
         this.writeCache = configuration.getWriteOnlyCache();
         this.silentCache = configuration.getSilentWriteCache();
-        this.findCache = configuration.getReadForUpdateCache();
         this.marshaller = configuration.getMarshaller();
         this.immutability = configuration.getImmutability();
         this.properties = configuration.getCacheProperties();
@@ -111,7 +108,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
 
     @Override
     public Map<String, Object> createValue(String id, Void context) {
-        Map<String, Object> attributes = this.properties.isLockOnRead() ? new HashMap<>() : new ConcurrentHashMap<>();
+        Map<String, Object> attributes = new ConcurrentHashMap<>();
         try {
             V value = this.marshaller.write(attributes);
             this.writeCache.put(new SessionAttributesKey(id), value);
@@ -123,16 +120,16 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
 
     @Override
     public Map<String, Object> findValue(String id) {
-        return this.getValue(this.findCache, id, true);
+        return this.getValue(id, true);
     }
 
     @Override
     public Map<String, Object> tryValue(String id) {
-        return this.getValue(this.cache, id, false);
+        return this.getValue(id, false);
     }
 
-    private Map<String, Object> getValue(Cache<SessionAttributesKey, V> cache, String id, boolean purgeIfInvalid) {
-        V value = cache.get(new SessionAttributesKey(id));
+    private Map<String, Object> getValue(String id, boolean purgeIfInvalid) {
+        V value = this.cache.get(new SessionAttributesKey(id));
         if (value != null) {
             try {
                 return this.marshaller.read(value);
