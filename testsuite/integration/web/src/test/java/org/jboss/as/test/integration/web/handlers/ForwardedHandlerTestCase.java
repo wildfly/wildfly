@@ -30,6 +30,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -72,6 +73,7 @@ public class ForwardedHandlerTestCase {
     public static WebArchive deployWithoutUndertowHandlers() {
         return ShrinkWrap.create(WebArchive.class, FORWARDED_HANDLER_NO_UT_HANDLERS + ".war")
                 .addPackage(ForwardedHandlerTestCase.class.getPackage())
+                .addClass(TestSuiteEnvironment.class)
                 .addAsWebInfResource(new StringAsset(JBOSS_WEB_TEXT), "jboss-web.xml")
                 .addAsWebResource(new StringAsset("A file"), "index.html")
                 .addAsManifestResource(
@@ -84,6 +86,7 @@ public class ForwardedHandlerTestCase {
     public static WebArchive deploy_servlet() {
         return ShrinkWrap.create(WebArchive.class, FORWARDED_SERVLET + ".war")
                 .addClass(ForwardedTestHelperServlet.class)
+                .addClass(TestSuiteEnvironment.class)
                 .addAsWebInfResource(new StringAsset(FORWARDER_HANDLER_NAME), "undertow-handlers.conf")
                 .addAsWebResource(new StringAsset("A file"), "index.html");
     }
@@ -92,6 +95,7 @@ public class ForwardedHandlerTestCase {
     public static WebArchive deployWithoutUndertowHandlers_servlet() {
         return ShrinkWrap.create(WebArchive.class, FORWARDED_SERVLET_NO_UT_HANDLERS + ".war")
                 .addClass(ForwardedTestHelperServlet.class)
+                .addClass(TestSuiteEnvironment.class)
                 .addAsWebResource(new StringAsset("A file"), "index.html");
     }
 
@@ -140,7 +144,7 @@ public class ForwardedHandlerTestCase {
             final String by = "203.0.113.43:777";
             final InetAddress addr = InetAddress.getByName(url.getHost());
             final String localAddrName = addr.getHostName();
-            final String localAddr = addr.getHostAddress() + ":" + url.getPort();
+            final String localAddr = TestSuiteEnvironment.formatPossibleIpv6Address(addr.getHostAddress()) + ":" + url.getPort();
 
             HttpGet httpget = new HttpGet(url.toExternalForm());
             httpget.addHeader("Forwarded", "for=" + forAddr + ";proto=" + proto + ";by=" + by);

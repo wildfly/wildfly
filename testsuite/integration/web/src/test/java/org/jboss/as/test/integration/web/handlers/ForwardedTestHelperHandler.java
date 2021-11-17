@@ -3,6 +3,7 @@ package org.jboss.as.test.integration.web.handlers;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 
 
 /**
@@ -20,8 +21,14 @@ public class ForwardedTestHelperHandler implements HttpHandler {
 
 
     public void handleRequest(HttpServerExchange exchange) throws Exception {
+        String address = exchange.getDestinationAddress().getAddress().toString();
+        if(address.startsWith("/")) {
+            address = "/" + TestSuiteEnvironment.formatPossibleIpv6Address(address.substring(1));
+        } else {
+            address = TestSuiteEnvironment.formatPossibleIpv6Address(address);
+        }
         String value = exchange.getSourceAddress() + "|" + exchange.getRequestScheme() + "|"
-                + exchange.getDestinationAddress();
+                + address + ':' + exchange.getDestinationAddress().getPort();
 
         exchange.getResponseHeaders().put(new HttpString(FORWARD_TEST_HEADER), value);
         next.handleRequest(exchange);
