@@ -21,14 +21,16 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.ListAttribute.ALIASES;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONTAINER;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.ListAttribute.ALIASES;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -45,8 +47,10 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
 import org.infinispan.util.concurrent.CompletableFutures;
+import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.controller.ServiceValueCaptor;
 import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
@@ -81,6 +85,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     private final PathAddress address;
     private final String name;
     private final SupplierDependency<GlobalConfiguration> configuration;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(this.getClass()));
 
     private volatile Registrar<String> registrar;
     private volatile ServiceName[] names;
@@ -95,14 +100,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
 
     @Override
     public CacheContainer apply(EmbeddedCacheManager manager) {
-        PathAddress containerAddress = this.address;
-        Function<String, ServiceName> serviceNameFactory = new Function<String, ServiceName>() {
-            @Override
-            public ServiceName apply(String cacheName) {
-                return CacheResourceDefinition.Capability.CACHE.getServiceName(containerAddress.append(CacheRuntimeResourceDefinition.pathElement(cacheName)));
-            }
-        };
-        return new DefaultCacheContainer(manager, this.registry, serviceNameFactory);
+        return new DefaultCacheContainer(manager);
     }
 
     @Override
@@ -131,6 +129,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         manager.removeListener(this);
         manager.stop();
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache container stopped", this.name);
+        this.executor.shutdown();
     }
 
     @Override
@@ -153,17 +152,34 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
     }
 
+    private ServiceName createCacheServiceName(String cacheName) {
+        return CacheResourceDefinition.Capability.CACHE.getServiceName(this.address.append(CacheRuntimeResourceDefinition.pathElement(cacheName)));
+    }
+
     @CacheStarted
     public CompletionStage<Void> cacheStarted(CacheStartedEvent event) {
         String cacheName = event.getCacheName();
         InfinispanLogger.ROOT_LOGGER.cacheStarted(cacheName, this.name);
         this.registrations.put(cacheName, this.registrar.register(cacheName));
+        ServiceValueCaptor<Cache<?, ?>> captor = this.registry.add(this.createCacheServiceName(cacheName));
+        // Use getCacheAsync(), once available
+        this.executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                captor.accept(event.getCacheManager().getCache(cacheName));
+            }
+        });
         return CompletableFutures.completedNull();
     }
 
     @CacheStopped
     public CompletionStage<Void> cacheStopped(CacheStoppedEvent event) {
         String cacheName = event.getCacheName();
+        ServiceValueCaptor<Cache<?, ?>> captor = this.registry.remove(this.createCacheServiceName(cacheName));
+        if (captor != null) {
+            captor.accept(null);
+        }
+        this.registry.remove(this.createCacheServiceName(cacheName)).accept(null);
         try (Registration registration = this.registrations.remove(cacheName)) {
             InfinispanLogger.ROOT_LOGGER.cacheStopped(cacheName, this.name);
         }
