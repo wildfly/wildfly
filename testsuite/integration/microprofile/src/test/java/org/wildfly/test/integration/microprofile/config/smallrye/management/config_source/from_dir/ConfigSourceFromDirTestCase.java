@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,7 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.microprofile.config.smallrye.management.config_source_provider;
+package org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir;
+
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.SetupTask.A;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.SetupTask.B;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.B_OVERRIDES_A;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.FROM_A;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.FROM_B;
 
 import java.net.URL;
 
@@ -43,7 +49,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.config.smallrye.AbstractMicroProfileConfigTestCase;
 import org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils;
-import org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_class.CustomConfigSource;
 
 /**
  * Load a ConfigSource from a class (in a module).
@@ -53,11 +58,11 @@ import org.wildfly.test.integration.microprofile.config.smallrye.management.conf
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(SetupTask.class)
-public class ConfigSourceProviderFromClassTestCase extends AbstractMicroProfileConfigTestCase {
+public class ConfigSourceFromDirTestCase extends AbstractMicroProfileConfigTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "ConfigSourceProviderFromClassTestCase.war")
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "ConfigSourceFromDirTestCase.war")
                 .addClasses(TestApplication.class, TestApplication.Resource.class, AbstractMicroProfileConfigTestCase.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         return war;
@@ -69,10 +74,12 @@ public class ConfigSourceProviderFromClassTestCase extends AbstractMicroProfileC
     @Test
     public void testGetWithConfigProperties() throws Exception {
         try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
-            HttpResponse response = client.execute(new HttpGet(url + "custom-config-source-provider/test"));
+            HttpResponse response = client.execute(new HttpGet(url + "custom-config-source/test"));
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
             String text = EntityUtils.toString(response.getEntity());
-            AssertUtils.assertTextContainsProperty(text, CustomConfigSource.PROP_NAME, CustomConfigSource.PROP_VALUE);
+            AssertUtils.assertTextContainsProperty(text, FROM_A, A);
+            AssertUtils.assertTextContainsProperty(text, FROM_B, B);
+            AssertUtils.assertTextContainsProperty(text, B_OVERRIDES_A, SetupTask.OVERRIDDEN_B);
         }
     }
 }

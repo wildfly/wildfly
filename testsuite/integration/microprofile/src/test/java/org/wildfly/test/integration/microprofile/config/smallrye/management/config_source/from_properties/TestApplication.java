@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.microprofile.config.smallrye.management.config_source_provider;
+package org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_properties;
 
 import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;
@@ -31,25 +31,38 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_class.CustomConfigSource;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
-@ApplicationPath("/custom-config-source-provider")
+@ApplicationPath("/custom-config-source")
 public class TestApplication extends Application {
+    static final String FROM_A = "from-a";
+    static final String FROM_B = "from-b";
+    static final String B_OVERRIDES_A = "b-overrides-a";
 
     @Path("/test")
     public static class Resource {
+
         @Inject
-        @ConfigProperty(name = CustomConfigSource.PROP_NAME)
-        String prop;
+        @ConfigProperty(name = FROM_A)
+        String fromA;
+
+        @Inject
+        @ConfigProperty(name = FROM_B)
+        String fromB;
+
+        @Inject
+        @ConfigProperty(name = B_OVERRIDES_A)
+        String bOverridesA;
 
         @GET
         @Produces("text/plain")
         public Response doGet() {
             StringBuilder text = new StringBuilder();
-            text.append(CustomConfigSource.PROP_NAME + " = " + prop + "\n");
+            text.append(FROM_A + " = " + fromA + "\n");
+            text.append(FROM_B + " = " + fromB + "\n");
+            text.append(B_OVERRIDES_A    + " = " + bOverridesA + "\n");
             return Response.ok(text).build();
         }
     }
