@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -181,16 +182,8 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
 
         managedReference = dataSourceInjectedValue.getValue().getReference();
         dataSource = (DataSource) managedReference.getInstance();
-        final InputStream stream = DatabaseTimerPersistence.class.getClassLoader().getResourceAsStream("timer-sql.properties");
-        sql = new Properties();
-        try {
-            sql.load(stream);
-        } catch (IOException e) {
-            throw new StartException(e);
-        } finally {
-            safeClose(stream);
-        }
         investigateDialect();
+        loadSqlProperties();
         checkDatabase();
         refreshTask = new RefreshTask();
         if (refreshInterval > 0) {
@@ -205,6 +198,50 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         managedReference.release();
         managedReference = null;
         dataSource = null;
+    }
+
+    /**
+     * Loads timer-sql.properties into a {@code Properties}, and adjusts these
+     * property entries based on the current database dialect.
+     * <p>
+     * If an entry key ends with a database dialect suffix for the current database dialect,
+     * its value is copied to the entry with the corresponding generic key, and
+     * this entry is removed.
+     * <p>
+     * If an entry key ends with a database dialect suffix different than the current one,
+     * it is removed.
+     *
+     * @throws StartException if IOException when loading timer-sql.properties
+     */
+    private void loadSqlProperties() throws StartException {
+        final InputStream stream = DatabaseTimerPersistence.class.getClassLoader().getResourceAsStream("timer-sql.properties");
+        sql = new Properties();
+        try {
+            sql.load(stream);
+        } catch (IOException e) {
+            throw new StartException(e);
+        } finally {
+            safeClose(stream);
+        }
+        final Iterator<Map.Entry<Object, Object>> iterator = sql.entrySet().iterator();
+        while (iterator.hasNext()) {
+            final Map.Entry<Object, Object> next = iterator.next();
+            final String key = (String) next.getKey();
+            final int dot = key.lastIndexOf('.');
+
+            // this may be an entry for current database, or other database dialect
+            if (dot > 0) {
+                final String keySuffix = key.substring(dot + 1);
+
+                // this is an entry for the current database dialect,
+                // copy its value to the corresponding generic entry
+                if (keySuffix.equals(database)) {
+                    final String keyWithoutSuffix = key.substring(0, dot);
+                    sql.setProperty(keyWithoutSuffix, (String) next.getValue());
+                }
+                iterator.remove();
+            }
+        }
     }
 
     /**
@@ -283,7 +320,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
      * and create the timer table if necessary.
      */
     private void checkDatabase() {
-        String loadTimer = sql(LOAD_TIMER);
+        String loadTimer = sql.getProperty(LOAD_TIMER);
         Connection connection = null;
         Statement statement = null;
         PreparedStatement preparedStatement = null;
@@ -303,7 +340,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             //the query failed, assume it is because the table does not exist
             if (connection != null) {
                 try {
-                    String createTable = sql(CREATE_TABLE);
+                    String createTable = sql.getProperty(CREATE_TABLE);
                     String[] statements = createTable.split(";");
                     for (final String sql : statements) {
                         try {
@@ -327,16 +364,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         }
     }
 
-    private String sql(final String key) {
-        if (database != null) {
-            String result = sql.getProperty(key + "." + database);
-            if (result != null) {
-                return result;
-            }
-        }
-        return sql.getProperty(key);
-    }
-
     /**
      * Loads a timer from database by its id and timed object id.
      *
@@ -346,7 +373,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
      * @return the timer loaded from database; null if nothing can be loaded
      */
     public TimerImpl loadTimer(final String timedObjectId, final String timerId, final TimerServiceImpl timerService) {
-        String loadTimer = sql(LOAD_TIMER);
+        String loadTimer = sql.getProperty(LOAD_TIMER);
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -384,7 +411,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             }
         }
 
-        String createTimer = sql(CREATE_TIMER);
+        String createTimer = sql.getProperty(CREATE_TIMER);
         Connection connection = null;
         PreparedStatement statement = null;
         try {
@@ -417,7 +444,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             connection = dataSource.getConnection();
             if (timerEntity.getState() == TimerState.CANCELED ||
                     timerEntity.getState() == TimerState.EXPIRED) {
-                String deleteTimer = sql(DELETE_TIMER);
+                String deleteTimer = sql.getProperty(DELETE_TIMER);
                 statement = connection.prepareStatement(deleteTimer);
                 statement.setString(1, timerEntity.getTimedObjectId());
                 statement.setString(2, timerEntity.getId());
@@ -430,7 +457,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 synchronized (this) {
                     knownTimerIds.get(timerEntity.getTimedObjectId()).add(timerEntity.getId());
                 }
-                String updateTimer = sql(UPDATE_TIMER);
+                String updateTimer = sql.getProperty(UPDATE_TIMER);
                 statement = connection.prepareStatement(updateTimer);
                 statement.setTimestamp(1, timestamp(timerEntity.getNextExpiration()));
                 statement.setTimestamp(2, timestamp(timerEntity.getPreviousRun()));
@@ -458,7 +485,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             //timers never execute on this node
             return false;
         }
-        String loadTimer = sql(UPDATE_RUNNING);
+        String loadTimer = sql.getProperty(UPDATE_RUNNING);
         Connection connection = null;
         PreparedStatement statement = null;
         try {
@@ -526,7 +553,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             EjbLogger.EJB3_TIMER_LOGGER.timerNotDeployed(timedObjectId);
             return Collections.emptyList();
         }
-        String loadTimer = sql(LOAD_ALL_TIMERS);
+        String loadTimer = sql.getProperty(LOAD_ALL_TIMERS);
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -545,7 +572,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                     if (timerImpl != null) {
                         timers.add(timerImpl);
                     } else {
-                        final String deleteTimer = sql(DELETE_TIMER);
+                        final String deleteTimer = sql.getProperty(DELETE_TIMER);
                         try (PreparedStatement deleteStatement = connection.prepareStatement(deleteTimer)) {
                             deleteStatement.setString(1, resultSet.getString(2));
                             deleteStatement.setString(2, timerId);
@@ -758,7 +785,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
      * @return the timer info from database; null if {@code SQLException}
      */
     public Serializable getPersistedTimerInfo(final TimerImpl timer) {
-        String getTimerInfo = sql(GET_TIMER_INFO);
+        String getTimerInfo = sql.getProperty(GET_TIMER_INFO);
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -923,7 +950,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                         synchronized (DatabaseTimerPersistence.this) {
                             existing = new HashSet<>(knownTimerIds.get(timedObjectId));
                         }
-                        String loadTimer = sql(LOAD_ALL_TIMERS);
+                        String loadTimer = sql.getProperty(LOAD_ALL_TIMERS);
                         Connection connection = null;
                         PreparedStatement statement = null;
                         ResultSet resultSet = null;
