@@ -46,8 +46,6 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.as.clustering.controller.ServiceValueRegistry;
-import org.jboss.msc.service.ServiceName;
 import org.junit.After;
 import org.junit.Test;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
@@ -59,8 +57,7 @@ import org.wildfly.clustering.infinispan.spi.CacheContainer;
  */
 public class DefaultCacheContainerTestCase {
     private final EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
-    private final ServiceValueRegistry<Cache<?, ?>> registry = mock(ServiceValueRegistry.class);
-    private final CacheContainer subject = new DefaultCacheContainer(this.manager, this.registry, ServiceName::parse);
+    private final CacheContainer subject = new DefaultCacheContainer(this.manager);
 
     @After
     public void cleanup() {
@@ -182,7 +179,6 @@ public class DefaultCacheContainerTestCase {
         this.subject.undefineConfiguration("test");
 
         verify(this.manager).undefineConfiguration("test");
-        verify(this.registry).remove(ServiceName.parse("test"));
     }
 
     @Test
