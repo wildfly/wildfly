@@ -441,7 +441,7 @@
         <version.org.jboss.mod_cluster>1.4.3.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>5.12.1.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.5.Final</version.org.jboss.openjdk-orb>
-        <version.org.jboss.resteasy>4.7.2.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>4.7.3.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
