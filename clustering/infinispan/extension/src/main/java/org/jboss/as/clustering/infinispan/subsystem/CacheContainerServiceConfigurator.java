@@ -179,7 +179,6 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         if (captor != null) {
             captor.accept(null);
         }
-        this.registry.remove(this.createCacheServiceName(cacheName)).accept(null);
         try (Registration registration = this.registrations.remove(cacheName)) {
             InfinispanLogger.ROOT_LOGGER.cacheStopped(cacheName, this.name);
         }
