@@ -45,7 +45,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -73,7 +72,6 @@ public class MPScriptTestCase {
 
     @Before
     public void check() {
-        AssumeTestGroupUtil.assumeElytronProfileEnabled();
         Assume.assumeTrue(String.format("Configuration file %s not found. Skipping these tests.", SCRIPT_FILE), Files.exists(SCRIPT_FILE));
     }
 
