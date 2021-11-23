@@ -168,9 +168,9 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 24, value = "Failed to persist session attribute %s with value %s for session %s")
     void failedToPersistSessionAttribute(String attributeName, Object value, String sessionID, @Cause Exception e);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 25, value = "Failed to register policy context handler for key %s")
-    void failedToRegisterPolicyContextHandler(String key, @Cause Exception e);
+    //@LogMessage(level = ERROR)
+    //@Message(id = 25, value = "Failed to register policy context handler for key %s")
+    //void failedToRegisterPolicyContextHandler(String key, @Cause Exception e);
 
     // @Message(id = 26, value = "Unknown handler '%s' encountered")
     // XMLStreamException unknownHandler(String name, @Param Location location);
@@ -435,4 +435,8 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id=108, value = "The deployment is configured to use legacy security which is no longer available.")
     DeploymentUnitProcessingException deploymentConfiguredForLegacySecurity();
+
+    @Message(id = 109, value = "The deployment is configured to use legacy security which is no longer supported.")
+    StartException legacySecurityUnsupported();
+
 }

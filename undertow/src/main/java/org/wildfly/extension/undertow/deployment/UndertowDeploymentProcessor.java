@@ -66,7 +66,6 @@ import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.deployers.StartupCountdown;
 import org.jboss.as.ee.security.JaccService;
-import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
@@ -322,7 +321,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final Supplier<UndertowService> usSupplier = udisBuilder.requires(UndertowService.UNDERTOW);
         final Supplier<SessionManagerFactory> smfSupplier;
         final Supplier<SessionIdentifierCodec> sicSupplier;
-        Supplier<SecurityDomainContext> sdcSupplier = null;
         final Supplier<ServletContainerService> scsSupplier = udisBuilder.requires(UndertowService.SERVLET_CONTAINER.append(servletContainerName));
         final Supplier<ComponentRegistry> crSupplier = componentRegistryExists ? udisBuilder.requires(ComponentRegistry.serviceName(deploymentUnit)) : new Supplier<ComponentRegistry>() {
             @Override
@@ -444,7 +442,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
                 .setTempDir(warMetaData.getTempDir())
                 .setExternalResources(deploymentUnit.getAttachmentList(UndertowAttachments.EXTERNAL_RESOURCES))
                 .setAllowSuspendedRequests(deploymentUnit.getAttachmentList(UndertowAttachments.ALLOW_REQUEST_WHEN_SUSPENDED))
-                .createUndertowDeploymentInfoService(diConsumer, usSupplier, smfSupplier, sicSupplier, sdcSupplier,
+                .createUndertowDeploymentInfoService(diConsumer, usSupplier, smfSupplier, sicSupplier,
                         scsSupplier, crSupplier, hostSupplier, cpSupplier, scSupplier, serverEnvSupplier, sdSupplier, mechanismFactorySupplier, bfSupplier);
         udisBuilder.setInstance(undertowDeploymentInfoService);
 
