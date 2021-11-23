@@ -103,11 +103,16 @@ public class MetricsFromWildFlyManagementModelTestCase {
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
 
+    @BeforeClass
+    public static void skipNonPreview() {
+        AssumeTestGroupUtil.assumeNotWildFlyPreview();
+    }
+
     @Test
     @InSequence(1)
     public void testMetricsBeforeDeployment() throws Exception {
         // the request-count from the deployment must not exist
-        checkMetricExistence( "deployment=\"MetricsFromWildFlyManagementModelTestCase.war\"", false);
+        checkMetricExistence("deployment=\"MetricsFromWildFlyManagementModelTestCase.war\"", false);
 
         // test the request-count metric on the deployment's undertow resources
         checkRequestCount(0, false);
@@ -116,6 +121,7 @@ public class MetricsFromWildFlyManagementModelTestCase {
         deployer.deploy("MetricsFromWildFlyManagementModelTestCase");
 
     }
+
     @Test
     @InSequence(2)
     @OperateOnDeployment("MetricsFromWildFlyManagementModelTestCase")
@@ -141,7 +147,7 @@ public class MetricsFromWildFlyManagementModelTestCase {
         checkRequestCount(3, false);
 
         // the request-count from the deployment must no longer exist
-        checkMetricExistence( "deployment=\"MetricsFromWildFlyManagementModelTestCase.war\"", false);
+        checkMetricExistence("deployment=\"MetricsFromWildFlyManagementModelTestCase.war\"", false);
     }
 
     private static String performCall(URL url) throws Exception {
