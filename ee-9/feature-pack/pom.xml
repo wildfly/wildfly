@@ -428,7 +428,7 @@
                                 <exclude>com.fasterxml.jackson.jaxrs:jackson-jaxrs-base\z</exclude>
                                 <exclude>com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider\z</exclude>
                                 <exclude>com.fasterxml.jackson.module:jackson-module-jaxb-annotations\z</exclude>
-								<!-- end JPMS or ISGi metadata excludes -->
+                                <!-- end JPMS or OSGi metadata excludes -->
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
@@ -736,24 +736,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.taglibs</groupId>
-            <artifactId>taglibs-standard-spec</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.taglibs</groupId>
-            <artifactId>taglibs-standard-impl</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.taglibs</groupId>
-            <artifactId>taglibs-standard-compat</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
             <groupId>jakarta.json.bind</groupId>
             <artifactId>jakarta.json.bind-api</artifactId>
             <scope>provided</scope>
@@ -780,6 +762,12 @@
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.servlet.jsp.jstl</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -997,6 +985,12 @@
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-xjc</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl</artifactId>
             <scope>provided</scope>
         </dependency>
 
