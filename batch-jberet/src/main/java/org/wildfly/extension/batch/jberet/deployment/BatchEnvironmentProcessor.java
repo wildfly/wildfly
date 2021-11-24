@@ -67,12 +67,10 @@ import org.wildfly.extension.requestcontroller.RequestController;
 public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
     private final boolean rcPresent;
-    private final boolean legacySecurityPresent;
     private final ContextClassLoaderJobOperatorContextSelector selector;
 
-    public BatchEnvironmentProcessor(final boolean rcPresent, final boolean legacySecurityPresent, final ContextClassLoaderJobOperatorContextSelector selector) {
+    public BatchEnvironmentProcessor(final boolean rcPresent, final ContextClassLoaderJobOperatorContextSelector selector) {
         this.rcPresent = rcPresent;
-        this.legacySecurityPresent = legacySecurityPresent;
         this.selector = selector;
     }
 
@@ -127,7 +125,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             // Create the batch environment
             final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
             final NamespaceContextSelector namespaceContextSelector = eeModuleDescription == null ? null : eeModuleDescription.getNamespaceContextSelector();
-            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, jobXmlResolver, deploymentName, namespaceContextSelector, legacySecurityPresent);
+            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, jobXmlResolver, deploymentName, namespaceContextSelector);
             final ServiceBuilder<SecurityAwareBatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit), service);
 
             // Add a dependency to the thread-pool
