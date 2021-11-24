@@ -202,7 +202,7 @@
         <!-- Surefire args -->
         <surefire.extra.args></surefire.extra.args>
         <surefire.jpda.args></surefire.jpda.args>
-        <surefire.non-modular.system.args>-ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=512m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.non-modular.system.args>
+        <surefire.non-modular.system.args>-Djava.security.manager=allow -ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=512m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.non-modular.system.args>
         <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} ${surefire.non-modular.system.args}</surefire.system.args>
 
         <!-- Galleon feature pack to use in testsuite provisioning executions that provide content
