@@ -22,6 +22,7 @@
 
 package org.wildfly.iiop.openjdk;
 
+import static org.wildfly.iiop.openjdk.logging.IIOPLogger.ROOT_LOGGER;
 import static org.wildfly.iiop.openjdk.Capabilities.IIOP_CAPABILITY;
 import static org.wildfly.iiop.openjdk.Capabilities.LEGACY_SECURITY;
 
@@ -70,7 +71,6 @@ import org.wildfly.iiop.openjdk.logging.IIOPLogger;
 import org.wildfly.iiop.openjdk.naming.jndi.JBossCNCtxFactory;
 import org.wildfly.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
 import org.wildfly.iiop.openjdk.security.NoSSLSocketFactory;
-import org.wildfly.iiop.openjdk.security.LegacySSLSocketFactory;
 import org.wildfly.iiop.openjdk.security.SSLSocketFactory;
 import org.wildfly.iiop.openjdk.service.CorbaNamingService;
 import org.wildfly.iiop.openjdk.service.CorbaORBService;
@@ -379,10 +379,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, SSLSocketFactory.class.getName());
             }
             else {
-                // if the config only has a legacy JSSE domain reference, install the LegacySSLSocketFactory.
-                final String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
-                LegacySSLSocketFactory.setSecurityDomain(securityDomain);
-                props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, LegacySSLSocketFactory.class.getName());
+                throw ROOT_LOGGER.legacySecurityUnsupported();
             }
             sslConfigured = true;
         } else {
