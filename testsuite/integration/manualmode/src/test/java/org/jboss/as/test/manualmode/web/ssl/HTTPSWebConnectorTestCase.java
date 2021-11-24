@@ -66,7 +66,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
-import org.jboss.as.test.integration.security.common.AddRoleLoginModule;
+//import org.jboss.as.test.integration.security.common.AddRoleLoginModule;
 import org.jboss.as.test.integration.security.common.SSLTruststoreUtil;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.SecurityTraceLoggingServerSetupTask;
@@ -159,7 +159,8 @@ public class HTTPSWebConnectorTestCase {
     public static WebArchive deployment() {
         LOGGER.trace("Start deployment " + APP_CONTEXT);
         final WebArchive war = ShrinkWrap.create(WebArchive.class, APP_CONTEXT + ".war");
-        war.addClasses(AddRoleLoginModule.class, SimpleServlet.class, SimpleSecuredServlet.class,
+        // AddRoleLoginModule.class
+        war.addClasses(SimpleServlet.class, SimpleSecuredServlet.class,
                 PrincipalPrintingServlet.class);
         war.addAsWebInfResource(HTTPSWebConnectorTestCase.class.getPackage(), "web.xml", "web.xml");
         war.addAsWebInfResource(HTTPSWebConnectorTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
@@ -534,7 +535,7 @@ public class HTTPSWebConnectorTestCase {
                             new SecurityModule.Builder().name(BaseCertLoginModule.class.getName())
                                     .putOption("securityDomain", SECURITY_DOMAIN_JSSE)
                                     .putOption("password-stacking", "useFirstPass").build(),
-                            new SecurityModule.Builder().name(AddRoleLoginModule.class.getName()).flag("optional")
+                            new SecurityModule.Builder().name("REMOVED").flag("optional") // AddRoleLoginModule.class.getName()
                                     .putOption("password-stacking", "useFirstPass")
                                     .putOption("roleName", SimpleSecuredServlet.ALLOWED_ROLE).build()) //
                     .build();
