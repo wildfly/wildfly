@@ -34,7 +34,6 @@ import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.security.SecurityConstants;
 import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Constants;
 
@@ -45,6 +44,8 @@ import org.wildfly.extension.undertow.Constants;
  */
 public class SecurityDomainResolvingProcessor implements DeploymentUnitProcessor {
 
+    private static final String JAAS_CONTEXT_ROOT = "java:jboss/jaas/";
+    private static final String JASPI_CONTEXT_ROOT = "java:jboss/jbsx/";
     private static final String LEGACY_JAAS_CONTEXT_ROOT = "java:/jaas/";
 
     private final String defaultSecurityDomain;
@@ -123,10 +124,10 @@ public class SecurityDomainResolvingProcessor implements DeploymentUnitProcessor
         String result = null;
         if (securityDomain != null)
         {
-            if (securityDomain.startsWith(SecurityConstants.JAAS_CONTEXT_ROOT))
-                result = securityDomain.substring(SecurityConstants.JAAS_CONTEXT_ROOT.length());
-            else if (securityDomain.startsWith(SecurityConstants.JASPI_CONTEXT_ROOT))
-                result = securityDomain.substring(SecurityConstants.JASPI_CONTEXT_ROOT.length());
+            if (securityDomain.startsWith(JAAS_CONTEXT_ROOT))
+                result = securityDomain.substring(JAAS_CONTEXT_ROOT.length());
+            else if (securityDomain.startsWith(JASPI_CONTEXT_ROOT))
+                result = securityDomain.substring(JASPI_CONTEXT_ROOT.length());
             else if (securityDomain.startsWith(LEGACY_JAAS_CONTEXT_ROOT))
                 result = securityDomain.substring(LEGACY_JAAS_CONTEXT_ROOT.length());
             else

@@ -67,7 +67,6 @@
         <module name="org.jboss.as.connector"/>
         <!-- Need access to org.jboss.as.core.security.ServerSecurityManager -->
         <module name="org.jboss.as.core-security"/>
-        <module name="org.jboss.as.security-plugins"/>
         <!-- Need access to org.jboss.as.domain.management.SecurityRealm for authentication of EJB cluster nodes
          in EJB client context-->
         <module name="org.jboss.as.domain-management"/>

@@ -22,23 +22,16 @@
 
 package org.jboss.as.ejb3.component.interceptors;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.concurrent.Callable;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.deployers.StartupCountdown;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.session.SessionBeanComponent;
-import org.jboss.as.security.remoting.RemoteConnection;
-import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.security.SecurityContext;
-import org.jboss.security.SecurityContextAssociation;
-import org.jboss.security.plugins.JBossSecurityContext;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -84,15 +77,12 @@ public final class AsyncFutureInterceptorFactory implements InterceptorFactory {
                     final StartupCountdown.Frame frame = StartupCountdown.current();
                     final SecurityIdentity currentIdentity = securityDomain == null ? null : securityDomain.getCurrentSecurityIdentity();
 
-                    final RemoteConnection remoteConnection = getConnection();
                     Callable<Object> invocationTask = () -> {
-                        setConnection(remoteConnection);
                         StartupCountdown.restore(frame);
                         try {
                             return asyncInterceptorContext.proceed();
                         } finally {
                             StartupCountdown.restore(null);
-                            clearConnection();
                         }
                     };
                     final AsyncInvocationTask task = new AsyncInvocationTask(flag) {
@@ -120,43 +110,17 @@ public final class AsyncFutureInterceptorFactory implements InterceptorFactory {
                     final InterceptorContext asyncInterceptorContext = context.clone();
                     asyncInterceptorContext.putPrivateData(InvocationType.class, InvocationType.ASYNC);
                     final CancellationFlag flag = new CancellationFlag();
-                    final SecurityContext securityContext;
-                    if (WildFlySecurityManager.isChecking()) {
-                        securityContext = AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
-                            @Override
-                            public SecurityContext run() {
-                                return SecurityContextAssociation.getSecurityContext();
-                            }
-                        });
-                    } else {
-                        securityContext = SecurityContextAssociation.getSecurityContext();
-                    }
-                    // clone the original security context so that changes to the original security context in a separate (caller/unrelated) thread doesn't affect
-                    // the security context associated with the async invocation thread
-                    final SecurityContext clonedSecurityContext;
-                    if (securityContext instanceof JBossSecurityContext) {
-                        clonedSecurityContext = (SecurityContext) ((JBossSecurityContext) securityContext).clone();
-                    } else {
-                        // we can't do anything if it isn't a JBossSecurityContext so just use the original one
-                        clonedSecurityContext = securityContext;
-                    }
-                    final RemoteConnection remoteConnection = getConnection();
+
+
                     final StartupCountdown.Frame frame = StartupCountdown.current();
                     final AsyncInvocationTask task = new AsyncInvocationTask(flag) {
                         @Override
                         protected Object runInvocation() throws Exception {
-                            setSecurityContextOnAssociation(clonedSecurityContext);
-                            setConnection(remoteConnection);
                             StartupCountdown.restore(frame);
                             try {
                                 return asyncInterceptorContext.proceed();
                             } finally {
                                 StartupCountdown.restore(null);
-                                try {
-                                    clearSecurityContextOnAssociation();
-                                } finally {
-                                    clearConnection();
-                                }
                             }
                         }
                     };
@@ -165,41 +129,6 @@ public final class AsyncFutureInterceptorFactory implements InterceptorFactory {
                     return execute(component, task);
                 }
             };
-        }
-    }
-
-    private void setConnection(final RemoteConnection remoteConnection) {
-        if (WildFlySecurityManager.isChecking()) {
-            WildFlySecurityManager.doUnchecked(new PrivilegedAction<Void>() {
-                @Override
-                public Void run() {
-                    RemotingContext.setConnection(remoteConnection);
-                    return null;
-                }
-            });
-        } else {
-            RemotingContext.setConnection(remoteConnection);
-        }
-    }
-
-    private void clearConnection() {
-        if (WildFlySecurityManager.isChecking()) {
-            WildFlySecurityManager.doUnchecked(new PrivilegedAction<Void>() {
-                @Override
-                public Void run() {
-                    RemotingContext.clear();
-                    return null;
-                }
-            });
-        } else {
-            RemotingContext.clear();
-        }
-    }
-    private RemoteConnection getConnection() {
-        if(WildFlySecurityManager.isChecking()) {
-            return WildFlySecurityManager.doUnchecked((PrivilegedAction<RemoteConnection>) () -> RemotingContext.getRemoteConnection());
-        } else {
-            return RemotingContext.getRemoteConnection();
         }
     }
 
@@ -218,25 +147,5 @@ public final class AsyncFutureInterceptorFactory implements InterceptorFactory {
         return task;
     }
 
-    private static void setSecurityContextOnAssociation(final SecurityContext sc) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
 
-            @Override
-            public Void run() {
-                SecurityContextAssociation.setSecurityContext(sc);
-                return null;
-            }
-        });
-    }
-
-    private static void clearSecurityContextOnAssociation() {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-            @Override
-            public Void run() {
-                SecurityContextAssociation.clearSecurityContext();
-                return null;
-            }
-        });
-    }
 }

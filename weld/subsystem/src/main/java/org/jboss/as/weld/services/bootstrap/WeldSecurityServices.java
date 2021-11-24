@@ -27,7 +27,6 @@ import java.security.PrivilegedAction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.weld.ServiceNames;
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.msc.Service;
@@ -76,16 +75,7 @@ public class WeldSecurityServices implements Service, SecurityServices {
             return elytronDomain.getCurrentSecurityIdentity().getPrincipal();
         }
 
-        // Use 'Object' initially to avoid loading ServerSecurityManager (which may not be present)
-        // until we know for sure we need it.
-        final Object securityManager = securityManagerSupplier != null ? securityManagerSupplier.get() : null;
-        if (securityManager == null)
-            throw WeldLogger.ROOT_LOGGER.securityNotEnabled();
-        if (WildFlySecurityManager.isChecking()) {
-            return AccessController.doPrivileged((PrivilegedAction<Principal>) ((ServerSecurityManager) securityManager)::getCallerPrincipal);
-        } else {
-            return ((ServerSecurityManager)securityManager).getCallerPrincipal();
-        }
+        throw WeldLogger.ROOT_LOGGER.securityNotEnabled();
     }
 
     @Override
