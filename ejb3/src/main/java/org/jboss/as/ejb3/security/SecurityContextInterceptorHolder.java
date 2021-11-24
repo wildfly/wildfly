@@ -24,15 +24,12 @@ package org.jboss.as.ejb3.security;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.core.security.ServerSecurityManager;
-
 /**
  * A simple transfer object
  *
  * @author anil saldhana
  */
 class SecurityContextInterceptorHolder {
-    ServerSecurityManager securityManager;
     String securityDomain, runAs, runAsPrincipal;
     String policyContextID;
     Set<String> extraRoles;
@@ -40,11 +37,6 @@ class SecurityContextInterceptorHolder {
     boolean skipAuthentication;
 
     public SecurityContextInterceptorHolder() {
-    }
-
-    public SecurityContextInterceptorHolder setSecurityManager(ServerSecurityManager ssm) {
-        this.securityManager = ssm;
-        return this;
     }
 
     public SecurityContextInterceptorHolder setSecurityDomain(String sd) {
