@@ -1057,6 +1057,8 @@
             </activation>
             <properties>
                 <modular.jdk.testsuite.args>${modular.jdk.args}
+                    --add-opens=java.base/javax.crypto=ALL-UNNAMED
+                    --add-opens=java.base/sun.security.validator=ALL-UNNAMED
                     --add-exports=java.base/sun.security.validator=ALL-UNNAMED
                     --add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED
                     --add-exports=java.base/com.sun.crypto.provider=ALL-UNNAMED
