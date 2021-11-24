@@ -3406,17 +3406,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.security</groupId>
-      <artifactId>jbossxacml</artifactId>
-      <licenses>
-        <license>
-          <name>BSD 3-Clause No Nuclear License</name>
-          <url>https://spdx.org/licenses/BSD-3-Clause-No-Nuclear-License.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.weld</groupId>
       <artifactId>weld-api</artifactId>
       <licenses>
