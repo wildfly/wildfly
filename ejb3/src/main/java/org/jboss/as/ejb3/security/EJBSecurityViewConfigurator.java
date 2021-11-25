@@ -158,8 +158,8 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         if (elytronSecurityDomain) {
             final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = ejbComponentDescription.getElytronInterceptorFactories(contextID, ejbComponentDescription.requiresJacc(), true);
             elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> viewConfiguration.addViewInterceptor(elytronInterceptorFactory, priority));
-        } else {
-            viewConfiguration.addViewInterceptor(new SecurityContextInterceptorFactory(securityRequired, true, contextID), InterceptorOrder.View.SECURITY_CONTEXT);
+        } else if (securityRequired) {
+            throw ROOT_LOGGER.legacySecurityUnsupported();
         }
         // now add the authorization interceptor if the bean has *any* security metadata applicable
         if (securityRequired) {
@@ -178,8 +178,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
                     if (elytronSecurityDomain) {
                         viewConfiguration.addViewInterceptor(viewMethod, new ImmediateInterceptorFactory(RolesAllowedInterceptor.DENY_ALL), InterceptorOrder.View.EJB_SECURITY_AUTHORIZATION_INTERCEPTOR);
                     } else {
-                        final Interceptor authorizationInterceptor = new AuthorizationInterceptor(EJBMethodSecurityAttribute.denyAll(), viewClassName, viewMethod, contextID);
-                        viewConfiguration.addViewInterceptor(viewMethod, new ImmediateInterceptorFactory(authorizationInterceptor), InterceptorOrder.View.EJB_SECURITY_AUTHORIZATION_INTERCEPTOR);
+                        throw ROOT_LOGGER.legacySecurityUnsupported();
                     }
                 }
             }
@@ -260,7 +259,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
                     }
                 }
             } else {
-                authorizationInterceptor = new AuthorizationInterceptor(ejbMethodSecurityMetaData, viewClassName, viewMethod, contextID);
+                throw ROOT_LOGGER.legacySecurityUnsupported();
             }
             viewConfiguration.addViewInterceptor(viewMethod, new ImmediateInterceptorFactory(authorizationInterceptor), InterceptorOrder.View.EJB_SECURITY_AUTHORIZATION_INTERCEPTOR);
 

@@ -215,7 +215,8 @@ public class GetCallerPrincipalTestCase {
             Assert.assertEquals(OK + "stop", results.getSlsb("predestroy"));
             return null;
         };
-        Util.switchIdentitySCF("user1", "password1", callable);
+        //Util.switchIdentitySCF("user1", "password1", callable);
+        callable.call();
     }
 
     @Test
@@ -234,7 +235,8 @@ public class GetCallerPrincipalTestCase {
             return null;
         };
         try {
-            Util.switchIdentitySCF("user1", "password1", callable);
+            //Util.switchIdentitySCF("user1", "password1", callable);
+            callable.call();
         } finally {
             deployer.undeploy("sfsb");
         }

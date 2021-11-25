@@ -876,4 +876,7 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 103, value = "Broker is not started. It cannot be managed yet.")
     IllegalStateException brokerNotStarted();
 
+    @Message(id = 104, value = "Legacy security is no longer supported.")
+    IllegalStateException legacySecurityUnsupported();
+
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.component.singleton;
 
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,7 +55,6 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.StatelessRemoteViewInstanceFactory;
 import org.jboss.as.ejb3.component.session.StatelessWriteReplaceInterceptor;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
-import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.ejb3.tx.EjbBMTInterceptor;
 import org.jboss.as.ejb3.tx.LifecycleCMTTxInterceptor;
 import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
@@ -129,8 +130,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                             final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(contextID, ejbComponentDescription.requiresJacc(), false);
                             elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> configuration.addPostConstructInterceptor(elytronInterceptorFactory, priority));
                         } else if (definedSecurityDomain){
-                            ejbComponentDescription.setSecurityRequired(definedSecurityDomain);
-                            configuration.addPostConstructInterceptor(new SecurityContextInterceptorFactory(definedSecurityDomain, false, contextID), InterceptorOrder.View.SECURITY_CONTEXT);
+                            throw ROOT_LOGGER.legacySecurityUnsupported();
                         }
                     }
                 });

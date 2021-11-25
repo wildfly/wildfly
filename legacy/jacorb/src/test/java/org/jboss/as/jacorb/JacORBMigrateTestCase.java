@@ -49,7 +49,6 @@ import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.security.SecurityDomain;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.iiop.openjdk.IIOPExtension;
@@ -123,7 +122,7 @@ public class JacORBMigrateTestCase extends AbstractSubsystemTest {
                     }, null));
 
             Map<String, Class> capabilities = new HashMap<>();
-            capabilities.put(buildDynamicCapabilityName("org.wildfly.security.legacy-security-domain", "security-domain"), SecurityDomain.class);
+            capabilities.put(buildDynamicCapabilityName("org.wildfly.security.legacy-security-domain", "security-domain"), Object.class);
             registerServiceCapabilities(capabilityRegistry, capabilities);
         }
 

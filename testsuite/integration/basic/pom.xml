@@ -460,11 +460,6 @@
         </dependency>
         <!-- This contains classes moved from WildFly Core -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-security-plugins</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-api</artifactId>
             <scope>test</scope>
