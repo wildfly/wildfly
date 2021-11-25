@@ -103,7 +103,6 @@
         <module name="org.jboss.staxmapper"/>
         <!-- For parser DUP -->
         <module name="org.jboss.vfs"/>
-        <module name="org.picketbox"/>
 
         <module name="org.omg.api"/>
         <!-- Not supported but a class is a return value in the EE 8 SessionContext API
