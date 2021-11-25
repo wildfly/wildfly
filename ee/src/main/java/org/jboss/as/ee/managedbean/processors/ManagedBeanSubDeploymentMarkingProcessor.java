@@ -70,9 +70,4 @@ public class ManagedBeanSubDeploymentMarkingProcessor implements DeploymentUnitP
             }
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
 }

@@ -94,9 +94,4 @@ public class WeldImplicitDeploymentProcessor implements DeploymentUnitProcessor 
             }
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
 }

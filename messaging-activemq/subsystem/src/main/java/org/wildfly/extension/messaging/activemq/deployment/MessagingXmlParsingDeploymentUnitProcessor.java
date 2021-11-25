@@ -108,12 +108,6 @@ public class MessagingXmlParsingDeploymentUnitProcessor implements DeploymentUni
         }
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
-
-
     private Set<VirtualFile> messageDestinations(final DeploymentUnit deploymentUnit) {
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         if (deploymentRoot == null || !deploymentRoot.exists()) {

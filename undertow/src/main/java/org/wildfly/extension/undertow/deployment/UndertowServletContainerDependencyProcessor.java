@@ -54,9 +54,4 @@ public class UndertowServletContainerDependencyProcessor implements DeploymentUn
             phaseContext.addDeploymentDependency(UndertowService.SERVLET_CONTAINER.append(servletContainerName), UndertowAttachments.SERVLET_CONTAINER_SERVICE);
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
 }

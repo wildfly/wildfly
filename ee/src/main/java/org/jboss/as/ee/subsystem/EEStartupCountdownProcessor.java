@@ -41,9 +41,4 @@ public class EEStartupCountdownProcessor implements DeploymentUnitProcessor {
             countdown.countUp(startupBeansCount);
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit deploymentUnit) {
-
-    }
 }

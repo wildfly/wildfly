@@ -93,10 +93,4 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
             }
         }
     }
-
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
 }

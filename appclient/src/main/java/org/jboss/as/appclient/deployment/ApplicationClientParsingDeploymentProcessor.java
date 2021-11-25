@@ -94,11 +94,6 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
 
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
-
     private ApplicationClientMetaData parseAppClient(DeploymentUnit deploymentUnit, final PropertyReplacer propertyReplacer) throws DeploymentUnitProcessingException {
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final VirtualFile alternateDescriptor = deploymentRoot.getAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_CLIENT_DEPLOYMENT_DESCRIPTOR);

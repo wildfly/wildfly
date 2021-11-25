@@ -80,9 +80,6 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
         }
     }
 
-    public void undeploy(final DeploymentUnit context) {
-    }
-
     protected void describeBean(final Module module, final ServiceTarget serviceTarget, DeploymentReflectionIndex deploymentIndex, BeanMetaDataConfig beanConfig) {
         final BeanState state = BeanState.NOT_INSTALLED;
         final ServiceName describedServiceName = BeanMetaDataConfig.toBeanName(beanConfig.getName(), state.next());

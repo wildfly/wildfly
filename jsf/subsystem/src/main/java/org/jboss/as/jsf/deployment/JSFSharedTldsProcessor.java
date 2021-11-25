@@ -125,8 +125,4 @@ public class JSFSharedTldsProcessor implements DeploymentUnitProcessor {
         if (jsfTlds != null) tldsMetaData.addAll(jsfTlds);
         deploymentUnit.putAttachment(SharedTldsMetaDataBuilder.ATTACHMENT_KEY, tldsMetaData);
     }
-
-    public void undeploy(DeploymentUnit context) {
-    }
-
 }

@@ -111,10 +111,6 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private void addJSFAPI(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
 

@@ -42,7 +42,6 @@
     <name>WildFly: Security Subsystem parent</name>
 
     <modules>
-        <module>api</module>
         <module>plugins</module>        
         <module>subsystem</module>        
     </modules>

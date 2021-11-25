@@ -118,7 +118,4 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
             }
         }
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

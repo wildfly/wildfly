@@ -66,8 +66,4 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
             moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, api, false, false, true, false));
         }
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
-
 }

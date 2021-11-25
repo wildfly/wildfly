@@ -102,7 +102,4 @@ public final class DiscoveryRegistrationProcessor implements DeploymentUnitProce
         }
         builder.install();
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

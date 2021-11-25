@@ -55,8 +55,4 @@ public class JSFCdiExtensionDeploymentProcessor implements DeploymentUnitProcess
                     .registerExtensionInstance(new JSFPassivatingViewScopedCdiExtension(), parent);
         }
     }
-
-    public void undeploy(DeploymentUnit context) {
-        // Do nothing.
-    }
 }

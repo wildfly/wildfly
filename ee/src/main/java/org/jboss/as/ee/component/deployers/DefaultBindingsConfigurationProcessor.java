@@ -72,10 +72,6 @@ public class DefaultBindingsConfigurationProcessor implements DeploymentUnitProc
         }
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     public void setContextService(String contextService) {
         this.contextService = contextService;
     }

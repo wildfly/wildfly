@@ -90,7 +90,4 @@ public class EarContextRootProcessor implements DeploymentUnitProcessor {
             }
         }
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

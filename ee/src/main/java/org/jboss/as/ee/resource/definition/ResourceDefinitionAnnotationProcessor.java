@@ -102,11 +102,6 @@ public abstract class ResourceDefinitionAnnotationProcessor implements Deploymen
         }
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
-
     private List<BindingConfiguration> getAnnotatedClassBindingConfigurations(EEModuleDescription moduleDescription, AnnotationInstance annotationInstance) throws DeploymentUnitProcessingException {
         final AnnotationTarget target = annotationInstance.target();
         if (!(target instanceof ClassInfo)) {

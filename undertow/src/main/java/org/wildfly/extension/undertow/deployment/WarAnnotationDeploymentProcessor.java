@@ -138,9 +138,6 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         }
     }
 
-    public void undeploy(final DeploymentUnit context) {
-    }
-
     /**
      * Process a single index.
      *

@@ -213,10 +213,4 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
 
         return false;
     }
-
-    public void undeploy(final DeploymentUnit unit) {
-
-        // does nothing
-    }
-
 }

@@ -161,8 +161,4 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
             VFSUtils.safeClose(xmlStream);
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

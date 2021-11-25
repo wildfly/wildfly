@@ -76,9 +76,6 @@ public class LifecycleAnnotationParsingProcessor implements DeploymentUnitProces
         }
     }
 
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private void processLifeCycle(final EEModuleDescription eeModuleDescription, final AnnotationTarget target, final DotName annotationType, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         if (!(target instanceof MethodInfo)) {
             throw EeLogger.ROOT_LOGGER.methodOnlyAnnotation(annotationType);

@@ -133,7 +133,4 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
         }
         return ret;
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

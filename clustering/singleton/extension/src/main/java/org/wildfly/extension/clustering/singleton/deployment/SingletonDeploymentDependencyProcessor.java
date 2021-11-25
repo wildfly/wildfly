@@ -50,8 +50,4 @@ public class SingletonDeploymentDependencyProcessor implements DeploymentUnitPro
             }
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

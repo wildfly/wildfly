@@ -164,10 +164,6 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
-
     private boolean isTldFile(VirtualFile file) {
         return file.isFile() && file.getName().toLowerCase(Locale.ENGLISH).endsWith(TLD);
     }

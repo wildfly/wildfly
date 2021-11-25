@@ -46,8 +46,4 @@ class OidcDependencyProcessor implements DeploymentUnitProcessor {
         ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ELYTRON_HTTP_OIDC, false, false, true, false));
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {}
-
 }

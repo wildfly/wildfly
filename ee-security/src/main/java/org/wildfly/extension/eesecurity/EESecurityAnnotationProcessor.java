@@ -71,9 +71,4 @@ class EESecurityAnnotationProcessor implements DeploymentUnitProcessor {
         DeploymentUnit top = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         top.putAttachment(SECURITY_PRESENT, true);
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
 }

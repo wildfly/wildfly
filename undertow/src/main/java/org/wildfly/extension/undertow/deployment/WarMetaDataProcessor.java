@@ -367,10 +367,6 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
-
     /**
      * Utility class to associate the logical name with the JAR name, needed
      * during the order resolving.

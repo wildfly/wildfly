@@ -104,9 +104,4 @@ public class DriverManagerAdapterProcessor implements DeploymentUnitProcessor {
             }
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit deploymentUnit) {
-
-    }
 }

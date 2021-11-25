@@ -63,10 +63,6 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private static String setContextParameterIfAbsent(final JBossWebMetaData webMetaData, final String name, final String value) {
         List<ParamValueMetaData> contextParams = webMetaData.getContextParams();
         if (contextParams == null) {
