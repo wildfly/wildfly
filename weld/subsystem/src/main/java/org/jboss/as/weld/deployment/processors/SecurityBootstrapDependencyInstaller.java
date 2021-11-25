@@ -32,7 +32,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.weld.security.spi.SecurityServices;
 
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * @author Martin Kouba
@@ -46,11 +45,8 @@ public class SecurityBootstrapDependencyInstaller implements BootstrapDependency
         final CapabilityServiceSupport capabilities = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         final ServiceBuilder<?> sb = serviceTarget.addService(serviceName);
         final Consumer<SecurityServices> securityServicesConsumer = sb.provides(serviceName);
-        Supplier<?> securityManagerSupplier = null;
-        if (capabilities.hasCapability("org.wildfly.legacy-security.server-security-manager")) {
-            securityManagerSupplier = sb.requires(capabilities.getCapabilityServiceName("org.wildfly.legacy-security.server-security-manager"));
-        }
-        sb.setInstance(new WeldSecurityServices(securityServicesConsumer, securityManagerSupplier));
+
+        sb.setInstance(new WeldSecurityServices(securityServicesConsumer));
         sb.install();
         return serviceName;
     }
