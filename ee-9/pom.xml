@@ -1362,6 +1362,7 @@
                 <module>deployment-transformer</module>
                 <module>dist</module>
                 <module>feature-pack</module>
+                <module>ee-9-api</module>
             </modules>
         </profile>
     </profiles>
