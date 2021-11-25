@@ -108,7 +108,4 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
         }
         return xmlDescriptor;
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

@@ -238,9 +238,4 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
             UndertowLogger.ROOT_LOGGER.failedToRegisterWebsocket(endpoint, path, e);
         }
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

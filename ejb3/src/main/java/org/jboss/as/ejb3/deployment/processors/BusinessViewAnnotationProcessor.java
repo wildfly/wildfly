@@ -282,8 +282,4 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
         // let the ejb jar metadata tell us what the version is
         return ejbJarMetaData.isVersionGreaterThanOrEqual(EjbJarVersion.EJB_3_2);
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

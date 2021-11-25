@@ -91,8 +91,4 @@ public class JaxrsCdiIntegrationProcessor implements DeploymentUnitProcessor {
         }
         params.add(param);
     }
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

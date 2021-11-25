@@ -81,11 +81,6 @@ public class CacheDependenciesProcessor implements DeploymentUnitProcessor {
         new MarshallingConfigurationRepositoryServiceConfigurator(unit).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-        // Do nothing
-    }
-
     private static ServiceName getCacheFactoryBuilderServiceName(StatefulComponentDescription description) {
         if (!description.isPassivationApplicable()) return CacheFactoryBuilderServiceNameProvider.DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME;
         CacheInfo cache = description.getCache();

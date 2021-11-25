@@ -284,8 +284,4 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         jndiBindingsLogMessage.append(jndiName);
         jndiBindingsLogMessage.append(System.lineSeparator());
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

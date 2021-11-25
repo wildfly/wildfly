@@ -47,7 +47,4 @@ public class DeploymentRootExplodedMountProcessor implements DeploymentUnitProce
             MountExplodedMarker.setMountExploded(depUnit);
         }
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

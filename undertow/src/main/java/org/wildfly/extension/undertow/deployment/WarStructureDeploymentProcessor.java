@@ -184,10 +184,6 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         }
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
-
     /**
      * Create the resource roots for a .war deployment
      *

@@ -46,7 +46,4 @@ public class WarDeploymentInitializingProcessor implements DeploymentUnitProcess
             DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
         }
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

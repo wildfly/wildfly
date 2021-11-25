@@ -389,10 +389,6 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
         return null;
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private BeansXml parseBeansXml(URL beansXmlFile, BeansXmlParser parser, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         return parser.parse(beansXmlFile);
     }

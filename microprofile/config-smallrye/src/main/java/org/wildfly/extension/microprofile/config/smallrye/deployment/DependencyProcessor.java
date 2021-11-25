@@ -43,10 +43,6 @@ public class DependencyProcessor implements DeploymentUnitProcessor {
         addDependencies(deploymentUnit);
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private void addDependencies(DeploymentUnit deploymentUnit) {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();

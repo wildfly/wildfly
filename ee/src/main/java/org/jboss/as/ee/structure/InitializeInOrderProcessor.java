@@ -92,8 +92,4 @@ public class InitializeInOrderProcessor implements DeploymentUnitProcessor {
             }
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

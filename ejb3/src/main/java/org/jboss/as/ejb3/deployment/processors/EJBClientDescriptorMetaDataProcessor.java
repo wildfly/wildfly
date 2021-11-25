@@ -320,10 +320,6 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME, ejbClientContextServiceName);
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private void checkDescriptorConfiguration(final EJBClientDescriptorMetaData ejbClientDescriptorMetaData)
             throws DeploymentUnitProcessingException {
         final boolean profileDefined = ejbClientDescriptorMetaData.getProfile() != null;

@@ -39,8 +39,4 @@ public class IIOPMarkerProcessor implements DeploymentUnitProcessor{
         //for now we mark all subsystems as using IIOP if the IIOP subsystem is installed
         IIOPDeploymentMarker.mark(deploymentUnit);
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

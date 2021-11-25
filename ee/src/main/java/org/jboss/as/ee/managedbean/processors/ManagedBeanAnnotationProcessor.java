@@ -127,9 +127,6 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    public void undeploy(DeploymentUnit context) {
-    }
-
     /**
      * Returns true if the passed <code>managedBeanClass</code> meets the requirements set by the Managed bean spec about
      * bean implementation classes. The passed <code>managedBeanClass</code> must not be an interface and must not be final or abstract.

@@ -108,10 +108,6 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
         deploymentUnit.putAttachment(Attachments.EJB_CLIENT_METADATA, ejbClientDescriptorMetaData);
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private XMLMapper createMapper(final DeploymentUnit deploymentUnit) {
         final XMLMapper mapper = XMLMapper.Factory.create();
 

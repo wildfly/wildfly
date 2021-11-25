@@ -108,9 +108,6 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
         }
     }
 
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private void processField(final DeploymentUnit deploymentUnit, final EJBResourceWrapper annotation, final FieldInfo fieldInfo, final EEModuleDescription eeModuleDescription) {
         final String fieldName = fieldInfo.name();
         final String fieldType = fieldInfo.type().name().toString();

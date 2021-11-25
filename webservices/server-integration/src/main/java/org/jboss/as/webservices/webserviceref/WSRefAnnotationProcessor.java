@@ -99,10 +99,6 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    public void undeploy(final DeploymentUnit unit) {
-        // NOOP
-    }
-
     private static void processFieldRef(final DeploymentUnit unit, final WSRefAnnotationWrapper annotation, final FieldInfo fieldInfo) throws DeploymentUnitProcessingException {
         final String fieldName = fieldInfo.name();
         final String injectionType = isEmpty(annotation.type()) || annotation.type().equals(Object.class.getName()) ? fieldInfo.type().name().toString() : annotation.type();

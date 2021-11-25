@@ -170,10 +170,4 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
         }
         return false;
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
-
 }

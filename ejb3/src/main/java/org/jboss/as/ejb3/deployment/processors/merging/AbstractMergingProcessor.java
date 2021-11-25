@@ -135,9 +135,4 @@ public abstract class AbstractMergingProcessor<T extends EJBComponentDescription
         }
         return methodParametersMetaData.toArray(new String[methodParametersMetaData.size()]);
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

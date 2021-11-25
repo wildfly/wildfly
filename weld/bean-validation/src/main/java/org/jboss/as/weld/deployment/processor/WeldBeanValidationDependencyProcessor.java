@@ -66,9 +66,4 @@ public class WeldBeanValidationDependencyProcessor implements DeploymentUnitProc
         ModuleDependency cdiBeanValidationDep = new ModuleDependency(moduleLoader, CDI_BEAN_VALIDATION_ID, false, false, true, false);
         moduleSpecification.addSystemDependency(cdiBeanValidationDep);
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
 }

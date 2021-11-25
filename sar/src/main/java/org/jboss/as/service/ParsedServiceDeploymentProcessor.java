@@ -114,10 +114,6 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         }
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
-
     private void addServices(final ServiceTarget target, final JBossServiceConfig mBeanConfig, final ClassLoader classLoader, final DeploymentReflectionIndex index, ServiceComponentInstantiator componentInstantiator, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final String mBeanClassName = mBeanConfig.getCode();
         final List<ClassReflectionIndex> mBeanClassHierarchy = getClassHierarchy(mBeanClassName, index, classLoader);

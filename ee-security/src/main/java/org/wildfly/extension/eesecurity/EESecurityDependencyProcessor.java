@@ -48,9 +48,4 @@ class EESecurityDependencyProcessor implements DeploymentUnitProcessor {
         }
 
     }
-
-    @Override
-    public void undeploy(DeploymentUnit deploymentUnit) {
-
-    }
 }

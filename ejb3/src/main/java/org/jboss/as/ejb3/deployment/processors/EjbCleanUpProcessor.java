@@ -39,9 +39,4 @@ public class EjbCleanUpProcessor implements DeploymentUnitProcessor {
         deploymentUnit.removeAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
         deploymentUnit.removeAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

@@ -104,11 +104,6 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
-
     private void addPersistenceProviderModuleDependencies(DeploymentPhaseContext phaseContext, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) throws
         DeploymentUnitProcessingException {
 

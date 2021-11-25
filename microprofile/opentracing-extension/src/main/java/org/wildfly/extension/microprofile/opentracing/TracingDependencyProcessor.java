@@ -104,8 +104,4 @@ public class TracingDependencyProcessor implements DeploymentUnitProcessor {
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, true, false, true, false));
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }
