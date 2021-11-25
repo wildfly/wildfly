@@ -201,39 +201,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.picketbox</groupId>
-            <artifactId>picketbox</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.picketbox</groupId>
-            <artifactId>picketbox-commons</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.picketbox</groupId>
-            <artifactId>picketbox-infinispan</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
             <exclusions>
