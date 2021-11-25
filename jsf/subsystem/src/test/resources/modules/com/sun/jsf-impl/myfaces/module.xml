@@ -40,8 +40,7 @@
         <module name="org.glassfish.jakarta.el"/>
         <module name="javax.api"/>
         <module name="javax.servlet.jstl.api"/>
-        <module name="org.apache.xerces" services="import"/>
-        <module name="org.apache.xalan" services="import"/>
+        <module name="java.xml"/>
 
         <!-- extra dependencies for MyFaces -->
         <module name="org.apache.commons.collections"/>
