@@ -1371,6 +1371,34 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-feature-pack-common</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-feature-pack-common</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-feature-pack-common-microprofile</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-feature-pack-common-microprofile</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-preview-feature-pack-ee-9-api</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
