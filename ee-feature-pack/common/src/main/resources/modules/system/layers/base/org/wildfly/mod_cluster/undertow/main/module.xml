@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-mod_cluster-undertow}"/>
+        <artifact name="\${org.wildfly:wildfly-mod_cluster-undertow@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
