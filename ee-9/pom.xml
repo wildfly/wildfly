@@ -1366,6 +1366,7 @@
                 <module>common</module>
                 <module>common-microprofile</module>
                 <module>galleon-content</module>
+                <module>galleon-content-microprofile</module>
             </modules>
         </profile>
     </profiles>

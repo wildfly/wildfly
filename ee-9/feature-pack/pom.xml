@@ -47,11 +47,16 @@
         <servlet.common.resources.directory>${basedir}/../../servlet-feature-pack/common/src/main/resources</servlet.common.resources.directory>
         <servlet.galleon-common.resources.directory>${basedir}/../../servlet-feature-pack/galleon-common/src/main/resources</servlet.galleon-common.resources.directory>
 
+        <!-- WildFly full and ee galleon contents -->
+        <full.galleon-content.resources.directory>${basedir}/../../galleon-pack/galleon-content/src/main/resources</full.galleon-content.resources.directory>
+        <ee.galleon-content.resources.directory>${basedir}/../../ee-feature-pack/galleon-content/src/main/resources</ee.galleon-content.resources.directory>
+
         <!-- WildFly Preview modules -->
         <ee-9-api.resources.directory>${basedir}/../ee-9-api/src/main/resources</ee-9-api.resources.directory>
         <common.resources.directory>${basedir}/../common/src/main/resources</common.resources.directory>
         <common-microprofile.resources.directory>${basedir}/../common-microprofile/src/main/resources</common-microprofile.resources.directory>
         <content.resources.directory>${basedir}/../galleon-content/src/main/resources</content.resources.directory>
+        <content-microprofile.resources.directory>${basedir}/../galleon-content-microprofile/src/main/resources</content-microprofile.resources.directory>
 
         <!-- WildFly Preview vs standard WildFly GAV expression properties. -->
         <module.jakarta.classifier>::jakarta</module.jakarta.classifier>
@@ -361,6 +366,24 @@
                         </configuration>
                     </execution>
 
+                    <!-- WildFly EE Galleon Content -->
+                    <execution>
+                        <id>copy-ee.galleon-content-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${ee.galleon-content.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+
                     <!-- WildFly preview EE 9 Galleon Content -->
                     <execution>
                         <id>copy-resources</id>
@@ -373,6 +396,24 @@
                             <resources>
                                 <resource>
                                     <directory>${content.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+
+                    <!-- WildFly preview EE 9 Galleon Content -->
+                    <execution>
+                        <id>copy-content-microprofile-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${content-microprofile.resources.directory}</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>

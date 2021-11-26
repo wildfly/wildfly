@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<feature-group-spec name="standalone-xts" xmlns="urn:jboss:galleon:feature-group:1.0">
+<feature-group-spec name="standalone-rts" xmlns="urn:jboss:galleon:feature-group:1.0">
 
     <feature-group name="standalone">
-        <exclude spec="subsystem.batch-jberet"/>
+        <exclude spec="subsystem.microprofile-jwt-smallrye"/>
     </feature-group>
 
     <feature spec="interface">
@@ -27,9 +27,11 @@
     </feature>
     <feature-group name="ejb3-mdb"/>
 
-    <feature spec="subsystem.xts">
+
+    <feature spec="subsystem.rts">
         <param name="host-feature" value="default-host"/>
-        <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/ws-c11/ActivationService"/>
-        <param name="default-context-propagation" value="true"/>
+        <param name="socket-binding" value="http"/>
+        <param name="server" value="default-server"/>
     </feature>
+
 </feature-group-spec>

@@ -10,6 +10,7 @@
     </feature>
     <feature-group name="standalone-full">
         <exclude spec="subsystem.messaging-activemq"/>
+        <exclude spec="subsystem.microprofile-jwt-smallrye"/>
     </feature-group>
     <feature-group name="messaging-activemq">
         <exclude feature-id="subsystem.messaging-activemq.server.http-acceptor:server=default,subsystem=messaging-activemq,http-acceptor=http-acceptor-throughput"/>
