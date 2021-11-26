@@ -47,7 +47,4 @@ public final class EarDependencyProcessor implements DeploymentUnitProcessor {
             }
         }
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

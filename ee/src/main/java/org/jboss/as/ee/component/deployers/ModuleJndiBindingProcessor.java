@@ -343,9 +343,6 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
         return false;
     }
 
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private static class BinderReleaseService implements Service<BinderReleaseService> {
 
         private final ServiceController<ManagedReferenceFactory> sharedBindingController;

@@ -5,6 +5,20 @@
 
 embed-server --server-config=${config:standalone.xml}
 
+if (outcome != success) of /subsystem=metrics:read-resource
+  /extension=org.wildfly.extension.metrics:add
+  /subsystem=metrics:add
+else
+  echo INFO: wildfly-metrics already in configuration, subsystem not added.
+end-if
+
+if (outcome != success) of /subsystem=health:read-resource
+  /extension=org.wildfly.extension.health:add
+  /subsystem=health:add
+else
+  echo INFO: wildfly-health already in configuration, subsystem not added.
+end-if
+
 if (outcome == success) of /subsystem=iiop-openjdk:read-resource
   /subsystem=iiop-openjdk:write-attribute(name=security, value=elytron)
 else 

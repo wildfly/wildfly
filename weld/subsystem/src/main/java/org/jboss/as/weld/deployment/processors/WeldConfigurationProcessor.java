@@ -76,9 +76,4 @@ public class WeldConfigurationProcessor implements DeploymentUnitProcessor {
             return globalValue;
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
 }

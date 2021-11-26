@@ -100,9 +100,4 @@ public class WSLibraryFilterProcessor implements DeploymentUnitProcessor {
         }
         return false;
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit unit) {
-        // does nothing
-    }
 }

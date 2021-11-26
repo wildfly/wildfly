@@ -248,7 +248,9 @@ public class ReverseProxyTestCase {
         configureMaxRequestTime(10);
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             HttpResponse res = httpclient.execute(new HttpGet("http://" + url.getHost() + ":" + url.getPort() + "/proxy/name?wait=50"));
-            Assert.assertEquals("Service Unaviable expected because max-request-time is set to 10ms", 503, res.getStatusLine().getStatusCode());
+            // With https://issues.redhat.com/browse/UNDERTOW-1459 fix, status code should be 504
+            // FIXME: after undertow 2.2.13.Final integrated into WildFly full, this should be updated to 504 only
+            Assert.assertTrue("Service Unaviable expected because max-request-time is set to 10ms", res.getStatusLine().getStatusCode() == 504 || res.getStatusLine().getStatusCode() == 503);
         }
     }
 }

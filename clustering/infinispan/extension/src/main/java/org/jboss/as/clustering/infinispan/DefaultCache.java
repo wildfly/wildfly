@@ -22,10 +22,7 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import java.util.function.Consumer;
-
 import org.infinispan.AdvancedCache;
-import org.infinispan.Cache;
 import org.infinispan.cache.impl.AbstractDelegatingAdvancedCache;
 import org.infinispan.manager.EmbeddedCacheManager;
 
@@ -35,29 +32,15 @@ import org.infinispan.manager.EmbeddedCacheManager;
  */
 public class DefaultCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
     private final EmbeddedCacheManager manager;
-    private final Consumer<Cache<?, ?>> consumer;
 
-    DefaultCache(EmbeddedCacheManager manager, AdvancedCache<K, V> cache, Consumer<Cache<?, ?>> consumer) {
+    DefaultCache(EmbeddedCacheManager manager, AdvancedCache<K, V> cache) {
         super(cache);
         this.manager = manager;
-        this.consumer = consumer;
     }
 
     @Override
     public EmbeddedCacheManager getCacheManager() {
         return this.manager;
-    }
-
-    @Override
-    public synchronized void start() {
-        super.start();
-        this.consumer.accept(this);
-    }
-
-    @Override
-    public synchronized void stop() {
-        this.consumer.accept(null);
-        super.stop();
     }
 
     @Override
@@ -73,6 +56,6 @@ public class DefaultCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
     @SuppressWarnings("unchecked")
     @Override
     public AdvancedCache rewrap(AdvancedCache newDelegate) {
-        return new DefaultCache<>(this.manager, newDelegate, this.consumer);
+        return new DefaultCache<>(this.manager, newDelegate);
     }
 }

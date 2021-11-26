@@ -103,8 +103,4 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
             }
         }
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

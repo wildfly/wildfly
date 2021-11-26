@@ -99,8 +99,4 @@ public class DescriptorEnvironmentLifecycleMethodProcessor implements Deployment
             }
         }
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

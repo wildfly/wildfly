@@ -262,7 +262,7 @@
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.5.2.Final</version.org.wildfly.common>
         <version.org.wildfly.component-matrix-plugin>1.0.3.Final</version.org.wildfly.component-matrix-plugin>
-        <version.org.wildfly.galleon-plugins>5.2.5.Final</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>5.2.6.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>5.0.2.Final</version.org.wildfly.jar.plugin>
         <version.org.wildfly.maven.plugins>2.2.0.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>2.0.1.Final</version.org.wildfly.plugin>
@@ -305,7 +305,7 @@
         <version.com.google.protobuf>3.15.7</version.com.google.protobuf>
         <version.com.h2database>1.4.197</version.com.h2database>
         <version.com.ibm.async.asyncutil>0.1.0</version.com.ibm.async.asyncutil>
-        <version.com.microsoft.azure>8.6.5</version.com.microsoft.azure>
+        <version.com.microsoft.azure>8.6.6</version.com.microsoft.azure>
         <version.com.nimbus.jose-jwt>8.11</version.com.nimbus.jose-jwt>
         <version.com.squareup.okhttp3>3.14.9</version.com.squareup.okhttp3>
         <version.com.squareup.okio>1.17.5</version.com.squareup.okio>
@@ -413,7 +413,7 @@
         <version.org.glassfish.soteria>1.0.1-jbossorg-1</version.org.glassfish.soteria>
         <version.org.hamcrest>1.3</version.org.hamcrest>
         <version.org.hamcrest.java-hamcrest>2.0.0.0</version.org.hamcrest.java-hamcrest>
-        <version.org.hibernate>5.3.23.Final</version.org.hibernate>
+        <version.org.hibernate>5.3.24.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.5.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>5.10.11.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>6.0.22.Final</version.org.hibernate.validator>
@@ -433,17 +433,16 @@
         <version.org.jboss.genericjms>2.0.10.Final</version.org.jboss.genericjms>
         <version.org.jboss.hal.console>3.3.8.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.1.Final</version.org.jboss.iiop-client>
-        <version.org.jboss.ironjacamar>1.5.2.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.ironjacamar>1.5.3.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.1.Final</version.org.jboss.jboss-transaction-spi>
         <!-- Only used for testing -->
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
         <version.org.jboss.metadata>14.0.0.Final</version.org.jboss.metadata>
-        <version.org.jboss.mod_cluster>1.4.3.Final</version.org.jboss.mod_cluster>
+        <version.org.jboss.mod_cluster>1.4.4.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>5.12.1.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.5.Final</version.org.jboss.openjdk-orb>
-        <version.org.jboss.resteasy>4.7.2.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>4.7.3.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
-        <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
@@ -477,7 +476,7 @@
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.9.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jctools.jctools-core>2.1.2</version.org.jctools.jctools-core>
         <version.org.jgroups>4.2.15.Final</version.org.jgroups>
-        <version.org.jgroups.azure>1.3.0.Final</version.org.jgroups.azure>
+        <version.org.jgroups.azure>1.3.1.Final</version.org.jgroups.azure>
         <version.org.jgroups.kubernetes>1.0.16.Final</version.org.jgroups.kubernetes>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
         <version.org.jvnet.staxex>1.8.3</version.org.jvnet.staxex>
@@ -495,7 +494,7 @@
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
         <version.org.testng>6.14.3</version.org.testng>
         <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>18.0.0.Beta2</version.org.wildfly.core>
+        <version.org.wildfly.core>18.0.0.Beta4</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.1.9.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.14.Final</version.org.wildfly.naming-client>
@@ -1404,12 +1403,6 @@
                         <artifactId>jboss-transaction-api_1.2_spec</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-security-api</artifactId>
-                <version>${ee.maven.version}</version>
             </dependency>
 
             <dependency>
@@ -8238,12 +8231,6 @@
                         <artifactId>jboss-seam</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.security</groupId>
-                <artifactId>jbossxacml</artifactId>
-                <version>${version.org.jboss.security.jbossxacml}</version>
             </dependency>
 
             <dependency>

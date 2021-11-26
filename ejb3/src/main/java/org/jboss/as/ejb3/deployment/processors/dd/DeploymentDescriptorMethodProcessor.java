@@ -213,8 +213,4 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
             }
         }
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

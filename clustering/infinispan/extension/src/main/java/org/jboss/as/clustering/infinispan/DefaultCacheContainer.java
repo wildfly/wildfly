@@ -24,7 +24,6 @@ package org.jboss.as.clustering.infinispan;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
@@ -33,8 +32,6 @@ import org.infinispan.manager.EmbeddedCacheManagerAdmin;
 import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
-import org.jboss.as.clustering.controller.ServiceValueRegistry;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
 
 /**
@@ -43,15 +40,11 @@ import org.wildfly.clustering.infinispan.spi.CacheContainer;
  */
 public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManager implements CacheContainer {
 
-    private final ServiceValueRegistry<Cache<?, ?>> registry;
-    private final Function<String, ServiceName> serviceNameFactory;
     private final EmbeddedCacheManagerAdmin administrator;
 
-    public DefaultCacheContainer(EmbeddedCacheManager container, ServiceValueRegistry<Cache<?, ?>> registry, Function<String, ServiceName> serviceNameFactory) {
+    public DefaultCacheContainer(EmbeddedCacheManager container) {
         super(container);
         this.administrator = new DefaultCacheContainerAdmin(this);
-        this.registry = registry;
-        this.serviceNameFactory = serviceNameFactory;
     }
 
     @Override
@@ -99,7 +92,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     }
 
     private <K, V> Cache<K, V> wrap(Cache<K, V> cache) {
-        return new DefaultCache<>(this, cache.getAdvancedCache(), this.registry.add(this.serviceNameFactory.apply(cache.getName())));
+        return new DefaultCache<>(this, cache.getAdvancedCache());
     }
 
     @Override
@@ -120,7 +113,6 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
 
     @Override
     public void undefineConfiguration(String configurationName) {
-        this.registry.remove(this.serviceNameFactory.apply(configurationName));
         super.undefineConfiguration(configurationName);
     }
 

@@ -128,9 +128,4 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
             throw new DeploymentUnitProcessingException(t);
         }
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
-
-
 }

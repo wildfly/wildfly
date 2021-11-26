@@ -72,8 +72,4 @@ public class WebServiceAnnotationProcessor implements DeploymentUnitProcessor {
             }
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

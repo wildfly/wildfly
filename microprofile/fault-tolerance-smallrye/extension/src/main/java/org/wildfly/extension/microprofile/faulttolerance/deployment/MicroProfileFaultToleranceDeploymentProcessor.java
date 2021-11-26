@@ -57,8 +57,4 @@ public class MicroProfileFaultToleranceDeploymentProcessor implements Deployment
 
         weldCapability.registerExtensionInstance(new FaultToleranceExtension(), deploymentUnit);
     }
-
-    @Override
-    public void undeploy(DeploymentUnit deploymentUnit) {
-    }
 }

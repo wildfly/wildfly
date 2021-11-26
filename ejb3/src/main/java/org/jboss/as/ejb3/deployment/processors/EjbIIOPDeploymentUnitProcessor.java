@@ -137,11 +137,6 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
-
     private void processEjb(final EJBComponentDescription componentDescription,
                             final DeploymentReflectionIndex deploymentReflectionIndex, final Module module,
                             final ServiceTarget serviceTarget, final IIOPMetaData iiopMetaData) {

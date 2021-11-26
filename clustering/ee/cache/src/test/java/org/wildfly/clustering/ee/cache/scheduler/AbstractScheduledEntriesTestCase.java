@@ -57,6 +57,7 @@ public abstract class AbstractScheduledEntriesTestCase {
         List<Map.Entry<UUID, Instant>> entries = new LinkedList<>();
         Instant now = Instant.now();
         entries.add(new SimpleImmutableEntry<>(UUID.randomUUID(), now));
+        entries.add(new SimpleImmutableEntry<>(UUID.randomUUID(), now));
         entries.add(new SimpleImmutableEntry<>(UUID.randomUUID(), now.minus(Duration.ofSeconds(1))));
         entries.add(new SimpleImmutableEntry<>(UUID.randomUUID(), now.plus(Duration.ofSeconds(2))));
         entries.add(new SimpleImmutableEntry<>(UUID.randomUUID(), now.plus(Duration.ofSeconds(1))));
@@ -66,6 +67,7 @@ public abstract class AbstractScheduledEntriesTestCase {
         }
 
         List<Map.Entry<UUID, Instant>> expected = this.expectedFactory.apply(entries);
+        Assert.assertEquals(5, expected.size());
 
         // Verify iteration order corresponds to expected order
         Iterator<Map.Entry<UUID, Instant>> iterator = this.entrySet.iterator();

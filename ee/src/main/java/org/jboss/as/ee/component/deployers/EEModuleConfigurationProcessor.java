@@ -103,7 +103,4 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldCl);
         }
     }
-
-    public void undeploy(DeploymentUnit context) {
-    }
 }

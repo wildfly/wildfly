@@ -54,8 +54,4 @@ public class ServerInterceptorsBindingsProcessor implements DeploymentUnitProces
             ejbComponentDescription.setServerInterceptorCache(serverInterceptorCache);
         }
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

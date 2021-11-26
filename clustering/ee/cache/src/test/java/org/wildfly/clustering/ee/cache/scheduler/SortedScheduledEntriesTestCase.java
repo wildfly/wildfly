@@ -38,7 +38,7 @@ public class SortedScheduledEntriesTestCase extends AbstractScheduledEntriesTest
     public SortedScheduledEntriesTestCase() {
         super(new SortedScheduledEntries<>(), list -> {
             List<Map.Entry<UUID, Instant>> result = new LinkedList<>(list);
-            Collections.sort(result, Map.Entry.comparingByValue());
+            Collections.sort(result, SortedScheduledEntries.comparingByValue());
             return result;
         });
     }

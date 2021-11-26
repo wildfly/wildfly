@@ -117,9 +117,4 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor 
             .install();
         jndiDependencies.add(transactionSynchronizationRegistryName);
     }
-
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

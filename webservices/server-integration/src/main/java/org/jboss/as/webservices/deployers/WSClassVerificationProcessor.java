@@ -180,9 +180,4 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
         }
         return false;
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
 }

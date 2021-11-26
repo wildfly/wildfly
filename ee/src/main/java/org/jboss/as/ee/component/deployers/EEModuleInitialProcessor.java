@@ -65,7 +65,4 @@ public final class EEModuleInitialProcessor implements DeploymentUnitProcessor {
         deploymentUnit.putAttachment(Attachments.EE_MODULE_DESCRIPTION, new EEModuleDescription(appName, moduleName, earApplicationName, appClient));
         deploymentUnit.putAttachment(org.jboss.as.server.deployment.Attachments.COMPONENT_JNDI_DEPENDENCIES, new HashMap<>());
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

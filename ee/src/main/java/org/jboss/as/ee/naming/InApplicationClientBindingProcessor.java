@@ -97,9 +97,4 @@ public class InApplicationClientBindingProcessor implements DeploymentUnitProces
         }
         jndiDependencies.add(inAppClientServiceName);
     }
-
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

@@ -125,7 +125,4 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
             VFSUtils.safeClose(xmlStream);
         }
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

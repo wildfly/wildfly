@@ -103,10 +103,6 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit deploymentUnit) {
-    }
-
     private ServiceName getEJBClientContextServiceName(final DeploymentPhaseContext phaseContext) {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final DeploymentUnit parentDeploymentUnit = deploymentUnit.getParent();

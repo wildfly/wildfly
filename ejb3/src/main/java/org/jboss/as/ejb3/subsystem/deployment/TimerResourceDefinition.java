@@ -27,6 +27,7 @@ import java.util.Date;
 import javax.ejb.NoMoreTimeoutsException;
 import javax.ejb.ScheduleExpression;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -117,8 +118,9 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
     private static final SimpleAttributeDefinition INFO = new SimpleAttributeDefinitionBuilder("info", ModelType.STRING, true)
             .setStorageRuntime().build();
 
+    @Deprecated
     private static final SimpleAttributeDefinition PRIMARY_KEY = new SimpleAttributeDefinitionBuilder("primary-key",
-            ModelType.STRING, true).setStorageRuntime().build();
+            ModelType.STRING, true).setStorageRuntime().setDeprecated(ModelVersion.create(9)).build();
 
     // operations
     private static final OperationDefinition SUSPEND = new SimpleOperationDefinitionBuilder("suspend",
@@ -322,18 +324,9 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
         });
         resourceRegistration.registerReadOnlyAttribute(PRIMARY_KEY, new AbstractReadAttributeHandler() {
-
             @Override
             protected void readAttribute(TimerImpl timer, ModelNode toSet) {
-                if (timer.isCanceled()) {
-                    return;
-                }
-                final Object pk = timer.getPrimaryKey();
-                if (pk != null) {
-                    toSet.set(pk.toString());
-                }
             }
-
         });
         resourceRegistration.registerReadOnlyAttribute(INFO, new AbstractReadAttributeHandler() {
 

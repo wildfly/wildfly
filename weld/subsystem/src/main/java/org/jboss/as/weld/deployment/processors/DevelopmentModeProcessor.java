@@ -156,9 +156,4 @@ public class DevelopmentModeProcessor implements DeploymentUnitProcessor {
         webMetaData.getFilterMappings().add(0, PROBE_FILTER_MAPPING);
         Utils.registerAsComponent(PROBE_FILTER_CLASS_NAME, deploymentUnit);
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
 }

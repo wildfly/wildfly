@@ -56,8 +56,4 @@ public class JSFBeanValidationFactoryProcessor implements DeploymentUnitProcesso
                     new ServletContextAttribute(VALIDATOR_FACTORY_KEY, validatorFactory));
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

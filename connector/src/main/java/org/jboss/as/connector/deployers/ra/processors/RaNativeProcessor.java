@@ -31,7 +31,6 @@ import java.util.Locale;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.vfs.VirtualFile;
@@ -95,10 +94,6 @@ public class RaNativeProcessor implements DeploymentUnitProcessor {
             throw ConnectorLogger.ROOT_LOGGER.failedToLoadNativeLibraries(e);
         }
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
-
 
     private static class LibraryFilter implements VirtualFileFilter {
 
