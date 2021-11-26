@@ -1365,6 +1365,7 @@
                 <module>ee-9-api</module>
                 <module>common</module>
                 <module>common-microprofile</module>
+                <module>galleon-content</module>
             </modules>
         </profile>
     </profiles>
