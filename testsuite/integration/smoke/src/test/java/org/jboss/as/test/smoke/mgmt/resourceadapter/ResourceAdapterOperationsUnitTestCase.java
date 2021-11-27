@@ -52,7 +52,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,7 +63,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("[WFLY-15249] Update test to use an Elytron configuration.")
 public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmtTestBase {
     private static final Deque<ModelNode> REMOVE_ADDRESSES = new LinkedList<>();
 
@@ -116,11 +114,6 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
     }
 
     @Test
-    public void addComplexResourceAdapterWithAppSecurity_SecurityDomainRecovery() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.APPLICATION, ConnectionSecurityType.SECURITY_DOMAIN);
-    }
-
-    @Test
     public void addComplexResourceAdapterWithAppSecurity_ElytronRecovery() throws Exception {
         complexResourceAdapterAddTest(ConnectionSecurityType.APPLICATION, ConnectionSecurityType.ELYTRON);
     }
@@ -128,60 +121,6 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
     @Test
     public void addComplexResourceAdapterWithAppSecurity_ElytronAuthCtxtRecovery() throws Exception {
         complexResourceAdapterAddTest(ConnectionSecurityType.APPLICATION, ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT);
-    }
-
-    @Test
-    public void addComplexResourceAdapterWithSecurityDomain() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN, ConnectionSecurityType.SECURITY_DOMAIN);
-    }
-
-    @Test
-    public void addComplexResourceAdapterWithSecurityDomain_NoRecoverySec() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN, null);
-    }
-
-    @Test
-    public void addComplexResourceAdapterWithSecurityDomain_UserPassRecovery() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN, ConnectionSecurityType.USER_PASSWORD);
-    }
-
-    @Test
-    public void addComplexResourceAdapterWithSecurityDomain_ElytronRecovery() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN, ConnectionSecurityType.ELYTRON);
-    }
-
-    @Test
-    public void addComplexResourceAdapterWithSecurityDomain_ElytronAuthCtxtRecovery() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN, ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT);
-    }
-
-    @Test
-    public void addComplexResourceAdapterWithSecurityDomainAndApp() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN_AND_APPLICATION, null);
-    }
-
-    @Test
-    public void addComplexResourceAdapterWithSecurityDomainAndApp_UserPassRecovery() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN_AND_APPLICATION,
-                ConnectionSecurityType.USER_PASSWORD);
-    }
-
-    @Test
-    public void addComplexResourceAdapterWithSecurityDomainAndApp_SecurityDomainRecovery() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN_AND_APPLICATION,
-                ConnectionSecurityType.SECURITY_DOMAIN);
-    }
-
-    @Test
-    public void addComplexResourceAdapterWithSecurityDomainAndApp_ElytronRecovery() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN_AND_APPLICATION,
-                ConnectionSecurityType.ELYTRON);
-    }
-
-    @Test
-    public void addComplexResourceAdapterWithSecurityDomainAndApp_ElytronAuthCtxtRecovery() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.SECURITY_DOMAIN_AND_APPLICATION,
-                ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT);
     }
 
     @Test
@@ -197,11 +136,6 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
     @Test
     public void addComplexResourceAdapterWithElytron_UserPassRecoverySec() throws Exception {
         complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON, ConnectionSecurityType.USER_PASSWORD);
-    }
-
-    @Test
-    public void addComplexResourceAdapterWithElytron_SecurityDomainRecoverySec() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON, ConnectionSecurityType.SECURITY_DOMAIN);
     }
 
     @Test
@@ -223,11 +157,6 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
     @Test
     public void addComplexResourceAdapterWithElytronAuthCtxt_UserPassRecoverySec() throws Exception {
         complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT, ConnectionSecurityType.USER_PASSWORD);
-    }
-
-    @Test
-    public void addComplexResourceAdapterWithElytronAuthCtxt_SecurityDomainRecoverySec() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT, ConnectionSecurityType.SECURITY_DOMAIN);
     }
 
     @Test
@@ -376,11 +305,10 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
         execute(client, op);
     }
 
-    private static ModelNode execute(final ModelControllerClient client, final ModelNode op) throws IOException {
+    private static void execute(final ModelControllerClient client, final ModelNode op) throws IOException {
         final ModelNode result = client.execute(op);
         if (!Operations.isSuccessfulOutcome(result)) {
             throw new RuntimeException(Operations.getFailureDescription(result).asString());
         }
-        return result;
     }
 }
