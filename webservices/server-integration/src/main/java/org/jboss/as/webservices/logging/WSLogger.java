@@ -317,4 +317,8 @@ public interface WSLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 68, value = "A potentially problematic %s library (%s) detected in ws endpoint deployment; Check if this library can be replaced with container module")
     void warningLibraryInDeployment(String libraryName, String jar);
+
+    @Message(id = 74, value = "The deployment is configured to use legacy security which is no longer supported." )
+    IllegalStateException legacySecurityUnsupported();
+
 }

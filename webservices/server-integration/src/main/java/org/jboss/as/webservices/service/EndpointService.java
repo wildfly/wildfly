@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.service;
 
+import static org.jboss.as.webservices.logging.WSLogger.ROOT_LOGGER;
+
 import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +38,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.ejb3.security.service.EJBViewMethodSecurityAttributesService;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService;
 import org.jboss.as.ejb3.subsystem.ApplicationSecurityDomainService.ApplicationSecurityDomain;
-import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -44,7 +45,6 @@ import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.as.webservices.security.EJBMethodSecurityAttributesAdaptor;
 import org.jboss.as.webservices.security.ElytronSecurityDomainContextImpl;
-import org.jboss.as.webservices.security.SecurityDomainContextImpl;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.ServiceContainerEndpointRegistry;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
@@ -101,14 +101,12 @@ public final class EndpointService implements Service {
     private final ServiceName name;
     private final ServiceName aliasName;
     private final Consumer<Endpoint> endpointConsumer;
-    private final Supplier<SecurityDomainContext> securityDomainContext;
     private final Supplier<AbstractServerConfig> serverConfigService;
     private final Supplier<ApplicationSecurityDomainService.ApplicationSecurityDomain> ejbApplicationSecurityDomain;
     private final Supplier<EJBViewMethodSecurityAttributesService> ejbMethodSecurityAttributeService;
     private final Supplier<SecurityDomain> elytronSecurityDomain;
 
     private EndpointService(final Endpoint endpoint, final ServiceName name, final ServiceName aliasName, final Consumer<Endpoint> endpointConsumer,
-                            final Supplier<SecurityDomainContext> securityDomainContext,
                             Supplier<AbstractServerConfig> serverConfigService,
                             Supplier<ApplicationSecurityDomainService.ApplicationSecurityDomain> ejbApplicationSecurityDomain,
                             Supplier<EJBViewMethodSecurityAttributesService> ejbMethodSecurityAttributeService,
@@ -118,7 +116,6 @@ public final class EndpointService implements Service {
         this.name = name;
         this.aliasName = aliasName;
         this.endpointConsumer = endpointConsumer;
-        this.securityDomainContext = securityDomainContext;
         this.serverConfigService = serverConfigService;
         this.ejbApplicationSecurityDomain = ejbApplicationSecurityDomain;
         this.ejbMethodSecurityAttributeService = ejbMethodSecurityAttributeService;
@@ -142,9 +139,6 @@ public final class EndpointService implements Service {
             } else {
                 endpoint.setSecurityDomainContext(new ElytronSecurityDomainContextImpl(this.elytronSecurityDomain.get()));
             }
-        }
-        if (this.securityDomainContext != null && this.securityDomainContext.get() != null) {
-            endpoint.setSecurityDomainContext(new SecurityDomainContextImpl(securityDomainContext.get()));
         }
         if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
             final EJBViewMethodSecurityAttributesService ejbMethodSecurityAttributeService = this.ejbMethodSecurityAttributeService.get();
@@ -243,7 +237,6 @@ public final class EndpointService implements Service {
         final String propEndpoint = endpoint.getName().getKeyProperty(Endpoint.SEPID_PROPERTY_ENDPOINT);
         final StringBuilder context = new StringBuilder(Endpoint.SEPID_PROPERTY_CONTEXT).append("=").append(propContext);
         final ServiceBuilder<?> builder = serviceTarget.addService(serviceName);
-        Supplier<SecurityDomainContext> securityDomainContext = null;
         Supplier<ApplicationSecurityDomainService.ApplicationSecurityDomain> ejbApplicationSecurityDomain = null;
         Supplier<EJBViewMethodSecurityAttributesService> ejbMethodSecurityAttributeService = null;
         Supplier<SecurityDomain> elytronSecurityDomain = null;
@@ -252,7 +245,6 @@ public final class EndpointService implements Service {
         //builder.addAliases(alias);
         final String domainName = getDeploymentSecurityDomainName(endpoint, unit);
         endpoint.setProperty(SECURITY_DOMAIN_NAME, domainName);
-        CapabilityServiceSupport capabilitySupport = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
         if (isElytronSecurityDomain(unit, endpoint, domainName)) {
             if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
                 ServiceName ejbSecurityDomainServiceName = EJB_APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY
@@ -268,14 +260,13 @@ public final class EndpointService implements Service {
             endpoint.setProperty(ELYTRON_SECURITY_DOMAIN, true);
         }
         else if (isLegacySecurityDomain(unit, endpoint, domainName)) {
-            // This is still picketbox jaas securityDomainContext
-            securityDomainContext = builder.requires(SECURITY_DOMAIN_SERVICE.append(domainName));
+            throw ROOT_LOGGER.legacySecurityUnsupported();
         }
         final Supplier<AbstractServerConfig> serverConfigService = builder.requires(WSServices.CONFIG_SERVICE);
         if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
             ejbMethodSecurityAttributeService = builder.requires(getEJBViewMethodSecurityAttributesServiceName(unit, endpoint));
         }
-        builder.setInstance(new EndpointService(endpoint, serviceName, alias, endpointConsumer, securityDomainContext,
+        builder.setInstance(new EndpointService(endpoint, serviceName, alias, endpointConsumer,
                 serverConfigService, ejbApplicationSecurityDomain, ejbMethodSecurityAttributeService, elytronSecurityDomain));
         builder.install();
         //add a dependency on the endpoint service to web deployments, so that the
