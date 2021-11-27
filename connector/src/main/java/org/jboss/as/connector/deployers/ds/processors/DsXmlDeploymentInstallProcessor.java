@@ -55,7 +55,6 @@ import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -88,7 +87,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.security.SubjectFactory;
 
 /**
  * Picks up -ds.xml deployments
@@ -324,14 +322,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
         dataSourceServiceBuilder.requires(support.getCapabilityServiceName(NamingService.CAPABILITY_NAME));
 
         if (requireLegacySecurity) {
-            if (support.hasCapability("org.wildfly.legacy-security")) {
-                dataSourceServiceBuilder.addDependency(support.getCapabilityServiceName("org.wildfly.legacy-security.server-security-manager"), ServerSecurityManager.class,
-                        dataSourceService.getServerSecurityManager());
-                dataSourceServiceBuilder.addDependency(support.getCapabilityServiceName("org.wildfly.legacy-security.subject-factory"), SubjectFactory.class,
-                        dataSourceService.getSubjectFactoryInjector());
-            } else {
-                throw ConnectorLogger.DS_DEPLOYER_LOGGER.legacySecurityNotAvailableForDsXml(managementName);
-            }
+            throw ConnectorLogger.DS_DEPLOYER_LOGGER.legacySecurityNotAvailableForDsXml(managementName);
         }
 
         //Register an empty override model regardless of we're enabled or not - the statistics listener will add the relevant childresources

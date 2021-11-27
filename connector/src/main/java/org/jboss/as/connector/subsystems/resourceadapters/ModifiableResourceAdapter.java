@@ -25,24 +25,17 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
 import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
 import org.jboss.jca.common.api.metadata.resourceadapter.WorkManager;
 import org.jboss.jca.common.metadata.resourceadapter.ActivationImpl;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.security.SubjectFactory;
 
 
 public class ModifiableResourceAdapter extends ActivationImpl {
 
     private volatile ServiceName raXmlDeploymentServiceName = null;
-
-    private volatile SubjectFactory subjectFactory = null;
-
-    private volatile ServerSecurityManager secManager = null;
-
 
     public ModifiableResourceAdapter(String id, String archive, TransactionSupportEnum transactionSupport, List<ConnectionDefinition> connectionDefinitions,
                                      List<AdminObject> adminObjects, Map<String, String> configProperties, List<String> beanValidationGroups,
@@ -78,20 +71,5 @@ public class ModifiableResourceAdapter extends ActivationImpl {
         this.raXmlDeploymentServiceName = raXmlDeploymentServiceName;
     }
 
-    public SubjectFactory getSubjectFactory() {
-        return subjectFactory;
-    }
-
-    public void setSubjectFactory(SubjectFactory subjectFactory) {
-        this.subjectFactory = subjectFactory;
-    }
-
-    public ServerSecurityManager getSecManager() {
-        return secManager;
-    }
-
-    public void setSecManager(ServerSecurityManager secManager) {
-        this.secManager = secManager;
-    }
 }
 

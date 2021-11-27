@@ -967,4 +967,7 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 127, value = "Connection factory  %s is configured to require the legacy security subsystem, which is not present")
     IllegalStateException legacySecurityNotAvailableForConnectionFactory(String jndiName);
+
+    @Message(id = 128, value = "Legacy security is not available")
+    IllegalStateException legacySecurityNotAvailable();
 }

@@ -45,7 +45,6 @@ import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
@@ -73,7 +72,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.security.SubjectFactory;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
@@ -222,12 +220,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 builder.addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, raDeploymentService.getCcmInjector());
             }
             if (activation != null && ActivationSecurityUtil.isLegacySecurityRequired(activation)) {
-                if (support.hasCapability("org.wildfly.legacy-security")) {
-                    builder.addDependency(support.getCapabilityServiceName("org.wildfly.legacy-security.subject-factory"), SubjectFactory.class, raDeploymentService.getSubjectFactoryInjector())
-                            .addDependency(support.getCapabilityServiceName("org.wildfly.legacy-security.server-security-manager"), ServerSecurityManager.class, raDeploymentService.getServerSecurityManager());
-                } else {
-                    throw ConnectorLogger.DS_DEPLOYER_LOGGER.legacySecurityNotAvailableForRa(connectorXmlDescriptor.getDeploymentName());
-                }
+                throw ConnectorLogger.DS_DEPLOYER_LOGGER.legacySecurityNotAvailableForRa(connectorXmlDescriptor.getDeploymentName());
             }
 
             return builder;
