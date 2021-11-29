@@ -197,10 +197,4 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
         }
         return localClass.getName();
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
-
 }

@@ -74,10 +74,6 @@ public final class WSIntegrationProcessorJAXWS_EJB implements DeploymentUnitProc
         processAnnotation(unit, WebServiceProvider.class);
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-        // does nothing
-    }
     @SuppressWarnings("rawtypes")
     private static void processAnnotation(final DeploymentUnit unit,  final Class annotationType) {
 

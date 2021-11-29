@@ -88,8 +88,4 @@ public class UndertowDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_JS, true, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, CLUSTERING_API, true, false, false, false));
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

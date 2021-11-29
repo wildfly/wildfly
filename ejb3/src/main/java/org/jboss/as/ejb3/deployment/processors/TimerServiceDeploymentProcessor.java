@@ -194,11 +194,6 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
         }
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
-
     private ServiceName getTimerPersistenceServiceName(CapabilityServiceSupport support, String dynamicName) {
         return support.getCapabilityServiceName(TIMER_PERSISTENCE_CAPABILITY_NAME, dynamicName);
     }

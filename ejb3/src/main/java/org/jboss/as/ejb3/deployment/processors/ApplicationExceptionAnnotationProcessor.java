@@ -85,9 +85,4 @@ public class ApplicationExceptionAnnotationProcessor implements DeploymentUnitPr
             descriptions.addApplicationException(exceptionClassName, rollback, inherited);
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
 }

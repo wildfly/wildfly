@@ -72,11 +72,6 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
         processAnnotation(unit, eeModuleDescription);
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit unit) {
-        // does nothing
-    }
-
     protected abstract void processAnnotation(final DeploymentUnit unit, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException;
 
     static ComponentDescription createComponentDescription(final DeploymentUnit unit, final String componentName, final String componentClassName, final String dependsOnEndpointClassName) {

@@ -46,9 +46,4 @@ public class BeanValidationResourceReferenceProcessorRegistryProcessor implement
             }
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit deploymentUnit) {
-    }
-
 }

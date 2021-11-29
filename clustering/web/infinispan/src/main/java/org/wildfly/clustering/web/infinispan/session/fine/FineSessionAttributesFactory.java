@@ -65,9 +65,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, AtomicReference<Map<String, UUID>>> {
 
     private final Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache;
-    private final Cache<SessionAttributeNamesKey, Map<String, UUID>> namesFindCache;
     private final Cache<SessionAttributeKey, V> attributeCache;
-    private final Cache<SessionAttributeKey, V> attributeFindCache;
     private final Cache<Key<String>, Object> writeCache;
     private final Cache<Key<String>, Object> silentCache;
     private final Marshaller<Object, V> marshaller;
@@ -83,9 +81,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 
     public FineSessionAttributesFactory(InfinispanSessionAttributesFactoryConfiguration<S, C, L, Object, V> configuration) {
         this.namesCache = configuration.getCache();
-        this.namesFindCache = configuration.getReadForUpdateCache();
         this.attributeCache = configuration.getCache();
-        this.attributeFindCache = configuration.getReadForUpdateCache();
         this.writeCache = configuration.getWriteOnlyCache();
         this.silentCache = configuration.getSilentWriteCache();
         this.marshaller = configuration.getMarshaller();
@@ -127,23 +123,23 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 
     @Override
     public AtomicReference<Map<String, UUID>> findValue(String id) {
-        return this.getValue(this.namesFindCache, this.attributeFindCache, id, true);
+        return this.getValue(id, true);
     }
 
     @Override
     public AtomicReference<Map<String, UUID>> tryValue(String id) {
-        return this.getValue(this.namesCache, this.attributeCache, id, false);
+        return this.getValue(id, false);
     }
 
-    private AtomicReference<Map<String, UUID>> getValue(Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache, Cache<SessionAttributeKey, V> attributeCache, String id, boolean purgeIfInvalid) {
-        Map<String, UUID> names = namesCache.get(new SessionAttributeNamesKey(id));
+    private AtomicReference<Map<String, UUID>> getValue(String id, boolean purgeIfInvalid) {
+        Map<String, UUID> names = this.namesCache.get(new SessionAttributeNamesKey(id));
         if (names != null) {
             // Validate all attributes
             Map<SessionAttributeKey, String> attributes = new TreeMap<>();
             for (Map.Entry<String, UUID> entry : names.entrySet()) {
                 attributes.put(new SessionAttributeKey(id, entry.getValue()), entry.getKey());
             }
-            Map<SessionAttributeKey, V> entries = attributeCache.getAdvancedCache().getAll(attributes.keySet());
+            Map<SessionAttributeKey, V> entries = this.attributeCache.getAdvancedCache().getAll(attributes.keySet());
             for (Map.Entry<SessionAttributeKey, String> attribute : attributes.entrySet()) {
                 V value = entries.get(attribute.getKey());
                 if (value != null) {

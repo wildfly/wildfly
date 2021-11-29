@@ -24,7 +24,6 @@ package org.jboss.as.connector.services.resourceadapters.deployment;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
 
-import javax.security.auth.Subject;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -39,13 +38,11 @@ import org.jboss.as.connector.security.ElytronSubjectFactory;
 import org.jboss.as.connector.services.resourceadapters.ResourceAdapterService;
 import org.jboss.as.connector.subsystems.resourceadapters.ModifiableResourceAdapter;
 import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.jca.common.api.metadata.common.SecurityMetadata;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.spec.Connector;
 import org.jboss.jca.common.metadata.merge.Merger;
-import org.jboss.jca.core.security.picketbox.PicketBoxSubjectFactory;
 import org.jboss.jca.deployers.DeployersLogger;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.jca.deployers.common.DeployException;
@@ -226,24 +223,6 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
                 }
             } else if (securityDomain == null || securityDomain.trim().equals("")) {
                 return null;
-            } else if (((ModifiableResourceAdapter) raxml).getSubjectFactory() != null) {
-                return new PicketBoxSubjectFactory(((ModifiableResourceAdapter) raxml).getSubjectFactory()){
-
-                    @Override
-                    public Subject createSubject(final String sd) {
-                        ServerSecurityManager sm = ((ModifiableResourceAdapter) raxml).getSecManager();
-                        if (sm != null) {
-                            sm.push(sd);
-                        }
-                        try {
-                            return super.createSubject(sd);
-                        } finally {
-                            if (sm != null) {
-                                sm.pop();
-                            }
-                        }
-                    }
-                };
             }
             return null;
         }

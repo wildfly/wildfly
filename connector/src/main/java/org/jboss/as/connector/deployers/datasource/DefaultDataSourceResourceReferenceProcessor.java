@@ -57,10 +57,6 @@ public class DefaultDataSourceResourceReferenceProcessor implements DeploymentUn
         }
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private static class DatasourceResourceReferenceProcessor implements EEResourceReferenceProcessor {
 
         private static final String TYPE = DataSource.class.getName();

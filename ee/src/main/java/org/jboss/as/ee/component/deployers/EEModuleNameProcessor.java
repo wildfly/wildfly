@@ -67,7 +67,4 @@ public final class EEModuleNameProcessor implements DeploymentUnitProcessor {
         }
 
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

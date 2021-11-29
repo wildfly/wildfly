@@ -87,8 +87,4 @@ public class ApplicationClientDependencyProcessor implements DeploymentUnitProce
         }
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

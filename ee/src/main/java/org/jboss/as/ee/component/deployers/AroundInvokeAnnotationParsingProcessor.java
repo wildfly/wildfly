@@ -67,10 +67,6 @@ public class AroundInvokeAnnotationParsingProcessor implements DeploymentUnitPro
         }
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
-
     private void processAroundInvoke(final EEModuleDescription eeModuleDescription, final AnnotationTarget target) throws DeploymentUnitProcessingException {
         if (!(target instanceof MethodInfo)) {
             throw EeLogger.ROOT_LOGGER.methodOnlyAnnotation(AROUND_INVOKE_ANNOTATION_NAME);

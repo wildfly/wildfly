@@ -122,8 +122,4 @@ public class InstanceNameBindingProcessor implements DeploymentUnitProcessor {
         }
         jndiDependencies.add(instanceNameServiceName);
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

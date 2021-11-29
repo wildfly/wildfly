@@ -82,9 +82,4 @@ public class TransactionDependenciesProcessor implements DeploymentUnitProcessor
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
         moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JTS_MODULE, false, false, true, false));
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
 }

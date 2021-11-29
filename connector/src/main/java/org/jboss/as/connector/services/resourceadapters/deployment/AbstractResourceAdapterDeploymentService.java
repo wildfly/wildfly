@@ -26,10 +26,6 @@ import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
 
-import javax.naming.InitialContext;
-import javax.naming.Reference;
-import javax.resource.spi.ResourceAdapter;
-import javax.transaction.TransactionManager;
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URI;
@@ -42,6 +38,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
+
+import javax.naming.InitialContext;
+import javax.naming.Reference;
+import javax.resource.spi.ResourceAdapter;
+import javax.transaction.TransactionManager;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity;
@@ -59,7 +60,6 @@ import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.connector.util.JCAValidatorFactory;
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -78,7 +78,6 @@ import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.bootstrapcontext.BootstrapContextCoordinator;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
-import org.jboss.jca.core.security.picketbox.PicketBoxSubjectFactory;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.security.Callback;
@@ -101,7 +100,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.security.SubjectFactory;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.action.ClearContextClassLoaderAction;
@@ -127,10 +125,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     protected final InjectedValue<JcaSubsystemConfiguration> config = new InjectedValue<JcaSubsystemConfiguration>();
     protected final InjectedValue<TransactionIntegration> txInt = new InjectedValue<TransactionIntegration>();
-    protected final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
     protected final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
     protected final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<ExecutorService>();
-    private final InjectedValue<ServerSecurityManager> secManager = new InjectedValue<ServerSecurityManager>();
 
     protected String raRepositoryRegistrationId;
     protected String connectorServicesRegistrationName;
@@ -276,14 +272,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     public Injector<JcaSubsystemConfiguration> getConfigInjector() {
         return config;
-    }
-
-    public Injector<SubjectFactory> getSubjectFactoryInjector() {
-        return subjectFactory;
-    }
-
-    public Injector<ServerSecurityManager> getServerSecurityManager() {
-        return secManager;
     }
 
     public Injector<CachedConnectionManager> getCcmInjector() {
@@ -682,7 +670,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
             } else if (securityDomain == null || securityDomain.trim().equals("")) {
                 return null;
             } else {
-                return new PicketBoxSubjectFactory(subjectFactory.getValue());
+                throw ConnectorLogger.ROOT_LOGGER.legacySecurityNotAvailable();
             }
         }
 

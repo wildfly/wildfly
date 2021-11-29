@@ -22,6 +22,15 @@
 
 package org.jboss.as.connector.services.resourceadapters;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.resource.spi.TransactionSupport;
+
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Security;
 import org.jboss.as.connector.metadata.api.resourceadapter.ActivationSecurityUtil;
@@ -30,7 +39,6 @@ import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.jca.common.api.metadata.Defaults;
@@ -52,15 +60,6 @@ import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.security.SubjectFactory;
-
-import javax.resource.spi.TransactionSupport;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
 
 public class DirectConnectionFactoryActivatorService implements org.jboss.msc.service.Service<org.jboss.as.naming.deployment.ContextNames.BindInfo> {
 
@@ -258,15 +257,7 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
             connectionFactoryServiceBuilder.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
 
             if (ActivationSecurityUtil.isLegacySecurityRequired(security)) {
-                if (legacySecurityAvailable) {
-                    connectionFactoryServiceBuilder
-                            .addDependency(SUBJECT_FACTORY_SERVICE, SubjectFactory.class,
-                                    activator.getSubjectFactoryInjector())
-                            .addDependency(SECURITY_MANAGER_SERVICE,
-                                    ServerSecurityManager.class, activator.getServerSecurityManager());
-                } else {
-                    throw ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER.legacySecurityNotAvailableForConnectionFactory(jndiName);
-                }
+                throw ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER.legacySecurityNotAvailableForConnectionFactory(jndiName);
             }
 
             connectionFactoryServiceBuilder.setInitialMode(org.jboss.msc.service.ServiceController.Mode.ACTIVE).install();

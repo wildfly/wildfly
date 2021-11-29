@@ -61,9 +61,4 @@ public abstract class AbstractEjbXmlDescriptorProcessor<T extends EnterpriseBean
     protected abstract Class<T> getMetaDataType();
 
     protected abstract void processBeanMetaData(T beanMetaData, DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException;
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
 }

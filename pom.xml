@@ -441,9 +441,8 @@
         <version.org.jboss.mod_cluster>1.4.4.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>5.12.1.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.5.Final</version.org.jboss.openjdk-orb>
-        <version.org.jboss.resteasy>4.7.2.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>4.7.3.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
-        <version.org.jboss.security.jbossxacml>2.0.8.Final</version.org.jboss.security.jbossxacml>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
@@ -495,7 +494,7 @@
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
         <version.org.testng>6.14.3</version.org.testng>
         <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>18.0.0.Beta4</version.org.wildfly.core>
+        <version.org.wildfly.core>18.0.0.Beta5</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.1.9.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.14.Final</version.org.wildfly.naming-client>
@@ -1404,12 +1403,6 @@
                         <artifactId>jboss-transaction-api_1.2_spec</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-security-api</artifactId>
-                <version>${ee.maven.version}</version>
             </dependency>
 
             <dependency>
@@ -8238,12 +8231,6 @@
                         <artifactId>jboss-seam</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.security</groupId>
-                <artifactId>jbossxacml</artifactId>
-                <version>${version.org.jboss.security.jbossxacml}</version>
             </dependency>
 
             <dependency>

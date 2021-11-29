@@ -74,10 +74,6 @@ public class OpenTelemetrySubsystemDeploymentProcessor implements DeploymentUnit
         setupOtelCdiBeans(deploymentPhaseContext);
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private void setupOtelCdiBeans(DeploymentPhaseContext deploymentPhaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = deploymentPhaseContext.getDeploymentUnit();
         final ClassLoader initialCl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();

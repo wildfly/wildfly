@@ -36,8 +36,4 @@ public class BatchCleanupProcessor implements DeploymentUnitProcessor {
         // Remove the JobOperatorService from the deployment unit
         phaseContext.getDeploymentUnit().removeAttachment(BatchAttachments.JOB_OPERATOR);
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

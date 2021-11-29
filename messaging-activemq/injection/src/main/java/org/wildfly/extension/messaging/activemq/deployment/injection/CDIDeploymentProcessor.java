@@ -51,7 +51,4 @@ public class CDIDeploymentProcessor implements DeploymentUnitProcessor {
                     .registerExtensionInstance(new JMSCDIExtension(propertyReplacer), parent);
         }
     }
-
-    public void undeploy(DeploymentUnit context) {
-    }
 }

@@ -99,8 +99,4 @@ class OidcActivationProcessor implements DeploymentUnitProcessor {
         contextParams.add(param);
         webMetaData.setContextParams(contextParams);
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {}
-
 }

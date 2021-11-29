@@ -23,7 +23,6 @@
 package org.jboss.as.ee.metadata.property;
 
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.metadata.property.SystemPropertyResolver;
@@ -37,6 +36,4 @@ public class SystemPropertyResolverProcessor implements DeploymentUnitProcessor 
         phaseContext.getDeploymentUnit().addToAttachmentList(Attachments.DEPLOYMENT_PROPERTY_RESOLVERS, SystemPropertyResolver.INSTANCE);
     }
 
-    public void undeploy(DeploymentUnit context) {
-    }
 }

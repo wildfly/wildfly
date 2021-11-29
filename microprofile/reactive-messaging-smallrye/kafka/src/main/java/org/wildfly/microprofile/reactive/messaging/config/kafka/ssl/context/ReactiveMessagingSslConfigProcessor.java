@@ -97,11 +97,6 @@ class ReactiveMessagingSslConfigProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    @Override
-    public void undeploy(DeploymentUnit deploymentUnit) {
-
-    }
-
     private boolean isReactiveMessagingDeployment(DeploymentUnit deploymentUnit) {
         if (deploymentUnit.hasAttachment(IS_REACTIVE_MESSAGING_DEPLOYMENT)) {
             Boolean isRm = deploymentUnit.getAttachment(IS_REACTIVE_MESSAGING_DEPLOYMENT);
