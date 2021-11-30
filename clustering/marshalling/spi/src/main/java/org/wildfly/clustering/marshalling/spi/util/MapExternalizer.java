@@ -55,12 +55,14 @@ public class MapExternalizer<T extends Map<Object, Object>, C, CC> implements Ex
 
     @Override
     public void writeObject(ObjectOutput output, T map) throws IOException {
-        C context = this.context.apply(map);
-        this.contextExternalizer.writeObject(output, context);
-        IndexSerializer.VARIABLE.writeInt(output, map.size());
-        for (Map.Entry<Object, Object> entry : map.entrySet()) {
-            output.writeObject(entry.getKey());
-            output.writeObject(entry.getValue());
+        synchronized (map) { // Avoid ConcurrentModificationException
+            C context = this.context.apply(map);
+            this.contextExternalizer.writeObject(output, context);
+            IndexSerializer.VARIABLE.writeInt(output, map.size());
+            for (Map.Entry<Object, Object> entry : map.entrySet()) {
+                output.writeObject(entry.getKey());
+                output.writeObject(entry.getValue());
+            }
         }
     }
 
@@ -79,9 +81,11 @@ public class MapExternalizer<T extends Map<Object, Object>, C, CC> implements Ex
     @Override
     public OptionalInt size(T map) {
         if (!map.isEmpty()) return OptionalInt.empty();
-        C context = this.context.apply(map);
-        OptionalInt contextSize = this.contextExternalizer.size(context);
-        return contextSize.isPresent() ? OptionalInt.of(contextSize.getAsInt() + IndexSerializer.VARIABLE.size(map.size())) : OptionalInt.empty();
+        synchronized (map) { // Avoid ConcurrentModificationException
+            C context = this.context.apply(map);
+            OptionalInt contextSize = this.contextExternalizer.size(context);
+            return contextSize.isPresent() ? OptionalInt.of(contextSize.getAsInt() + IndexSerializer.VARIABLE.size(map.size())) : OptionalInt.empty();
+        }
     }
 
     @Override
