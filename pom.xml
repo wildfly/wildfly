@@ -297,7 +297,7 @@
         <version.com.github.tomakehurst.wiremock>2.20.0</version.com.github.tomakehurst.wiremock>
         <version.com.google.android.annotations>4.1.1.4</version.com.google.android.annotations>
         <version.com.google.api.grpc>2.0.1</version.com.google.api.grpc>
-        <version.com.google.code.gson>2.8.6</version.com.google.code.gson>
+        <version.com.google.code.gson>2.8.9</version.com.google.code.gson>
         <version.com.google.errorprone>2.4.0</version.com.google.errorprone>
         <version.com.google.guava>30.1-jre</version.com.google.guava>
         <version.com.google.guava.failureaccess>1.0.1</version.com.google.guava.failureaccess>
@@ -341,8 +341,8 @@
         <version.io.smallrye.open-api>2.1.15</version.io.smallrye.open-api>
         <version.io.smallrye.opentracing>2.0.0</version.io.smallrye.opentracing>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
-        <version.io.smallrye.smallrye-common>1.6.0</version.io.smallrye.smallrye-common>
-        <version.io.smallrye.smallrye-config>2.5.1</version.io.smallrye.smallrye-config>
+        <version.io.smallrye.smallrye-common>1.8.0</version.io.smallrye.smallrye-common>
+        <version.io.smallrye.smallrye-config>2.6.1</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>5.2.1</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>3.1.1</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>3.1.1</version.io.smallrye.smallrye-jwt>
@@ -431,7 +431,7 @@
         <version.org.jboss.ejb-client-legacy>3.0.3.Final</version.org.jboss.ejb-client-legacy>
         <version.org.jboss.ejb3.ext-api>2.3.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>2.0.10.Final</version.org.jboss.genericjms>
-        <version.org.jboss.hal.console>3.3.8.Final</version.org.jboss.hal.console>
+        <version.org.jboss.hal.console>3.4.1.Final</version.org.jboss.hal.console>
         <version.org.jboss.iiop-client>1.0.1.Final</version.org.jboss.iiop-client>
         <version.org.jboss.ironjacamar>1.5.3.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jboss-transaction-spi>7.6.1.Final</version.org.jboss.jboss-transaction-spi>
@@ -440,7 +440,7 @@
         <version.org.jboss.metadata>14.0.0.Final</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.4.4.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>5.12.1.Final</version.org.jboss.narayana>
-        <version.org.jboss.openjdk-orb>8.1.5.Final</version.org.jboss.openjdk-orb>
+        <version.org.jboss.openjdk-orb>8.1.7.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.resteasy>4.7.3.Final</version.org.jboss.resteasy>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
