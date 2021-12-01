@@ -9703,6 +9703,12 @@
                 <artifactId>testcontainers</artifactId>
                 <version>${version.org.testcontainers.testcontainers}</version>
                 <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-compress</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.keycloak</groupId>
