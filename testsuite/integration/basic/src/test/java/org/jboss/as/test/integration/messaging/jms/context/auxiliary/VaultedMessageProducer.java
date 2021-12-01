@@ -39,7 +39,7 @@ public class VaultedMessageProducer {
 
     @Inject
     @JMSConnectionFactory("java:jboss/exported/jms/RemoteConnectionFactory")
-    @JMSPasswordCredential(userName = "guest", password = "guest")
+    @JMSPasswordCredential(userName = "${test.userName}", password = "${test.password}")
     private JMSContext context;
 
     public void sendToDestination(Destination destination, String text) {
