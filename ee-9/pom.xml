@@ -66,6 +66,7 @@
         <version.jakarta.security.enterprise>2.0.0</version.jakarta.security.enterprise>
         <version.jakarta.servlet.jakarta-servlet-api>5.0.0</version.jakarta.servlet.jakarta-servlet-api>
         <version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.0.0</version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
+        <version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>2.0.0</version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
         <version.jakarta.transaction.jakarta-transaction-api>2.0.0</version.jakarta.transaction.jakarta-transaction-api>
         <version.jakarta.validation.jakarta-validation-api>3.0.0</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.0.0</version.jakarta.websocket.jakarta-websocket-api>
@@ -79,6 +80,7 @@
         <!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
 		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
         <version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</version.org.glassfish.jaxb.jaxb-xjc>
+        <version.org.glassfish.web.jakarta.servlet.jsp.jstl>2.0.0</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <version.org.hibernate.validator>7.0.1.Final</version.org.hibernate.validator>
         <version.org.jberet>2.0.2.Final</version.org.jberet>
         <version.org.jboss.invocation>1.7.0.Final</version.org.jboss.invocation>
@@ -100,12 +102,6 @@
         <!--
         <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>2.0.0.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>1.0.2.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>
-        -->
-
-        <!-- TODO Glassfish 6.0.0.M1 uses jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api for this
-             but we use Apache Tomcat Taglibs for both spec and impl -->
-        <!--
-        <version.org.apache.jstl>1.2.6-RC1</version.org.apache.jstl>
         -->
     </properties>
 
@@ -429,6 +425,18 @@
             </dependency>
 
             <dependency>
+                <groupId>jakarta.servlet.jsp.jstl</groupId>
+                <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+                <version>${version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>jakarta.servlet.jsp</groupId>
                 <artifactId>jakarta.servlet.jsp-api</artifactId>
                 <version>${version.jakarta.servlet.jsp.jakarta-servlet-jsp-api}</version>
@@ -593,6 +601,18 @@
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-xjc</artifactId>
                 <version>${version.org.glassfish.jaxb.jaxb-xjc}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.web</groupId>
+                <artifactId>jakarta.servlet.jsp.jstl</artifactId>
+                <version>${version.org.glassfish.web.jakarta.servlet.jsp.jstl}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
