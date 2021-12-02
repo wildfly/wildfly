@@ -129,6 +129,16 @@ class LegacySupport {
         }
 
         @Override
+        protected void addOperationReplyValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+            final ModelNode valueType = getNoTextValueTypeDescriptionOnly(node);
+            valueType.get(CODE, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, CODE));
+            valueType.get(Constants.FLAG, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.FLAG));
+            valueType.get(Constants.MODULE, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.MODULE));
+            valueType.get(Constants.MODULE_OPTIONS, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.MODULE_OPTIONS));
+            valueType.get(Constants.LOGIN_MODULE_STACK_REF, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.LOGIN_MODULE_STACK_REF));
+        }
+
+        @Override
         public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
             throw SecurityLogger.ROOT_LOGGER.unsupportedOperation();
         }
@@ -162,6 +172,30 @@ class LegacySupport {
             ref.get(TYPE).set(ModelType.STRING);
             ref.get(NILLABLE).set(true);
             ref.get(MIN_LENGTH).set(1);
+
+            return valueType;
+        }
+
+        private ModelNode getNoTextValueTypeDescriptionOnly(final ModelNode parent) {
+            final ModelNode valueType = parent.get(VALUE_TYPE);
+            final ModelNode code = valueType.get(CODE);
+            code.get(DESCRIPTION); // placeholder
+            code.get(TYPE).set(ModelType.STRING);
+
+            final ModelNode flag = valueType.get(Constants.FLAG);
+            flag.get(DESCRIPTION);  // placeholder
+            flag.get(TYPE).set(ModelType.STRING);
+
+            final ModelNode module = valueType.get(Constants.MODULE);
+            module.get(TYPE).set(ModelType.STRING);
+
+            final ModelNode moduleOptions = valueType.get(Constants.MODULE_OPTIONS);
+            moduleOptions.get(DESCRIPTION);  // placeholder
+            moduleOptions.get(TYPE).set(ModelType.OBJECT);
+
+            final ModelNode ref = valueType.get(Constants.LOGIN_MODULE_STACK_REF);
+            ref.get(DESCRIPTION); // placeholder
+            ref.get(TYPE).set(ModelType.STRING);
 
             return valueType;
         }
@@ -211,6 +245,15 @@ class LegacySupport {
             valueType.get(Constants.MODULE_OPTIONS, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.MODULE_OPTIONS));
         }
 
+        @Override
+        protected void addOperationReplyValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+            final ModelNode valueType = getNoTextValueTypeDescriptionOnly(node);
+            valueType.get(CODE, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, CODE));
+            valueType.get(Constants.FLAG, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.FLAG));
+            valueType.get(Constants.MODULE, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.MODULE));
+            valueType.get(Constants.MODULE_OPTIONS, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.MODULE_OPTIONS));
+        }
+
 
         @Override
         public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
@@ -242,6 +285,26 @@ class LegacySupport {
             moduleOptions.get(VALUE_TYPE).set(ModelType.STRING);
             moduleOptions.get(NILLABLE).set(true);
 
+
+            return valueType;
+        }
+
+        private ModelNode getNoTextValueTypeDescriptionOnly(final ModelNode parent) {
+            final ModelNode valueType = parent.get(VALUE_TYPE);
+            final ModelNode code = valueType.get(CODE);
+            code.get(DESCRIPTION); // placeholder
+            code.get(TYPE).set(ModelType.STRING);
+
+            final ModelNode flag = valueType.get(Constants.FLAG);
+            flag.get(DESCRIPTION);  // placeholder
+            flag.get(TYPE).set(ModelType.STRING);
+
+            final ModelNode module = valueType.get(Constants.MODULE);
+            module.get(TYPE).set(ModelType.STRING);
+
+            final ModelNode moduleOptions = valueType.get(Constants.MODULE_OPTIONS);
+            moduleOptions.get(DESCRIPTION);  // placeholder
+            moduleOptions.get(TYPE).set(ModelType.OBJECT);
 
             return valueType;
         }
@@ -292,6 +355,14 @@ class LegacySupport {
         }
 
         @Override
+        protected void addOperationReplyValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+            final ModelNode valueType = getNoTextValueTypeDescriptionOnly(node);
+            valueType.get(CODE, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, CODE));
+            valueType.get(Constants.TYPE, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.TYPE));
+            valueType.get(Constants.MODULE_OPTIONS, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.MODULE_OPTIONS));
+        }
+
+        @Override
         public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
             throw SecurityLogger.ROOT_LOGGER.unsupportedOperation();
         }
@@ -315,6 +386,23 @@ class LegacySupport {
             moduleOptions.get(VALUE_TYPE).set(ModelType.STRING);
             moduleOptions.get(NILLABLE).set(true);
 
+
+            return valueType;
+        }
+
+        private ModelNode getNoTextValueTypeDescriptionOnly(final ModelNode parent) {
+            final ModelNode valueType = parent.get(VALUE_TYPE);
+            final ModelNode code = valueType.get(CODE);
+            code.get(DESCRIPTION); // placeholder
+            code.get(TYPE).set(ModelType.STRING);
+
+            final ModelNode flag = valueType.get(Constants.TYPE);
+            flag.get(DESCRIPTION);  // placeholder
+            flag.get(TYPE).set(ModelType.STRING);
+
+            final ModelNode moduleOptions = valueType.get(Constants.MODULE_OPTIONS);
+            moduleOptions.get(DESCRIPTION);  // placeholder
+            moduleOptions.get(TYPE).set(ModelType.OBJECT);
 
             return valueType;
         }
@@ -360,6 +448,13 @@ class LegacySupport {
             valueType.get(Constants.MODULE_OPTIONS, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.MODULE_OPTIONS));
         }
 
+        @Override
+        protected void addOperationReplyValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+            final ModelNode valueType = getNoTextValueTypeDescriptionOnly(node);
+            valueType.get(CODE, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, CODE));
+            valueType.get(Constants.MODULE_OPTIONS, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.MODULE_OPTIONS));
+        }
+
 
         @Override
         public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
@@ -379,6 +474,19 @@ class LegacySupport {
             moduleOptions.get(TYPE).set(ModelType.OBJECT);
             moduleOptions.get(VALUE_TYPE).set(ModelType.STRING);
             moduleOptions.get(NILLABLE).set(true);
+
+            return valueType;
+        }
+
+        private ModelNode getNoTextValueTypeDescriptionOnly(final ModelNode parent) {
+            final ModelNode valueType = parent.get(VALUE_TYPE);
+            final ModelNode code = valueType.get(CODE);
+            code.get(DESCRIPTION); // placeholder
+            code.get(TYPE).set(ModelType.STRING);
+
+            final ModelNode moduleOptions = valueType.get(Constants.MODULE_OPTIONS);
+            moduleOptions.get(DESCRIPTION);  // placeholder
+            moduleOptions.get(TYPE).set(ModelType.OBJECT);
 
             return valueType;
         }
