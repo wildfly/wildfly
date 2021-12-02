@@ -1185,11 +1185,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.resteasy.spring</groupId>
-            <artifactId>resteasy-spring</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.seam.integration</groupId>
             <artifactId>jboss-seam-int-jbossas</artifactId>
         </dependency>

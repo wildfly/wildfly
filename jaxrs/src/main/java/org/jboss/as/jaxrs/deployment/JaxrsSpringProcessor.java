@@ -38,7 +38,7 @@ import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -63,7 +63,7 @@ import java.util.List;
 public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
 
     private static final String JAR_LOCATION = "resteasy-spring-jar";
-    private static final ModuleIdentifier MODULE = ModuleIdentifier.create("org.jboss.resteasy.resteasy-spring");
+    private static final String MODULE = "org.jboss.resteasy.resteasy-spring";
 
     public static final String SPRING_LISTENER = "org.jboss.resteasy.plugins.spring.SpringContextLoaderListener";
     public static final String SPRING_SERVLET = "org.springframework.web.servlet.DispatcherServlet";
@@ -136,6 +136,14 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (deploymentUnit.getParent() != null) {
+            return;
+        }
+
+        // The module is optional, if it does not exist we should skip processing
+        try {
+            Module.getBootModuleLoader().loadModule(MODULE);
+        } catch (ModuleLoadException e) {
+            JaxrsLogger.JAXRS_LOGGER.debugf("Module %s not found, skipping the RESTEasy Spring processor", MODULE);
             return;
         }
 
