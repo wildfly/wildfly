@@ -21,6 +21,8 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
+import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
+
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
@@ -105,7 +107,6 @@ import static org.wildfly.extension.messaging.activemq.ServerDefinition.PERSISTE
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.PERSIST_ID_CACHE;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.SCHEDULED_THREAD_POOL_MAX_SIZE;
-import static org.wildfly.extension.messaging.activemq.ServerDefinition.SECURITY_DOMAIN;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.SECURITY_ENABLED;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.SECURITY_INVALIDATION_INTERVAL;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.SERVER_DUMP_INTERVAL;
@@ -158,7 +159,6 @@ import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
-import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
@@ -329,18 +329,12 @@ class ServerAdd extends AbstractAddStepHandler {
             // Inject a reference to the Elytron security domain if one has been defined.
             Optional<Supplier<SecurityDomain>> elytronSecurityDomain = Optional.empty();
             // legacy security
-            Optional<Supplier<SecurityDomainContext>> securityDomainContext = Optional.empty();
             final ModelNode elytronSecurityDomainModel = ELYTRON_DOMAIN.resolveModelAttribute(context, model);
             if (elytronSecurityDomainModel.isDefined()) {
                 ServiceName elytronDomainCapability = context.getCapabilityServiceName(ELYTRON_DOMAIN_CAPABILITY, elytronSecurityDomainModel.asString(), SecurityDomain.class);
                 elytronSecurityDomain = Optional.of(serviceBuilder.requires(elytronDomainCapability));
             } else {
-                // Add legacy security
-                String domain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asString();
-                securityDomainContext = Optional.of(serviceBuilder.requires(SECURITY_DOMAIN_SERVICE.append(domain)));
-                // WFLY-6652 / WFLY-10292 this dependency ensures that Artemis will be able to destroy any queues created on behalf of a
-                // pooled-connection-factory client during server stop
-                serviceBuilder.requires(SECURITY_BOOTSTRAP_SERVICE);
+                throw ROOT_LOGGER.legacySecurityUnsupported();
             }
 
             List<Interceptor> incomingInterceptors = processInterceptors(INCOMING_INTERCEPTORS.resolveModelAttribute(context, operation));
@@ -456,7 +450,6 @@ class ServerAdd extends AbstractAddStepHandler {
                     commandDispatcherFactories,
                     clusterNames,
                     elytronSecurityDomain,
-                    securityDomainContext,
                     mbeanServer,
                     dataSource
             );
