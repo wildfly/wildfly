@@ -644,6 +644,10 @@
                     <artifactId>undertow-websockets-jsr</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>io.undertow.jastow</groupId>
+                    <artifactId>jastow</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.jboss.metadata</groupId>
                     <artifactId>jboss-metadata-common</artifactId>
                 </exclusion>
@@ -919,6 +923,12 @@
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-websockets-jsr-jakartaee9</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.undertow.jastow</groupId>
+            <artifactId>jastow-jakarta</artifactId>
             <scope>provided</scope>
         </dependency>
 

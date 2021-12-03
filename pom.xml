@@ -350,7 +350,7 @@
         <version.io.smallrye.smallrye-mutiny>0.18.1</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-mutiny-vertx>2.11.0</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-reactive-messaging>3.10.1</version.io.smallrye.smallrye-reactive-messaging>
-        <version.io.undertow.jastow>2.0.9.Final</version.io.undertow.jastow>
+        <version.io.undertow.jastow>2.0.10.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
         <version.io.vertx.vertx>4.1.4</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
@@ -2638,6 +2638,12 @@
             <dependency>
                 <groupId>io.undertow.jastow</groupId>
                 <artifactId>jastow</artifactId>
+                <version>${version.io.undertow.jastow}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.undertow.jastow</groupId>
+                <artifactId>jastow-jakarta</artifactId>
                 <version>${version.io.undertow.jastow}</version>
             </dependency>
 
