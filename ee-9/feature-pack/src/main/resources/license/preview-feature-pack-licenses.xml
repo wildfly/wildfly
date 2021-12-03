@@ -35,7 +35,7 @@
     </dependency>
     <dependency>
       <groupId>io.undertow</groupId>
-      <artifactId>undertow-servlet-jakartaee9</artifactId>
+      <artifactId>undertow-servlet-jakarta</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -46,7 +46,7 @@
     </dependency>
     <dependency>
       <groupId>io.undertow</groupId>
-      <artifactId>undertow-websockets-jsr-jakartaee9</artifactId>
+      <artifactId>undertow-websockets-jsr-jakarta</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
