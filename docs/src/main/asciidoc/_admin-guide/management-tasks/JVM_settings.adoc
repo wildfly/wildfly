@@ -3,7 +3,7 @@
 
 Configuration of the JVM settings is different for a managed domain and
 a standalone server. In a managed domain, the domain controller
-components are responsible for starting and stoping server processes and
+components are responsible for starting and stopping server processes and
 hence determine the JVM settings. For a standalone server, it's the
 responsibility of the process that started the server (e.g. passing them
 as command line arguments).
@@ -78,6 +78,33 @@ heap size.
    }
 }
 ----
+
+=== Using filesystem locations as JVM options on domain mode
+The link:Admin_Guide{outfilesuffix}#controlling-filesystem-locations-with-system-properties[Controlling filesystem locations with system properties] section describes the available system properties associated with relevant WildFly file system paths. In addition to all the domain mode properties, the following server specific properties are also available for resolution as JVM options:
+
+* jboss.server.base.dir
+* jboss.server.log.dir
+* jboss.server.data.dir
+* jboss.server.temp.dir
+
+This ability is useful when you need to configure JVM settings without specifying a specific server name. For example, if you want to redirect the GC logging to a file to the default log server directory, you can configure the following JVM option at host level:
+
+[source,options="nowrap"]
+----
+[domain@localhost:9990 /] /host=master/jvm=default:add-jvm-option(jvm-option="-Xlog:gc:file=${jboss.server.log.dir}/gc.log")
+{
+    "outcome" => "success",
+    "result" => undefined,
+    "server-groups" => {"main-server-group" => {"host" => {"master" => {"server-two" => {"response" => {
+        "outcome" => "success",
+        "response-headers" => {
+            "operation-requires-restart" => true,
+            "process-state" => "restart-required"
+        }
+    }}}}}}
+}
+----
+
 
 == Standalone Server
 
