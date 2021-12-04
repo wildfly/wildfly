@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>26.0.0.Beta1-SNAPSHOT</version>
+        <version>26.0.0.Final-SNAPSHOT</version>
     </parent>
     
     <artifactId>wildfly-preview-feature-pack</artifactId>
@@ -51,8 +51,7 @@
         <!-- WildFly Preview vs standard WildFly GAV expression properties. -->
         <module.jakarta.classifier>::jakarta</module.jakarta.classifier>
         <module.jakarta.suffix>-jakarta</module.jakarta.suffix>
-        <module.jakartaee9.suffix>-jakartaee9</module.jakartaee9.suffix>
-
+        <version.io.undertow>2.2.14.Final</version.io.undertow> <!-- TODO: eliminate this line when proper Undertow version will be available via WildFly Core upgrade -->
     </properties>
 
     <build>
@@ -428,7 +427,7 @@
                                 <exclude>com.fasterxml.jackson.jaxrs:jackson-jaxrs-base\z</exclude>
                                 <exclude>com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider\z</exclude>
                                 <exclude>com.fasterxml.jackson.module:jackson-module-jaxb-annotations\z</exclude>
-								<!-- end JPMS or ISGi metadata excludes -->
+                                <!-- end JPMS or OSGi metadata excludes -->
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
@@ -644,6 +643,10 @@
                     <artifactId>undertow-websockets-jsr</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>io.undertow.jastow</groupId>
+                    <artifactId>jastow</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.jboss.metadata</groupId>
                     <artifactId>jboss-metadata-common</artifactId>
                 </exclusion>
@@ -736,24 +739,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.taglibs</groupId>
-            <artifactId>taglibs-standard-spec</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.taglibs</groupId>
-            <artifactId>taglibs-standard-impl</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.taglibs</groupId>
-            <artifactId>taglibs-standard-compat</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
             <groupId>jakarta.json.bind</groupId>
             <artifactId>jakarta.json.bind-api</artifactId>
             <scope>provided</scope>
@@ -780,6 +765,12 @@
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.servlet.jsp.jstl</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -864,16 +855,17 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.spec.javax.xml.bind</groupId>
-            <artifactId>jboss-jaxb-api_2.3_spec</artifactId>
+            <groupId>org.jboss.spec.jakarta.xml.soap</groupId>
+            <artifactId>jboss-saaj-api_2.0_spec</artifactId>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.spec.javax.xml.soap</groupId>
-            <artifactId>jboss-saaj-api_1.4_spec</artifactId>
+            <groupId>org.jboss.spec.javax.xml.bind</groupId>
+            <artifactId>jboss-jaxb-api_2.3_spec</artifactId>
             <scope>provided</scope>
         </dependency>
+        
         <dependency>
             <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
             <artifactId>jboss-jakarta-xml-ws-api_3.0_spec</artifactId>
@@ -923,13 +915,21 @@
 
         <dependency>
             <groupId>io.undertow</groupId>
-            <artifactId>undertow-servlet-jakartaee9</artifactId>
+            <artifactId>undertow-servlet-jakarta</artifactId>
+            <version>${version.io.undertow}</version> <!-- TODO: eliminate this line when proper Undertow version will be available via WildFly Core upgrade -->
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>io.undertow</groupId>
-            <artifactId>undertow-websockets-jsr-jakartaee9</artifactId>
+            <artifactId>undertow-websockets-jsr-jakarta</artifactId>
+            <version>${version.io.undertow}</version> <!-- TODO: eliminate this line when proper Undertow version will be available via WildFly Core upgrade -->
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.undertow.jastow</groupId>
+            <artifactId>jastow-jakarta</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -996,6 +996,12 @@
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-xjc</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl</artifactId>
             <scope>provided</scope>
         </dependency>
 

@@ -35,7 +35,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
     -->
-    <version>26.0.0.Beta1-SNAPSHOT</version>
+    <version>26.0.0.Final-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -235,7 +235,6 @@
         <!-- Props that will differ start here-->
         <module.jakarta.classifier></module.jakarta.classifier>
         <module.jakarta.suffix></module.jakarta.suffix>
-        <module.jakartaee9.suffix></module.jakartaee9.suffix>
 
         <!--
             *Plugin* Dependency versions. Please keep alphabetical.
@@ -310,7 +309,7 @@
         <version.com.squareup.okhttp3>3.14.9</version.com.squareup.okhttp3>
         <version.com.squareup.okio>1.17.5</version.com.squareup.okio>
         <version.com.sun.activation.jakarta.activation>1.2.2</version.com.sun.activation.jakarta.activation>
-        <version.com.sun.faces>2.3.14.SP04</version.com.sun.faces>
+        <version.com.sun.faces>2.3.17.SP01</version.com.sun.faces>
         <version.com.sun.istack>3.0.11</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
         <version.commons-beanutils>1.9.4</version.commons-beanutils>
@@ -350,7 +349,7 @@
         <version.io.smallrye.smallrye-mutiny>0.18.1</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-mutiny-vertx>2.11.0</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-reactive-messaging>3.10.1</version.io.smallrye.smallrye-reactive-messaging>
-        <version.io.undertow.jastow>2.0.9.Final</version.io.undertow.jastow>
+        <version.io.undertow.jastow>2.0.10.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
         <version.io.vertx.vertx>4.1.4</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
@@ -406,7 +405,7 @@
         <version.org.eclipse.microprofile.reactive-messaging.api>2.0.1</version.org.eclipse.microprofile.reactive-messaging.api>
         <version.org.eclipse.microprofile.reactive-streams-operators.api>2.0</version.org.eclipse.microprofile.reactive-streams-operators.api>
         <version.org.eclipse.microprofile.rest.client.api>2.0</version.org.eclipse.microprofile.rest.client.api>
-        <version.org.eclipse.yasson>1.0.9</version.org.eclipse.yasson>
+        <version.org.eclipse.yasson>1.0.10</version.org.eclipse.yasson>
         <version.org.eclipselink.version>2.7.9</version.org.eclipselink.version>
         <version.org.glassfish.jakarta.el>3.0.3.jbossorg-4</version.org.glassfish.jakarta.el>
         <version.org.glassfish.jakarta.enterprise.concurrent>1.1.1</version.org.glassfish.jakarta.enterprise.concurrent>
@@ -496,7 +495,7 @@
         <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.core>18.0.0.Beta5</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
-        <version.org.wildfly.http-client>1.1.9.Final</version.org.wildfly.http-client>
+        <version.org.wildfly.http-client>1.1.10.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.14.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron>1.17.0.Final</version.org.wildfly.security.elytron>
         <version.org.wildfly.transaction.client>2.0.0.Final</version.org.wildfly.transaction.client>
@@ -2638,6 +2637,12 @@
             <dependency>
                 <groupId>io.undertow.jastow</groupId>
                 <artifactId>jastow</artifactId>
+                <version>${version.io.undertow.jastow}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.undertow.jastow</groupId>
+                <artifactId>jastow-jakarta</artifactId>
                 <version>${version.io.undertow.jastow}</version>
             </dependency>
 
@@ -9703,6 +9708,12 @@
                 <artifactId>testcontainers</artifactId>
                 <version>${version.org.testcontainers.testcontainers}</version>
                 <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-compress</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.keycloak</groupId>

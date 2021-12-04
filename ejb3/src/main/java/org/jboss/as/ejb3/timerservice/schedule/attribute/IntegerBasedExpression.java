@@ -22,7 +22,6 @@
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.timerservice.schedule.ScheduleExpressionTypeUtil;
 import org.jboss.as.ejb3.timerservice.schedule.value.IncrementValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.ListValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.RangeValue;
@@ -65,8 +64,8 @@ public abstract class IntegerBasedExpression {
     public IntegerBasedExpression(String value) {
         this.origValue = value;
         // check the type of value
-        this.scheduleExpressionType = ScheduleExpressionTypeUtil.getType(value);
-        if (this.accepts(scheduleExpressionType) == false) {
+        this.scheduleExpressionType = ScheduleExpressionType.getType(value);
+        if (!this.accepts(scheduleExpressionType)) {
             throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleExpressionType(value, this.getClass().getName(), this.scheduleExpressionType.toString());
         }
         switch (this.scheduleExpressionType) {
@@ -114,7 +113,7 @@ public abstract class IntegerBasedExpression {
         // check what type of a value the list item is.
         // Each item in the list must be an individual attribute value or a range.
         // List items can not themselves be lists, wild-cards, or increments.
-        ScheduleExpressionType listItemType = ScheduleExpressionTypeUtil.getType(listItem);
+        ScheduleExpressionType listItemType = ScheduleExpressionType.getType(listItem);
         switch (listItemType) {
             case SINGLE_VALUE:
                 SingleValue singleVal = new SingleValue(listItem);
