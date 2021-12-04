@@ -867,8 +867,8 @@
         </dependency>
         
         <dependency>
-            <groupId>org.jboss.spec.javax.xml.ws</groupId>
-            <artifactId>jboss-jaxws-api_2.3_spec</artifactId>
+            <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
+            <artifactId>jboss-jakarta-xml-ws-api_3.0_spec</artifactId>
             <scope>provided</scope>
         </dependency>
 
