@@ -643,6 +643,10 @@
                     <artifactId>undertow-websockets-jsr</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>io.undertow.jastow</groupId>
+                    <artifactId>jastow</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.jboss.metadata</groupId>
                     <artifactId>jboss-metadata-common</artifactId>
                 </exclusion>
@@ -920,6 +924,12 @@
             <groupId>io.undertow</groupId>
             <artifactId>undertow-websockets-jsr-jakarta</artifactId>
             <version>${version.io.undertow}</version> <!-- TODO: eliminate this line when proper Undertow version will be available via WildFly Core upgrade -->
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.undertow.jastow</groupId>
+            <artifactId>jastow-jakarta</artifactId>
             <scope>provided</scope>
         </dependency>
 
