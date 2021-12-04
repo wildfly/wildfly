@@ -22,30 +22,18 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import java.util.Set;
+
 import org.apache.activemq.artemis.core.security.CheckType;
 import org.apache.activemq.artemis.core.security.Role;
 import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
-import org.jboss.as.security.plugins.SecurityDomainContext;
-import org.jboss.security.SecurityContext;
-import org.jboss.security.SecurityContextAssociation;
-import org.jboss.security.SecurityContextFactory;
-import org.jboss.security.SimplePrincipal;
-
-import javax.security.auth.Subject;
-import java.security.AccessController;
-import java.security.Principal;
-import java.security.PrivilegedAction;
-import java.util.HashSet;
-import java.util.Set;
 
 public class WildFlySecurityManager implements ActiveMQSecurityManager {
-    private SecurityDomainContext securityDomainContext;
     private String defaultUser = null;
     private String defaultPassword = null;
 
-    public WildFlySecurityManager(SecurityDomainContext sdc) {
-        securityDomainContext = sdc;
+    public WildFlySecurityManager() {
         defaultUser = DefaultCredentials.getUsername();
         defaultPassword = DefaultCredentials.getPassword();
     }
@@ -55,10 +43,7 @@ public class WildFlySecurityManager implements ActiveMQSecurityManager {
         if (defaultUser.equals(username) && defaultPassword.equals(password))
             return true;
 
-        if (securityDomainContext == null)
-            throw MessagingLogger.ROOT_LOGGER.securityDomainContextNotSet();
-
-        return securityDomainContext.getAuthenticationManager().isValid(new SimplePrincipal(username), password, new Subject());
+        throw MessagingLogger.ROOT_LOGGER.legacySecurityUnsupported();
     }
 
     @Override
@@ -66,52 +51,6 @@ public class WildFlySecurityManager implements ActiveMQSecurityManager {
         if (defaultUser.equals(username) && defaultPassword.equals(password))
             return true;
 
-        if (securityDomainContext == null)
-            throw MessagingLogger.ROOT_LOGGER.securityDomainContextNotSet();
-
-        final Subject subject = new Subject();
-
-        // The authentication call here changes the subject and that subject must be used later.  That is why we don't call validateUser(String, String) here.
-        boolean authenticated = securityDomainContext.getAuthenticationManager().isValid(new SimplePrincipal(username), password, subject);
-
-        if (authenticated) {
-            authenticated = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
-                @Override
-                public Boolean run() {
-                    final SimplePrincipal principal = new SimplePrincipal(username);
-
-                    // push a new security context if there is not one.
-                    final SecurityContext currentSecurityContext = SecurityContextAssociation.getSecurityContext();
-                    final SecurityContext securityContext;
-                    if (currentSecurityContext == null) {
-                        try {
-                            securityContext = SecurityContextFactory.createSecurityContext(principal, password, subject, securityDomainContext.getAuthenticationManager().getSecurityDomain());
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    } else {
-                        securityContext = currentSecurityContext;
-                        securityContext.getUtil().createSubjectInfo(principal, password, subject);
-                    }
-                    SecurityContextAssociation.setSecurityContext(securityContext);
-
-                    final Set<Principal> principals = new HashSet<Principal>();
-                    for (Role role : roles) {
-                        if (checkType.hasRole(role)) {
-                            principals.add(new SimplePrincipal(role.getName()));
-                        }
-                    }
-
-                    final boolean authenticated = securityDomainContext.getAuthorizationManager().doesUserHaveRole(new SimplePrincipal(username), principals);
-
-                    // restore the previous security context if any
-                    SecurityContextAssociation.setSecurityContext(currentSecurityContext);
-
-                    return authenticated;
-                }
-            });
-        }
-
-        return authenticated;
+        throw MessagingLogger.ROOT_LOGGER.legacySecurityUnsupported();
     }
 }

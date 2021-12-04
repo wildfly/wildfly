@@ -56,7 +56,6 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
-import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -110,8 +109,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     private final Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories;
     // Supplier for Elytron SecurityDomain
     private final Optional<Supplier<SecurityDomain>> elytronSecurityDomain;
-    // Supplier for legacy SecurityDomainContext
-    private final Optional<Supplier<SecurityDomainContext>> securityDomainContext;
 
     // credential source injectors
     private Map<String, InjectedValue<ExceptionSupplier<CredentialSource, Exception>>> bridgeCredentialSource = new HashMap<>();
@@ -128,7 +125,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                                  Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories,
                                  Map<String, String> clusterNames,
                                  Optional<Supplier<SecurityDomain>> elytronSecurityDomain,
-                                 Optional<Supplier<SecurityDomainContext>> securityDomainContext,
                                  Optional<Supplier<MBeanServer>> mbeanServer,
                                  Optional<Supplier<DataSource>> dataSource) {
         this.configuration = configuration;
@@ -137,7 +133,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         this.mbeanServer = mbeanServer;
         this.pathManager = pathManager;
         this.elytronSecurityDomain = elytronSecurityDomain;
-        this.securityDomainContext = securityDomainContext;
         this.incomingInterceptors = incomingInterceptors;
         this.outgoingInterceptors = outgoingInterceptors;
         this.socketBindings = socketBindings;
@@ -252,8 +247,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
             if (elytronSecurityDomain.isPresent()) {
                 securityManager = new ElytronSecurityManager(elytronSecurityDomain.get().get());
             } else {
-                assert securityDomainContext.isPresent();
-                securityManager = new WildFlySecurityManager(securityDomainContext.get().get());
+                securityManager = new WildFlySecurityManager();
             }
 
             // insert possible credential source hold passwords
