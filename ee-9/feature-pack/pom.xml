@@ -51,8 +51,7 @@
         <!-- WildFly Preview vs standard WildFly GAV expression properties. -->
         <module.jakarta.classifier>::jakarta</module.jakarta.classifier>
         <module.jakarta.suffix>-jakarta</module.jakarta.suffix>
-        <module.jakartaee9.suffix>-jakartaee9</module.jakartaee9.suffix>
-
+        <version.io.undertow>2.2.14.Final</version.io.undertow> <!-- TODO: eliminate this line when proper Undertow version will be available via WildFly Core upgrade -->
     </properties>
 
     <build>
@@ -912,13 +911,15 @@
 
         <dependency>
             <groupId>io.undertow</groupId>
-            <artifactId>undertow-servlet-jakartaee9</artifactId>
+            <artifactId>undertow-servlet-jakarta</artifactId>
+            <version>${version.io.undertow}</version> <!-- TODO: eliminate this line when proper Undertow version will be available via WildFly Core upgrade -->
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>io.undertow</groupId>
-            <artifactId>undertow-websockets-jsr-jakartaee9</artifactId>
+            <artifactId>undertow-websockets-jsr-jakarta</artifactId>
+            <version>${version.io.undertow}</version> <!-- TODO: eliminate this line when proper Undertow version will be available via WildFly Core upgrade -->
             <scope>provided</scope>
         </dependency>
 
