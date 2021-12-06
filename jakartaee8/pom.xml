@@ -418,22 +418,10 @@
                                     <artifactId>wildfly-elytron</artifactId>
                                 </dependency>
 
-                                <!-- include security: jboss -->
-                                <dependency>
-                                    <groupId>org.jboss.security</groupId>
-                                    <artifactId>jbossxacml</artifactId>
-                                </dependency>
-
                                 <!-- include security: picketbox -->
                                 <dependency>
                                     <groupId>org.picketbox</groupId>
                                     <artifactId>picketbox-commons</artifactId>
-                                </dependency>
-
-                                <!-- include security: wfly -->
-                                <dependency>
-                                    <groupId>org.wildfly</groupId>
-                                    <artifactId>wildfly-security-api</artifactId>
                                 </dependency>
 
                                 <!-- other WFLY APIs to include -->
