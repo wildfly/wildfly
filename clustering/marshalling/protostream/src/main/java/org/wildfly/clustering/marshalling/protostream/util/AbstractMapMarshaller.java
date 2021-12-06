@@ -45,9 +45,11 @@ public abstract class AbstractMapMarshaller<T extends Map<Object, Object>> imple
 
     @Override
     public void writeTo(ProtoStreamWriter writer, T map) throws IOException {
-        for (Map.Entry<Object, Object> entry : map.entrySet()) {
-            writer.writeAny(KEY_INDEX, entry.getKey());
-            writer.writeAny(VALUE_INDEX, entry.getValue());
+        synchronized (map) { // Avoid ConcurrentModificationException
+            for (Map.Entry<Object, Object> entry : map.entrySet()) {
+                writer.writeAny(KEY_INDEX, entry.getKey());
+                writer.writeAny(VALUE_INDEX, entry.getValue());
+            }
         }
     }
 

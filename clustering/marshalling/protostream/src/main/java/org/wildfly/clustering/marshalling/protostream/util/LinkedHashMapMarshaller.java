@@ -78,10 +78,12 @@ public class LinkedHashMapMarshaller extends AbstractMapMarshaller<LinkedHashMap
 
     @Override
     public void writeTo(ProtoStreamWriter writer, LinkedHashMap<Object, Object> map) throws IOException {
-        super.writeTo(writer, map);
-        boolean accessOrder = LinkedHashMapExternalizer.ACCESS_ORDER.apply(map);
-        if (accessOrder) {
-            writer.writeBool(ACCESS_ORDER_INDEX, accessOrder);
+        synchronized (map) { // Avoid ConcurrentModificationException
+            super.writeTo(writer, map);
+            boolean accessOrder = LinkedHashMapExternalizer.ACCESS_ORDER.apply(map);
+            if (accessOrder) {
+                writer.writeBool(ACCESS_ORDER_INDEX, accessOrder);
+            }
         }
     }
 
