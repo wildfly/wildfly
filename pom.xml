@@ -10315,6 +10315,17 @@
             </properties>
         </profile>
         <profile>
+            <id>jdk18</id>
+            <activation>
+                <jdk>[18,)</jdk>
+            </activation>
+            <properties>
+                <modular.jdk.props>
+                    -Djava.security.manager=allow
+                </modular.jdk.props>
+            </properties>
+        </profile>
+        <profile>
             <id>docs</id>
             <activation>
                 <property>
