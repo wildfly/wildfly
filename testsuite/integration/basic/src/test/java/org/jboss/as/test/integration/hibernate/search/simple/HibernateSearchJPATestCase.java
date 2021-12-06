@@ -49,7 +49,8 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class HibernateSearchJPATestCase {
 
-    private static final String ARCHIVE_NAME = "hibernate4native_search_test";
+    private static final String NAME = HibernateSearchJPATestCase.class.getSimpleName();
+    private static final String JAR_ARCHIVE_NAME = NAME + ".jar";
 
     @BeforeClass
     public static void securityManagerNotSupportedInHibernateSearch() {
@@ -77,8 +78,7 @@ public class HibernateSearchJPATestCase {
 
     @Deployment
     public static Archive<?> deploy() throws Exception {
-
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JAR_ARCHIVE_NAME);
         // add Jakarta Persistence configuration
         jar.addAsManifestResource(HibernateSearchJPATestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         // add testing Bean and entities
