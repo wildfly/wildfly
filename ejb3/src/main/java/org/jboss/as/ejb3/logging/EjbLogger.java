@@ -51,7 +51,6 @@ import javax.ejb.NoMoreTimeoutsException;
 import javax.ejb.NoSuchEJBException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.RemoveException;
-import javax.ejb.ScheduleExpression;
 import javax.ejb.Timer;
 import javax.ejb.TransactionAttributeType;
 import javax.interceptor.InvocationContext;
@@ -1828,69 +1827,69 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 277, value = "Value cannot be null")
     IllegalArgumentException valueIsNull();
 
-    /**
-     * Creates an exception indicating Cannot create class from a null schedule expression
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 278, value = "Cannot create %s from a null schedule expression")
-    IllegalArgumentException invalidScheduleExpression(String name);
+//    /**
+//     * Creates an exception indicating Cannot create class from a null schedule expression
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 278, value = "Cannot create %s from a null schedule expression")
+//    IllegalArgumentException invalidScheduleExpression(String name);
 
-    /**
-     * Creates an exception indicating second cannot be null in schedule expression
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 279, value = "Second cannot be null in schedule expression %s")
-    IllegalArgumentException invalidScheduleExpressionSecond(ScheduleExpression schedule);
+//    /**
+//     * Creates an exception indicating second cannot be null in schedule expression
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 279, value = "Second cannot be null in schedule expression %s")
+//    IllegalArgumentException invalidScheduleExpressionSecond(ScheduleExpression schedule);
 
-    /**
-     * Creates an exception indicating Minute cannot be null in schedule expression
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 280, value = "Minute cannot be null in schedule expression %s")
-    IllegalArgumentException invalidScheduleExpressionMinute(ScheduleExpression schedule);
+//    /**
+//     * Creates an exception indicating Minute cannot be null in schedule expression
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 280, value = "Minute cannot be null in schedule expression %s")
+//    IllegalArgumentException invalidScheduleExpressionMinute(ScheduleExpression schedule);
 
-    /**
-     * Creates an exception indicating hour cannot be null in schedule expression
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 281, value = "Hour cannot be null in schedule expression %s")
-    IllegalArgumentException invalidScheduleExpressionHour(ScheduleExpression schedule);
+//    /**
+//     * Creates an exception indicating hour cannot be null in schedule expression
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 281, value = "Hour cannot be null in schedule expression %s")
+//    IllegalArgumentException invalidScheduleExpressionHour(ScheduleExpression schedule);
 
-    /**
-     * Creates an exception indicating day-of-month cannot be null in schedule expression
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 282, value = "day-of-month cannot be null in schedule expression %s")
-    IllegalArgumentException invalidScheduleExpressionDayOfMonth(ScheduleExpression schedule);
+//    /**
+//     * Creates an exception indicating day-of-month cannot be null in schedule expression
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 282, value = "day-of-month cannot be null in schedule expression %s")
+//    IllegalArgumentException invalidScheduleExpressionDayOfMonth(ScheduleExpression schedule);
 
-    /**
-     * Creates an exception indicating day-of-week cannot be null in schedule expression
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 283, value = "day-of-week cannot be null in schedule expression %s")
-    IllegalArgumentException invalidScheduleExpressionDayOfWeek(ScheduleExpression schedule);
+//    /**
+//     * Creates an exception indicating day-of-week cannot be null in schedule expression
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 283, value = "day-of-week cannot be null in schedule expression %s")
+//    IllegalArgumentException invalidScheduleExpressionDayOfWeek(ScheduleExpression schedule);
 
-    /**
-     * Creates an exception indicating Month cannot be null in schedule expression
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 284, value = "Month cannot be null in schedule expression %s")
-    IllegalArgumentException invalidScheduleExpressionMonth(ScheduleExpression schedule);
+//    /**
+//     * Creates an exception indicating Month cannot be null in schedule expression
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 284, value = "Month cannot be null in schedule expression %s")
+//    IllegalArgumentException invalidScheduleExpressionMonth(ScheduleExpression schedule);
 
-    /**
-     * Creates an exception indicating Year cannot be null in schedule expression
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 285, value = "Year cannot be null in schedule expression %s")
-    IllegalArgumentException invalidScheduleExpressionYear(ScheduleExpression schedule);
+//    /**
+//     * Creates an exception indicating Year cannot be null in schedule expression
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 285, value = "Year cannot be null in schedule expression %s")
+//    IllegalArgumentException invalidScheduleExpressionYear(ScheduleExpression schedule);
 
     /**
      * Creates an exception indicating Invalid range value
