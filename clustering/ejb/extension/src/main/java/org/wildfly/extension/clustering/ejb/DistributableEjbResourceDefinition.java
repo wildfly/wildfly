@@ -21,8 +21,6 @@
  */
 package org.wildfly.extension.clustering.ejb;
 
-import java.util.function.Consumer;
-
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.DefaultSubsystemDescribeHandler;
@@ -38,7 +36,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.ejb.EjbDefaultProviderRequirement;
@@ -49,7 +46,7 @@ import org.wildfly.clustering.ejb.EjbProviderRequirement;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class DistributableEjbResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> implements Consumer<DeploymentProcessorTarget> {
+public class DistributableEjbResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
 
     static final PathElement PATH = pathElement(DistributableEjbExtension.SUBSYSTEM_NAME);
 
@@ -112,25 +109,5 @@ public class DistributableEjbResourceDefinition extends SubsystemResourceDefinit
         // register the child resources for client-mappings-registry-provider
         new LocalClientMappingsRegistryProviderResourceDefinition().register(registration);
         new InfinispanClientMappingsRegistryProviderResourceDefinition().register(registration);
-    }
-
-    /**
-     * Opportunity to add deployment processors tied to this resource
-     * @param target
-     */
-    @Override
-    public void accept(DeploymentProcessorTarget target) {
-        /*
-        JBossAllXmlParserRegisteringProcessor.Builder builder = JBossAllXmlParserRegisteringProcessor.builder();
-        // register parsers for deployment XML schema
-        for (DistributableEjbDeploymentSchema schema : EnumSet.allOf(DistributableEjbDeploymentSchema.class)) {
-            builder.addParser(schema.getRoot(), DistributableEjbDeploymentDependencyProcessor.CONFIGURATION_KEY, new DistributableEjbDeploymentXMLReader(schema));
-        }
-        // register deployment processors for distributable-ejb
-        target.addDeploymentProcessor(DistributableEjbExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_DISTRIBUTABLE_EJB, builder.build());
-        target.addDeploymentProcessor(DistributableEjbExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_DISTRIBUTABLE_EJB, new DistributableEjbDeploymentParsingProcessor());
-        target.addDeploymentProcessor(DistributableEjbExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_DISTRIBUTABLE_EJB, new DistributableEjbDeploymentDependencyProcessor());
-        target.addDeploymentProcessor(DistributableEjbExtension.SUBSYSTEM_NAME, Phase.CONFIGURE_MODULE, Phase.CONFIGURE_DISTRIBUTABLE_EJB, new DistributableEjbDeploymentProcessor());
-        */
     }
 }
