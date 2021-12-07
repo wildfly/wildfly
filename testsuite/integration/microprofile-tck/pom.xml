@@ -61,6 +61,8 @@
         <ts.microprofile-tck-provisioning.base.layer>FIXME-must-override</ts.microprofile-tck-provisioning.base.layer>
         <ts.microprofile-tck-provisioning.decorator.layer>FIXME-must-override</ts.microprofile-tck-provisioning.decorator.layer>
 
+        <!-- By default (i.e. Java EE) use the following directory as an additional source -->
+        <ts.microprofile-tck.build-helper.source.dir>src/test/javax/java</ts.microprofile-tck.build-helper.source.dir>
     </properties>
 
     <modules>
@@ -178,6 +180,30 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <!--
+                    Here because for some tests we need some helper classes which need to access the javax/jakarta
+                    APIs.
+                    In these cases use test/javax/java for the EE8 version, and test/jakarta/java for the EE9+ version.
+                    The latter is set up by the ee9.test.profile which is enabled by -Dts.ee9
+                -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-test-source-directory</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${ts.microprofile-tck.build-helper.source.dir}</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -266,6 +292,9 @@
                 <!-- Test framework only dependencies - don't update in ee-9/pom.xml -->
                 <version.org.testng>7.4.0</version.org.testng>
                 <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
+
+                <!-- For EE9 use the following directory as an additional source -->
+                <ts.microprofile-tck.build-helper.source.dir>src/test/jakarta/java</ts.microprofile-tck.build-helper.source.dir>
             </properties>
             <!-- Temporary for MP 5/Jakarta 9 -->
             <dependencyManagement>
