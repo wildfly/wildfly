@@ -21,8 +21,7 @@ import java.util.function.Supplier;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public abstract class ClientMappingsRegistryProviderServiceConfigurator extends CapabilityServiceNameProvider
-        implements ResourceServiceConfigurator, Supplier<ClientMappingsRegistryProvider> {
+public abstract class ClientMappingsRegistryProviderServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<ClientMappingsRegistryProvider> {
 
     public ClientMappingsRegistryProviderServiceConfigurator(PathAddress address) {
         super(ClientMappingsRegistryProviderResourceDefinition.Capability.CLIENT_MAPPINGS_REGISTRY_PROVIDER, address);

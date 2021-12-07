@@ -17,7 +17,7 @@ import org.wildfly.clustering.service.Requirement;
 import java.util.function.UnaryOperator;
 
 /**
- * Base class definition of the /subsystem=distributable-ejb/client-mappings-registry resource.
+ * Base class definition of the /subsystem=distributable-ejb/client-mappings-registry=* resource.
  *
  * @author Paul Ferraro
  * @author Richard Achmatowicz
@@ -52,7 +52,7 @@ public class ClientMappingsRegistryProviderResourceDefinition extends ChildResou
     private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;
 
     ClientMappingsRegistryProviderResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory) {
-        super(path, DistributableEjbExtension.SUBSYSTEM_RESOLVER.createChildResolver(pathElement(PathElement.WILDCARD_VALUE), path));
+        super(path, DistributableEjbExtension.SUBSYSTEM_RESOLVER.createChildResolver(path));
         this.configurator = configurator;
         this.serviceConfiguratorFactory = serviceConfiguratorFactory;
     }
@@ -67,5 +67,4 @@ public class ClientMappingsRegistryProviderResourceDefinition extends ChildResou
         new SimpleResourceRegistration(descriptor, handler).register(registration);
         return registration;
     }
-
 }
