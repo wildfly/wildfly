@@ -51,7 +51,7 @@ public class ClientMappingsRegistryProviderResourceDefinition extends ChildResou
     private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;
 
-    public ClientMappingsRegistryProviderResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory) {
+    ClientMappingsRegistryProviderResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory) {
         super(path, DistributableEjbExtension.SUBSYSTEM_RESOLVER.createChildResolver(pathElement(PathElement.WILDCARD_VALUE), path));
         this.configurator = configurator;
         this.serviceConfiguratorFactory = serviceConfiguratorFactory;

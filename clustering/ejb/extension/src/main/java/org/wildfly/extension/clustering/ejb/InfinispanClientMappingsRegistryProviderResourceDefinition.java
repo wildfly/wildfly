@@ -60,7 +60,7 @@ public class InfinispanClientMappingsRegistryProviderResourceDefinition extends 
         }
     }
 
-    public InfinispanClientMappingsRegistryProviderResourceDefinition() {
+    InfinispanClientMappingsRegistryProviderResourceDefinition() {
         super(PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), InfinispanClientMappingsRegistryProviderServiceConfigurator::new);
     }
 }

@@ -28,9 +28,9 @@ public class InfinispanClientMappingsRegistryProviderServiceConfigurator extends
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.containerName = CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
-        this.cacheName = CACHE.resolveModelAttribute(context, model).asString();
-        return super.configure(context, model);
+        this.containerName = CACHE_CONTAINER.resolveModelAttribute(context, model).asStringOrNull();
+        this.cacheName = CACHE.resolveModelAttribute(context, model).asStringOrNull();
+        return this;
     }
 
     @Override

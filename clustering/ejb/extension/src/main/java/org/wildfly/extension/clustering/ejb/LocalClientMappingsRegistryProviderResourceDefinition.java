@@ -14,7 +14,7 @@ public class LocalClientMappingsRegistryProviderResourceDefinition extends Clien
 
     static final PathElement PATH = pathElement("local");
 
-    public LocalClientMappingsRegistryProviderResourceDefinition() {
+    LocalClientMappingsRegistryProviderResourceDefinition() {
         super(PATH, UnaryOperator.identity(), LocalClientMappingsRegistryProviderServiceConfigurator::new);
     }
 }
