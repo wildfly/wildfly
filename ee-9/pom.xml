@@ -73,6 +73,11 @@
         <!--<version.jakarta.ws.rs.jakarta-ws-rs-api>3.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>-->
         <!--<version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.0</version.jakarta.xml.bind.jakarta-xml-bind-api>-->
         <version.org.apache.myfaces.core>3.0.1</version.org.apache.myfaces.core>
+        <!--
+            Overrides for MP5. Also make sure to update these in testsuite/integration/microprofile-tck/pom.xml
+        -->
+        <version.org.eclipse.microprofile.config.api>3.0</version.org.eclipse.microprofile.config.api>
+        <!-- MP5 - END -->
         <version.org.eclipse.yasson>2.0.3</version.org.eclipse.yasson>
         <version.org.glassfish.jakarta.el>4.0.0</version.org.glassfish.jakarta.el>
         <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</version.org.glassfish.jakarta.enterprise.concurrent>

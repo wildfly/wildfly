@@ -254,7 +254,26 @@
                 <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
                 <!-- Disable the standard copy-based provisioning -->
                 <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
+
+                <!--
+                    Override version properties for MicroProfile 5 as we do in ee-9/pom.xml
+                -->
+                <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
+                <version.org.eclipse.microprofile.config.api>3.0</version.org.eclipse.microprofile.config.api>
+                <!-- Test only dependencies - don't update in ee-9/pom.xml -->
+                <version.org.testng>7.4.0</version.org.testng>
+                <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
             </properties>
+            <!-- Temporary for MP 5/Jakarta 9 -->
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.enterprise</groupId>
+                        <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                        <version>${version.jakarta.enterprise}</version>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
             <build>
                 <plugins>
                     <plugin>
