@@ -26,7 +26,6 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 import org.jboss.as.clustering.controller.Schema;
 import org.jboss.as.clustering.controller.persistence.AttributeXMLBuilderOperator;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.PersistentResourceXMLDescription.PersistentResourceXMLBuilder;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 
 /**
@@ -48,18 +47,10 @@ public class DistributableEjbXMLParser extends PersistentResourceXMLParser {
      */
     @Override
     public PersistentResourceXMLDescription getParserDescription() {
-        return builder(DistributableEjbResourceDefinition.PATH, this.schema.getNamespaceUri())
-                .addAttribute(DistributableEjbResourceDefinition.Attribute.DEFAULT_BEAN_MANAGEMENT.getDefinition())
-                .addChild(this.getInfinispanBeanManagementResourceXMLBuilder())
+        return new AttributeXMLBuilderOperator().addAttributes(DistributableEjbResourceDefinition.Attribute.class).apply(builder(DistributableEjbResourceDefinition.PATH, this.schema.getNamespaceUri()))
+                .addChild(new AttributeXMLBuilderOperator().addAttributes(InfinispanBeanManagementResourceDefinition.Attribute.class).apply(builder(InfinispanBeanManagementResourceDefinition.WILDCARD_PATH)))
                 .addChild(builder(LocalClientMappingsRegistryProviderResourceDefinition.PATH).setXmlElementName("local-client-mappings-registry"))
                 .addChild(new AttributeXMLBuilderOperator(InfinispanClientMappingsRegistryProviderResourceDefinition.Attribute.class).apply(builder(InfinispanClientMappingsRegistryProviderResourceDefinition.PATH)).setXmlElementName("infinispan-client-mappings-registry"))
                 .build();
-    }
-
-    private PersistentResourceXMLBuilder getInfinispanBeanManagementResourceXMLBuilder() {
-        PersistentResourceXMLBuilder builder = new AttributeXMLBuilderOperator()
-                .addAttributes(InfinispanBeanManagementResourceDefinition.Attribute.class)
-                .apply(builder(InfinispanBeanManagementResourceDefinition.WILDCARD_PATH));
-        return builder;
     }
 }
