@@ -333,32 +333,10 @@
                                 <licensesConfigFile>${basedir}/target/resources/license/servlet-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/ee-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/preview-feature-pack-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/elytron-oidc-feature-pack-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/microprofile-feature-pack-licenses.xml</licensesConfigFile>
                             </licensesConfigFiles>
-                            <licensesOutputFile>${license.directory}/full-feature-pack-licenses.xml</licensesOutputFile>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>update-licenses-xml-mp</id>
-                        <goals>
-                            <goal>insert-versions</goal>
-                        </goals>
-                        <phase>process-resources</phase>
-                        <configuration>
-                            <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
-                            <licensesConfigFile>${basedir}/target/resources/license/microprofile-feature-pack-licenses.xml</licensesConfigFile>
                             <licensesOutputFile>${license.directory}/microprofile-feature-pack-licenses.xml</licensesOutputFile>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>update-licenses-xml-oidc</id>
-                        <goals>
-                            <goal>insert-versions</goal>
-                        </goals>
-                        <phase>process-resources</phase>
-                        <configuration>
-                            <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
-                            <licensesConfigFile>${basedir}/target/resources/license/elytron-oidc-client-feature-pack-licenses.xml</licensesConfigFile>
-                            <licensesOutputFile>${license.directory}/elytron-oidc-client-feature-pack-licenses.xml</licensesOutputFile>
                         </configuration>
                     </execution>
                 </executions>
