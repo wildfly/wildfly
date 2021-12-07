@@ -60,7 +60,6 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
     }
 
     protected void install(OperationContext context, ModelNode operation, final int maxSize, final String containerName, final String cacheName) {
-        final String name = context.getCurrentAddressValue();
         BeanManagerFactoryServiceConfiguratorConfiguration config = new BeanManagerFactoryServiceConfiguratorConfiguration() {
             @Override
             public String getContainerName() {
@@ -77,7 +76,7 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
                 return maxSize;
             }
         };
-        new LegacyDistributableCacheFactoryBuilderServiceConfigurator<>(name, config).build(context.getServiceTarget())
+        new LegacyDistributableCacheFactoryBuilderServiceConfigurator<>(context.getCurrentAddress(), config).build(context.getServiceTarget())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
     }
