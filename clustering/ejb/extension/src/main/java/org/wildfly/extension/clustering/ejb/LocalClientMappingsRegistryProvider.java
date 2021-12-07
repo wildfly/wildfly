@@ -43,43 +43,29 @@ import java.util.ServiceLoader;
 import java.util.Set;
 
 /**
- * The non-legacy version of the client mappings registry provider, used when the distributable-ejb subsystem is present.
+ * A local client mappings registry provider implementation.
  *
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
 public class LocalClientMappingsRegistryProvider implements ClientMappingsRegistryProvider {
     static final Set<ClusteringCacheRequirement> REGISTRY_REQUIREMENTS = EnumSet.of(ClusteringCacheRequirement.REGISTRY, ClusteringCacheRequirement.REGISTRY_FACTORY, ClusteringCacheRequirement.GROUP);
-
-    private final String containerName ;
-    private final String cacheName;
-
-    /**
-     * Creates an instance of the Infinispan-based client mappings registry provider, for local or distribute use, based on a cache-service abstraction.
-     *
-     * @param containerName name of the existing cache container to use, must be defined in the Infinispan subsystem.
-     * @param cacheName name of the existing cache configuration to use, must be defined in the Infinispan subsystem.
-     */
-    public LocalClientMappingsRegistryProvider(final String containerName, final String cacheName) {
-        this.containerName = containerName;
-        this.cacheName = cacheName;
-    }
+    static final String NAME = "ejb";
 
     @Override
     public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String connectorName, SupplierDependency<List<ClientMapping>> clientMappings) {
-        CapabilityServiceConfigurator registryEntryConfigurator = new ClientMappingsRegistryEntryServiceConfigurator(this.containerName, connectorName, clientMappings);
+        CapabilityServiceConfigurator registryEntryConfigurator = new ClientMappingsRegistryEntryServiceConfigurator(NAME, connectorName, clientMappings);
         List<Iterable<CapabilityServiceConfigurator>> configurators = new LinkedList<>();
         configurators.add(Arrays.asList(registryEntryConfigurator));
-        String containerName = this.containerName;
         ServiceNameRegistry<ClusteringCacheRequirement> routingRegistry = new ServiceNameRegistry<ClusteringCacheRequirement>() {
             @Override
             public ServiceName getServiceName(ClusteringCacheRequirement requirement) {
-                return REGISTRY_REQUIREMENTS.contains(requirement) ? ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, connectorName) : null;
+                return REGISTRY_REQUIREMENTS.contains(requirement) ? ServiceNameFactory.parseServiceName(requirement.getName()).append(NAME, connectorName) : null;
             }
         };
         // install the underlying cache service abstractions using the configured provider
         for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(LocalCacheServiceConfiguratorProvider.class, LocalCacheServiceConfiguratorProvider.class.getClassLoader())) {
-            configurators.add(provider.getServiceConfigurators(routingRegistry, this.containerName, connectorName));
+            configurators.add(provider.getServiceConfigurators(routingRegistry, NAME, connectorName));
         }
         return new CompositeIterable<>(configurators);
     }

@@ -17,7 +17,6 @@ public class LocalClientMappingsRegistryProviderServiceConfigurator extends Clie
 
     @Override
     public ClientMappingsRegistryProvider get() {
-        // note: the container and cache names used here are arbitrary and not constrained by any resources
-        return new LocalClientMappingsRegistryProvider("ejb", "client-mappings");
+        return new LocalClientMappingsRegistryProvider();
     }
 }

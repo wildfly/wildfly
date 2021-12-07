@@ -5,7 +5,7 @@ import org.jboss.as.controller.PathElement;
 import java.util.function.UnaryOperator;
 
 /**
- * Definition of the /subsystem=distributable-ejb/local-client-mappings-registry resource.
+ * Definition of the /subsystem=distributable-ejb/client-mappings-registry=local resource.
  *
  * @author Paul Ferraro
  * @author Richard Achmatowicz
