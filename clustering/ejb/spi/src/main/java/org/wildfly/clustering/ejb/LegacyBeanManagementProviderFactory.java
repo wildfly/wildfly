@@ -28,5 +28,5 @@ package org.wildfly.clustering.ejb;
  * @author Richard Achmatowicz
  */
 public interface LegacyBeanManagementProviderFactory {
-    DistributableBeanManagementProvider getBeanManagerFactoryBuilder(String name, BeanManagerFactoryServiceConfiguratorConfiguration config);
+    BeanManagementProvider createBeanManagementProvider(String name, BeanManagerFactoryServiceConfiguratorConfiguration config);
 }

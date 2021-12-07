@@ -30,7 +30,7 @@ import org.jboss.msc.service.ServiceName;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public interface DistributableBeanManagementProvider {
+public interface BeanManagementProvider {
 
     /**
      * Installs dependencies for a deployment unit

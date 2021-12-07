@@ -40,7 +40,7 @@ import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
-import org.wildfly.clustering.ejb.DistributableBeanManagementProvider;
+import org.wildfly.clustering.ejb.BeanManagementProvider;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
@@ -60,7 +60,7 @@ import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
  * @param <G> the group identifier type
  * @param <I> the bean identifier type
  */
-public class InfinispanBeanManagementProvider<I> implements DistributableBeanManagementProvider {
+public class InfinispanBeanManagementProvider<I> implements BeanManagementProvider {
 
     static String getCacheName(ServiceName deploymentUnitServiceName, String beanManagerFactoryName) {
         List<String> parts = new ArrayList<>(3);

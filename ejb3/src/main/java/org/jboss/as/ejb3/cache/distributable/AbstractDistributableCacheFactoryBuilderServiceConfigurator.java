@@ -43,7 +43,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ejb.DistributableBeanManagementProvider;
+import org.wildfly.clustering.ejb.BeanManagementProvider;
 import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.service.SupplierDependency;
 
@@ -56,9 +56,9 @@ import org.wildfly.clustering.service.SupplierDependency;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public abstract class AbstractDistributableCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K> & Contextual<Batch>> extends DistributableCacheFactoryBuilderServiceNameProvider implements ResourceServiceConfigurator, CacheFactoryBuilder<K, V>, Consumer<SupplierDependency<DistributableBeanManagementProvider>> {
+public abstract class AbstractDistributableCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K> & Contextual<Batch>> extends DistributableCacheFactoryBuilderServiceNameProvider implements ResourceServiceConfigurator, CacheFactoryBuilder<K, V>, Consumer<SupplierDependency<BeanManagementProvider>> {
 
-    private volatile SupplierDependency<DistributableBeanManagementProvider> provider;
+    private volatile SupplierDependency<BeanManagementProvider> provider;
 
     public AbstractDistributableCacheFactoryBuilderServiceConfigurator(PathAddress address) {
         super(address.getLastElement().getValue());
@@ -74,7 +74,7 @@ public abstract class AbstractDistributableCacheFactoryBuilderServiceConfigurato
     }
 
     @Override
-    public void accept(SupplierDependency<DistributableBeanManagementProvider> provider) {
+    public void accept(SupplierDependency<BeanManagementProvider> provider) {
         this.provider = provider;
     }
 

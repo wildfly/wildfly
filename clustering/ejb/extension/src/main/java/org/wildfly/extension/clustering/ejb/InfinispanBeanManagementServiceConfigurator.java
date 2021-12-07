@@ -37,7 +37,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.ejb.DistributableBeanManagementProvider;
+import org.wildfly.clustering.ejb.BeanManagementProvider;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.ejb.infinispan.InfinispanBeanManagementProvider;
 import org.wildfly.clustering.service.FunctionalService;
@@ -53,7 +53,7 @@ import static org.wildfly.extension.clustering.ejb.InfinispanBeanManagementResou
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class InfinispanBeanManagementServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<DistributableBeanManagementProvider>, BeanManagerFactoryServiceConfiguratorConfiguration {
+public class InfinispanBeanManagementServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<BeanManagementProvider>, BeanManagerFactoryServiceConfiguratorConfiguration {
 
     private volatile String name;
     private volatile String containerName;
@@ -78,13 +78,13 @@ public class InfinispanBeanManagementServiceConfigurator extends CapabilityServi
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceName name = this.getServiceName();
         ServiceBuilder<?> builder = target.addService(name);
-        Consumer<DistributableBeanManagementProvider> provider = builder.provides(name);
+        Consumer<BeanManagementProvider> provider = builder.provides(name);
         Service service = new FunctionalService<>(provider, Function.identity(), this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
     @Override
-    public DistributableBeanManagementProvider get() {
+    public BeanManagementProvider get() {
         return new InfinispanBeanManagementProvider<>(this.name, this);
     }
 

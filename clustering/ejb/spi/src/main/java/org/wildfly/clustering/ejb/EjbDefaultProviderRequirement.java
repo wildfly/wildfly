@@ -32,7 +32,7 @@ import org.wildfly.clustering.service.Requirement;
  * @author Richard Achmatowicz
  */
 public enum EjbDefaultProviderRequirement implements Requirement, ServiceNameFactoryProvider {
-    BEAN_MANAGEMENT_PROVIDER("org.wildfly.clustering.ejb.default-bean-management-provider", DistributableBeanManagementProvider.class),
+    BEAN_MANAGEMENT_PROVIDER("org.wildfly.clustering.ejb.default-bean-management-provider", BeanManagementProvider.class),
     ;
     private final String name;
     private final Class<?> type;

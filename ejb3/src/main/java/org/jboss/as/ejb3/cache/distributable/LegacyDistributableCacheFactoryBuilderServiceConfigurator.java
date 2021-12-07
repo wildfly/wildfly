@@ -47,7 +47,7 @@ public class LegacyDistributableCacheFactoryBuilderServiceConfigurator<K, V exte
 
     public LegacyDistributableCacheFactoryBuilderServiceConfigurator(PathAddress address, BeanManagerFactoryServiceConfiguratorConfiguration config) {
         super(address);
-        this.accept(new SimpleSupplierDependency<>(load().getBeanManagerFactoryBuilder(address.getLastElement().getValue(), config)));
+        this.accept(new SimpleSupplierDependency<>(load().createBeanManagementProvider(address.getLastElement().getValue(), config)));
     }
 
     private static LegacyBeanManagementProviderFactory load() {
