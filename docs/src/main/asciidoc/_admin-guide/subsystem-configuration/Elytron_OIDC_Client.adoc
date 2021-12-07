@@ -82,7 +82,7 @@ The following example shows how to add configuration to the _elytron-oidc-client
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:wildfly:elytron-oidc-client:1.0">
+<subsystem xmlns="urn:wildfly:elytron-oidc-client:2.0">
     <secure-deployment name="DEPLOYMENT_RUNTIME_NAME.war">
         <client-id>customer-portal</client-id>
         <provider-url>http://localhost:8180/auth/realms/demo</provider-url>
@@ -106,7 +106,7 @@ the `provider` configuration can be defined separately as shown in the example b
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:wildfly:elytron-oidc-client:1.0">
+<subsystem xmlns="urn:wildfly:elytron-oidc-client:2.0">
     <provider name="keycloak">
         <provider-url>http://localhost:8080/auth/realms/demo</provider-url>
         <ssl-required>external</ssl-required>

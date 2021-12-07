@@ -2,6 +2,6 @@
 
 <config>
     <extension-module>org.wildfly.extension.elytron-oidc-client</extension-module>
-    <subsystem xmlns="urn:wildfly:elytron-oidc-client:1.0">
+    <subsystem xmlns="urn:wildfly:elytron-oidc-client:2.0">
     </subsystem>
 </config>
