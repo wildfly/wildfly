@@ -62,5 +62,7 @@ public class ServiceContributorImpl implements ServiceContributor {
             JPA_LOGGER.tracef("ServiceContributorImpl#contribute adding ORM initiator for 2lc region factory");
             serviceRegistryBuilder.addInitiator(new WildFlyCustomRegionFactoryInitiator());
         }
+
+        serviceRegistryBuilder.addInitiator(new WildFlySimplifiedIdentifierGeneratorFactory.Initiator());
     }
 }
