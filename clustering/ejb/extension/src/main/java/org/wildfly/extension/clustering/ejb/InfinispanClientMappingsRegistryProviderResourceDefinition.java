@@ -13,7 +13,7 @@ import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
 import java.util.function.UnaryOperator;
 
 /**
- * Definition of the /subsystem=distributable-ejb/infinispan-client-mappings-registry resource.
+ * Definition of the /subsystem=distributable-ejb/client-mappings-registry=infinispan resource.
  *
  * @author Paul Ferraro
  * @author Richard Achmatowicz
@@ -24,22 +24,18 @@ public class InfinispanClientMappingsRegistryProviderResourceDefinition extends 
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         CACHE_CONTAINER("cache-container", ModelType.STRING) {
-
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setAllowExpression(false)
-                        .setRequired(true)
+                return builder.setRequired(true)
                         .setCapabilityReference(new CapabilityReference(Capability.CLIENT_MAPPINGS_REGISTRY_PROVIDER, InfinispanDefaultCacheRequirement.CONFIGURATION))
                         ;
             }
         },
         CACHE("cache", ModelType.STRING) {
-
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setAllowExpression(false)
-                        .setCapabilityReference(new CapabilityReference(Capability.CLIENT_MAPPINGS_REGISTRY_PROVIDER, InfinispanCacheRequirement.CONFIGURATION, CACHE_CONTAINER))
-                        ;
+                return builder.setRequired(false)
+                        .setCapabilityReference(new CapabilityReference(Capability.CLIENT_MAPPINGS_REGISTRY_PROVIDER, InfinispanCacheRequirement.CONFIGURATION, CACHE_CONTAINER));
             }
         }
         ;
@@ -48,8 +44,7 @@ public class InfinispanClientMappingsRegistryProviderResourceDefinition extends 
 
         Attribute(String name, ModelType type) {
             this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setRequired(false)
+                    .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     ).build();
         }

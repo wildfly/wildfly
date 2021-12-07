@@ -63,6 +63,7 @@ public class InfinispanBeanManagementResourceDefinition extends ChildResourceDef
             this.capability = new UnaryRequirementCapability(requirement, this);
         }
 
+        @Override
         public org.jboss.as.clustering.controller.Capability getCapability() {
             return this.capability;
         }
@@ -70,7 +71,7 @@ public class InfinispanBeanManagementResourceDefinition extends ChildResourceDef
         @Override
         public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
             return builder.setDynamicNameMapper(UnaryCapabilityNameResolver.DEFAULT)
-            .addRequirements(ClientMappingsRegistryProviderResourceDefinition.Capability.CLIENT_MAPPINGS_REGISTRY_PROVIDER.getName());
+                    .addRequirements(ClientMappingsRegistryProviderResourceDefinition.Capability.CLIENT_MAPPINGS_REGISTRY_PROVIDER.getName());
         }
     }
 
@@ -88,17 +89,10 @@ public class InfinispanBeanManagementResourceDefinition extends ChildResourceDef
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAllowExpression(false)
-                        .setCapabilityReference(new CapabilityReference(Capability.BEAN_MANAGEMENT_PROVIDER, InfinispanCacheRequirement.CONFIGURATION, CACHE_CONTAINER))
-                        ;
+                        .setCapabilityReference(new CapabilityReference(Capability.BEAN_MANAGEMENT_PROVIDER, InfinispanCacheRequirement.CONFIGURATION, CACHE_CONTAINER));
             }
         },
-        MAX_SIZE("max-size", ModelType.INT) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setAllowExpression(true)
-                         ;
-            }
-        },
+        MAX_SIZE("max-size", ModelType.INT),
         ;
         private final AttributeDefinition definition;
 
@@ -113,6 +107,11 @@ public class InfinispanBeanManagementResourceDefinition extends ChildResourceDef
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder;
         }
     }
 
