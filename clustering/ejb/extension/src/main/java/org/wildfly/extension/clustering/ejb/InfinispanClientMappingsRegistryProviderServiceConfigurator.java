@@ -28,14 +28,13 @@ public class InfinispanClientMappingsRegistryProviderServiceConfigurator extends
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.containerName = CACHE_CONTAINER.resolveModelAttribute(context, model).asStringOrNull();
+        this.containerName = CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
         this.cacheName = CACHE.resolveModelAttribute(context, model).asStringOrNull();
         return this;
     }
 
     @Override
     public ClientMappingsRegistryProvider get() {
-        // return new InfinispanClientMappingsRegistryProvider();
         return new InfinispanClientMappingsRegistryProvider(this.containerName, this.cacheName);
     }
 }
