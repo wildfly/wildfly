@@ -260,7 +260,10 @@
                 -->
                 <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
                 <version.org.eclipse.microprofile.config.api>3.0</version.org.eclipse.microprofile.config.api>
+                <version.org.eclipse.microprofile.fault-tolerance.api>4.0</version.org.eclipse.microprofile.fault-tolerance.api>
                 <!-- Test only dependencies - don't update in ee-9/pom.xml -->
+                <version.org.eclipse.microprofile.fault-tolerance.tck>${version.org.eclipse.microprofile.fault-tolerance.api}</version.org.eclipse.microprofile.fault-tolerance.tck>
+                <!-- Test framework only dependencies - don't update in ee-9/pom.xml -->
                 <version.org.testng>7.4.0</version.org.testng>
                 <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
             </properties>

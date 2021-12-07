@@ -77,6 +77,8 @@
             Overrides for MP5. Also make sure to update these in testsuite/integration/microprofile-tck/pom.xml
         -->
         <version.org.eclipse.microprofile.config.api>3.0</version.org.eclipse.microprofile.config.api>
+        <version.org.eclipse.microprofile.fault-tolerance.api>4.0</version.org.eclipse.microprofile.fault-tolerance.api>
+        <version.org.eclipse.microprofile.fault-tolerance.tck>${version.org.eclipse.microprofile.fault-tolerance.api}</version.org.eclipse.microprofile.fault-tolerance.tck>
         <!-- MP5 - END -->
         <version.org.eclipse.yasson>2.0.3</version.org.eclipse.yasson>
         <version.org.glassfish.jakarta.el>4.0.0</version.org.glassfish.jakarta.el>
