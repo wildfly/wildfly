@@ -53,8 +53,7 @@ import static org.wildfly.extension.clustering.ejb.InfinispanBeanManagementResou
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class InfinispanBeanManagementServiceConfigurator extends CapabilityServiceNameProvider
-        implements ResourceServiceConfigurator, Supplier<DistributableBeanManagementProvider>, BeanManagerFactoryServiceConfiguratorConfiguration {
+public class InfinispanBeanManagementServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<DistributableBeanManagementProvider>, BeanManagerFactoryServiceConfiguratorConfiguration {
 
     private volatile String name;
     private volatile String containerName;
@@ -86,7 +85,7 @@ public class InfinispanBeanManagementServiceConfigurator extends CapabilityServi
 
     @Override
     public DistributableBeanManagementProvider get() {
-        return new InfinispanBeanManagementProvider(this.name, this);
+        return new InfinispanBeanManagementProvider<>(this.name, this);
     }
 
     @Override
