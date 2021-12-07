@@ -31,6 +31,7 @@ import java.util.function.Consumer;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.Contextual;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
@@ -58,10 +59,9 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class LegacyDistributableCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K> & Contextual<Batch>> extends DistributableCacheFactoryBuilderServiceNameProvider implements ServiceConfigurator, DistributableCacheFactoryBuilder<K, V> {
+public class LegacyDistributableCacheFactoryBuilderServiceConfigurator<K, V extends Identifiable<K> & Contextual<Batch>> extends DistributableCacheFactoryBuilderServiceNameProvider implements ServiceConfigurator, CacheFactoryBuilder<K, V> {
 
     private final DistributableBeanManagementProvider factory;
-    private final BeanManagerFactoryServiceConfiguratorConfiguration config;
 
     public LegacyDistributableCacheFactoryBuilderServiceConfigurator(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
         this(name, load(), config);
@@ -87,7 +87,6 @@ public class LegacyDistributableCacheFactoryBuilderServiceConfigurator<K, V exte
 
     public LegacyDistributableCacheFactoryBuilderServiceConfigurator(String name, LegacyBeanManagementProviderFactory provider, BeanManagerFactoryServiceConfiguratorConfiguration config) {
         super(name);
-        this.config = config;
         this.factory = provider.getBeanManagerFactoryBuilder(name, config);
     }
 
@@ -95,14 +94,9 @@ public class LegacyDistributableCacheFactoryBuilderServiceConfigurator<K, V exte
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceName name = this.getServiceName();
         ServiceBuilder<?> builder = target.addService(name);
-        Consumer<DistributableCacheFactoryBuilder<K, V>> cacheFactoryBuilder = builder.provides(name);
+        Consumer<CacheFactoryBuilder<K, V>> cacheFactoryBuilder = builder.provides(name);
         Service service = Service.newInstance(cacheFactoryBuilder, this);
         return builder.setInstance(service);
-    }
-
-    @Override
-    public BeanManagerFactoryServiceConfiguratorConfiguration getConfiguration() {
-        return this.config;
     }
 
     @Override
