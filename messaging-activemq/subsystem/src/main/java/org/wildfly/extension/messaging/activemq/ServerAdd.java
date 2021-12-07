@@ -213,7 +213,9 @@ class ServerAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         super.populateModel(context, operation, resource);
-        context.addStep(SecurityDomainCheckHandler.INSTANCE, OperationContext.Stage.MODEL);
+        if(SECURITY_ENABLED.resolveModelAttribute(context, operation).asBoolean()) {
+            context.addStep(SecurityDomainCheckHandler.INSTANCE, OperationContext.Stage.MODEL);
+        }
         handleCredentialReferenceUpdate(context, resource.getModel().get(CREDENTIAL_REFERENCE.getName()), CREDENTIAL_REFERENCE.getName());
 
         // add an operation to create all the messaging paths resources that have not been already been created
@@ -328,13 +330,16 @@ class ServerAdd extends AbstractAddStepHandler {
 
             // Inject a reference to the Elytron security domain if one has been defined.
             Optional<Supplier<SecurityDomain>> elytronSecurityDomain = Optional.empty();
-            // legacy security
+            if (configuration.isSecurityEnabled()) {
+
             final ModelNode elytronSecurityDomainModel = ELYTRON_DOMAIN.resolveModelAttribute(context, model);
             if (elytronSecurityDomainModel.isDefined()) {
                 ServiceName elytronDomainCapability = context.getCapabilityServiceName(ELYTRON_DOMAIN_CAPABILITY, elytronSecurityDomainModel.asString(), SecurityDomain.class);
                 elytronSecurityDomain = Optional.of(serviceBuilder.requires(elytronDomainCapability));
             } else {
+                // legacy security
                 throw ROOT_LOGGER.legacySecurityUnsupported();
+                }
             }
 
             List<Interceptor> incomingInterceptors = processInterceptors(INCOMING_INTERCEPTORS.resolveModelAttribute(context, operation));
