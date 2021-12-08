@@ -21,9 +21,8 @@
  */
 package org.jboss.as.test.integration.hibernate.search.massindexer;
 
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -38,13 +37,12 @@ public class Singer implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @DocumentId
     private long id;
 
-    @Field
+    @FullTextField
     private String firstName;
 
-    @Field
+    @FullTextField
     private String lastName;
 
     public long getId() {

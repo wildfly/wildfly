@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.hibernate.search.cdi.beans.bridge;
 
-import org.hibernate.search.bridge.MetadataProvidingFieldBridge;
+import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.ValueBinder;
 
-public interface InternationalizedValueBridge extends MetadataProvidingFieldBridge {
+public interface InternationalizedValueBinder extends ValueBinder {
 
 }

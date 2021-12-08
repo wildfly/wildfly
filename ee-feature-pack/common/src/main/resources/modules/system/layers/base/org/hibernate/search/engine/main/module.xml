@@ -22,50 +22,16 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<!-- Hibernate Search Engine: the fulltext indexing and query capabilities
-     without the ORM integration bits. This is reused by several other project
-     outside of the Hibernate group. -->
+<!-- Hibernate Search Engine: the main glue between backend (e.g. Lucene backend)
+     and mapper (e.g. Hibernate ORM mapper) -->
 <module xmlns="urn:jboss:module:1.9" name="org.hibernate.search.engine">
 
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
     <resources>
-        <artifact name="${org.hibernate:hibernate-search-engine}"/>
+        <artifact name="${org.hibernate.search:hibernate-search-util-common}"/>
+        <artifact name="${org.hibernate.search:hibernate-search-engine}"/>
     </resources>
 
     <dependencies>
-        <module name="java.desktop"/>
-        <module name="java.management"/>
-        <module name="java.sql"/>
-        <module name="javax.transaction.api"/>
-        <module name="org.hibernate.commons-annotations"/>
-        <module name="org.apache.lucene" export="true"/>
-        <module name="org.apache.lucene.internal"/>
         <module name="org.jboss.logging"/>
-
-        <!-- Elasticsearch support -->
-        <module name="org.hibernate.search.elasticsearch" export="true" services="import" optional="true" />
-
-        <!-- optional JMS backend support -->
-        <module name="org.hibernate.search.backend-jms" export="true" services="import" optional="true"/>
-
-        <!-- optional JGroups backend support -->
-        <module name="org.hibernate.search.backend-jgroups" export="true" services="import" optional="true"/>
-
-        <!-- optional Avro serialization -->
-        <module name="org.hibernate.search.serialization-avro" services="import" optional="true"/>
-
-        <!-- Infinispan extensions - provided as separate download by the Infinispan project -->
-        <module name="org.infinispan.hibernate-search.directory-provider:for-hibernatesearch-5.10" services="import" optional="true"/>
-
-        <!-- optional Apache Tika integration -->
-        <module name="org.apache.tika" optional="true" />
-
-        <!-- For naming -->
-        <module name="javax.api" />
-        <module name="org.jboss.as.naming" />
-
-        <module name="java.xml"/>
     </dependencies>
 </module>

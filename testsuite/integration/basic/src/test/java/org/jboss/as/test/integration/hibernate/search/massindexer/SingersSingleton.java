@@ -21,15 +21,14 @@
  */
 package org.jboss.as.test.integration.hibernate.search.massindexer;
 
-import org.apache.lucene.search.MatchAllDocsQuery;
 import org.hibernate.CacheMode;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.FullTextQuery;
-import org.hibernate.search.jpa.Search;
+import org.hibernate.search.mapper.orm.Search;
 
 import javax.ejb.Singleton;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceUnit;
 import javax.persistence.Query;
 import java.util.List;
 
@@ -40,6 +39,8 @@ import java.util.List;
  */
 @Singleton
 public class SingersSingleton {
+    @PersistenceUnit(name = "cmt-test")
+    private EntityManagerFactory entityManagerFactory;
     @PersistenceContext(unitName = "cmt-test")
     private EntityManager entityManager;
 
@@ -50,12 +51,9 @@ public class SingersSingleton {
         entityManager.persist(singer);
     }
 
-    public boolean rebuildIndex() throws InterruptedException {
-        FullTextEntityManager fullTextEntityManager = Search
-                .getFullTextEntityManager(entityManager);
+    public boolean rebuildIndex() {
         try {
-            fullTextEntityManager
-                    .createIndexer()
+            Search.mapping(entityManagerFactory).scope(Object.class).massIndexer()
                     .batchSizeToLoadObjects(30)
                     .threadsToLoadObjects(4)
                     .cacheMode(CacheMode.NORMAL)
@@ -72,15 +70,9 @@ public class SingersSingleton {
     }
 
     public List<?> searchAllContacts() {
-        FullTextEntityManager fullTextEntityManager = Search
-                .getFullTextEntityManager(entityManager);
-
-        FullTextQuery query = fullTextEntityManager.createFullTextQuery(
-                new MatchAllDocsQuery(),
-                Singer.class
-        );
-
-        return query.getResultList();
+        return Search.session(entityManager).search(Singer.class)
+                .where(f -> f.matchAll())
+                .fetchAllHits();
     }
 }
 

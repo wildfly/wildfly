@@ -89,9 +89,6 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
         putPropertyIfAbsent( pu, properties, AvailableSettings.JPA_PROXY_COMPLIANCE, true );
         putPropertyIfAbsent( pu, properties, AvailableSettings.ENABLE_LAZY_LOAD_NO_TRANS, false );
         putPropertyIfAbsent( pu, properties, AvailableSettings.JPA_ID_GENERATOR_GLOBAL_SCOPE_COMPLIANCE, true);
-
-        // Search hint
-        putPropertyIfAbsent( pu, properties,"hibernate.search.index_uninverting_allowed", "true" );
     }
 
     @Override
