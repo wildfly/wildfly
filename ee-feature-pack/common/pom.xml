@@ -95,6 +95,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.carrotsearch</groupId>
+            <artifactId>hppc</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.fasterxml</groupId>
             <artifactId>classmate</artifactId>
         </dependency>
