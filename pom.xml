@@ -288,6 +288,7 @@
          -->
         <version.antlr>2.7.7</version.antlr>
         <version.com.beust>1.78</version.com.beust>
+        <version.com.carrotsearch.hppc>0.8.1</version.com.carrotsearch.hppc>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.12.3</version.com.fasterxml.jackson>
         <version.com.github.ben-manes.caffeine>2.9.3</version.com.github.ben-manes.caffeine>
@@ -1697,6 +1698,12 @@
                 <artifactId>jcommander</artifactId>
                 <version>${version.com.beust}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.carrotsearch</groupId>
+                <artifactId>hppc</artifactId>
+                <version>${version.com.carrotsearch.hppc}</version>
             </dependency>
 
             <dependency>
