@@ -286,9 +286,16 @@
                 -->
                 <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
                 <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
+                <version.jakarta.json.jakarta-json-api>2.0.0</version.jakarta.json.jakarta-json-api>
                 <version.org.eclipse.microprofile.config.api>3.0</version.org.eclipse.microprofile.config.api>
                 <version.org.eclipse.microprofile.fault-tolerance.api>4.0</version.org.eclipse.microprofile.fault-tolerance.api>
+                <version.org.eclipse.microprofile.jwt.api>2.0</version.org.eclipse.microprofile.jwt.api>
                 <version.org.eclipse.microprofile.metrics.api>4.0</version.org.eclipse.microprofile.metrics.api>
+                <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
+                <version.org.jboss.resteasy.ee9>6.0.0.Beta1</version.org.jboss.resteasy.ee9>
+                <!-- This is required for the RESTEasy 6.0.0.Beta1 upgrade. As of RESTEasy 5 there is no more MP related implementations -->
+                <version.org.jboss.resteasy.microprofile>1.0.0.Final</version.org.jboss.resteasy.microprofile>
+                <version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>
                 <!-- Test only dependencies - don't update in ee-9/pom.xml -->
                 <version.org.eclipse.microprofile.fault-tolerance.tck>${version.org.eclipse.microprofile.fault-tolerance.api}</version.org.eclipse.microprofile.fault-tolerance.tck>
                 <!-- Test framework only dependencies - don't update in ee-9/pom.xml -->
@@ -310,6 +317,187 @@
                         <groupId>jakarta.inject</groupId>
                         <artifactId>jakarta.inject-api</artifactId>
                         <version>${version.jakarta.inject.jakarta.inject-api}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>jakarta.json</groupId>
+                        <artifactId>jakarta.json-api</artifactId>
+                        <version>${version.jakarta.json.jakarta-json-api}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>jose-jwt</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.glassfish</groupId>
+                        <artifactId>jakarta.json</artifactId>
+                        <version>${version.org.glassfish.jakarta.json}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-client</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-client-api</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-core</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-core-spi</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-atom-provider</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-cdi</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-crypto</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-jackson2-provider</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-json-binding-provider</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-json-p-provider</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-jaxb-provider</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-jsapi</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-multipart-provider</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-rxjava2</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy</groupId>
+                        <artifactId>resteasy-validator-provider</artifactId>
+                        <version>${version.org.jboss.resteasy.ee9}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.resteasy.microprofile</groupId>
+                        <artifactId>microprofile-config</artifactId>
+                        <version>${version.org.jboss.resteasy.microprofile}</version>
+                        <exclusions>
+                            <exclusion>
+                                <artifactId>*</artifactId>
+                                <groupId>*</groupId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jboss.resteasy.microprofile</groupId>
+                        <artifactId>microprofile-rest-client</artifactId>
+                        <version>${version.org.jboss.resteasy.microprofile}</version>
+                        <exclusions>
+                            <exclusion>
+                                <artifactId>*</artifactId>
+                                <groupId>*</groupId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jboss.resteasy.microprofile</groupId>
+                        <artifactId>microprofile-rest-client-base</artifactId>
+                        <version>${version.org.jboss.resteasy.microprofile}</version>
+                        <exclusions>
+                            <exclusion>
+                                <artifactId>*</artifactId>
+                                <groupId>*</groupId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jboss.spec.javax.ws.rs</groupId>
+                        <artifactId>jboss-jaxrs-api_3.0_spec</artifactId>
+                        <version>${version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec}</version>
                     </dependency>
                 </dependencies>
             </dependencyManagement>
