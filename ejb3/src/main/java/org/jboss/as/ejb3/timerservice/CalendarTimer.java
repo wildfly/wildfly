@@ -65,18 +65,7 @@ public class CalendarTimer extends TimerImpl {
             this.timeoutMethod = null;
         }
 
-        ScheduleExpression s = new ScheduleExpression();
-        s.second(builder.scheduleExprSecond);
-        s.minute(builder.scheduleExprMinute);
-        s.hour(builder.scheduleExprHour);
-        s.dayOfWeek(builder.scheduleExprDayOfWeek);
-        s.dayOfMonth(builder.scheduleExprDayOfMonth);
-        s.month(builder.scheduleExprMonth);
-        s.year(builder.scheduleExprYear);
-        s.start(builder.scheduleExprStartDate);
-        s.end(builder.scheduleExprEndDate);
-        s.timezone(builder.scheduleExprTimezone);
-        this.calendarTimeout = new CalendarBasedTimeout(s);
+        this.calendarTimeout = new CalendarBasedTimeout(builder.scheduleExpression);
 
         if (builder.nextDate == null && builder.newTimer) {
             // compute the next timeout (from "now")
@@ -176,66 +165,12 @@ public class CalendarTimer extends TimerImpl {
     }
 
     public static class Builder extends TimerImpl.Builder {
-        private String scheduleExprSecond;
-        private String scheduleExprMinute;
-        private String scheduleExprHour;
-        private String scheduleExprDayOfWeek;
-        private String scheduleExprDayOfMonth;
-        private String scheduleExprMonth;
-        private String scheduleExprYear;
-        private Date scheduleExprStartDate;
-        private Date scheduleExprEndDate;
-        private String scheduleExprTimezone;
+        private ScheduleExpression scheduleExpression;
         private boolean autoTimer;
         private Method timeoutMethod;
 
-        public Builder setScheduleExprSecond(final String scheduleExprSecond) {
-            this.scheduleExprSecond = scheduleExprSecond;
-            return this;
-        }
-
-        public Builder setScheduleExprMinute(final String scheduleExprMinute) {
-            this.scheduleExprMinute = scheduleExprMinute;
-            return this;
-        }
-
-        public Builder setScheduleExprHour(final String scheduleExprHour) {
-            this.scheduleExprHour = scheduleExprHour;
-            return this;
-        }
-
-        public Builder setScheduleExprDayOfWeek(final String scheduleExprDayOfWeek) {
-            this.scheduleExprDayOfWeek = scheduleExprDayOfWeek;
-            return this;
-        }
-
-        public Builder setScheduleExprDayOfMonth(final String scheduleExprDayOfMonth) {
-            this.scheduleExprDayOfMonth = scheduleExprDayOfMonth;
-            return this;
-        }
-
-        public Builder setScheduleExprMonth(final String scheduleExprMonth) {
-            this.scheduleExprMonth = scheduleExprMonth;
-            return this;
-        }
-
-        public Builder setScheduleExprYear(final String scheduleExprYear) {
-            this.scheduleExprYear = scheduleExprYear;
-            return this;
-        }
-
-        public Builder setScheduleExprStartDate(final Date scheduleExprStartDate) {
-            this.scheduleExprStartDate = scheduleExprStartDate;
-            return this;
-        }
-
-        public Builder setScheduleExprEndDate(final Date scheduleExprEndDate) {
-            this.scheduleExprEndDate = scheduleExprEndDate;
-            return this;
-        }
-
-        public Builder setScheduleExprTimezone(final String scheduleExprTimezone) {
-            this.scheduleExprTimezone = scheduleExprTimezone;
+        public Builder setScheduleExpression(final ScheduleExpression scheduleExpression) {
+            this.scheduleExpression = scheduleExpression;
             return this;
         }
 

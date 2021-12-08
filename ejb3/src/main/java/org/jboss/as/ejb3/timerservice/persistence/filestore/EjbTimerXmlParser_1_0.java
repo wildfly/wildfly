@@ -62,7 +62,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
+import javax.ejb.ScheduleExpression;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -217,6 +217,8 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
                 SCHEDULE_EXPR_DAY_OF_MONTH,
                 SCHEDULE_EXPR_MONTH,
                 SCHEDULE_EXPR_YEAR}));
+
+        final ScheduleExpression scheduleExpression = new ScheduleExpression();
         for (int i = 0; i < reader.getAttributeCount(); ++i) {
             String attr = reader.getAttributeValue(i);
             String attrName = reader.getAttributeLocalName(i);
@@ -225,34 +227,34 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
             if (!handled) {
                 switch (attrName) {
                     case SCHEDULE_EXPR_SECOND:
-                        builder.setScheduleExprSecond(attr);
+                        scheduleExpression.second(attr);
                         break;
                     case SCHEDULE_EXPR_MINUTE:
-                        builder.setScheduleExprMinute(attr);
+                        scheduleExpression.minute(attr);
                         break;
                     case SCHEDULE_EXPR_HOUR:
-                        builder.setScheduleExprHour(attr);
+                        scheduleExpression.hour(attr);
                         break;
                     case SCHEDULE_EXPR_DAY_OF_WEEK:
-                        builder.setScheduleExprDayOfWeek(attr);
+                        scheduleExpression.dayOfWeek(attr);
                         break;
                     case SCHEDULE_EXPR_DAY_OF_MONTH:
-                        builder.setScheduleExprDayOfMonth(attr);
+                        scheduleExpression.dayOfMonth(attr);
                         break;
                     case SCHEDULE_EXPR_MONTH:
-                        builder.setScheduleExprMonth(attr);
+                        scheduleExpression.month(attr);
                         break;
                     case SCHEDULE_EXPR_YEAR:
-                        builder.setScheduleExprYear(attr);
+                        scheduleExpression.year(attr);
                         break;
                     case SCHEDULE_EXPR_START_DATE:
-                        builder.setScheduleExprStartDate(new Date(Long.parseLong(attr)));
+                        scheduleExpression.start(new Date(Long.parseLong(attr)));
                         break;
                     case SCHEDULE_EXPR_END_DATE:
-                        builder.setScheduleExprEndDate(new Date(Long.parseLong(attr)));
+                        scheduleExpression.end(new Date(Long.parseLong(attr)));
                         break;
                     case SCHEDULE_EXPR_TIMEZONE:
-                        builder.setScheduleExprTimezone(attr);
+                        scheduleExpression.timezone(attr);
                         break;
                     default:
                         throw ParseUtils.unexpectedAttribute(reader, i);
@@ -262,6 +264,7 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
         if (!required.isEmpty()) {
             throw ParseUtils.missingRequired(reader, required);
         }
+        builder.setScheduleExpression(scheduleExpression);
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
