@@ -293,7 +293,7 @@
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
         <version.com.github.fge.msg-simple>1.1</version.com.github.fge.msg-simple>
         <version.com.github.spullara.mustache>0.9.6</version.com.github.spullara.mustache>
-        <version.com.github.tomakehurst.wiremock>2.20.0</version.com.github.tomakehurst.wiremock>
+        <version.com.github.tomakehurst.wiremock>2.27.2</version.com.github.tomakehurst.wiremock>
         <version.com.google.android.annotations>4.1.1.4</version.com.google.android.annotations>
         <version.com.google.api.grpc>2.0.1</version.com.google.api.grpc>
         <version.com.google.code.gson>2.8.9</version.com.google.code.gson>
@@ -443,6 +443,8 @@
         <version.org.jboss.narayana>5.12.1.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.7.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.resteasy>4.7.4.Final</version.org.jboss.resteasy>
+        <!-- This is required for the RESTEasy 6.0.0.Beta1 upgrade. As of RESTEasy 5 there is no more MP related implementations -->
+        <version.org.jboss.resteasy.microprofile>1.0.0.Final</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>

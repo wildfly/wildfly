@@ -294,6 +294,7 @@
                 <version.org.eclipse.microprofile.jwt.api>2.0</version.org.eclipse.microprofile.jwt.api>
                 <version.org.eclipse.microprofile.metrics.api>4.0</version.org.eclipse.microprofile.metrics.api>
                 <version.org.eclipse.microprofile.openapi>3.0</version.org.eclipse.microprofile.openapi>
+                <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
                 <version.org.eclipse.yasson>2.0.3</version.org.eclipse.yasson>
                 <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
                 <version.org.jboss.resteasy.ee9>6.0.0.Beta1</version.org.jboss.resteasy.ee9>
@@ -305,7 +306,7 @@
                 <!-- Test framework only dependencies - don't update in ee-9/pom.xml -->
                 <version.org.testng>7.4.0</version.org.testng>
                 <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
-
+                <version.org.wildfly.arquillian>5.0.0.Alpha2</version.org.wildfly.arquillian>
                 <!-- For EE9 use the following directory as an additional source -->
                 <ts.microprofile-tck.build-helper.source.dir>src/test/jakarta/java</ts.microprofile-tck.build-helper.source.dir>
             </properties>
