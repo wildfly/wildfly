@@ -157,6 +157,12 @@
                 <!-- Enable galleon provisioning -->
                 <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
             </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>jakarta.inject</groupId>
+                    <artifactId>jakarta.inject-api</artifactId>
+                </dependency>
+            </dependencies>
         </profile>
 
         <!-- Profile to turn off execution of this module's tests if the testsuite is being run

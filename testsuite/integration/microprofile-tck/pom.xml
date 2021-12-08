@@ -285,8 +285,10 @@
                     Override version properties for MicroProfile 5 as we do in ee-9/pom.xml
                 -->
                 <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
+                <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
                 <version.org.eclipse.microprofile.config.api>3.0</version.org.eclipse.microprofile.config.api>
                 <version.org.eclipse.microprofile.fault-tolerance.api>4.0</version.org.eclipse.microprofile.fault-tolerance.api>
+                <version.org.eclipse.microprofile.metrics.api>4.0</version.org.eclipse.microprofile.metrics.api>
                 <!-- Test only dependencies - don't update in ee-9/pom.xml -->
                 <version.org.eclipse.microprofile.fault-tolerance.tck>${version.org.eclipse.microprofile.fault-tolerance.api}</version.org.eclipse.microprofile.fault-tolerance.tck>
                 <!-- Test framework only dependencies - don't update in ee-9/pom.xml -->
@@ -303,6 +305,11 @@
                         <groupId>jakarta.enterprise</groupId>
                         <artifactId>jakarta.enterprise.cdi-api</artifactId>
                         <version>${version.jakarta.enterprise}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>jakarta.inject</groupId>
+                        <artifactId>jakarta.inject-api</artifactId>
+                        <version>${version.jakarta.inject.jakarta.inject-api}</version>
                     </dependency>
                 </dependencies>
             </dependencyManagement>
