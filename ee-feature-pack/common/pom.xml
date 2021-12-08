@@ -1674,9 +1674,17 @@
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-join</artifactId>
+        </dependency>
+        <dependency>
+            <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+            <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
+            <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-misc</artifactId>
         </dependency>
         <dependency>
+            <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+            <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-backward-codecs</artifactId>
         </dependency>

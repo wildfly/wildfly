@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.hibernate.search.cdi.beans.i18n;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;

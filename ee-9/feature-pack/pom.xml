@@ -921,6 +921,22 @@
                     <artifactId>jboss-ejb-client</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-engine</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-orm</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-backend-jms</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-serialization-avro</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.jvnet.staxex</groupId>
                     <artifactId>stax-ex</artifactId>
                 </exclusion>

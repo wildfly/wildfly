@@ -39,7 +39,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -82,7 +82,7 @@ public class HibernateSearchEarMassIndexerTestCase {
 
     private static Asset ejbManifest() {
         String manifest = Descriptors.create(ManifestDescriptor.class)
-                .attribute("Dependencies", "org.hibernate.search.orm")
+                .attribute("Dependencies", "org.hibernate.search.mapper.orm services,org.hibernate.search.backend.lucene services")
                 .exportAsString();
         return new StringAsset(manifest);
     }
@@ -96,9 +96,10 @@ public class HibernateSearchEarMassIndexerTestCase {
                 .clazz(Singer.class.getName())
                 .getOrCreateProperties()
                 .createProperty().name("hibernate.hbm2ddl.auto").value("create").up()
-                .createProperty().name("hibernate.search.default.lucene_version").value("LUCENE_CURRENT").up()
-                .createProperty().name("hibernate.search.default.directory_provider").value("local-heap").up()
-                .createProperty().name("hibernate.search.indexing_strategy").value("manual").up()
+                .createProperty().name("hibernate.search.schema_management.strategy").value("drop-and-create-and-drop").up()
+                .createProperty().name("hibernate.search.backend.lucene_version").value("LUCENE_CURRENT").up()
+                .createProperty().name("hibernate.search.backend.directory.type").value("local-heap").up()
+                .createProperty().name("hibernate.search.automatic_indexing.enabled").value("false").up()
                 .up().up()
                 .exportAsString();
         return new StringAsset(persistenceXml);

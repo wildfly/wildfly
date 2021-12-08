@@ -21,13 +21,12 @@
  */
 package org.jboss.as.test.integration.hibernate.search.simple;
 
-import org.hibernate.search.annotations.Analyzer;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 
 @Entity
 @Indexed
@@ -37,8 +36,10 @@ public class Book {
     @GeneratedValue
     Long id;
 
-    @Field
-    @Field(name = "title_autocomplete", analyzer = @Analyzer(definition = AnalysisConfigurationProvider.AUTOCOMPLETE))
+    @FullTextField
+    @FullTextField(name = "title_autocomplete",
+            analyzer = AnalysisConfigurer.AUTOCOMPLETE,
+            searchAnalyzer = AnalysisConfigurer.AUTOCOMPLETE_QUERY)
     String title;
 
 }

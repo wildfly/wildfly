@@ -21,20 +21,15 @@
  */
 package org.jboss.as.test.integration.hibernate.search.cdi.beans.model;
 
-import org.apache.lucene.search.Query;
-import org.hibernate.search.engine.ProjectionConstants;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.FullTextQuery;
-import org.hibernate.search.jpa.Search;
-import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.engine.search.common.ValueConvert;
+import org.hibernate.search.mapper.orm.Search;
 
-import javax.inject.Singleton;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaDelete;
-import javax.transaction.Transactional;
+import jakarta.inject.Singleton;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.CriteriaDelete;
+import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Singleton
 public class EntityWithCDIAwareBridgesDao {
@@ -63,44 +58,24 @@ public class EntityWithCDIAwareBridgesDao {
                 .createCriteriaDelete(EntityWithCDIAwareBridges.class);
         delete.from(EntityWithCDIAwareBridges.class);
         entityManager.createQuery(delete).executeUpdate();
-        Search.getFullTextEntityManager(entityManager).purgeAll(EntityWithCDIAwareBridges.class);
+        Search.session(entityManager).workspace(EntityWithCDIAwareBridges.class).purge();
     }
 
     @Transactional
-    @SuppressWarnings("unchecked")
-    public List<Long> searchFieldBridge(String terms) {
-        FullTextEntityManager ftEntityManager = Search.getFullTextEntityManager(entityManager);
-        QueryBuilder queryBuilder = ftEntityManager.getSearchFactory().buildQueryBuilder()
-                .forEntity(EntityWithCDIAwareBridges.class).get();
-        Query luceneQuery = queryBuilder.keyword()
-                .onField("internationalizedValue")
-                .ignoreFieldBridge()
-                .matching(terms)
-                .createQuery();
-        FullTextQuery query = ftEntityManager.createFullTextQuery(luceneQuery, EntityWithCDIAwareBridges.class);
-        query.setProjection(ProjectionConstants.ID);
-        List<Object[]> projections = query.getResultList();
-        return projections.stream()
-                .map(array -> (Long) array[0])
-                .collect(Collectors.toList());
+    public List<Long> searchValueBridge(String terms) {
+        return Search.session(entityManager).search(EntityWithCDIAwareBridges.class)
+                .select(f -> f.id(Long.class))
+                .where(f -> f.match().fields("value_fr", "value_en", "value_de")
+                        .matching(terms, ValueConvert.NO))
+                .fetchAllHits();
     }
 
     @Transactional
-    @SuppressWarnings("unchecked")
-    public List<Long> searchClassBridge(String terms) {
-        FullTextEntityManager ftEntityManager = Search.getFullTextEntityManager(entityManager);
-        QueryBuilder queryBuilder = ftEntityManager.getSearchFactory().buildQueryBuilder()
-                .forEntity(EntityWithCDIAwareBridges.class).get();
-        Query luceneQuery = queryBuilder.keyword()
-                .onField(EntityWithCDIAwareBridges.CLASS_BRIDGE_FIELD_NAME)
-                .ignoreFieldBridge()
-                .matching(terms)
-                .createQuery();
-        FullTextQuery query = ftEntityManager.createFullTextQuery(luceneQuery, EntityWithCDIAwareBridges.class);
-        query.setProjection(ProjectionConstants.ID);
-        List<Object[]> projections = query.getResultList();
-        return projections.stream()
-                .map(array -> (Long) array[0])
-                .collect(Collectors.toList());
+    public List<Long> searchTypeBridge(String terms) {
+        return Search.session(entityManager).search(EntityWithCDIAwareBridges.class)
+                .select(f -> f.id(Long.class))
+                .where(f -> f.match().field(EntityWithCDIAwareBridges.TYPE_BRIDGE_FIELD_NAME)
+                        .matching(terms, ValueConvert.NO))
+                .fetchAllHits();
     }
 }

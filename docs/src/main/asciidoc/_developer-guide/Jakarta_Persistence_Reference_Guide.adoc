@@ -485,9 +485,24 @@ Persistence.xml to use the above custom settings:
 [[using-hibernate-search]]
 == Using Hibernate Search
 
-WildFly includes Hibernate Search. If you want to use the bundled version of Hibernate Search, which requires to use the default Hibernate ORM persistence provider, this will be automatically enabled.  Having this enabled means that, provided your application includes any entity which is annotated with *org.hibernate.search.annotations.Indexed*, the module *org.hibernate.search.orm:main* will be made available to your deployment; this will also include the required version of Apache Lucene.
+WildFly includes Hibernate Search.
+If you want to use the bundled version of Hibernate Search, which requires to use the default Hibernate ORM persistence provider:
 
-If you do not want this module to be exposed to your deployment, set the persistence property *wildfly.jpa.hibernate.search.module* to either *none* to not automatically inject any Hibernate Search module, or to any other module identifier to inject a different module. For example you could set *wildfly.jpa.hibernate.search.module=org.hibernate.search.orm:5.11.0.Alpha1* to use the experimental version 5.11.0.Alpha1 instead of the provided module; in this case you'll have to download and add the custom modules to the application server as other versions are not included.  When setting *wildfly.jpa.hibernate.search.module=none* you might also opt to include Hibernate Search and its dependencies within your application but we highly recommend the modules approach.
+* Ensure at least one entity in your application is annotated with *org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed*,
+  so that WildFly will make the module *org.hibernate.search.mapper.orm:main* available to your deployment.
+* Ensure you set the configuration property `hibernate.search.backend.type` to `lucene`,
+  so that WildFly will make the module *org.hibernate.search.backend.lucene:main* available to your deployment.
+* Alternatively, add dependencies to those modules explicitly,
+for example using a <<dependencies-manifest-entries,manifest entry>>.
+Do not forget to append the `services` keyword, otherwise Hibernate Search may not detect these modules.
++
+For example:
+[source]
+----
+Dependencies: org.hibernate.search.mapper.orm services,org.hibernate.search.backend.lucene services
+----
+
+If you do not want Hibernate Search to be exposed to your deployment, set the persistence property *wildfly.jpa.hibernate.search.module* to either *none* to not automatically inject any Hibernate Search module, or to any other module identifier to inject a different module. For example you could set *wildfly.jpa.hibernate.search.module=org.hibernate.search.mapper.orm:6.1.0.Beta1* to use the experimental version 6.1.0.Beta1 instead of the provided module; in this case you'll have to download and add the custom modules to the application server as other versions are not included.  When setting *wildfly.jpa.hibernate.search.module=none* you might also opt to include Hibernate Search and its dependencies within your application but we highly recommend the modules approach.
 
 [[packaging-the-hibernate-jpa-persistence-provider-with-your-application]]
 == Packaging the Hibernate JPA persistence provider with your application
@@ -727,7 +742,7 @@ across all application deployments on the AS instance).
 
 |hibernate.auto_quote_keyword=false | 
 
-|hibernate.implicit_naming_strategy=org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
+|hibernate.implicit_naming_strategy=org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl |
 
 |hibernate.model.generator_name_as_sequence_name=true |
 
@@ -747,8 +762,6 @@ across all application deployments on the AS instance).
 
 |hibernate.jpa.compliance.global_id_generators=true |
 
-|hibernate.search.index_uninverting_allowed=true |
-| 
 |=======================================================================
 
 if *hibernate.id.new_generator_mappings* is *true*:

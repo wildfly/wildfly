@@ -21,25 +21,22 @@
  */
 package org.jboss.as.test.integration.hibernate.search.simple;
 
-import org.hibernate.search.SearchFactory;
-import org.hibernate.search.engine.impl.MutableSearchFactory;
+import static org.junit.Assert.assertEquals;
+
+import jakarta.ejb.EJB;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.EJB;
-
-import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Verify deployed applications can use the default Hibernate Search module via Jakarta Persistence APIs.
@@ -89,24 +86,13 @@ public class HibernateSearchJPATestCase {
         assertEquals(1, searchBean.findAutocomplete("he pl").size());
     }
 
-    @Test
-    public void testCustomConfigurationApplied() {
-        SearchFactory searchFactory = searchBean.retrieveHibernateSearchEngine();
-        MutableSearchFactory internalSearchEngine = searchFactory.unwrap( MutableSearchFactory.class );
-        Assert.assertTrue(internalSearchEngine.isIndexUninvertingAllowed());
-    }
-
     @Deployment
     public static Archive<?> deploy() throws Exception {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JAR_ARCHIVE_NAME);
         // add Jakarta Persistence configuration
         jar.addAsManifestResource(HibernateSearchJPATestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         // add testing Bean and entities
-        jar.addClasses(SearchBean.class, Book.class, HibernateSearchJPATestCase.class, AnalysisConfigurationProvider.class);
-        // WFLY-10195: temporary - should be possible to remove after upgrade to Lucene 6
-        jar.addAsManifestResource(createPermissionsXmlAsset(
-                new RuntimePermission("accessDeclaredMembers")
-        ), "permissions.xml");
+        jar.addClasses(SearchBean.class, Book.class, HibernateSearchJPATestCase.class, AnalysisConfigurer.class);
 
         return jar;
     }

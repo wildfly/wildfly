@@ -92,9 +92,6 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
 
         // Enable JPA Compliance mode
         putPropertyIfAbsent( pu, properties, AvailableSettings.JPA_COMPLIANCE, true);
-
-        // Search hint
-        putPropertyIfAbsent( pu, properties,"hibernate.search.index_uninverting_allowed", "true" );
     }
 
     private void failOnIncompatibleSetting(PersistenceUnitMetadata pu, Map properties) {
