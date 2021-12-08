@@ -289,6 +289,7 @@
                 <version.jakarta.json.jakarta-json-api>2.0.0</version.jakarta.json.jakarta-json-api>
                 <version.org.eclipse.microprofile.config.api>3.0</version.org.eclipse.microprofile.config.api>
                 <version.org.eclipse.microprofile.fault-tolerance.api>4.0</version.org.eclipse.microprofile.fault-tolerance.api>
+                <version.org.eclipse.microprofile.health.api>4.0</version.org.eclipse.microprofile.health.api>
                 <version.org.eclipse.microprofile.jwt.api>2.0</version.org.eclipse.microprofile.jwt.api>
                 <version.org.eclipse.microprofile.metrics.api>4.0</version.org.eclipse.microprofile.metrics.api>
                 <version.org.eclipse.microprofile.openapi>3.0</version.org.eclipse.microprofile.openapi>

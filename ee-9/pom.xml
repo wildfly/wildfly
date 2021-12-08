@@ -80,6 +80,7 @@
         <version.org.eclipse.microprofile.fault-tolerance.api>4.0</version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.fault-tolerance.tck>${version.org.eclipse.microprofile.fault-tolerance.api}</version.org.eclipse.microprofile.fault-tolerance.tck>
         <version.org.eclipse.microprofile.jwt.api>2.0</version.org.eclipse.microprofile.jwt.api>
+        <version.org.eclipse.microprofile.health.api>4.0</version.org.eclipse.microprofile.health.api>
         <version.org.eclipse.microprofile.metrics.api>4.0</version.org.eclipse.microprofile.metrics.api>
         <version.org.eclipse.microprofile.openapi>3.0</version.org.eclipse.microprofile.openapi>
         <!-- MP5 - END -->
