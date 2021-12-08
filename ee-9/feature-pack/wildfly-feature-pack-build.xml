@@ -77,6 +77,7 @@
                 <extension>org.jboss.as.xts</extension>
                 <extension>org.wildfly.extension.batch.jberet</extension>
                 <extension>org.wildfly.extension.bean-validation</extension>
+                <extension>org.wildfly.extension.clustering.ejb</extension>
                 <extension>org.wildfly.extension.clustering.singleton</extension>
                 <extension>org.wildfly.extension.clustering.web</extension>
                 <extension>org.wildfly.extension.core-management</extension>
@@ -128,6 +129,7 @@
                 <extension>org.jboss.as.xts</extension>
                 <extension>org.wildfly.extension.batch.jberet</extension>
                 <extension>org.wildfly.extension.bean-validation</extension>
+                <extension>org.wildfly.extension.clustering.ejb</extension>
                 <extension>org.wildfly.extension.clustering.singleton</extension>
                 <extension>org.wildfly.extension.clustering.web</extension>
                 <extension>org.wildfly.extension.core-management</extension>
