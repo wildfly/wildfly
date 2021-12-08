@@ -43,6 +43,9 @@
         <ts.microprofile-tck-provisioning.decorator.layer>observability</ts.microprofile-tck-provisioning.decorator.layer>
         <!-- properties to enable plugins shared by various bootable profiles -->
         <bootable-jar-generate-properties-file.phase>none</bootable-jar-generate-properties-file.phase>
+
+        <!-- Resource path -->
+        <wiremock.resource.path>${project.build.directory}/wildfly/wiremock/wiremock.jar${:}${project.build.directory}/wildfly/wiremock/junit.jar${:}${project.build.directory}/wildfly/wiremock/jetty-io.jar${:}${project.build.directory}/wildfly/wiremock/jetty-http.jar${:}${project.build.directory}/wildfly/wiremock/jetty-server.jar${:}${project.build.directory}/wildfly/wiremock/jetty-util.jar</wiremock.resource.path>
     </properties>
     <dependencies>
         <!-- Required by the RESTEasy Client -->
@@ -79,6 +82,30 @@
             <artifactId>resteasy-core-spi</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-io</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-http</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- End requirement -->
+
         <dependency>
             <groupId>org.eclipse.microprofile.rest.client</groupId>
             <artifactId>microprofile-rest-client-api</artifactId>
@@ -207,6 +234,22 @@
                                     <groupId>junit</groupId>
                                     <artifactId>junit</artifactId>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.eclipse.jetty</groupId>
+                                    <artifactId>jetty-io</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.eclipse.jetty</groupId>
+                                    <artifactId>jetty-http</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.eclipse.jetty</groupId>
+                                    <artifactId>jetty-server</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.eclipse.jetty</groupId>
+                                    <artifactId>jetty-util</artifactId>
+                                </artifactItem>
                             </artifactItems>
                             <stripVersion>true</stripVersion>
                             <outputDirectory>${project.build.directory}/wildfly/wiremock</outputDirectory>
@@ -227,7 +270,7 @@
                         </goals>
                         <configuration>
                             <commands>
-                                <command>module add --name=com.github.tomakehurst.wiremock --resources=${project.build.directory}/wildfly/wiremock/wiremock.jar${:}${project.build.directory}/wildfly/wiremock/junit.jar --module-xml=${basedir}/module.xml</command>
+                                <command>module add --name=com.github.tomakehurst.wiremock --resources=${wiremock.resource.path} --module-xml=${basedir}/module.xml</command>
                             </commands>
                             <scripts>
                                 <script>wiremock.cli</script>
@@ -332,12 +375,8 @@
                             <filename>wiremock-bootable-cli.properties</filename>
                             <properties>
                                 <property>
-                                    <name>wiremock.jar.path</name>
-                                    <value>${project.build.directory}/wildfly/wiremock/wiremock.jar</value>
-                                </property>
-                                <property>
-                                    <name>wiremock.junit.jar.path</name>
-                                    <value>${project.build.directory}/wildfly/wiremock/junit.jar</value>
+                                    <name>wiremock.resource.path</name>
+                                    <value>${wiremock.resource.path}</value>
                                 </property>
                                 <property>
                                     <name>module.xml.path</name>
@@ -403,22 +442,6 @@
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
                         <jboss.server.config.file.name>standalone-microprofile.xml</jboss.server.config.file.name>
                     </systemPropertyVariables>
-                    <excludes>
-                        <!-- We are not going to start a Jetty server within WildFly; test coverage ensured by having
-                             the tck run in RESTEasy too -->
-                        <exclude>org.eclipse.microprofile.rest.client.tck.ProxyServerTest</exclude>
-                        <exclude>org.eclipse.microprofile.rest.client.tck.cditests.CDIProxyServerTest</exclude>
-                        <exclude>org.eclipse.microprofile.rest.client.tck.ssl.SslContextTest</exclude>
-                        <!-- https://github.com/eclipse/microprofile-rest-client/issues/265 -->
-                        <exclude>org.eclipse.microprofile.rest.client.tck.timeout.TimeoutBuilderIndependentOfMPConfigTest</exclude>
-                        <exclude>org.eclipse.microprofile.rest.client.tck.timeout.TimeoutTest</exclude>
-                        <exclude>org.eclipse.microprofile.rest.client.tck.timeout.TimeoutViaMPConfigTest</exclude>
-                        <exclude>org.eclipse.microprofile.rest.client.tck.timeout.TimeoutViaMPConfigWithConfigKeyTest</exclude>
-                        <!-- Ignored until the fix for https://github.com/eclipse/microprofile-rest-client/issues/305 is released -->
-                        <exclude>org.eclipse.microprofile.rest.client.tck.cditests.CDIManagedProviderTest</exclude>
-                        <exclude>org.eclipse.microprofile.rest.client.tck.cditests.CDIProxyServerTest</exclude>
-                        <exclude>org.eclipse.microprofile.rest.client.tck.cditests.CDIQueryParamStyleTest</exclude>
-                    </excludes>
                 </configuration>
             </plugin>
         </plugins>

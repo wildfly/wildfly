@@ -1,16 +1,20 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<module xmlns="urn:jboss:module:1.1" name="com.github.tomakehurst.wiremock">
+<module xmlns="urn:jboss:module:1.9" name="com.github.tomakehurst.wiremock">
 
     <resources>
         <resource-root path="wiremock.jar"/>
         <resource-root path="junit.jar"/>
+        <resource-root path="jetty-io.jar"/>
+        <resource-root path="jetty-http.jar"/>
+        <resource-root path="jetty-server.jar"/>
+        <resource-root path="jetty-util.jar"/>
     </resources>
 
     <dependencies>
         <module name="javax.api"/>
         <module name="org.apache.httpcomponents"/>
-        <module name="org.apache.httpcomponents.core"/>
+        <module name="org.apache.httpcomponents.core" export="true"/>
         <module name="com.google.guava"/>
         <module name="org.apache.commons.lang3"/>
         <module name="com.fasterxml.jackson.core.jackson-annotations"/>
@@ -21,6 +25,7 @@
         <module name="javax.enterprise.api"/>
         <module name="javax.inject.api"/>
         <module name="javax.annotation.api"/>
+        <module name="javax.servlet.api"/>
         <module name="org.jboss.resteasy.resteasy-cdi" services="export" export="true">
           <imports>
             <include path="META-INF"/>

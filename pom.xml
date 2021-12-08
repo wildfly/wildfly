@@ -394,6 +394,8 @@
         <version.org.bytebuddy>1.11.12</version.org.bytebuddy>
         <version.org.cryptacular>1.2.4</version.org.cryptacular>
         <version.org.eclipse.jdt>3.26.0</version.org.eclipse.jdt>
+        <!-- Required by the Wiremock used in the MicroProfile REST Client TCK -->
+        <version.org.eclipse.jetty>9.2.30.v20200428</version.org.eclipse.jetty>
         <version.org.eclipse.microprofile.config.api>2.0</version.org.eclipse.microprofile.config.api>
         <version.org.eclipse.microprofile.fault-tolerance.api>3.0</version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.fault-tolerance.tck>${version.org.eclipse.microprofile.fault-tolerance.api}</version.org.eclipse.microprofile.fault-tolerance.tck>
@@ -6357,6 +6359,29 @@
                 <artifactId>ecj</artifactId>
                 <version>${version.org.eclipse.jdt}</version>
             </dependency>
+
+            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-io</artifactId>
+                <version>${version.org.eclipse.jetty}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-http</artifactId>
+                <version>${version.org.eclipse.jetty}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-server</artifactId>
+                <version>${version.org.eclipse.jetty}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-util</artifactId>
+                <version>${version.org.eclipse.jetty}</version>
+            </dependency>
+            <!-- End requirement -->
 
             <dependency>
                 <groupId>org.eclipse.microprofile.config</groupId>
