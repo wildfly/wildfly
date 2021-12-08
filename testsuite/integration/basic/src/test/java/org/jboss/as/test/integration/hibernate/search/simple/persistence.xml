@@ -12,6 +12,8 @@
             -->
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.search.default.directory_provider" value="ram"/>
+            <property name="hibernate.search.lucene.analysis_definition_provider"
+                      value="org.jboss.as.test.integration.hibernate.search.simple.AnalysisConfigurationProvider"/>
         </properties>
     </persistence-unit>
 </persistence>

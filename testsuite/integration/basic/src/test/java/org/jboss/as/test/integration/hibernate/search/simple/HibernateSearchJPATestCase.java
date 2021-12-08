@@ -35,7 +35,9 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,6 +55,12 @@ public class HibernateSearchJPATestCase {
     @EJB(mappedName = "java:module/SearchBean")
     private SearchBean searchBean;
 
+    @Before
+    @After
+    public void cleanupDatabase() {
+        searchBean.deleteAll();
+    }
+
     @Test
     public void testFullTextQuery() {
         searchBean.storeNewBook("Hello");
@@ -60,6 +68,20 @@ public class HibernateSearchJPATestCase {
         searchBean.storeNewBook("Hello planet Mars");
         assertEquals(3, searchBean.findByKeyword("hello").size());
         assertEquals(1, searchBean.findByKeyword("mars").size());
+        // Search should be case-insensitive thanks to the default analyzer
+        assertEquals(3, searchBean.findByKeyword("HELLO").size());
+    }
+
+    @Test
+    public void testAnalysisConfiguration() {
+        searchBean.storeNewBook("Hello");
+        searchBean.storeNewBook("Hello world");
+        searchBean.storeNewBook("Hello planet Mars");
+        // This search relies on a custom analyzer configured in AnalysisConfigurationProvider;
+        // if it works, then our custom analysis configuration was taken into account.
+        assertEquals(3, searchBean.findAutocomplete("he").size());
+        assertEquals(1, searchBean.findAutocomplete("he wo").size());
+        assertEquals(1, searchBean.findAutocomplete("he pl").size());
     }
 
     @Test
@@ -75,7 +97,7 @@ public class HibernateSearchJPATestCase {
         // add Jakarta Persistence configuration
         jar.addAsManifestResource(HibernateSearchJPATestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         // add testing Bean and entities
-        jar.addClasses(SearchBean.class, Book.class, HibernateSearchJPATestCase.class);
+        jar.addClasses(SearchBean.class, Book.class, HibernateSearchJPATestCase.class, AnalysisConfigurationProvider.class);
         // WFLY-10195: temporary - should be possible to remove after upgrade to Lucene 6
         jar.addAsManifestResource(createPermissionsXmlAsset(
                 new RuntimePermission("accessDeclaredMembers")

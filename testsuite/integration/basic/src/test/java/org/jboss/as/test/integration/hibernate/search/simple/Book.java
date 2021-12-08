@@ -25,6 +25,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
@@ -37,6 +38,7 @@ public class Book {
     Long id;
 
     @Field
+    @Field(name = "title_autocomplete", analyzer = @Analyzer(definition = AnalysisConfigurationProvider.AUTOCOMPLETE))
     String title;
 
 }
