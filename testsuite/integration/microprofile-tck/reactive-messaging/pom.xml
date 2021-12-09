@@ -166,6 +166,10 @@
             </activation>
             <properties>
                 <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
+                <!-- We're still on javax, so set these back to the original versions from the main parent pom -->
+                <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
+                <!--<version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>-->
+
             </properties>
         </profile>
 
