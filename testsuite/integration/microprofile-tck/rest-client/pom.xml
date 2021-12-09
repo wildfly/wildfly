@@ -387,7 +387,7 @@
                                     <value>${basedir}/module.xml</value>
                                 </property>
                                 <property>
-                                    <name>beans.xml.path</name>
+                                    <name>beansxml.path</name>
                                     <value>${basedir}/beans.xml</value>
                                 </property>
                             </properties>
