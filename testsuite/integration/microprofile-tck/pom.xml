@@ -701,6 +701,13 @@
                                 </classpathDependencyExclude>
                             </classpathDependencyExcludes>
                         </configuration>
+                        <!-- Disaable bootable jar Preview tests for now -->
+                        <executions>
+                            <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
