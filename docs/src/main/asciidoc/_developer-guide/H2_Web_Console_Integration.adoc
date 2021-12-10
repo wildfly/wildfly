@@ -1,0 +1,31 @@
+[[h2-web-console]]
+= H2 Web Console Integration
+:author:            Brian E. Stansberry
+:email:             brian.stansberry@redhat.com
+:idprefix:
+:idseparator:       -
+
+
+The H2 database library provided by WildFly's `com.h2database.h2` module includes an implementation of the Jakarta Servlet `HttpServlet` interface (`org.h2.server.web.WebServlet`) that can be used to expose the H2 project's web console tool. WildFly users could utilize this servlet in their own application by adding a dependency on the `com.h2database.h2` module to their application's deployment and then adding the servlet to the application's `web.xml`. This is certainly not recommended for production use -- no use of H2 is recommended in production applications -- but developers may find use of the H2 console useful.
+
+WildFly has historically integrated H2 in such a way that this is possible. But beginning with the 26 release, this no longer works out of the box, as the `com.h2database.h2` module no longer has out-of-the-box access to the module that exposes the Jakarta Servlet API. As of late 2021 the H2 project does not provide a variant of their `WebServlet` that will work on EE 9 or later, so in preparation for WildFly's move to EE 10, out of the box support for this integration has been removed.
+
+However it is possible for users of an EE 8 WildFly to restore this integration by adding a JBoss Modules module named `javax.servlet.api.h2` to their server installation. The steps to do this are as follows:
+
+* `cd $WILDFLY_HOME`
+* `mkdir -p modules/javax/servlet/api/h2`
+* In that dir create a `module.xml` file with the following content:
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<module-alias xmlns="urn:jboss:module:1.9"
+              name="javax.servlet.api:h2"
+              target-name="javax.servlet.api"/>
+----
+
+The `com.h2database.h2` module optionally depends on the `javax.servlet.api.h2` module, so if one exists and it exposes the Jakarta Servlet API, then H2 `WebServlet` integration will work.
+
+This will work so long as the `javax.servlet.api` module provides the EE 8 Jakarta Servlet API. As of the 26 release that is the case with standard WildFly but is not the case with WildFly Preview. H2 Web Console integration will not work with WildFly Preview.
+
+If in the future a version of the H2 database library becomes available that supports an EE 9 or later version of Jakarta Servlet, out of the box support for use of the H2 `WebServlet` may be restored.
