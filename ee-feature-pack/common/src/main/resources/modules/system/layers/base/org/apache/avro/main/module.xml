@@ -32,7 +32,8 @@
     </resources>
 
     <dependencies>
-        <module name="org.codehaus.jackson.jackson-core-asl"/>
-        <module name="org.codehaus.jackson.jackson-mapper-asl"/>
+        <module name="org.slf4j"/>
+        <module name="com.fasterxml.jackson.core.jackson-core"/>
+        <module name="com.fasterxml.jackson.core.jackson-databind"/>
     </dependencies>
 </module>
