@@ -368,7 +368,7 @@
         <version.net.shibboleth.utilities.java-support>7.3.0</version.net.shibboleth.utilities.java-support>
         <version.org.apache.activemq.artemis>2.19.1-PSI</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>1.0.2</version.org.apache.activemq.artemis.native>
-        <version.org.apache.avro>1.10.2</version.org.apache.avro>
+        <version.org.apache.avro>1.11.0</version.org.apache.avro>
         <version.org.apache.cxf>3.4.10</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.3.1</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M24</version.org.apache.ds>
@@ -925,7 +925,7 @@
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
             </dependency>
-            
+
              <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ee-feature-pack-galleon-content</artifactId>
@@ -1139,7 +1139,7 @@
                 <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
- 
+
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-messaging-activemq-injection</artifactId>
@@ -1276,7 +1276,7 @@
                 <version>${full.maven.version}</version>
                 <type>pom</type>
             </dependency>
-            
+
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
@@ -1304,7 +1304,7 @@
                 <version>${full.maven.version}</version>
                 <type>pom</type>
             </dependency>
-            
+
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-feature-pack-galleon-content</artifactId>
@@ -3435,14 +3435,6 @@
                 <version>${version.org.apache.avro}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>com.thoughtworks.paranamer</groupId>
-                        <artifactId>paranamer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.xerial.snappy</groupId>
-                        <artifactId>snappy-java</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>org.apache.commons</groupId>
                         <artifactId>commons-compress</artifactId>
                     </exclusion>
@@ -3623,7 +3615,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>                                        
+                    </exclusion>
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -3679,7 +3671,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion> 
+                    </exclusion>
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-javamail_1.4_spec</artifactId>
@@ -10640,7 +10632,7 @@
                 <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
-        
+
         <profile>
             <id>layers.profile</id>
             <activation>

@@ -32,6 +32,9 @@
     </resources>
 
     <dependencies>
+        <module name="org.slf4j"/>
+        <module name="com.fasterxml.jackson.core.jackson-core"/>
+        <module name="com.fasterxml.jackson.core.jackson-databind"/>
         <module name="jdk.unsupported"/>
     </dependencies>
 </module>
