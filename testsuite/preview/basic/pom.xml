@@ -94,6 +94,11 @@
             <artifactId>hibernate-search-mapper-orm-orm6</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate.search</groupId>
+            <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.jboss.shrinkwrap.descriptors</groupId>
@@ -114,7 +119,32 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <!-- See HibernateSearchOutboxPollingTestCase -->
+                        <id>copy-hibernate-search-extra-jars</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.hibernate.search</groupId>
+                                    <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
+                                    <version>${version.org.hibernate.search}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/testlib</outputDirectory>
+                                    <destFileName>hibernate-search-mapper-orm-coordination-outbox-polling.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
