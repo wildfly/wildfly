@@ -95,9 +95,9 @@ public class InfinispanBeanManagementProvider<I> implements BeanManagementProvid
                 InfinispanEjbLogger.ROOT_LOGGER.expirationDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, templateCacheName));
             }
 
-            int size = this.config.getMaxSize();
-            EvictionStrategy strategy = (size > 0) ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL;
-            builder.memory().storage(StorageType.HEAP).whenFull(strategy).maxCount(size);
+            Integer size = this.config.getMaxActiveBeans();
+            EvictionStrategy strategy = (size != null) ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL;
+            builder.memory().storage(StorageType.HEAP).whenFull(strategy).maxCount((size != null) ? size.longValue() : 0);
             if (strategy.isEnabled()) {
                 // Only evict bean group entries
                 // We will cascade eviction to the associated beans

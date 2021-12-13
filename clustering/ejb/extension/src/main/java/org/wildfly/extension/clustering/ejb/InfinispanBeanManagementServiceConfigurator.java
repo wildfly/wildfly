@@ -45,7 +45,7 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 
 import static org.wildfly.extension.clustering.ejb.InfinispanBeanManagementResourceDefinition.Attribute.CACHE;
 import static org.wildfly.extension.clustering.ejb.InfinispanBeanManagementResourceDefinition.Attribute.CACHE_CONTAINER;
-import static org.wildfly.extension.clustering.ejb.InfinispanBeanManagementResourceDefinition.Attribute.MAX_SIZE;
+import static org.wildfly.extension.clustering.ejb.InfinispanBeanManagementResourceDefinition.Attribute.MAX_ACTIVE_BEANS;
 
 /**
  * Service configurator for Infinispan bean management providers.
@@ -58,7 +58,7 @@ public class InfinispanBeanManagementServiceConfigurator extends CapabilityServi
     private volatile String name;
     private volatile String containerName;
     private volatile String cacheName;
-    private volatile int maxSize;
+    private volatile Integer maxActiveBeans;
 
     public InfinispanBeanManagementServiceConfigurator(PathAddress address) {
         super(InfinispanBeanManagementResourceDefinition.Capability.BEAN_MANAGEMENT_PROVIDER, address);
@@ -70,7 +70,7 @@ public class InfinispanBeanManagementServiceConfigurator extends CapabilityServi
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.containerName = CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
         this.cacheName = CACHE.resolveModelAttribute(context, model).asStringOrNull();
-        this.maxSize = MAX_SIZE.resolveModelAttribute(context, model).asInt();
+        this.maxActiveBeans = MAX_ACTIVE_BEANS.resolveModelAttribute(context, model).asIntOrNull();
         return this;
     }
 
@@ -99,7 +99,7 @@ public class InfinispanBeanManagementServiceConfigurator extends CapabilityServi
     }
 
     @Override
-    public int getMaxSize() {
-        return this.maxSize;
+    public Integer getMaxActiveBeans() {
+        return this.maxActiveBeans;
     }
 }

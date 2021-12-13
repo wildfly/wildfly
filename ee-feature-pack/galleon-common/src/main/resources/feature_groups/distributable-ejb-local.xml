@@ -7,7 +7,7 @@
             <param name="infinispan-bean-management" value="default"/>
             <param name="cache-container" value="ejb"/>
             <param name="cache" value="passivation"/>
-            <param name="max-size" value="10000"/>
+            <param name="max-active-beans" value="10000"/>
         </feature>
         <feature spec="subsystem.distributable-ejb.client-mappings-registry.local"/>
     </feature>

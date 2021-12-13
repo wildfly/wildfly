@@ -33,6 +33,7 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
+import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -79,26 +80,26 @@ public class InfinispanBeanManagementResourceDefinition extends ChildResourceDef
         CACHE_CONTAINER("cache-container", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setAllowExpression(false)
-                        .setRequired(true)
-                        .setCapabilityReference(new CapabilityReference(Capability.BEAN_MANAGEMENT_PROVIDER, InfinispanDefaultCacheRequirement.CONFIGURATION))
-                        ;
+                return builder.setRequired(true).setCapabilityReference(new CapabilityReference(Capability.BEAN_MANAGEMENT_PROVIDER, InfinispanDefaultCacheRequirement.CONFIGURATION));
             }
         },
         CACHE("cache", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setAllowExpression(false)
-                        .setCapabilityReference(new CapabilityReference(Capability.BEAN_MANAGEMENT_PROVIDER, InfinispanCacheRequirement.CONFIGURATION, CACHE_CONTAINER));
+                return builder.setCapabilityReference(new CapabilityReference(Capability.BEAN_MANAGEMENT_PROVIDER, InfinispanCacheRequirement.CONFIGURATION, CACHE_CONTAINER));
             }
         },
-        MAX_SIZE("max-size", ModelType.INT),
+        MAX_ACTIVE_BEANS("max-active-beans", ModelType.INT) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setAllowExpression(true).setValidator(new IntRangeValidatorBuilder().min(1).configure(builder).build());
+            }
+        },
         ;
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {
             this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
                     .setRequired(false)
                     .setFlags(Flag.RESTART_RESOURCE_SERVICES)
                 ).build();
@@ -107,11 +108,6 @@ public class InfinispanBeanManagementResourceDefinition extends ChildResourceDef
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
-        }
-
-        @Override
-        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-            return builder;
         }
     }
 

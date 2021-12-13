@@ -72,7 +72,7 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
             }
 
             @Override
-            public int getMaxSize() {
+            public Integer getMaxActiveBeans() {
                 return maxSize;
             }
         };
