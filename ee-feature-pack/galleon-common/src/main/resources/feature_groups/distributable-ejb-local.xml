@@ -3,6 +3,7 @@
 
     <feature spec="subsystem.distributable-ejb">
         <param name="default-bean-management" value="default"/>
+        <param name="default-persistent-timer-management" value="default"/>
         <feature spec="subsystem.distributable-ejb.infinispan-bean-management">
             <param name="infinispan-bean-management" value="default"/>
             <param name="cache-container" value="ejb"/>
@@ -10,6 +11,11 @@
             <param name="max-active-beans" value="10000"/>
         </feature>
         <feature spec="subsystem.distributable-ejb.client-mappings-registry.local"/>
+        <feature spec="subsystem.distributable-ejb.infinispan-timer-management">
+            <param name="infinispan-timer-management" value="default"/>
+            <param name="cache-container" value="ejb"/>
+            <param name="cache" value="persistent"/>
+        </feature>
     </feature>
 
 </feature-group-spec>

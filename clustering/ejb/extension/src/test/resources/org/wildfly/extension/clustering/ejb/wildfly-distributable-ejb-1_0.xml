@@ -1,4 +1,5 @@
 <subsystem xmlns="urn:jboss:domain:distributable-ejb:1.0" default-bean-management="default">
     <infinispan-bean-management name="default" cache-container="foo" cache="bar" max-active-beans="${exp.max-active-beans:10000}"/>
     <local-client-mappings-registry/>
+    <infinispan-timer-management name="persistent" cache-container="foo" cache="bar" max-active-timers="100"/>
 </subsystem>

@@ -51,6 +51,7 @@ public class DistributableEjbXMLParser extends PersistentResourceXMLParser {
                 .addChild(new AttributeXMLBuilderOperator().addAttributes(InfinispanBeanManagementResourceDefinition.Attribute.class).apply(builder(InfinispanBeanManagementResourceDefinition.WILDCARD_PATH)))
                 .addChild(builder(LocalClientMappingsRegistryProviderResourceDefinition.PATH).setXmlElementName("local-client-mappings-registry"))
                 .addChild(new AttributeXMLBuilderOperator(InfinispanClientMappingsRegistryProviderResourceDefinition.Attribute.class).apply(builder(InfinispanClientMappingsRegistryProviderResourceDefinition.PATH)).setXmlElementName("infinispan-client-mappings-registry"))
+                .addChild(new AttributeXMLBuilderOperator(InfinispanTimerManagementResourceDefinition.Attribute.class).apply(builder(InfinispanTimerManagementResourceDefinition.WILDCARD_PATH)).setXmlElementName("infinispan-timer-management"))
                 .build();
     }
 }
