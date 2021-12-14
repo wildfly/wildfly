@@ -35,4 +35,7 @@ public interface ServiceNames {
     ServiceName CONFIG_SOURCE = MICROPROFILE_CONFIG.append("config-source");
 
     ServiceName CONFIG_SOURCE_PROVIDER = MICROPROFILE_CONFIG.append("config-source-provider");
+
+    ServiceName CONFIG_SOURCE_ROOT = MICROPROFILE_CONFIG.append("config-source-root");
+
 }
