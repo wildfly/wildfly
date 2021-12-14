@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,37 +22,39 @@
 
 package org.jboss.as.ejb3.timerservice;
 
-import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaData;
+import java.util.Locale;
+
+import org.jboss.as.clustering.controller.Schema;
 
 /**
- * Encapsulates timer service meta data for an EJB component.
- * @author Stuart Douglas
  * @author Paul Ferraro
  */
-public class TimerServiceMetaData extends AbstractEJBBoundMetaData {
-    private static final long serialVersionUID = 8290412083429128705L;
+public enum TimerServiceMetaDataSchema implements Schema<TimerServiceMetaDataSchema> {
+    VERSION_1_0(1, 0),
+    VERSION_2_0(2, 0),
+    ;
+    static final Schema<TimerServiceMetaDataSchema> CURRENT = VERSION_2_0;
 
-    private String dataStoreName;
-    private String persistentProvider;
+    private final int major;
+    private final int minor;
 
-    public String getDataStoreName() {
-        return dataStoreName;
-    }
-
-    public void setDataStoreName(final String dataStoreName) {
-        this.dataStoreName = dataStoreName;
-    }
-
-    public String getPersistentTimerManagementProvider() {
-        return this.persistentProvider;
-    }
-
-    public void setPersistentTimerManagementProvider(String persistentProvider) {
-        this.persistentProvider = persistentProvider;
+    TimerServiceMetaDataSchema(int major, int minor) {
+        this.major = major;
+        this.minor = minor;
     }
 
     @Override
-    public String toString() {
-        return String.format("data-store=%s, persistent-provider=%s", this.dataStoreName, this.persistentProvider);
+    public int major() {
+        return this.major;
+    }
+
+    @Override
+    public int minor() {
+        return this.minor;
+    }
+
+    @Override
+    public String getNamespaceUri() {
+        return String.format(Locale.ROOT, "urn:timer-service:%d.%d", this.major, this.minor);
     }
 }
