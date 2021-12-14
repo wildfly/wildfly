@@ -32,7 +32,7 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-undertow}"/>
+        <artifact name="\${org.wildfly:wildfly-undertow@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
