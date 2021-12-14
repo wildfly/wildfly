@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.threads.ThreadsParser;
@@ -31,6 +32,7 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
+import java.util.EnumSet;
 import java.util.List;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ALLOW_EJB_NAME_REGEX;
@@ -569,7 +571,9 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
                 writer.writeStartElement(EJB3SubsystemXMLElement.DISTRIBUTABLE_CACHE.getLocalName());
                 ModelNode distributableCache = property.getValue();
                 writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
-                DistributableCacheFactoryResourceDefinition.Attribute.BEAN_MANAGEMENT.getDefinition().marshallAsElement(distributableCache, writer);
+                for (Attribute attribute : EnumSet.allOf(DistributableCacheFactoryResourceDefinition.Attribute.class)) {
+                    attribute.getDefinition().getMarshaller().marshallAsAttribute(attribute.getDefinition(), distributableCache, false, writer);
+                }
                 writer.writeEndElement();
             }
         }
