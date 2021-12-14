@@ -18,7 +18,7 @@ public class ConfigSourceProviderRegistrationService implements Service {
         this.sources = sources;
     }
 
-    static void install(OperationContext context, String name, ConfigSourceProvider configSourceProvider, Registry registry) {
+    static void install(OperationContext context, String name, ConfigSourceProvider configSourceProvider, Registry<ConfigSourceProvider> registry) {
         context.getServiceTarget()
                 .addService(ServiceNames.CONFIG_SOURCE_PROVIDER.append(name))
                 .setInstance(new ConfigSourceProviderRegistrationService(name, configSourceProvider, registry))

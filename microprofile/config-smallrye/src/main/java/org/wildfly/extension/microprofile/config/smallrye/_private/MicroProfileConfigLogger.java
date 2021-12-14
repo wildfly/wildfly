@@ -25,6 +25,8 @@ package org.wildfly.extension.microprofile.config.smallrye._private;
 import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.INFO;
 
+import java.util.List;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -60,4 +62,23 @@ public interface MicroProfileConfigLogger extends BasicLogger {
     @LogMessage(level = DEBUG)
     @Message(id = 4, value = "Use class for MicroProfile Config Source: %s")
     void loadConfigSourceFromClass(Class clazz);
+
+    // 5 and 6 will come from https://github.com/wildfly/wildfly/pull/15030
+
+    // 7 and 8 are used downstream
+    /*
+    @Message(id = 7, value = "")
+    OperationFailedException seeDownstream();
+
+    @Message(id = 8, value = "")
+    String seeDownstream();
+    */
+
+    @LogMessage(level = DEBUG)
+    @Message(id = 9, value = "Use directory for MicroProfile Config Source Root: %s")
+    void loadConfigSourceRootFromDir(String path);
+
+    @LogMessage(level = INFO)
+    @Message(id = 10, value = "The MicroProfile Config Source root directory '%s' contains the following directories which will be used as MicroProfile Config Sources: %s")
+    void logDirectoriesUnderConfigSourceRoot(String name, List<String> directories);
 }

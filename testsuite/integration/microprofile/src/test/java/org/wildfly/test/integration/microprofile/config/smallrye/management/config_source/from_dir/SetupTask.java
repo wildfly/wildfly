@@ -50,6 +50,7 @@ public class SetupTask extends CLIServerSetupTask {
 
     private static final String ADDR_A = "/subsystem=microprofile-config-smallrye/config-source=propsA";
     private static final String ADDR_B = "/subsystem=microprofile-config-smallrye/config-source=propsB";
+    private static final String ADDR_NON_EXISTENT = "/subsystem=microprofile-config-smallrye/config-source=not-there";
 
     static final String A = "val-a";
     static final String B = "val-b";
@@ -58,12 +59,17 @@ public class SetupTask extends CLIServerSetupTask {
     static final String OVERRIDDEN_B = "overridden-b";
 
     private volatile Path rootDir;
+    private volatile Path nonExistent;
 
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         Path target = Paths.get("target").toAbsolutePath().normalize();
         rootDir = Files.createTempDirectory(target, "test");
         Assert.assertTrue(Files.exists(rootDir));
+
+        nonExistent = Files.createTempDirectory(target, "duff");
+        deleteDirectory(nonExistent);
+        Assert.assertFalse(Files.exists(nonExistent));
 
         Path dirA = createPropsDir(rootDir, PROPS_A, FROM_A, A, B_OVERRIDES_A, OVERRIDDEN_A);
         Path dirB = createPropsDir(rootDir, PROPS_B, FROM_B, B, B_OVERRIDES_A, OVERRIDDEN_B);
@@ -74,9 +80,11 @@ public class SetupTask extends CLIServerSetupTask {
         nb.setup(String.format("%s:add(dir={path=\"%s\"})", ADDR_A, escapePath(dirA)));
         nb.setup(String.format("/path=mp-config-test:add(path=\"%s\")", escapePath(dirB.getParent())));
         nb.setup(String.format("%s:add(dir={relative-to=mp-config-test, path=\"%s\"}, ordinal=300)", ADDR_B, dirB.getFileName()));
+        nb.setup(String.format("%s:add(dir={path=\"%s\"})", ADDR_NON_EXISTENT, escapePath(nonExistent)));
 
         nb.teardown(String.format("%s:remove", ADDR_A));
         nb.teardown(String.format("%s:remove", ADDR_B));
+        nb.teardown(String.format("%s:remove", ADDR_NON_EXISTENT));
         nb.teardown("/path=mp-config-test:remove");
 
         super.setup(managementClient, containerId);
@@ -110,6 +118,10 @@ public class SetupTask extends CLIServerSetupTask {
     }
 
     private void deleteDirectory() throws IOException {
+        deleteDirectory(rootDir);
+    }
+
+    private void deleteDirectory(Path rootDir) throws IOException {
         if (rootDir != null && Files.exists(rootDir)) {
             Files.walkFileTree(rootDir, new SimpleFileVisitor<Path>() {
                 @Override
