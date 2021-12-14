@@ -52,7 +52,6 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
-import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -68,20 +67,20 @@ import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
-public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemBaseTest {
+public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemBaseTest {
 
-    public MessagingActiveMQSubsystem_13_0_TestCase() {
+    public MessagingActiveMQSubsystem_14_0_TestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_13_0.xml");
+        return readResource("subsystem_14_0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-messaging-activemq_13_0.xsd";
+        return "schema/wildfly-messaging-activemq_14_0.xsd";
     }
 
     @Override
@@ -90,11 +89,6 @@ public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemB
         properties.put("messaging.cluster.user.name", "myClusterUser");
         properties.put("messaging.cluster.user.password", "myClusterPassword");
         return properties;
-    }
-
-    @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
     }
 
     @Test
@@ -130,12 +124,17 @@ public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemB
 
     @Test
     public void testHAPolicyConfiguration() throws Exception {
-        standardSubsystemTest("subsystem_13_0_ha-policy.xml");
+        standardSubsystemTest("subsystem_14_0_ha-policy.xml");
     }
 
     ///////////////////////
     // Transformers test //
     ///////////////////////
+    @Test
+    public void testTransformersWildfly25() throws Exception {
+        testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_13_0_0);
+    }
+
 
     @Test
     public void testTransformersWildfly22() throws Exception {
@@ -200,7 +199,7 @@ public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemB
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXmlResource("subsystem_13_0_transform.xml");
+                .setSubsystemXmlResource("subsystem_14_0_transform.xml");
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
                 .addMavenResourceURL(getMessagingActiveMQGAV(controllerVersion))
                 .addMavenResourceURL(getActiveMQDependencies(controllerVersion))
@@ -212,16 +211,13 @@ public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemB
         assertTrue(mainServices.isSuccessfulBoot());
         assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
 
-        checkSubsystemModelTransformation(mainServices, messagingVersion, new ModelFixer() {
-            @Override
-            public ModelNode fixModel(ModelNode modelNode) {
-                ModelNode legacyModel = modelNode.clone();
-                if(modelNode.hasDefined("server", "default", "address-setting", "test", "page-size-bytes")) {
-                    int legacyNodeValue = modelNode.get("server", "default", "address-setting", "test", "page-size-bytes").asInt();
-                    legacyModel.get("server", "default", "address-setting", "test", "page-size-bytes").set(legacyNodeValue);
-                }
-                return legacyModel;
+        checkSubsystemModelTransformation(mainServices, messagingVersion, (ModelNode modelNode) -> {
+            ModelNode legacyModel = modelNode.clone();
+            if(modelNode.hasDefined("server", "default", "address-setting", "test", "page-size-bytes")) {
+                int legacyNodeValue = modelNode.get("server", "default", "address-setting", "test", "page-size-bytes").asInt();
+                legacyModel.get("server", "default", "address-setting", "test", "page-size-bytes").set(legacyNodeValue);
             }
+            return legacyModel;
         });
         mainServices.shutdown();
     }
@@ -240,8 +236,8 @@ public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemB
         assertTrue(mainServices.isSuccessfulBoot());
         assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXmlResource("subsystem_13_0_reject_transform.xml");
-        System.out.println("ops = " + ops);
+        List<ModelNode> ops = builder.parseXmlResource("subsystem_14_0_reject_transform.xml");
+//        System.out.println("ops = " + ops);
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
@@ -386,11 +382,12 @@ public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemB
                             ServerDefinition.CRITICAL_ANALYZER_POLICY,
                             ServerDefinition.CRITICAL_ANALYZER_TIMEOUT,
                             ServerDefinition.JOURNAL_MAX_ATTIC_FILES));
-            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
-            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH),
-                    new FailedOperationTransformationConfig.NewAttributesConfig(
-                            BridgeDefinition.CALL_TIMEOUT));
+                    new FailedOperationTransformationConfig.NewAttributesConfig( BridgeDefinition.CALL_TIMEOUT));
         } else if (messagingVersion.compareTo(MessagingExtension.VERSION_6_0_0) > 0 ) {
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
                     ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
@@ -438,7 +435,8 @@ public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemB
             config.addFailedAttribute(subsystemAddress.append(SocketDiscoveryGroupDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
         } else if (messagingVersion.compareTo(MessagingExtension.VERSION_6_0_0) > 0) {
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, MessagingExtension.QUEUE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(QueueDefinition.ROUTING_TYPE));
-            config.addFailedAttribute(subsystemAddress.append(POOLED_CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX, ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
+            config.addFailedAttribute(subsystemAddress.append(POOLED_CONNECTION_FACTORY_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX, ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
                     ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX,
                     ConnectionFactoryAttributes.Common.USE_TOPOLOGY,
