@@ -92,6 +92,10 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     }
 
     private static void registerTransformers_WF_25(ResourceTransformationDescriptionBuilder subsystem) {
+        ResourceTransformationDescriptionBuilder bridge = subsystem
+                .addChildResource(MessagingExtension.SERVER_PATH)
+                .addChildResource(MessagingExtension.BRIDGE_PATH);
+        rejectDefinedAttributeWithDefaultValue(bridge, BridgeDefinition.ROUTING_TYPE);
     }
 
     private static void registerTransformers_WF_23(ResourceTransformationDescriptionBuilder subsystem) {

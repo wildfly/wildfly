@@ -637,6 +637,14 @@
                     <xs:attribute name="static-connectors" type="stringList"  use="optional" />
                     <xs:attribute name="discovery-group" type="xs:string"  use="optional" />
                     <xs:attribute name="call-timeout" type="xs:long"  use="optional" default="30000" />
+                    <xs:attribute name="routing-type" use="optional">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="STRIP"/>
+                                <xs:enumeration value="PASS"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
                 </xs:complexType>
             </xs:element>
 

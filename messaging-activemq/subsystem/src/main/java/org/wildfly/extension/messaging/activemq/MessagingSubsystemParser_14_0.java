@@ -491,29 +491,8 @@ public class MessagingSubsystemParser_14_0 extends PersistentResourceXMLParser {
                                 .addChild(
                                         builder(MessagingExtension.BRIDGE_PATH)
                                                 .addAttributes(
-                                                        BridgeDefinition.QUEUE_NAME,
-                                                        BridgeDefinition.FORWARDING_ADDRESS,
-                                                        CommonAttributes.HA,
-                                                        CommonAttributes.FILTER,
-                                                        CommonAttributes.TRANSFORMER_CLASS_NAME,
-                                                        CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
-                                                        CommonAttributes.CHECK_PERIOD,
-                                                        CommonAttributes.CONNECTION_TTL,
-                                                        CommonAttributes.RETRY_INTERVAL,
-                                                        CommonAttributes.RETRY_INTERVAL_MULTIPLIER,
-                                                        CommonAttributes.MAX_RETRY_INTERVAL,
-                                                        BridgeDefinition.INITIAL_CONNECT_ATTEMPTS,
-                                                        BridgeDefinition.RECONNECT_ATTEMPTS,
-                                                        BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE,
-                                                        BridgeDefinition.USE_DUPLICATE_DETECTION,
-                                                        CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
-                                                        BridgeDefinition.PRODUCER_WINDOW_SIZE,
-                                                        BridgeDefinition.USER,
-                                                        BridgeDefinition.PASSWORD,
-                                                        BridgeDefinition.CREDENTIAL_REFERENCE,
-                                                        BridgeDefinition.CONNECTOR_REFS,
-                                                        BridgeDefinition.DISCOVERY_GROUP_NAME,
-                                                        BridgeDefinition.CALL_TIMEOUT))
+                                                        BridgeDefinition.ATTRIBUTES
+                                                        ))
                                 .addChild(
                                         builder(ConnectorServiceDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(

@@ -304,7 +304,8 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 BridgeDefinition.PRODUCER_WINDOW_SIZE,
-                                BridgeDefinition.CALL_TIMEOUT))
+                                BridgeDefinition.CALL_TIMEOUT,
+                                BridgeDefinition.ROUTING_TYPE))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, CLUSTER_CONNECTION_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE))
@@ -361,7 +362,7 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                                 ConnectionFactoryAttributes.Common.USE_TOPOLOGY))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
-                                BridgeDefinition.CALL_TIMEOUT));
+                                BridgeDefinition.CALL_TIMEOUT, BridgeDefinition.ROUTING_TYPE));
         } else if(messagingVersion.compareTo(MessagingExtension.VERSION_5_0_0) > 0 ){
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH),
                     new FailedOperationTransformationConfig.NewAttributesConfig(
@@ -387,7 +388,7 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
                     new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH),
-                    new FailedOperationTransformationConfig.NewAttributesConfig( BridgeDefinition.CALL_TIMEOUT));
+                    new FailedOperationTransformationConfig.NewAttributesConfig( BridgeDefinition.CALL_TIMEOUT, BridgeDefinition.ROUTING_TYPE));
         } else if (messagingVersion.compareTo(MessagingExtension.VERSION_6_0_0) > 0 ) {
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
                     ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
@@ -411,7 +412,7 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, JGroupsDiscoveryGroupDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, SocketDiscoveryGroupDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
-                            BridgeDefinition.CALL_TIMEOUT));
+                            BridgeDefinition.CALL_TIMEOUT, BridgeDefinition.ROUTING_TYPE));
         }
 
         if (messagingVersion.compareTo(MessagingExtension.VERSION_4_0_0) > 0) {
@@ -525,7 +526,7 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                     ServerDefinition.JOURNAL_MAX_ATTIC_FILES
             ));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
-                    BridgeDefinition.CALL_TIMEOUT));
+                    BridgeDefinition.CALL_TIMEOUT, BridgeDefinition.ROUTING_TYPE));
         }
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);
         mainServices.shutdown();

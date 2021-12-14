@@ -182,7 +182,8 @@
                 producer-window-size="${producer.windows.size:5678}"
                 static-connectors="in-vm netty"
                 user="${user:Brian}"
-                password="${password:secret}">
+                password="${password:secret}"
+                routing-type="STRIP">
         </bridge>
 
         <connection-factory name="otherConnectionFactory"

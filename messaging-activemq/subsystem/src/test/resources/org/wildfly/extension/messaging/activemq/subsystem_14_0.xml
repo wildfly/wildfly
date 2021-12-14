@@ -430,7 +430,8 @@
                 user="${user:Brian}"
                 password="${password:secret}"
                 static-connectors="in-vm netty"
-                call-timeout="${call.timeout:60000}" />
+                call-timeout="${call.timeout:60000}"
+                routing-type="PASS" />
         <bridge name="bridge2"
                 queue-name="coreQueueB"
                 discovery-group="groupC" />
