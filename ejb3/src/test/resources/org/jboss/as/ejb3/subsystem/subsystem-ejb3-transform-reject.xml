@@ -32,7 +32,7 @@
         <passivation-store name="infinispan" cache-container="ejb" bean-cache="default" max-size="10"/>
     </passivation-stores>
     <async thread-pool-name="default"/>
-    <timer-service thread-pool-name="default" default-data-store="file-data-store">
+    <timer-service thread-pool-name="default">
         <data-stores>
             <file-data-store name="file-data-store" path="${prop.timer-service.path:timer-service-data}" relative-to="jboss.server.data.dir"/>
         </data-stores>

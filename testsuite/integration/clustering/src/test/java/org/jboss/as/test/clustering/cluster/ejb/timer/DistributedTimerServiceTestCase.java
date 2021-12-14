@@ -48,8 +48,6 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.timer.beans.ManualTimerBean;
 import org.jboss.as.test.clustering.cluster.ejb.timer.beans.SingleActionTimerBean;
@@ -57,8 +55,6 @@ import org.jboss.as.test.clustering.cluster.ejb.timer.beans.TimerBean;
 import org.jboss.as.test.clustering.cluster.ejb.timer.servlet.TimerServlet;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jboss.as.test.shared.CLIServerSetupTask;
-import org.jboss.as.test.shared.ServerReload;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -71,7 +67,6 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@ServerSetup(DistributedTimerServiceTestCase.ServerSetupTask.class)
 public class DistributedTimerServiceTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = DistributedTimerServiceTestCase.class.getSimpleName();
 
@@ -92,6 +87,7 @@ public class DistributedTimerServiceTestCase extends AbstractClusteringTestCase 
                 .addPackage(TimerServlet.class.getPackage())
                 .addPackage(EJBDirectory.class.getPackage())
                 .addPackage(TimerBean.class.getPackage())
+                .addAsWebInfResource(DistributedTimerServiceTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 ;
     }
 
@@ -337,23 +333,5 @@ public class DistributedTimerServiceTestCase extends AbstractClusteringTestCase 
             timeouts.add(DateUtils.parseDate(header.getValue()).toInstant());
         }
         return timeouts;
-    }
-
-    static class ServerSetupTask extends CLIServerSetupTask {
-        ServerSetupTask() {
-            this.builder.node(TWO_NODES)
-                    // TODO: Replace with distributable-ejb management operations, once available
-                    .setup("/system-property=jboss.ejb.timer-service.distributed.enabled:add(value=true)")
-                    .reloadOnSetup(false)
-                    .teardown("/system-property=jboss.ejb.timer-service.distributed.enabled:remove")
-                    ;
-        }
-
-        @Override
-        public void setup(ManagementClient client, String containerId) throws Exception {
-            super.setup(client, containerId);
-            // system-property=*:add does not put server in reload required state, so let's force a reload
-            ServerReload.executeReloadAndWaitForCompletion(client);
-        }
     }
 }
