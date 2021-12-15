@@ -1,4 +1,4 @@
-package org.jboss.as.test.integration.hibernate.search.simple;
+package org.jboss.as.test.integration.hibernate.search.backend.lucene.simple;
 
 import org.hibernate.search.backend.lucene.analysis.LuceneAnalysisConfigurationContext;
 import org.hibernate.search.backend.lucene.analysis.LuceneAnalysisConfigurer;

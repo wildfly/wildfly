@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.hibernate.search.simple;
+package org.jboss.as.test.integration.hibernate.search.backend.lucene.simple;
 
 import static org.junit.Assert.assertEquals;
 
@@ -44,9 +44,9 @@ import org.junit.runner.RunWith;
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2014 Red Hat Inc.
  */
 @RunWith(Arquillian.class)
-public class HibernateSearchJPATestCase {
+public class HibernateSearchLuceneSimpleTestCase {
 
-    private static final String NAME = HibernateSearchJPATestCase.class.getSimpleName();
+    private static final String NAME = HibernateSearchLuceneSimpleTestCase.class.getSimpleName();
     private static final String JAR_ARCHIVE_NAME = NAME + ".jar";
 
     @BeforeClass
@@ -90,9 +90,9 @@ public class HibernateSearchJPATestCase {
     public static Archive<?> deploy() throws Exception {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JAR_ARCHIVE_NAME);
         // add Jakarta Persistence configuration
-        jar.addAsManifestResource(HibernateSearchJPATestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        jar.addAsManifestResource(HibernateSearchLuceneSimpleTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         // add testing Bean and entities
-        jar.addClasses(SearchBean.class, Book.class, HibernateSearchJPATestCase.class, AnalysisConfigurer.class);
+        jar.addClasses(SearchBean.class, Book.class, HibernateSearchLuceneSimpleTestCase.class, AnalysisConfigurer.class);
 
         return jar;
     }
