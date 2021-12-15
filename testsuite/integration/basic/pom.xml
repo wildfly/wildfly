@@ -935,12 +935,8 @@
                                 <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
                                 <!-- no ejb -->
                                 <exclude>org/jboss/as/test/integration/deployment/dependencies/EjbDependencyRestartTestCase.java</exclude>
-                                <exclude>org/jboss/as/test/integration/security/loginmodules/databases/ExternalDatabaseLoginTestCase.java</exclude>
-                                <exclude>org/jboss/as/test/integration/security/loginmodules/RunAsLoginModuleTestCase.java</exclude>
-                                <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleUseNewClientCertTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/jacc/context/PolicyContextTestCase.java</exclude>
-                                <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/context/ReuseAuthenticatedSubjectTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/jaas/JAASIdentityCachingTestCase.java</exclude>
 
@@ -1014,8 +1010,6 @@
                                 <exclude>org/jboss/as/test/integration/security/auditing/*Test.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/cli/*TestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/jaspi/*TestCase.java</exclude>
-                                <exclude>org/jboss/as/test/integration/security/loginmodules/**/*TestCase.java</exclude>
-                                <exclude>org/jboss/as/test/integration/security/loginmodules/**/*Test.java</exclude>
                                 <exclude>org/jboss/as/test/integration/weld/builtin/**/*TestCase.java</exclude>
                                 <!-- no sar subsystem -->
                                 <exclude>org/jboss/as/test/integration/deployment/classloading/sar/SarClassLoadingTestCase.java</exclude>
@@ -1182,8 +1176,6 @@
                                 <configuration>
                                     <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
                                     <excludes>
-                                        <!-- truststore setting used in LDAPs testing is affected by some other test -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                         <!-- 2nd run tests are run in other execution. -->
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
                                         <!-- Tests which need FULL config. -->
@@ -1264,7 +1256,6 @@
                                 </goals>
                                 <configuration>
                                     <includes>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/jca/moduledeployment/**/*TestCase*.java</include>
                                     </includes>
 
@@ -1329,7 +1320,6 @@
                                     </includes>
                                     <excludes>
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -2716,8 +2706,6 @@
                                         <include>org/jboss/as/test/integration/security/auditing/*Test.java</include>
                                         <include>org/jboss/as/test/integration/security/cli/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/security/jaspi/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/**/*Test.java</include>
                                         <include>org/jboss/as/test/integration/weld/builtin/*TestCase.java</include>
                                     </includes>
                                     <excludes>
@@ -2725,13 +2713,7 @@
                                         <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
                                         <!-- no ejb -->
                                         <exclude>org/jboss/as/test/integration/jca/security/workmanager/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/databases/ExternalDatabaseLoginTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RunAsLoginModuleTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleUseNewClientCertTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleTestCase.java</exclude>
-                                        <!-- truststore setting used in LDAPs testing was affected by some other test - need a separate execution -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -2758,7 +2740,6 @@
                                     </environmentVariables>
                                     <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</include>
                                     </includes>
                                 </configuration>
@@ -3348,8 +3329,6 @@
                                         <include>org/jboss/as/test/integration/security/auditing/*Test.java</include>
                                         <include>org/jboss/as/test/integration/security/cli/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/security/jaspi/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/**/*Test.java</include>
                                         <include>org/jboss/as/test/integration/weld/builtin/*TestCase.java</include>
                                     </includes>
                                     <excludes>
@@ -3357,17 +3336,10 @@
                                         <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
                                         <!-- no ejb -->
                                         <exclude>org/jboss/as/test/integration/jca/security/workmanager/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/databases/ExternalDatabaseLoginTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RunAsLoginModuleTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleUseNewClientCertTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleTestCase.java</exclude>
-                                        <!-- truststore setting used in LDAPs testing was affected by some other test - need a separate execution -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                         <!-- For bootable-jar, custom modules have to be prepared aside in the time of jar packinging,
                                         which is not sustainable for all tests. -->
                                         <exclude>org/jboss/as/test/integration/security/auditing/CustomAuditProviderModuleTest.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/MultipleCustomLoginModulesTest.java</exclude>
                                     </excludes>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
@@ -3393,7 +3365,6 @@
                                     </systemPropertyVariables>
                                     <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                                     <includes>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
                                         <!-- For bootable-jar, custom modules have to be prepared aside in the time of jar packinging,
                                         which is not sustainable for all tests. Complex changes would be necessary for the following test cases. -->
                                         <!--<include>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</include>-->
@@ -3439,7 +3410,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <!-- Test against bootable jar ee9-->
         <profile>
             <id>bootablejar.ee9.profile</id>
@@ -3579,8 +3550,8 @@
                                         <exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
                                         <!--EE9 -->
                                         <exclude>org/jboss/as/test/integration/beanvalidation/hibernate/validator/deprecated/SafeHtmlValidationTestCase</exclude>
-                                        <exclude>org/jboss/as/test/integration/management/cli/DeploymentOverlayCLITestCase.java</exclude> 
-                                        <exclude>org/jboss/as/test/integration/management/deploy/runtime/JaxrsRuntimeNameTestCase.java</exclude><!-- test expects javax strings in mgmt api responses -->                                    
+                                        <exclude>org/jboss/as/test/integration/management/cli/DeploymentOverlayCLITestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/deploy/runtime/JaxrsRuntimeNameTestCase.java</exclude><!-- test expects javax strings in mgmt api responses -->
                                         <exclude>org/jboss/as/test/integration/weld/extensions/cdiportableextensions/ExtensionTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/modules/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/modules/deployment/*Test.java</exclude>
@@ -3660,7 +3631,6 @@
                                         <!-- Requires legacy security -->
                                         <exclude>org/jboss/as/test/integration/ejb/security/LdapLegacyTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/security/RunAsPrincipalCustomDomainTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ejb/security/securitydomain/EJBContextMultipleSDTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/security/callerprincipal/GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainDotNameTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/web/security/runas/WebSecurityRunAsTestCase.java</exclude>
@@ -3687,8 +3657,6 @@
                                     <excludes>
                                         <!-- Repeat the standard excludes for this execution as combine-children="append" doesn't work
                                              FIXME. Sort this so this is not needed -->
-                                        <!-- truststore setting used in LDAPs testing is affected by some other test -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                         <!-- 2nd run tests are run in other execution. -->
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
                                         <!-- Tests which need FULL config. -->
@@ -3744,8 +3712,6 @@
                                         <exclude>org/jboss/as/test/integration/security/context/ReuseAuthenticatedSubjectTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/jaas/JAASIdentityCachingTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/jaspi/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/**/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/**/*Test.java</exclude>
                                         <exclude>org/wildfly/test/elytron/intermediate/*TestCase.java</exclude>
                                         <!-- No agroal -->
                                         <exclude>org/wildfly/test/integration/agroal/*TestCase.java</exclude>
@@ -3780,8 +3746,6 @@
                                 <phase>none</phase>
                                 <configuration>
                                 <excludes>
-                                    <!-- Requires legacy security -->
-                                    <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                     <!-- Need to handle addition of JBoss Modules that use EE 8 -->
                                     <exclude>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</exclude>
                                 </excludes>
