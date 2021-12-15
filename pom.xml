@@ -289,6 +289,7 @@
         <version.antlr>2.7.7</version.antlr>
         <version.com.beust>1.78</version.com.beust>
         <version.com.carrotsearch.hppc>0.8.1</version.com.carrotsearch.hppc>
+        <version.org.elasticsearch.client.rest-client>7.16.3</version.org.elasticsearch.client.rest-client>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.12.3</version.com.fasterxml.jackson>
         <version.com.github.ben-manes.caffeine>2.9.3</version.com.github.ben-manes.caffeine>
@@ -6857,6 +6858,32 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+
+            <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>elasticsearch-rest-client</artifactId>
+                <version>${version.org.elasticsearch.client.rest-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>elasticsearch-rest-client-sniffer</artifactId>
+                <version>${version.org.elasticsearch.client.rest-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>com.github.tomakehurst</groupId>
                 <artifactId>wiremock</artifactId>
