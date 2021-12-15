@@ -81,6 +81,11 @@
         </dependency>
         <dependency>
             <groupId>org.hibernate.search</groupId>
+            <artifactId>hibernate-search-backend-elasticsearch</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-engine</artifactId>
             <scope>test</scope>
         </dependency>
@@ -109,10 +114,26 @@
             <artifactId>hibernate-search-v5migrationhelper-orm-orm6</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.jboss.shrinkwrap.descriptors</groupId>
             <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>${version.org.testcontainers}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
