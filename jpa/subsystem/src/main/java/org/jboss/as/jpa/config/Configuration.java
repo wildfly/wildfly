@@ -212,6 +212,11 @@ public class Configuration {
     public static final String HIBERNATE_SEARCH_MODULE_BACKEND_LUCENE = "org.hibernate.search.backend.lucene";
 
     /**
+     * name of the Hibernate Search module providing the Elasticsearch backend
+     */
+    public static final String HIBERNATE_SEARCH_MODULE_BACKEND_ELASTICSEARCH = "org.hibernate.search.backend.elasticsearch";
+
+    /**
      * name of the Hibernate Search configuration property allowing to set the backend type
      */
     public static final String HIBERNATE_SEARCH_BACKEND_TYPE = "hibernate.search.backend.type";
@@ -220,6 +225,11 @@ public class Configuration {
      * The value of the {@link #HIBERNATE_SEARCH_BACKEND_TYPE} property that identifies the use of a Lucene backend.
      */
     public static final String HIBERNATE_SEARCH_BACKEND_TYPE_VALUE_LUCENE = "lucene";
+
+    /**
+     * The value of the {@link #HIBERNATE_SEARCH_BACKEND_TYPE} property that identifies the use of an Elasticsearch backend.
+     */
+    public static final String HIBERNATE_SEARCH_BACKEND_TYPE_VALUE_ELASTICSEARCH = "elasticsearch";
 
     private static final String EE_DEFAULT_DATASOURCE = "java:comp/DefaultDataSource";
     // key = provider class name, value = module name

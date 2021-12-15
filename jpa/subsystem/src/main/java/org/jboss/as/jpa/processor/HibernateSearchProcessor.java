@@ -61,6 +61,8 @@ public class HibernateSearchProcessor implements DeploymentUnitProcessor {
             ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM);
     private static final ModuleIdentifier MODULE_BACKEND_LUCENE =
             ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_BACKEND_LUCENE);
+    private static final ModuleIdentifier MODULE_BACKEND_ELASTICSEARCH =
+            ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_BACKEND_ELASTICSEARCH);
 
 
     private static final String NONE = "none";
@@ -134,9 +136,15 @@ public class HibernateSearchProcessor implements DeploymentUnitProcessor {
         }
 
         List<String> backendTypes = HibernateSearchDeploymentMarker.getBackendTypes(deploymentUnit);
-        if (backendTypes != null && backendTypes.contains(Configuration.HIBERNATE_SEARCH_BACKEND_TYPE_VALUE_LUCENE)) {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_BACKEND_LUCENE,
-                    false, true, true, false));
+        if (backendTypes != null) {
+            if (backendTypes.contains(Configuration.HIBERNATE_SEARCH_BACKEND_TYPE_VALUE_LUCENE)) {
+                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_BACKEND_LUCENE,
+                        false, true, true, false));
+            }
+            if (backendTypes.contains(Configuration.HIBERNATE_SEARCH_BACKEND_TYPE_VALUE_ELASTICSEARCH)) {
+                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_BACKEND_ELASTICSEARCH,
+                        false, true, true, false));
+            }
         }
     }
 }
