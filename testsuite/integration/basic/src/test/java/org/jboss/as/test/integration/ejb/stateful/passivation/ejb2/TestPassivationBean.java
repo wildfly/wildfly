@@ -38,7 +38,7 @@ import org.jboss.logging.Logger;
  * @author Ondrej Chaloupka
  */
 @Stateful
-@Cache("passivating")
+@Cache("distributable")
 @RemoteHome(TestPassivationRemoteHome.class)
 public class TestPassivationBean extends TestPassivationBeanParent implements SessionBean {
     private static final long serialVersionUID = 1L;

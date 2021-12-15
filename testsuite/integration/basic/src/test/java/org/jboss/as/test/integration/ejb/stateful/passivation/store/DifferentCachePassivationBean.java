@@ -32,7 +32,7 @@ import javax.ejb.Remove;
 import javax.ejb.Stateful;
 
 @Stateful
-@Cache("longlife")
+@Cache("another-passivating-cache")
 @Local(Bean.class)
 public class DifferentCachePassivationBean implements Bean {
 

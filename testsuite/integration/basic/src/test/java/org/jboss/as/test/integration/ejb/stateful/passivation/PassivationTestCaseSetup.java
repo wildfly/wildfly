@@ -22,13 +22,14 @@
 
 package org.jboss.as.test.integration.ejb.stateful.passivation;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -38,42 +39,38 @@ import org.junit.Assert;
  * Setup for passivation test case.
  *
  * @author Stuart Douglas, Ondrej Chaloupka
+ * @author Richard Achmatowicz
  */
 public class PassivationTestCaseSetup implements ServerSetupTask {
     private static final Logger log = Logger.getLogger(PassivationTestCaseSetup.class);
 
-    private static ModelNode getPassivationStoreAddress() {
-        ModelNode address = new ModelNode();
-        address.add("subsystem", "ejb3");
-        address.add("passivation-store", "infinispan");
-        address.protect();
-        return address;
-    }
+    /**
+     * This test setup originally depended upon manipulating the passivation-store for the default (passivating) cache.
+     * However, since WFLY-14953, passivation stores have been superceeded by bean-management-providers
+     * (i.e. use /subsystem=distributable-ejb/infinispan-bean-management=default instead of /subsystem=ejb3/passivation-store=infinispan)
+     */
+    private static final PathAddress INFINISPAN_BEAN_MANAGEMENT_PATH = PathAddress.pathAddress(PathElement.pathElement("subsystem", "distributable-ejb"),
+            PathElement.pathElement("infinispan-bean-management", "default"));
 
+    /*
+     * Set the max-acive-beans attribute of the bean-management provider to 1 to force passivation.
+     */
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-        // update the file passivation store attributes
-        ModelNode passivationStoreAddress = getPassivationStoreAddress();
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set("write-attribute");
-        operation.get(OP_ADDR).set(passivationStoreAddress);
-        operation.get("name").set("max-size");
-        operation.get("value").set(1);
+        ModelNode operation = Util.getWriteAttributeOperation(INFINISPAN_BEAN_MANAGEMENT_PATH, "max-active-beans", 1);
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        log.trace("modelnode operation write attribute max-size=1: " + result);
+        log.trace("modelnode operation write-attribute max-active-beans=1: " + result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         ServerReload.reloadIfRequired(managementClient);
     }
 
+    /*
+     * Return max-active-beans to its configured value (10,000).
+     * NOTE: the configured default is 10000 but may change over time.
+     */
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-        // reset the file passivation store attributes
-        ModelNode address = getPassivationStoreAddress();
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set("undefine-attribute");
-        operation.get(OP_ADDR).set(address);
-        operation.get("name").set("max-size");
-        managementClient.getControllerClient().execute(operation);
+        ModelNode operation = Util.getWriteAttributeOperation(INFINISPAN_BEAN_MANAGEMENT_PATH, "max-active-beans", 10000);
         ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         ServerReload.reloadIfRequired(managementClient);
