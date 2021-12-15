@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.hibernate.search.massindexer;
+package org.jboss.as.test.integration.hibernate.search.backend.lucene.massindexer;
 
 import org.hibernate.CacheMode;
 import org.hibernate.search.mapper.orm.Search;

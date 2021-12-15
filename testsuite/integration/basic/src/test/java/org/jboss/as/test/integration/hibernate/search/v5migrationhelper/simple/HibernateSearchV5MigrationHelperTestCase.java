@@ -23,7 +23,8 @@ package org.jboss.as.test.integration.hibernate.search.v5migrationhelper.simple;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.hibernate.search.simple.AnalysisConfigurer;
+import org.jboss.as.test.integration.hibernate.search.backend.lucene.simple.AnalysisConfigurer;
+import org.jboss.as.test.integration.hibernate.search.backend.lucene.simple.HibernateSearchLuceneSimpleTestCase;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -47,7 +48,7 @@ import static org.junit.Assert.assertEquals;
  * Verify deployed applications can use the default Hibernate Search module via Jakarta Persistence APIs
  * and through the V5 migration helper provided as an application library.
  * <p>
- * This test is similar to {@link org.jboss.as.test.integration.hibernate.search.simple.HibernateSearchJPATestCase},
+ * This test is similar to {@link HibernateSearchLuceneSimpleTestCase},
  * but uses old APIs thanks to the V5 migration helper JARs that are packaged with the application.
  * Those are not provided as modules because they shouldn't be used in production.
  */

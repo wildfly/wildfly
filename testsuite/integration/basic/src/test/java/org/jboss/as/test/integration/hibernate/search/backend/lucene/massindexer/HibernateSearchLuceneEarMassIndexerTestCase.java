@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.hibernate.search.massindexer;
+package org.jboss.as.test.integration.hibernate.search.backend.lucene.massindexer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -47,8 +47,8 @@ import static org.junit.Assert.assertTrue;
  * @author Hardy Ferentschik
  */
 @RunWith(Arquillian.class)
-public class HibernateSearchEarMassIndexerTestCase {
-    private static final String NAME = HibernateSearchEarMassIndexerTestCase.class.getSimpleName();
+public class HibernateSearchLuceneEarMassIndexerTestCase {
+    private static final String NAME = HibernateSearchLuceneEarMassIndexerTestCase.class.getSimpleName();
     private static final String EAR_ARCHIVE_NAME = NAME + ".ear";
     private static final String WAR_ARCHIVE_NAME = NAME + ".war";
     private static final String EJB_ARCHIVE_NAME = NAME + ".jar";
@@ -62,7 +62,7 @@ public class HibernateSearchEarMassIndexerTestCase {
 
         WebArchive war = ShrinkWrap
                 .create(WebArchive.class, WAR_ARCHIVE_NAME)
-                .addClasses(HibernateSearchEarMassIndexerTestCase.class)
+                .addClasses(HibernateSearchLuceneEarMassIndexerTestCase.class)
                 .addAsResource(warManifest(), "META-INF/MANIFEST.MF")
                 .addAsResource(persistenceXml(), "META-INF/persistence.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
