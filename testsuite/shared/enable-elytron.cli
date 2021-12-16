@@ -5,8 +5,6 @@ embed-server --server-config=standalone.xml
 
 /subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
 
-/core-service=management/access=identity:add(security-domain=ManagementDomain)
-
 stop-embedded-server
 
 
@@ -19,7 +17,5 @@ embed-server --server-config=standalone-full.xml
 /subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
 /subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
 /subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
-
-/core-service=management/access=identity:add(security-domain=ManagementDomain)
 
 stop-embedded-server
