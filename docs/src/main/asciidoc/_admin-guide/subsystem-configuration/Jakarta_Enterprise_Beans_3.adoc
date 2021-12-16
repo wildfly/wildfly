@@ -9,12 +9,12 @@ of each
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:ejb3:8.0">
+<subsystem xmlns="urn:jboss:domain:ejb3:10.0">
   <session-bean>
     <stateless>
       <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
     </stateless>
-    <stateful default-session-timeout="600000" default-access-timeout="5000" cache-ref="simple" clustered-cache-ref="clustered"/>
+    <stateful default-session-timeout="600000" default-access-timeout="5000" cache-ref="distributable" passivation-disabled-cache-ref="simple"/>
     <singleton default-access-timeout="5000"/>
   </session-bean>
   <mdb>
@@ -32,14 +32,9 @@ of each
   </bean-instance-pools>
   </pools>
   <caches>
-    <cache name="simple" aliases="NoPassivationCache"/>
-    <cache name="passivating" passivation-store-ref="file" aliases="SimpleStatefulCache"/>
-    <cache name="clustered" passivation-store-ref="infinispan" aliases="StatefulTreeCache"/>
+    <simple-cache name="simple"/>
+    <distributable-cache name="distributable" bean-management="default"/>
   </caches>
-  <passivation-stores>
-    <file-passivation-store name="file"/>
-    <cluster-passivation-store name="infinispan" cache-container="ejb"/>
-  </passivation-stores>
   <async thread-pool-name="default"/>
   <timer-service thread-pool-name="default" default-data-store="default-file-store">
     <data-stores>
@@ -100,11 +95,11 @@ the instance lock. It can be overridden via the deployment descriptor or
 via the `javax.ejb.AccessTimeout` annotation.
 
 * `cache-ref` This attribute is used to set the default cache for
-non-clustered beans. It can be overridden by `jboss-ejb3.xml`, or via
+beans which require a passivating cache. It can be overridden by `jboss-ejb3.xml`, or via
 the `org.jboss.ejb3.annotation.Cache` annotation.
 
-* `clustered-cache-ref` This attribute is used to set the default cache
-for clustered beans.
+* `non-passivating-cache-ref` This attribute is used to set the default cache
+for beans which require a non-passivating cache.
 
 [[singleton]]
 === <singleton>
@@ -156,8 +151,29 @@ instance pools themselves are configured in the `<pools>` element.
 [[caches]]
 == <caches>
 
-[[passivation-stores]]
-== <passivation-stores>
+This element is used to define named cache factories to support the persistence of SFSB session states.
+Cache factories may be passivating (an in-memory cache with the ability to passivate to persistant store
+the session states of beans not recently used and then activate them when needed) or non-passivating
+(an in-memory cache only). Default values for passivating and non-passivating caches are specified
+in the <stateful> element mentioned above. A SFSB may override the named cache used to store its session states
+via the @Cache annotation (in its class definition) or via a corresponding deployment descriptor.
+
+[[simple-cache]]
+=== <simple-cache>
+
+This element defines a non-passivating (in-memory only) cache factory for storing session states of a SFSB.
+
+[[distributable-cache]]
+=== <distributable-cache>
+
+This element defines a passivating cache factory (in-memory plus passivation to persistent store) for storing
+session states of a SFSB. A passivating cache factory relies on a bean-management provider to configure
+the passivation mechanism and the persistent store that it uses.
+
+* `bean-management` This attribute specifies the bean-management provider to be used to
+support passivation of cache entries. The bean-management provider is defined and configured
+in the distributable-ejb subsystem. If the attribute is non-defined, the default bean management provider
+defined in the distributable-ejb subsystem is used (infinispan-bean-manager).
 
 [[async]]
 == <async>
@@ -180,9 +196,15 @@ information is saved to.
 [[remote]]
 == <remote>
 
-This is used to enable remote EJB invocations. It specifies a space-separated list of remoting
-connectors to use (as defined in the remoting subsystem configuration),
-and the thread pool to use for remote invocations.
+This element is used to enable remote EJB invocations. In other words, it allows a remote EJB client
+application to make invocations on Jakarta Enterprise beans deployed on the server.
+
+It specifies the following attributes:
+
+* `connectors` specifies a space-separated list of remoting connectors to use (as defined in the remoting
+subsystem configuration) for accepting invocations.
+
+* `thread-pool` specifies a thread pool to use for processing incoming remote invocations
 
 [[profile]]
 === <profile>
