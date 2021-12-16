@@ -3251,7 +3251,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 529, value = "Failed to retrieve info from database for timer: %s")
     void failedToRetrieveTimerInfo(final TimerImpl timer, @Cause Exception e);
 
-    @Message(id = 530, value = "The deployment is configured to use legacy security which is no longer supported.")
-    IllegalStateException legacySecurityUnsupported();
+    @Message(id = 530, value = "The deployment is configured to use a legacy security domain '%s' which is no longer supported.")
+    IllegalStateException legacySecurityUnsupported(String domainName);
 
 }
