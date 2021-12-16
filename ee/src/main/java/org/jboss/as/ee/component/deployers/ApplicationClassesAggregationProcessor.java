@@ -52,10 +52,4 @@ public class ApplicationClassesAggregationProcessor implements DeploymentUnitPro
         final EEApplicationClasses classes = new EEApplicationClasses(descriptions);
         deploymentUnit.putAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION, classes);
     }
-
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

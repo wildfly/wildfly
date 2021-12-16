@@ -91,8 +91,4 @@ public final class EEDefaultPermissionsProcessor implements DeploymentUnitProces
         }
 
     }
-
-    public void undeploy(final DeploymentUnit context) {
-        // no op
-    }
 }

@@ -23,7 +23,6 @@
 package org.jboss.as.xts;
 
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
@@ -38,10 +37,4 @@ public class GracefulShutdownDeploymentProcessor implements DeploymentUnitProces
         deploymentPhaseContext.getDeploymentUnit().putAttachment(WSAttachmentKeys.REJECTION_RULE_KEY,
                 new GracefulShutdownRejectionRule());
     }
-
-    @Override
-    public void undeploy(DeploymentUnit deploymentUnit) {
-
-    }
-
 }

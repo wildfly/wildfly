@@ -111,9 +111,4 @@ public class IIOPJndiBindingProcessor implements DeploymentUnitProcessor {
                 .install();
 
     }
-
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

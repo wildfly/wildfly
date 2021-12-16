@@ -81,9 +81,4 @@ public class ApplicationClientManifestProcessor implements DeploymentUnitProcess
             }
         }
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

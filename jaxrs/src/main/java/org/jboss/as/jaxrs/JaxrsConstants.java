@@ -33,7 +33,9 @@ public class JaxrsConstants {
     public static final String RESTEASY_BUFFER_EXCEPTION_ENTITY = "resteasy-buffer-exception-entity";
     public static final String RESTEASY_DISABLE_HTML_SANITIZER = "resteasy-disable-html-sanitizer";
     public static final String RESTEASY_DISABLE_PROVIDERS = "resteasy-disable-providers";
+    @Deprecated
     public static final String RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES = "resteasy-document-expand-entity-references";
+    @Deprecated
     public static final String RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS = "resteasy-document-secure-disableDTDs";
     public static final String RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE = "resteasy-document-secure-processing-feature";
     public static final String RESTEASY_GZIP_MAX_INPUT = "resteasy-gzip-max-input";

@@ -23,14 +23,12 @@
 package org.wildfly.clustering.web.infinispan.sso.coarse;
 
 import java.util.AbstractMap;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.ee.Mutator;
-import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
 import org.wildfly.clustering.web.cache.sso.SessionsFactory;
@@ -45,15 +43,11 @@ public class CoarseSessionsFactory<D, S> implements SessionsFactory<Map<D, S>, D
 
     private final SessionsFilter<D, S> filter = new SessionsFilter<>();
     private final Cache<CoarseSessionsKey, Map<D, S>> cache;
-    private final Cache<CoarseSessionsKey, Map<D, S>> findCache;
     private final Cache<CoarseSessionsKey, Map<D, S>> createCache;
-    private final CacheProperties properties;
 
     public CoarseSessionsFactory(InfinispanConfiguration configuration) {
         this.cache = configuration.getCache();
         this.createCache = configuration.getWriteOnlyCache();
-        this.findCache = configuration.getReadForUpdateCache();
-        this.properties = configuration.getCacheProperties();
     }
 
     @Override
@@ -65,14 +59,14 @@ public class CoarseSessionsFactory<D, S> implements SessionsFactory<Map<D, S>, D
 
     @Override
     public Map<D, S> createValue(String id, Void context) {
-        Map<D, S> sessions = this.properties.isLockOnRead() ? new HashMap<>() : new ConcurrentHashMap<>();
+        Map<D, S> sessions = new ConcurrentHashMap<>();
         this.createCache.put(new CoarseSessionsKey(id), sessions);
         return sessions;
     }
 
     @Override
     public Map<D, S> findValue(String id) {
-        return this.findCache.get(new CoarseSessionsKey(id));
+        return this.cache.get(new CoarseSessionsKey(id));
     }
 
     @Override

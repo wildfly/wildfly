@@ -27,6 +27,8 @@ import org.jboss.as.weld.discovery.AnnotationType;
 import org.jboss.jandex.DotName;
 import org.jboss.weld.util.collections.ImmutableSet;
 
+import javax.enterprise.inject.spi.BeanManager;
+
 /**
  * Class that stores the {@link DotName}s of CDI annotations.
  *
@@ -138,10 +140,13 @@ public enum CdiAnnotations {
      * this can't go on the enum itself.
      */
     private static class Constants {
+
+        private static final String EE_NAMESPACE = BeanManager.class.getName().substring(0, BeanManager.class.getName().indexOf("."));
+
         /**
          * javax package.
          */
-        public static final DotName JAVAX = DotName.createComponentized(null, "javax");
+        public static final DotName JAVAX = DotName.createComponentized(null, EE_NAMESPACE);
 
         /**
          * javax.interceptor package.

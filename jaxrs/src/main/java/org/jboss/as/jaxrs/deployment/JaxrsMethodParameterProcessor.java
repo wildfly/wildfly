@@ -607,9 +607,4 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
             throws DeploymentUnitProcessingException {
         processData(null, classLoader, resteasyDeploymentData, true);
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
 }

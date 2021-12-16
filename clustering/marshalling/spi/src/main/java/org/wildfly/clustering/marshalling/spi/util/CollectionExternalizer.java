@@ -56,11 +56,13 @@ public class CollectionExternalizer<T extends Collection<Object>, C, CC> impleme
 
     @Override
     public void writeObject(ObjectOutput output, T collection) throws IOException {
-        C context = this.context.apply(collection);
-        this.contextExternalizer.writeObject(output, context);
-        IndexSerializer.VARIABLE.writeInt(output, collection.size());
-        for (Object element : collection) {
-            output.writeObject(element);
+        synchronized (collection) { // Avoid ConcurrentModificationException
+            C context = this.context.apply(collection);
+            this.contextExternalizer.writeObject(output, context);
+            IndexSerializer.VARIABLE.writeInt(output, collection.size());
+            for (Object element : collection) {
+                output.writeObject(element);
+            }
         }
     }
 
@@ -79,9 +81,11 @@ public class CollectionExternalizer<T extends Collection<Object>, C, CC> impleme
     @Override
     public OptionalInt size(T collection) {
         if (!collection.isEmpty()) return OptionalInt.empty();
-        C context = this.context.apply(collection);
-        OptionalInt contextSize = this.contextExternalizer.size(context);
-        return contextSize.isPresent() ? OptionalInt.of(contextSize.getAsInt() + IndexSerializer.VARIABLE.size(collection.size())) : OptionalInt.empty();
+        synchronized (collection) { // Avoid ConcurrentModificationException
+            C context = this.context.apply(collection);
+            OptionalInt contextSize = this.contextExternalizer.size(context);
+            return contextSize.isPresent() ? OptionalInt.of(contextSize.getAsInt() + IndexSerializer.VARIABLE.size(collection.size())) : OptionalInt.empty();
+        }
     }
 
     @Override

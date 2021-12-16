@@ -73,8 +73,4 @@ public class BatchDeploymentResourceProcessor implements DeploymentUnitProcessor
             }
         }
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

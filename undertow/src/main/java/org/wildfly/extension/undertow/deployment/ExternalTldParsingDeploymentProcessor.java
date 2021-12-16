@@ -127,11 +127,6 @@ public class ExternalTldParsingDeploymentProcessor implements DeploymentUnitProc
         }
     }
 
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
-
     private TldMetaData parseTLD(Resource tld)
             throws DeploymentUnitProcessingException {
         if (IMPLICIT_TLD.equals(tld.getName())) {

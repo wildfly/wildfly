@@ -28,7 +28,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
 public class DeploymentMetricProcessor implements DeploymentUnitProcessor {
@@ -53,9 +52,5 @@ public class DeploymentMetricProcessor implements DeploymentUnitProcessor {
 
         DeploymentMetricService.install(phaseContext.getServiceTarget(), phaseContext.getDeploymentUnit(), rootResource, managementResourceRegistration,
                 exposeAnySubsystem, exposedSubsystems, prefix);
-    }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
     }
 }

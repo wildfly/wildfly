@@ -2284,29 +2284,29 @@ public interface EjbLogger extends BasicLogger {
 //    @Message(id = 334, value = "Could not deserialize info in timer ")
 //    RuntimeException failToDeserializeInfoInTimer(@Cause Throwable e);
 
-    /**
-     * Creates an exception indicating the Id cannot be null
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 335, value = "Id cannot be null")
-    IllegalArgumentException idIsNull();
-
-    /**
-     * Creates an exception indicating Timed objectid cannot be null
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 336, value = "Timed objectid cannot be null")
-    IllegalArgumentException timedObjectNull();
-
-    /**
-     * Creates an exception indicating the timer service cannot be null
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 337, value = "Timer service cannot be null")
-    IllegalArgumentException timerServiceIsNull();
+//    /**
+//     * Creates an exception indicating the Id cannot be null
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 335, value = "Id cannot be null")
+//    IllegalArgumentException idIsNull();
+//
+//    /**
+//     * Creates an exception indicating Timed objectid cannot be null
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 336, value = "Timed objectid cannot be null")
+//    IllegalArgumentException timedObjectNull();
+//
+//    /**
+//     * Creates an exception indicating the timer service cannot be null
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 337, value = "Timer service cannot be null")
+//    IllegalArgumentException timerServiceIsNull();
 
     /**
      * Creates an exception indicating the timerservice with timedObjectId is not registered

@@ -56,8 +56,4 @@ public class ClientInterceptorsBindingsProcessor implements DeploymentUnitProces
             throw new DeploymentUnitProcessingException(e);
         }
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

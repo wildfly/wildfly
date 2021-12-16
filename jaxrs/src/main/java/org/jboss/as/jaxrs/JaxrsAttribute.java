@@ -31,6 +31,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.DefaultAttributeMarshaller;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -89,20 +90,24 @@ public abstract class JaxrsAttribute {
             .setAttributeMarshaller(ListMarshaller.INSTANCE)
             .build();
 
+    @Deprecated
     public static final SimpleAttributeDefinition RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES = new SimpleAttributeDefinitionBuilder(JaxrsConstants.RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES, ModelType.BOOLEAN)
             .setRequired(false)
             .setAllowExpression(true)
             .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, false))
             .setDefaultValue(ModelNode.FALSE)
             .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
+            .setDeprecated(ModelVersion.create(3, 0, 0), true)
             .build();
 
+    @Deprecated
     public static final SimpleAttributeDefinition RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS = new SimpleAttributeDefinitionBuilder(JaxrsConstants.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS, ModelType.BOOLEAN)
             .setRequired(false)
             .setAllowExpression(true)
             .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, false))
             .setDefaultValue(ModelNode.TRUE)
             .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
+            .setDeprecated(ModelVersion.create(3, 0, 0), true)
             .build();
 
     public static final SimpleAttributeDefinition RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE = new SimpleAttributeDefinitionBuilder(JaxrsConstants.RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE, ModelType.BOOLEAN)

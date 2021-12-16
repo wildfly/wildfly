@@ -98,10 +98,6 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
         phaseContext.addDeploymentDependency(capabilitySupport.getCapabilityServiceName(JPAServiceNames.TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY), JpaAttachments.TRANSACTION_SYNCHRONIZATION_REGISTRY);
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private void handleJarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!isEarDeployment(deploymentUnit) && !isWarDeployment(deploymentUnit) &&

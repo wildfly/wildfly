@@ -71,7 +71,7 @@
         <module name="org.jboss.resteasy.resteasy-jsapi" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-multipart-provider" optional="true"/>
         <module name="org.jboss.resteasy.resteasy-spring" optional="true" />
-        <module name="org.jboss.resteasy.resteasy-validator-provider-11" optional="true"/>
+        <module name="org.jboss.resteasy.resteasy-validator-provider" optional="true"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
         <module name="java.xml"/>

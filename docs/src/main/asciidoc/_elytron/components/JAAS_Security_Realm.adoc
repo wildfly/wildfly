@@ -1,0 +1,25 @@
+[[jaas-security-realm]]
+= JAAS Security Realm
+
+The JAAS security realm can be used to configure custom Login Modules in the Elytron subsystem to use for credentials verification.
+This is being done by initializing and using LoginContext from the provided JAAS configuration file to verify user's credentials.
+
+The `jaas-realm` resource contains the following attributes: -
+
+ * `entry` - The entry name to use to initialize LoginContext.
+ * `path` - The optional path to JAAS configuration file. You can also specify the location with java system property "java.security.auth.login.config" or with java security property "login.config.url".
+ * `relative-to` - If 'relative-to' is provided, the value of the 'path' attribute is treated as relative to the path specified by this attribute.
+ * `callback-handler` - Callback handler to use with the Login Context. Security property "auth.login.defaultCallbackHandler" can be used instead. The default callback handler of the realm will be used if none of these are defined.
+ * `module` - WildFly module with custom LoginModules and CallbackHandler classes.
+
+All attributes but `entry` are optional.
+
+== Defining a JAAS realm
+
+You can use following command to add a JAAS realm.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/jaas-realm=theRealm:add(entry=Entry1,path=/path/to/jaas/config/JAASConfig.conf,module=myModule,callback-handler=my.custom..MyCallbackHandler)
+----
+

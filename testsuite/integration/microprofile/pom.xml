@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>26.0.0.Beta1-SNAPSHOT</version>
+        <version>26.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-microprofile</artifactId>
@@ -49,6 +49,13 @@
         <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
         <!-- properties to enable plugins shared by various bootable jar executions -->
         <bootable-jar-packaging.phase>none</bootable-jar-packaging.phase>
+        <!--
+            Temporarily downgrade embedded Kafka until until
+            https://github.com/apache/kafka/commit/145392b8c66cf5c351d11bc659a3fc80fc6b602a makes it into
+            a 3.0.1 or 3.1.0 release of the Kafka client.
+            Tracked in https://issues.redhat.com/browse/WFLY-15799
+        -->
+        <version.org.apache.kafka>${version.org.apache.kafka.for.test}</version.org.apache.kafka>
     </properties>
 
     <dependencies>

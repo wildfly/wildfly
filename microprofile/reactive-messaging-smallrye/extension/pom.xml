@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>26.0.0.Beta1-SNAPSHOT</version>
+        <version>26.0.0.Final-SNAPSHOT</version>
     </parent>
 
 
@@ -77,6 +77,10 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-microprofile-reactive-messaging-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-weld-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>

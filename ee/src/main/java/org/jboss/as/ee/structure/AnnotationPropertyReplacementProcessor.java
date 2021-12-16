@@ -48,11 +48,6 @@ public class AnnotationPropertyReplacementProcessor implements DeploymentUnitPro
 
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
-
     public void setDescriptorPropertyReplacement(boolean annotationPropertyReplacement) {
         this.annotationPropertyReplacement = annotationPropertyReplacement;
     }

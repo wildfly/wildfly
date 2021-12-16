@@ -66,19 +66,8 @@ public class TimerHandleImpl implements TimerHandle {
      * @param id            The id of the timer instance
      * @param timedObjectId The id of the target {@link org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker}
      * @param service       The timer service to which this timer handle belongs to
-     * @throws IllegalArgumentException If either of the passed parameters is null
      */
-    public TimerHandleImpl(final String id, final String timedObjectId, final TimerServiceImpl service) throws IllegalArgumentException {
-        if (id == null) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.idIsNull();
-        }
-        if (timedObjectId == null) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.timedObjectNull();
-        }
-        if (service == null) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.timerServiceIsNull();
-        }
-
+    public TimerHandleImpl(final String id, final String timedObjectId, final TimerServiceImpl service) {
         this.timedObjectId = timedObjectId;
         this.id = id;
         this.service = service;

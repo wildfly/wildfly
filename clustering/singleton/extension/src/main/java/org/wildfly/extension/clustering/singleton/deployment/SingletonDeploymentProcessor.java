@@ -65,11 +65,6 @@ public class SingletonDeploymentProcessor implements DeploymentUnitProcessor, Li
     }
 
     @Override
-    public void undeploy(DeploymentUnit unit) {
-        // We intentionally leave any DEPLOYMENT_UNIT_PHASE_BUILDER attached to the deployment unit
-    }
-
-    @Override
     public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
         if (event == LifecycleEvent.DOWN) {
             controller.setMode(Mode.ACTIVE);

@@ -64,7 +64,4 @@ public class RaXmlDependencyProcessor implements DeploymentUnitProcessor {
             }
         }
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

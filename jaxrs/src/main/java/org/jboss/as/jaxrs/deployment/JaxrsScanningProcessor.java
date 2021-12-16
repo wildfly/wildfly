@@ -217,11 +217,6 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
-
     public static final Set<String> BOOT_CLASSES = new HashSet<String>();
 
     static {

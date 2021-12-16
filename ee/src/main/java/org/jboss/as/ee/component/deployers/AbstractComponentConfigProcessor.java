@@ -69,10 +69,4 @@ public abstract class AbstractComponentConfigProcessor implements DeploymentUnit
      * @throws DeploymentUnitProcessingException if any problems occur
      */
     protected abstract void processComponentConfig(final DeploymentUnit deploymentUnit, final DeploymentPhaseContext phaseContext, final CompositeIndex index, final ComponentDescription componentDescription) throws DeploymentUnitProcessingException;
-
-    /**
-     * {@inheritDoc} *
-     */
-    public void undeploy(DeploymentUnit context) {
-    }
 }

@@ -51,8 +51,4 @@ public class StartupAwaitDeploymentUnitProcessor implements DeploymentUnitProces
       }
     }
   }
-
-  @Override
-  public void undeploy(DeploymentUnit context) {
-  }
 }
