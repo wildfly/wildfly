@@ -1820,13 +1820,13 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 276, value = "EJBComponent has not been set in the current invocation context %s")
     IllegalStateException failToGetEjbComponent(InterceptorContext currentInvocationContext);
 
-    /**
-     * Creates an exception indicating Value cannot be null
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 277, value = "Value cannot be null")
-    IllegalArgumentException valueIsNull();
+//    /**
+//     * Creates an exception indicating Value cannot be null
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 277, value = "Value cannot be null")
+//    IllegalArgumentException valueIsNull();
 
     /**
      * Creates an exception indicating Cannot create class from a null schedule expression
@@ -1893,44 +1893,46 @@ public interface EjbLogger extends BasicLogger {
     IllegalArgumentException invalidScheduleExpressionYear(ScheduleExpression schedule);
 
     /**
-     * Creates an exception indicating Invalid range value
+     * Creates an exception indicating invalid value of a certain type.
      *
+     * @param type types of schedule attribute value, e.g., INCREMENT, RANGE, LIST, month, minute, etc
+     * @param value schedule attribute value
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 286, value = "Invalid range value: %s")
-    IllegalArgumentException invalidRange(String range);
+    @Message(id = 286, value = "Invalid schedule %s value: %s")
+    IllegalArgumentException invalidScheduleValue(String type, String value);
 
-    /**
-     * Creates an exception indicating Invalid list expression
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 287, value = "Invalid list expression: %s")
-    IllegalArgumentException invalidListExpression(String list);
+//    /**
+//     * Creates an exception indicating Invalid list expression
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 287, value = "Invalid list expression: %s")
+//    IllegalArgumentException invalidListExpression(String list);
 
-    /**
-     * Creates an exception indicating Invalid increment value
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 288, value = "Invalid increment value: %s")
-    IllegalArgumentException invalidIncrementValue(String value);
+//    /**
+//     * Creates an exception indicating Invalid increment value
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 288, value = "Invalid increment value: %s")
+//    IllegalArgumentException invalidIncrementValue(String value);
 
-    /**
-     * Creates an exception indicating there are no valid seconds for expression
-     *
-     * @return an {@link IllegalStateException} for the error.
-     */
-    @Message(id = 289, value = "There are no valid seconds for expression: %s")
-    IllegalStateException invalidExpressionSeconds(String origValue);
+//    /**
+//     * Creates an exception indicating there are no valid seconds for expression
+//     *
+//     * @return an {@link IllegalStateException} for the error.
+//     */
+//    @Message(id = 289, value = "There are no valid seconds for expression: %s")
+//    IllegalStateException invalidExpressionSeconds(String origValue);
 
-    /**
-     * Creates an exception indicating there are no valid minutes for expression
-     *
-     * @return an {@link IllegalStateException} for the error.
-     */
-    @Message(id = 290, value = "There are no valid minutes for expression: %s")
-    IllegalStateException invalidExpressionMinutes(String origValue);
+//    /**
+//     * Creates an exception indicating there are no valid minutes for expression
+//     *
+//     * @return an {@link IllegalStateException} for the error.
+//     */
+//    @Message(id = 290, value = "There are no valid minutes for expression: %s")
+//    IllegalStateException invalidExpressionMinutes(String origValue);
 
     /**
      * Creates an exception indicating Invalid value it doesn't support values of specified types
@@ -1948,13 +1950,13 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 292, value = "A list value can only contain either a range or an individual value. Invalid value: %s")
     IllegalArgumentException invalidListValue(String listItem);
 
-    /**
-     * Creates an exception indicating it could not parse schedule expression
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 293, value = "Could not parse: %s in schedule expression")
-    IllegalArgumentException couldNotParseScheduleExpression(String origValue);
+//    /**
+//     * Creates an exception indicating it could not parse schedule expression
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 293, value = "Could not parse: %s in schedule expression")
+//    IllegalArgumentException couldNotParseScheduleExpression(String origValue);
 
     /**
      * Creates an exception indicating invalid value range
@@ -1964,37 +1966,37 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 294, value = "Invalid value: %s Valid values are between %s and %s")
     IllegalArgumentException invalidValuesRange(Integer value, int min, int max);
 
-    /**
-     * Creates an exception indicating invalid value for day-of-month
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 295, value = "Invalid value for day-of-month: %s")
-    IllegalArgumentException invalidValueDayOfMonth(Integer value);
+//    /**
+//     * Creates an exception indicating invalid value for day-of-month
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 295, value = "Invalid value for day-of-month: %s")
+//    IllegalArgumentException invalidValueDayOfMonth(Integer value);
 
-    /**
-     * Creates an exception indicating relative day-of-month cannot be null or empty
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 296, value = "Relative day-of-month cannot be null or empty")
-    IllegalArgumentException relativeDayOfMonthIsNull();
+//    /**
+//     * Creates an exception indicating relative day-of-month cannot be null or empty
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 296, value = "Relative day-of-month cannot be null or empty")
+//    IllegalArgumentException relativeDayOfMonthIsNull();
 
-    /**
-     * Creates an exception indicating is not relative value day-of-month
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 297, value = "%s is not a relative value")
-    IllegalArgumentException invalidRelativeValue(String relativeDayOfMonth);
+//    /**
+//     * Creates an exception indicating is not relative value day-of-month
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 297, value = "%s is not a relative value")
+//    IllegalArgumentException invalidRelativeValue(String relativeDayOfMonth);
 
-    /**
-     * Creates an exception indicating value is null, cannot determine if it's relative
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 298, value = "Value is null, cannot determine if it's relative")
-    IllegalArgumentException relativeValueIsNull();
+//    /**
+//     * Creates an exception indicating value is null, cannot determine if it's relative
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 298, value = "Value is null, cannot determine if it's relative")
+//    IllegalArgumentException relativeValueIsNull();
 
 //    /**
 //     * Creates an exception indicating null timerservice cannot be registered"
