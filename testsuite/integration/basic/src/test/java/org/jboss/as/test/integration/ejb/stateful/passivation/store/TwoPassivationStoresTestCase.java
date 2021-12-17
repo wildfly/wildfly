@@ -88,24 +88,21 @@ public class TwoPassivationStoresTestCase {
     }
 
     public static class ServerSetupTask extends CLIServerSetupTask {
-
         /**
          * This test setup originally depended upon manipulating the passivation-store for the default (passivating) cache.
-         * However, since WFLY-14953, passivation stores have been superceded by bean-management-providers
-         * i.e. use /subsystem=distributable-ejb/infinispan-bean-management=default instead of /subsystem=ejb3/passicvation-store=infinispan
+         * However, since WFLY-14953, passivation stores have been superseded by bean-management-providers
+         * i.e. use /subsystem=distributable-ejb/infinispan-bean-management=default instead of /subsystem=ejb3/passivation-store=infinispan
          */
-
         public ServerSetupTask() {
-            builder.node(DEFAULT_CONNECTION_SERVER)
-                    .batch(false)                       // batching results in caches not being started
+            this.builder.node(DEFAULT_CONNECTION_SERVER)
                     .reloadOnSetup(true)
                     .reloadOnTearDown(true)
-                    .setup("/subsystem=distributable-ejb/infinispan-bean-management=another-bean-manager:add(cache-container=ejb, bean-cache=passivation, max-active-beans=1)")
+                    .setup("/subsystem=distributable-ejb/infinispan-bean-management=another-bean-manager:add(cache-container=ejb, cache=passivation, max-active-beans=1)")
                     .setup("/subsystem=ejb3/distributable-cache=another-passivating-cache:add(bean-management=another-bean-manager)")
                     .setup("/subsystem=distributable-ejb/infinispan-bean-management=default:write-attribute(name=max-active-beans,value=1)")
-                    .teardown("/subsystem=distributable-ejb/infinispan-bean-management=another-bean-manager:remove")
+                    .teardown("/subsystem=distributable-ejb/infinispan-bean-management=default:write-attribute(name=max-active-beans,value=10000)")
                     .teardown("/subsystem=ejb3/distributable-cache=another-passivating-cache:remove")
-                    .teardown("/subsystem=distributable-ejb/infinispan-bean-management=default:write-attribute(name=max-active-beans,value=10000)");
+                    .teardown("/subsystem=distributable-ejb/infinispan-bean-management=another-bean-manager:remove");
         }
     }
 }
