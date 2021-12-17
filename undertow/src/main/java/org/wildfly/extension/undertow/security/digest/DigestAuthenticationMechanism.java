@@ -38,6 +38,7 @@ import io.undertow.security.impl.DigestAuthorizationToken;
 import io.undertow.security.impl.DigestQop;
 import io.undertow.security.impl.SimpleNonceManager;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.servlet.handlers.ServletRequestContext;
 import io.undertow.util.AttachmentKey;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
@@ -372,6 +373,14 @@ public class DigestAuthenticationMechanism implements AuthenticationMechanism {
 
     @Override
     public ChallengeResult sendChallenge(final HttpServerExchange exchange, final SecurityContext securityContext) {
+        // Ensure a session is created to have stickiness through loadbalancers
+        try {
+            final ServletRequestContext servletRequestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+            servletRequestContext.getCurrentServletContext().getSession(exchange, true);
+        } catch (Exception e) {
+            UndertowLogger.ROOT_LOGGER.debug("Session error. Digest auth may fail from broken stickiness", e);
+        }
+
         DigestContext context = exchange.getAttachment(DigestContext.ATTACHMENT_KEY);
         boolean stale = context == null ? false : context.isStale();
 
