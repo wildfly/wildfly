@@ -172,8 +172,9 @@ the passivation mechanism and the persistent store that it uses.
 
 * `bean-management` This attribute specifies the bean-management provider to be used to
 support passivation of cache entries. The bean-management provider is defined and configured
-in the distributable-ejb subsystem. If the attribute is non-defined, the default bean management provider
-defined in the distributable-ejb subsystem is used (infinispan-bean-manager).
+in the distributable-ejb subsystem (see the link:High_Availability_Guide{outfilesuffix}[High Availability Guide]).
+If the attribute is non-defined, the default bean management provider
+defined in the distributable-ejb subsystem is used.
 
 [[async]]
 == <async>
