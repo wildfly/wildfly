@@ -45,8 +45,8 @@ import javax.naming.InitialContext;
  * @author Daniel Cihak
  */
 @RunWith(Arquillian.class)
-@ServerSetup(TwoPassivationStoresTestCase.ServerSetupTask.class)
-public class TwoPassivationStoresTestCase {
+@ServerSetup(org.jboss.as.test.integration.ejb.stateful.passivation.store.MultiStatefulCachesTestCase.ServerSetupTask.class)
+public class MultiStatefulCachesTestCase {
 
     private static final String DEPLOYMENT = "DEPLOYMENT";
     private static final String DEFAULT_CONNECTION_SERVER = "jboss";
