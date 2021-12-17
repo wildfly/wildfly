@@ -61,6 +61,7 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
+import javax.ejb.ScheduleExpression;
 import javax.sql.DataSource;
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -664,16 +665,19 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             CalendarTimer.Builder cb = CalendarTimer.builder();
             builder = cb;
             //set calendar timer specifics first
-            cb.setScheduleExprSecond(resultSet.getString(10));
-            cb.setScheduleExprMinute(resultSet.getString(11));
-            cb.setScheduleExprHour(resultSet.getString(12));
-            cb.setScheduleExprDayOfWeek(resultSet.getString(13));
-            cb.setScheduleExprDayOfMonth(resultSet.getString(14));
-            cb.setScheduleExprMonth(resultSet.getString(15));
-            cb.setScheduleExprYear(resultSet.getString(16));
-            cb.setScheduleExprStartDate(stringAsSchedulerDate(resultSet.getString(17), timerId));
-            cb.setScheduleExprEndDate(stringAsSchedulerDate(resultSet.getString(18), timerId));
-            cb.setScheduleExprTimezone(resultSet.getString(19));
+            final ScheduleExpression scheduleExpression = new ScheduleExpression();
+            scheduleExpression.second(resultSet.getString(10));
+            scheduleExpression.minute(resultSet.getString(11));
+            scheduleExpression.hour(resultSet.getString(12));
+            scheduleExpression.dayOfWeek(resultSet.getString(13));
+            scheduleExpression.dayOfMonth(resultSet.getString(14));
+            scheduleExpression.month(resultSet.getString(15));
+            scheduleExpression.year(resultSet.getString(16));
+            scheduleExpression.start(stringAsSchedulerDate(resultSet.getString(17), timerId));
+            scheduleExpression.end(stringAsSchedulerDate(resultSet.getString(18), timerId));
+            scheduleExpression.timezone(resultSet.getString(19));
+
+            cb.setScheduleExpression(scheduleExpression);
             cb.setAutoTimer(resultSet.getBoolean(20));
 
             final String clazz = resultSet.getString(21);

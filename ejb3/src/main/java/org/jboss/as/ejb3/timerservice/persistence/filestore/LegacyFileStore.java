@@ -1,5 +1,17 @@
 package org.jboss.as.ejb3.timerservice.persistence.filestore;
 
+import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import javax.ejb.ScheduleExpression;
+
 import org.jboss.as.ejb3.timerservice.CalendarTimer;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
@@ -10,17 +22,6 @@ import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.vfs.VFSUtils;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
 
 /**
  * Contains the code needed to load timers from the legacy persistent format.
@@ -71,17 +72,21 @@ public class LegacyFileStore {
                     TimerImpl.Builder builder;
                     if (entity instanceof CalendarTimerEntity) {
                         CalendarTimerEntity c = (CalendarTimerEntity) entity;
+
+                        final ScheduleExpression scheduleExpression = new ScheduleExpression();
+                        scheduleExpression.second(c.getSecond())
+                                .minute(c.getMinute())
+                                .hour(c.getHour())
+                                .dayOfWeek(c.getDayOfWeek())
+                                .dayOfMonth(c.getDayOfMonth())
+                                .month(c.getMonth())
+                                .year(c.getYear())
+                                .start(c.getStartDate())
+                                .end(c.getEndDate())
+                                .timezone(c.getTimezone());
+
                         builder = CalendarTimer.builder()
-                                .setScheduleExprSecond(c.getSecond())
-                                .setScheduleExprMinute(c.getMinute())
-                                .setScheduleExprHour(c.getHour())
-                                .setScheduleExprDayOfWeek(c.getDayOfWeek())
-                                .setScheduleExprDayOfMonth(c.getDayOfMonth())
-                                .setScheduleExprMonth(c.getMonth())
-                                .setScheduleExprYear(c.getYear())
-                                .setScheduleExprStartDate(c.getStartDate())
-                                .setScheduleExprEndDate(c.getEndDate())
-                                .setScheduleExprTimezone(c.getTimezone())
+                                .setScheduleExpression(scheduleExpression)
                                 .setAutoTimer(c.isAutoTimer())
                                 .setTimeoutMethod(CalendarTimer.getTimeoutMethod(c.getTimeoutMethod(), timerService.getTimedObjectInvoker().getValue().getClassLoader()));
                     } else {

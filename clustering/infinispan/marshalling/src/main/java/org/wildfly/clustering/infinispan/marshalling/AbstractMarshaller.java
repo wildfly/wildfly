@@ -27,7 +27,7 @@ import java.io.IOException;
 
 import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.commons.io.ByteBufferImpl;
-import org.infinispan.commons.io.ExposedByteArrayOutputStream;
+import org.infinispan.commons.io.LazyByteArrayOutputStream;
 import org.infinispan.commons.marshall.BufferSizePredictor;
 import org.infinispan.commons.marshall.MarshallableTypeHints;
 import org.infinispan.commons.marshall.Marshaller;
@@ -103,7 +103,7 @@ public abstract class AbstractMarshaller implements Marshaller, StreamAwareMarsh
     }
 
     private ByteBuffer objectToBuffer(Object object, int estimatedSize) throws IOException {
-        ExposedByteArrayOutputStream output = new ExposedByteArrayOutputStream(estimatedSize + Byte.BYTES);
+        LazyByteArrayOutputStream output = new LazyByteArrayOutputStream(estimatedSize + Byte.BYTES);
         this.writeObject(object, output);
         return ByteBufferImpl.create(output.getRawBuffer(), 0, output.size());
     }

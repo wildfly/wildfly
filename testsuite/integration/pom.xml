@@ -271,6 +271,15 @@
             </modules>
         </profile>
 
+        <!-- -Dts.elytron-oidc-client-->
+        <profile>
+            <id>ts.integ.group.elytron-oidc-client</id>
+            <activation><property><name>ts.elytron-oidc-client</name></property></activation>
+            <modules>
+                <module>elytron-oidc-client</module>
+            </modules>
+        </profile>
+
         <!-- Test against bootable jar -->
         <profile>
             <id>bootablejar.profile</id>
