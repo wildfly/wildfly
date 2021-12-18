@@ -40,7 +40,6 @@ import javax.ejb.TransactionManagementType;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
@@ -98,7 +97,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final String policyContextID;
 
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
-    private final InjectedValue<ServerSecurityManager> serverSecurityManagerInjectedValue = new InjectedValue<>();
     private final InjectedValue<ControlPoint> controlPoint = new InjectedValue<>();
     private final InjectedValue<AtomicBoolean> exceptionLoggingEnabled = new InjectedValue<>();
     private final InjectedValue<SecurityDomain> securityDomain = new InjectedValue<>();
@@ -353,14 +351,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     EJBSuspendHandlerService getEJBSuspendHandler() {
         return this.ejbSuspendHandler.getValue();
-    }
-
-    ServerSecurityManager getServerSecurityManager() {
-        return this.serverSecurityManagerInjectedValue.getOptionalValue();
-    }
-
-    Injector<ServerSecurityManager> getServerSecurityManagerInjector() {
-        return this.serverSecurityManagerInjectedValue;
     }
 
     public ControlPoint getControlPoint() {

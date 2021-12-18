@@ -39,7 +39,6 @@ import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.ProtocolSocketBinding;
-import org.jboss.as.security.remoting.RemoteConnection;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.EJBClientInvocationContext;
@@ -59,7 +58,6 @@ import org.jboss.ejb.server.ModuleAvailabilityListener;
 import org.jboss.ejb.server.Request;
 import org.jboss.ejb.server.SessionOpenRequest;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.remoting3.Connection;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.registry.Registry;
@@ -69,7 +67,6 @@ import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.ejb.EJBException;
-import javax.net.ssl.SSLSession;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -228,24 +225,6 @@ final class AssociationImpl implements Association, AutoCloseable {
             // invoke the method
             final Object result;
 
-            // the Remoting connection that is set here is only used for legacy purposes
-            Connection remotingConnection = invocationRequest.getProviderInterface(Connection.class);
-            if(remotingConnection != null) {
-                SecurityActions.remotingContextSetConnection(remotingConnection);
-            } else if (invocationRequest.getSecurityIdentity() != null) {
-                SecurityActions.remotingContextSetConnection(new RemoteConnection() {
-                    @Override
-                    public SSLSession getSslSession() {
-                        return null;
-                    }
-
-                    @Override
-                    public SecurityIdentity getSecurityIdentity() {
-                        return invocationRequest.getSecurityIdentity();
-                    }
-                });
-            }
-
             try {
                 final Map<String, Object> contextDataHolder = new HashMap<>();
                 result = invokeMethod(componentView, invokedMethod, invocationRequest, requestContent, cancellationFlag, actualLocator, contextDataHolder);
@@ -282,8 +261,6 @@ final class AssociationImpl implements Association, AutoCloseable {
                 }
                 invocationRequest.writeException(exceptionToWrite);
                 return;
-            } finally {
-                SecurityActions.remotingContextClear();
             }
             // invocation was successful
             if (! oneWay) try {

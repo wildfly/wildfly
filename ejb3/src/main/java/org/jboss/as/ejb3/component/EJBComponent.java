@@ -52,7 +52,6 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
-import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.InvocationType;
@@ -122,16 +121,8 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
     private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private final UserTransaction userTransaction;
-    private final ServerSecurityManager serverSecurityManager;
     private final ControlPoint controlPoint;
     private final AtomicBoolean exceptionLoggingEnabled;
-
-    private final PrivilegedAction<Principal> getCaller = new PrivilegedAction<Principal>() {
-        @Override
-        public Principal run() {
-            return serverSecurityManager.getCallerPrincipal();
-        }
-    };
 
     private final SecurityDomain securityDomain;
     private final boolean enableJacc;
@@ -185,7 +176,6 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.ejbSuspendHandlerService = ejbComponentCreateService.getEJBSuspendHandler();
         this.transactionSynchronizationRegistry = ejbComponentCreateService.getTransactionSynchronizationRegistry();
         this.userTransaction = ejbComponentCreateService.getUserTransaction();
-        this.serverSecurityManager = ejbComponentCreateService.getServerSecurityManager();
         this.controlPoint = ejbComponentCreateService.getControlPoint();
         this.exceptionLoggingEnabled = ejbComponentCreateService.getExceptionLoggingEnabled();
 
@@ -281,11 +271,10 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     public Principal getCallerPrincipal() {
         if (isSecurityDomainKnown()) {
             return getCallerSecurityIdentity().getPrincipal();
-        } else if (WildFlySecurityManager.isChecking()) {
-            return WildFlySecurityManager.doUnchecked(getCaller);
-        } else {
-            return this.serverSecurityManager.getCallerPrincipal();
         }
+
+        // TODO Should this return a Principal when security is not activated.
+        return null;
     }
 
     public SecurityIdentity getIncomingRunAsIdentity() {
@@ -374,10 +363,6 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         }
     }
 
-    public ServerSecurityManager getSecurityManager() {
-        return this.serverSecurityManager;
-    }
-
     public TimerService getTimerService() throws IllegalStateException {
         return timerService;
     }
@@ -457,11 +442,10 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
             } else {
                 return checkCallerSecurityIdentityRole(roleName);
             }
-        } else if (WildFlySecurityManager.isChecking()) {
-            return WildFlySecurityManager.doUnchecked((PrivilegedAction<Boolean>) () -> serverSecurityManager.isCallerInRole(getComponentName(), policyContextID, securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName));
-        } else {
-            return this.serverSecurityManager.isCallerInRole(getComponentName(), policyContextID, securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
         }
+
+        // No security, no role membership.
+        return false;
     }
 
     public boolean isStatisticsEnabled() {
