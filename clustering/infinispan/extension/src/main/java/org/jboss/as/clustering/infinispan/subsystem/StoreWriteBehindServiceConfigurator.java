@@ -45,7 +45,7 @@ public class StoreWriteBehindServiceConfigurator extends ComponentServiceConfigu
 
     @Override
     public AsyncStoreConfiguration get() {
-        return new ConfigurationBuilder().persistence().addSingleFileStore().async()
+        return new ConfigurationBuilder().persistence().addSoftIndexFileStore().async()
                 .enable()
                 .modificationQueueSize(this.queueSize)
                 .create();
