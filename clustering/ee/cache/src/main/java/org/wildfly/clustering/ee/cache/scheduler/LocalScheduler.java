@@ -55,6 +55,8 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 
     public LocalScheduler(ScheduledEntries<T, Instant> entries, Predicate<T> task, Duration closeTimeout) {
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, new DefaultThreadFactory(this.getClass()));
+        executor.setKeepAliveTime(1L, TimeUnit.MINUTES);
+        executor.allowCoreThreadTimeOut(true);
         executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
         executor.setRemoveOnCancelPolicy(entries.isSorted());
         this.executor = executor;
