@@ -18,14 +18,6 @@ import org.testcontainers.DockerClientFactory;
 public class AssumeTestGroupUtil {
 
     /**
-     * Assume for test failures when running with Elytron profile enabled. It skips test in case the {@code '-Delytron'} Maven
-     * argument is used (for Elytron profile activation). For legacy-security only tests.
-     */
-    public static void assumeElytronProfileEnabled() {
-        assumeCondition("Tests failing in Elytron profile are disabled", () -> System.getProperty("elytron") == null);
-    }
-
-    /**
      * Assume for tests that fail when the security manager is enabled. This should be used sparingly and issues should
      * be filed for failing tests so a proper fix can be done.
      * <p>
