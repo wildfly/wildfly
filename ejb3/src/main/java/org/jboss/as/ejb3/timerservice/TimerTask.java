@@ -21,11 +21,11 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
+
 import java.util.Date;
 
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
 
 /**
  * A timer task which will be invoked at appropriate intervals based on a {@link javax.ejb.Timer}
@@ -44,7 +44,7 @@ import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
  * @author Wolf-Dieter Fink
  * @version $Revision: $
  */
-public class TimerTask<T extends TimerImpl> implements Runnable {
+public class TimerTask implements Runnable {
 
     protected final String timedObjectId;
     protected final String timerId;
@@ -61,9 +61,9 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
      * Creates a {@link TimerTask} for the timer
      *
      * @param timer The timer for which this task is being created.
-     * @throws IllegalArgumentException If the passed timer is null
+     * @throws IllegalStateException If the passed timer is null
      */
-    public TimerTask(T timer) {
+    public TimerTask(TimerImpl timer) {
         if (timer == null) {
             throw EJB3_TIMER_LOGGER.timerIsNull();
         }

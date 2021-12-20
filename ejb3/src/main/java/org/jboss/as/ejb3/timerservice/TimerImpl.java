@@ -522,8 +522,8 @@ public class TimerImpl implements Timer {
      * @return
      * @see TimerTask
      */
-    protected TimerTask<?> getTimerTask() {
-        return new TimerTask<TimerImpl>(this);
+    protected TimerTask getTimerTask() {
+        return new TimerTask(this);
     }
 
     public void lock() throws InterruptedException {
