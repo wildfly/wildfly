@@ -1,15 +1,13 @@
-[[Jakarta_Enterprise_Beans_Clustered_Database_Timers]]
-= Jakarta Enterprise Beans 3 Clustered Database Timers
+[[Jakarta_Enterprise_Beans_Database_Persistent_Timers]]
+= Jakarta Enterprise Beans 3 Database Persistent Timers
 
 [abstract]
 
-WildFly now supports clustered database backed timers. The clustering
+WildFly now supports persistent timers backed by a shared database. High-availability
 support is provided through the database, and as a result it is not
 intended to be a super high performance solution that supports thousands
 of timers going off a second, however properly tuned it should provide
 sufficient performance for most use cases.
-
-Note that database timers can also be used in non-clustered mode.
 
 [WARNING]
 
