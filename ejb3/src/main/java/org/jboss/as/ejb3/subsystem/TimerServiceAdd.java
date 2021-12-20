@@ -59,11 +59,12 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
 
-        final String threadPoolName = TimerServiceResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
+        final String threadPoolName = TimerServiceResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asStringOrNull();
 
         TimerServiceMetaData defaultMetaData = new TimerServiceMetaData();
         defaultMetaData.setDataStoreName(TimerServiceResourceDefinition.DEFAULT_DATA_STORE.resolveModelAttribute(context, model).asStringOrNull());
         defaultMetaData.setPersistentTimerManagementProvider(TimerServiceResourceDefinition.DEFAULT_PERSISTENT_TIMER_MANAGEMENT.resolveModelAttribute(context, model).asStringOrNull());
+        defaultMetaData.setTransientTimerManagementProvider(TimerServiceResourceDefinition.DEFAULT_TRANSIENT_TIMER_MANAGEMENT.resolveModelAttribute(context, model).asStringOrNull());
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
@@ -77,7 +78,9 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        context.getCapabilityServiceTarget().addCapability(TimerServiceResourceDefinition.TIMER_SERVICE_CAPABILITY, new TimerValueService()).install();
+        if (threadPoolName != null) {
+            context.getCapabilityServiceTarget().addCapability(TimerServiceResourceDefinition.TIMER_SERVICE_CAPABILITY, new TimerValueService()).install();
+        }
     }
 
     private static final class TimerValueService implements Service<Timer> {

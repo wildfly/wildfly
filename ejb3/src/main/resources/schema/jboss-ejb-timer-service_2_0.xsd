@@ -36,18 +36,25 @@
     <xs:complexType name="timer-serviceType">
         <xs:complexContent>
             <xs:extension base="javaee:jboss-assembly-descriptor-bean-entryType">
-                <xs:choice>
-                    <xs:element name="persistence-store-name" type="xs:string">
-                        <xs:annotation>
-                            <xs:documentation>Identifies the name of the data store to use for persistent timers.</xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                    <xs:element name="persistent-timer-management" type="xs:string">
+                <xs:all>
+                    <xs:choice minOccurs="0">
+                        <xs:element name="persistence-store-name" type="xs:string">
+                            <xs:annotation>
+                                <xs:documentation>Identifies the name of the data store to use for persistent timers.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="persistent-timer-management" type="xs:string">
+                            <xs:annotation>
+                                <xs:documentation>Identifies the timer-management provider to use for persistent timers.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:choice>
+                    <xs:element name="transient-timer-management" type="xs:string" minOccurs="0">
                         <xs:annotation>
                             <xs:documentation>Identifies the timer-management provider to use for persistent timers.</xs:documentation>
                         </xs:annotation>
                     </xs:element>
-                </xs:choice>
+                </xs:all>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

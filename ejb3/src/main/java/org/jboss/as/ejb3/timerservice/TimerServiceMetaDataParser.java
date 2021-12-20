@@ -65,6 +65,11 @@ public class TimerServiceMetaDataParser extends AbstractEJBBoundMetaDataParser<T
                         metaData.setPersistentTimerManagementProvider(getElementText(reader, propertyReplacer));
                         break;
                     }
+                case "transient-timer-management":
+                    if (this.schema.since(TimerServiceMetaDataSchema.VERSION_2_0)) {
+                        metaData.setTransientTimerManagementProvider(getElementText(reader, propertyReplacer));
+                        break;
+                    }
                 default:
                     throw unexpectedElement(reader);
             }

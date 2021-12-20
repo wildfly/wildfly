@@ -72,9 +72,9 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
         subsystemBuilder.rejectChildResource(EJB3SubsystemModel.DISTRIBUTABLE_CACHE_PATH);
 
         subsystemBuilder.addChildResource(EJB3SubsystemModel.TIMER_SERVICE_PATH).getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, TimerServiceResourceDefinition.DEFAULT_PERSISTENT_TIMER_MANAGEMENT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, TimerServiceResourceDefinition.DEFAULT_PERSISTENT_TIMER_MANAGEMENT)
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, TimerServiceResourceDefinition.DEFAULT_DATA_STORE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, TimerServiceResourceDefinition.DEFAULT_PERSISTENT_TIMER_MANAGEMENT, TimerServiceResourceDefinition.DEFAULT_TRANSIENT_TIMER_MANAGEMENT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, TimerServiceResourceDefinition.DEFAULT_PERSISTENT_TIMER_MANAGEMENT, TimerServiceResourceDefinition.DEFAULT_TRANSIENT_TIMER_MANAGEMENT)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, TimerServiceResourceDefinition.THREAD_POOL_NAME, TimerServiceResourceDefinition.DEFAULT_DATA_STORE)
                 .end();
     }
 }

@@ -17,6 +17,12 @@
             <param name="cache-container" value="ejb"/>
             <param name="max-active-timers" value="10000"/>
         </feature>
+        <feature spec="subsystem.distributable-ejb.infinispan-timer-management">
+            <param name="infinispan-timer-management" value="transient"/>
+            <param name="cache-container" value="ejb"/>
+            <param name="cache" value="transient"/>
+            <param name="max-active-timers" value="10000"/>
+        </feature>
     </feature>
 
 </feature-group-spec>

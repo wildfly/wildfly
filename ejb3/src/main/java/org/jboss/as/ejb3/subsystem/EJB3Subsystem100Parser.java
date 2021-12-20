@@ -157,6 +157,9 @@ public class EJB3Subsystem100Parser extends EJB3Subsystem90Parser {
                 case DEFAULT_PERSISTENT_TIMER_MANAGEMENT:
                     TimerServiceResourceDefinition.DEFAULT_PERSISTENT_TIMER_MANAGEMENT.parseAndSetParameter(value, operation, reader);
                     break;
+                case DEFAULT_TRANSIENT_TIMER_MANAGEMENT:
+                    TimerServiceResourceDefinition.DEFAULT_TRANSIENT_TIMER_MANAGEMENT.parseAndSetParameter(value, operation, reader);
+                    break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }

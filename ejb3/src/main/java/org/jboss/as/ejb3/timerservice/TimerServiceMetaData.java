@@ -34,6 +34,7 @@ public class TimerServiceMetaData extends AbstractEJBBoundMetaData {
 
     private String dataStoreName;
     private String persistentProvider;
+    private String transientProvider;
 
     public String getDataStoreName() {
         return dataStoreName;
@@ -51,8 +52,16 @@ public class TimerServiceMetaData extends AbstractEJBBoundMetaData {
         this.persistentProvider = persistentProvider;
     }
 
+    public String getTransientTimerManagementProvider() {
+        return this.transientProvider;
+    }
+
+    public void setTransientTimerManagementProvider(String transientProvider) {
+        this.transientProvider = transientProvider;
+    }
+
     @Override
     public String toString() {
-        return String.format("data-store=%s, persistent-provider=%s", this.dataStoreName, this.persistentProvider);
+        return String.format("data-store=%s, persistent-provider=%s, transient-provider=%s", this.dataStoreName, this.persistentProvider, this.transientProvider);
     }
 }

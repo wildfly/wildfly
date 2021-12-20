@@ -37,7 +37,7 @@
         <passivation-store name="infinispan" cache-container="ejb" bean-cache="default" max-size="10"/>
     </passivation-stores>
     <async thread-pool-name="default"/>
-    <timer-service thread-pool-name="default" default-persistent-timer-management="persistent">
+    <timer-service default-transient-timer-management="transient" default-persistent-timer-management="persistent">
         <data-stores>
             <file-data-store name="file-data-store" path="${prop.timer-service.path:timer-service-data}" relative-to="jboss.server.data.dir"/>
             <database-data-store name="database-data-store" datasource-jndi-name="${prop.timer-service-database:java:global/DataSource}" database="hsql" partition="mypartition" allow-execution="true" refresh-interval="100"/>

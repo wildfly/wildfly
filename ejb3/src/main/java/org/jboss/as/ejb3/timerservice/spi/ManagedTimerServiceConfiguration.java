@@ -52,11 +52,21 @@ public interface ManagedTimerServiceConfiguration extends TimerServiceApplicable
             public boolean test(TimerConfig config) {
                 return !config.isPersistent();
             }
+
+            @Override
+            public ServiceName apply(ServiceName name) {
+                return name.append("transient");
+            }
         },
         PERSISTENT() {
             @Override
             public boolean test(TimerConfig config) {
                 return config.isPersistent();
+            }
+
+            @Override
+            public ServiceName apply(ServiceName name) {
+                return name.append("persistent");
             }
         },
         ;

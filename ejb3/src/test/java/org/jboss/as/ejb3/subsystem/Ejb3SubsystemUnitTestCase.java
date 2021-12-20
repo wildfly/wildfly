@@ -56,6 +56,7 @@ import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     private static final AdditionalInitialization ADDITIONAL_INITIALIZATION = AdditionalInitialization.withCapabilities(
+            TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER.resolve("transient"),
             TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER.resolve("persistent"),
             SingletonDefaultRequirement.POLICY.getName()
             );

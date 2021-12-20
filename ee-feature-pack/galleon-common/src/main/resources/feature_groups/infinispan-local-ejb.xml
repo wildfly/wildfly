@@ -37,6 +37,16 @@
                     <unset param="relative-to"/>
                 </feature>
             </feature>
+            <feature spec="subsystem.infinispan.cache-container.local-cache">
+                <param name="local-cache" value="transient"/>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="interval" value="0"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.store.file">
+                    <unset param="relative-to"/>
+                    <param name="purge" value="true"/>
+                </feature>
+            </feature>
         </feature>
     </feature>
 

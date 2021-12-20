@@ -38,6 +38,7 @@ import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.timer.TimerServiceRequirement;
 
+import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -59,12 +60,13 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     .build();
 
     public static final String TIMER_SERVICE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service";
-    public static final RuntimeCapability<Void> TIMER_SERVICE_CAPABILITY = RuntimeCapability.Builder.of(TIMER_SERVICE_CAPABILITY_NAME).build();
+    public static final RuntimeCapability<Void> TIMER_SERVICE_CAPABILITY = RuntimeCapability.Builder.of(TIMER_SERVICE_CAPABILITY_NAME, Timer.class).build();
 
     static final SimpleAttributeDefinition THREAD_POOL_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.THREAD_POOL_NAME, ModelType.STRING)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setRequired(true)
+                    .setAlternatives(EJB3SubsystemModel.DEFAULT_TRANSIENT_TIMER_MANAGEMENT)
                     .setCapabilityReference(THREAD_POOL_CAPABILITY_NAME, TIMER_SERVICE_CAPABILITY)
                     .build();
 
@@ -84,7 +86,15 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     .setCapabilityReference(TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER.getName(), TIMER_SERVICE_CAPABILITY)
                     .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { THREAD_POOL_NAME, DEFAULT_DATA_STORE, DEFAULT_PERSISTENT_TIMER_MANAGEMENT };
+    static final SimpleAttributeDefinition DEFAULT_TRANSIENT_TIMER_MANAGEMENT =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_TRANSIENT_TIMER_MANAGEMENT, ModelType.STRING)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setRequired(true)
+                    .setAlternatives(EJB3SubsystemModel.THREAD_POOL_NAME)
+                    .setCapabilityReference(TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER.getName(), TIMER_SERVICE_CAPABILITY)
+                    .build();
+
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { THREAD_POOL_NAME, DEFAULT_DATA_STORE, DEFAULT_PERSISTENT_TIMER_MANAGEMENT, DEFAULT_TRANSIENT_TIMER_MANAGEMENT };
 
     private final PathManager pathManager;
 

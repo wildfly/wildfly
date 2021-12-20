@@ -113,6 +113,13 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
             List<TimerServiceMetaData> timerService = ejbJarMetaData.getAssemblyDescriptor().getAny(TimerServiceMetaData.class);
             if (timerService != null) {
                 for (TimerServiceMetaData metaData : timerService) {
+                    if ((metaData.getDataStoreName() == null) && (metaData.getPersistentTimerManagementProvider() == null)) {
+                        metaData.setDataStoreName(this.defaultMetaData.getDataStoreName());
+                        metaData.setPersistentTimerManagementProvider(this.defaultMetaData.getPersistentTimerManagementProvider());
+                    }
+                    if (metaData.getTransientTimerManagementProvider() == null) {
+                        metaData.setTransientTimerManagementProvider(this.defaultMetaData.getTransientTimerManagementProvider());
+                    }
                     String name = metaData.getEjbName().equals("*") ? null : metaData.getEjbName();
                     timerServiceMetaData.put(name, metaData);
                 }
@@ -170,48 +177,22 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
                             TimerServiceMetaData componentMetaData = timerServiceMetaData.getOrDefault(ejbComponentDescription.getEJBName(), defaultMetaData);
 
-                            if (componentMetaData.getDataStoreName() != null) {
+                            if ((threadPoolName != null) && (componentMetaData.getDataStoreName() != null)) {
+                                // Install in-memory timer service factory w/persistence support
                                 new TimerServiceFactoryServiceConfigurator(serviceName, factoryConfiguration, threadPoolName, componentMetaData.getDataStoreName()).configure(capabilityServiceSupport).build(target).install();
                             } else {
+                                // Use composite timer service, with separate transient vs persistent implementations.
                                 ServiceName transientServiceName = TimerFilter.TRANSIENT.apply(serviceName);
                                 ServiceName persistentServiceName = TimerFilter.PERSISTENT.apply(serviceName);
 
-                                new TimerServiceFactoryServiceConfigurator(transientServiceName, factoryConfiguration, threadPoolName, null).filter(TimerFilter.TRANSIENT).configure(capabilityServiceSupport).build(target).install();
+                                if (componentMetaData.getTransientTimerManagementProvider() != null) {
+                                    installDistributableTimerServiceFactory(phaseContext, transientServiceName, componentMetaData.getTransientTimerManagementProvider(), factoryConfiguration, componentDescription, TimerFilter.TRANSIENT);
+                                } else {
+                                    // Install in-memory timer service factory w/out persistence support
+                                    new TimerServiceFactoryServiceConfigurator(transientServiceName, factoryConfiguration, threadPoolName, null).filter(TimerFilter.TRANSIENT).configure(capabilityServiceSupport).build(target).install();
+                                }
 
-                                BeanConfiguration beanConfiguration = new BeanConfiguration() {
-                                    @Override
-                                    public String getName() {
-                                        List<String> parts = new ArrayList<>(3);
-                                        if (deploymentUnit.getParent() != null) {
-                                            parts.add(deploymentUnit.getParent().getName());
-                                        }
-                                        parts.add(deploymentUnit.getName());
-                                        parts.add(description.getComponentName());
-                                        return String.join(".", parts);
-                                    }
-
-                                    @Override
-                                    public ServiceName getDeploymentUnitServiceName() {
-                                        return deploymentUnit.getServiceName();
-                                    }
-
-                                    @Override
-                                    public Module getModule() {
-                                        return module;
-                                    }
-                                };
-
-                                String provider = componentMetaData.getPersistentTimerManagementProvider();
-                                ServiceName providerServiceName = TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER.getServiceName(capabilityServiceSupport, provider);
-                                ServiceBuilder<?> builder = target.addService(persistentServiceName.append("installer"));
-                                Supplier<TimerManagementProvider> dependency = builder.requires(providerServiceName);
-                                builder.setInstance(new ChildTargetService(new Consumer<ServiceTarget>() {
-                                    @Override
-                                    public void accept(ServiceTarget target) {
-                                        TimerManagementProvider provider = dependency.get();
-                                        new DistributableTimerServiceFactoryServiceConfigurator(persistentServiceName, factoryConfiguration, beanConfiguration, provider, TimerFilter.PERSISTENT).configure(capabilityServiceSupport).build(target).install();
-                                    }
-                                })).install();
+                                installDistributableTimerServiceFactory(phaseContext, persistentServiceName, componentMetaData.getPersistentTimerManagementProvider(), factoryConfiguration, componentDescription, TimerFilter.PERSISTENT);
 
                                 new CompositeTimerServiceFactoryServiceConfigurator(serviceName, factoryConfiguration).build(target).install();
                             }
@@ -232,5 +213,44 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                 });
             }
         }
+    }
+
+    static void installDistributableTimerServiceFactory(DeploymentPhaseContext context, ServiceName name, String providerName, ManagedTimerServiceFactoryConfiguration factoryConfiguration, ComponentDescription description, TimerFilter filter) {
+        DeploymentUnit unit = context.getDeploymentUnit();
+        BeanConfiguration beanConfiguration = new BeanConfiguration() {
+            @Override
+            public String getName() {
+                List<String> parts = new ArrayList<>(3);
+                if (unit.getParent() != null) {
+                    parts.add(unit.getParent().getName());
+                }
+                parts.add(unit.getName());
+                parts.add(description.getComponentName());
+                parts.add(filter.name());
+                return String.join(".", parts);
+            }
+
+            @Override
+            public ServiceName getDeploymentUnitServiceName() {
+                return unit.getServiceName();
+            }
+
+            @Override
+            public Module getModule() {
+                return unit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+            }
+        };
+
+        CapabilityServiceSupport support = unit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
+        ServiceName providerServiceName = TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER.getServiceName(support, providerName);
+        ServiceBuilder<?> builder = context.getServiceTarget().addService(name.append("installer"));
+        Supplier<TimerManagementProvider> dependency = builder.requires(providerServiceName);
+        builder.setInstance(new ChildTargetService(new Consumer<ServiceTarget>() {
+            @Override
+            public void accept(ServiceTarget target) {
+                TimerManagementProvider provider = dependency.get();
+                new DistributableTimerServiceFactoryServiceConfigurator(name, factoryConfiguration, beanConfiguration, provider, filter).configure(support).build(target).install();
+            }
+        })).install();
     }
 }

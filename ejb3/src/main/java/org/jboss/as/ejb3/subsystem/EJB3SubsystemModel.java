@@ -88,6 +88,7 @@ public interface EJB3SubsystemModel {
     String DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT = "default-stateful-bean-session-timeout";
     String DEFAULT_DATA_STORE = "default-data-store";
     String DEFAULT_PERSISTENT_TIMER_MANAGEMENT = "default-persistent-timer-management";
+    String DEFAULT_TRANSIENT_TIMER_MANAGEMENT = "default-transient-timer-management";
 
     String REMOTE = "remote";
     String SERVICE = "service";
