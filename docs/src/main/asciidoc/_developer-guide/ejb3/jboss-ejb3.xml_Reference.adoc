@@ -137,3 +137,19 @@ defined in the server configuration (i.e. `standalone.xml` or
 This namespace is deprecated and as of WildFly {wildflyVersion} its use has no effect.
 The clustering behavior of Jakarta Enterprise Beans are determined by the profile in use on
 the server.
+
+[[timer-service-namespace]]
+==== The timer-service namespace urn:timer-service:2.0
+
+This allows you to customize the TimerService behavior for a given EJB.
+
+e.g.
+
+[source,xml,options="nowrap"]
+----
+<t:timer-service>
+    <ejb-name>*</ejb-name>
+    <t:persistent-timer-management>persistent</t:persistent-timer-management>
+    <t:transient-timer-management>transient</t:transient-timer-management>
+</t:timer-service>
+----

@@ -1,0 +1,52 @@
+[[Jakarta_Enterprise_Beans_Distributed_Timers]]
+= Jakarta Enterprise Beans Distributed Timers
+
+[abstract]
+
+WildFly now supports distributed timers backed by an embedded Infinispan cache.
+The Infinispan cache not only provides an HA solution for persistent timer metadata, in the case of a server crash or restart,
+but also distributes timer execution evenly between cluster members.
+Consequently, this solution generally provides better performance and scalability than the existing database solution.
+
+This feature can also be used to provide file, database, or remote Infinispan cluster persistence of timer metadata for single server architectures, effectively replacing the existing file-store and database-store TimerService facilities.
+Additionally, this feature can also provide passivation support for non-persistent timers to allow the creation of large number of transient timers without the risk of running out of memory.
+
+[[setup]]
+== Setup
+
+Distributed timer behavior is configured via the distributable-ejb subsystem, and can be configured globally via the ejb3 subsysetem or customized per EJB via the `timer-service` EJB deployment descriptor namespace.
+To use distributed timers, one must first disable the existing data store mechanism, and then specify the timer management to use for persistent timers, which references a timer management resource from the distributable-ejb subsystem.
+
+[source,options="nowrap"]
+----
+batch
+ /subsystem=ejb3/service=timer-service:undefine-attribute(name=default-data-store)
+ /subsystem=ejb3/service=timer-service:write-attribute(name=default-persistent-timer-management, value=persistent)
+run-batch
+----
+
+To use distributable timer management for transient (i.e. non-persistent) timers, remove the thread-pool-name attribute, and then specify the timer management to use for transient timers, which references a timer management resource from the distributable-ejb subsystem.
+
+[source,options="nowrap"]
+----
+batch
+ /subsystem=ejb3/service=timer-service:undefine-attribute(name=thread-pool)
+ /subsystem=ejb3/service=timer-service:write-attribute(name=default-transient-timer-management, value=transient)
+run-batch
+----
+
+Alternatively, distributable timer management can be enabled via the timer-service deployment descriptor namespace, either globally, or per EJB.
+e.g.
+
+[source,xml]
+----
+<t:timer-service>
+    <ejb-name>*</ejb-name>
+    <t:persistent-timer-management>distributed</t:persistent-timer-management>
+    <t:transient-timer-management>transient</t:transient-timer-management>
+</t:timer-service>
+----
+
+The `<persistent-timer-management/>` and `<transient-timer-management/>` elements above each reference a named timer management resource defined within the distributable-ejb subsystem.
+
+To customize distributed EJB timer behavior, please refer to the link:High_Availability_Guide{outfilesuffix}#timer-management[distributable-ejb subsystem documentation].
