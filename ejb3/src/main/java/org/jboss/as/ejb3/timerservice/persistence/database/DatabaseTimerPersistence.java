@@ -721,7 +721,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         builder.setRepeatInterval(resultSet.getLong(4));
         builder.setNextDate(resultSet.getTimestamp(5));
         builder.setPreviousRun(resultSet.getTimestamp(6));
-        builder.setPrimaryKey(deSerialize(resultSet.getString(7)));
+//        builder.setPrimaryKey(deSerialize(resultSet.getString(7)));
         builder.setInfo((Serializable) deSerialize(resultSet.getString(8)));
         builder.setTimerState(timerState != null ? timerState : TimerState.valueOf(resultSet.getString(9)));
         builder.setPersistent(true);
@@ -748,7 +748,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         statement.setLong(4, timerEntity.getInterval());
         statement.setTimestamp(5, timestamp(timerEntity.getNextExpiration()));
         statement.setTimestamp(6, timestamp(timerEntity.getPreviousRun()));
-        statement.setString(7, serialize((Serializable) timerEntity.getPrimaryKey()));
+        statement.setString(7, null);
         statement.setString(8, serialize(timerEntity.getTimerInfo()));
         statement.setString(9, timerEntity.getState().name());
 

@@ -389,14 +389,12 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public Collection<Timer> getTimers() throws IllegalStateException, EJBException {
         assertTimerServiceState();
-        Object pk = currentPrimaryKey();
         // get all active timers for this timerservice
         final Collection<TimerImpl> values = this.timers.values();
         final List<Timer> activeTimers = new ArrayList<>(values.size() + 10);
         for (final TimerImpl timer : values) {
             // Less disruptive way to get WFLY-8457 fixed.
-            if ((timer.isActive() || timer.getState() == TimerState.ACTIVE)
-                    && (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk))) {
+            if (timer.isActive() || timer.getState() == TimerState.ACTIVE) {
                 activeTimers.add(timer);
             }
         }
@@ -404,8 +402,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         // get all active timers which are persistent, but haven't yet been
         // persisted (waiting for tx to complete) that are in the current transaction
         for (final TimerImpl timer : getWaitingOnTxCompletionTimers().values()) {
-            if (timer.isActive()
-                    && (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk))) {
+            if (timer.isActive()) {
                 activeTimers.add(timer);
             }
         }
@@ -472,7 +469,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 .setRepeatInterval(intervalDuration)
                 .setInfo(info)
                 .setPersistent(persistent)
-                .setPrimaryKey(currentPrimaryKey())
                 .setTimerState(TimerState.CREATED)
                 .setTimedObjectId(getInvoker().getTimedObjectId())
                 .build(this);
@@ -484,13 +480,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         this.startTimer(timer);
         // return the newly created timer
         return timer;
-    }
-
-    /**
-     * @return The primary key of the current Jakarta Enterprise Beans, or null if not applicable
-     */
-    private Object currentPrimaryKey() {
-        return null;
     }
 
     /**
@@ -516,7 +505,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 .setTimerState(TimerState.CREATED)
                 .setId(uuid.toString())
                 .setPersistent(persistent)
-                .setPrimaryKey(currentPrimaryKey())
                 .setTimedObjectId(getInvoker().getTimedObjectId())
                 .setInfo(info)
                 .setNewTimer(true)

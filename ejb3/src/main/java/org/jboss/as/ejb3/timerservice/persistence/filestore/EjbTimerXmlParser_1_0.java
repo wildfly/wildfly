@@ -32,7 +32,6 @@ import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPe
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.NEXT_DATE;
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.PARAMETER;
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.PREVIOUS_RUN;
-import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.PRIMARY_KEY;
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.REPEAT_INTERVAL;
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.SCHEDULE_EXPR_DAY_OF_MONTH;
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.SCHEDULE_EXPR_DAY_OF_WEEK;
@@ -155,9 +154,6 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
                         if (loadableElements.info != null) {
                             builder.setInfo((Serializable) deserialize(loadableElements.info));
                         }
-                        if (loadableElements.primaryKey != null) {
-                            builder.setPrimaryKey(deserialize(loadableElements.primaryKey));
-                        }
                         timers.add(builder.build(timerService));
                     } catch (Exception e) {
                         EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(builder.getTimedObjectId(), builder.getId(), e);
@@ -189,11 +185,6 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
         switch (reader.getName().getLocalPart()) {
             case INFO: {
                 builder.info = reader.getElementText();
-                handled = true;
-                break;
-            }
-            case PRIMARY_KEY: {
-                builder.primaryKey = reader.getElementText();
                 handled = true;
                 break;
             }
@@ -272,9 +263,6 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
                     try {
                         if (loadableElements.info != null) {
                             builder.setInfo((Serializable) deserialize(loadableElements.info));
-                        }
-                        if (loadableElements.primaryKey != null) {
-                            builder.setPrimaryKey(deserialize(loadableElements.primaryKey));
                         }
                         if (loadableElements.methodName != null) {
                             Method timeoutMethod = CalendarTimer.getTimeoutMethod(new TimeoutMethod(loadableElements.className, loadableElements.methodName, loadableElements.params.toArray(new String[loadableElements.params.size()])), classLoader);
@@ -420,7 +408,6 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
 
     private static class LoadableElements {
         String info;
-        String primaryKey;
         String className;
         String methodName;
         final List<String> params = new ArrayList<>();

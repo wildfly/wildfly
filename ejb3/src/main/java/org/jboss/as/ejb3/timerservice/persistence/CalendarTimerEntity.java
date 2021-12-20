@@ -23,11 +23,9 @@ package org.jboss.as.ejb3.timerservice.persistence;
 
 import java.lang.reflect.Method;
 import java.util.Date;
-
 import javax.ejb.ScheduleExpression;
 
 import org.jboss.as.ejb3.timerservice.CalendarTimer;
-import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 
 /**
  * DO NOT MODIFY THIS CLASS
@@ -39,10 +37,7 @@ import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
  * @author Stuart Douglas
  */
 public class CalendarTimerEntity extends TimerEntity {
-
-    private transient ScheduleExpression scheduleExpression;
-
-    private transient CalendarBasedTimeout calendarTimeout;
+    private static final long serialVersionUID = -8641876649577480976L;
 
     private final String scheduleExprSecond;
 
@@ -70,7 +65,6 @@ public class CalendarTimerEntity extends TimerEntity {
 
     public CalendarTimerEntity(CalendarTimer calendarTimer) {
         super(calendarTimer);
-        this.scheduleExpression = calendarTimer.getScheduleExpression();
         this.autoTimer = calendarTimer.isAutoTimer();
         if (calendarTimer.isAutoTimer()) {
             Method method = calendarTimer.getTimeoutMethod();
@@ -84,40 +78,18 @@ public class CalendarTimerEntity extends TimerEntity {
             this.timeoutMethod = null;
         }
 
-        this.scheduleExprSecond = this.scheduleExpression.getSecond();
-        this.scheduleExprMinute = this.scheduleExpression.getMinute();
-        this.scheduleExprHour = this.scheduleExpression.getHour();
-        this.scheduleExprDayOfMonth = this.scheduleExpression.getDayOfMonth();
-        this.scheduleExprMonth = this.scheduleExpression.getMonth();
-        this.scheduleExprDayOfWeek = this.scheduleExpression.getDayOfWeek();
-        this.scheduleExprYear = this.scheduleExpression.getYear();
-        this.scheduleExprStartDate = this.scheduleExpression.getStart();
-        this.scheduleExprEndDate = this.scheduleExpression.getEnd();
-        this.scheduleExprTimezone = this.scheduleExpression.getTimezone();
+        ScheduleExpression scheduleExpression = calendarTimer.getScheduleExpression();
+        this.scheduleExprSecond = scheduleExpression.getSecond();
+        this.scheduleExprMinute = scheduleExpression.getMinute();
+        this.scheduleExprHour = scheduleExpression.getHour();
+        this.scheduleExprDayOfMonth = scheduleExpression.getDayOfMonth();
+        this.scheduleExprMonth = scheduleExpression.getMonth();
+        this.scheduleExprDayOfWeek = scheduleExpression.getDayOfWeek();
+        this.scheduleExprYear = scheduleExpression.getYear();
+        this.scheduleExprStartDate = scheduleExpression.getStart();
+        this.scheduleExprEndDate = scheduleExpression.getEnd();
+        this.scheduleExprTimezone = scheduleExpression.getTimezone();
 
-    }
-
-    @Override
-    public boolean isCalendarTimer() {
-        return true;
-    }
-
-    public ScheduleExpression getScheduleExpression() {
-        if (this.scheduleExpression == null) {
-            this.scheduleExpression = new ScheduleExpression();
-            this.scheduleExpression.second(this.scheduleExprSecond).minute(this.scheduleExprMinute).hour(this.scheduleExprHour).dayOfWeek(this.scheduleExprDayOfWeek)
-                    .dayOfMonth(this.scheduleExprDayOfMonth).month(this.scheduleExprMonth).year(this.scheduleExprYear).timezone(this.scheduleExprTimezone)
-                    .start(this.scheduleExprStartDate).end(this.scheduleExprEndDate);
-
-        }
-        return scheduleExpression;
-    }
-
-    public CalendarBasedTimeout getCalendarTimeout() {
-        if (this.calendarTimeout == null) {
-            this.calendarTimeout = new CalendarBasedTimeout(this.getScheduleExpression());
-        }
-        return this.calendarTimeout;
     }
 
     public String getSecond() {
