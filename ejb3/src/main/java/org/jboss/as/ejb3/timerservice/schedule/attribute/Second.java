@@ -95,7 +95,7 @@ public class Second extends IntegerBasedExpression {
             return 0;
         }
         if (this.absoluteValues.isEmpty()) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.invalidExpressionSeconds(this.origValue);
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue(Second.class.getSimpleName(), this.origValue);
         }
         return this.absoluteValues.first();
     }
