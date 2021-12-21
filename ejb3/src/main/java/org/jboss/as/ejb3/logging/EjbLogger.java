@@ -1624,13 +1624,13 @@ public interface EjbLogger extends BasicLogger {
 //    @Message(id = 252, value = "No current invocation context available")
 //    IllegalStateException noCurrentContextAvailable();
 
-    /**
-     * Creates an exception indicating the method should be overridden
-     *
-     * @return a {@link IllegalStateException} for the error.
-     */
-    @Message(id = 253, value = "Should be overridden")
-    IllegalStateException shouldBeOverridden();
+//    /**
+//     * Creates an exception indicating the method should be overridden
+//     *
+//     * @return a {@link IllegalStateException} for the error.
+//     */
+//    @Message(id = 253, value = "Should be overridden")
+//    IllegalStateException shouldBeOverridden();
 
 //    /**
 //     * Creates an exception indicating could not find session bean with name
