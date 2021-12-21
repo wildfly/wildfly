@@ -132,7 +132,7 @@ public class CalendarTimer extends TimerImpl {
      * @see CalendarTimerTask
      */
     @Override
-    protected TimerTask<?> getTimerTask() {
+    protected CalendarTimerTask getTimerTask() {
         return new CalendarTimerTask(this);
     }
 

@@ -895,7 +895,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 return;
             }
             // create the timer task
-            final TimerTask<?> timerTask = timer.getTimerTask();
+            final TimerTask timerTask = timer.getTimerTask();
             // find out how long is it away from now
             final long currentTime = System.currentTimeMillis();
             long delay = nextExpiration.getTime() - currentTime;
@@ -1251,7 +1251,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
     private class Task extends java.util.TimerTask {
 
-        private final TimerTask<?> delegate;
+        private final TimerTask delegate;
         private final ControlPoint controlPoint;
         /**
          * This is true if a task is queued up to be run by the request controller,
@@ -1259,7 +1259,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
          */
         private volatile boolean queued = false;
 
-        public Task(final TimerTask<?> delegate, ControlPoint controlPoint) {
+        public Task(final TimerTask delegate, ControlPoint controlPoint) {
             this.delegate = delegate;
             this.controlPoint = controlPoint;
         }
