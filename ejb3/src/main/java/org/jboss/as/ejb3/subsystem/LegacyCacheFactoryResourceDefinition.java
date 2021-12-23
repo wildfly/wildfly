@@ -47,13 +47,11 @@ public class LegacyCacheFactoryResourceDefinition extends SimpleResourceDefiniti
 
     // capabilities not required as although we install CacheFactoryBuilder services, these do not depend on any defined clustering resources
 
-    @Deprecated
     public static final StringListAttributeDefinition ALIASES = new StringListAttributeDefinition.Builder(EJB3SubsystemModel.ALIASES)
             .setXmlName(EJB3SubsystemXMLAttribute.ALIASES.getLocalName())
             .setRequired(false)
             .build();
 
-    @Deprecated
     public static final SimpleAttributeDefinition PASSIVATION_STORE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PASSIVATION_STORE, ModelType.STRING, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.PASSIVATION_STORE_REF.getLocalName())
@@ -65,7 +63,6 @@ public class LegacyCacheFactoryResourceDefinition extends SimpleResourceDefiniti
     private static final LegacyCacheFactoryAdd ADD_HANDLER = new LegacyCacheFactoryAdd(ATTRIBUTES);
     private static final LegacyCacheFactoryRemove REMOVE_HANDLER = new LegacyCacheFactoryRemove(ADD_HANDLER);
 
-    @Deprecated
     public static final LegacyCacheFactoryResourceDefinition INSTANCE = new LegacyCacheFactoryResourceDefinition();
 
     private LegacyCacheFactoryResourceDefinition() {
@@ -73,6 +70,7 @@ public class LegacyCacheFactoryResourceDefinition extends SimpleResourceDefiniti
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.CACHE),
                 ADD_HANDLER, REMOVE_HANDLER,
                 OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        this.setDeprecated(EJB3Model.VERSION_10_0_0.getVersion());
     }
 
     @Override
