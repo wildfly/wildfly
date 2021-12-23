@@ -2,19 +2,21 @@
 = Distributable Jakarta Enterprise Beans Applications
 
 Just as with standard web applications, session state of stateful session beans (SFSB) contained in a standard EJB application
-is not guaranteed to survive beyond the lifespan of the EJB container. And, as with standard web applications, there *is* a way to
+is not guaranteed to survive beyond the lifespan of the Jakarta Enterprise Beans container. And, as with standard web applications, there *is* a way to
 allow session state of SFSBs to survive beyond the lifespan of a single server, either through persistence or by replicating state to
 other nodes in the cluster.
 
-However, in the case of EJB applications, whether a bean is distributable or not is determined on a per-bean basis, not
-an application-wide basis as in the case of web applications through the use of the <distributable/> element.
+However, in the case of Jakarta Enterprise Beans applications, whether or not a bean is distributable is determined globally or on a per-bean basis, rather than on
+an application-wide basis as in the case of distributed HttpSessions.
 
-A stateful session bean within an EJB application indicates its intention to be distributable by using a passivation-capable cache factory
-to store its session states. Cache factories were discussed in Section 7.6.5 of link:Admin_Guide{outfilesuffix}[Wildfly Admin Guide].
+A stateful session bean within an Jakarta Enterprise Beans application indicates its intention to be distributable by using a passivation-capable cache
+to store its session state.
+Since Jakarta Enterprise Beans are passivation-capable by default, generally, users already using an HA profile will not need to make any configuration changes.
+Cache factories were discussed in the link:Admin_Guide{outfilesuffix}#distributable-cache[Jakarta Enterprise Beans section of the Wildfly Admin Guide].
 Additionally, the EJB application needs to be deployed into a server which uses an HA (High Availability) server profile, such as standalone-ha.xml
 or standalone-full-ha.xml.
 
-NOTE: More information on passivation-capable beans can be found in the EJB 3.2 specification document, Section 4.6.5.
+NOTE: More information on passivation-capable beans can be found in Section 4.6.5 of the Jakarta Enterprise Beans specification.
 
 In the sections that follow, we discuss some aspects of configuring distributable Jakarta Enterprise Beans applications in Wildfly.
 
@@ -50,7 +52,7 @@ the distributable-ejb subsystem.
 The available bean management provider is:
 
 [[infinispan-bean-management]]
-==== <infinispan-bean-management>
+==== infinispan-bean-management
 
 The infinispan-bean-management provider element represents a bean manager implementation based on an Infinispan cache. The
 attributes for the infinispan-bean-manager element are:
@@ -72,7 +74,7 @@ ad port for each interface on the multi-homed server).
 The available client mappings registry providers are:
 
 [[infinispan-client-mappings-registry]]
-==== <infinispan-client-mappings-registry>
+==== infinispan-client-mappings-registry
 
 The infinispan-client-mappings-registry provider is a provider based on an Infinispan cache and suitable for a clustered server.
 
@@ -80,32 +82,9 @@ The infinispan-client-mappings-registry provider is a provider based on an Infin
 * `cache` specifies the cache and its configured properties used to support the client mappings registry
 
 [[local-client-mappings-registry]]
-==== <local-client-mappings-registry>
+==== local-client-mappings-registry
 
 The client mappings registry provider suitable for a local, non-clustered server.
-
-[[distributable-ejb-default-configurations]]
-=== distributable-ejb subsystem default configurations
-
-The default configurations for the distributable-ejb subsystem are as follows:
-
-HA server profiles (i.e. standalone-ha.xml or standalone-full-ha.xml):
-[source,xml]
-----
-<subsystem xmlns="urn:jboss:domain:distributable-ejb:1.0" default-bean-management="default">
-    <infinispan-bean-management name="default" cache-container="ejb" cache="dist" max-active-beans="10000"/>
-    <infinispan-client-mappings-registry cache-container="ejb" cache="client-mappings"/>
-</subsystem>
-----
-
-non-HA server profiles (i.e. standalone.xml or standalone-full.xml) :
-[source,xml]
-----
-<subsystem xmlns="urn:jboss:domain:distributable-ejb:1.0" default-bean-management="default">
-    <infinispan-bean-management name="default" cache-container="ejb" cache="passivation" max-active-beans="10000"/>
-    <local-client-mappings-registry/>
-</subsystem>
-----
 
 
 [[ejb-timer]]
