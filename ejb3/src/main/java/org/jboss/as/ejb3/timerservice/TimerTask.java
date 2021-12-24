@@ -214,7 +214,7 @@ public class TimerTask implements Runnable {
     protected Date calculateNextTimeout(TimerImpl timer) {
         long intervalDuration = timer.getInterval();
         if (intervalDuration > 0) {
-            long now = new Date().getTime();
+            long now = System.currentTimeMillis();
             long nextExpiration = timer.getNextExpiration().getTime();
             // compute skipped number of interval
             int periods = (int) ((now - nextExpiration) / intervalDuration);
