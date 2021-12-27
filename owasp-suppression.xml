@@ -37,12 +37,14 @@
     </suppress>
 
     <!-- [wildfly] The "exampleDS" that uses H2 is removed during hardening -->
+    <!-- [wildfly] WildFly 21 ships with H2 1.4.197 which is not affected by CVE-2021-23463 - no support for SQLXML, vulnerability occurs in higher versions, up to 2.0.202(excluding) -->
     <suppress>
         <notes><![CDATA[
    file name: h2-1.4.197.jar
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
         <cve>CVE-2018-10054</cve>
+        <cve>CVE-2021-23463</cve>
     </suppress>
 
     <!-- [wildfly] Does not apply to WildFly version 21 -->
