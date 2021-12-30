@@ -21,12 +21,16 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.logging.ControllerLogger;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
@@ -36,14 +40,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collection;
+import java.util.List;
 
 import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
 
 /**
  * Each VertxDefinition represents a Vert.x instance.
  */
-public class VertxResourceDefinition extends PersistentResourceDefinition {
+public class VertxResourceDefinition extends SimpleResourceDefinition {
 
     static final String VERTX_CAPABILITY_NAME = "org.wildfly.extension.vertx";
 
@@ -64,8 +68,33 @@ public class VertxResourceDefinition extends PersistentResourceDefinition {
     }
 
     @Override
-    public Collection<AttributeDefinition> getAttributes() {
-        return VertxAttributes.getSimpleAttributes();
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        super.registerAttributes(resourceRegistration);
+        List<AttributeDefinition> attributes = VertxAttributes.getSimpleAttributes();
+        ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(attributes);
+        for (AttributeDefinition attr : attributes) {
+            if(!attr.getFlags().contains(AttributeAccess.Flag.RESTART_ALL_SERVICES)) {
+                throw ControllerLogger.ROOT_LOGGER.attributeWasNotMarkedAsReloadRequired(attr.getName(), resourceRegistration.getPathAddress());
+            }
+            if (attr.equals(VertxAttributes.JNDI_NAME)) {
+                resourceRegistration.registerReadWriteAttribute(attr, new JndiNameReadAttributeHandler(), handler);
+            } else {
+                resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+            }
+        }
+    }
+
+    static class JndiNameReadAttributeHandler implements OperationStepHandler {
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            String name = context.getCurrentAddressValue();
+            VertxProxy vertxProxy = VertxRegistry.INSTANCE.getVertx(name);
+            if (vertxProxy == null) {
+                throw VERTX_LOGGER.vertxNotFound(name);
+            }
+            context.getResult().set(vertxProxy.getJndiName());
+        }
     }
 
     static class VertxResourceAdd extends AbstractAddStepHandler {

@@ -38,4 +38,9 @@ class VertxRegistry {
     Collection<VertxProxy> listVertx() {
         return this.vertxProxyMap.values();
     }
+
+    VertxProxy getVertx(String name) {
+        return this.vertxProxyMap.get(name);
+    }
+
 }

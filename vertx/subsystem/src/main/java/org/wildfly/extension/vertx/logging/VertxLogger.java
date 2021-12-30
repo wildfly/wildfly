@@ -60,4 +60,7 @@ public interface VertxLogger extends BasicLogger {
     @Message(id = 8, value = "Error when closing the Vertx: %s")
     void errorWhenClosingVertx(String name, @Cause Exception e);
 
+    @Message(id = 9, value = "Vertx: %s was not found.")
+    OperationFailedException vertxNotFound(String name);
+
 }

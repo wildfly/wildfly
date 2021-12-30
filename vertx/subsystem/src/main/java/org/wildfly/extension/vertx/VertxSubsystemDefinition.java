@@ -17,11 +17,9 @@
 package org.wildfly.extension.vertx;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
@@ -33,10 +31,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.vertx.deployment.VertxDependenciesProcessor;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * The root Vertx subsystem resource definition.
  *
@@ -44,7 +38,7 @@ import java.util.List;
  *
  * @author <a href="aoingl@gmail.com">Lin Gao</a>
  */
-public class VertxSubsystemDefinition extends PersistentResourceDefinition {
+public class VertxSubsystemDefinition extends SimpleResourceDefinition {
 
     private static final SimpleOperationDefinition LIST_VERTX_OPERATION = new SimpleOperationDefinitionBuilder("list-vertx",
             VertxSubsystemExtension.getResourceDescriptionResolver(VertxSubsystemExtension.SUBSYSTEM_NAME))
@@ -62,19 +56,15 @@ public class VertxSubsystemDefinition extends PersistentResourceDefinition {
     }
 
     @Override
-    protected List<? extends PersistentResourceDefinition> getChildren() {
-        return Collections.singletonList(VertxResourceDefinition.INSTANCE);
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        resourceRegistration.registerSubModel(VertxResourceDefinition.INSTANCE);
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerOperationHandler(LIST_VERTX_OPERATION, new ListAllVertxOperation());
         super.registerOperations(resourceRegistration);
-    }
-
-    @Override
-    public Collection<AttributeDefinition> getAttributes() {
-        return Collections.emptyList();
     }
 
     static class VertxSubsystemAdd extends AbstractBoottimeAddStepHandler {
