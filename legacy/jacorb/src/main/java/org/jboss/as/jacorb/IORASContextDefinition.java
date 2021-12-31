@@ -54,7 +54,7 @@ public class IORASContextDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_AS_CONTEXT_AUTH_METHOD, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(AuthMethodValues.USERNAME_PASSWORD.toString()))
-                    .setValidator(new EnumValidator<AuthMethodValues>(AuthMethodValues.class, true, true))
+                    .setValidator(EnumValidator.create(AuthMethodValues.class))
                     .setAllowExpression(true)
                     .build();
 

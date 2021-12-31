@@ -56,5 +56,5 @@ public enum ConnectionFactoryType {
         return type;
     }
 
-    public static final ParameterValidator VALIDATOR = new EnumValidator<>(ConnectionFactoryType.class, true, false);
+    public static final ParameterValidator VALIDATOR = EnumValidator.create(ConnectionFactoryType.class);
 }

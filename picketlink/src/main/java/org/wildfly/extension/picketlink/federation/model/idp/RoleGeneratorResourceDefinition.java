@@ -40,7 +40,7 @@ public class RoleGeneratorResourceDefinition extends AbstractFederationResourceD
         .setAlternatives(ModelElement.COMMON_CODE.getName())
         .build();
     public static final SimpleAttributeDefinition CODE = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_CODE.getName(), ModelType.STRING, true)
-        .setValidator(new EnumValidator<>(RoleGeneratorTypeEnum.class, true, true))
+        .setValidator(EnumValidator.create(RoleGeneratorTypeEnum.class))
         .setAllowExpression(true)
         .setAlternatives(ModelElement.COMMON_CLASS_NAME.getName())
         .build();

@@ -143,7 +143,7 @@ public class ModClusterDefinition extends AbstractHandlerDefinition {
 
     public static final AttributeDefinition FAILOVER_STRATEGY = new SimpleAttributeDefinitionBuilder(Constants.FAILOVER_STRATEGY, ModelType.STRING)
             .setRequired(false)
-            .setValidator(new EnumValidator<>(FailoverStrategy.class, true, true))
+            .setValidator(EnumValidator.create(FailoverStrategy.class))
             .setRestartAllServices()
             .setDefaultValue(new ModelNode(FailoverStrategy.LOAD_BALANCED.name()))
             .build();
