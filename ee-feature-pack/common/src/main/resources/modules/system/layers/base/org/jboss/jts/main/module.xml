@@ -38,6 +38,7 @@
         <module name="java.management"/>
         <module name="java.naming"/>
         <module name="java.sql"/>
+        <module name="java.transaction.xa"/>
         <module name="javax.transaction.api"/>
         <module name="sun.jdk"/>
         <module name="org.omg.api" />
