@@ -32,6 +32,7 @@
         <module name="java.desktop"/>
         <!-- Revisit when checking already deprecated javax.api removal  <module name="java.naming"/> -->
         <module name="java.sql"/>
+        <module name="java.transaction.xa"/>
         <module name="javax.transaction.api" export="true"/>
         <module name="javax.api" export="false">
             <exports>

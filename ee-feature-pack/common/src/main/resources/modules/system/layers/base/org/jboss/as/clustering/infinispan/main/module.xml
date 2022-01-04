@@ -39,6 +39,7 @@
     <dependencies>
         <module name="java.management"/>
         <module name="java.sql"/>
+        <module name="java.transaction.xa"/>
         <module name="java.xml"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.transaction.api"/>
