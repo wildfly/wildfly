@@ -19,6 +19,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -63,4 +64,19 @@ public interface VertxLogger extends BasicLogger {
     @Message(id = 9, value = "Vertx: %s was not found.")
     OperationFailedException vertxNotFound(String name);
 
+    @Message(id = 10, value = "Failed to read content from VirtualFile: %s .")
+    DeploymentUnitProcessingException failedToReadConfig(String name, @Cause Throwable e);
+
+    @Message(id = 11, value = "No verticle-class defined in deployment: %s")
+    DeploymentUnitProcessingException noVerticleClassDefined(String deploymentName);
+
+    @Message(id = 12, value = "Failed to lookup Vertx instance with JNDI name: %s")
+    StartException failedToLookupVertx(String jndiName, @Cause Throwable e);
+
+    @Message(id = 13, value = "Failed to deploy verticle: %s to Vertx: %s")
+    StartException failedToDeployVerticle(String verticleClass, String jndiName, @Cause Throwable e);
+
+    @LogMessage(level = WARN)
+    @Message(id = 14, value = "Error to undeploy verticle: %s from Vertx: %s")
+    void errorWhenUndeployVerticle(String verticleClass, String jndiName, @Cause Exception e);
 }

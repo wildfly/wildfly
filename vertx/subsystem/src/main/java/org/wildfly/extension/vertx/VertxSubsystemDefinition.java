@@ -29,7 +29,9 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.extension.vertx.deployment.VertxDependenciesProcessor;
+import org.wildfly.extension.vertx.deployment.processors.VertxDependenciesProcessor;
+import org.wildfly.extension.vertx.deployment.processors.VerticleDeploymentMarkerProcessor;
+import org.wildfly.extension.vertx.deployment.processors.VerticleDeploymentProcessor;
 
 /**
  * The root Vertx subsystem resource definition.
@@ -71,14 +73,17 @@ public class VertxSubsystemDefinition extends SimpleResourceDefinition {
         @Override
         public void performBoottime(OperationContext context, ModelNode operation, ModelNode model)
                 throws OperationFailedException {
-            //Add deployment processors here
-            //Remove this if you don't need to hook into the deployers, or you can add as many as you like
-            //see SubDeploymentProcessor for explanation of the phases
             context.addStep(new AbstractDeploymentChainStep() {
                 public void execute(DeploymentProcessorTarget processorTarget) {
                     processorTarget.addDeploymentProcessor(VertxSubsystemExtension.SUBSYSTEM_NAME,
+                            VerticleDeploymentMarkerProcessor.PHASE, VerticleDeploymentMarkerProcessor.PRIORITY,
+                            new VerticleDeploymentMarkerProcessor());
+                    processorTarget.addDeploymentProcessor(VertxSubsystemExtension.SUBSYSTEM_NAME,
                             VertxDependenciesProcessor.PHASE, VertxDependenciesProcessor.PRIORITY,
                             new VertxDependenciesProcessor());
+                    processorTarget.addDeploymentProcessor(VertxSubsystemExtension.SUBSYSTEM_NAME,
+                            VerticleDeploymentProcessor.PHASE, VerticleDeploymentProcessor.PRIORITY,
+                            new VerticleDeploymentProcessor());
                 }
             }, OperationContext.Stage.RUNTIME);
         }
