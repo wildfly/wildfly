@@ -51,8 +51,6 @@ public class VerticleDeploymentProcessor implements DeploymentUnitProcessor {
     public static final Phase PHASE = Phase.INSTALL;
     public static final int PRIORITY = 0x4000;
 
-    private static final ServiceName serviceNameBase = ServiceName.of(ServiceName.JBOSS, "deployment");
-
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
@@ -80,7 +78,7 @@ public class VerticleDeploymentProcessor implements DeploymentUnitProcessor {
                 final JsonObject deployOption = vertxDeployment.getJsonObject(DEPLOY_OPTIONS, new JsonObject());
                 VerticleDeploymentService service = new VerticleDeploymentService(verticleClass, jndiName,
                         new DeploymentOptions((deployOption)), moduleClassLoader);
-                context.getServiceTarget().addService(ServiceName.of(serviceNameBase, deploymentName, verticleClass))
+                context.getServiceTarget().addService(ServiceName.of(deploymentUnit.getServiceName(), verticleClass))
                         .setInstance(service)
                         .setInitialMode(ServiceController.Mode.ACTIVE)
                         .install();
