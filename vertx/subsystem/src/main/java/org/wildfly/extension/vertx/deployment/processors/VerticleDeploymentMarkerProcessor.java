@@ -57,15 +57,15 @@ public class VerticleDeploymentMarkerProcessor implements DeploymentUnitProcesso
         if (deploymentRoot == null) {
             return;
         }
+        VirtualFile vertxDeploymentFile;
         if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
-            final VirtualFile vertxDeploymentFile = deploymentRoot.getRoot().getChild(WEB_INF_VERTX_DEPLOYMENT);
-            final boolean vertxDeploymentExists = vertxDeploymentFile.exists() && vertxDeploymentFile.isFile();
-            if (vertxDeploymentExists) {
-                attachVertxDeployments(deploymentUnit, vertxDeploymentFile);
-                return;
-            }
+            vertxDeploymentFile = deploymentRoot.getRoot().getChild(WEB_INF_VERTX_DEPLOYMENT);
+        } else {
+            vertxDeploymentFile = deploymentRoot.getRoot().getChild(META_INF_VERTX_DEPLOYMENT);
         }
-        final VirtualFile vertxDeploymentFile = deploymentRoot.getRoot().getChild(META_INF_VERTX_DEPLOYMENT);
+        if (vertxDeploymentFile == null) {
+            return;
+        }
         final boolean vertxDeploymentExists = vertxDeploymentFile.exists() && vertxDeploymentFile.isFile();
         if (vertxDeploymentExists) {
             attachVertxDeployments(deploymentUnit, vertxDeploymentFile);

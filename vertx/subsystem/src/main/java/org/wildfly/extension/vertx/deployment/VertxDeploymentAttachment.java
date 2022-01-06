@@ -30,32 +30,35 @@ public final class VertxDeploymentAttachment {
      */
     private static final AttachmentKey<VerticleDeploymentsMetaData> ATTACHMENT_KEY = AttachmentKey.create(VerticleDeploymentsMetaData.class);
 
+    /**
+     * Marker attachment key, this will be attached to the parent deployment unit if any.
+     */
+    private static final AttachmentKey<Boolean> MARKER_ATTACHMENT_KEY = AttachmentKey.create(Boolean.class);
+
     private VertxDeploymentAttachment() {
         // ignore
     }
 
     /**
-     * Mark the deployment as a Vertx one.
+     * Mark the deployment as a Vertx deployment.
      *
      * @param deployment to be marked
      */
     public static void attachVertxDeployments(final DeploymentUnit deployment, final VerticleDeploymentsMetaData vertxDeployments) {
-        if (deployment.getParent() != null) {
-            deployment.getParent().putAttachment(ATTACHMENT_KEY, vertxDeployments);
-        } else {
-            deployment.putAttachment(ATTACHMENT_KEY, vertxDeployments);
-        }
+        deployment.putAttachment(ATTACHMENT_KEY, vertxDeployments);
+        getRootDeploymentUnit(deployment).putAttachment(MARKER_ATTACHMENT_KEY, true);
     }
 
     /**
-     * If the deploymentUnit has vertx deployment configuration defined.
+     * If the the parent deploymentUnit is marked as a vertx deployment, it is used by
+     * {@link org.wildfly.extension.vertx.deployment.processors.VertxDependenciesProcessor} to add vertx module dependencies.
      *
      * @param deploymentUnit the deployment unit
-     * @return true if it has vertx deployment configuration defined, false otherwise.
+     * @return true if it is marked as a vertx deployment, false otherwise.
      */
     public static boolean isVertxDeployment(final DeploymentUnit deploymentUnit) {
-        VerticleDeploymentsMetaData vertxDeployments = getVertxDeploymentsMeta(deploymentUnit);
-        return vertxDeployments != null;
+        Boolean marker = getRootDeploymentUnit(deploymentUnit).getAttachment(MARKER_ATTACHMENT_KEY);
+        return marker != null && marker;
     }
 
     /**
@@ -65,7 +68,7 @@ public final class VertxDeploymentAttachment {
      * @return the vertx deployment meta or null
      */
     public static VerticleDeploymentsMetaData getVertxDeploymentsMeta(final DeploymentUnit deploymentUnit) {
-        return getRootDeploymentUnit(deploymentUnit).getAttachment(ATTACHMENT_KEY);
+        return deploymentUnit.getAttachment(ATTACHMENT_KEY);
     }
 
     /**
@@ -74,7 +77,7 @@ public final class VertxDeploymentAttachment {
      * @param deploymentUnit the deployment unit
      */
     public static void removeVertxDeploymentsMeta(final DeploymentUnit deploymentUnit) {
-        getRootDeploymentUnit(deploymentUnit).removeAttachment(ATTACHMENT_KEY);
+        deploymentUnit.removeAttachment(ATTACHMENT_KEY);
     }
 
     /**
