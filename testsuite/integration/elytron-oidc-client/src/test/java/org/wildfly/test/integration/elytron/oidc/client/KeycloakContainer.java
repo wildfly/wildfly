@@ -27,13 +27,14 @@ import org.testcontainers.containers.wait.strategy.Wait;
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
 public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
-    public static final String KEYCLOAK_ADMIN_USER = "admin";
-    public static final String KEYCLOAK_ADMIN_PASSWORD = "admin";
-    private static final String KEYCLOAK_AUTH_PATH = "/auth";
+    public static final String ADMIN_USER = "admin";
+    public static final String ADMIN_PASSWORD = "admin";
+    private static final String AUTH_PATH = "/auth";
 
     private static final String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:latest";
-    private static final int KEYCLOAK_PORT_HTTP = 8080;
-    private static final int KEYCLOAK_PORT_HTTPS = 8443;
+    private static final String SSO_IMAGE = System.getProperty("testsuite.integration.oidc.rhsso.image",KEYCLOAK_IMAGE);
+    private static final int PORT_HTTP = 8080;
+    private static final int PORT_HTTPS = 8443;
 
     private boolean useHttps;
 
@@ -42,20 +43,23 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
     }
 
     public KeycloakContainer(final boolean useHttps) {
-        super(KEYCLOAK_IMAGE);
+        super(SSO_IMAGE);
         this.useHttps = useHttps;
 
     }
 
     @Override
     protected void configure() {
-        withExposedPorts(KEYCLOAK_PORT_HTTP, KEYCLOAK_PORT_HTTPS);
+        withExposedPorts(PORT_HTTP, PORT_HTTPS);
         waitingFor(Wait.forHttp("/auth").forPort(8080));
-        withEnv("KEYCLOAK_USER", KEYCLOAK_ADMIN_USER);
-        withEnv("KEYCLOAK_PASSWORD", KEYCLOAK_ADMIN_PASSWORD);
+        withEnv("KEYCLOAK_USER", ADMIN_USER);
+        withEnv("KEYCLOAK_PASSWORD", ADMIN_PASSWORD);
+        withEnv("SSO_ADMIN_USERNAME", ADMIN_USER);
+        withEnv("SSO_ADMIN_PASSWORD", ADMIN_PASSWORD);
+        withEnv("SSO_HOSTNAME", "localhost");
     }
 
     public String getAuthServerUrl() {
-        return String.format("http://%s:%s%s", getContainerIpAddress(), useHttps ? getMappedPort(KEYCLOAK_PORT_HTTPS) : getMappedPort(KEYCLOAK_PORT_HTTP), KEYCLOAK_AUTH_PATH);
+        return String.format("http://%s:%s%s", getContainerIpAddress(), useHttps ? getMappedPort(PORT_HTTPS) : getMappedPort(PORT_HTTP), AUTH_PATH);
     }
 }
