@@ -23,7 +23,6 @@
 package org.wildfly.extension.undertow;
 
 import io.undertow.connector.ByteBufferPool;
-import io.undertow.security.api.AuthenticationMechanismFactory;
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.servlet.api.CrawlerSessionManagerConfig;
 import io.undertow.servlet.api.ServletContainer;
@@ -76,7 +75,6 @@ public final class ServletContainerService implements Service<ServletContainerSe
     private final Map<String, String> mimeMappings;
     private final List<String> welcomeFiles;
     private final boolean proactiveAuth;
-    private final Map<String, AuthenticationMechanismFactory> authenticationMechanisms;
     private final Integer maxSessions;
     private final boolean disableFileWatchService;
     private final boolean disableSessionIdReuse;
@@ -95,7 +93,7 @@ public final class ServletContainerService implements Service<ServletContainerSe
             String defaultEncoding, boolean useListenerEncoding, boolean ignoreFlush, boolean eagerFilterInit, int defaultSessionTimeout,
             boolean disableCachingForSecuredPages, boolean websocketsEnabled, boolean dispatchWebsocketInvocationToWorker, boolean perMessageDeflate,
             int deflaterLevel, Map<String, String> mimeMappings, List<String> welcomeFiles, Boolean directoryListingEnabled, boolean proactiveAuth,
-            int sessionIdLength, Map<String, AuthenticationMechanismFactory> authenticationMechanisms, Integer maxSessions,
+            int sessionIdLength, Integer maxSessions,
             CrawlerSessionManagerConfig crawlerSessionManagerConfig, boolean disableFileWatchService, boolean disableSessionIdReuse, int fileCacheMetadataSize, int fileCacheMaxFileSize, Integer fileCacheTimeToLive, int defaultCookieVersion, boolean preservePathOnForward) {
         this.serviceConsumer = serviceConsumer;
         this.sessionPersistenceManager = sessionPersistenceManager;
@@ -124,7 +122,6 @@ public final class ServletContainerService implements Service<ServletContainerSe
         this.welcomeFiles = new ArrayList<>(welcomeFiles);
         this.mimeMappings = new HashMap<>(mimeMappings);
         this.sessionIdLength = sessionIdLength;
-        this.authenticationMechanisms = authenticationMechanisms;
         this.disableSessionIdReuse = disableSessionIdReuse;
         this.fileCacheMetadataSize = fileCacheMetadataSize;
         this.fileCacheMaxFileSize = fileCacheMaxFileSize;
@@ -147,10 +144,6 @@ public final class ServletContainerService implements Service<ServletContainerSe
     @Override
     public ServletContainerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
-    }
-
-    public Map<String, AuthenticationMechanismFactory> getAuthenticationMechanisms() {
-        return authenticationMechanisms;
     }
 
     public ServletContainer getServletContainer() {

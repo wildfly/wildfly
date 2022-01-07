@@ -27,7 +27,6 @@ import io.undertow.jsp.JspFileHandler;
 import io.undertow.jsp.JspServletBuilder;
 import io.undertow.predicate.Predicate;
 import io.undertow.security.api.AuthenticationMechanism;
-import io.undertow.security.api.AuthenticationMechanismFactory;
 import io.undertow.security.api.AuthenticationMode;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
@@ -118,7 +117,6 @@ import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.JSPConfig;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.SessionCookieConfig;
-import org.wildfly.extension.undertow.SingleSignOnService;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.ApplicationSecurityDomainDefinition.Registration;
@@ -419,11 +417,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             if (controlPoint != null) {
                 deploymentInfo.addOuterHandlerChainWrapper(GlobalRequestControllerHandler.wrapper(controlPoint, allowSuspendedRequests));
             }
-
-            for (Map.Entry<String, AuthenticationMechanismFactory> e : container.get().getAuthenticationMechanisms().entrySet()) {
-                deploymentInfo.addAuthenticationMechanism(e.getKey(), e.getValue());
-            }
-            deploymentInfo.setUseCachedAuthenticationMechanism(!deploymentInfo.getAuthenticationMechanisms().containsKey(SingleSignOnService.AUTHENTICATION_MECHANISM_NAME));
 
             deploymentInfoConsumer.accept(this.deploymentInfo = deploymentInfo);
         } finally {
