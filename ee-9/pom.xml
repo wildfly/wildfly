@@ -107,7 +107,7 @@
         <version.org.jvnet.staxex>2.0.1</version.org.jvnet.staxex>
         <version.org.wildfly.security.elytron>2.0.0.Beta1</version.org.wildfly.security.elytron>
         <version.org.wildfly.security.elytron-web>2.0.0.Beta2</version.org.wildfly.security.elytron-web>
-        <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta1</version.org.wildfly.security.jakarta.elytron-ee>
+        <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta2</version.org.wildfly.security.jakarta.elytron-ee>
 
         <!-- TODO Glassfish uses org.glassfish:jakarta-el for this, which we use for the impl
              but we have a separate API jar -->
@@ -1396,6 +1396,30 @@
             <dependency>
                 <groupId>org.wildfly.security.jakarta</groupId>
                 <artifactId>jakarta-authorization</artifactId>
+                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.jakarta</groupId>
+                <artifactId>jakarta-client-resteasy</artifactId>
+                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.jakarta</groupId>
+                <artifactId>jakarta-client-webservices</artifactId>
                 <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
                 <exclusions>
                     <exclusion>
