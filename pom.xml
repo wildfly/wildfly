@@ -27,6 +27,8 @@
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
         <version>37</version>
+        <!-- The empty relativePath makes Maven lookup it in the repository. Missing tag default is ../pom.xml. -->
+        <relativePath/>
     </parent>
 
     <groupId>org.wildfly</groupId>
