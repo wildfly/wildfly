@@ -45,9 +45,9 @@ import org.jboss.modcluster.container.Host;
 public class UndertowContext implements Context {
 
     private Deployment deployment;
-    private Host host;
+    private UndertowHost host;
 
-    public UndertowContext(Deployment deployment, Host host) {
+    public UndertowContext(Deployment deployment, UndertowHost host) {
         this.deployment = deployment;
         this.host = host;
     }
@@ -65,7 +65,8 @@ public class UndertowContext implements Context {
 
     @Override
     public boolean isStarted() {
-        return this.deployment.getApplicationListeners().isStarted();
+        return this.deployment.getApplicationListeners().isStarted()
+                && !this.host.isSuspended();
     }
 
     @Override
