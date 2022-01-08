@@ -662,7 +662,10 @@
                     <groupId>${project.groupId}</groupId>
                     <artifactId>jipijapa-spi</artifactId>
                 </exclusion>
-                
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>jipijapa-eclipselink</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>${ee.maven.groupId}</groupId>
                     <artifactId>wildfly-opentelemetry-api</artifactId>

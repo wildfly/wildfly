@@ -89,6 +89,7 @@
         <version.io.smallrye.smallrye-config>3.0.0-RC1</version.io.smallrye.smallrye-config>
         <!-- MP5 - END -->
         <version.org.eclipse.yasson>2.0.3</version.org.eclipse.yasson>
+        <version.org.eclipselink.version>3.0.2</version.org.eclipselink.version>
         <version.org.glassfish.jakarta.el>4.0.0</version.org.glassfish.jakarta.el>
         <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
@@ -1033,6 +1034,18 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>jipijapa-spi-jakarta</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>jipijapa-eclipselink-jakarta</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
