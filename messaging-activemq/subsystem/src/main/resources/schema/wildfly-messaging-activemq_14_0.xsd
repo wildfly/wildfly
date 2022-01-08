@@ -148,12 +148,14 @@
                     <xs:complexType>
                         <xs:attribute name="name" type="xs:string" use="required" />
                         <xs:attribute name="entries" type="stringList" use="required" />
+                        <xs:attribute name="enable-amq1-prefix" type="xs:boolean" use="optional" />
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="external-jms-topic" minOccurs="0" maxOccurs="unbounded">
                     <xs:complexType>
                         <xs:attribute name="name" type="xs:string" use="required" />
                         <xs:attribute name="entries" type="stringList" use="required" />
+                        <xs:attribute name="enable-amq1-prefix" type="xs:boolean" use="optional" />
                     </xs:complexType>
                 </xs:element>
                 <xs:element maxOccurs="unbounded" minOccurs="0" name="server" type="serverType" />

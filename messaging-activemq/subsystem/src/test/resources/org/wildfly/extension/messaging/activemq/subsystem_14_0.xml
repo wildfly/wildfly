@@ -135,11 +135,14 @@
     </pooled-connection-factory>
 
     <external-jms-queue name="testQueue"
-                   entries="${jms-queue.entry:queue/client-test}"/>
+                   entries="${jms-queue.entry:queue/client-test}"
+                   enable-amq1-prefix="true"/>
     <external-jms-queue name="testQueue2"
-                   entries="java:/global/queue/test java:/global/queue/client-test2"/>
+                   entries="java:/global/queue/test java:/global/queue/client-test2"
+                   enable-amq1-prefix="true"/>
     <external-jms-topic name="testTopic"
-                   entries="${jms-topic.entry:topic/client-test}"/>
+                   entries="${jms-topic.entry:topic/client-test}"
+                   enable-amq1-prefix="true"/>
 
     <server name="default"
             persistence-enabled="${persistence.enabled:false}"

@@ -389,6 +389,10 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                     new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH),
                     new FailedOperationTransformationConfig.NewAttributesConfig( BridgeDefinition.CALL_TIMEOUT, BridgeDefinition.ROUTING_TYPE));
+            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_QUEUE_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
+            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_TOPIC_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
         } else if (messagingVersion.compareTo(MessagingExtension.VERSION_6_0_0) > 0 ) {
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
                     ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
@@ -527,6 +531,10 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
             ));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
                     BridgeDefinition.CALL_TIMEOUT, BridgeDefinition.ROUTING_TYPE));
+            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_QUEUE_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
+            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_TOPIC_PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
         }
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);
         mainServices.shutdown();
