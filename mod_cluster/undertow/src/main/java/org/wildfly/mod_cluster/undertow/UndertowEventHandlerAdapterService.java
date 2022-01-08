@@ -82,6 +82,11 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
         // Initialize mod_cluster and start it now
         eventHandler.init(this.server);
         eventHandler.start(this.server);
+        for (Engine engine : this.server.getEngines()) {
+            for (org.jboss.modcluster.container.Host host : engine.getHosts()) {
+                host.getContexts().forEach(c->contexts.add(c));
+            }
+        }
 
         // Start the periodic STATUS thread
         this.executor = Executors.newScheduledThreadPool(1, new DefaultThreadFactory(UndertowEventHandlerAdapterService.class));
