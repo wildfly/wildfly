@@ -12,9 +12,22 @@
         <bean-validation-group>${test.expr:group}</bean-validation-group>
       </bean-validation-groups>
       <!--Optional:-->
-      <transaction-support>NoTransaction</transaction-support>
+      <transaction-support>${test.expr:NoTransaction}</transaction-support>
       <!--Zero or more repetitions:-->
       <config-property name="config1">value</config-property>
+      <workmanager>
+        <security>
+          <domain>${test.expr:domain}</domain>
+          <default-groups>
+            <group>${test.expr:group}</group>
+          </default-groups>
+          <mappings>
+            <groups>
+              <map from="${test.expr:from}" to="${test.expr:to}"/>
+            </groups>
+          </mappings>
+        </security>
+      </workmanager>
       <!--Optional:-->
       <connection-definitions>
         <!--1 or more repetitions:-->
@@ -43,7 +56,7 @@
           <security>
             <!--You have a CHOICE of the next 3 items at this level-->
             <!--Optional:-->
-            <application>${test.expr:true}</application>
+            <security-domain-and-application>${test.expr:domain}</security-domain-and-application>
           </security>
           <!--Optional:-->
           <timeout>
