@@ -23,7 +23,6 @@ package org.jboss.as.ejb3.timerservice.schedule;
 
 import static org.jboss.as.ejb3.logging.EjbLogger.EJB3_TIMER_LOGGER;
 
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -48,48 +47,48 @@ import org.jboss.as.ejb3.timerservice.schedule.attribute.Year;
  * @version $Revision: $
  */
 public class CalendarBasedTimeout {
-
+    private static final TimeZone DEFAULT_TIMEZONE = TimeZone.getDefault();
 
     /**
      * The {@link javax.ejb.ScheduleExpression} from which this {@link CalendarBasedTimeout}
      * was created
      */
-    private ScheduleExpression scheduleExpression;
+    private final ScheduleExpression scheduleExpression;
 
     /**
      * The {@link Second} created out of the {@link javax.ejb.ScheduleExpression#getSecond()} value
      */
-    private Second second;
+    private final Second second;
 
     /**
      * The {@link org.jboss.as.ejb3.timerservice.schedule.attribute.Minute} created out of the {@link javax.ejb.ScheduleExpression#getMinute()} value
      */
-    private Minute minute;
+    private final Minute minute;
 
     /**
      * The {@link org.jboss.as.ejb3.timerservice.schedule.attribute.Hour} created out of the {@link javax.ejb.ScheduleExpression#getHour()} value
      */
-    private Hour hour;
+    private final Hour hour;
 
     /**
      * The {@link DayOfWeek} created out of the {@link javax.ejb.ScheduleExpression#getDayOfWeek()} value
      */
-    private DayOfWeek dayOfWeek;
+    private final DayOfWeek dayOfWeek;
 
     /**
      * The {@link org.jboss.as.ejb3.timerservice.schedule.attribute.DayOfMonth} created out of the {@link javax.ejb.ScheduleExpression#getDayOfMonth()} value
      */
-    private DayOfMonth dayOfMonth;
+    private final DayOfMonth dayOfMonth;
 
     /**
      * The {@link Month} created out of the {@link javax.ejb.ScheduleExpression#getMonth()} value
      */
-    private Month month;
+    private final Month month;
 
     /**
      * The {@link org.jboss.as.ejb3.timerservice.schedule.attribute.Year} created out of the {@link javax.ejb.ScheduleExpression#getYear()} value
      */
-    private Year year;
+    private final Year year;
 
     /**
      * The first timeout relative to the time when this {@link CalendarBasedTimeout} was created
@@ -112,18 +111,14 @@ public class CalendarBasedTimeout {
      * @param schedule The schedule
      */
     public CalendarBasedTimeout(ScheduleExpression schedule) {
-        if (schedule == null) {
-            throw EJB3_TIMER_LOGGER.invalidScheduleExpression(this.getClass().getName());
-        }
-        // make sure that the schedule doesn't have null values for its various attributes
-        this.nullCheckScheduleAttributes(schedule);
-
         // store the original expression from which this
         // CalendarBasedTimeout was created. Since the ScheduleExpression
         // is mutable, we will have to store a clone copy of the schedule,
         // so that any subsequent changes after the CalendarBasedTimeout construction,
         // do not affect this internal schedule expression.
-        this.scheduleExpression = this.clone(schedule);
+        // The caller of this constructor already passes a new instance of ScheduleExpression
+        // exclusively for this purpose, so no need to clone here.
+        this.scheduleExpression = schedule;
 
         // Start parsing the values in the ScheduleExpression
         this.second = new Second(schedule.getSecond());
@@ -134,22 +129,18 @@ public class CalendarBasedTimeout {
         this.month = new Month(schedule.getMonth());
         this.year = new Year(schedule.getYear());
         String timezoneId = schedule.getTimezone();
-        if (timezoneId != null && !(timezoneId = timezoneId.trim()).isEmpty()) {
+
+        if (timezoneId != null) {
             // If the timezone ID wasn't valid, then Timezone.getTimeZone returns
             // GMT, which may not always be desirable.
-            // So we first check to see if the timezone id specified is available in
-            // timezone ids in the system. If it's available then we log a WARN message
-            // and fallback on the server's timezone.
-            String[] availableTimeZoneIDs = TimeZone.getAvailableIDs();
-            if (availableTimeZoneIDs != null && Arrays.asList(availableTimeZoneIDs).contains(timezoneId)) {
-                this.timezone = TimeZone.getTimeZone(timezoneId);
-            } else {
+            this.timezone = TimeZone.getTimeZone(timezoneId);
+            if (this.timezone.getID().equals("GMT") && !timezoneId.equalsIgnoreCase("GMT")) {
                 // use server's timezone
-                this.timezone = TimeZone.getDefault();
-                EJB3_TIMER_LOGGER.unknownTimezoneId(timezoneId, this.timezone.getID());
+                this.timezone = DEFAULT_TIMEZONE;
+                EJB3_TIMER_LOGGER.unknownTimezoneId(timezoneId, DEFAULT_TIMEZONE.getID());
             }
         } else {
-            this.timezone = TimeZone.getDefault();
+            this.timezone = DEFAULT_TIMEZONE;
         }
 
         // Now that we have parsed the values from the ScheduleExpression,
@@ -537,47 +528,6 @@ public class CalendarBasedTimeout {
 
     private boolean isDayOfMonthWildcard() {
         return this.scheduleExpression.getDayOfMonth().equals("*");
-    }
-
-    private void nullCheckScheduleAttributes(ScheduleExpression schedule) {
-        if (schedule.getSecond() == null) {
-            throw EJB3_TIMER_LOGGER.invalidScheduleExpressionSecond(schedule);
-        }
-        if (schedule.getMinute() == null) {
-            throw EJB3_TIMER_LOGGER.invalidScheduleExpressionMinute(schedule);
-        }
-        if (schedule.getHour() == null) {
-            throw EJB3_TIMER_LOGGER.invalidScheduleExpressionHour(schedule);
-        }
-        if (schedule.getDayOfMonth() == null) {
-            throw EJB3_TIMER_LOGGER.invalidScheduleExpressionDayOfMonth(schedule);
-        }
-        if (schedule.getDayOfWeek() == null) {
-            throw EJB3_TIMER_LOGGER.invalidScheduleExpressionDayOfWeek(schedule);
-        }
-        if (schedule.getMonth() == null) {
-            throw EJB3_TIMER_LOGGER.invalidScheduleExpressionMonth(schedule);
-        }
-        if (schedule.getYear() == null) {
-            throw EJB3_TIMER_LOGGER.invalidScheduleExpressionYear(schedule);
-        }
-    }
-
-    private ScheduleExpression clone(ScheduleExpression schedule) {
-        // clone the schedule
-        ScheduleExpression clonedSchedule = new ScheduleExpression();
-        clonedSchedule.second(schedule.getSecond());
-        clonedSchedule.minute(schedule.getMinute());
-        clonedSchedule.hour(schedule.getHour());
-        clonedSchedule.dayOfWeek(schedule.getDayOfWeek());
-        clonedSchedule.dayOfMonth(schedule.getDayOfMonth());
-        clonedSchedule.month(schedule.getMonth());
-        clonedSchedule.year(schedule.getYear());
-        clonedSchedule.timezone(schedule.getTimezone());
-        clonedSchedule.start(schedule.getStart());
-        clonedSchedule.end(schedule.getEnd());
-
-        return clonedSchedule;
     }
 
     /**
