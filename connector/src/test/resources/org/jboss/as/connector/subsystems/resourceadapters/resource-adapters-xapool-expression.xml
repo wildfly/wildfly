@@ -14,7 +14,7 @@
       <!--Optional:-->
       <transaction-support>${test.expr:XATransaction}</transaction-support>
       <!--Zero or more repetitions:-->
-      <config-property name="config1">value</config-property>
+      <config-property name="config1">${test.expr:value}</config-property>
       <!--Optional:-->
       <connection-definitions>
         <!--1 or more repetitions:-->
@@ -39,7 +39,7 @@
                 <!--Optional:-->
                 <is-same-rm-override>${test.expr:true}</is-same-rm-override>
                 <!--Optional:-->
-                <interleaving/>
+                <interleaving>${test.expr:false}</interleaving>
                 <!--Optional:-->
                 <no-tx-separate-pools/>
                 <!--Optional:-->

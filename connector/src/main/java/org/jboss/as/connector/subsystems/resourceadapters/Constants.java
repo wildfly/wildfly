@@ -493,11 +493,6 @@ public class Constants {
             .setRestartAllServices()
             .build();
 
-    static SimpleAttributeDefinition USETRYLOCK = new SimpleAttributeDefinitionBuilder(USETRYLOCK_NAME, ModelType.LONG, true)
-            .setXmlName(TimeOut.Tag.USE_TRY_LOCK.getLocalName())
-            .setAllowExpression(true)
-            .build();
-
     static SimpleAttributeDefinition USE_CCM = new SimpleAttributeDefinitionBuilder(USE_CCM_NAME, ModelType.BOOLEAN, true)
             .setXmlName(DataSource.Attribute.USE_CCM.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.USE_CCM))
