@@ -41,4 +41,8 @@ public class StartupContext {
         return INJECTION_CONTAINER.get();
     }
 
+    public static void removeInjectionContainer() {
+        INJECTION_CONTAINER.remove();
+    }
+
 }

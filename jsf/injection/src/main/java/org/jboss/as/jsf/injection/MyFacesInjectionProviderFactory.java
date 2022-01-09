@@ -34,7 +34,7 @@ import javax.faces.context.ExternalContext;
  */
 public class MyFacesInjectionProviderFactory extends InjectionProviderFactory {
 
-    private final InjectionProvider injectionProvider;
+    private InjectionProvider injectionProvider;
 
     public MyFacesInjectionProviderFactory(){
         injectionProvider = new MyFacesInjectionProvider();
@@ -47,7 +47,9 @@ public class MyFacesInjectionProviderFactory extends InjectionProviderFactory {
 
     @Override
     public void release() {
-
+        MyFacesInjectionProvider toClose = (MyFacesInjectionProvider) injectionProvider;
+        injectionProvider = null;
+        toClose.close();
     }
 
 }
