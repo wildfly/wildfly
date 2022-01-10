@@ -261,13 +261,10 @@ public class ExternalJMSDestinationDefinitionLegacyPrefixMessagingDeploymentTest
     }
 
     @Test
-    public void testSendMessageInClientQueue() throws Exception {
+    public void testSendMessage() throws Exception {
         sendAndReceiveMessage(true);
-    }
-
-    @Test
-    public void testSendMessageInClientTopic() throws Exception {
         sendAndReceiveMessage(false);
+        checkRuntimeQueue();
     }
 
     private void sendAndReceiveMessage(boolean sendToQueue) throws Exception {
@@ -288,7 +285,7 @@ public class ExternalJMSDestinationDefinitionLegacyPrefixMessagingDeploymentTest
             op.get("child-type").set("runtime-queue");
             List<ModelNode> runtimeQueues = Operations.readResult(managementClient.getControllerClient().execute(op)).asList();
             Set<String> queues = runtimeQueues.stream().map(ModelNode::asString).collect(Collectors.toSet());
-            Assert.assertEquals(initialQueues.size() + 2, queues.size());
+            Assert.assertEquals("expected:<" + (initialQueues.size() + 2) + "> but was:<" + queues.size()+ ">" + queues.toString() , initialQueues.size() + 2, queues.size());
             Assert.assertTrue("We should have myExternalQueue queue", queues.contains("jms.queue.myExternalQueue"));
             queues.removeAll(initialQueues);
             queues.remove("jms.queue.myExternalQueue");
