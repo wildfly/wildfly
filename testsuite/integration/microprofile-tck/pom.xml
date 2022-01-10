@@ -298,9 +298,13 @@
                 <version.org.eclipse.yasson>2.0.3</version.org.eclipse.yasson>
                 <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
                 <version.org.jboss.resteasy.ee9>6.0.0.Beta1</version.org.jboss.resteasy.ee9>
-                <!-- This is required for the RESTEasy 6.0.0.Beta1 upgrade. As of RESTEasy 5 there is no more MP related implementations -->
-                <version.org.jboss.resteasy.microprofile>1.0.0.Final</version.org.jboss.resteasy.microprofile>
+                <version.org.jboss.resteasy.microprofile>2.0.0.Beta1</version.org.jboss.resteasy.microprofile>
                 <version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>
+                <!--
+                    Override version properties for MicroProfile 5 Implementations as we do in ee-9/pom.xml
+                -->
+                <version.io.smallrye.smallrye-config>3.0.0-RC1</version.io.smallrye.smallrye-config>
+
                 <!-- Test only dependencies - don't update in ee-9/pom.xml -->
                 <version.org.eclipse.microprofile.fault-tolerance.tck>${version.org.eclipse.microprofile.fault-tolerance.api}</version.org.eclipse.microprofile.fault-tolerance.tck>
                 <!-- Test framework only dependencies - don't update in ee-9/pom.xml -->
@@ -313,6 +317,37 @@
             <!-- Temporary for MP 5/Jakarta 9 -->
             <dependencyManagement>
                 <dependencies>
+                    <dependency>
+                        <groupId>io.smallrye.config</groupId>
+                        <artifactId>smallrye-config</artifactId>
+                        <version>${version.io.smallrye.smallrye-config}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>jakarta.annotation</groupId>
+                                <artifactId>jakarta.annotation-api</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>jakarta.enterprise</groupId>
+                                <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>io.smallrye.config</groupId>
+                        <artifactId>smallrye-config-common</artifactId>
+                        <version>${version.io.smallrye.smallrye-config}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>io.smallrye.config</groupId>
+                        <artifactId>smallrye-config-core</artifactId>
+                        <version>${version.io.smallrye.smallrye-config}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>io.smallrye.config</groupId>
+                        <artifactId>smallrye-config-source-file-system</artifactId>
+                        <version>${version.io.smallrye.smallrye-config}</version>
+                    </dependency>
+
                     <dependency>
                         <groupId>jakarta.enterprise</groupId>
                         <artifactId>jakarta.enterprise.cdi-api</artifactId>
