@@ -37,11 +37,11 @@ import org.h2.tools.Server;
 public class ClusterDatabaseTestUtil {
 
     public static void startH2() throws SQLException {
-        Server.createTcpServer("-tcpPort", DB_PORT, "-tcpAllowOthers", "-baseDir", "./target/h2").start();
+        Server.createTcpServer("-tcpPort", DB_PORT, "-tcpAllowOthers", "-ifNotExists", "-tcpPassword", "sa", "-baseDir", "./target/h2").start();
     }
 
     public static void stopH2() throws SQLException {
-        Server.shutdownTcpServer("tcp://localhost:" + DB_PORT, "", true, true);
+        Server.shutdownTcpServer("tcp://localhost:" + DB_PORT, "sa", true, true);
     }
 
     private ClusterDatabaseTestUtil() {

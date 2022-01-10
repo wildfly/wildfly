@@ -106,7 +106,7 @@ public class StopFromDifferentNodeTestCase {
             if (h2Server == null) {
                 //We need a TCP server that can be shared between the two servers.
                 //To allow remote connections, start the TCP server using the option -tcpAllowOthers
-                h2Server = Server.createTcpServer("-tcpAllowOthers").start();
+                h2Server = Server.createTcpServer("-tcpAllowOthers", "-ifNotExists").start();
             }
 
             if (savedDefaultJobRepository == null) {
