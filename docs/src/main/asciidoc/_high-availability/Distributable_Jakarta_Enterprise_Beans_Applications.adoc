@@ -6,15 +6,21 @@ is not guaranteed to survive beyond the lifespan of the Jakarta Enterprise Beans
 allow session state of SFSBs to survive beyond the lifespan of a single server, either through persistence or by replicating state to
 other nodes in the cluster.
 
-However, in the case of Jakarta Enterprise Beans applications, whether or not a bean is distributable is determined globally or on a per-bean basis, rather than on
+A _distributable_ SFSB is one whose state is made available on multiple nodes in a cluster and which supports failover of invocation attempts: if the node
+on which the SFSB was created fails, the invocation will be retried on another node in the cluster where the SFSB state is present.
+
+In the case of Jakarta Enterprise Beans applications, whether or not a bean is distributable is determined globally or on a per-bean basis, rather than on
 an application-wide basis as in the case of distributed HttpSessions.
 
 A stateful session bean within an Jakarta Enterprise Beans application indicates its intention to be distributable by using a passivation-capable cache
-to store its session state.
-Since Jakarta Enterprise Beans are passivation-capable by default, generally, users already using an HA profile will not need to make any configuration changes.
-Cache factories were discussed in the link:Admin_Guide{outfilesuffix}#distributable-cache[Jakarta Enterprise Beans section of the Wildfly Admin Guide].
-Additionally, the EJB application needs to be deployed into a server which uses an HA (High Availability) server profile, such as standalone-ha.xml
+to store its session state. Cache factories were discussed in the link:Admin_Guide{outfilesuffix}#caches[Jakarta Enterprise Beans section of the Wildfly Admin Guide].
+Additionally, the EJB application needs to be deployed into a server which uses an High Availability (HA) server profile, such as standalone-ha.xml
 or standalone-full-ha.xml.
+
+Since Jakarta Enterprise Beans are passivation-capable by default, generally, users already using an HA profile will not need to make any configuration changes
+for their beans to be distributable and, consequently, to support failover. More fine-grained control over whether a bean is distrubutable can be
+achieved using the _passivationCapable_ attribute of the @Stateful annotation (or the equivalent deployment descriptor override). A bean which is marked as
+@Stateful(passivationCapable=false) will not exhibit distributable behavior (i.e. failover), even when the application containing it is deployed in a cluster.
 
 NOTE: More information on passivation-capable beans can be found in Section 4.6.5 of the Jakarta Enterprise Beans specification.
 
