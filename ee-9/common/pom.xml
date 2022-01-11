@@ -689,6 +689,11 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-jaxrs-jakarta</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-jsf-injection-jakarta</artifactId>
             <exclusions>
                 <exclusion>
