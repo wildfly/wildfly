@@ -32,5 +32,6 @@
         <param name="security-enabled" value="false"/>
         <param name="empty-liveness-checks-status" value="${env.MP_HEALTH_EMPTY_LIVENESS_CHECKS_STATUS:UP}" />
         <param name="empty-readiness-checks-status" value="${env.MP_HEALTH_EMPTY_READINESS_CHECKS_STATUS:UP}" />
+        <param name="empty-startup-checks-status" value="${env.MP_HEALTH_EMPTY_STARTUP_CHECKS_STATUS:UP}" />
     </feature>
 </layer-spec>
