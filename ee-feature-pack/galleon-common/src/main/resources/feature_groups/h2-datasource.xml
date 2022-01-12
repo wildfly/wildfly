@@ -7,7 +7,7 @@
             <param name="use-java-context" value="true"/>
             <param name="jndi-name" value="java:jboss/datasources/ExampleDS"/>
             <param name="data-source" value="ExampleDS"/>
-            <param name="connection-url" value="&quot;jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE&quot;"/>
+            <param name="connection-url" value="&quot;jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=LEGACY&quot;"/>
             <param name="driver-name" value="h2"/>
             <param name="user-name" value="sa"/>
             <param name="password" value="sa"/>
