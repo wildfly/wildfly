@@ -149,3 +149,63 @@ For WildFly 25, the _elytron-oidc-client_ subsystem has been tested with the Key
 Other OpenID providers haven't been extensively tested yet so the use of other OpenID providers should
 be considered experimental for now and should not be used in a production environment yet. Proper support
 for other OpenID providers will be added in a future WildFly release.
+
+== Multi-Tenancy Support
+
+In some cases, it might be desirable to secure an application using multiple `oidc.json` configuration files.
+For example, you might want a different `oidc.json` file to be used depending on the request in order to authenticate
+users from multiple Keycloak realms. The _elytron-oidc-client_ subsystem makes it possible to use a custom configuration
+resolver so you can define which configuration file to use for each request.
+
+To make use of the multi-tenancy feature, you need to create a class that implements the
+`org.wildfly.security.http.oidc.OidcClientConfigurationResolver` interface, as shown in the example below:
+
+[source,java,options="nowrap"]
+----
+package example;
+
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.wildfly.security.http.oidc.OidcClientConfiguration;
+import org.wildfly.security.http.oidc.OidcClientConfigurationBuilder;
+import org.wildfly.security.http.oidc.OidcClientConfigurationResolver;
+import org.wildfly.security.http.oidc.OidcHttpFacade;
+
+public class MyCustomConfigResolver implements OidcClientConfigurationResolver {
+
+    private final Map<String, OidcClientConfiguration> cache = new ConcurrentHashMap<>();
+
+    @Override
+    public OidcClientConfiguration resolve(OidcHttpFacade.Request request) {
+        String path = request.getURI();
+        String realm = ... // determine which Keycloak realm to use based on the request path
+        OidcClientConfiguration clientConfiguration = cache.get(realm);
+        if (clientConfiguration == null) {
+            InputStream is = getClass().getResourceAsStream("/oidc-" + realm + ".json"); // config to use based on the realm
+            clientConfiguration = OidcClientConfigurationBuilder.build(is);
+            cache.put(realm, clientConfiguration);
+        }
+        return clientConfiguration;
+    }
+
+}
+----
+
+Once you've created your `OidcClientConfigurationResolver `, you can specify that you want to make
+use of your custom configuration resolver by setting the `oidc.config.resolver` `context-param` in
+your application's `web.xml` file, as shown in the example below:
+
+[source,xml,options="nowrap"]
+----
+<web-app>
+    ...
+    <context-param>
+        <param-name>oidc.config.resolver</param-name>
+        <param-value>example.MyCustomConfigResolver</param-value>
+    </context-param>
+    ...
+</web-app>
+----
