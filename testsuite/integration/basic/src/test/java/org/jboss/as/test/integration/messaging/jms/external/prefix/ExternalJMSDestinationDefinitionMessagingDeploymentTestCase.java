@@ -256,13 +256,10 @@ public class ExternalJMSDestinationDefinitionMessagingDeploymentTestCase {
     }
 
     @Test
-    public void testSendMessageInClientQueue() throws Exception {
+    public void testSendMessage() throws Exception {
         sendAndReceiveMessage(true);
-    }
-
-    @Test
-    public void testSendMessageInClientTopic() throws Exception {
         sendAndReceiveMessage(false);
+        checkRuntimeQueue();
     }
 
     private void sendAndReceiveMessage(boolean sendToQueue) throws Exception {
@@ -273,7 +270,6 @@ public class ExternalJMSDestinationDefinitionMessagingDeploymentTestCase {
         String reply = HttpRequest.get(servletUrl.toExternalForm(), TimeoutUtil.adjust(10), TimeUnit.SECONDS);
         assertNotNull(reply);
         assertEquals(text, reply);
-        checkRuntimeQueue();
     }
 
     private void checkRuntimeQueue() throws IOException {
