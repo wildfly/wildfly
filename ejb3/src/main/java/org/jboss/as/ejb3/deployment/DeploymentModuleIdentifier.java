@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.deployment;
 import org.jboss.as.ejb3.logging.EjbLogger;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Identifier for a deployed module, consisting of application + distinct + module name.
@@ -72,7 +73,7 @@ public final class DeploymentModuleIdentifier implements Serializable {
         DeploymentModuleIdentifier that = (DeploymentModuleIdentifier) o;
 
         if (!applicationName.equals(that.applicationName)) return false;
-        if (distinctName != null ? !distinctName.equals(that.distinctName) : that.distinctName != null) return false;
+        if (!Objects.equals(distinctName, that.distinctName)) return false;
         if (!moduleName.equals(that.moduleName)) return false;
 
         return true;
