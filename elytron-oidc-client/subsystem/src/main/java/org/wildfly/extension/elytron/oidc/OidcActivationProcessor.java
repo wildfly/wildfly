@@ -62,7 +62,7 @@ class OidcActivationProcessor implements DeploymentUnitProcessor {
         }
 
         LoginConfigMetaData loginConfig = webMetaData.getLoginConfig();
-        if (loginConfig != null && loginConfig.getAuthMethod().equals(OIDC_AUTH_METHOD)) {
+        if (loginConfig != null && OIDC_AUTH_METHOD.equals(loginConfig.getAuthMethod())) {
             ListenerMetaData listenerMetaData = new ListenerMetaData();
             listenerMetaData.setListenerClass(OidcConfigurationServletListener.class.getName());
             webMetaData.getListeners().add(listenerMetaData);
@@ -73,7 +73,7 @@ class OidcActivationProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private void addOidcAuthDataAndConfig(DeploymentPhaseContext phaseContext, OidcConfigService service, JBossWebMetaData webMetaData) throws DeploymentUnitProcessingException {
+    private void addOidcAuthDataAndConfig(DeploymentPhaseContext phaseContext, OidcConfigService service, JBossWebMetaData webMetaData) {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         addJSONDataAsContextParam(service.getJSON(deploymentUnit), webMetaData);
