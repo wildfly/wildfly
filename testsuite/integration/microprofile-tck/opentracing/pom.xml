@@ -105,6 +105,11 @@
             <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- RESTEasy client implementation -->
         <dependency>
             <groupId>org.jboss.resteasy</groupId>

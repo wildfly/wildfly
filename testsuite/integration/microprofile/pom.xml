@@ -148,6 +148,11 @@
             <artifactId>nimbus-jose-jwt</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- MicroProfile Opentracing Test Dependencies -->
         <dependency>
@@ -229,6 +234,10 @@
             <classifier>test</classifier>
             <scope>test</scope>
             <version>${version.org.apache.kafka}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-cli</artifactId>
         </dependency>
 
         <!-- Other test dependencies -->
