@@ -45,6 +45,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
  * Handler for adding a discovery group using socket bindings.
@@ -122,6 +123,9 @@ public class SocketDiscoveryGroupAdd extends AbstractAddStepHandler {
    public static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final String name, final DiscoveryGroupConfiguration config, final SocketBinding socketBinding) throws Exception {
 
         final String localAddress = socketBinding.getAddress().getHostAddress();
+        if (socketBinding.getMulticastAddress() == null) {
+            throw MessagingLogger.ROOT_LOGGER.socketBindingMulticastNotSet("socket-discovery-group", name, socketBinding.getName());
+        }
         final String groupAddress = socketBinding.getMulticastAddress().getHostAddress();
         final int groupPort = socketBinding.getMulticastPort();
         final long refreshTimeout = config.getRefreshTimeout();
