@@ -64,6 +64,7 @@ import org.xnio.Options;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  * @author <a href="mailto:rachmato@redhat.com">Richard Achmatowicz</a>
+ * @author <a href="mailto:jbaesner@redhat.com">Joerg Baesner</a>
  */
 public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
 
@@ -77,15 +78,23 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
 
     /**
      * Override populateModel() to handle case of deprecated attribute connector-ref
-     * - if connector-ref is present, use it to initialise connectors
-     * - if connector-ref is not present and connectors is not present, throw an exception
+     * - if connector-ref is present and connectors is not present, use it to initialise connectors
+     * - if connector-ref is present and connectors is present, merge them into connectors, leading to potential duplicate definitions
      */
+    @SuppressWarnings("deprecation")
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
         if (operation.hasDefined(EJB3RemoteResourceDefinition.CONNECTOR_REF.getName())) {
             ModelNode connectorRef = operation.remove(EJB3RemoteResourceDefinition.CONNECTOR_REF.getName());
-            operation.get(EJB3RemoteResourceDefinition.CONNECTORS.getName()).set(new ModelNode().add(connectorRef));
+
+            ModelNode connectorsNode = operation.get(EJB3RemoteResourceDefinition.CONNECTORS.getName());
+            if(connectorsNode.isDefined()) {
+                connectorsNode.add(connectorRef.asString());
+            }
+            else {
+                connectorsNode.set(new ModelNode().add(connectorRef));
+            }
         }
         super.populateModel(operation, model);
     }

@@ -62,6 +62,7 @@ public class EJB3Subsystem80Parser extends EJB3Subsystem70Parser {
         final PathAddress ejb3RemoteServiceAddress = SUBSYSTEM_PATH.append(SERVICE, REMOTE);
         ModelNode operation = Util.createAddOperation(ejb3RemoteServiceAddress);
         final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.CONNECTORS, EJB3SubsystemXMLAttribute.THREAD_POOL_NAME);
+        boolean deprecatedConnectorRefAttributeConfigured = false;
 
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -71,6 +72,11 @@ public class EJB3Subsystem80Parser extends EJB3Subsystem70Parser {
             switch (attribute) {
                 case CLIENT_MAPPINGS_CLUSTER_NAME:
                     EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.parseAndSetParameter(value, operation, reader);
+                    break;
+                case CONNECTOR_REF:
+                    // allow the deprecated connector-ref attribute, see WFLY-15900
+                    EJB3RemoteResourceDefinition.CONNECTOR_REF.parseAndSetParameter(value, operation, reader);
+                    deprecatedConnectorRefAttributeConfigured = true;
                     break;
                 case CONNECTORS:
                     // can't use the obvious: EJB3RemoteResourceDefinition.CONNECTORS.parseAndSetParameter(value, operation, reader);
@@ -86,6 +92,15 @@ public class EJB3Subsystem80Parser extends EJB3Subsystem70Parser {
                     throw unexpectedAttribute(reader, i);
             }
         }
+
+        /**
+         * if connector-ref is configured, connectors is not required, as populating the model is handled correctly in
+         * {@link EJB3RemoteServiceAdd.populateModel()}, so remove connectors from the required EnumSet
+         */
+        if(deprecatedConnectorRefAttributeConfigured) {
+            required.remove(EJB3SubsystemXMLAttribute.CONNECTORS);
+        }
+
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
