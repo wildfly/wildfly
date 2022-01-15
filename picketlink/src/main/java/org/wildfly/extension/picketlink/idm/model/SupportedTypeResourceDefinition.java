@@ -46,7 +46,7 @@ public class SupportedTypeResourceDefinition extends AbstractIDMResourceDefiniti
         .setAlternatives(ModelElement.COMMON_CODE.getName())
         .build();
     public static final SimpleAttributeDefinition CODE = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_CODE.getName(), ModelType.STRING, true)
-        .setValidator(new EnumValidator<>(AttributedTypeEnum.class, true, true))
+        .setValidator(EnumValidator.create(AttributedTypeEnum.class))
         .setAllowExpression(true)
         .setAlternatives(ModelElement.COMMON_CLASS_NAME.getName())
         .build();
