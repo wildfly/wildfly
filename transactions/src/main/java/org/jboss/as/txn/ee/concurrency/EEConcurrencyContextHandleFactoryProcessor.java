@@ -59,8 +59,4 @@ public class EEConcurrencyContextHandleFactoryProcessor implements DeploymentUni
             componentDescription.getConfigurators().add(componentConfigurator);
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

@@ -68,7 +68,11 @@ public class LayersTestCase {
         "org.jboss.as.security",
         "org.jboss.as.security-integration",
         "org.jboss.as.security-plugins",
-        "org.picketbox"
+        "org.picketbox",
+        "org.apache.commons.cli",
+        "org.apache.commons.lang3",
+        "org.wildfly.security.elytron-tool",
+        "org.wildfly.security.http.sfbasic"
     };
     // Packages that are not referenced from the module graph but needed.
     // This is the expected set of un-referenced modules found when scanning

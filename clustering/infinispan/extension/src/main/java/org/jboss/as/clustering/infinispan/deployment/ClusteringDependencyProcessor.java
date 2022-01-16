@@ -53,8 +53,4 @@ public class ClusteringDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MARSHALLING_API, true, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SINGLETON_API, true, false, false, false));
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

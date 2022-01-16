@@ -34,9 +34,18 @@
                 <min-pool-size>${test.expr:1}</min-pool-size>
                 <max-pool-size>${test.expr:5}</max-pool-size>
                 <prefill>${test.expr:true}</prefill>
+                <fair>${test.expr:false}</fair>
                 <use-strict-min>${test.expr:true}</use-strict-min>
                 <flush-strategy>${test.expr:EntirePool}</flush-strategy>
                 <allow-multiple-users>${test.expr:true}</allow-multiple-users>
+                <capacity>
+                    <incrementer class-name="${test.expr:token}">
+                        <config-property name="token">${test.expr:token}</config-property>
+                    </incrementer>
+                    <decrementer class-name="${test.expr:token}">
+                        <config-property name="token">${test.expr:token}</config-property>
+                    </decrementer>
+                </capacity>
             </pool>
             <security>
                 <user-name>
@@ -231,7 +240,7 @@
             </statement>
         </xa-datasource>
         <drivers>
-            <driver major-version="${test.expr:3}" minor-version="${test.expr:3}" module="com.h2database.h2" name="h2">
+            <driver major-version="${test.expr:3}" minor-version="${test.expr:3}" module="${test.expr:com.h2database.h2}:${test.expr:main}" name="h2">
                 <driver-class>${test.expr:token}</driver-class>
                 <xa-datasource-class>
                     ${test.expr:org.h2.jdbcx.JdbcDataSource}

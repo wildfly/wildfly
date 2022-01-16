@@ -78,10 +78,6 @@ public class EarApplicationScopedObserverMethodProcessor implements DeploymentUn
         }
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private static class PortableExtension implements Extension {
 
         private final DeploymentUnit deploymentUnit;

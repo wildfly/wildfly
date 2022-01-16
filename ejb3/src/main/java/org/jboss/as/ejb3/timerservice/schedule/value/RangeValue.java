@@ -88,7 +88,7 @@ public class RangeValue implements ScheduleValue {
     public RangeValue(String range) {
         String[] values = getRangeValues(range);
         if (values == null || values.length != 2) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.invalidRange(range);
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue(ScheduleExpressionType.RANGE.name(), range);
         }
 
         this.rangeStart = values[0].trim();

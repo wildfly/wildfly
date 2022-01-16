@@ -118,8 +118,4 @@ class JwtActivationProcessor implements DeploymentUnitProcessor {
 
         return extendsApplication(index.getClassByName(superType), index);
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {}
-
 }

@@ -67,7 +67,7 @@ import org.wildfly.extension.messaging.activemq.shallow.ShallowResourceDefinitio
  */
 public class BroadcastGroupDefinition extends ShallowResourceDefinition {
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = new StringListAttributeDefinition.Builder(CONNECTORS)
-            .setRequired(false)
+            .setRequired(true)
             .setElementValidator(new StringLengthValidator(1))
             .setAttributeParser(AttributeParser.STRING_LIST)
             .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)

@@ -77,9 +77,4 @@ public abstract class AbstractEEAnnotationProcessor implements DeploymentUnitPro
      * @return The annotation information factories
      */
     protected abstract List<ClassAnnotationInformationFactory> annotationInformationFactories();
-
-
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

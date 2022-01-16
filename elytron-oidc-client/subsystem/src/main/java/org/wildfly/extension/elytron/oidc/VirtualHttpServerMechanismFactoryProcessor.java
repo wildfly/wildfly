@@ -76,8 +76,4 @@ class VirtualHttpServerMechanismFactoryProcessor implements DeploymentUnitProces
         serviceBuilder.setInitialMode(Mode.ON_DEMAND);
         serviceBuilder.install();
     }
-
-    @Override
-    public void undeploy(DeploymentUnit deploymentUnit) {}
-
 }

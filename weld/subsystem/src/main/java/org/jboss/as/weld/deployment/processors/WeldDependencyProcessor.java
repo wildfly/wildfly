@@ -96,9 +96,4 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
             ModuleIdentifier moduleIdentifier, boolean optional) {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, optional, false, true, false));
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
 }

@@ -110,10 +110,6 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
 
     protected abstract List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ResourceInjectionTarget resourceInjectionTarget, final ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException;
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     /**
      * Processes the injection targets of a resource binding
      *

@@ -48,12 +48,13 @@ enum Namespace {
     UNDERTOW_10_0("urn:jboss:domain:undertow:10.0"),
     UNDERTOW_11_0("urn:jboss:domain:undertow:11.0"),
     UNDERTOW_12_0("urn:jboss:domain:undertow:12.0"),
+    UNDERTOW_13_0("urn:jboss:domain:undertow:13.0"),
     ;
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = UNDERTOW_12_0;
+    public static final Namespace CURRENT = UNDERTOW_13_0;
 
     private final String name;
 

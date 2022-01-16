@@ -1,0 +1,37 @@
+[[jaas-security-realm]]
+= JAAS Security Realm
+
+A JAAS realm utilizes a https://docs.oracle.com/en/java/javase/17/docs/api/java.base/javax/security/auth/login/LoginContext.html[LoginContext] initialized from a https://docs.oracle.com/en/java/javase/17/security/appendix-b-jaas-login-configuration-file.html[JAAS configuration file] to authenticate and authorize users with custom https://docs.oracle.com/en/java/javase/17/docs/api/java.base/javax/security/auth/spi/LoginModule.html[Login Modules]. Flags and options can be specified in a https://docs.oracle.com/en/java/javase/17/security/appendix-b-jaas-login-configuration-file.html[JAAS configuration file] according to the https://docs.oracle.com/en/java/javase/17/security/appendix-b-jaas-login-configuration-file.html[Java documentation].
+
+The `jaas-realm` resource contains the following attributes: -
+
+ * `entry` JAAS configuration file entry name
+ * `path` Path to the JAAS configuration file. You can also specify the location of the configuration with java system property "java.security.auth.login.config" or with java security property "login.config.url"
+ * `relative-to` Optional base folder for the `path`.
+ * `module` The WildFly module with Login Module implementations and Callback Handler implementation.
+ * `callback-handler` Callback handler to use with the Login Context. Security property "auth.login.defaultCallbackHandler" can be used instead. The default callback handler of the realm will be used if none of these are defined.
+
+All attributes but `entry` are optional.
+
+Example of `jaas-realm` configuration via WildFly CLI:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/jaas-realm=theRealm:add(
+    entry=Entry1,
+    path=/path/to/jaas/config/JAASConfig.conf,
+    module=myLoginModule,
+    callback-handler=my.custom.MyCallbackHandler)
+----
+
+
+== Subject's Principals to attributes mapping
+
+https://docs.oracle.com/en/java/javase/17/docs/api/java.base/javax/security/auth/spi/LoginModule.html[Login Modules] use https://docs.oracle.com/en/java/javase/17/docs/api/java.base/javax/security/auth/Subject.html[Subjects] to represent the user currently being authenticated. Subject's
+https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/security/Principal.html[principals] are mapped to user's attributes with the following rule:
+
+ * *key* of the attribute is principal’s simple classname, so the value of `principal.getClass().getSimpleName())`
+
+ * *value* is principal’s name, so the result of `principal.getName()` call. For principals of the same type / key, the values will be appended to the collection under this attribute key.
+
+Attributes can be used to associate roles in the Elytron subsystem. `Roles` is the default attribute name used for this purpose. You can configure a `role-decoder` to use a different attribute. This means you can add roles to authenticated user by associating https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/security/Principal.html[principals] with the https://docs.oracle.com/en/java/javase/17/docs/api/java.base/javax/security/auth/Subject.html[Subject] in a https://docs.oracle.com/en/java/javase/17/docs/api/java.base/javax/security/auth/spi/LoginModule.html[Login Module] imlpementations.

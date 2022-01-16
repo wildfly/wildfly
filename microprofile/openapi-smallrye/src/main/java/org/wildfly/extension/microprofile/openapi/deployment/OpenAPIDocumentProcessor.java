@@ -82,8 +82,4 @@ public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
             }
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit unit) {
-    }
 }

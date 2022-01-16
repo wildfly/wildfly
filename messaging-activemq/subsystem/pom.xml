@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>26.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
@@ -141,6 +141,18 @@
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-ra</artifactId>
         </dependency>
+
+        <!-- This is only required for the MessagingExtension to initialize Netty's InternalLoggerFactory -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-common</artifactId>
+        </dependency>
+        <!-- This is only required for the HTTPUpgradeService to initialize Netty's channel -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport</artifactId>
+        </dependency>
+
 
         <dependency>
             <groupId>jakarta.inject</groupId>

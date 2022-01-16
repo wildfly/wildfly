@@ -21,19 +21,18 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.timerservice.schedule.ScheduleExpressionTypeUtil;
 import org.jboss.as.ejb3.timerservice.schedule.value.IncrementValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.ListValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.RangeValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.SingleValue;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Represents a {@link Integer} type value in a {@link javax.ejb.ScheduleExpression}.
@@ -65,8 +64,8 @@ public abstract class IntegerBasedExpression {
     public IntegerBasedExpression(String value) {
         this.origValue = value;
         // check the type of value
-        this.scheduleExpressionType = ScheduleExpressionTypeUtil.getType(value);
-        if (this.accepts(scheduleExpressionType) == false) {
+        this.scheduleExpressionType = ScheduleExpressionType.getType(value);
+        if (!this.accepts(scheduleExpressionType)) {
             throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleExpressionType(value, this.getClass().getName(), this.scheduleExpressionType.toString());
         }
         switch (this.scheduleExpressionType) {
@@ -114,7 +113,7 @@ public abstract class IntegerBasedExpression {
         // check what type of a value the list item is.
         // Each item in the list must be an individual attribute value or a range.
         // List items can not themselves be lists, wild-cards, or increments.
-        ScheduleExpressionType listItemType = ScheduleExpressionTypeUtil.getType(listItem);
+        ScheduleExpressionType listItemType = ScheduleExpressionType.getType(listItem);
         switch (listItemType) {
             case SINGLE_VALUE:
                 SingleValue singleVal = new SingleValue(listItem);
@@ -202,7 +201,7 @@ public abstract class IntegerBasedExpression {
 
     protected void assertValid(Integer value) throws IllegalArgumentException {
         if (value == null) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.couldNotParseScheduleExpression(this.origValue);
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue("", this.origValue);
         }
         int max = this.getMaxValue();
         int min = this.getMinValue();

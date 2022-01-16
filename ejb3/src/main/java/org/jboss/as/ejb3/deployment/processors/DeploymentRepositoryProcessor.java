@@ -144,10 +144,4 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
         startBuilder.addDependency(DeploymentRepositoryService.SERVICE_NAME, DeploymentRepository.class, deploymentStart.getDeploymentRepository());
         startBuilder.install();
     }
-
-    @Override
-    public void undeploy(DeploymentUnit deploymentUnit) {
-
-    }
-
 }

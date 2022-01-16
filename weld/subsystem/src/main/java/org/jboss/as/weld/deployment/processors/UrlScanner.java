@@ -172,7 +172,7 @@ class UrlScanner {
             if (child.isDirectory()) {
                 handleDirectory(child, newPath);
             } else {
-                handleFile(newPath, () -> file.toURL().openStream());
+                handleFile(newPath, () -> child.toURL().openStream());
             }
         }
     }

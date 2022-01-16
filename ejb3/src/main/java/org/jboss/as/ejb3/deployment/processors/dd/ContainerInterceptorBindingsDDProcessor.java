@@ -308,8 +308,4 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
             }
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

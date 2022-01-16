@@ -132,10 +132,6 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
     }
 
     @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
-    @Override
     public SessionManagerFactory apply(SessionManagerFactoryConfiguration configuration) {
         String deploymentName = configuration.getDeploymentName();
         Integer maxActiveSessions = configuration.getMaxActiveSessions();

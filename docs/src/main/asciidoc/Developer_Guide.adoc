@@ -63,6 +63,8 @@ include::_developer-guide/Jakarta_Enterprise_Beans_invocations_from_a_remote_ser
 
 include::_developer-guide/Remote_Jakarta_Enterprise_Beans_invocations_via_JNDI_-_Jakarta_Enterprise_Beans_client_API_or_wildfly-naming-client_project.adoc[]
 
+include::_developer-guide/H2_Web_Console_Integration.adoc[]
+
 include::_developer-guide/Migrated_to_WildFly_Example_Applications.adoc[]
 
 include::_developer-guide/Spring_applications_development_and_migration_guide.adoc[]

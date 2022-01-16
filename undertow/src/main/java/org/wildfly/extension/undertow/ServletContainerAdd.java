@@ -23,7 +23,6 @@
 package org.wildfly.extension.undertow;
 
 import io.undertow.connector.ByteBufferPool;
-import io.undertow.security.api.AuthenticationMechanismFactory;
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.servlet.api.CrawlerSessionManagerConfig;
 import io.undertow.servlet.api.ServletStackTraces;
@@ -38,7 +37,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
-import org.wildfly.extension.undertow.security.digest.DigestAuthenticationMechanismFactory;
 import org.xnio.XnioWorker;
 
 import java.util.ArrayList;
@@ -47,8 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -122,11 +118,6 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
             }
         }
 
-        // WFLY-2553 Adding default WildFly specific mechanisms here - subsequently we could enhance the servlet-container
-        // config to override / add mechanisms.
-        Map<String, AuthenticationMechanismFactory> authenticationMechanisms = new HashMap<>();
-        authenticationMechanisms.put(HttpServletRequest.DIGEST_AUTH, DigestAuthenticationMechanismFactory.FACTORY);
-
         final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY);
         final Consumer<ServletContainerService> sConsumer = sb.provides(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY, UndertowService.SERVLET_CONTAINER.append(name));
         final Supplier<SessionPersistenceManager> spmSupplier = persistentSessions ? sb.requires(AbstractPersistentSessionManager.SERVICE_NAME) : null;
@@ -138,7 +129,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 jspConfig, defaultEncoding, useListenerEncoding, ignoreFlush, eagerFilterInit, sessionTimeout,
                 disableCachingForSecuredPages, webSocketInfo != null, webSocketInfo != null && webSocketInfo.isDispatchToWorker(),
                 webSocketInfo != null && webSocketInfo.isPerMessageDeflate(), webSocketInfo == null ? -1 : webSocketInfo.getDeflaterLevel(), mimeMappings,
-                welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, authenticationMechanisms, maxSessions, crawlerSessionManagerConfig, disableFileWatchService, disableSessionIdReususe, fileCacheMetadataSize, fileCacheMaxFileSize, fileCacheTimeToLive, defaultCookieVersion, preservePathOnForward);
+                welcomeFiles, directoryListingEnabled, proactiveAuth, sessionIdLength, maxSessions, crawlerSessionManagerConfig, disableFileWatchService, disableSessionIdReususe, fileCacheMetadataSize, fileCacheMaxFileSize, fileCacheTimeToLive, defaultCookieVersion, preservePathOnForward);
         sb.setInstance(container);
         sb.setInitialMode(ServiceController.Mode.ON_DEMAND);
         sb.install();

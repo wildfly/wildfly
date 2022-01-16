@@ -182,14 +182,6 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
 
     }
 
-    /**
-     * @param unit
-     */
-    @Override
-    public void undeploy(DeploymentUnit unit) {
-
-    }
-
     private static VirtualFile getDescriptor(final DeploymentUnit deploymentUnit, final VirtualFile deploymentRoot, final String descriptorName) {
         final String deploymentUnitName = deploymentUnit.getName().toLowerCase(Locale.ENGLISH);
         // Locate the descriptor

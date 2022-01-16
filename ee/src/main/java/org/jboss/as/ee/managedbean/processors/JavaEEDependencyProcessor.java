@@ -103,7 +103,4 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, true, false, true, false));
         }
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

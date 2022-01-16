@@ -135,9 +135,4 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         }
         moduleSpecification.addSystemDependency(dependency);
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
 }

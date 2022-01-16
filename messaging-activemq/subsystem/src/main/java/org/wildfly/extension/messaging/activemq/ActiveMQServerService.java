@@ -243,11 +243,15 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
             }
 
             // security - if an Elytron domain has been defined we delegate security checks to the Elytron based security manager.
-            final ActiveMQSecurityManager securityManager;
-            if (elytronSecurityDomain.isPresent()) {
-                securityManager = new ElytronSecurityManager(elytronSecurityDomain.get().get());
+            final ActiveMQSecurityManager securityManager ;
+            if (configuration.isSecurityEnabled()) {
+                if (elytronSecurityDomain.isPresent()) {
+                    securityManager = new ElytronSecurityManager(elytronSecurityDomain.get().get());
+                } else {
+                    securityManager = new WildFlySecurityManager();
+                }
             } else {
-                securityManager = new WildFlySecurityManager();
+                securityManager = null;
             }
 
             // insert possible credential source hold passwords

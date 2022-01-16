@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import java.lang.reflect.Method;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.TimerConfig;
 
@@ -28,10 +29,21 @@ import javax.ejb.TimerConfig;
  * Holds data about an automatic timer
  * @author Stuart Douglas
  */
-public class AutoTimer {
+public final class AutoTimer {
+    private final ScheduleExpression scheduleExpression;
+    private final TimerConfig timerConfig;
+    private Method method;
 
-    private final ScheduleExpression scheduleExpression = new ScheduleExpression();
-    private final TimerConfig timerConfig = new TimerConfig();
+    public AutoTimer() {
+        scheduleExpression = new ScheduleExpression();
+        timerConfig = new TimerConfig();
+    }
+
+    public AutoTimer(final ScheduleExpression scheduleExpression, final TimerConfig timerConfig, final Method method) {
+        this.scheduleExpression = scheduleExpression;
+        this.timerConfig = timerConfig;
+        this.method = method;
+    }
 
     public ScheduleExpression getScheduleExpression() {
         return scheduleExpression;
@@ -39,5 +51,9 @@ public class AutoTimer {
 
     public TimerConfig getTimerConfig() {
         return timerConfig;
+    }
+
+    public Method getMethod() {
+        return method;
     }
 }

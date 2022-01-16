@@ -96,11 +96,6 @@ public class XTSInterceptorDeploymentProcessor implements DeploymentUnitProcesso
         }
     }
 
-    public void undeploy(final DeploymentUnit unit) {
-
-        // does nothing
-    }
-
     private boolean methodHasServiceRequestAnnotation(Method method) {
         for (Annotation a : method.getDeclaredAnnotations()) {
             if (a instanceof ServiceRequest) {

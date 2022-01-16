@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>26.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
     <artifactId>wildfly-ts-integ-mp-rest-client</artifactId>
     <name>WildFly Test Suite: Integration - MicroProfile - REST Client TCK</name>
@@ -43,6 +43,9 @@
         <ts.microprofile-tck-provisioning.decorator.layer>observability</ts.microprofile-tck-provisioning.decorator.layer>
         <!-- properties to enable plugins shared by various bootable profiles -->
         <bootable-jar-generate-properties-file.phase>none</bootable-jar-generate-properties-file.phase>
+
+        <!-- Resource path -->
+        <wiremock.resource.path>${project.build.directory}/wildfly/wiremock/wiremock.jar${:}${project.build.directory}/wildfly/wiremock/junit.jar${:}${project.build.directory}/wildfly/wiremock/jetty-io.jar${:}${project.build.directory}/wildfly/wiremock/jetty-http.jar${:}${project.build.directory}/wildfly/wiremock/jetty-server.jar${:}${project.build.directory}/wildfly/wiremock/jetty-util.jar${:}${project.build.directory}/wildfly/wiremock/jboss-servlet-api_4.0_spec.jar</wiremock.resource.path>
     </properties>
     <dependencies>
         <!-- Required by the RESTEasy Client -->
@@ -79,6 +82,30 @@
             <artifactId>resteasy-core-spi</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-io</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-http</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- End requirement -->
+
         <dependency>
             <groupId>org.eclipse.microprofile.rest.client</groupId>
             <artifactId>microprofile-rest-client-api</artifactId>
@@ -207,6 +234,26 @@
                                     <groupId>junit</groupId>
                                     <artifactId>junit</artifactId>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.eclipse.jetty</groupId>
+                                    <artifactId>jetty-io</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.eclipse.jetty</groupId>
+                                    <artifactId>jetty-http</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.eclipse.jetty</groupId>
+                                    <artifactId>jetty-server</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.eclipse.jetty</groupId>
+                                    <artifactId>jetty-util</artifactId>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.jboss.spec.javax.servlet</groupId>
+                                    <artifactId>jboss-servlet-api_4.0_spec</artifactId>
+                                </artifactItem>
                             </artifactItems>
                             <stripVersion>true</stripVersion>
                             <outputDirectory>${project.build.directory}/wildfly/wiremock</outputDirectory>
@@ -227,7 +274,7 @@
                         </goals>
                         <configuration>
                             <commands>
-                                <command>module add --name=com.github.tomakehurst.wiremock --resources=${project.build.directory}/wildfly/wiremock/wiremock.jar${:}${project.build.directory}/wildfly/wiremock/junit.jar --module-xml=${basedir}/module.xml</command>
+                                <command>module add --name=com.github.tomakehurst.wiremock --resources=${wiremock.resource.path} --module-xml=${basedir}/module.xml</command>
                             </commands>
                             <scripts>
                                 <script>wiremock.cli</script>
@@ -332,19 +379,15 @@
                             <filename>wiremock-bootable-cli.properties</filename>
                             <properties>
                                 <property>
-                                    <name>wiremock.jar.path</name>
-                                    <value>${project.build.directory}/wildfly/wiremock/wiremock.jar</value>
-                                </property>
-                                <property>
-                                    <name>wiremock.junit.jar.path</name>
-                                    <value>${project.build.directory}/wildfly/wiremock/junit.jar</value>
+                                    <name>wiremock.resource.path</name>
+                                    <value>${wiremock.resource.path}</value>
                                 </property>
                                 <property>
                                     <name>module.xml.path</name>
                                     <value>${basedir}/module.xml</value>
                                 </property>
                                 <property>
-                                    <name>beans.xml.path</name>
+                                    <name>beansxml.path</name>
                                     <value>${basedir}/beans.xml</value>
                                 </property>
                             </properties>
@@ -392,33 +435,15 @@
                     <dependenciesToScan>
                         <dependency>org.eclipse.microprofile.rest.client:microprofile-rest-client-tck</dependency>
                     </dependenciesToScan>
-                    <systemProperties>
-                        <microprofile.jvm.args>${microprofile.jvm.args}</microprofile.jvm.args>
-                        <test.url>http://localhost:8080</test.url>
-                    </systemProperties>
                     <systemPropertyVariables>
                         <!-- Override the standard module path that points at the shared module set from servlet-dist -->
                         <module.path>${project.build.directory}/wildfly/modules</module.path>
                         <jboss.inst>${basedir}/target/wildfly</jboss.inst>
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
                         <jboss.server.config.file.name>standalone-microprofile.xml</jboss.server.config.file.name>
+                        <microprofile.jvm.args>${microprofile.jvm.args} -Dorg.eclipse.microprofile.rest.client.tck.timeoutCushion=30 -Dorg.wildfly.unsupported.skip.jakarta.transformer=true</microprofile.jvm.args>
+                        <test.url>http://localhost:8080</test.url>
                     </systemPropertyVariables>
-                    <excludes>
-                        <!-- We are not going to start a Jetty server within WildFly; test coverage ensured by having
-                             the tck run in RESTEasy too -->
-                        <exclude>org.eclipse.microprofile.rest.client.tck.ProxyServerTest</exclude>
-                        <exclude>org.eclipse.microprofile.rest.client.tck.cditests.CDIProxyServerTest</exclude>
-                        <exclude>org.eclipse.microprofile.rest.client.tck.ssl.SslContextTest</exclude>
-                        <!-- https://github.com/eclipse/microprofile-rest-client/issues/265 -->
-                        <exclude>org.eclipse.microprofile.rest.client.tck.timeout.TimeoutBuilderIndependentOfMPConfigTest</exclude>
-                        <exclude>org.eclipse.microprofile.rest.client.tck.timeout.TimeoutTest</exclude>
-                        <exclude>org.eclipse.microprofile.rest.client.tck.timeout.TimeoutViaMPConfigTest</exclude>
-                        <exclude>org.eclipse.microprofile.rest.client.tck.timeout.TimeoutViaMPConfigWithConfigKeyTest</exclude>
-                        <!-- Ignored until the fix for https://github.com/eclipse/microprofile-rest-client/issues/305 is released -->
-                        <exclude>org.eclipse.microprofile.rest.client.tck.cditests.CDIManagedProviderTest</exclude>
-                        <exclude>org.eclipse.microprofile.rest.client.tck.cditests.CDIProxyServerTest</exclude>
-                        <exclude>org.eclipse.microprofile.rest.client.tck.cditests.CDIQueryParamStyleTest</exclude>
-                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
@@ -575,16 +600,39 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <!--Disable the default surefire execution until WFLY-14136 is sorted. -->
-                            <execution>
-                                <id>default-test</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <microprofile.jvm.args>${microprofile.jvm.args} -Dts.include.servlet.4=true -Dorg.eclipse.microprofile.rest.client.tck.timeoutCushion=50000 -Dorg.wildfly.unsupported.skip.jakarta.transformer=true</microprofile.jvm.args>
+                            </systemPropertyVariables>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>org.jboss.resteasy:resteasy-client-microprofile</classpathDependencyExclude>
+                                <classpathDependencyExclude>org.jboss.resteasy:resteasy-client-microprofile-base</classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
+            <dependencies>
+                <dependency>
+                    <groupId>jakarta.enterprise</groupId>
+                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.spec.javax.ws.rs</groupId>
+                    <artifactId>jboss-jaxrs-api_3.0_spec</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.resteasy.microprofile</groupId>
+                    <artifactId>microprofile-rest-client</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.resteasy.microprofile</groupId>
+                    <artifactId>microprofile-rest-client-base</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
         </profile>
 
         <!-- Skip TCK testing on Windows due to issues with beans.xml deployment overlay -->

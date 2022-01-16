@@ -26,8 +26,4 @@ public class Jsr77DependenciesProcessor implements DeploymentUnitProcessor {
         moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JSR77_API, false, true, true, false));
 
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

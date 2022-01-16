@@ -164,9 +164,6 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         }
     }
 
-    public void undeploy(final DeploymentUnit context) {
-    }
-
     protected void processFieldResource(final DeploymentPhaseContext phaseContext, final FieldInfo fieldInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription, final Module module, final EEApplicationClasses applicationClasses, final PropertyReplacer replacer) throws DeploymentUnitProcessingException {
         final String fieldName = fieldInfo.name();
         final String injectionType = isEmpty(type) || type.equals(Object.class.getName()) ? fieldInfo.type().name().toString() : type;

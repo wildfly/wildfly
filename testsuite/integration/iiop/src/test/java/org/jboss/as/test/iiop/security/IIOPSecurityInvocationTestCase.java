@@ -53,7 +53,7 @@ import org.wildfly.security.permission.ElytronPermission;
  * A simple IIOP invocation for one AS7 server to another
  */
 @RunWith(Arquillian.class)
-@Ignore("[WFLY-15271] Update to use Elytron for authentication and identity propagation.")
+@Ignore("[WFLY-15272] Update to use Elytron for authentication and identity propagation.")
 public class IIOPSecurityInvocationTestCase {
 
 

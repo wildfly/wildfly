@@ -27,9 +27,9 @@ import java.util.function.Supplier;
 import javax.sql.DataSource;
 
 import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.persistence.jdbc.configuration.AbstractJdbcStoreConfigurationBuilder;
-import org.infinispan.persistence.jdbc.configuration.AbstractJdbcStoreConfigurationChildBuilder;
-import org.infinispan.persistence.jdbc.configuration.ConnectionFactoryConfigurationBuilder;
+import org.infinispan.persistence.jdbc.common.configuration.AbstractJdbcStoreConfigurationBuilder;
+import org.infinispan.persistence.jdbc.common.configuration.AbstractJdbcStoreConfigurationChildBuilder;
+import org.infinispan.persistence.jdbc.common.configuration.ConnectionFactoryConfigurationBuilder;
 import org.wildfly.clustering.service.SimpleSupplierDependency;
 
 /**

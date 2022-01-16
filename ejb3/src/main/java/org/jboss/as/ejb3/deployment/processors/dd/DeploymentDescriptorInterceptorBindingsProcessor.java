@@ -346,8 +346,4 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
 
 
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

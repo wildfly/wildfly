@@ -47,8 +47,8 @@
             </jms-connection-factory>
             <jms-connection-factory>
                 <name>java:app/myFactory6</name>
-                <user>guest</user>
-                <password>guest</password>
+                <user>${test.userName}</user>
+                <password>${test.password}</password>
             </jms-connection-factory>
             <jms-destination>
                 <description></description>

@@ -35,7 +35,7 @@ import javax.jms.TextMessage;
   * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
  */
 @MessageDriven(activationConfig = {
-        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = MDBWithVaultedPropertiesTestCase.CLEAR_TEXT_DESTINATION_LOOKUP)
+        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = MDBWithVaultedPropertiesTestCase.DEPLOYMENT_PROP_EXPRESSION)
 })
 public class MDB implements MessageListener {
 

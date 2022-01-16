@@ -51,8 +51,13 @@ The "formal" rules to format code are based on Eclipse. You can find them here h
 
 Same for cleanup and templates
 
-== IntelliJ
+== IntelliJ IDEA
+=== Code Formatter
 There is a plugin for IntelliJ to use the Eclipse formatter: https://github.com/krasa/EclipseCodeFormatter#instructions[Eclipse Code Formatter]
+
+=== Import WildFly as Maven project in IntelliJ IDEA
+Before importing you have to set the VM Options of the IntelliJ Maven importer. Please follow this guide https://www.jetbrains.com/help/idea/maven-importing.html and add ```-DallTests``` to the field ```VM options for importer```.
+This is necessary because the testsuite poms do not contain all necessary modules by default.
 
 = Jira
 Make sure there is a JIRA somewhere for the enhancement/fix

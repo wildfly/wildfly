@@ -49,11 +49,6 @@ public class DescriptorPropertyReplacementProcessor implements DeploymentUnitPro
 
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
-
     public void setDescriptorPropertyReplacement(boolean descriptorPropertyReplacement) {
         this.descriptorPropertyReplacement = descriptorPropertyReplacement;
     }

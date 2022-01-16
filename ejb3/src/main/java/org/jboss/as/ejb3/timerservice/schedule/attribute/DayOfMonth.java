@@ -21,13 +21,6 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
-import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.timerservice.schedule.util.CalendarUtil;
-import org.jboss.as.ejb3.timerservice.schedule.value.RangeValue;
-import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
-import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleValue;
-import org.jboss.as.ejb3.timerservice.schedule.value.SingleValue;
-
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,6 +30,13 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+
+import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.timerservice.schedule.util.CalendarUtil;
+import org.jboss.as.ejb3.timerservice.schedule.value.RangeValue;
+import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
+import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleValue;
+import org.jboss.as.ejb3.timerservice.schedule.value.SingleValue;
 
 /**
  * Represents the value of a day in a month, constructed out of a {@link javax.ejb.ScheduleExpression#getDayOfMonth()}
@@ -184,7 +184,7 @@ public class DayOfMonth extends IntegerBasedExpression {
     @Override
     protected void assertValid(Integer value) throws IllegalArgumentException {
         if (value != null && value == 0) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.invalidValueDayOfMonth(value);
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue(DayOfMonth.class.getSimpleName(), String.valueOf(value));
         }
         super.assertValid(value);
     }
@@ -260,7 +260,7 @@ public class DayOfMonth extends IntegerBasedExpression {
 
     private int getAbsoluteDayOfMonth(Calendar cal, String relativeDayOfMonth) {
         if (relativeDayOfMonth == null || relativeDayOfMonth.trim().isEmpty()) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.relativeDayOfMonthIsNull();
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue(DayOfMonth.class.getSimpleName(), relativeDayOfMonth);
         }
         String trimmedRelativeDayOfMonth = relativeDayOfMonth.trim();
         if (trimmedRelativeDayOfMonth.equalsIgnoreCase("last")) {
@@ -297,7 +297,7 @@ public class DayOfMonth extends IntegerBasedExpression {
 
             return date;
         }
-        throw EjbLogger.EJB3_TIMER_LOGGER.invalidRelativeValue(relativeDayOfMonth);
+        throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue(DayOfMonth.class.getSimpleName(), relativeDayOfMonth);
     }
 
     private boolean isValidNegativeDayOfMonth(String dayOfMonth) {
@@ -343,7 +343,7 @@ public class DayOfMonth extends IntegerBasedExpression {
     @Override
     public boolean isRelativeValue(String value) {
         if (value == null) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.relativeValueIsNull();
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue(DayOfMonth.class.getSimpleName(), value);
         }
         if (value.equalsIgnoreCase("last")) {
             return true;

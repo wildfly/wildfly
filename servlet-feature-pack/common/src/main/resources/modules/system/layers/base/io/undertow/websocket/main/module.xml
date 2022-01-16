@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="\${io.undertow:undertow-websockets-jsr@module.jakartaee9.suffix@}"/>
+        <artifact name="\${io.undertow:undertow-websockets-jsr@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>

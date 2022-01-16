@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import static org.jboss.as.weld.util.Utils.getRootDeploymentUnit;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -100,6 +102,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
+
         if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             return;
         }
@@ -160,6 +163,8 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
         final ServiceLoader<ModuleServicesProvider> moduleServicesProviders = ServiceLoader.load(ModuleServicesProvider.class,
                 WildFlySecurityManager.getClassLoaderPrivileged(WeldDeploymentProcessor.class));
 
+        Set<String> skipPrecalculatedJandexModules = getSkipPrecalculatedJandexModules(deploymentUnit);
+
         // This map is a cache that allows us to avoid repeated introspection of Module's exported resources
         // it is of little importance for small deployment, but makes a difference in massive ones, see WFLY-14055
         Map<String, Map<URL, URL>> exportedResourcesCache = new HashMap<>();
@@ -181,6 +186,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                 if (dependency == null) {
                     continue;
                 }
+
                 Map<URL, URL> resourcesMap = findExportedResources(dependency, exportedResourcesCache);
                 if (!resourcesMap.isEmpty()) {
                     List<BeanDeploymentArchiveImpl> moduleBdas = new ArrayList<>();
@@ -218,8 +224,9 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                             continue;
                         }
 
+                        final boolean skipPrecalculatedJandex = skipPrecalculatedJandexModules.contains(dependency.getName());
                         Map<String, List<String>> allAndBeanClasses = discover(beansXml.getBeanDiscoveryMode(), beansXmlUrl, entry.getValue(),
-                                beanDefiningAnnotations);
+                                beanDefiningAnnotations, skipPrecalculatedJandex);
                         Collection<String> discoveredBeanClasses = allAndBeanClasses.get(BEAN_CLASSES);
                         Collection<String> allKnownClasses = allAndBeanClasses.get(ALL_KNOWN_CLASSES);
                         if (discoveredBeanClasses == null) {
@@ -256,22 +263,31 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
         }
     }
 
+    private Set<String> getSkipPrecalculatedJandexModules(DeploymentUnit deploymentUnit) {
+        List<String> list = getRootDeploymentUnit(deploymentUnit).getAttachment(WeldAttachments.INGORE_PRECALCULATED_JANDEX_MODULES);
+        if (list != null) {
+            return new HashSet<>(list);
+        }
+        return Collections.emptySet();
+    }
+
     /**
      *
      * @param beanDiscoveryMode
      * @param beansXmlUrl
      * @param indexUrl
      * @param beanDefiningAnnotations
+     * @param skipPrecalculatedJandex
      * @return the set of discovered bean classes or null if unable to handle the provided beans.xml url
      */
-    private Map<String, List<String>> discover(BeanDiscoveryMode beanDiscoveryMode, URL beansXmlUrl, URL indexUrl, Set<AnnotationType> beanDefiningAnnotations) {
+    private Map<String, List<String>> discover(BeanDiscoveryMode beanDiscoveryMode, URL beansXmlUrl, URL indexUrl, Set<AnnotationType> beanDefiningAnnotations, boolean skipPrecalculatedJandex) {
         List<String> discoveredBeanClasses = new ArrayList<String>();
         List<String> allKnownClasses = new ArrayList<String>();
         BiConsumer<String, ClassFile> consumer;
 
         if (BeanDiscoveryMode.ANNOTATED.equals(beanDiscoveryMode)) {
             // We must only consider types with bean defining annotations
-            Index index = tryLoadIndex(indexUrl);
+            Index index = skipPrecalculatedJandex ? null : tryLoadIndex(indexUrl);
             if (index != null) {
                 // Use the provided index to find ClassInfo
                 consumer = (name, classFile) -> {
@@ -387,10 +403,6 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
             }
         }
         return null;
-    }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
     }
 
     private BeansXml parseBeansXml(URL beansXmlFile, BeansXmlParser parser, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {

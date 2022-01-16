@@ -80,7 +80,4 @@ public class RarDependencyProcessor implements DeploymentUnitProcessor {
         if (! appclient)
             phaseContext.addDeploymentDependency(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, ResourceAdaptersSubsystemService.ATTACHMENT_KEY);
     }
-
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

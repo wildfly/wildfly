@@ -8,7 +8,6 @@
         <extension module="org.wildfly.extension.elytron"/>
     </extensions>
     <management>
-        <identity security-domain="ManagementDomain"/>
         <audit-log>
             <formatters>
                 <json-formatter name="json-formatter"/>

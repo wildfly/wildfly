@@ -62,9 +62,4 @@ public class StaticInterceptorsDependenciesDeploymentUnitProcessor implements De
             deploymentModuleSpec.addSystemDependency(new ModuleDependency(moduleLoader, interceptorModuleId, false, false, true, false));
         }
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

@@ -215,8 +215,4 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
         }
         return false;
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

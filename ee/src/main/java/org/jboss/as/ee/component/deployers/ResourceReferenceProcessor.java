@@ -363,12 +363,6 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
         return string == null || string.isEmpty();
     }
 
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
-
     private Class<?> loadClass(String className, ClassLoader cl) throws ClassNotFoundException {
         if (className == null || className.trim().isEmpty()) {
             throw EeLogger.ROOT_LOGGER.cannotBeNullOrEmpty("Classname", className);

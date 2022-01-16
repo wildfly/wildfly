@@ -28,6 +28,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.shrinkwrap.api.ArchivePaths.create;
+import static org.wildfly.test.security.common.SecureExpressionUtil.getDeploymentPropertiesAsset;
+import static org.wildfly.test.security.common.SecureExpressionUtil.setupCredentialStore;
+import static org.wildfly.test.security.common.SecureExpressionUtil.setupCredentialStoreExpressions;
+import static org.wildfly.test.security.common.SecureExpressionUtil.teardownCredentialStore;
 
 import java.io.IOException;
 import java.net.SocketPermission;
@@ -48,6 +52,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.security.common.SecureExpressionUtil;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
@@ -56,13 +61,16 @@ import org.junit.runner.RunWith;
 @ServerSetup(JMSResourceDefinitionsTestCase.StoreVaultedPropertyTask.class)
 public class JMSResourceDefinitionsTestCase {
 
-    //String vaultedUserName = vaultHandler.addSecuredAttribute("messaging", "userName", "guest".toCharArray());
-    //String vaultedPassword = vaultHandler.addSecuredAttribute("messaging", "password", "guest".toCharArray());
+    static final String UNIQUE_NAME = "JMSResourceDefinitionsTestCase";
+    private static final SecureExpressionUtil.SecureExpressionData USERNAME = new SecureExpressionUtil.SecureExpressionData("guest", "test.userName");
+    private static final SecureExpressionUtil.SecureExpressionData PASSWORD = new SecureExpressionUtil.SecureExpressionData("guest", "test.password");
+    static final String STORE_LOCATION = JMSResourceDefinitionsTestCase.class.getResource("/").getPath() + "security/" + UNIQUE_NAME + ".cs";
 
     static class StoreVaultedPropertyTask implements ServerSetupTask {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            setupCredentialStore(managementClient, UNIQUE_NAME, STORE_LOCATION);
             // for annotation-based JMS definitions
             updatePropertyReplacement(managementClient, "annotation-property-replacement", true);
             // for deployment descriptor-based JMS definitions
@@ -73,6 +81,7 @@ public class JMSResourceDefinitionsTestCase {
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             updatePropertyReplacement(managementClient, "annotation-property-replacement", false);
             updatePropertyReplacement(managementClient, "spec-descriptor-property-replacement", false);
+            teardownCredentialStore(managementClient, UNIQUE_NAME, STORE_LOCATION);
         }
 
         private void updatePropertyReplacement(ManagementClient managementClient, String propertyReplacement, boolean value) throws IOException {
@@ -90,16 +99,22 @@ public class JMSResourceDefinitionsTestCase {
     private MessagingBean bean;
 
     @Deployment
-    public static JavaArchive createArchive() {
+    public static JavaArchive createArchive() throws Exception {
+
+        // Create the credential expressions so we can store them in the deployment
+        setupCredentialStoreExpressions(UNIQUE_NAME, USERNAME, PASSWORD);
+
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "JMSResourceDefinitionsTestCase.jar")
                 .addPackage(MessagingBean.class.getPackage())
+                .addClasses(SecureExpressionUtil.getDeploymentClasses())
                 .addAsManifestResource(
                         MessagingBean.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
                         new SocketPermission("localhost", "resolve")), "permissions.xml")
                 .addAsManifestResource(
                         EmptyAsset.INSTANCE,
-                        create("beans.xml"));
+                        create("beans.xml"))
+                .addAsManifestResource(getDeploymentPropertiesAsset(USERNAME, PASSWORD), "jboss.properties");
         return archive;
     }
 

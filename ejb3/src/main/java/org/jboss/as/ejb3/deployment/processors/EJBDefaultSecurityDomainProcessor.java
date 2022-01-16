@@ -219,10 +219,6 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
         }
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     /**
      * Sets the default security domain name to be used for Jakarta Enterprise Beans components, if no explicit security domain
      * is configured for the bean.

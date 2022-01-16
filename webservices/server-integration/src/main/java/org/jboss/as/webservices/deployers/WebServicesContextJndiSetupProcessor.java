@@ -42,9 +42,4 @@ public class WebServicesContextJndiSetupProcessor  implements DeploymentUnitProc
             registry.registerResourceReferenceProcessor(new WebServiceContextResourceProcessor());
         }
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

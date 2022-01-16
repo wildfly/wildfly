@@ -47,6 +47,7 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
             ModuleIdentifier.create("javax.xml.soap.api"),
             ModuleIdentifier.create("javax.xml.ws.api")
     };
+    public static final ModuleIdentifier XERCES_IMPL = ModuleIdentifier.create("org.apache.xerces");
 
     private final boolean addJBossWSDependencies;
 
@@ -65,9 +66,8 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
         for(ModuleIdentifier api : JAVAEE_APIS) {
             moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, api, false, false, true, false));
         }
-    }
+        //After jboss modules 2.0, the xercers module is not added
+        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, XERCES_IMPL, true, false, true, false));
 
-    public void undeploy(final DeploymentUnit context) {
     }
-
 }

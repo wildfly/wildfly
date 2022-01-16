@@ -48,7 +48,4 @@ public class EarInitializationProcessor implements DeploymentUnitProcessor {
             DeploymentTypeMarker.setType(DeploymentType.EAR, deploymentUnit);
         }
     }
-
-    public void undeploy(DeploymentUnit context) {
-    }
 }

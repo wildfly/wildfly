@@ -69,11 +69,6 @@ public class InboundBridgeDeploymentProcessor implements DeploymentUnitProcessor
         }
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
-
     private boolean isBridgeRequired(final DeploymentUnit deploymentUnit) {
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
 

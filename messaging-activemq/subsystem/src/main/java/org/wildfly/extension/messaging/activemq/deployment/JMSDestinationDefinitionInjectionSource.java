@@ -67,6 +67,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.External;
 import org.wildfly.extension.messaging.activemq.jms.DestinationConfiguration;
 import org.wildfly.extension.messaging.activemq.jms.ExternalJMSQueueService;
 import org.wildfly.extension.messaging.activemq.jms.ExternalJMSTopicService;
@@ -200,6 +201,8 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         destination.get(ENTRIES).add(jndiName);
         Service<Queue> queueService;
         if(external) {
+            // check @JMSDestinationDefinitions boolean property named enable-amq1-prefix for runtime queue
+            final boolean enabledAMQ1Prefix = properties.containsKey(External.ENABLE_AMQ1_PREFIX.getName()) ? Boolean.valueOf(properties.get(External.ENABLE_AMQ1_PREFIX.getName())) : External.ENABLE_AMQ1_PREFIX.getDefaultValue().asBoolean();
             ServiceName pcfName= JMSServices.getPooledConnectionFactoryBaseServiceName(serverServiceName).append(resourceAdapter);
             final ServiceName jmsQueueServiceName = JMSServices.getJmsQueueBaseServiceName(serverServiceName).append(queueName);
             queueService = ExternalJMSQueueService.installRuntimeQueueService(
@@ -214,7 +217,8 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
                             .setManagementPassword(password)
                             .build(),
                     serviceTarget,
-                    pcfName);
+                    pcfName,
+                    enabledAMQ1Prefix);
         } else {
            queueService = JMSQueueService.installService(queueName, serviceTarget, serverServiceName, selector, durable);
         }
@@ -257,6 +261,8 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
 
         Service<Topic> topicService;
         if(external) {
+            // check @JMSDestinationDefinitions boolean property named enable-amq1-prefix for runtime topic
+            final boolean enabledAMQ1Prefix = properties.containsKey(External.ENABLE_AMQ1_PREFIX.getName()) ? Boolean.valueOf(properties.get(External.ENABLE_AMQ1_PREFIX.getName())) : External.ENABLE_AMQ1_PREFIX.getDefaultValue().asBoolean();
             ServiceName pcfName = JMSServices.getPooledConnectionFactoryBaseServiceName(serverServiceName).append(resourceAdapter);
             final ServiceName jmsTopicServiceName = JMSServices.getJmsTopicBaseServiceName(serverServiceName).append(topicName);
             topicService = ExternalJMSTopicService.installRuntimeTopicService(
@@ -269,7 +275,8 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
                             .setDestinationServiceName(jmsTopicServiceName)
                             .build(),
                     serviceTarget,
-                    pcfName);
+                    pcfName,
+                    enabledAMQ1Prefix);
         } else {
             topicService = JMSTopicService.installService(topicName, serverServiceName, serviceTarget);
         }

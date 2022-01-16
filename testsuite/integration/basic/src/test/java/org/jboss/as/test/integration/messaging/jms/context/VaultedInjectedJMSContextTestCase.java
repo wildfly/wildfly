@@ -30,6 +30,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import static org.jboss.as.test.shared.TimeoutUtil.adjust;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
+import static org.wildfly.test.security.common.SecureExpressionUtil.getDeploymentPropertiesAsset;
+import static org.wildfly.test.security.common.SecureExpressionUtil.setupCredentialStore;
+import static org.wildfly.test.security.common.SecureExpressionUtil.setupCredentialStoreExpressions;
+import static org.wildfly.test.security.common.SecureExpressionUtil.teardownCredentialStore;
 
 import java.io.IOException;
 import java.net.SocketPermission;
@@ -58,6 +62,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.security.common.SecureExpressionUtil;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
@@ -66,18 +71,22 @@ import org.junit.runner.RunWith;
 @ServerSetup(VaultedInjectedJMSContextTestCase.StoreVaultedPropertyTask.class)
 public class VaultedInjectedJMSContextTestCase {
 
-    //String vaultedUserName = vaultHandler.addSecuredAttribute("messaging", "userName", "guest".toCharArray());
-    //String vaultedPassword = vaultHandler.addSecuredAttribute("messaging", "password", "guest".toCharArray());
+    static final String UNIQUE_NAME = "VaultedInjectedJMSContextTestCase";
+    private static final SecureExpressionUtil.SecureExpressionData USERNAME = new SecureExpressionUtil.SecureExpressionData("guest", "test.userName");
+    private static final SecureExpressionUtil.SecureExpressionData PASSWORD = new SecureExpressionUtil.SecureExpressionData("guest", "test.password");
+    static final String STORE_LOCATION = VaultedInjectedJMSContextTestCase.class.getResource("/").getPath() + "security/" + UNIQUE_NAME + ".cs";
 
     static class StoreVaultedPropertyTask implements ServerSetupTask {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            setupCredentialStore(managementClient, UNIQUE_NAME, STORE_LOCATION);
             updateAnnotationPropertyReplacement(managementClient, true);
         }
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            teardownCredentialStore(managementClient, UNIQUE_NAME, STORE_LOCATION);
             updateAnnotationPropertyReplacement(managementClient, false);
         }
 
@@ -99,9 +108,14 @@ public class VaultedInjectedJMSContextTestCase {
     private VaultedMessageProducer producerBean;
 
     @Deployment
-    public static JavaArchive createTestArchive() {
+    public static JavaArchive createTestArchive() throws Exception {
+
+        // Create the credential expressions so we can store them in the deployment
+        setupCredentialStoreExpressions(UNIQUE_NAME, USERNAME, PASSWORD);
+
         return ShrinkWrap.create(JavaArchive.class, "VaultedInjectedJMSContextTestCase.jar")
                 .addClass(TimeoutUtil.class)
+                .addClasses(SecureExpressionUtil.getDeploymentClasses())
                 .addPackage(VaultedMessageProducer.class.getPackage())
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsResource(createPermissionsXmlAsset(
@@ -109,7 +123,8 @@ public class VaultedInjectedJMSContextTestCase {
                         // required because the VaultedMessageProducer uses the RemoteConnectionFactory
                         // (that requires auth with vaulted credentials)
                         new SocketPermission("*", "connect"),
-                        new RuntimePermission("setContextClassLoader")), "META-INF/jboss-permissions.xml");
+                        new RuntimePermission("setContextClassLoader")), "META-INF/jboss-permissions.xml")
+                .addAsManifestResource(getDeploymentPropertiesAsset(USERNAME, PASSWORD), "jboss.properties");
     }
 
     @Test

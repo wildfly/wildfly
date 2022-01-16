@@ -71,11 +71,6 @@ public class GlobalModuleDependencyProcessor implements DeploymentUnitProcessor 
             }
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
-
     /**
      * Set the global modules configuration for the container.
      * @param globalModules a fully resolved (i.e. with expressions resolved and default values set) global modules configuration
