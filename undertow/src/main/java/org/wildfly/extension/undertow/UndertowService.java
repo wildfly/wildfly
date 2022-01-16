@@ -29,19 +29,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
-import javax.security.jacc.PolicyContext;
-import javax.security.jacc.PolicyContextException;
 
-import io.undertow.Version;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.security.SecurityConstants;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
-import org.wildfly.extension.undertow.security.jacc.HttpServletRequestPolicyContextHandler;
+
+import io.undertow.Version;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -185,22 +182,13 @@ public class UndertowService implements Service<UndertowService> {
     @Override
     public void start(final StartContext context) throws StartException {
         UndertowLogger.ROOT_LOGGER.serverStarting(Version.getVersionString());
-        // Register the active request PolicyContextHandler
-        try {
-            PolicyContext.registerHandler(SecurityConstants.WEB_REQUEST_KEY,
-                    new HttpServletRequestPolicyContextHandler(), true);
-        } catch (PolicyContextException pce) {
-            UndertowLogger.ROOT_LOGGER.failedToRegisterPolicyContextHandler(SecurityConstants.WEB_REQUEST_KEY, pce);
-        }
+
         serviceConsumer.accept(this);
     }
 
     @Override
     public void stop(final StopContext context) {
         serviceConsumer.accept(null);
-        // Remove PolicyContextHandler
-        Set handlerKeys = PolicyContext.getHandlerKeys();
-        handlerKeys.remove(SecurityConstants.WEB_REQUEST_KEY);
 
         UndertowLogger.ROOT_LOGGER.serverStopping(Version.getVersionString());
 
