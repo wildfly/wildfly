@@ -75,6 +75,9 @@ public class VerticleDeploymentMarkerProcessor implements DeploymentUnitProcesso
     private void attachVertxDeployments(DeploymentUnit deploymentUnit, VirtualFile vertxDeploymentFile) throws DeploymentUnitProcessingException {
         try {
             String jsonContent = streamToString(vertxDeploymentFile);
+            if (jsonContent.trim().isEmpty()) {
+                jsonContent = "{}";
+            }
             VertxDeploymentAttachment.attachVertxDeployments(deploymentUnit, new VerticleDeploymentsMetaData(new JsonObject(jsonContent)));
         } catch (IOException ioe) {
             throw VertxLogger.VERTX_LOGGER.failedToReadConfig(vertxDeploymentFile.getName(), ioe);
