@@ -38,6 +38,7 @@ import org.jboss.as.ejb3.timerservice.TimerState;
  * @author Stuart Douglas
  */
 public class TimerEntity implements Serializable {
+    private static final long serialVersionUID = 8229332510659372218L;
 
     protected final String id;
 
@@ -53,8 +54,6 @@ public class TimerEntity implements Serializable {
 
     protected final Serializable info;
 
-    protected final Object primaryKey;
-
     protected final TimerState timerState;
 
     public TimerEntity(TimerImpl timer) {
@@ -65,7 +64,6 @@ public class TimerEntity implements Serializable {
         this.previousRun = timer.getPreviousRun();
         this.timedObjectId = timer.getTimedObjectId();
         this.info = timer.getTimerInfo();
-        this.primaryKey = timer.getPrimaryKey();
 
         if (timer.getState() == TimerState.CREATED) {
             //a timer that has been persisted cannot be in the created state
@@ -105,14 +103,6 @@ public class TimerEntity implements Serializable {
 
     public TimerState getTimerState() {
         return timerState;
-    }
-
-    public boolean isCalendarTimer() {
-        return false;
-    }
-
-    public Object getPrimaryKey() {
-        return primaryKey;
     }
 
     @Override

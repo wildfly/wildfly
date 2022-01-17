@@ -32,7 +32,6 @@ import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPe
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.NEXT_DATE;
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.PARAMETER;
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.PREVIOUS_RUN;
-import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.PRIMARY_KEY;
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.REPEAT_INTERVAL;
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.SCHEDULE_EXPR_DAY_OF_MONTH;
 import static org.jboss.as.ejb3.timerservice.persistence.filestore.EjbTimerXmlPersister.SCHEDULE_EXPR_DAY_OF_WEEK;
@@ -62,7 +61,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
+import javax.ejb.ScheduleExpression;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -155,9 +154,6 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
                         if (loadableElements.info != null) {
                             builder.setInfo((Serializable) deserialize(loadableElements.info));
                         }
-                        if (loadableElements.primaryKey != null) {
-                            builder.setPrimaryKey(deserialize(loadableElements.primaryKey));
-                        }
                         timers.add(builder.build(timerService));
                     } catch (Exception e) {
                         EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(builder.getTimedObjectId(), builder.getId(), e);
@@ -192,11 +188,6 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
                 handled = true;
                 break;
             }
-            case PRIMARY_KEY: {
-                builder.primaryKey = reader.getElementText();
-                handled = true;
-                break;
-            }
         }
         return handled;
     }
@@ -217,6 +208,8 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
                 SCHEDULE_EXPR_DAY_OF_MONTH,
                 SCHEDULE_EXPR_MONTH,
                 SCHEDULE_EXPR_YEAR}));
+
+        final ScheduleExpression scheduleExpression = new ScheduleExpression();
         for (int i = 0; i < reader.getAttributeCount(); ++i) {
             String attr = reader.getAttributeValue(i);
             String attrName = reader.getAttributeLocalName(i);
@@ -225,34 +218,34 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
             if (!handled) {
                 switch (attrName) {
                     case SCHEDULE_EXPR_SECOND:
-                        builder.setScheduleExprSecond(attr);
+                        scheduleExpression.second(attr);
                         break;
                     case SCHEDULE_EXPR_MINUTE:
-                        builder.setScheduleExprMinute(attr);
+                        scheduleExpression.minute(attr);
                         break;
                     case SCHEDULE_EXPR_HOUR:
-                        builder.setScheduleExprHour(attr);
+                        scheduleExpression.hour(attr);
                         break;
                     case SCHEDULE_EXPR_DAY_OF_WEEK:
-                        builder.setScheduleExprDayOfWeek(attr);
+                        scheduleExpression.dayOfWeek(attr);
                         break;
                     case SCHEDULE_EXPR_DAY_OF_MONTH:
-                        builder.setScheduleExprDayOfMonth(attr);
+                        scheduleExpression.dayOfMonth(attr);
                         break;
                     case SCHEDULE_EXPR_MONTH:
-                        builder.setScheduleExprMonth(attr);
+                        scheduleExpression.month(attr);
                         break;
                     case SCHEDULE_EXPR_YEAR:
-                        builder.setScheduleExprYear(attr);
+                        scheduleExpression.year(attr);
                         break;
                     case SCHEDULE_EXPR_START_DATE:
-                        builder.setScheduleExprStartDate(new Date(Long.parseLong(attr)));
+                        scheduleExpression.start(new Date(Long.parseLong(attr)));
                         break;
                     case SCHEDULE_EXPR_END_DATE:
-                        builder.setScheduleExprEndDate(new Date(Long.parseLong(attr)));
+                        scheduleExpression.end(new Date(Long.parseLong(attr)));
                         break;
                     case SCHEDULE_EXPR_TIMEZONE:
-                        builder.setScheduleExprTimezone(attr);
+                        scheduleExpression.timezone(attr);
                         break;
                     default:
                         throw ParseUtils.unexpectedAttribute(reader, i);
@@ -262,6 +255,7 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
         if (!required.isEmpty()) {
             throw ParseUtils.missingRequired(reader, required);
         }
+        builder.setScheduleExpression(scheduleExpression);
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -269,9 +263,6 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
                     try {
                         if (loadableElements.info != null) {
                             builder.setInfo((Serializable) deserialize(loadableElements.info));
-                        }
-                        if (loadableElements.primaryKey != null) {
-                            builder.setPrimaryKey(deserialize(loadableElements.primaryKey));
                         }
                         if (loadableElements.methodName != null) {
                             Method timeoutMethod = CalendarTimer.getTimeoutMethod(new TimeoutMethod(loadableElements.className, loadableElements.methodName, loadableElements.params.toArray(new String[loadableElements.params.size()])), classLoader);
@@ -417,7 +408,6 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
 
     private static class LoadableElements {
         String info;
-        String primaryKey;
         String className;
         String methodName;
         final List<String> params = new ArrayList<>();

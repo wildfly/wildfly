@@ -1,12 +1,13 @@
 package org.jboss.as.ejb3.timerservice.persistence.database;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Properties;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class DatabaseTimerPersistenceTestCase {
 
@@ -16,11 +17,17 @@ public class DatabaseTimerPersistenceTestCase {
 
 
     @Before
-    public void initializeVars() throws NoSuchFieldException, NoSuchMethodException {
+    public void initializeVars() throws NoSuchFieldException, NoSuchMethodException, IllegalAccessException {
         field = object.getClass().getDeclaredField("database");
         field.setAccessible(true);
         method = object.getClass().getDeclaredMethod("investigateDialect");
         method.setAccessible(true);
+
+        final Field sqlField = object.getClass().getDeclaredField("sql");
+        sqlField.setAccessible(true);
+        final Properties testSqlProperties = new Properties();
+        testSqlProperties.setProperty("create-auto-timer", "insert...");
+        sqlField.set(object, testSqlProperties);
     }
 
     @Test

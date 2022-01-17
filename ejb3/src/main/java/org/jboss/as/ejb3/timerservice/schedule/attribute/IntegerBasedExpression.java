@@ -21,6 +21,11 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.schedule.value.IncrementValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.ListValue;
@@ -28,11 +33,6 @@ import org.jboss.as.ejb3.timerservice.schedule.value.RangeValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.SingleValue;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Represents a {@link Integer} type value in a {@link javax.ejb.ScheduleExpression}.
@@ -201,7 +201,7 @@ public abstract class IntegerBasedExpression {
 
     protected void assertValid(Integer value) throws IllegalArgumentException {
         if (value == null) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.couldNotParseScheduleExpression(this.origValue);
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue("", this.origValue);
         }
         int max = this.getMaxValue();
         int min = this.getMinValue();

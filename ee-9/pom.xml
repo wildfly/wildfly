@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>26.0.0.Final-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ee-9-parent</artifactId>
@@ -85,6 +85,8 @@
         <version.org.eclipse.microprofile.openapi>3.0</version.org.eclipse.microprofile.openapi>
         <version.org.eclipse.microprofile.opentracing>3.0</version.org.eclipse.microprofile.opentracing>
         <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
+        <!-- Implementations -->
+        <version.io.smallrye.smallrye-config>3.0.0-RC1</version.io.smallrye.smallrye-config>
         <!-- MP5 - END -->
         <version.org.eclipse.yasson>2.0.3</version.org.eclipse.yasson>
         <version.org.glassfish.jakarta.el>4.0.0</version.org.glassfish.jakarta.el>
@@ -97,7 +99,8 @@
         <version.org.hibernate.validator>7.0.1.Final</version.org.hibernate.validator>
         <version.org.jberet>2.0.2.Final</version.org.jberet>
         <version.org.jboss.invocation>1.7.0.Final</version.org.jboss.invocation>
-        <version.org.jboss.resteasy.ee9>6.0.0.Beta1</version.org.jboss.resteasy.ee9>
+        <version.org.jboss.resteasy.ee9>6.0.0.Final</version.org.jboss.resteasy.ee9>
+        <version.org.jboss.resteasy.microprofile>2.0.0.Beta1</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>3.0.0</version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>
         <version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec>
         <version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>
@@ -105,8 +108,9 @@
         <version.org.jboss.weld.weld>4.0.2.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>4.0.SP1</version.org.jboss.weld.weld-api>
         <version.org.jvnet.staxex>2.0.1</version.org.jvnet.staxex>
-        <version.org.wildfly.security.elytron-web>2.0.0.Beta1</version.org.wildfly.security.elytron-web>
-        <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta1</version.org.wildfly.security.jakarta.elytron-ee>
+        <version.org.wildfly.security.elytron>2.0.0.Beta1</version.org.wildfly.security.elytron>
+        <version.org.wildfly.security.elytron-web>2.0.0.Beta2</version.org.wildfly.security.elytron-web>
+        <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta2</version.org.wildfly.security.jakarta.elytron-ee>
 
         <!-- TODO Glassfish uses org.glassfish:jakarta-el for this, which we use for the impl
              but we have a separate API jar -->
@@ -221,6 +225,37 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.config</groupId>
+                <artifactId>smallrye-config</artifactId>
+                <version>${version.io.smallrye.smallrye-config}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>jakarta.annotation</groupId>
+                        <artifactId>jakarta.annotation-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jakarta.enterprise</groupId>
+                        <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.config</groupId>
+                <artifactId>smallrye-config-common</artifactId>
+                <version>${version.io.smallrye.smallrye-config}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.config</groupId>
+                <artifactId>smallrye-config-core</artifactId>
+                <version>${version.io.smallrye.smallrye-config}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.config</groupId>
+                <artifactId>smallrye-config-source-file-system</artifactId>
+                <version>${version.io.smallrye.smallrye-config}</version>
             </dependency>
 
             <dependency>
@@ -1045,6 +1080,18 @@
             </dependency>
 
             <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-jaxrs-jakarta</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.weld.module</groupId>
                 <artifactId>weld-jsf</artifactId>
                 <version>${version.org.jboss.weld.weld}</version>
@@ -1273,6 +1320,102 @@
             </dependency>
 
             <dependency>
+                <groupId>org.wildfly.security</groupId>
+                <artifactId>wildfly-elytron-audit</artifactId>
+                <version>${version.org.wildfly.security.elytron}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security</groupId>
+                <artifactId>wildfly-elytron-client</artifactId>
+                <version>${version.org.wildfly.security.elytron}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security</groupId>
+                <artifactId>wildfly-elytron-http-oidc</artifactId>
+                <version>${version.org.wildfly.security.elytron}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security</groupId>
+                <artifactId>wildfly-elytron-json-util</artifactId>
+                <version>${version.org.wildfly.security.elytron}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security</groupId>
+                <artifactId>wildfly-elytron-mechanism-oauth2</artifactId>
+                <version>${version.org.wildfly.security.elytron}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security</groupId>
+                <artifactId>wildfly-elytron-realm-token</artifactId>
+                <version>${version.org.wildfly.security.elytron}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security</groupId>
+                <artifactId>wildfly-elytron-tool</artifactId>
+                <version>${version.org.wildfly.security.elytron}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security</groupId>
+                <artifactId>wildfly-elytron-x500-cert-acme</artifactId>
+                <version>${version.org.wildfly.security.elytron}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.wildfly.security.elytron-web</groupId>
                 <artifactId>undertow-server-servlet</artifactId>
                 <version>${version.org.wildfly.security.elytron-web}</version>
@@ -1299,6 +1442,30 @@
             <dependency>
                 <groupId>org.wildfly.security.jakarta</groupId>
                 <artifactId>jakarta-authorization</artifactId>
+                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.jakarta</groupId>
+                <artifactId>jakarta-client-resteasy</artifactId>
+                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.jakarta</groupId>
+                <artifactId>jakarta-client-webservices</artifactId>
                 <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
                 <exclusions>
                     <exclusion>
@@ -1362,6 +1529,11 @@
                 <module>deployment-transformer</module>
                 <module>dist</module>
                 <module>feature-pack</module>
+                <module>ee-9-api</module>
+                <module>common</module>
+                <module>common-microprofile</module>
+                <module>galleon-content</module>
+                <module>galleon-content-microprofile</module>
             </modules>
         </profile>
     </profiles>

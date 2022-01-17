@@ -275,7 +275,7 @@ extracting identities from security tokens.
 |failover-realm |A realm definition that is an aggregation of two realms, one for default behaviour and
 second for cases when first realm is unavailable.
 
-|<<jaas-security-realm,jaas-realm>> |A security realm definition that uses JAAS configuration file to initialize LoginContext that is used to verify credentials.
+|<<jaas-security-realm, jaas-realm>> |A security realm definition that uses JAAS configuration file to initialize LoginContext that is used to obtain identities.
 |=======================================================================
 
 [[permission-mappers]]

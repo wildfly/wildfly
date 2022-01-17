@@ -38,8 +38,6 @@ import static org.wildfly.extension.messaging.activemq.BridgeDefinition.RECONNEC
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.USER;
 import static org.wildfly.extension.messaging.activemq.BridgeDefinition.USE_DUPLICATE_DETECTION;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +45,7 @@ import org.apache.activemq.artemis.core.config.BridgeConfiguration;
 import org.apache.activemq.artemis.core.config.TransformerConfiguration;
 import org.apache.activemq.artemis.core.persistence.StorageManager;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
+import org.apache.activemq.artemis.core.server.ComponentConfigurationRoutingType;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
@@ -70,6 +69,7 @@ public class BridgeAdd extends AbstractAddStepHandler {
     public static final BridgeAdd INSTANCE = new BridgeAdd();
 
     static final String CALL_TIMEOUT_PROPERTY = "org.wildfly.messaging.core.bridge.call-timeout";
+    static final String ROUTING_TYPE_PROPERTY = "org.wildfly.messaging.core.bridge.%s.routing-type";
 
     private BridgeAdd() {
         super(ATTRIBUTES);
@@ -135,6 +135,10 @@ public class BridgeAdd extends AbstractAddStepHandler {
         final boolean ha = CommonAttributes.HA.resolveModelAttribute(expressionResolver, model).asBoolean();
         final String user = USER.resolveModelAttribute(expressionResolver, model).asString();
         final String password = PASSWORD.resolveModelAttribute(expressionResolver, model).asString();
+        String routingType = getRoutingTypeFromSystemProperty(name);
+        if(routingType == null) {
+            routingType = BridgeDefinition.ROUTING_TYPE.resolveModelAttribute(expressionResolver, model).asString();
+        }
 
         Long callTimeout = getCallTimeoutFromSystemProperty();
         if (callTimeout == null) {
@@ -161,7 +165,8 @@ public class BridgeAdd extends AbstractAddStepHandler {
                 .setHA(ha)
                 .setUser(user)
                 .setPassword(password)
-                .setCallTimeout(callTimeout);
+                .setCallTimeout(callTimeout)
+                .setRoutingType(ComponentConfigurationRoutingType.valueOf(routingType));
 
         if (discoveryGroupName != null) {
             config.setDiscoveryGroupName(discoveryGroupName);
@@ -238,16 +243,17 @@ public class BridgeAdd extends AbstractAddStepHandler {
     /**
      * In upstream this property is gonna be part of the management model. Here we need to get it from a system property.
      */
-    static Long getCallTimeoutFromSystemProperty() {
-        String value;
-        if (System.getSecurityManager() == null) {
-            value = System.getProperty(CALL_TIMEOUT_PROPERTY);
-        } else {
-            value = AccessController.doPrivileged((PrivilegedAction<String>) () -> System.getProperty(CALL_TIMEOUT_PROPERTY));
-        }
+    private static Long getCallTimeoutFromSystemProperty() {
+        String value = org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(CALL_TIMEOUT_PROPERTY);
         if (value == null) {
             return null;
         }
         return Long.parseLong(value);
+    }
+    /**
+     * In upstream this property is gonna be part of the management model. Here we need to get it from a system property.
+     */
+    private static String getRoutingTypeFromSystemProperty(String name) {
+        return org.wildfly.security.manager.WildFlySecurityManager.getSystemPropertiesPrivileged().getProperty(String.format(ROUTING_TYPE_PROPERTY, name));
     }
 }

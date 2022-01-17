@@ -115,6 +115,8 @@ public interface JMSOperations {
 
     void removeExternalHttpConnector(String connectorName);
 
+    void removeExternalRemoteConnector(String name);
+
     /**
      * Set system properties for the given destination and resourceAdapter.
      *

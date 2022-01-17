@@ -113,7 +113,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         ComponentConfiguration singletonComponentConfiguration = new ComponentConfiguration(this, classIndex, moduleClassLoader, moduleLoader);
         // setup the component create service
         singletonComponentConfiguration.setComponentCreateServiceFactory(new SingletonComponentCreateServiceFactory(this.isInitOnStartup(), dependsOn));
-        final boolean definedSecurityDomain = getDefinedSecurityDomain() != null;
+        final String definedSecurityDomain = getDefinedSecurityDomain();
         final boolean securityRequired = hasBeanLevelSecurityMetadata();
         if (securityRequired) {
             getConfigurators().add(new ComponentConfigurator() {
@@ -129,8 +129,8 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                             ejbComponentDescription.setSecurityRequired(securityRequired);
                             final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(contextID, ejbComponentDescription.requiresJacc(), false);
                             elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> configuration.addPostConstructInterceptor(elytronInterceptorFactory, priority));
-                        } else if (definedSecurityDomain){
-                            throw ROOT_LOGGER.legacySecurityUnsupported();
+                        } else if (definedSecurityDomain != null){
+                            throw ROOT_LOGGER.legacySecurityUnsupported(definedSecurityDomain);
                         }
                     }
                 });

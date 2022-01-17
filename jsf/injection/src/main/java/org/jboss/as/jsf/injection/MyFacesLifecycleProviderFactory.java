@@ -30,7 +30,7 @@ import org.apache.myfaces.config.annotation.LifecycleProviderFactory;
  */
 public class MyFacesLifecycleProviderFactory extends LifecycleProviderFactory {
 
-    private final LifecycleProvider provider;
+    private LifecycleProvider provider;
 
     public MyFacesLifecycleProviderFactory() {
         provider = new MyFacesLifecycleProvider();
@@ -43,7 +43,9 @@ public class MyFacesLifecycleProviderFactory extends LifecycleProviderFactory {
 
     @Override
     public void release() {
-
+        MyFacesLifecycleProvider toClose = (MyFacesLifecycleProvider) provider;
+        provider = null;
+        toClose.close();
     }
 
 }

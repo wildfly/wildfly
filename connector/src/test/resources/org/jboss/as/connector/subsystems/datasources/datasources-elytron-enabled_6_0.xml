@@ -58,12 +58,10 @@
       <security>
         <!--You have a CHOICE of the next 2 items at this level-->
         <!--Optional:-->
+        <security-domain>token</security-domain>
         <!--Optional:-->
         <credential-reference store="test-store" alias="test-alias" type="org.wildfly.Foo" />
         <elytron-enabled>true</elytron-enabled>
-        <authentication-context>DsAuthCtxt</authentication-context>
-        <!--Optional:-->
-
       </security>
       <!--Optional:-->
       <validation>
@@ -182,7 +180,8 @@
       </xa-pool>
       <!--Optional:-->
       <security>
-        <credential-reference type="org.wildfly.Foo" clear-text="123456"/>
+        <user-name>token</user-name>
+        <password>token</password>
         <elytron-enabled>true</elytron-enabled>
         <!--Optional:-->
         <reauth-plugin class-name="token">

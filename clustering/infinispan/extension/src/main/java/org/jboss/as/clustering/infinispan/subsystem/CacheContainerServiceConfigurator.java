@@ -31,6 +31,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -85,8 +86,8 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     private final PathAddress address;
     private final String name;
     private final SupplierDependency<GlobalConfiguration> configuration;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(this.getClass()));
 
+    private volatile ExecutorService executor;
     private volatile Registrar<String> registrar;
     private volatile ServiceName[] names;
 
@@ -119,6 +120,8 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         }
 
         manager.start();
+        // Must create executor before registering cache listener
+        this.executor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(this.getClass()));
         manager.addListener(this);
         InfinispanLogger.ROOT_LOGGER.debugf("%s cache container started", this.name);
         return manager;
@@ -163,12 +166,16 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         this.registrations.put(cacheName, this.registrar.register(cacheName));
         ServiceValueCaptor<Cache<?, ?>> captor = this.registry.add(this.createCacheServiceName(cacheName));
         // Use getCacheAsync(), once available
-        this.executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                captor.accept(event.getCacheManager().getCache(cacheName));
-            }
-        });
+        try {
+            this.executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    captor.accept(event.getCacheManager().getCache(cacheName));
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            // Service was stopped
+        }
         return CompletableFutures.completedNull();
     }
 

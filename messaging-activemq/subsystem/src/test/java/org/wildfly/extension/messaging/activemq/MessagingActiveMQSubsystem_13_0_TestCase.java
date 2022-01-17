@@ -92,6 +92,11 @@ public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemB
         return properties;
     }
 
+    @Override
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
+    }
+
     @Test
     public void testJournalAttributes() throws Exception {
         KernelServices kernelServices = standardSubsystemTest(null, false);
@@ -104,6 +109,7 @@ public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemB
         Assert.assertEquals(2, serverModel.get(ServerDefinition.JOURNAL_MIN_FILES.getName()).resolve().asInt());
         Assert.assertEquals(5, serverModel.get(ServerDefinition.JOURNAL_POOL_FILES.getName()).resolve().asInt());
         Assert.assertEquals(7, serverModel.get(ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT.getName()).resolve().asInt());
+        kernelServices.shutdown();
     }
 
     @Test
@@ -115,6 +121,7 @@ public class MessagingActiveMQSubsystem_13_0_TestCase extends AbstractSubsystemB
 
         Assert.assertEquals("${call.timeout:60000}", bridgeModel.get(BridgeDefinition.CALL_TIMEOUT.getName()).asExpression().getExpressionString());
         Assert.assertEquals(60000, bridgeModel.get(BridgeDefinition.CALL_TIMEOUT.getName()).resolve().asLong());
+        kernelServices.shutdown();
     }
 
     /////////////////////////////////////////
