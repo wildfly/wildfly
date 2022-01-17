@@ -16,8 +16,10 @@
 
 package org.jboss.as.test.integration.batch.batchlet;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.BatchStatus;
@@ -46,9 +48,11 @@ public class SimpleCounterBatchletTestCase extends AbstractBatchTestCase {
 
     @Deployment
     public static WebArchive createDeployment() {
-        return createDefaultWar("simple-counter-batchlet.war", SimpleCounterBatchletTestCase.class.getPackage(), "simple-counter-batchlet.xml")
+        return createDefaultWar("simple-counter-batchlet.war",
+                        SimpleCounterBatchletTestCase.class.getPackage(),
+                        "simple-counter-batchlet.xml",
+                        "inactive-job.xml")
                 .addPackage(SimpleCounterBatchletTestCase.class.getPackage());
-
     }
 
     /**
@@ -61,6 +65,15 @@ public class SimpleCounterBatchletTestCase extends AbstractBatchTestCase {
         final Properties jobProperties = new Properties();
         jobProperties.setProperty("count", "10");
         final JobOperator jobOperator = BatchRuntime.getJobOperator();
+
+        // check available job names
+        // jobOperator.getJobNames() should return all available jobs in the
+        // current deployment, whether a job has been started or not.
+        final List<String> expectedJobNames = Arrays.asList("simple-counter-batchlet", "inactive-job");
+        final Set<String> jobNames = jobOperator.getJobNames();
+        Assert.assertTrue(String.format("Expecting job names: %s, but got %s", expectedJobNames, jobNames),
+                jobNames.containsAll(expectedJobNames));
+        Assert.assertEquals(2, jobNames.size());
 
         // Start the first job
         long executionId = jobOperator.start("simple-counter-batchlet", jobProperties);

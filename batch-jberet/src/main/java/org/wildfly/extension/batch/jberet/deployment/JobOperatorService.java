@@ -29,7 +29,6 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -38,7 +37,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
-
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionIsRunningException;
 import javax.batch.operations.JobExecutionNotMostRecentException;
@@ -163,13 +161,9 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
     @Override
     public Set<String> getJobNames() throws JobSecurityException {
         checkState();
-        Set<String> set = new HashSet<>();
-        for (String s : super.getJobNames()) {
-            if (resolver.isValidJobName(s)) {
-                set.add(s);
-            }
-        }
-        return set;
+        // job repository does not know a job if it has not been started.
+        // So we rely on the resolver to provide complete job names for the deployment.
+        return resolver.getJobNames();
     }
 
     @Override
