@@ -30,6 +30,7 @@ import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.kohsuke.MetaInfServices;
 
 /**
  * Jakarta Enterprise Beans Transformers used to transform current model version to legacy model versions for domain mode.
@@ -37,6 +38,7 @@ import org.jboss.as.controller.transform.description.TransformationDescriptionBu
  * @author Tomaz Cerar (c) 2017 Red Hat Inc.
  * @author Richard Achmatowicz (c) 2020 Red Hat Inc.
  */
+@MetaInfServices(ExtensionTransformerRegistration.class)
 public class EJBTransformers implements ExtensionTransformerRegistration {
 
     @Override
