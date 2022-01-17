@@ -37,6 +37,6 @@ public class StoreWriteThroughServiceConfigurator extends ComponentServiceConfig
 
     @Override
     public AsyncStoreConfiguration get() {
-        return new ConfigurationBuilder().persistence().addSingleFileStore().async().disable().create();
+        return new ConfigurationBuilder().persistence().addSoftIndexFileStore().async().disable().create();
     }
 }

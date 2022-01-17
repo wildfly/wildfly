@@ -45,108 +45,60 @@ public class ScheduleAnnotationInformationFactory extends ClassAnnotationInforma
     @Override
     protected AutoTimer fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
         final AutoTimer timer = new AutoTimer();
-        for (ScheduleValues schedulePart : ScheduleValues.values()) {
-            schedulePart.set(timer, annotationInstance, propertyReplacer);
+
+        for (AnnotationValue av : annotationInstance.values()) {
+            switch (ScheduleValues.valueOf(av.name())) {
+                case dayOfMonth:
+                    timer.getScheduleExpression().dayOfMonth(propertyReplacer.replaceProperties(av.asString()));
+                    break;
+                case dayOfWeek:
+                    timer.getScheduleExpression().dayOfWeek(propertyReplacer.replaceProperties(av.asString()));
+                    break;
+                case hour:
+                    timer.getScheduleExpression().hour(propertyReplacer.replaceProperties(av.asString()));
+                    break;
+                case info:
+                    timer.getTimerConfig().setInfo(propertyReplacer.replaceProperties(av.asString()));
+                    break;
+                case minute:
+                    timer.getScheduleExpression().minute(propertyReplacer.replaceProperties(av.asString()));
+                    break;
+                case month:
+                    timer.getScheduleExpression().month(propertyReplacer.replaceProperties(av.asString()));
+                    break;
+                case persistent:
+                    timer.getTimerConfig().setPersistent(av.asBoolean());
+                    break;
+                case second:
+                    timer.getScheduleExpression().second(propertyReplacer.replaceProperties(av.asString()));
+                    break;
+                case timezone:
+                    timer.getScheduleExpression().timezone(propertyReplacer.replaceProperties(av.asString()));
+                    break;
+                case year:
+                    timer.getScheduleExpression().year(propertyReplacer.replaceProperties(av.asString()));
+                    break;
+                default:
+                    throw EjbLogger.ROOT_LOGGER.invalidScheduleValue(av.name(), av.value().toString());
+            }
         }
         return timer;
     }
 
-
-    enum ScheduleValues {
-        DAY_OF_MONTH("dayOfMonth", "*") {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().dayOfMonth(value);
-            }
-        },
-
-        DAY_OF_WEEK("dayOfWeek", "*") {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().dayOfWeek(value);
-            }
-        },
-        HOUR("hour", "0") {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().hour(value);
-            }
-        },
-        INFO("info", null) {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getTimerConfig().setInfo(value);
-            }
-        },
-        MINUTE("minute", "0") {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().minute(value);
-            }
-        },
-        MONTH("month", "*") {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().month(value);
-            }
-        },
-        PERSISTENT("persistent", true) {
-            protected void setBoolean(final AutoTimer timer, final boolean value) {
-                timer.getTimerConfig().setPersistent(value);
-            }
-        },
-        SECOND("second", "0") {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().second(value);
-            }
-        },
-        TIMEZONE("timezone", null) {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().timezone(value);
-            }
-        },
-        YEAR("year", "*") {
-            protected void setString(final AutoTimer timer, final String value) {
-                timer.getScheduleExpression().year(value);
-            }
-        },;
-
-        private final String name;
-        private final String defaultStringValue;
-        private final boolean defaultBooleanValue;
-        private final boolean booleanValue;
-
-        ScheduleValues(final String name, final String defaultStringValue) {
-            this.name = name;
-            this.defaultStringValue = defaultStringValue;
-            this.defaultBooleanValue = false;
-            this.booleanValue = false;
-        }
-
-        ScheduleValues(final String name, final boolean defaultBooleanValue) {
-            this.name = name;
-            this.defaultStringValue = null;
-            this.defaultBooleanValue = defaultBooleanValue;
-            this.booleanValue = true;
-        }
-
-        public void set(final AutoTimer timer, final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
-            final AnnotationValue value = annotationInstance.value(name);
-            if (booleanValue) {
-                if (value == null) {
-                    setBoolean(timer, defaultBooleanValue);
-                } else {
-                    setBoolean(timer, value.asBoolean());
-                }
-            } else {
-                if (value == null) {
-                    setString(timer, defaultStringValue);
-                } else {
-                    setString(timer, propertyReplacer.replaceProperties(value.asString()));
-                }
-            }
-        }
-
-        protected void setString(final AutoTimer expression, final String value) {
-            throw EjbLogger.ROOT_LOGGER.shouldBeOverridden();
-        }
-
-        protected void setBoolean(final AutoTimer expression, final boolean value) {
-            throw EjbLogger.ROOT_LOGGER.shouldBeOverridden();
-        }
+    /**
+     * Attribute names of {@code javax.ejb.Schedule} annotation.
+     * Enum instance names must match {@code Schedule} annotation field names.
+     */
+    private enum ScheduleValues {
+        dayOfMonth,
+        dayOfWeek,
+        hour,
+        info,
+        minute,
+        month,
+        persistent,
+        second,
+        timezone,
+        year
     }
 }

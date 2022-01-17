@@ -23,7 +23,6 @@
 package org.jboss.as.test.integration.ejb.interceptor.annotatedejbclient;
 
 import java.net.URL;
-import java.util.Date;
 import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -67,7 +66,7 @@ public class AnnotatedEJBClientInterceptorTestCase {
     @Test
     public void testConfiguration(@ArquillianResource URL url) throws Throwable {
         TestRemote bean = lookup(url, TestRemote.class, TestSLSB.class, JAR_FILE_NAME);
-        if(bean.invoke("Test-" + new Date().getTime()) > 1){
+        if(bean.invoke("Test-" + System.currentTimeMillis()) > 1){
             Assert.fail("Method was invoked more than once.");
         }
     }

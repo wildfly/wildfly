@@ -73,9 +73,6 @@ public class PassivationAnnotationParsingProcessor implements DeploymentUnitProc
         }
     }
 
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private void processPassivation(final EEModuleDescription eeModuleDescription, final AnnotationTarget target, final DotName annotationType) throws DeploymentUnitProcessingException {
         if (!(target instanceof MethodInfo)) {
             throw EeLogger.ROOT_LOGGER.methodOnlyAnnotation(annotationType);

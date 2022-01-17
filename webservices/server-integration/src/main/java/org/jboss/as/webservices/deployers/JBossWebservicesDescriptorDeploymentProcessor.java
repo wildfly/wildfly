@@ -57,10 +57,6 @@ public final class JBossWebservicesDescriptorDeploymentProcessor implements Depl
         }
     }
 
-    public void undeploy(final DeploymentUnit unit) {
-        // does nothing
-    }
-
     private URL getJBossWebServicesDescriptorURL(final ResourceRoot deploymentRoot) throws DeploymentUnitProcessingException {
         VirtualFile jwsdd = deploymentRoot.getRoot().getChild("WEB-INF/jboss-webservices.xml");
 

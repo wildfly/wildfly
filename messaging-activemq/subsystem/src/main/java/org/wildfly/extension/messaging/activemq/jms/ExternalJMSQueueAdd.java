@@ -16,6 +16,7 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX;
 import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
 
 import javax.jms.Queue;
@@ -53,7 +54,8 @@ public class ExternalJMSQueueAdd extends AbstractAddStepHandler {
         // Do not pass the JNDI bindings to ActiveMQ but install them directly instead so that the
         // dependencies from the BinderServices to the JMSQueueService are not broken
         final ServiceName jmsQueueServiceName = JMSServices.getJmsQueueBaseServiceName(MessagingServices.getActiveMQServiceName((String) null)).append(name);
-        Service<Queue> queueService = ExternalJMSQueueService.installService(name, serviceTarget, jmsQueueServiceName);
+        final boolean enabledAMQ1Prefix = ENABLE_AMQ1_PREFIX.resolveModelAttribute(context, model).asBoolean();
+        Service<Queue> queueService = ExternalJMSQueueService.installService(name, serviceTarget, jmsQueueServiceName, enabledAMQ1Prefix);
         for (String entry : CommonAttributes.DESTINATION_ENTRIES.unwrap(context, model)) {
             ROOT_LOGGER.boundJndiName(entry);
             BinderServiceUtil.installBinderService(serviceTarget, entry, queueService, jmsQueueServiceName);

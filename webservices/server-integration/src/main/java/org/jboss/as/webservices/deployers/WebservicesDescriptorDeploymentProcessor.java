@@ -62,10 +62,6 @@ public final class WebservicesDescriptorDeploymentProcessor implements Deploymen
         }
     }
 
-    public void undeploy(final DeploymentUnit unit) {
-        // does nothing
-    }
-
     private URL getWebServicesDescriptorURL(final ResourceRoot deploymentRoot) throws DeploymentUnitProcessingException {
         VirtualFile wsdd = deploymentRoot.getRoot().getChild("WEB-INF/webservices.xml");
 

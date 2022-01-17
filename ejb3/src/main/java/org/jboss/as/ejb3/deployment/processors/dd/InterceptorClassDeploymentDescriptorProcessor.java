@@ -166,8 +166,4 @@ public class InterceptorClassDeploymentDescriptorProcessor implements Deployment
         }
 
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-    }
 }

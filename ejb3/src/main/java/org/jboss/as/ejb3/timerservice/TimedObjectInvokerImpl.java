@@ -23,7 +23,6 @@ package org.jboss.as.ejb3.timerservice;
 
 import static org.jboss.as.ejb3.util.MethodInfoHelper.EMPTY_STRING_ARRAY;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,11 +46,11 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Timed object invoker for an Jakarta Enterprise Beans. This is analogous to a view service for timer invocations
+ * Timed object invoker for an enterprise bean. This is analogous to a view service for timer invocations
  *
  * @author Stuart Douglas
  */
-public class TimedObjectInvokerImpl implements TimedObjectInvoker, Serializable, Service<TimedObjectInvoker> {
+public class TimedObjectInvokerImpl implements TimedObjectInvoker, Service<TimedObjectInvoker> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("TimedObjectInvoker");
 

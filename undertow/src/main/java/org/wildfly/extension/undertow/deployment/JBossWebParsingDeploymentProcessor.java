@@ -104,8 +104,4 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
             }
         }
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

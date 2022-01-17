@@ -59,10 +59,6 @@ public class DefaultJMSConnectionFactoryResourceReferenceProcessor implements De
         }
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     private static class JMSConnectionFactoryResourceReferenceProcessor implements EEResourceReferenceProcessor {
 
         private static final String TYPE = ConnectionFactory.class.getName();

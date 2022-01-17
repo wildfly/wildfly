@@ -200,8 +200,4 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
         parameter.setParamValue("false");
         contextParams.add(parameter);
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

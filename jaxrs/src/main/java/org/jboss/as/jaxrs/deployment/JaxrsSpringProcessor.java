@@ -205,8 +205,4 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
             }
         }
     }
-
-
-    public void undeploy(DeploymentUnit context) {
-    }
 }

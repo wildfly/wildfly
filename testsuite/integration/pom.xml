@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>26.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
@@ -268,6 +268,15 @@
             <activation><property><name>ts.elytron</name></property></activation>
             <modules>
                 <module>elytron</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.elytron-oidc-client-->
+        <profile>
+            <id>ts.integ.group.elytron-oidc-client</id>
+            <activation><property><name>ts.elytron-oidc-client</name></property></activation>
+            <modules>
+                <module>elytron-oidc-client</module>
             </modules>
         </profile>
 

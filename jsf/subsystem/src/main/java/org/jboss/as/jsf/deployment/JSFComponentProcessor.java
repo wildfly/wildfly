@@ -430,9 +430,4 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
         moduleDescription.addComponent(componentDescription);
         deploymentUnit.addToAttachmentList(WebComponentDescription.WEB_COMPONENTS, componentDescription.getStartServiceName());
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

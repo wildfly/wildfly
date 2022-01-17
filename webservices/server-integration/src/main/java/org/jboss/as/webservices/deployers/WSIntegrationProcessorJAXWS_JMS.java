@@ -126,11 +126,6 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
         unit.putAttachment(JMS_ENDPOINT_METADATA_KEY, new JMSEndpointsMetaData(list));
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-        // NOOP
-    }
-
     private static ResourceRoot getWsdlResourceRoot(final DeploymentUnit unit, final String wsdlPath) {
         final AttachmentList<ResourceRoot> resourceRoots = new AttachmentList<ResourceRoot>(ResourceRoot.class);
         final ResourceRoot root = unit.getAttachment(DEPLOYMENT_ROOT);

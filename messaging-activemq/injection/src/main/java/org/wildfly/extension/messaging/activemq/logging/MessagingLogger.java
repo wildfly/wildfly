@@ -879,4 +879,7 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 104, value = "Legacy security is no longer supported.")
     IllegalStateException legacySecurityUnsupported();
 
+    @Message(id = 105, value = "The %s %s is configured to use socket-binding %s, but this socket binding doesn't have the multicast-address or a multicast-port attributes configured.")
+    OperationFailedException socketBindingMulticastNotSet(String resourceType, String resourceName, String socketBindingName);
+
 }

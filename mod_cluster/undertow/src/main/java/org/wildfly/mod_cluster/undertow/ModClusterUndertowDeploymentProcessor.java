@@ -94,11 +94,6 @@ public class ModClusterUndertowDeploymentProcessor implements DeploymentUnitProc
 
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-        // Do nothing.
-    }
-
     /**
      * Checks whether this {@link Class} is configured to be used.
      *

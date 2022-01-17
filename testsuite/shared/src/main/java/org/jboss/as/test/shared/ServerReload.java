@@ -166,17 +166,39 @@ public class ServerReload {
      * @param serverPort if {@code -1}, use {@code TestSuiteEnvironment.getServerPort()} to create the ModelControllerClient
      */
     public static void executeReloadAndWaitForCompletion(ModelControllerClient client, int timeout, boolean adminOnly, String serverAddress, int serverPort, String serverConfig) {
-        executeReload(client, adminOnly, serverConfig);
+        executeReloadAndWaitForCompletion(client, timeout, adminOnly, false, serverAddress, serverPort, serverConfig);
+    }
+
+    /**
+     *
+     * @param client client to use to instruct the server to reload
+     * @param timeout time in ms to wait for a server process to return to running state following the reload
+     * @param adminOnly if {@code true}, the server will be reloaded in admin-only mode
+     * @param startSuspended if {@code true}, the service will be reloaded in suspended state
+     * @param serverAddress if {@code null}, use {@code TestSuiteEnvironment.getServerAddress()} to create the ModelControllerClient
+     * @param serverPort if {@code -1}, use {@code TestSuiteEnvironment.getServerPort()} to create the ModelControllerClient
+     */
+    public static void executeReloadAndWaitForCompletion(ModelControllerClient client, int timeout, boolean adminOnly, boolean startSuspended, String serverAddress, int serverPort, String serverConfig) {
+        executeReload(client, adminOnly, startSuspended, serverConfig);
         waitForLiveServerToReload(timeout,
                 serverAddress != null ? serverAddress : TestSuiteEnvironment.getServerAddress(),
                 serverPort != -1 ? serverPort : TestSuiteEnvironment.getServerPort());
     }
 
     private static void executeReload(ModelControllerClient client, boolean adminOnly, String serverConfig) {
+        executeReload(client, adminOnly, false, serverConfig);
+    }
+
+    private static void executeReload(ModelControllerClient client, boolean adminOnly, boolean startSuspended, String serverConfig) {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).setEmptyList();
         operation.get(OP).set("reload");
-        operation.get("admin-only").set(adminOnly);
+        if (adminOnly) {
+            operation.get("admin-only").set(adminOnly);
+        }
+        if (startSuspended) {
+            operation.get("start-mode").set("suspend");
+        }
         if(serverConfig != null) {
             operation.get("server-config").set(serverConfig);
         }

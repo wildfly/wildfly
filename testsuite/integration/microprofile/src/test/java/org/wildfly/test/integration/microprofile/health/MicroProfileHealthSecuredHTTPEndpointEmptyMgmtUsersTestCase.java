@@ -34,11 +34,9 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,12 +47,6 @@ public class MicroProfileHealthSecuredHTTPEndpointEmptyMgmtUsersTestCase {
 
     @ContainerResource
     ManagementClient managementClient;
-
-    @BeforeClass
-    public static void beforeClass() {
-        AssumeTestGroupUtil.assumeElytronProfileEnabled(); // Elytron has different behavior than PicketBox
-        // https://issues.jboss.org/browse/WFLY-10861?focusedCommentId=13623626&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-13623626
-    }
 
     @Deployment
     public static Archive<?> deployment() {

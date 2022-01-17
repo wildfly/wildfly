@@ -94,11 +94,6 @@ public class WeldDeploymentCleanupProcessor implements DeploymentUnitProcessor {
         weldStartCompletionServiceBuilder.install();
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-        // no-op
-    }
-
     private List<ServiceName> getComponentStartServiceNames(DeploymentUnit deploymentUnit) {
         List<ServiceName> serviceNames = new ArrayList<>();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);

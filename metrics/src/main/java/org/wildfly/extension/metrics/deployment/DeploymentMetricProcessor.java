@@ -60,8 +60,4 @@ public class DeploymentMetricProcessor implements DeploymentUnitProcessor {
         DeploymentMetricService.install(phaseContext.getServiceTarget(), deploymentUnit, rootResource, managementResourceRegistration,
                 exposeAnySubsystem, exposedSubsystems, prefix);
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

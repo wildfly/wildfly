@@ -15,6 +15,19 @@
       <transaction-support>NoTransaction</transaction-support>
       <!--Zero or more repetitions:-->
       <config-property name="config1">value</config-property>
+      <workmanager>
+        <security>
+          <domain>domain</domain>
+          <default-groups>
+            <group>group</group>
+          </default-groups>
+          <mappings>
+            <groups>
+              <map from="from" to="to"/>
+            </groups>
+          </mappings>
+        </security>
+      </workmanager>
       <!--Optional:-->
       <connection-definitions>
         <!--1 or more repetitions:-->
@@ -43,7 +56,7 @@
           <security>
             <!--You have a CHOICE of the next 3 items at this level-->
             <!--Optional:-->
-            <application/>
+            <security-domain-and-application>domain</security-domain-and-application>
           </security>
           <!--Optional:-->
           <timeout>

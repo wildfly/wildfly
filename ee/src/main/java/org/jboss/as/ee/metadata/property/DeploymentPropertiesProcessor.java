@@ -66,7 +66,4 @@ public class DeploymentPropertiesProcessor implements DeploymentUnitProcessor {
 
         deploymentUnit.putAttachment(Attachments.DEPLOYMENT_PROPERTIES, properties);
     }
-
-    public void undeploy(DeploymentUnit context) {
-    }
 }

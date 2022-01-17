@@ -54,8 +54,4 @@ class JwtDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, SMALLRYE_JWT, false, false, true, false));
         moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ELYTRON_JWT, false, false, true, false));
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {}
-
 }

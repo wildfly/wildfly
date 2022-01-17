@@ -15,8 +15,6 @@
  */
 package org.wildfly.extension.messaging.activemq.jms;
 
-
-
 import java.util.Collection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -27,10 +25,11 @@ import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ClusterTopologyListener;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.apache.activemq.artemis.api.core.client.TopologyMember;
-import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.activemq.artemis.core.client.impl.TopologyMemberImpl;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+import org.apache.activemq.artemis.jms.client.ActiveMQDestination;
 import org.apache.activemq.artemis.ra.ActiveMQRAConnectionFactory;
+import org.apache.activemq.artemis.spi.core.remoting.ClientProtocolManagerFactory;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
@@ -52,6 +51,7 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */
 public class ExternalJMSTopicService implements Service<Topic> {
+
     static final String JMS_TOPIC_PREFIX = "jms.topic.";
 
     private final InjectedValue<NamingStore> namingStoreInjector = new InjectedValue<NamingStore>();
@@ -62,20 +62,20 @@ public class ExternalJMSTopicService implements Service<Topic> {
     private final DestinationConfiguration config;
     private ClientSessionFactory sessionFactory;
 
-    private ExternalJMSTopicService(String name) {
-        this.topicName = JMS_TOPIC_PREFIX + name;
+    private ExternalJMSTopicService(final String name, final boolean enabledAMQ1Prefix) {
+        this.topicName = enabledAMQ1Prefix ? JMS_TOPIC_PREFIX + name : name;
         this.config = null;
     }
 
-    private ExternalJMSTopicService(final DestinationConfiguration config) {
-        this.topicName = JMS_TOPIC_PREFIX + config.getName();
+    private ExternalJMSTopicService(final DestinationConfiguration config, final boolean enabledAMQ1Prefix) {
+        this.topicName = enabledAMQ1Prefix ? JMS_TOPIC_PREFIX + config.getName() : config.getName();
         this.config = config;
     }
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         NamingStore namingStore = namingStoreInjector.getOptionalValue();
-        if(namingStore!= null) {
+        if (namingStore != null) {
             final Queue managementQueue = config.getManagementQueue();
             final NamingContext storeBaseContext = new NamingContext(namingStore, null);
             try {
@@ -83,13 +83,13 @@ public class ExternalJMSTopicService implements Service<Topic> {
                 if (cf instanceof ActiveMQRAConnectionFactory) {
                     final ActiveMQRAConnectionFactory raCf = (ActiveMQRAConnectionFactory) cf;
                     final ServerLocator locator = raCf.getDefaultFactory().getServerLocator();
-                    final String protocolManagerFactor = locator.getProtocolManagerFactory().getClass().getName();
+                    final ClientProtocolManagerFactory protocolManagerFactory = locator.getProtocolManagerFactory();
                     sessionFactory = locator.createSessionFactory();
                     ClusterTopologyListener listener = new ClusterTopologyListener() {
                         @Override
                         public void nodeUP(TopologyMember member, boolean last) {
                             try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getLive())) {
-                                factory.setProtocolManagerFactoryStr(protocolManagerFactor);
+                                factory.getServerLocator().setProtocolManagerFactory(protocolManagerFactory);
                                 MessagingLogger.ROOT_LOGGER.infof("Creating topic %s on node UP %s - %s", topicName, member.getNodeId(), member.getLive().toJson());
                                 config.createTopic(factory, managementQueue, topicName);
                             } catch (JMSException | StartException ex) {
@@ -98,7 +98,7 @@ public class ExternalJMSTopicService implements Service<Topic> {
                             }
                             if (member.getBackup() != null) {
                                 try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getBackup())) {
-                                    factory.setProtocolManagerFactoryStr(protocolManagerFactor);
+                                    factory.getServerLocator().setProtocolManagerFactory(protocolManagerFactory);
                                     MessagingLogger.ROOT_LOGGER.infof("Creating topic %s on backup node UP %s - %s", topicName, member.getNodeId(), member.getBackup().toJson());
                                     config.createTopic(factory, managementQueue, topicName);
                                 } catch (JMSException | StartException ex) {
@@ -108,7 +108,8 @@ public class ExternalJMSTopicService implements Service<Topic> {
                         }
 
                         @Override
-                        public void nodeDown(long eventUID, String nodeID) {}
+                        public void nodeDown(long eventUID, String nodeID) {
+                        }
                     };
                     locator.addClusterTopologyListener(listener);
                     Collection<TopologyMemberImpl> members = locator.getTopology().getMembers();
@@ -129,13 +130,12 @@ public class ExternalJMSTopicService implements Service<Topic> {
                 }
             }
         }
-        topic = ActiveMQJMSClient.createTopic(topicName);
+        topic = ActiveMQDestination.createTopic(topicName);
     }
-
 
     @Override
     public synchronized void stop(final StopContext context) {
-        if(sessionFactory != null) {
+        if (sessionFactory != null) {
             sessionFactory.close();
         }
     }
@@ -145,15 +145,15 @@ public class ExternalJMSTopicService implements Service<Topic> {
         return topic;
     }
 
-    public static ExternalJMSTopicService installService(final String name, final ServiceName serviceName, final ServiceTarget serviceTarget) {
-        final ExternalJMSTopicService service = new ExternalJMSTopicService(name);
+    public static ExternalJMSTopicService installService(final String name, final ServiceName serviceName, final ServiceTarget serviceTarget, final boolean enabledAMQ1Prefix) {
+        final ExternalJMSTopicService service = new ExternalJMSTopicService(name, enabledAMQ1Prefix);
         final ServiceBuilder<Topic> serviceBuilder = serviceTarget.addService(serviceName, service);
         serviceBuilder.install();
         return service;
     }
 
-    public static ExternalJMSTopicService installRuntimeTopicService(final DestinationConfiguration config, final ServiceTarget serviceTarget, final ServiceName pcf) {
-        final ExternalJMSTopicService service = new ExternalJMSTopicService(config);
+    public static ExternalJMSTopicService installRuntimeTopicService(final DestinationConfiguration config, final ServiceTarget serviceTarget, final ServiceName pcf, final boolean enabledAMQ1Prefix) {
+        final ExternalJMSTopicService service = new ExternalJMSTopicService(config, enabledAMQ1Prefix);
         final ServiceBuilder<Topic> serviceBuilder = serviceTarget.addService(config.getDestinationServiceName(), service);
         serviceBuilder.addDependency(NamingService.SERVICE_NAME, NamingStore.class, service.namingStoreInjector);
         serviceBuilder.addDependency(pcf, ExternalPooledConnectionFactoryService.class, service.pcfInjector);

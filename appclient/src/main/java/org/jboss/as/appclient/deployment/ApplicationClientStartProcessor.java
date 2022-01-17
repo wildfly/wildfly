@@ -99,9 +99,4 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
                 .addDependency(component.getCreateServiceName(), Component.class, startService.getApplicationClientComponent())
                 .install();
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
 }

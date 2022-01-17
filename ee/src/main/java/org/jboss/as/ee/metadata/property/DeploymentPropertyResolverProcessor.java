@@ -56,7 +56,4 @@ public class DeploymentPropertyResolverProcessor implements DeploymentUnitProces
             deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_PROPERTY_RESOLVERS, new CompositePropertyResolver(propertyResolvers));
         }
     }
-
-    public void undeploy(DeploymentUnit context) {
-    }
 }

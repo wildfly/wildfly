@@ -29,8 +29,4 @@ public class MailDependenciesProcessor implements DeploymentUnitProcessor {
         moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ACTIVATION_API, false, false, true, false));
 
     }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
 }

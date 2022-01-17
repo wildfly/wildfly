@@ -93,11 +93,6 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
         }
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-        // noop
-    }
-
     private static void processHandlerChainAnnotations(final ResourceRoot currentResourceRoot,
             final List<ResourceRoot> resourceRoots, final Index index, final WSEndpointHandlersMapping mapping)
             throws DeploymentUnitProcessingException {

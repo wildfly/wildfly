@@ -21,15 +21,15 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
-import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
-
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 
 /**
  * Month
@@ -144,7 +144,7 @@ public class Month extends IntegerBasedExpression {
             return Calendar.JANUARY;
         }
         if (this.offsetAdjustedMonths.isEmpty()) {
-            throw EjbLogger.EJB3_TIMER_LOGGER.invalidExpressionSeconds(this.origValue);
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue(Month.class.getSimpleName(), this.origValue);
         }
         return this.offsetAdjustedMonths.first();
     }

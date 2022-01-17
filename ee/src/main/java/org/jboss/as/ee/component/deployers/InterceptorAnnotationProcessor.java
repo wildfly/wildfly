@@ -134,10 +134,4 @@ public class InterceptorAnnotationProcessor implements DeploymentUnitProcessor {
             }
         }
     }
-
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
-
 }

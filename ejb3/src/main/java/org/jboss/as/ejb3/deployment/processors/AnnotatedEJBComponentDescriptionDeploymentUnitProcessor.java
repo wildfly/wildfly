@@ -85,11 +85,6 @@ public class AnnotatedEJBComponentDescriptionDeploymentUnitProcessor implements 
         processDeploymentDescriptor(deploymentUnit);
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-        // do nothing
-    }
-
     protected static EjbJarDescription getEjbJarDescription(final DeploymentUnit deploymentUnit) {
         EjbJarDescription ejbJarDescription = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION);
         if (ejbJarDescription == null) {

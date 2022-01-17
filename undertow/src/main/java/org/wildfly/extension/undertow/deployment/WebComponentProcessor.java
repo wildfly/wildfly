@@ -136,10 +136,6 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     /**
      * Gets all classes that are eligible for injection etc
      *

@@ -364,6 +364,13 @@ public class RemoteActiveMQProviderJMSOperations implements JMSOperations {
     }
 
     @Override
+    public void removeExternalRemoteConnector(String connectorName) {
+        ModelNode address = getSubsystemAddress()
+                .add("remote-connector", connectorName);
+        executeOperation(address, REMOVE_OPERATION, null);
+    }
+
+    @Override
     public void enableMessagingTraces() {
         final ModelNode attributes = new ModelNode();
         attributes.get("level").set("TRACE");

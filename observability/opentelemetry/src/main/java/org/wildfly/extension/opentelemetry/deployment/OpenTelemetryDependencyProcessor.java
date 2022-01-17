@@ -41,11 +41,6 @@ public class OpenTelemetryDependencyProcessor implements DeploymentUnitProcessor
         addDependencies(phaseContext.getDeploymentUnit());
     }
 
-    @Override
-    public void undeploy(DeploymentUnit deploymentUnit) {
-
-    }
-
     private void addDependencies(DeploymentUnit deploymentUnit) {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();

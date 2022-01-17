@@ -283,10 +283,6 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         configuration.addAroundConstructInterceptor(new ImmediateInterceptorFactory(WeldConstructionStartInterceptor.INSTANCE), InterceptorOrder.AroundConstruct.CONSTRUCTION_START_INTERCEPTOR);
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-    }
-
     /**
      * Retrieves ManagedReference from the interceptor context and performs an InjectionTarget operation on the instance
      */
