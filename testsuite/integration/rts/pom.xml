@@ -96,6 +96,16 @@
             <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Required for Java 11 -->
         <dependency>
             <groupId>org.jboss.spec.javax.xml.bind</groupId>

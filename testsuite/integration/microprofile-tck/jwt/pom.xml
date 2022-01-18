@@ -66,6 +66,11 @@
             <artifactId>hamcrest-all</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- A REST (RESTEasy) implementation is required -->
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
