@@ -92,19 +92,6 @@ public class DayOfMonth extends IntegerBasedExpression {
      * Internally, we map all allowed {@link String} values to their {@link Integer} equivalents.
      * This map holds the {@link String} name to {@link Integer} value mapping.
      */
-    private static final Map<String, Integer> DAY_OF_MONTH_ALIAS = new HashMap<String, Integer>();
-
-    static {
-        DAY_OF_MONTH_ALIAS.put("sun", Calendar.SUNDAY);
-        DAY_OF_MONTH_ALIAS.put("mon", Calendar.MONDAY);
-        DAY_OF_MONTH_ALIAS.put("tue", Calendar.TUESDAY);
-        DAY_OF_MONTH_ALIAS.put("wed", Calendar.WEDNESDAY);
-        DAY_OF_MONTH_ALIAS.put("thu", Calendar.THURSDAY);
-        DAY_OF_MONTH_ALIAS.put("fri", Calendar.FRIDAY);
-        DAY_OF_MONTH_ALIAS.put("sat", Calendar.SATURDAY);
-
-    }
-
     private static final Map<String, Integer> ORDINAL_TO_WEEK_NUMBER_MAPPING = new HashMap<>(8);
 
     static {
@@ -180,17 +167,14 @@ public class DayOfMonth extends IntegerBasedExpression {
     }
 
     private boolean hasRelativeDayOfMonth() {
-        if (this.relativeValues.isEmpty()) {
-            return false;
-        }
-        return true;
+        return !this.relativeValues.isEmpty();
     }
 
     private SortedSet<Integer> getEligibleDaysOfMonth(Calendar cal) {
-        if (this.hasRelativeDayOfMonth() == false) {
+        if (!this.hasRelativeDayOfMonth()) {
             return this.absoluteValues;
         }
-        SortedSet<Integer> eligibleDaysOfMonth = new TreeSet<Integer>(this.absoluteValues);
+        SortedSet<Integer> eligibleDaysOfMonth = new TreeSet<>(this.absoluteValues);
         for (ScheduleValue relativeValue : this.relativeValues) {
             if (relativeValue instanceof SingleValue) {
                 SingleValue singleValue = (SingleValue) relativeValue;
@@ -202,7 +186,7 @@ public class DayOfMonth extends IntegerBasedExpression {
                 String start = range.getStart();
                 String end = range.getEnd();
 
-                Integer dayOfMonthStart = null;
+                Integer dayOfMonthStart;
                 // either start will be relative or end will be relative or both are relative
                 if (this.isRelativeValue(start)) {
                     dayOfMonthStart = this.getAbsoluteDayOfMonth(cal, start);
@@ -210,7 +194,7 @@ public class DayOfMonth extends IntegerBasedExpression {
                     dayOfMonthStart = this.parseInt(start);
                 }
 
-                Integer dayOfMonthEnd = null;
+                Integer dayOfMonthEnd;
                 if (this.isRelativeValue(end)) {
                     dayOfMonthEnd = this.getAbsoluteDayOfMonth(cal, end);
                 } else {
@@ -263,7 +247,7 @@ public class DayOfMonth extends IntegerBasedExpression {
             return CalendarUtil.getLastDateOfMonth(cal);
         }
         if (this.isValidNegativeDayOfMonth(trimmedRelativeDayOfMonth)) {
-            Integer negativeRelativeDayOfMonth = Integer.parseInt(trimmedRelativeDayOfMonth);
+            int negativeRelativeDayOfMonth = Integer.parseInt(trimmedRelativeDayOfMonth);
             int lastDayOfCurrentMonth = CalendarUtil.getLastDateOfMonth(cal);
             return lastDayOfCurrentMonth + negativeRelativeDayOfMonth;
         }
@@ -271,9 +255,12 @@ public class DayOfMonth extends IntegerBasedExpression {
         if (parts != null) {
             String ordinal = parts[0];
             String day = parts[1];
-            int dayOfWeek = DAY_OF_MONTH_ALIAS.get(day);
 
-            Integer date = null;
+            // DAY_OF_WEEK_ALIAS value is 0-based, while Calendar.SUNDAY is 1,
+            // MONDAY is 2, so need to add 1 match Calendar's value.
+            int dayOfWeek = DayOfWeek.DAY_OF_WEEK_ALIAS.get(day) + 1;
+
+            Integer date;
             if (ordinal.equals("last")) {
                 date = CalendarUtil.getDateOfLastDayOfWeekInMonth(cal, dayOfWeek);
             } else {
@@ -296,7 +283,7 @@ public class DayOfMonth extends IntegerBasedExpression {
 
     private boolean isValidNegativeDayOfMonth(String dayOfMonth) {
         try {
-            Integer val = Integer.parseInt(dayOfMonth.trim());
+            int val = Integer.parseInt(dayOfMonth.trim());
             if (val <= -1 && val >= -7) {
                 return true;
             }
@@ -329,7 +316,7 @@ public class DayOfMonth extends IntegerBasedExpression {
         if (!ORDINAL_TO_WEEK_NUMBER_MAPPING.containsKey(lowerCaseOrdinal) && !lowerCaseOrdinal.equals("last")) {
             return null;
         }
-        if (DAY_OF_MONTH_ALIAS.containsKey(lowerCaseDayOfWeek) == false) {
+        if (!DayOfWeek.DAY_OF_WEEK_ALIAS.containsKey(lowerCaseDayOfWeek)) {
             return null;
         }
         return relativeParts;
@@ -381,11 +368,12 @@ public class DayOfMonth extends IntegerBasedExpression {
         try {
             return super.parseInt(alias);
         } catch (NumberFormatException nfe) {
-            if (DAY_OF_MONTH_ALIAS != null) {
-                String lowerCaseAlias = alias.toLowerCase(Locale.ENGLISH);
-                return DAY_OF_MONTH_ALIAS.get(lowerCaseAlias);
-            }
+            String lowerCaseAlias = alias.toLowerCase(Locale.ENGLISH);
+            final Integer dayOfWeekInteger = DayOfWeek.DAY_OF_WEEK_ALIAS.get(lowerCaseAlias);
+
+            // DAY_OF_WEEK_ALIAS value is 0-based, while Calendar.SUNDAY is 1,
+            // MONDAY is 2, so need to add 1 match Calendar's value.
+            return dayOfWeekInteger == null ? null : dayOfWeekInteger + 1;
         }
-        return null;
     }
 }
