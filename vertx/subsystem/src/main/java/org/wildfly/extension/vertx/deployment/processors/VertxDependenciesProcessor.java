@@ -52,6 +52,7 @@ public class VertxDependenciesProcessor implements DeploymentUnitProcessor {
     private static final String MODULE_VERTX_EXTENSION = "org.wildfly.extension.vertx";
     private static final String MODULE_IO_VERTX_CORE = "io.vertx.core";
     private static final String MODULE_IO_VERTX_INFINISPAN = "io.vertx.infinispan";
+    private static final String MODULE_IO_VERTX_AUTH = "io.vertx.auth";
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
@@ -65,6 +66,7 @@ public class VertxDependenciesProcessor implements DeploymentUnitProcessor {
         dependencies.add(new ModuleDependency(moduleLoader, MODULE_VERTX_EXTENSION, false, false, false, false));
         dependencies.add(new ModuleDependency(moduleLoader, MODULE_IO_VERTX_CORE, false, true, true, false));
         dependencies.add(new ModuleDependency(moduleLoader, MODULE_IO_VERTX_INFINISPAN, true, true, true, false));
+        dependencies.add(new ModuleDependency(moduleLoader, MODULE_IO_VERTX_AUTH, true, true, true, false));
         moduleSpecification.addSystemDependencies(dependencies);
     }
 
