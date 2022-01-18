@@ -51,6 +51,7 @@
         <module>ee-security</module>
         <module>jaxrs</module>
         <module>jpa/spi</module>
+        <module>jpa/eclipselink</module>
         <module>jpa/subsystem</module>
         <module>jsf/injection</module>
         <module>jsf/subsystem</module>
