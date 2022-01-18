@@ -48,6 +48,7 @@
         <module name="io.netty.netty-common"/>
         <module name="io.netty.netty-resolver"/>
         <module name="io.netty.netty-transport"/>
+        <module name="io.netty.netty-handler"/>
         <!-- https://issues.jboss.org/browse/AS7-4936  this is to avoid an issue on IBM JDK -->
         <module name="sun.jdk"/>
 
