@@ -16,8 +16,11 @@
 package org.wildfly.extension.vertx;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.impl.VertxBuilder;
+import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.cluster.infinispan.InfinispanClusterManager;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
@@ -137,6 +140,7 @@ public class VertxProxyService implements Service, VertxConstants {
 
     private Vertx createVertx() throws Exception {
         VertxOptions vertxOptions = vertxProxy.getVertxOptions();
+        VertxBuilder vb = new VertxBuilder(vertxOptions);
         if (vertxProxy.isClustered()) {
             JChannel jChannel = channelFactorySupplier.get().createChannel(UUID.randomUUID().toString());
             String clusterName = clusterSupplier.get() != null ? clusterSupplier.get() : vertxProxy.getJgroupChannelName();
@@ -151,12 +155,14 @@ public class VertxProxyService implements Service, VertxConstants {
             configurationBuilderHolder.newConfigurationBuilder(NODE_INFO_CACHE_NAME).clustering().cacheMode(CacheMode.REPL_SYNC);
             configurationBuilderHolder.newConfigurationBuilder(CACHE_CONFIGURATION).template(true).clustering().cacheMode(CacheMode.DIST_SYNC);
             defaultCacheManager = new DefaultCacheManager(configurationBuilderHolder, true);
-            vertxOptions.setClusterManager(new InfinispanClusterManager(defaultCacheManager));
-            CompletableFuture<Vertx> vertxFuture = (CompletableFuture<Vertx>)Vertx.clusteredVertx(vertxOptions)
-                    .toCompletionStage();
-            return vertxFuture.get();
+            ClusterManager clusterManager = new InfinispanClusterManager(defaultCacheManager);
+            vertxOptions.setClusterManager(clusterManager);
+            vb.clusterManager(clusterManager);
+            Promise<Vertx> promise = Promise.promise();
+            vb.init().clusteredVertx(promise);
+            return promise.future().toCompletionStage().toCompletableFuture().get();
         } else {
-            return Vertx.vertx(vertxOptions);
+            return vb.init().vertx();
         }
     }
 
