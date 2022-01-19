@@ -20,6 +20,7 @@ public final class Capabilities {
     public static final String CAPABILITY_HOST_SSO = "org.wildfly.undertow.host.sso";
     public static final String CAPABILITY_LOCATION = "org.wildfly.undertow.host.location";
     public static final String CAPABILITY_ACCESS_LOG = "org.wildfly.undertow.host.access-log";
+    public static final String CAPABILITY_ACTIVE_REQUEST_TRACKING = "org.wildfly.undertow.host.active-request-tracker";
     public static final String CAPABILITY_CONSOLE_ACCESS_LOG = "org.wildfly.undertow.host.console-access-log";
     public static final String CAPABILITY_HANDLER = "org.wildfly.extension.undertow.handler";
     public static final String CAPABILITY_MOD_CLUSTER_FILTER = "org.wildfly.undertow.mod_cluster-filter";
