@@ -439,4 +439,7 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 109, value = "The deployment is configured to use legacy security which is no longer supported.")
     StartException legacySecurityUnsupported();
 
+    @LogMessage(level = WARN)
+    @Message(id=110, value="Statistics must be enabled to track active requests")
+    void cannotEnableActiveRequestTracking();
 }

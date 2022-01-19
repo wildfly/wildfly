@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
 
+import io.undertow.Version;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -37,8 +38,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
-
-import io.undertow.Version;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -89,7 +88,8 @@ public class UndertowService implements Service<UndertowService> {
 
     protected UndertowService(final Consumer<UndertowService> serviceConsumer, final String defaultContainer,
                               final String defaultServer, final String defaultVirtualHost,
-                              final String instanceId, final boolean obfuscateSessionRoute, final boolean statisticsEnabled) {
+                              final String instanceId, final boolean obfuscateSessionRoute,
+                              final boolean statisticsEnabled) {
         this.serviceConsumer = serviceConsumer;
         this.defaultContainer = defaultContainer;
         this.defaultServer = defaultServer;
@@ -127,6 +127,10 @@ public class UndertowService implements Service<UndertowService> {
 
     public static ServiceName accessLogServiceName(final String server, final String virtualHost) {
         return virtualHostName(server, virtualHost).append(Constants.ACCESS_LOG);
+    }
+
+    public static ServiceName activeRequestTrackingServiceName(final String server, final String virtualHost) {
+        return virtualHostName(server, virtualHost).append(Constants.ACTIVE_REQUEST_TRACKING);
     }
 
     public static ServiceName ssoServiceName(final String server, final String virtualHost) {

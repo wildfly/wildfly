@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PersistentResourceDefinition;
@@ -42,8 +44,6 @@ import org.wildfly.extension.undertow.handlers.FileHandler;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
 import org.wildfly.extension.undertow.handlers.ReverseProxyHandler;
 import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerHost;
-
-import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -112,7 +112,7 @@ public class UndertowSubsystemParser_5_0 extends PersistentResourceXMLParser {
                                                         HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE,
                                                         HttpListenerResourceDefinition.REQUIRE_HOST_HTTP11)
                                 ).addChild(
-                                        builder(HostDefinition.INSTANCE.getPathElement())
+                                        builder(UndertowExtension.HOST_PATH)
                                                 .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE, HostDefinition.DISABLE_CONSOLE_REDIRECT)
                                                 .addChild(
                                                         builder(LocationDefinition.INSTANCE.getPathElement())

@@ -104,7 +104,7 @@ public class UndertowSubsystemParser_3_1 extends PersistentResourceXMLParser {
                                                         HttpListenerResourceDefinition.HTTP2_MAX_FRAME_SIZE,
                                                         HttpListenerResourceDefinition.HTTP2_MAX_HEADER_LIST_SIZE)
                                 ).addChild(
-                                        builder(HostDefinition.INSTANCE.getPathElement())
+                                        builder(UndertowExtension.HOST_PATH)
                                                 .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE, HostDefinition.DISABLE_CONSOLE_REDIRECT)
                                                 .addChild(
                                                         builder(LocationDefinition.INSTANCE.getPathElement())
