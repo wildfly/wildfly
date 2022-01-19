@@ -14,6 +14,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
@@ -167,6 +168,10 @@ public class ElytronRemoteOutboundConnectionTestCase {
     private static final String BARE_REMOTING_PROTOCOL = "remote";
     private static final int SSL_REMOTING_PORT = 54448;
     private static final String SSL_REMOTING_PROTOCOL = "remote";
+
+    private static final int SSL_REMOTING_TLS_PORT = 54449;
+    private static final String SSL_REMOTING_TLS_PROTOCOL = "remote+tls";
+
     private static final int HTTP_REMOTING_PORT = 8080;
     private static final String HTTP_REMOTING_PROTOCOL = "http-remoting";
     private static final int HTTPS_REMOTING_PORT = 8443;
@@ -604,6 +609,36 @@ public class ElytronRemoteOutboundConnectionTestCase {
         deployer.deploy(EJB_SERVER_DEPLOYMENT);
         deployer.deploy(EJB_CLIENT_DEPLOYMENT);
         Assert.assertEquals(OVERRIDING_USERNAME, callIntermediateWhoAmI());
+    }
+
+    /**
+     * The test verifies whether remote+tls protocol works correctly for outbound SSL invocation
+     */
+    @Test
+    public void testConnectionContextWithSSLRemoteTls() {
+        //==================================
+        // Server-side server setup
+        //==================================
+        configureServerSideForInboundTLSRemoting(serverSideMCC);
+        //==================================
+        // Client-side server setup
+        //==================================
+        applyUpdate(clientSideMCC, getAddOutboundSocketBindingOp(OUTBOUND_SOCKET_BINDING, TestSuiteEnvironment.getServerAddress(),
+                SSL_REMOTING_TLS_PORT));
+        applyUpdate(clientSideMCC, getAddAuthenticationConfigurationOp(OVERRIDING_AUTH_CONFIG, SSL_REMOTING_TLS_PROTOCOL, PROPERTIES_REALM,
+                OVERRIDING_USERNAME, OVERRIDING_PASSWORD, TestSuiteEnvironment.getServerAddress(),SSL_REMOTING_TLS_PORT));
+        applyUpdate(clientSideMCC, getAddKeyStoreOp(OVERRIDING_KEY_STORE, CLIENT_KEY_STORE_PATH, KEY_STORE_KEYPASS));
+        applyUpdate(clientSideMCC, getAddKeyManagerOp(OVERRIDING_KEY_MANAGER, OVERRIDING_KEY_STORE, KEY_STORE_KEYPASS));
+        applyUpdate(clientSideMCC, getAddKeyStoreOp(OVERRIDING_TRUST_STORE, CLIENT_TRUST_STORE_PATH, KEY_STORE_KEYPASS));
+        applyUpdate(clientSideMCC, getAddTrustManagerOp(OVERRIDING_TRUST_MANAGER, OVERRIDING_TRUST_STORE));
+        applyUpdate(clientSideMCC, getAddServerSSLContextOp(OVERRIDING_SERVER_SSL_CONTEXT, OVERRIDING_KEY_MANAGER, OVERRIDING_TRUST_MANAGER));
+        applyUpdate(clientSideMCC, getAddAuthenticationContextOp(OVERRIDING_AUTH_CONTEXT, OVERRIDING_AUTH_CONFIG, OVERRIDING_SERVER_SSL_CONTEXT));
+        applyUpdate(clientSideMCC, getAddConnectionOp(REMOTE_OUTBOUND_CONNECTION, OUTBOUND_SOCKET_BINDING, OVERRIDING_AUTH_CONTEXT));
+        executeBlockingReloadClientServer(clientSideMCC);
+
+        deployer.deploy(EJB_SERVER_DEPLOYMENT);
+        deployer.deploy(EJB_CLIENT_DEPLOYMENT);
+        Assert.assertEquals(OVERRIDING_USERNAME, callIntermediateWhoAmI(false));
     }
 
     /**
@@ -1198,10 +1233,11 @@ public class ElytronRemoteOutboundConnectionTestCase {
     }
 
     private static ModelNode getAddConnectorOp(String connectorName, String socketBindingName, String factoryName,
-                                               String serverSSLContextName) {
+                                               String serverSSLContextName, String protocol) {
         ModelNode addConnectorOp = Util.createAddOperation(getConnectorAddress(connectorName));
         addConnectorOp.get(SOCKET_BINDING).set(socketBindingName);
         addConnectorOp.get(SASL_AUTHENTICATION_FACTORY).set(factoryName);
+        addConnectorOp.get(PROTOCOL).set(protocol);
         if (serverSSLContextName != null && !serverSSLContextName.isEmpty()) {
             addConnectorOp.get(SSL_CONTEXT).set(serverSSLContextName);
         }
@@ -1212,8 +1248,8 @@ public class ElytronRemoteOutboundConnectionTestCase {
             .build().getOperation();
     }
 
-    private static ModelNode getAddConnectorOp(String connectorName, String socketBindingName, String factoryName) {
-        return getAddConnectorOp(connectorName, socketBindingName, factoryName, "");
+    private static ModelNode getAddConnectorOp(String connectorName, String socketBindingName, String factoryName, String protocol) {
+        return getAddConnectorOp(connectorName, socketBindingName, factoryName, "", protocol);
     }
 
     private static ModelNode getEjbConnectorOp(String operationName, String connectorName) {
@@ -1436,7 +1472,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(serverSideMCC, getAddSaslAuthenticationFactoryOp(AUTHENTICATION_FACTORY, SECURITY_DOMAIN, PROPERTIES_REALM));
         applyUpdate(serverSideMCC, getAddEjbApplicationSecurityDomainOp(APPLICATION_SECURITY_DOMAIN, SECURITY_DOMAIN));
         applyUpdate(serverSideMCC, getAddSocketBindingOp(INBOUND_SOCKET_BINDING, BARE_REMOTING_PORT));
-        applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY));
+        applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY, BARE_REMOTING_PROTOCOL));
         executeBlockingReloadServerSide(serverSideMCC);
     }
 
@@ -1451,7 +1487,22 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(serverSideMCC, getAddKeyStoreOp(SERVER_TRUST_STORE, SERVER_TRUST_STORE_PATH, KEY_STORE_KEYPASS));
         applyUpdate(serverSideMCC, getAddTrustManagerOp(SERVER_TRUST_MANAGER, SERVER_TRUST_STORE));
         applyUpdate(serverSideMCC, getAddServerSSLContextOp(SERVER_SSL_CONTEXT, SERVER_KEY_MANAGER, SERVER_TRUST_MANAGER));
-        applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY, SERVER_SSL_CONTEXT));
+        applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY, SERVER_SSL_CONTEXT, BARE_REMOTING_PROTOCOL));
+        executeBlockingReloadServerSide(serverSideMCC);
+    }
+
+    private static void configureServerSideForInboundTLSRemoting(ModelControllerClient serverSideMCC) {
+        applyUpdate(serverSideMCC, getAddPropertiesRealmOp(PROPERTIES_REALM, ROLES_PATH, USERS_PATH, true));
+        applyUpdate(serverSideMCC, getAddElytronSecurityDomainOp(SECURITY_DOMAIN, PROPERTIES_REALM));
+        applyUpdate(serverSideMCC, getAddSaslAuthenticationFactoryOp(AUTHENTICATION_FACTORY, SECURITY_DOMAIN, PROPERTIES_REALM));
+        applyUpdate(serverSideMCC, getAddEjbApplicationSecurityDomainOp(APPLICATION_SECURITY_DOMAIN, SECURITY_DOMAIN));
+        applyUpdate(serverSideMCC, getAddSocketBindingOp(INBOUND_SOCKET_BINDING, SSL_REMOTING_TLS_PORT));
+        applyUpdate(serverSideMCC, getAddKeyStoreOp(SERVER_KEY_STORE, SERVER_KEY_STORE_PATH, KEY_STORE_KEYPASS));
+        applyUpdate(serverSideMCC, getAddKeyManagerOp(SERVER_KEY_MANAGER, SERVER_KEY_STORE, KEY_STORE_KEYPASS));
+        applyUpdate(serverSideMCC, getAddKeyStoreOp(SERVER_TRUST_STORE, SERVER_TRUST_STORE_PATH, KEY_STORE_KEYPASS));
+        applyUpdate(serverSideMCC, getAddTrustManagerOp(SERVER_TRUST_MANAGER, SERVER_TRUST_STORE));
+        applyUpdate(serverSideMCC, getAddServerSSLContextOp(SERVER_SSL_CONTEXT, SERVER_KEY_MANAGER, SERVER_TRUST_MANAGER));
+        applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY, SERVER_SSL_CONTEXT, SSL_REMOTING_TLS_PROTOCOL));
         executeBlockingReloadServerSide(serverSideMCC);
     }
 
@@ -1499,7 +1550,7 @@ public class ElytronRemoteOutboundConnectionTestCase {
         applyUpdate(serverSideMCC, getAddSaslAuthenticationFactoryOp(AUTHENTICATION_FACTORY, SECURITY_DOMAIN, PROPERTIES_REALM));
         applyUpdate(serverSideMCC, getAddEjbApplicationSecurityDomainOp(APPLICATION_SECURITY_DOMAIN, SECURITY_DOMAIN));
         applyUpdate(serverSideMCC, getAddSocketBindingOp(INBOUND_SOCKET_BINDING, BARE_REMOTING_PORT));
-        applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY));
+        applyUpdate(serverSideMCC, getAddConnectorOp(CONNECTOR, INBOUND_SOCKET_BINDING, AUTHENTICATION_FACTORY, BARE_REMOTING_PROTOCOL));
         executeBlockingReloadServerSide(serverSideMCC);
     }
 
