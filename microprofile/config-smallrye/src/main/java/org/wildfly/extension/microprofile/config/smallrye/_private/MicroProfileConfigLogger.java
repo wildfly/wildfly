@@ -60,4 +60,16 @@ public interface MicroProfileConfigLogger extends BasicLogger {
     @LogMessage(level = DEBUG)
     @Message(id = 4, value = "Use class for MicroProfile Config Source: %s")
     void loadConfigSourceFromClass(Class clazz);
+
+    // 5 and 6 will come from https://github.com/wildfly/wildfly/pull/15030
+
+    // 7 and 8 are used downstream
+    /*
+    @Message(id = 7, value = "")
+    OperationFailedException seeDownstream();
+
+    @Message(id = 8, value = "")
+    String seeDownstream();
+    */
+
 }

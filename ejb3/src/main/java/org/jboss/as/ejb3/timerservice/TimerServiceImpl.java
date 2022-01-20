@@ -237,9 +237,21 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         if (schedule == null) {
             throw EJB3_TIMER_LOGGER.invalidTimerParameter("schedule", null);
         }
+
+        final ScheduleExpression scheduleClone = new ScheduleExpression()
+                .second(schedule.getSecond())
+                .minute(schedule.getMinute())
+                .hour(schedule.getHour())
+                .dayOfMonth(schedule.getDayOfMonth())
+                .dayOfWeek(schedule.getDayOfWeek())
+                .month(schedule.getMonth())
+                .year(schedule.getYear())
+                .timezone(schedule.getTimezone())
+                .start(schedule.getStart())
+                .end(schedule.getEnd());
         Serializable info = timerConfig == null ? null : timerConfig.getInfo();
         boolean persistent = timerConfig == null || timerConfig.isPersistent();
-        return this.createCalendarTimer(schedule, info, persistent, null);
+        return this.createCalendarTimer(scheduleClone, info, persistent, null);
     }
 
     /**

@@ -41,7 +41,7 @@
         <!-- Directory from which source is obtained. Child modules will override this -->
         <transformer-input-dir>${project.basedir}</transformer-input-dir>
         <!-- Plugin dependency versions -->
-        <version.org.wildfly.extras.batavia>1.0.10.Final</version.org.wildfly.extras.batavia>
+        <version.org.wildfly.extras.batavia>1.0.12.Final</version.org.wildfly.extras.batavia>
     </properties>
 
     <modules>
@@ -67,6 +67,7 @@
         <module>weld/transactions</module>
         <module>observability/opentelemetry-api</module>
         <module>observability/opentelemetry</module>
+        <module>undertow</module>
     </modules>
 
     <build>
