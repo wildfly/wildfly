@@ -50,6 +50,7 @@
         <module>ee</module>
         <module>ee-security</module>
         <module>jaxrs</module>
+        <module>iiop-openjdk</module>
         <module>jpa/spi</module>
         <module>jpa/eclipselink</module>
         <module>jpa/subsystem</module>
