@@ -72,7 +72,8 @@ public class LayersTestCase {
         "org.apache.commons.cli",
         "org.apache.commons.lang3",
         "org.wildfly.security.elytron-tool",
-        "org.wildfly.security.http.sfbasic"
+        "org.wildfly.security.http.sfbasic",
+        "internal.javax.json.api.ee8"
     };
     // Packages that are not referenced from the module graph but needed.
     // This is the expected set of un-referenced modules found when scanning
@@ -103,7 +104,8 @@ public class LayersTestCase {
         // bootable jar runtime
         "org.wildfly.bootable-jar",
         // May be needed by deployments if running on IBM JDK.
-        "ibm.jdk"
+        "ibm.jdk",
+        "internal.javax.json.api.ee8"
         };
 
     /**
