@@ -1083,11 +1083,6 @@
         </dependency>
 
         <dependency>
-            <groupId>io.undertow.js</groupId>
-            <artifactId>undertow-js</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>jose-jwt</artifactId>
             <exclusions>
