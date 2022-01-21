@@ -56,11 +56,10 @@ class JacORBSubsystemDefinitions {
 
     static final ModelNode DEFAULT_ENABLED_PROPERTY = new ModelNode("on");
 
-    private static final ParameterValidator SSL_CONFIG_VALIDATOR =
-            new EnumValidator<SSLConfigValue>(SSLConfigValue.class, true, false);
+    private static final ParameterValidator SSL_CONFIG_VALIDATOR = EnumValidator.create(SSLConfigValue.class);
 
     private static final ParameterValidator ON_OFF_VALIDATOR = new EnumValidator<TransactionsAllowedValues>(
-            TransactionsAllowedValues.class, true, false, TransactionsAllowedValues.ON, TransactionsAllowedValues.OFF);
+            TransactionsAllowedValues.class, TransactionsAllowedValues.ON, TransactionsAllowedValues.OFF);
 
     static final SensitivityClassification JACORB_SECURITY =
             new SensitivityClassification(JacORBExtension.SUBSYSTEM_NAME, "jacorb-security", false, false, true);
@@ -206,7 +205,7 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition ORB_INIT_SECURITY = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_INIT_SECURITY, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(new EnumValidator<SecurityAllowedValues>(SecurityAllowedValues.class, true, false))
+            .setValidator(EnumValidator.create(SecurityAllowedValues.class))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .addAccessConstraint(JACORB_SECURITY_DEF)
@@ -215,7 +214,7 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition ORB_INIT_TX = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_INIT_TRANSACTIONS, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(new EnumValidator<TransactionsAllowedValues>(TransactionsAllowedValues.class, true, false))
+            .setValidator(EnumValidator.create(TransactionsAllowedValues.class))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
