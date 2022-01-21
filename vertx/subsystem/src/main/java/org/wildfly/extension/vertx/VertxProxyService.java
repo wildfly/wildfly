@@ -50,11 +50,16 @@ import java.util.function.Supplier;
 
 import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
 
+/**
+ * The msc service to initialize a Vertx instance.
+ *
+ * @author <a href="aoingl@gmail.com">Lin Gao</a>
+ */
 public class VertxProxyService implements Service, VertxConstants {
     private final VertxProxy vertxProxy;
     private final Supplier<ChannelFactory> channelFactorySupplier;
     private final Supplier<String> clusterSupplier;
-    private volatile VertxDelegate vertxDelegate;
+    private volatile Vertx vertx;
     private volatile DefaultCacheManager defaultCacheManager;
 
     static void installService(OperationContext context, VertxProxy vertxProxy, boolean forkedChannel) {
@@ -118,8 +123,8 @@ public class VertxProxyService implements Service, VertxConstants {
                 .install();
     }
 
-    VertxDelegate getValue() {
-        return this.vertxDelegate;
+    Vertx getValue() {
+        return this.vertx;
     }
 
     private VertxProxyService(Supplier<ChannelFactory> channelFactorySupplier, Supplier<String> clusterSupplier, VertxProxy vertxProxy) {
@@ -131,7 +136,7 @@ public class VertxProxyService implements Service, VertxConstants {
     @Override
     public void start(StartContext context) throws StartException {
         try {
-            this.vertxDelegate = new VertxDelegate(createVertx());
+            this.vertx = createVertx();
         } catch (Exception e) {
             throw VERTX_LOGGER.failedToStartVertxService(vertxProxy.getName(), e);
         }
@@ -168,7 +173,7 @@ public class VertxProxyService implements Service, VertxConstants {
 
     @Override
     public void stop(StopContext context) {
-        CompletableFuture<Void> closeFuture = (CompletableFuture<Void>)this.vertxDelegate.closeInternal()
+        CompletableFuture<Void> closeFuture = (CompletableFuture<Void>)this.vertx.close()
                 .flatMap(v -> {
                     try {
                         if (defaultCacheManager != null) {
@@ -186,7 +191,7 @@ public class VertxProxyService implements Service, VertxConstants {
             VERTX_LOGGER.errorWhenClosingVertx(vertxProxy.getName(), e);
         } finally {
             VertxRegistry.INSTANCE.unRegister(vertxProxy.getName());
-            this.vertxDelegate = null;
+            this.vertx = null;
         }
     }
 

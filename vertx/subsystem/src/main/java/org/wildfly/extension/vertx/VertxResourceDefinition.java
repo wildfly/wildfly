@@ -121,11 +121,6 @@ public class VertxResourceDefinition extends SimpleResourceDefinition {
             }
             final boolean forkedChannel = VertxAttributes.FORKED_CHANNEL.resolveModelAttribute(context, operation).asBoolean();
             try {
-                final VertxProxy vertxProxy = new VertxProxy();
-                vertxProxy.setName(name);
-                vertxProxy.setJndiName(jndiName);
-                vertxProxy.setClustered(clustered);
-                vertxProxy.setJgroupChannelName(jgroupChannel);
                 final VertxOptions vertxOptions;
                 if (vertxOptionsFile == null) {
                     vertxOptions = new VertxOptions();
@@ -133,7 +128,7 @@ public class VertxResourceDefinition extends SimpleResourceDefinition {
                     JsonObject json = readJsonFromFile(vertxOptionsFile);
                     vertxOptions = new VertxOptions(json);
                 }
-                vertxProxy.setVertxOptions(vertxOptions);
+                final VertxProxy vertxProxy = new VertxProxy(name, jndiName, vertxOptions, clustered, jgroupChannel);
                 VertxProxyService.installService(context, vertxProxy, forkedChannel);
             } catch (Exception e) {
                 throw VERTX_LOGGER.failedToStartVertx(name, e);

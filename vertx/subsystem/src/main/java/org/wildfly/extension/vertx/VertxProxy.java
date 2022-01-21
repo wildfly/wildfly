@@ -18,54 +18,56 @@ package org.wildfly.extension.vertx;
 
 import io.vertx.core.VertxOptions;
 
+/**
+ * This is a resource used to manage the Vertx instances in the subsystem.
+ *
+ * Each {@link VertxProxy} instance will be registered to {@link VertxRegistry} on creation and be removed on stop.
+ *
+ * @author <a href="aoingl@gmail.com">Lin Gao</a>
+ */
 public class VertxProxy {
-    private String name;
-    private String jndiName;
-    private VertxOptions vertxOptions;
-    private boolean clustered;
-    private String jgroupChannelName;
+
+    /** The name of the Vertx instance, it is the last element value of the PathAddress **/
+    private final String name;
+
+    /** The JNDI name of the Vertx instance so that it can be retrieved using naming subsystem **/
+    private final String jndiName;
+
+    /** The options used for Vertx instance creation. **/
+    private final VertxOptions vertxOptions;
+
+    /** Flag that indicates if it is a clustered Vertx instance, it will be used to determine how Vertx instance is constructed. **/
+    private final boolean clustered;
+
+    /** The channel name in jgroups subsystem configuration, this is used when creating a clustered Vertx instance **/
+    private final String jgroupChannelName;
+
+    public VertxProxy(String name, String jndiName, VertxOptions vertxOptions, boolean clustered, String jgroupChannelName) {
+        this.name = name;
+        this.jndiName = jndiName;
+        this.vertxOptions = vertxOptions;
+        this.clustered = clustered;
+        this.jgroupChannelName = jgroupChannelName;
+    }
 
     public VertxOptions getVertxOptions() {
         return vertxOptions;
-    }
-
-    public void setVertxOptions(VertxOptions vertxOptions) {
-        this.vertxOptions = vertxOptions;
     }
 
     public boolean isClustered() {
         return clustered;
     }
 
-    public void setClustered(boolean clustered) {
-        this.clustered = clustered;
-    }
-
     public String getJgroupChannelName() {
         return jgroupChannelName;
-    }
-
-    public void setJgroupChannelName(String jgroupChannelName) {
-        this.jgroupChannelName = jgroupChannelName;
     }
 
     public String getName() {
         return name;
     }
 
-    public VertxProxy setName(String name) {
-        this.name = name;
-        return this;
-    }
-
     public String getJndiName() {
         return jndiName;
     }
-
-    public VertxProxy setJndiName(String jndiName) {
-        this.jndiName = jndiName;
-        return this;
-    }
-
 
 }

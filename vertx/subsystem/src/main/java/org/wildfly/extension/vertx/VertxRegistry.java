@@ -19,6 +19,11 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * The central registry of Vertx installations.
+ *
+ * @author <a href="aoingl@gmail.com">Lin Gao</a>
+ */
 class VertxRegistry {
     private final Map<String, VertxProxy> vertxProxyMap;
     static VertxRegistry INSTANCE = new VertxRegistry();
