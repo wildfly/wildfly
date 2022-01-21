@@ -1108,8 +1108,8 @@
                 </exclusions>
             </dependency>
 
-	    <!-- wildfly-jpa-jakarta == JPA subsystem -->
-	    <dependency>
+            <!-- wildfly-jpa-jakarta == JPA subsystem -->
+            <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-jpa-jakarta</artifactId>
                 <version>${ee.maven.version}</version>
