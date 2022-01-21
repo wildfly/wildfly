@@ -411,13 +411,13 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
             return false;
         }
         //let's look into the external-pooled-connection-factory
-        ServiceName pcfName = JMSServices.getPooledConnectionFactoryBaseServiceName(MessagingServices.getActiveMQServiceName("")).append(resourceAdapter);
+        ServiceName pcfName = JMSServices.getPooledConnectionFactoryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(resourceAdapter);
         return serviceRegistry.getServiceNames().contains(pcfName);
     }
 
     private static ExternalPooledConnectionFactoryService getExternalPooledConnectionFactory(String resourceAdapter, ServiceRegistry serviceRegistry) {
         //let's look into the external-pooled-connection-factory
-        ServiceName pcfName = JMSServices.getPooledConnectionFactoryBaseServiceName(MessagingServices.getActiveMQServiceName("")).append(resourceAdapter);
+        ServiceName pcfName = JMSServices.getPooledConnectionFactoryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(resourceAdapter);
         return (ExternalPooledConnectionFactoryService) serviceRegistry.getService(pcfName).getValue();
     }
 

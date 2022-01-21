@@ -40,7 +40,7 @@ public class MessagingServices {
     /**
      * The service name is "jboss.messaging-activemq"
      */
-    static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
+    private static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
     public static final ServiceName ACTIVEMQ_CLIENT_THREAD_POOL = JBOSS_MESSAGING_ACTIVEMQ.append("client-thread-pool");
     private static final ServiceName COMMAND_DISPATCHER_FACTORY = JBOSS_MESSAGING_ACTIVEMQ.append("command-dispatcher-factory");
 
@@ -71,6 +71,10 @@ public class MessagingServices {
        }
        return PathAddress.EMPTY_ADDRESS;
    }
+
+    public static ServiceName getActiveMQServiceName() {
+        return JBOSS_MESSAGING_ACTIVEMQ;
+    }
 
    public static ServiceName getActiveMQServiceName(String serverName) {
        if(serverName == null || serverName.isEmpty()) {
