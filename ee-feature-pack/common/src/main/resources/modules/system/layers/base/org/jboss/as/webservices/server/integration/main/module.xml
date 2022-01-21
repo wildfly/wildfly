@@ -81,6 +81,7 @@
             <include path="META-INF"/>
           </exports>
         </module>
+        <module name="org.apache.commons.codec"/>
         <module name="org.apache.xalan" services="export" export="true"/>
         <module name="org.apache.xerces" services="export" export="true"/>
         <module name="org.jboss.as.webservices" services="export" export="true"/>
@@ -95,5 +96,6 @@
             <include path="org.jboss.jbossts.txbridge.outbound"/>
           </imports>
         </module>
+        <module name="org.wildfly.security.elytron"/>
     </dependencies>
 </module>
