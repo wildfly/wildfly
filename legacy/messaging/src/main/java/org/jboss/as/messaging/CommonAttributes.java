@@ -365,7 +365,7 @@ public interface CommonAttributes {
             .setDefaultValue(new ModelNode(JournalType.ASYNCIO.toString()))
             .setRequired(false)
             .setAllowExpression(true)
-            .setValidator(new EnumValidator<>(JournalType.class, true, true))
+            .setValidator(EnumValidator.create(JournalType.class))
             .setRestartAllServices()
             .build();
 
