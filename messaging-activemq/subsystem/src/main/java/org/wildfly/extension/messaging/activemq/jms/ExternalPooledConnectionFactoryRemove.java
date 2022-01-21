@@ -39,7 +39,7 @@ public class ExternalPooledConnectionFactoryRemove extends PooledConnectionFacto
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        ServiceName serviceName = MessagingServices.getActiveMQServiceName("");
+        ServiceName serviceName = MessagingServices.getActiveMQServiceName();
         context.removeService(JMSServices.getPooledConnectionFactoryBaseServiceName(serviceName).append(context.getCurrentAddressValue()));
         removeJNDIAliases(context, model.require(ENTRIES.getName()).asList());
     }
