@@ -86,6 +86,7 @@
         <version.org.eclipse.microprofile.opentracing>3.0</version.org.eclipse.microprofile.opentracing>
         <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
         <!-- Implementations -->
+        <version.io.smallrye.smallrye-common>2.0.0-RC1</version.io.smallrye.smallrye-common>
         <version.io.smallrye.smallrye-config>3.0.0-RC1</version.io.smallrye.smallrye-config>
         <!-- MP5 - END -->
         <version.org.eclipse.yasson>2.0.3</version.org.eclipse.yasson>
@@ -226,6 +227,46 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.common</groupId>
+                <artifactId>smallrye-common-annotation</artifactId>
+                <version>${version.io.smallrye.smallrye-common}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>jakarta.enterprise</groupId>
+                        <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jakarta.inject</groupId>
+                        <artifactId>jakarta.inject-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.common</groupId>
+                <artifactId>smallrye-common-constraint</artifactId>
+                <version>${version.io.smallrye.smallrye-common}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.common</groupId>
+                <artifactId>smallrye-common-classloader</artifactId>
+                <version>${version.io.smallrye.smallrye-common}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.common</groupId>
+                <artifactId>smallrye-common-expression</artifactId>
+                <version>${version.io.smallrye.smallrye-common}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.common</groupId>
+                <artifactId>smallrye-common-function</artifactId>
+                <version>${version.io.smallrye.smallrye-common}</version>
             </dependency>
 
             <dependency>
