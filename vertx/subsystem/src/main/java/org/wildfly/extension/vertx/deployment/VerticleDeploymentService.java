@@ -63,6 +63,7 @@ public class VerticleDeploymentService implements Service {
             }
         }
         try {
+            this.deploymentOptions.setClassLoader(classLoader);
             Class<? extends Verticle> vcls = (Class<? extends Verticle>)classLoader.loadClass(verticleClass);
             this.deploymentID = this.vertx.deployVerticle(vcls, this.deploymentOptions)
                     .toCompletionStage().toCompletableFuture().get(DEFAULT_DEPLOY_TIME_OUT, TimeUnit.SECONDS);
