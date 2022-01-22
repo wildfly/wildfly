@@ -29,8 +29,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.as.connector.annotations.repository.jandex.JandexAnnotationRepositoryImpl;
-import org.jboss.as.connector.logging.ConnectorLogger;
-import org.jboss.as.connector.metadata.api.resourceadapter.ActivationSecurityUtil;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
@@ -218,9 +216,6 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 builder.addDependency(ConnectorServices.NON_TX_CCM_SERVICE, CachedConnectionManager.class, raDeploymentService.getCcmInjector());
             } else {
                 builder.addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, raDeploymentService.getCcmInjector());
-            }
-            if (activation != null && ActivationSecurityUtil.isLegacySecurityRequired(activation)) {
-                throw ConnectorLogger.DS_DEPLOYER_LOGGER.legacySecurityNotAvailableForRa(connectorXmlDescriptor.getDeploymentName());
             }
 
             return builder;
