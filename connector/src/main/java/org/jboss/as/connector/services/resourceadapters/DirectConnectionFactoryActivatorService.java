@@ -33,7 +33,6 @@ import javax.resource.spi.TransactionSupport;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Security;
-import org.jboss.as.connector.metadata.api.resourceadapter.ActivationSecurityUtil;
 import org.jboss.as.connector.metadata.common.SecurityImpl;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
@@ -255,10 +254,6 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
             connectionFactoryServiceBuilder.requires(ConnectorServices.getCachedCapabilityServiceName(NamingService.CAPABILITY_NAME));
             connectionFactoryServiceBuilder.requires(ConnectorServices.getCachedCapabilityServiceName(ConnectorServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
             connectionFactoryServiceBuilder.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"));
-
-            if (ActivationSecurityUtil.isLegacySecurityRequired(security)) {
-                throw ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER.legacySecurityNotAvailableForConnectionFactory(jndiName);
-            }
 
             connectionFactoryServiceBuilder.setInitialMode(org.jboss.msc.service.ServiceController.Mode.ACTIVE).install();
 
