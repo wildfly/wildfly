@@ -24,6 +24,7 @@ import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
+import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -35,7 +36,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that a {@link javax.faces.bean.RequestScoped @RequestScoped} bean will work correctly in a batch job.
+ * Tests that a {@code @RequestScoped} bean will work correctly in a batch job.
  * <p>
  * The order of the two tests should not matter. The reason it's tested twice however is a {@code @RequestScoped} bean
  * should create a new instance for each job executed. Executing twice ensures the scoping for batch is correct.
@@ -69,11 +70,20 @@ public class SimpleCounterBatchletTestCase extends AbstractBatchTestCase {
         // check available job names
         // jobOperator.getJobNames() should return all available jobs in the
         // current deployment, whether a job has been started or not.
-        final List<String> expectedJobNames = Arrays.asList("simple-counter-batchlet", "inactive-job");
+        final String inactiveJobName = "inactive-job";
+        final List<String> expectedJobNames = Arrays.asList("simple-counter-batchlet", inactiveJobName);
         final Set<String> jobNames = jobOperator.getJobNames();
         Assert.assertTrue(String.format("Expecting job names: %s, but got %s", expectedJobNames, jobNames),
                 jobNames.containsAll(expectedJobNames));
         Assert.assertEquals(2, jobNames.size());
+
+        //getJobInstanceCount, getJobInstances & getRunningExecutions on an inactive job name should not cause exception
+        final int jobInstanceCount = jobOperator.getJobInstanceCount(inactiveJobName);
+        Assert.assertEquals("getJobInstanceCount() should return 0 for job name: " + inactiveJobName, 0, jobInstanceCount);
+        final List<JobInstance> jobInstances = jobOperator.getJobInstances(inactiveJobName, 0, Integer.MAX_VALUE);
+        Assert.assertEquals("getJobInstances() should return empty list for job name: " + inactiveJobName, 0, jobInstances.size());
+        final List<Long> runningExecutions = jobOperator.getRunningExecutions(inactiveJobName);
+        Assert.assertEquals("getRunningExecutions() should return empty list for job name: " + inactiveJobName, 0, runningExecutions.size());
 
         // Start the first job
         long executionId = jobOperator.start("simple-counter-batchlet", jobProperties);
