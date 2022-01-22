@@ -159,7 +159,7 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         try {
             ServiceName serviceName;
             if(external) {
-                serviceName = MessagingServices.getActiveMQServiceName("");
+                serviceName = MessagingServices.getActiveMQServiceName();
             } else {
                 serviceName = MessagingServices.getActiveMQServiceName(getActiveMQServerName(properties));
             }

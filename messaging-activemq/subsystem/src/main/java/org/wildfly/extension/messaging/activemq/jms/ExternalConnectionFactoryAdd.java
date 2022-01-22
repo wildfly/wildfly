@@ -82,7 +82,7 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
         List<String> connectorNames = Common.CONNECTORS.unwrap(context, model);
         ServiceBuilder<?> builder = context.getServiceTarget()
                 .addService(serviceName)
-                .addAliases(MessagingServices.getActiveMQServiceName(name));
+                .addAliases(JMSServices.getConnectionFactoryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(name));
         ExternalConnectionFactoryService service;
         if (discoveryGroupName.isDefined()) {
             // mapping between the {discovery}-groups and the cluster names they use
@@ -106,7 +106,7 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
                 String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
                 clusterNames.put(key, clusterName);
             } else {
-                final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);
+                final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(dgname);
                 Supplier<SocketBinding> groupBindingSupplier = builder.requires(groupBinding);
                 groupBindings.put(key, groupBindingSupplier);
             }
