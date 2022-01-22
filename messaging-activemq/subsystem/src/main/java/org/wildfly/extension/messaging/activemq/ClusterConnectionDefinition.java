@@ -134,7 +134,7 @@ public class ClusterConnectionDefinition extends PersistentResourceDefinition {
     // FIXME WFLY-4587 forward-when-no-consumers == true ? STRICT : ON_DEMAND
     public static final SimpleAttributeDefinition MESSAGE_LOAD_BALANCING_TYPE = create("message-load-balancing-type", STRING)
             .setDefaultValue(new ModelNode(MessageLoadBalancingType.ON_DEMAND.toString()))
-            .setValidator(new EnumValidator<>(MessageLoadBalancingType.class, true, true))
+            .setValidator(EnumValidator.create(MessageLoadBalancingType.class))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
