@@ -61,7 +61,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
 
     static final ModelNode NONE = new ModelNode("none");
 
-    static final ParameterValidator SSL_CONFIG_VALIDATOR = new EnumValidator<>(SSLConfigValue.class, true, false);
+    static final ParameterValidator SSL_CONFIG_VALIDATOR = EnumValidator.create(SSLConfigValue.class);
 
     static final StringLengthValidator LENGTH_VALIDATOR = new StringLengthValidator(1, Integer.MAX_VALUE, true, false);
 
@@ -71,8 +71,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     static final SensitiveTargetAccessConstraintDefinition IIOP_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(
             IIOP_SECURITY);
 
-    static final ParameterValidator VALIDATOR = new EnumValidator<>(IORTransportConfigValues.class,
-            true, true);
+    static final ParameterValidator VALIDATOR = EnumValidator.create(IORTransportConfigValues.class);
 
     //ORB attributes
 
@@ -110,7 +109,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.ORB_INIT_SECURITY, ModelType.STRING, true)
             .setAttributeGroup(Constants.ORB_INIT)
             .setDefaultValue(NONE)
-            .setValidator(new EnumValidator<>(SecurityAllowedValues.class, true, false))
+            .setValidator(EnumValidator.create(SecurityAllowedValues.class))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).setAllowExpression(true)
             .addAccessConstraint(IIOP_SECURITY_DEF).build();
 
@@ -127,7 +126,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.ORB_INIT_TRANSACTIONS, ModelType.STRING, true)
             .setAttributeGroup(Constants.ORB_INIT)
             .setDefaultValue(NONE)
-            .setValidator(new EnumValidator<>(TransactionsAllowedValues.class, true, false))
+            .setValidator(EnumValidator.create(TransactionsAllowedValues.class))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).setAllowExpression(true).build();
 
     //Naming attributes
@@ -313,7 +312,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             Constants.IOR_TRANSPORT_TRUST_IN_TARGET, ModelType.STRING, true)
             .setAttributeGroup(Constants.IOR_TRANSPORT_CONFIG)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setValidator(new EnumValidator<>(IORTransportConfigValues.class, true, true,
+            .setValidator(new EnumValidator<>(IORTransportConfigValues.class,
                     IORTransportConfigValues.NONE, IORTransportConfigValues.SUPPORTED))
             .setAllowExpression(true)
             .setDeprecated(IIOPExtension.VERSION_1)
@@ -355,7 +354,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setAttributeGroup(Constants.IOR_AS_CONTEXT)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode(AuthMethodValues.USERNAME_PASSWORD.toString()))
-            .setValidator(new EnumValidator<>(AuthMethodValues.class, true, true))
+            .setValidator(EnumValidator.create(AuthMethodValues.class))
             .setAllowExpression(true)
             .build();
 
@@ -382,7 +381,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
             .setAttributeGroup(Constants.IOR_SAS_CONTEXT)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(NONE)
-            .setValidator(new EnumValidator<>(CallerPropagationValues.class, true, true))
+            .setValidator(EnumValidator.create(CallerPropagationValues.class))
             .setAllowExpression(true)
             .build();
 
