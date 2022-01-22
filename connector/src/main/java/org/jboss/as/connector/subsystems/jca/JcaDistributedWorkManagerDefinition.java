@@ -105,7 +105,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName(Element.SELECTOR.getLocalName())
-                .setValidator(new EnumValidator<SelectorValue>(SelectorValue.class, true, true))
+                .setValidator(EnumValidator.create(SelectorValue.class))
                 .setDefaultValue(new ModelNode(SelectorValue.PING_TIME.name()))
                 .build()),
         POLICY(SimpleAttributeDefinitionBuilder.create("policy", ModelType.STRING)
@@ -114,7 +114,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
                 .setXmlName(Element.POLICY.getLocalName())
-                .setValidator(new EnumValidator<PolicyValue>(PolicyValue.class, true, true))
+                .setValidator(EnumValidator.create(PolicyValue.class))
                 .setDefaultValue(new ModelNode(PolicyValue.WATERMARK.name()))
                 .build()),
         POLICY_OPTIONS(new PropertiesAttributeDefinition.Builder("policy-options", true)
