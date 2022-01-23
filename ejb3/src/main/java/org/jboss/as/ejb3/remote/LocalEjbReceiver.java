@@ -63,8 +63,6 @@ import org.jboss.marshalling.cloner.ClassLoaderClassCloner;
 import org.jboss.marshalling.cloner.ClonerConfiguration;
 import org.jboss.marshalling.cloner.ObjectCloner;
 import org.jboss.marshalling.cloner.ObjectCloners;
-import org.jboss.security.SecurityContext;
-import org.jboss.security.SecurityContextAssociation;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -178,13 +176,10 @@ public class LocalEjbReceiver extends EJBReceiver {
                 if (isAsync && isSessionBean && !oneWay) {
                     interceptorContext.putPrivateData(CancellationFlag.class, flag);
                 }
-                final SecurityContext securityContext;
                 final SecurityDomain securityDomain;
                 if (WildFlySecurityManager.isChecking()) {
-                    securityContext = AccessController.doPrivileged((PrivilegedAction<SecurityContext>) SecurityContextAssociation::getSecurityContext);
                     securityDomain = AccessController.doPrivileged((PrivilegedAction<SecurityDomain>) SecurityDomain::getCurrent);
                 } else {
-                    securityContext = SecurityContextAssociation.getSecurityContext();
                     securityDomain = SecurityDomain.getCurrent();
                 }
                 final SecurityIdentity securityIdentity = securityDomain != null ? securityDomain.getCurrentSecurityIdentity() : null;
@@ -194,7 +189,6 @@ public class LocalEjbReceiver extends EJBReceiver {
                         receiverContext.requestCancelled();
                         return;
                     }
-                    setSecurityContextOnAssociation(securityContext);
                     StartupCountdown.restore(frame);
                     try {
                         final Object result;
@@ -240,7 +234,6 @@ public class LocalEjbReceiver extends EJBReceiver {
                         receiverContext.resultReady(new CloningResultProducer(invocation, resultCloner, result, allowPassByReference));
                     } finally {
                         StartupCountdown.restore(null);
-                        clearSecurityContextOnAssociation();
                     }
                 };
                 invocation.putAttachment(CANCELLATION_FLAG_ATTACHMENT_KEY, flag);
@@ -400,17 +393,4 @@ public class LocalEjbReceiver extends EJBReceiver {
         return ejbInfo;
     }
 
-    private static void setSecurityContextOnAssociation(final SecurityContext sc) {
-        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-            SecurityContextAssociation.setSecurityContext(sc);
-            return null;
-        });
-    }
-
-    private static void clearSecurityContextOnAssociation() {
-        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-            SecurityContextAssociation.clearSecurityContext();
-            return null;
-        });
-    }
 }
