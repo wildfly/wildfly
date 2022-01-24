@@ -15,11 +15,14 @@
  */
 package org.wildfly.iiop.openjdk.csiv2;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.AccessController;
 import java.security.Principal;
+import java.security.PrivilegedAction;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -27,10 +30,6 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
-import com.sun.corba.se.impl.interceptors.ClientRequestInfoImpl;
-import com.sun.corba.se.impl.transport.SocketOrChannelContactInfoImpl;
-import com.sun.corba.se.pept.transport.ContactInfo;
-import com.sun.corba.se.spi.transport.CorbaConnection;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
@@ -53,10 +52,10 @@ import org.omg.CSIIOP.EstablishTrustInClient;
 import org.omg.CSIIOP.IdentityAssertion;
 import org.omg.GSSUP.InitialContextToken;
 import org.omg.IOP.Codec;
+import org.omg.IOP.ServiceContext;
 import org.omg.IOP.CodecPackage.FormatMismatch;
 import org.omg.IOP.CodecPackage.InvalidTypeForEncoding;
 import org.omg.IOP.CodecPackage.TypeMismatch;
-import org.omg.IOP.ServiceContext;
 import org.omg.PortableInterceptor.ClientRequestInfo;
 import org.omg.PortableInterceptor.ClientRequestInterceptor;
 import org.omg.PortableInterceptor.ForwardRequest;
@@ -69,6 +68,11 @@ import org.wildfly.security.auth.principal.AnonymousPrincipal;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
+
+import com.sun.corba.se.impl.interceptors.ClientRequestInfoImpl;
+import com.sun.corba.se.impl.transport.SocketOrChannelContactInfoImpl;
+import com.sun.corba.se.pept.transport.ContactInfo;
+import com.sun.corba.se.spi.transport.CorbaConnection;
 
 /**
  * This implementation of {@code org.omg.PortableInterceptor.ClientRequestInterceptor} inserts the security attribute
@@ -168,7 +172,7 @@ public class ElytronSASClientInterceptor extends LocalObject implements ClientRe
             if(uri == null) {
                 return;
             }
-            SecurityDomain domain = SecurityDomain.getCurrent();
+            SecurityDomain domain = getCurrentSecurityDomain();
             SecurityIdentity currentIdentity = null;
             if(domain != null) {
                 currentIdentity = domain.getCurrentSecurityIdentity();
@@ -396,5 +400,12 @@ public class ElytronSASClientInterceptor extends LocalObject implements ClientRe
             return CSIv2Util.encodeInitialContextToken(authenticationToken, codec);
         }
         return NO_AUTHENTICATION_TOKEN;
+    }
+
+    private static SecurityDomain getCurrentSecurityDomain() {
+        if (WildFlySecurityManager.isChecking()) {
+            return doPrivileged((PrivilegedAction<SecurityDomain>) SecurityDomain::getCurrent);
+        }
+        return SecurityDomain.getCurrent();
     }
 }
