@@ -1746,8 +1746,8 @@
                                     <!-- Tests to execute. -->
                                     <includes>
                                         <!-- EJB tests -->
-                                        <include>**/ejb/**/*TestCase.java</include>
-                                        <include>**/ejb2/**/*TestCase.java</include>
+                                        <include>${test-group}/**/ejb/**/*TestCase.java</include>
+                                        <include>${test-group}/**/ejb2/**/*TestCase.java</include>
                                     </includes>
                                     <excludes>
                                         <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
