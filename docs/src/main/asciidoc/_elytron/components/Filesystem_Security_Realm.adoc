@@ -15,17 +15,19 @@ Every identity is stored in an XML file where the name of the file is the name o
 * `hash-charset` specifies the character set to use when converting the password string to a byte array. Set to UTF-8 by default.
 * `credential-store` specifies the credential store where the secret key is stored if the filesystem realm is to be encrypted. This attribute is optional.
 * `secret-key` specifies the alias of the secret key that is stored in the previously specified credential store. This attribute is optional.
+* `key-store` specifies the key store where the key pair is stored if the integrity is to be enabled on the filesystem realm. This attribute is optional.
+* `key-store-alias` specifies the alias of the key pair that is stored in the previously specified key store. This attribute is optional.
 
 Filesystem security realm can be added with WildFly management CLI or with Elytron API.
 
 === WildFly management CLI
 
 The following command creates realm with name `fsRealm` that resides in directory `fs-realm-users` inside the base configuration directory defined by `jboss.server.config.dir` property. The levels number is 2 and encoded value is true.
-The charset is UTF-8 and the string encoding is BASE64. The credential-store being referenced is called `mycredstore` and the alias of the key in that credential-store is `key`. The `key` secret key will be used to encrypt and decrypt the filesystem realm
+The charset is UTF-8 and the string encoding is BASE64. The credential-store being referenced is called `mycredstore` and the alias of the key in that credential-store is `key`. The `key` secret key will be used to encrypt and decrypt the filesystem realm. The key-store being referenced is called `keystore` and the alias of the key pair in that key-store is `localhost`. The `localhost` key pair will be used to sign identity files and verify the pre-existing signatures to ensure that the filesystem realm has not been tampered with.
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/filesystem-realm=fsRealm:add(path=fs-realm-users, relative-to=jboss.server.config.dir, credential-store=mycredstore, secret-key=key)
+/subsystem=elytron/filesystem-realm=fsRealm:add(path=fs-realm-users, relative-to=jboss.server.config.dir, credential-store=mycredstore, secret-key=key, key-store=keystore, key-store-alias=localhost)
 ----
 
 NOTE: Although identities stored within the same realm can be hashed using different algorithms, they are all
@@ -51,6 +53,8 @@ When creating filesystem realm with Elytron API, you can specify `name rewriter`
 
 To encrypt the filesystem realm programmatically, you can specify a SecretKey when instantiating the realm.
 
+To enable integrity for the filesystem realm programmatically, you can specify a PublicKey and PrivateKey when instantiating the realm.
+
 Class `org.wildfly.security.auth.realm.FileSystemSecurityRealm` is used to instantiate the realm. A builder FileSystemSecurityRealm builder is available at `org.wildfly.security.auth.realm.FileSystemSecurityRealmBuilder` to make the instantiating process easier.
 
 [source,options="nowrap"]
@@ -60,7 +64,10 @@ FileSystemSecurityRealm fsRealm = FileSystemSecurityRealm.builder()
     .setNameRewriter(IDENTITY_REWRITER)
     .setLevels(2)
     .setEncoded(true)
-    .setSecretKey(key)
+    .setProviders(ELYTRON_PASSWORD_PROVIDERS)
+    .setSecretKey(secretKey)
+    .setPublicKey(publicKey)
+    .setPrivateKey(privateKey)
     .build();
 ----
 

@@ -21,8 +21,9 @@
  */
 package org.wildfly.test.integration.elytron.realm;
 
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -71,7 +72,7 @@ public class FilesystemRealmIntegrityTestCase {
 
     /**
      *
-     * Test Filesystem realm correctly handles when integrity is enabled
+     * Test Filesystem realm correctly handles integrity being enabled
      */
     @Test
     @OperateOnDeployment(DEPLOYMENT)
@@ -82,15 +83,26 @@ public class FilesystemRealmIntegrityTestCase {
 
     /**
      *
-     * Test Filesystem realm correctly handles when wrong keystore alias is used
+     * Test Filesystem realm correctly handles incorrect credentials when integrity is enabled
      */
     @Test
     @OperateOnDeployment(DEPLOYMENT)
     public void testIntegrityFail(@ArquillianResource URL webAppURL) throws Exception {
+        URL url = prepareURL(webAppURL);
+        Utils.makeCallWithBasicAuthn(url, USER, PASSWORD+"123", SC_UNAUTHORIZED);
+    }
+
+    /**
+     *
+     * Test Filesystem realm correctly handles wrong keystore alias being used
+     */
+    @Test
+    @OperateOnDeployment(DEPLOYMENT)
+    public void testIntegrityKeyStoreFail(@ArquillianResource URL webAppURL) throws Exception {
         SetUpTask.setupNewKeystoreAlias(SetUpTask.REALM_NAME, SetUpTask.KEYSTORE_NAME, SetUpTask.KEYSTORE_ALIAS);
         URL url = prepareURL(webAppURL);
-        Utils.makeCallWithBasicAuthn(url, USER, PASSWORD, SC_NOT_FOUND);
-        SetUpTask.tearDownNewKeystoreAlias(SetUpTask.REALM_NAME, SetUpTask.KEYSTORE_ALIAS);
+        Utils.makeCallWithBasicAuthn(url, USER, PASSWORD, SC_INTERNAL_SERVER_ERROR);
+        SetUpTask.tearDownNewKeystoreAlias(SetUpTask.REALM_NAME, SetUpTask.KEYSTORE_NAME, SetUpTask.KEYSTORE_ALIAS);
     }
 
     private URL prepareURL(URL url) throws MalformedURLException {
@@ -124,6 +136,8 @@ public class FilesystemRealmIntegrityTestCase {
                         keyStoreName, password));
                 cli.sendLine(String.format("/subsystem=elytron/key-store=%1$s:generate-key-pair(alias=%2$s,algorithm=RSA,key-size=1024,validity=365,distinguished-name=\"CN=%2$s\")",
                         keyStoreName, keyStoreAlias));
+                cli.sendLine(String.format("/subsystem=elytron/key-store=%s:store()", keyStoreName));
+
                 cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:add(path=%s, relative-to=jboss.server.config.dir, key-store=%s, key-store-alias=%s)",
                         realmName, fsPath, keyStoreName, keyStoreAlias));
                 cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:add-identity(identity=%s)", realmName, username));
@@ -144,18 +158,21 @@ public class FilesystemRealmIntegrityTestCase {
         }
 
         private static void setupNewKeystoreAlias(String realmName, String keyStoreName, String keyStoreAlias) throws Exception {
-            keyStoreAlias = keyStoreAlias+"new";
+            keyStoreAlias = keyStoreAlias+"New";
             try (CLIWrapper cli = new CLIWrapper(true)) {
                 cli.sendLine(String.format("/subsystem=elytron/key-store=%1$s:generate-key-pair(alias=%2$s,algorithm=RSA,key-size=1024,validity=365,distinguished-name=\"CN=%2$s\")",
                         keyStoreName, keyStoreAlias));
+                cli.sendLine(String.format("/subsystem=elytron/key-store=%s:store()", keyStoreName));
                 cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:write-attribute(name=key-store-alias, value=%s)",
                         realmName, keyStoreAlias));
             }
             ServerReload.reloadIfRequired(managementClient);
         }
 
-        private static void tearDownNewKeystoreAlias(String realmName, String keyStoreAlias) throws Exception {
+        private static void tearDownNewKeystoreAlias(String realmName, String keyStoreName, String keyStoreAlias) throws Exception {
             try (CLIWrapper cli = new CLIWrapper(true)) {
+                cli.sendLine(String.format("/subsystem=elytron/key-store=%s:remove-alias(alias=%s)", keyStoreName, keyStoreAlias+"New"));
+                cli.sendLine(String.format("/subsystem=elytron/key-store=%s:store()", keyStoreName));
                 cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:write-attribute(name=key-store-alias, value=%s)",
                         realmName, keyStoreAlias));
             }
@@ -164,7 +181,7 @@ public class FilesystemRealmIntegrityTestCase {
 
         @Override
         public void tearDown(ManagementClient managementClient, java.lang.String s) throws Exception {
-            tearDownDomain(DEPLOYMENT, DOMAIN_NAME, REALM_NAME, USER, KEYSTORE_NAME);
+            tearDownDomain(DEPLOYMENT, DOMAIN_NAME, REALM_NAME, USER, KEYSTORE_NAME, KEYSTORE_ALIAS);
             try (CLIWrapper cli = new CLIWrapper(true)) {
                 cli.sendLine("/subsystem=elytron/simple-role-decoder=from-roles-attribute:remove()");
             }
@@ -172,7 +189,7 @@ public class FilesystemRealmIntegrityTestCase {
 
         }
 
-        private void tearDownDomain(String deployment, String domainName, String realmName, String username, String keyStoreName) throws Exception {
+        private void tearDownDomain(String deployment, String domainName, String realmName, String username, String keyStoreName, String keyStoreAlias) throws Exception {
             try (CLIWrapper cli = new CLIWrapper(true)) {
                 cli.sendLine(String.format("/subsystem=undertow/application-security-domain=%s:remove()", deployment));
                 cli.sendLine(String.format("/subsystem=elytron/http-authentication-factory=%s:remove()",
@@ -181,6 +198,8 @@ public class FilesystemRealmIntegrityTestCase {
                         domainName));
                 cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:remove-identity(identity=%s)", realmName, username));
                 cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:remove()", realmName));
+                cli.sendLine(String.format("/subsystem=elytron/key-store=%s:remove-alias(alias=%s)", keyStoreName, keyStoreAlias));
+                cli.sendLine(String.format("/subsystem=elytron/key-store=%s:store()", keyStoreName));
                 cli.sendLine(String.format("/subsystem=elytron/key-store=%s:remove()", keyStoreName));
             }
         }
