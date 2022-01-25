@@ -210,6 +210,11 @@ public abstract class IntegerBasedExpression {
         }
     }
 
+    /**
+     * Checks if relative value is supported.
+     * @param value non-null value
+     * @return true if relative value is supported
+     */
     public abstract boolean isRelativeValue(String value);
 
 }
