@@ -47,11 +47,15 @@ public class CLIServerSetupTask implements ServerSetupTask {
     private static final Logger LOG = Logger.getLogger(CLIServerSetupTask.class);
     protected final Builder builder = new Builder();
 
+    // Batching constants that are defined in org.jboss.as.cli.impl.CommandContextImpl.initCommands(boolean)
+    public static String BATCH = "batch";
+    public static String RUN_BATCH = "run-batch";
+
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         NodeBuilder node = builder.configuration.get(containerId);
         if (node != null && !node.setupCommands.isEmpty()) {
-            this.executeCommands(managementClient, node.setupCommands, node.batch, node.reloadOnSetup);
+            this.executeCommands(managementClient, node.setupCommands, node.batch, node.explicitBatching, node.reloadOnSetup);
         }
     }
 
@@ -59,17 +63,17 @@ public class CLIServerSetupTask implements ServerSetupTask {
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
         NodeBuilder node = builder.configuration.get(containerId);
         if (node != null && !node.teardownCommands.isEmpty()) {
-            this.executeCommands(managementClient, node.teardownCommands, node.batch, node.reloadOnTearDown);
+            this.executeCommands(managementClient, node.teardownCommands, node.batch, node.explicitBatching, node.reloadOnTearDown);
         }
     }
 
-    private void executeCommands(ManagementClient managementClient, List<String> commands, boolean useBatch, boolean reload) throws Exception {
+    private void executeCommands(ManagementClient managementClient, List<String> commands, boolean useBatch, boolean explicitBatching, boolean reload) throws Exception {
         if (commands.isEmpty()) return;
 
         CommandContext context = CLITestUtil.getCommandContext();
         context.connectController();
 
-        if (useBatch) {
+        if (useBatch && !explicitBatching) {
             context.getBatchManager().activateNewBatch();
             Batch batch = context.getBatchManager().getActiveBatch();
             for (String command : commands) {
@@ -86,11 +90,26 @@ public class CLIServerSetupTask implements ServerSetupTask {
             LOG.debugf("Executed batch %s with result %s", commands, result.toJSONString(true));
             this.checkResult(result);
         } else {
+            Batch activeBatch = null;
             for (String command : commands) {
-                ModelNode commandModel = context.buildRequest(command);
+                ModelNode commandModel;
+                if (command.equalsIgnoreCase(BATCH)) {
+                    context.getBatchManager().activateNewBatch();
+                    activeBatch = context.getBatchManager().getActiveBatch();
+                    continue;
+                } else if (command.equalsIgnoreCase(RUN_BATCH)) {
+                    commandModel = activeBatch.toRequest();
+                    activeBatch = null;
+                } else if (activeBatch != null) {
+                    activeBatch.add(context.toBatchedCommand(command));
+                    continue;
+                } else {
+                    commandModel = context.buildRequest(command);
+                }
+
                 ModelNode result = managementClient.getControllerClient().execute(commandModel);
 
-                LOG.debugf("Executed single command %s with result %s", commands, result.toJSONString(true));
+                LOG.debugf("Executed command %s with result %s", commands, result.toJSONString(true));
                 this.checkResult(result);
             }
         }
@@ -148,6 +167,7 @@ public class CLIServerSetupTask implements ServerSetupTask {
         private final List<String> setupCommands = new LinkedList<>();
         private final List<String> teardownCommands = new LinkedList<>();
         private boolean batch = true;
+        private boolean explicitBatching = false;
         private boolean reloadOnSetup = true;
         private boolean reloadOnTearDown = true;
 
@@ -171,6 +191,21 @@ public class CLIServerSetupTask implements ServerSetupTask {
         }
 
         /**
+         * Starts a new batch. Must be eventually followed by {@link NodeBuilder#setupRunBatch()}.
+         */
+        public NodeBuilder setupBatch() {
+            this.explicitBatching = true;
+            return setup(BATCH);
+        }
+
+        /**
+         * Runs the active batch. Must be preceded by {@link NodeBuilder#setupBatch()} call.
+         */
+        public NodeBuilder setupRunBatch() {
+            return setup(RUN_BATCH);
+        }
+
+        /**
          * Adds a single command to be run in teardown phase.
          */
         public NodeBuilder teardown(String teardownCommand) {
@@ -186,7 +221,24 @@ public class CLIServerSetupTask implements ServerSetupTask {
         }
 
         /**
-         * Configure whether the commands should be run in a batch. Default configuration is to batch.
+         * Starts a new batch. Must be eventually followed by {@link NodeBuilder#teardownRunBatch()}.
+         */
+        public NodeBuilder teardownBatch() {
+            this.explicitBatching = true;
+            return teardown(BATCH);
+        }
+
+        /**
+         * Runs the active batch. Must be preceded by {@link NodeBuilder#teardownBatch()} call.
+         */
+        public NodeBuilder teardownRunBatch() {
+            return teardown(RUN_BATCH);
+        }
+
+
+        /**
+         * Configure whether the commands should be run in a batch. Default configuration is to batch unless explicit
+         * batching is used.
          */
         public NodeBuilder batch(boolean batch) {
             this.batch = batch;
