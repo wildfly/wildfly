@@ -146,7 +146,7 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
             .setAttributeGroup(GROUP_SAMPLER)
             .setValidator((parameterName, value) -> {
                 if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
-                    long val = value.asLong();
+                    double val = value.asDouble();
                     if (val < 0.0 || val > 1.0) {
                         throw new OperationFailedException(OpenTelemetryExtensionLogger.OTEL_LOGGER.invalidRatio());
                     }
