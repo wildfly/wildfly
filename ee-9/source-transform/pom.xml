@@ -47,6 +47,7 @@
     <modules>
         <module>batch-jberet</module>
         <module>bean-validation</module>
+        <module>clustering</module>
         <module>ee</module>
         <module>ee-security</module>
         <module>jaxrs</module>
