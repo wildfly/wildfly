@@ -8,8 +8,4 @@
         <feature-group name="undertow-sockets"/>
     </feature>
     <feature-group name="undertow-base"/>
-     <packages>
-       <!-- evolve undertow optional module injected in DU located in full FP -->
-       <package name="io.undertow.js"/>
-    </packages>
 </layer-spec>
