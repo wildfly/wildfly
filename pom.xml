@@ -10019,12 +10019,6 @@
                 <scope>test</scope>
             </dependency>
 
-           <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ormtransformer</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-
         </dependencies>
 
     </dependencyManagement>

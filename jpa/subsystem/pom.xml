@@ -131,10 +131,6 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ormtransformer</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron-security-manager-action</artifactId>
         </dependency>
