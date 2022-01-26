@@ -2926,6 +2926,8 @@
                                         <exclude>org/jboss/as/test/integration/messaging/jms/definitions/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/xmldeployment/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/jms/external/DiscoveryGroupExternalMessagingDeploymentTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/jms/external/prefix/ExternalJMSDestinationDefinitionLegacyPrefixMessagingDeploymentTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/jms/external/prefix/ExternalJMSDestinationDefinitionMessagingDeploymentTestCase.java</exclude>
                                         <!-- Security is managed at the broker level -->
                                         <exclude>org/jboss/as/test/integration/messaging/security/SecurityTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/security/DeserializationBlackListTestCase.java</exclude>
