@@ -1108,8 +1108,8 @@
                 </exclusions>
             </dependency>
 
-	    <!-- wildfly-jpa-jakarta == JPA subsystem -->
-	    <dependency>
+            <!-- wildfly-jpa-jakarta == JPA subsystem -->
+            <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-jpa-jakarta</artifactId>
                 <version>${ee.maven.version}</version>
@@ -1209,6 +1209,18 @@
                 <groupId>org.jboss.weld.probe</groupId>
                 <artifactId>weld-probe-core</artifactId>
                 <version>${version.org.jboss.weld.weld}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-clustering-web-undertow-jakarta</artifactId>
+                <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
