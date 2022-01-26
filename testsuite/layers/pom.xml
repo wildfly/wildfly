@@ -33,6 +33,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-launcher</artifactId>
+        </dependency>
     </dependencies>
     
     <properties>
