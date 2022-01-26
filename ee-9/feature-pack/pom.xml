@@ -689,6 +689,10 @@
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-clustering-web-undertow</artifactId>
                 </exclusion>
                 <exclusion>
