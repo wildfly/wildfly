@@ -25,9 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
-import java.security.AccessController;
 import java.security.Principal;
-import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
@@ -54,9 +52,6 @@ import org.jboss.marshalling.InputStreamByteInput;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.Unmarshaller;
-import org.jboss.security.SecurityContext;
-import org.jboss.security.SecurityContextAssociation;
-import org.jboss.security.SecurityContextFactory;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.InterfaceDef;
 import org.omg.CORBA.ORB;
@@ -341,39 +336,9 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                             // legacy security behavior: setup the security context if a SASCurrent is available and invoke the component.
                             // One of the EJB security interceptors will authenticate and authorize the client.
 
-                            SecurityContext legacyContext = null;
-                            if (this.legacySecurityDomain != null && (identityPrincipal != null || principal != null)) {
-                                // we don't have any real way to establish trust in identity based auth so we just use
-                                // the SASCurrent as a credential, and a custom legacy login module can make a decision for us.
-                                final Object finalCredential = identityPrincipal != null ? this.sasCurrent : credential;
-                                final Principal finalPrincipal = identityPrincipal != null ? identityPrincipal : principal;
-                                if (WildFlySecurityManager.isChecking()) {
-                                    legacyContext = AccessController.doPrivileged((PrivilegedExceptionAction<SecurityContext>) () -> {
-                                        SecurityContext sc = SecurityContextFactory.createSecurityContext(this.legacySecurityDomain);
-                                        sc.getUtil().createSubjectInfo(finalPrincipal, finalCredential, null);
-                                        return sc;
-                                    });
-                                } else {
-                                    legacyContext = SecurityContextFactory.createSecurityContext(this.legacySecurityDomain);
-                                    legacyContext.getUtil().createSubjectInfo(finalPrincipal, finalCredential, null);
-                                }
-                            }
-
-                            if (legacyContext != null) {
-                                setSecurityContextOnAssociation(legacyContext);
-                            }
-                            try {
-                                final InterceptorContext interceptorContext = new InterceptorContext();
-                                if (legacyContext != null) {
-                                    interceptorContext.putPrivateData(SecurityContext.class, legacyContext);
-                                }
-                                prepareInterceptorContext(op, params, interceptorContext);
-                                retVal = this.componentView.invoke(interceptorContext);
-                            } finally {
-                                if (legacyContext != null) {
-                                    clearSecurityContextOnAssociation();
-                                }
-                            }
+                            final InterceptorContext interceptorContext = new InterceptorContext();
+                            prepareInterceptorContext(op, params, interceptorContext);
+                            retVal = this.componentView.invoke(interceptorContext);
                         }
                     }
                 }
@@ -472,21 +437,6 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
 
     public void setEjbMetaData(final EJBMetaData ejbMetaData) {
         this.ejbMetaData = ejbMetaData;
-    }
-
-
-    private static void setSecurityContextOnAssociation(final SecurityContext sc) {
-        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-            SecurityContextAssociation.setSecurityContext(sc);
-            return null;
-        });
-    }
-
-    private static void clearSecurityContextOnAssociation() {
-        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-            SecurityContextAssociation.clearSecurityContext();
-            return null;
-        });
     }
 
     /**
