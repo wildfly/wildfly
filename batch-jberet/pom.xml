@@ -76,6 +76,11 @@
             <artifactId>jboss-msc</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-weld-spi</artifactId>
         </dependency>

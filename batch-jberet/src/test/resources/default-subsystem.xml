@@ -27,6 +27,9 @@
     <job-repository name="in-memory" execution-records-limit="200">
         <in-memory/>
     </job-repository>
+    <job-repository name="jdbc" execution-records-limit="200">
+        <jdbc data-source="ExampleDS"/>
+    </job-repository>
 
     <thread-pool name="batch">
         <max-threads count="10"/>

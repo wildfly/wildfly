@@ -34,17 +34,13 @@ import org.wildfly.extension.batch.jberet.deployment.BatchJobResourceDefinition;
 
 public class BatchSubsystemExtension implements Extension {
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
-
     /**
      * Version numbers for batch subsystem management interface.
      */
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(
-            MANAGEMENT_API_MAJOR_VERSION,
-            MANAGEMENT_API_MINOR_VERSION,
-            MANAGEMENT_API_MICRO_VERSION);
+    static final ModelVersion VERSION_3_0_0 = ModelVersion.create(3, 0, 0);
+    static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
+    static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = VERSION_3_0_0;
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {

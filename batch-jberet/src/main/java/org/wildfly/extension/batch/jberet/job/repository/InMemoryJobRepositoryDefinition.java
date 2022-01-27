@@ -43,7 +43,7 @@ import org.wildfly.extension.batch.jberet._private.Capabilities;
 public class InMemoryJobRepositoryDefinition extends SimpleResourceDefinition {
 
     public static final String NAME = "in-memory-job-repository";
-    static final PathElement PATH = PathElement.pathElement(NAME);
+    public static final PathElement PATH = PathElement.pathElement(NAME);
 
     public InMemoryJobRepositoryDefinition() {
         super(

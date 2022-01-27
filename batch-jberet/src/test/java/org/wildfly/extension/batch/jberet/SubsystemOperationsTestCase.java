@@ -51,7 +51,7 @@ public class SubsystemOperationsTestCase extends AbstractBatchTestCase {
     }
 
     @Override
-    protected void standardSubsystemTest(final String configId) throws Exception {
+    protected void standardSubsystemTest(final String configId) {
         // do nothing as this is not a subsystem parsing test
     }
 
@@ -67,7 +67,10 @@ public class SubsystemOperationsTestCase extends AbstractBatchTestCase {
             @Override
             protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
                 super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration, capabilityRegistry);
-                registerCapabilities(capabilityRegistry, "org.wildfly.batch.thread.pool.new-job-repo", "org.wildfly.transactions.global-default-local-provider");
+                registerCapabilities(capabilityRegistry,
+                        "org.wildfly.batch.thread.pool.new-job-repo",
+                        "org.wildfly.transactions.global-default-local-provider",
+                        "org.wildfly.data-source.ExampleDS");
             }
         };
     }

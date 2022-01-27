@@ -50,7 +50,7 @@ import org.wildfly.extension.batch.jberet._private.Capabilities;
 public class JdbcJobRepositoryDefinition extends SimpleResourceDefinition {
 
     public static final String NAME = "jdbc-job-repository";
-    static final PathElement PATH = PathElement.pathElement(NAME);
+    public static final PathElement PATH = PathElement.pathElement(NAME);
 
     /**
      * A data-source attribute which requires the {@link Capabilities#DATA_SOURCE_CAPABILITY}.
