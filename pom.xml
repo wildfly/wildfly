@@ -360,6 +360,7 @@
         <version.jakarta.mail>1.6.7</version.jakarta.mail>
         <version.jakarta.persistence>2.2.3</version.jakarta.persistence>
         <version.jakarta.security.enterprise>1.0.2</version.jakarta.security.enterprise>
+        <version.jakarta.transaction>2.0.0</version.jakarta.transaction>
         <version.jakarta.validation>2.0.2</version.jakarta.validation>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.jakarta.jws.jakarta.jws-api>2.1.0</version.jakarta.jws.jakarta.jws-api>
@@ -3025,6 +3026,18 @@
                 <groupId>jakarta.jws</groupId>
                 <artifactId>jakarta.jws-api</artifactId>
                 <version>${version.jakarta.jws.jakarta.jws-api}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.transaction</groupId>
+                <artifactId>jakarta.transaction-api</artifactId>
+                <version>${version.jakarta.transaction}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

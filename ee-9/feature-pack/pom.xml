@@ -522,6 +522,16 @@
                                 <!-- Only contains hard-coded strings that are either not used or both the javax and
                                 jakarta names are used -->
                                 <exclude>org.apache.logging.log4j:log4j-api\z</exclude>
+
+                                <!-- Don't transform Infinispan modules and its dependents -->
+                                <exclude>org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec</exclude>
+                                <exclude>org.infinispan:.+\z</exclude>
+                                <exclude>org.wildfly:wildfly-clustering-ee-cache\z</exclude>
+                                <exclude>org.wildfly:wildfly-clustering-ee-infinispan\z</exclude>
+                                <exclude>org.wildfly:wildfly-clustering-ee-hotrod\z</exclude>
+                                <exclude>org.wildfly:wildfly-clustering-infinispan-client\z</exclude>
+                                <exclude>org.wildfly:wildfly-clustering-infinispan-extension\z</exclude>
+                                <exclude>org.wildfly:wildfly-clustering-web-infinispan\z</exclude>
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>

@@ -30,6 +30,7 @@ import org.infinispan.client.hotrod.configuration.TransactionConfigurationBuilde
 import org.infinispan.client.hotrod.transaction.manager.RemoteTransactionManager;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
+import org.jboss.as.clustering.infinispan.jakarta.TransactionManagerAdapter;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentServiceConfigurator;
 import org.jboss.as.clustering.infinispan.subsystem.TransactionMode;
 import org.jboss.as.controller.OperationContext;
@@ -72,13 +73,15 @@ public class RemoteTransactionServiceConfigurator extends ComponentServiceConfig
                 break;
             }
             case NON_XA: {
+                Object tm = ContextTransactionManager.getInstance();
                 builder.transactionMode(org.infinispan.client.hotrod.configuration.TransactionMode.NON_XA);
-                builder.transactionManagerLookup(new TransactionManagerProvider(ContextTransactionManager.getInstance()));
+                builder.transactionManagerLookup(new TransactionManagerProvider(tm instanceof javax.transaction.TransactionManager ? (javax.transaction.TransactionManager) tm : new TransactionManagerAdapter((jakarta.transaction.TransactionManager) tm)));
                 break;
             }
             case NON_DURABLE_XA: {
+                Object tm = ContextTransactionManager.getInstance();
                 builder.transactionMode(org.infinispan.client.hotrod.configuration.TransactionMode.NON_DURABLE_XA);
-                builder.transactionManagerLookup(new TransactionManagerProvider(ContextTransactionManager.getInstance()));
+                builder.transactionManagerLookup(new TransactionManagerProvider(tm instanceof javax.transaction.TransactionManager ? (javax.transaction.TransactionManager) tm : new TransactionManagerAdapter((jakarta.transaction.TransactionManager) tm)));
                 break;
             }
             default: {
