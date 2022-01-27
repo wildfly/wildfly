@@ -48,7 +48,7 @@ public enum ConnectionFactoryType {
         return type;
     }
 
-    public static final ParameterValidator VALIDATOR = new EnumValidator<>(ConnectionFactoryType.class, true, false);
+    public static final ParameterValidator VALIDATOR = EnumValidator.create(ConnectionFactoryType.class);
 
     // copied from HornetQ to avoid import HornetQ artifacts just to define attribute constants and enum validator
     private enum JMSFactoryType

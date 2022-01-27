@@ -46,7 +46,7 @@ public class ConnectionFactoryRemove extends AbstractRemoveStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         ServiceName serviceName;
         if(isSubsystemResource(context)) {
-            serviceName = MessagingServices.getActiveMQServiceName("");
+            serviceName = MessagingServices.getActiveMQServiceName();
         } else {
             serviceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
         }

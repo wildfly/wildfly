@@ -24,14 +24,12 @@ package org.jboss.as.test.integration.web.formauth;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.Principal;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.security.auth.Subject;
-
-import org.jboss.security.SecurityContextAssociation;
 
 /**
  * A servlet that is secured by the web.xml descriptor. When accessed it simply
@@ -45,13 +43,6 @@ public class SecureServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Principal user = request.getUserPrincipal();
-        String validateSubject = request.getParameter("validateSubject");
-        if (validateSubject != null && Boolean.valueOf(validateSubject).booleanValue()) {
-            // Assert that there is a valid SecurityAssociation Subject
-            Subject subject = SecurityContextAssociation.getSubject();
-            if (subject == null)
-                throw new ServletException("No valid subject found, user=" + user);
-        }
         HttpSession session = request.getSession(false);
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();

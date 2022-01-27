@@ -39,8 +39,6 @@ public enum IIOPInitializer {
     UNKNOWN("", ""),
 
     // the security group encompasses both CSIv2 and SAS initializers.
-    SECURITY_CLIENT("client", "org.wildfly.iiop.openjdk.csiv2.CSIv2Initializer", "org.wildfly.iiop.openjdk.csiv2.SASClientInitializer"),
-    SECURITY_IDENTITY("identity", "org.wildfly.iiop.openjdk.csiv2.CSIv2Initializer", "org.wildfly.iiop.openjdk.csiv2.SASInitializer"),
     SECURITY_ELYTRON("elytron", "org.wildfly.iiop.openjdk.csiv2.CSIv2Initializer", "org.wildfly.iiop.openjdk.csiv2.ElytronSASInitializer"),
 
     // the transaction group encompasses the Interposition and InboundCurrent initializers.

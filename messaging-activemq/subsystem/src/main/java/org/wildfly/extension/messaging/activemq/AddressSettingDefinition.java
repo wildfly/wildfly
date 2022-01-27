@@ -94,7 +94,7 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
 
     public static final SimpleAttributeDefinition ADDRESS_FULL_MESSAGE_POLICY = create("address-full-policy", ModelType.STRING)
             .setDefaultValue(new ModelNode(AddressFullMessagePolicy.PAGE.toString()))
-            .setValidator(new EnumValidator<>(AddressFullMessagePolicy.class, true, false))
+            .setValidator(EnumValidator.create(AddressFullMessagePolicy.class))
             .setRequired(false)
             .setAllowExpression(true)
             .build();
@@ -187,7 +187,7 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
 
     public static final SimpleAttributeDefinition SLOW_CONSUMER_POLICY = create("slow-consumer-policy", ModelType.STRING)
             .setDefaultValue(new ModelNode(SlowConsumerPolicy.NOTIFY.toString()))
-            .setValidator(new EnumValidator<>(SlowConsumerPolicy.class, true, true))
+            .setValidator(EnumValidator.create(SlowConsumerPolicy.class))
             .setRequired(false)
             .setAllowExpression(true)
             .build();

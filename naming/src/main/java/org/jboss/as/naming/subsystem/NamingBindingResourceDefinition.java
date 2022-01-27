@@ -60,7 +60,7 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
 
     static final SimpleAttributeDefinition BINDING_TYPE = new SimpleAttributeDefinitionBuilder(NamingSubsystemModel.BINDING_TYPE, ModelType.STRING, false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .setValidator(EnumValidator.create(BindingType.class, false, false))
+            .setValidator(EnumValidator.create(BindingType.class))
             .build();
 
     static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(NamingSubsystemModel.VALUE, ModelType.STRING, true)

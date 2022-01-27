@@ -69,6 +69,12 @@ public class SimpleScheduleFirstTestCase {
         Assert.assertTrue(SingletonScheduleBean.awaitTimerCall());
     }
 
+    @Test
+    public void testScheduleTimezone() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        SimpleScheduleBean bean = (SimpleScheduleBean) ctx.lookup("java:module/" + SimpleScheduleBean.class.getSimpleName());
+        bean.verifyTimezone();
+    }
 
     @Test
     public void testSchedulesAnnotation() throws NamingException {

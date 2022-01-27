@@ -70,4 +70,17 @@ public interface MicroProfileMetricsLogger extends BasicLogger {
 
     @Message(id = 6, value = "The metric was unavailable")
     IllegalStateException metricUnavailable();
+
+    //7, 8 and 9 are taken downstream
+    /*
+    @Message(id = 7, value = "")
+    OperationFailedException seeDownstream();
+
+    @Message(id = 8, value = "")
+    String seeDownstream();
+
+    @Message(id = 9, value = "")
+    OperationFailedException seeDownstream();
+    */
+
 }

@@ -68,4 +68,17 @@ public interface TracingExtensionLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 8, value = "Error using tracer resolver to resolve the tracer.")
     void errorResolvingTracer(@Cause Exception ex);
+
+    //9, 10 and 11 are taken downstream
+    /*
+    @Message(id = 9, value = "")
+    OperationFailedException seeDownstream();
+
+    @Message(id = 10, value = "")
+    String seeDownstream();
+
+    @Message(id = 11, value = "")
+    OperationFailedException seeDownstream();
+    */
+
 }

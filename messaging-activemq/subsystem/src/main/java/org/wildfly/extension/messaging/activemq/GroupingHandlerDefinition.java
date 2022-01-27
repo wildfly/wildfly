@@ -89,7 +89,7 @@ public class GroupingHandlerDefinition extends PersistentResourceDefinition {
 
     public static final SimpleAttributeDefinition TYPE = create("type", STRING)
             .setAllowExpression(true)
-            .setValidator(new EnumValidator<>(Type.class, false, true))
+            .setValidator(EnumValidator.create(Type.class))
             .setRestartAllServices()
             .build();
 

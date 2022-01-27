@@ -38,7 +38,6 @@
         <bootable-jar-maven-jar-plugin.create.modules.phase>none</bootable-jar-maven-jar-plugin.create.modules.phase>
         <bootable-jar-jpa-packaging.phase>none</bootable-jar-jpa-packaging.phase>
         <bootable-jar-cloud-profile-packaging.phase>none</bootable-jar-cloud-profile-packaging.phase>
-        <bootable-jar-legacy-security-packaging.phase>none</bootable-jar-legacy-security-packaging.phase>
         <bootable-jar-copy-module-files.phase>none</bootable-jar-copy-module-files.phase>
         <!-- Disable the default surefire test execution. -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
@@ -209,6 +208,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
             <scope>test</scope>
@@ -281,6 +290,11 @@
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-json-binding-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-json-p-provider</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -851,40 +865,6 @@
                         </configuration>
                     </execution>
 
-                    <!-- Package a cloud-profile server with legacy security as well -->
-                    <execution>
-                        <id>bootable-jar-legacy-security-packaging</id>
-                        <goals>
-                            <goal>package</goal>
-                        </goals>
-                        <phase>${bootable-jar-legacy-security-packaging.phase}</phase>
-                        <configuration>
-                            <output-file-name>test-wildfly-legacy-security.jar</output-file-name>
-                            <hollowJar>true</hollowJar>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <extra-server-content-dirs>
-                                <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
-                            </extra-server-content-dirs>
-                            <offline>true</offline>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.ee.galleon.pack.version}</version>
-                                </feature-pack>
-                            </feature-packs>
-                            <layers>
-                                <layer>cloud-server</layer>
-                                <layer>h2-default-datasource</layer>
-                            </layers>
-                        </configuration>
-                    </execution>
-
                     <!-- Package a server with jpa -->
                     <execution>
                         <id>bootable-jar-jpa-packaging</id>
@@ -985,12 +965,8 @@
                                 <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
                                 <!-- no ejb -->
                                 <exclude>org/jboss/as/test/integration/deployment/dependencies/EjbDependencyRestartTestCase.java</exclude>
-                                <exclude>org/jboss/as/test/integration/security/loginmodules/databases/ExternalDatabaseLoginTestCase.java</exclude>
-                                <exclude>org/jboss/as/test/integration/security/loginmodules/RunAsLoginModuleTestCase.java</exclude>
-                                <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleUseNewClientCertTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/jacc/context/PolicyContextTestCase.java</exclude>
-                                <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/context/ReuseAuthenticatedSubjectTestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/jaas/JAASIdentityCachingTestCase.java</exclude>
 
@@ -1064,8 +1040,6 @@
                                 <exclude>org/jboss/as/test/integration/security/auditing/*Test.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/cli/*TestCase.java</exclude>
                                 <exclude>org/jboss/as/test/integration/security/jaspi/*TestCase.java</exclude>
-                                <exclude>org/jboss/as/test/integration/security/loginmodules/**/*TestCase.java</exclude>
-                                <exclude>org/jboss/as/test/integration/security/loginmodules/**/*Test.java</exclude>
                                 <exclude>org/jboss/as/test/integration/weld/builtin/**/*TestCase.java</exclude>
                                 <!-- no sar subsystem -->
                                 <exclude>org/jboss/as/test/integration/deployment/classloading/sar/SarClassLoadingTestCase.java</exclude>
@@ -1232,8 +1206,6 @@
                                 <configuration>
                                     <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
                                     <excludes>
-                                        <!-- truststore setting used in LDAPs testing is affected by some other test -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                         <!-- 2nd run tests are run in other execution. -->
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
                                         <!-- Tests which need FULL config. -->
@@ -1314,7 +1286,6 @@
                                 </goals>
                                 <configuration>
                                     <includes>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/jca/moduledeployment/**/*TestCase*.java</include>
                                     </includes>
 
@@ -1379,7 +1350,6 @@
                                     </includes>
                                     <excludes>
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -1709,45 +1679,6 @@
                                             <layers>
                                                 <layer>jdr</layer>
                                                 <layer>datasources-web-server</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-
-                            <!-- Provision a cloud-profile server with legacy-security as well -->
-                            <execution>
-                                <id>legacy-security-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>compile</phase>
-                                <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-legacy-security</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                        <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -2726,93 +2657,6 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Tests against the install with legacy security -->
-                            <execution>
-                                <id>legacy-security-layers.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <systemPropertyVariables>
-                                        <jboss.install.dir>${basedir}/target/wildfly-legacy-security</jboss.install.dir>
-                                        <jboss.home>${project.build.directory}/wildfly-legacy-security</jboss.home>
-                                        <jboss.home.dir>${project.build.directory}/wildfly-legacy-security</jboss.home.dir>
-                                        <jbossas.dist>${project.build.directory}/wildfly-legacy-security</jbossas.dist>
-                                        <jboss.dist>${project.build.directory}/wildfly-legacy-security</jboss.dist>
-                                        <!-- Override the standard module path that points at the shared module set from dist -->
-                                        <module.path>${project.build.directory}/wildfly-legacy-security/modules${path.separator}${basedir}/target/modules</module.path>
-                                    </systemPropertyVariables>
-                                    <environmentVariables>
-                                        <JBOSS_HOME>${project.build.directory}/wildfly-legacy-security</JBOSS_HOME>
-                                    </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/jca/anno/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/basic/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/capacitypolicies/ResourceAdapterCapacityPoliciesTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/ijdeployment/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/metrics/RaCfgMetricUnitTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/poolattributes/ResourceAdapterPoolAttributesTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/security/DsWithMixedSecurityTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/security/DsWithSecurityDomainTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/security/IronJacamarActivationRaWithSecurityDomainTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithElytronAuthContextTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithMixedSecurityTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/statistics/ResourceAdapterStatisticsTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/management/api/security/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/aselytron/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/auditing/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/auditing/*Test.java</include>
-                                        <include>org/jboss/as/test/integration/security/cli/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/jaspi/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/**/*Test.java</include>
-                                        <include>org/jboss/as/test/integration/weld/builtin/*TestCase.java</include>
-                                    </includes>
-                                    <excludes>
-                                        <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
-                                        <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
-                                        <!-- no ejb -->
-                                        <exclude>org/jboss/as/test/integration/jca/security/workmanager/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/databases/ExternalDatabaseLoginTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RunAsLoginModuleTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleUseNewClientCertTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleTestCase.java</exclude>
-                                        <!-- truststore setting used in LDAPs testing was affected by some other test - need a separate execution -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
-                                    </excludes>
-                                </configuration>
-                            </execution>
-
-                            <!-- truststore setting used in LDAPs testing was affected by some other test - need an extra run -->
-                            <execution>
-                                <id>legacy-security-layers-ldap.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <systemPropertyVariables>
-                                        <jboss.install.dir>${basedir}/target/wildfly-legacy-security</jboss.install.dir>
-                                        <jboss.home>${project.build.directory}/wildfly-legacy-security</jboss.home>
-                                        <jboss.home.dir>${project.build.directory}/wildfly-legacy-security</jboss.home.dir>
-                                        <jbossas.dist>${project.build.directory}/wildfly-legacy-security</jbossas.dist>
-                                        <jboss.dist>${project.build.directory}/wildfly-legacy-security</jboss.dist>
-                                        <!-- Override the standard module path that points at the shared module set from dist -->
-                                        <module.path>${project.build.directory}/wildfly-legacy-security/modules${path.separator}${basedir}/target/modules</module.path>
-                                    </systemPropertyVariables>
-                                    <environmentVariables>
-                                        <JBOSS_HOME>${project.build.directory}/wildfly-legacy-security</JBOSS_HOME>
-                                    </environmentVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</include>
-                                    </includes>
-                                </configuration>
-                            </execution>
                             <!-- Tests against the install with ejb-lite -->
                             <execution>
                                 <id>ejb-lite-layers.surefire</id>
@@ -3082,6 +2926,8 @@
                                         <exclude>org/jboss/as/test/integration/messaging/jms/definitions/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/xmldeployment/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/jms/external/DiscoveryGroupExternalMessagingDeploymentTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/jms/external/prefix/ExternalJMSDestinationDefinitionLegacyPrefixMessagingDeploymentTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/jms/external/prefix/ExternalJMSDestinationDefinitionMessagingDeploymentTestCase.java</exclude>
                                         <!-- Security is managed at the broker level -->
                                         <exclude>org/jboss/as/test/integration/messaging/security/SecurityTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/security/DeserializationBlackListTestCase.java</exclude>
@@ -3263,7 +3109,6 @@
                 <bootable-jar-maven-jar-plugin.create.modules.phase>process-test-classes</bootable-jar-maven-jar-plugin.create.modules.phase>
                 <bootable-jar-jpa-packaging.phase>process-test-classes</bootable-jar-jpa-packaging.phase>
                 <bootable-jar-cloud-profile-packaging.phase>process-test-classes</bootable-jar-cloud-profile-packaging.phase>
-                <bootable-jar-legacy-security-packaging.phase>process-test-classes</bootable-jar-legacy-security-packaging.phase>
             </properties>
             <build>
                 <plugins>
@@ -3288,13 +3133,6 @@
                             <!-- Disable the default provisioning -->
                             <execution>
                                 <id>cloud-profile-provisioning</id>
-                                <goals>
-                                    <goal>provisioning</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <id>legacy-security-provisioning</id>
                                 <goals>
                                     <goal>provisioning</goal>
                                 </goals>
@@ -3365,97 +3203,6 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Tests against the install with legacy security -->
-                            <execution>
-                                <id>legacy-security-layers.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <systemPropertyVariables>
-                                        <install.dir>${project.build.directory}/wildfly-bootable-legacy-security</install.dir>
-                                        <bootable.jar>${project.build.directory}/test-wildfly-legacy-security.jar</bootable.jar>
-                                        <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
-                                    </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/jca/anno/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/basic/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/capacitypolicies/ResourceAdapterCapacityPoliciesTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/ijdeployment/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/metrics/RaCfgMetricUnitTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/poolattributes/ResourceAdapterPoolAttributesTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/security/DsWithMixedSecurityTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/security/DsWithSecurityDomainTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/security/IronJacamarActivationRaWithSecurityDomainTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithElytronAuthContextTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/security/WildFlyActivationRaWithMixedSecurityTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/jca/statistics/ResourceAdapterStatisticsTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/management/api/security/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/aselytron/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/auditing/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/auditing/*Test.java</include>
-                                        <include>org/jboss/as/test/integration/security/cli/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/jaspi/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/**/*TestCase.java</include>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/**/*Test.java</include>
-                                        <include>org/jboss/as/test/integration/weld/builtin/*TestCase.java</include>
-                                    </includes>
-                                    <excludes>
-                                        <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
-                                        <exclude>org/jboss/as/test/integration/security/jaspi/EESecurityAuthMechanismTestCase.java</exclude>
-                                        <!-- no ejb -->
-                                        <exclude>org/jboss/as/test/integration/jca/security/workmanager/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/databases/ExternalDatabaseLoginTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RunAsLoginModuleTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleUseNewClientCertTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/RemotingLoginModuleTestCase.java</exclude>
-                                        <!-- truststore setting used in LDAPs testing was affected by some other test - need a separate execution -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
-                                        <!-- For bootable-jar, custom modules have to be prepared aside in the time of jar packinging,
-                                        which is not sustainable for all tests. -->
-                                        <exclude>org/jboss/as/test/integration/security/auditing/CustomAuditProviderModuleTest.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/MultipleCustomLoginModulesTest.java</exclude>
-                                    </excludes>
-                                    <classpathDependencyExcludes>
-                                        <classpathDependencyExclude>
-                                            org.wildfly.arquillian:wildfly-arquillian-container-managed
-                                        </classpathDependencyExclude>
-                                    </classpathDependencyExcludes>
-                                </configuration>
-                            </execution>
-
-                            <!-- truststore setting used in LDAPs testing was affected by some other test - need an extra run -->
-                            <execution>
-                                <id>legacy-security-layers-ldap.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <systemPropertyVariables>
-                                        <install.dir>${project.build.directory}/wildfly-bootable-legacy-security-ldap</install.dir>
-                                        <module.path>${project.build.directory}/wildfly-bootable-legacy-security-ldap</module.path>
-                                        <bootable.jar>${project.build.directory}/test-wildfly-legacy-security.jar</bootable.jar>
-                                        <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
-                                    </systemPropertyVariables>
-                                    <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
-                                        <!-- For bootable-jar, custom modules have to be prepared aside in the time of jar packinging,
-                                        which is not sustainable for all tests. Complex changes would be necessary for the following test cases. -->
-                                        <!--<include>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</include>-->
-                                    </includes>
-                                    <classpathDependencyExcludes>
-                                        <classpathDependencyExclude>
-                                            org.wildfly.arquillian:wildfly-arquillian-container-managed
-                                        </classpathDependencyExclude>
-                                    </classpathDependencyExcludes>
-                                </configuration>
-                            </execution>
-
                             <!-- Tests against a server provisioned with jpa -->
                             <execution>
                                 <id>jpa-layers.surefire</id>
@@ -3489,7 +3236,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <!-- Test against bootable jar ee9-->
         <profile>
             <id>bootablejar.ee9.profile</id>
@@ -3564,13 +3311,6 @@
                                 <phase>none</phase>
                             </execution>
                             <execution>
-                                <id>legacy-security-provisioning</id>
-                                <goals>
-                                    <goal>provisioning</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
                                 <id>jpa-provisioning</id>
                                 <goals>
                                     <goal>provisioning</goal>
@@ -3629,8 +3369,8 @@
                                         <exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
                                         <!--EE9 -->
                                         <exclude>org/jboss/as/test/integration/beanvalidation/hibernate/validator/deprecated/SafeHtmlValidationTestCase</exclude>
-                                        <exclude>org/jboss/as/test/integration/management/cli/DeploymentOverlayCLITestCase.java</exclude> 
-                                        <exclude>org/jboss/as/test/integration/management/deploy/runtime/JaxrsRuntimeNameTestCase.java</exclude><!-- test expects javax strings in mgmt api responses -->                                    
+                                        <exclude>org/jboss/as/test/integration/management/cli/DeploymentOverlayCLITestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/management/deploy/runtime/JaxrsRuntimeNameTestCase.java</exclude><!-- test expects javax strings in mgmt api responses -->
                                         <exclude>org/jboss/as/test/integration/weld/extensions/cdiportableextensions/ExtensionTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/modules/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/modules/deployment/*Test.java</exclude>
@@ -3710,7 +3450,6 @@
                                         <!-- Requires legacy security -->
                                         <exclude>org/jboss/as/test/integration/ejb/security/LdapLegacyTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/security/RunAsPrincipalCustomDomainTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ejb/security/securitydomain/EJBContextMultipleSDTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/security/callerprincipal/GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainDotNameTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/web/security/runas/WebSecurityRunAsTestCase.java</exclude>
@@ -3739,8 +3478,6 @@
                                     <excludes>
                                         <!-- Repeat the standard excludes for this execution as combine-children="append" doesn't work
                                              FIXME. Sort this so this is not needed -->
-                                        <!-- truststore setting used in LDAPs testing is affected by some other test -->
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                         <!-- 2nd run tests are run in other execution. -->
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
                                         <!-- Tests which need FULL config. -->
@@ -3796,8 +3533,6 @@
                                         <exclude>org/jboss/as/test/integration/security/context/ReuseAuthenticatedSubjectTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/jaas/JAASIdentityCachingTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/security/jaspi/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/**/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/loginmodules/**/*Test.java</exclude>
                                         <exclude>org/wildfly/test/elytron/intermediate/*TestCase.java</exclude>
                                         <!-- No agroal -->
                                         <exclude>org/wildfly/test/integration/agroal/*TestCase.java</exclude>
@@ -3834,8 +3569,6 @@
                                 <phase>none</phase>
                                 <configuration>
                                 <excludes>
-                                    <!-- Requires legacy security -->
-                                    <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                     <!-- Need to handle addition of JBoss Modules that use EE 8 -->
                                     <exclude>org/jboss/as/test/integration/jca/moduledeployment/*TestCase.java</exclude>
                                 </excludes>

@@ -29,7 +29,7 @@
                                           /*[local-name()='initializers']">
         <xsl:copy>
             <xsl:attribute name="transactions">full</xsl:attribute>
-            <xsl:attribute name="security">client</xsl:attribute>
+            <xsl:attribute name="security">elytron</xsl:attribute>
         </xsl:copy>
     </xsl:template>
 

@@ -442,7 +442,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRequired(false)
             .setAllowExpression(true)
             // list allowed values explicitly to exclude MAPPED
-            .setValidator(new EnumValidator<>(JournalType.class, true, true))
+            .setValidator(EnumValidator.create(JournalType.class))
             .setRestartAllServices()
             .build();
     public static final SimpleAttributeDefinition JOURNAL_MAX_ATTIC_FILES = create("journal-max-attic-files", ModelType.INT)

@@ -292,7 +292,7 @@ public class Constants {
     static final SimpleAttributeDefinition TRANSACTION_SUPPORT = new SimpleAttributeDefinitionBuilder(TRANSACTIONSUPPORT_NAME, ModelType.STRING, true)
             .setXmlName(Activation.Tag.TRANSACTION_SUPPORT.getLocalName())
             .setAllowExpression(true)
-            .setValidator(new EnumValidator<TransactionSupportEnum>(TransactionSupportEnum.class, true, true))
+            .setValidator(EnumValidator.create(TransactionSupportEnum.class))
             .setRestartAllServices()
             .build();
 

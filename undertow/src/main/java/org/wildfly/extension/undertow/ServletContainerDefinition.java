@@ -70,7 +70,7 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.STACK_TRACE_ON_ERROR, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(ServletStackTraces.LOCAL_ONLY.toString()))
-                    .setValidator(new EnumValidator<>(ServletStackTraces.class, true, true))
+                    .setValidator(EnumValidator.create(ServletStackTraces.class))
                     .setAllowExpression(true)
                     .build();
 

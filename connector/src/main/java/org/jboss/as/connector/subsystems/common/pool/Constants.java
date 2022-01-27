@@ -225,7 +225,7 @@ public class Constants {
             .setRequired(false)
             .setAllowExpression(true)
             .setAllowedValues(Stream.of(FlushStrategy.values()).map(FlushStrategy::toString).filter(Objects::nonNull).toArray(String[]::new))
-            .setValidator(new EnumValidator<FlushStrategy>(FlushStrategy.class, true, true))
+            .setValidator(EnumValidator.create(FlushStrategy.class))
             .setRestartAllServices()
             .build();
 
