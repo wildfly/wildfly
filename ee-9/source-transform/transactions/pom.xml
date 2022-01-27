@@ -40,7 +40,7 @@
     <name>WildFly: Transaction Subsystem (Jakarta Namespace)</name>
 
     <properties>
-        <transformer-input-dir>${project.basedir}/../../../../transactions</transformer-input-dir>
+	<transformer-input-dir>${project.basedir}/../../../transactions</transformer-input-dir>
     </properties>
 
     <dependencies>
@@ -115,6 +115,23 @@
         <dependency>
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron-security-manager</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise.concurrent</groupId>
+            <artifactId>jakarta.enterprise.concurrent-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.enterprise.concurrent</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.narayana.jts</groupId>
+            <artifactId>narayana-jts-integration-jakarta</artifactId>
+            <version>${version.org.jboss.narayana}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.narayana.jts</groupId>
+            <artifactId>narayana-jts-idlj-jakarta</artifactId>
         </dependency>
     </dependencies>
 
