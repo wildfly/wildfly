@@ -27,6 +27,8 @@ import static org.jboss.as.clustering.infinispan.subsystem.FileStoreResourceDefi
 
 import java.io.File;
 
+import org.infinispan.persistence.sifs.configuration.SoftIndexFileStoreConfiguration;
+import org.infinispan.persistence.sifs.configuration.SoftIndexFileStoreConfigurationBuilder;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -36,8 +38,6 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jgroups.util.UUID;
-import org.wildfly.clustering.infinispan.spi.persistence.sifs.SoftIndexFileStoreConfiguration;
-import org.wildfly.clustering.infinispan.spi.persistence.sifs.SoftIndexFileStoreConfigurationBuilder;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
