@@ -93,5 +93,7 @@
         <module name="javax.json.api" optional="true"/>
         <module name="org.wildfly.event.logger" optional="true"/>
         <module name="org.wildfly.common" optional="true"/>
+        <!-- WFLY-15609 -->
+        <module name="org.wildfly.transaction.client" optional="true"/>
     </dependencies>
 </module>

@@ -995,6 +995,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             d.setPreservePathOnForward(servletContainer.isPreservePathOnForward());
 
+            // See also https://issues.redhat.com/browse/WFLY-15609
+            d.addOuterHandlerChainWrapper(next -> new TransactionTimeoutCleanupHandler(next));
+
             return d;
         } catch (ClassNotFoundException e) {
             throw new StartException(e);
