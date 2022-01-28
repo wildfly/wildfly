@@ -28,7 +28,7 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-ee-9-source-transform-parent</artifactId>
+        <artifactId>wildfly-clustering-jakarta</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -36,26 +36,12 @@
         <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-clustering-jakarta</artifactId>
+    <artifactId>wildfly-clustering-ejb-jakarta</artifactId>
     <packaging>pom</packaging>
 
-    <name>WildFly: Clustering subsystems and modules (Jakarta Namespace)</name>
+    <name>WildFly: EJB clustering (Jakarta Namespace)</name>
 
     <modules>
-        <module>ejb</module>
-        <module>web</module>
+        <module>infinispan</module>
     </modules>
-
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
 </project>
