@@ -638,6 +638,16 @@
         <!-- Misc -->
 
         <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron-audit</artifactId>
             <exclusions>
@@ -805,6 +815,17 @@
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>jipijapa-eclipselink-jakarta</artifactId>
+           <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+       <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>jipijapa-hibernate6</artifactId>
            <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

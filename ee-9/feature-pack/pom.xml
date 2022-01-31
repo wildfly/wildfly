@@ -748,6 +748,10 @@
                      the standard module source to use jakarta.* and drop the -jakarta artifacts we'll just
                      have to move back. -->
                 <exclusion>
+                    <groupId>antlr</groupId>
+                    <artifactId>antlr</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>jipijapa-spi</artifactId>
                 </exclusion>
