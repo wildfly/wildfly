@@ -23,8 +23,6 @@
 package org.wildfly.extension.batch.jberet.deployment;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Deque;
 
 /**
@@ -65,10 +63,10 @@ interface ContextHandle {
      */
     class ChainedContextHandle implements ContextHandle {
 
-        private final Collection<ContextHandle> contextHandles;
+        private final ContextHandle[] contextHandles;
 
         public ChainedContextHandle(final ContextHandle... contextHandles) {
-            this.contextHandles = Arrays.asList(contextHandles);
+            this.contextHandles = contextHandles;
         }
 
         @Override
