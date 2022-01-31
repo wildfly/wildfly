@@ -522,6 +522,11 @@
                                 <!-- Only contains hard-coded strings that are either not used or both the javax and
                                 jakarta names are used -->
                                 <exclude>org.apache.logging.log4j:log4j-api\z</exclude>
+                                <exclude>org.wildfly:wildfly-iiop-openjdk-jakarta\z</exclude>
+                                <exclude>org.jboss:jboss-transaction-spi\z</exclude>
+                                <exclude>org.wildfly.transaction:wildfly-transaction-client\z</exclude>
+                                <exclude>org.jboss.narayana.jts:narayana-jts-integration\z</exclude>
+                                <exclude>org.jboss.narayana.jts:narayana-jts-idlj\z</exclude>
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
