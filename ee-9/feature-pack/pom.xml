@@ -777,6 +777,10 @@
                     <groupId>org.wildfly.wildfly-http-client</groupId>
                     <artifactId>wildfly-http-transaction-client</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-iiop-openjdk</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
