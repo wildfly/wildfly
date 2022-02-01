@@ -58,7 +58,7 @@
         <module>jsf/injection</module>
         <module>jsf/subsystem</module>
         <module>mail</module>
-        <module>microprofile/reactive-streams-operators-smallrye/cdi-provider</module>
+        <module>microprofile</module>
         <module>web-common</module>
         <module>weld/bean-validation</module>
         <module>weld/common</module>
