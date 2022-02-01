@@ -44,6 +44,10 @@
     <dependencies>
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-openapi-smallrye-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider-jakarta</artifactId>
         </dependency>
 
