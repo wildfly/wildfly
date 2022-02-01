@@ -441,7 +441,7 @@
                         <jboss.inst>${basedir}/target/wildfly</jboss.inst>
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
                         <jboss.server.config.file.name>standalone-microprofile.xml</jboss.server.config.file.name>
-                        <microprofile.jvm.args>${microprofile.jvm.args} -Dorg.eclipse.microprofile.rest.client.tck.timeoutCushion=30 -Dorg.wildfly.unsupported.skip.jakarta.transformer=true</microprofile.jvm.args>
+                        <microprofile.jvm.args>${microprofile.jvm.args} -Dorg.eclipse.microprofile.rest.client.tck.timeoutCushion=50 -Dorg.wildfly.unsupported.skip.jakarta.transformer=true</microprofile.jvm.args>
                         <test.url>http://localhost:8080</test.url>
                     </systemPropertyVariables>
                 </configuration>
