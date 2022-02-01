@@ -91,8 +91,7 @@ public class AssumeTestGroupUtil {
     }
 
     private static int getJavaSpecificationVersion() {
-        String versionString = System.getProperty("java.specification.version");
-        versionString = versionString.startsWith("1.") ? versionString.substring(2) : versionString;
+        final String versionString = System.getProperty("java.specification.version");
         return Integer.parseInt(versionString);
     }
 

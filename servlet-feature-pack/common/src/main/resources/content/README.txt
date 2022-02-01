@@ -24,7 +24,7 @@ http://wildfly.org/
 
 Getting Started
 ---------------
-WildFly requires JDK 1.8 or later. For information regarding installation
+WildFly requires JDK 11 or later. For information regarding installation
 of the JDK, see http://www.oracle.com/technetwork/java/index.html
 
 WildFly has two modes of operation: Standalone and Domain. For more

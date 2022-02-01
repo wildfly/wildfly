@@ -159,12 +159,26 @@
             For example: <version.surefire.plugin>2.11</version.surefire.plugin>
           -->
         <maven.min.version>3.6.0</maven.min.version>
+        <!-- Require Java 11 -->
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
 
         <!-- TarArchiver behavior -->
         <assembly.tarLongFileMode>posix</assembly.tarLongFileMode>
 
         <!-- Modularized JDK support (various workarounds) - activated via profile -->
-        <modular.jdk.args></modular.jdk.args>
+        <modular.jdk.args>
+            --add-exports=java.desktop/sun.awt=ALL-UNNAMED
+            --add-opens=java.base/java.io=ALL-UNNAMED
+            --add-opens=java.base/java.lang=ALL-UNNAMED
+            --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+            --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+            --add-opens=java.base/java.security=ALL-UNNAMED
+            --add-opens=java.base/java.util=ALL-UNNAMED
+            --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+            --add-opens=java.management/javax.management=ALL-UNNAMED
+            --add-opens=java.naming/javax.naming=ALL-UNNAMED
+        </modular.jdk.args>
         <modular.jdk.props></modular.jdk.props>
 
         <!--
@@ -10136,19 +10150,6 @@
                         </systemProperties>
                         <argLine>${surefire.system.args}</argLine>
                     </configuration>
-                    <executions>
-                        <!-- The java8-test execution is defined by the org:jboss:jboss-parent pom
-                             and is used when a SE > 8 build is configured to test a multi-release jar
-                             using a separate SE 8 JDK. Redefine the surefire argline for this
-                             case to not include the modular.jdk.args/modular.jdk.props that will not
-                             work with that SE 8 JDK-->
-                        <execution>
-                            <id>java8-test</id>
-                            <configuration>
-                                <argLine>${surefire.non-modular.system.args}</argLine>
-                            </configuration>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -10189,7 +10190,7 @@
                     </configuration>
                 </plugin>
 
-                <!-- Ban bad dependencies and require Java 8 for deploying -->
+                <!-- Ban bad dependencies and require Java 11 for deploying -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
@@ -10315,7 +10316,7 @@
                             </configuration>
                         </execution>
                         <execution>
-                            <id>require-java8</id>
+                            <id>require-java11</id>
                             <goals>
                                 <goal>enforce</goal>
                             </goals>
@@ -10323,7 +10324,7 @@
                             <configuration>
                                 <rules>
                                     <requireJavaVersion>
-                                        <version>[1.8,9)</version>
+                                        <version>[11,12)</version>
                                     </requireJavaVersion>
                                 </rules>
                             </configuration>
@@ -10588,30 +10589,6 @@
 
     <!-- Profiles -->
     <profiles>
-        <!--
-                  Name: JDK9+
-                  Descr: various workarounds activation for JDK9+
-                -->
-        <profile>
-            <id>jdk9</id>
-            <activation>
-                <jdk>[9,)</jdk>
-            </activation>
-            <properties>
-                <modular.jdk.args>
-                    --add-exports=java.desktop/sun.awt=ALL-UNNAMED
-                    --add-opens=java.base/java.io=ALL-UNNAMED
-                    --add-opens=java.base/java.lang=ALL-UNNAMED
-                    --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
-                    --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
-                    --add-opens=java.base/java.security=ALL-UNNAMED
-                    --add-opens=java.base/java.util=ALL-UNNAMED
-                    --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
-                    --add-opens=java.management/javax.management=ALL-UNNAMED
-                    --add-opens=java.naming/javax.naming=ALL-UNNAMED
-                </modular.jdk.args>
-            </properties>
-        </profile>
         <profile>
             <id>jdk18</id>
             <activation>
@@ -10647,7 +10624,7 @@
                 </property>
             </activation>
             <properties>
-                <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
+                <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=*:8787,server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
 

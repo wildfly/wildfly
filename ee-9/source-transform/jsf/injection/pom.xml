@@ -101,6 +101,11 @@
             <artifactId>wildfly-web-common-jakarta</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-server</artifactId>
+        </dependency>
+
         <!-- other dependencies -->
 
         <dependency>

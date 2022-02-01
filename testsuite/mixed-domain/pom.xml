@@ -227,6 +227,12 @@
             <build>
                 <plugins>
                     <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <testRelease>8</testRelease>
+                        </configuration>
+                    </plugin>
+                    <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
