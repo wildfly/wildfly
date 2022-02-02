@@ -664,6 +664,10 @@
                     <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-client-microprofile-base</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>${full.maven.groupId}</groupId>
+                    <artifactId>wildfly-microprofile-health-smallrye</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
