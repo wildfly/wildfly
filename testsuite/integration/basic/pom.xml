@@ -1603,8 +1603,9 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <!-- Provision a cloud-profile server -->
                             <execution>
@@ -1614,15 +1615,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -1630,21 +1631,20 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
-
                             <!-- Provision a server with JBoss Diagnostic Reporting layer -->
                             <execution>
                                 <id>jdr-provisioning</id>
@@ -1653,15 +1653,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-jdr</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-jdr</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -1669,18 +1669,18 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                        <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>jdr</layer>
-                                                <layer>datasources-web-server</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>jdr</layer>
+                                        <layer>datasources-web-server</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -1692,15 +1692,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-batch</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-batch</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -1708,19 +1708,19 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>batch-jberet</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>batch-jberet</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -1732,15 +1732,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-jpa</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-jpa</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -1748,19 +1748,19 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>jpa</layer>
-                                                <layer>jaxrs-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>jpa</layer>
+                                        <layer>jaxrs-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -1772,15 +1772,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-jsonp</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-jsonp</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -1788,23 +1788,23 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>datasources-web-server</layer>
-                                                <layer>jsonp</layer>
-                                            </layers>
-                                            <excluded-layers>
-                                                <!-- Not strictly necessary but it will avoid the provisioning of
-                                                     Jakarta JSON Binding brought in by ee layer. We removes Jakarta JSON Binding to make the tests cleaner -->
-                                                <layer>jsonb</layer>
-                                            </excluded-layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>datasources-web-server</layer>
+                                        <layer>jsonp</layer>
+                                    </layers>
+                                    <excluded-layers>
+                                        <!-- Not strictly necessary but it will avoid the provisioning of
+                                             Jakarta JSON Binding brought in by ee layer. We removes Jakarta JSON Binding to make the tests cleaner -->
+                                        <layer>jsonb</layer>
+                                    </excluded-layers>
                                 </configuration>
                             </execution>
 
@@ -1816,15 +1816,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-jsonb</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-jsonb</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -1832,18 +1832,18 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>datasources-web-server</layer>
-                                                <layer>jsonb</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>datasources-web-server</layer>
+                                        <layer>jsonb</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -1855,15 +1855,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-microprofile-platform</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-microprofile-platform</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -1871,21 +1871,21 @@
                                             <version>${full.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-platform</layer>
-                                                <layer>jaxrs-server</layer>
-                                                <!-- Needed by arquillian: protocol and security manager -->
-                                                <layer>jmx-remoting</layer>
-                                                <layer>security-manager</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>microprofile-platform</layer>
+                                        <layer>jaxrs-server</layer>
+                                        <!-- Needed by arquillian: protocol and security manager -->
+                                        <layer>jmx-remoting</layer>
+                                        <layer>security-manager</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -1897,15 +1897,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-ejb-lite</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-ejb-lite</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -1913,21 +1913,22 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>ejb-lite</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>ejb-lite</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
+
                             <!-- Provision a cloud-profile server with ejb -->
                             <execution>
                                 <id>ejb-provisioning</id>
@@ -1936,15 +1937,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-ejb</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-ejb</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${project.groupId}</groupId>
@@ -1952,20 +1953,20 @@
                                             <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>ejb</layer>
-                                                <layer>ejb-elytron-testsuite</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>ejb</layer>
+                                        <layer>ejb-elytron-testsuite</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -1977,15 +1978,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-ejb-embedded-broker</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-ejb-embedded-broker</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${project.groupId}</groupId>
@@ -1993,23 +1994,24 @@
                                             <version>${project.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>ejb</layer>
-                                                <layer>embedded-activemq</layer>
-                                                <layer>remote-naming</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>ejb</layer>
+                                        <layer>embedded-activemq</layer>
+                                        <layer>remote-naming</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
+
                             <!-- Provision a cloud-profile server with ejb for remote Artemis broker-->
                             <execution>
                                 <id>ejb-remote-broker-provisioning</id>
@@ -2018,15 +2020,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-ejb-remote-broker</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-ejb-remote-broker</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${project.groupId}</groupId>
@@ -2034,21 +2036,21 @@
                                             <version>${project.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>ejb</layer>
-                                                <layer>remote-activemq-cf</layer>
-                                                <layer>remote-naming</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>ejb</layer>
+                                        <layer>remote-activemq-cf</layer>
+                                        <layer>remote-naming</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -2060,15 +2062,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-jsf</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-jsf</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -2076,19 +2078,19 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>datasources-web-server</layer>
-                                                <layer>jsf</layer>
-                                                <layer>web-passivation</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>datasources-web-server</layer>
+                                        <layer>jsf</layer>
+                                        <layer>web-passivation</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -2100,15 +2102,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-jsf-ejb-lite</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-jsf-ejb-lite</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -2116,19 +2118,19 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>datasources-web-server</layer>
-                                                <layer>jsf</layer>
-                                                <layer>ejb-lite</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>datasources-web-server</layer>
+                                        <layer>jsf</layer>
+                                        <layer>ejb-lite</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -2140,15 +2142,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-legacy-sar</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-legacy-sar</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -2156,19 +2158,19 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>sar</layer>
-                                                <layer>mail</layer>
-                                                <layer>datasources-web-server</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>sar</layer>
+                                        <layer>mail</layer>
+                                        <layer>datasources-web-server</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -2180,15 +2182,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-mail</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-mail</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -2196,18 +2198,18 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>mail</layer>
-                                                <layer>datasources-web-server</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>mail</layer>
+                                        <layer>datasources-web-server</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -2219,15 +2221,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-mail-ejb</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-mail-ejb</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -2235,19 +2237,19 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>mail</layer>
-                                                <layer>ejb</layer>
-                                                <layer>datasources-web-server</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>mail</layer>
+                                        <layer>ejb</layer>
+                                        <layer>datasources-web-server</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -2259,15 +2261,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-pojo</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-mail-ejb</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -2275,18 +2277,18 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>pojo</layer>
-                                                <layer>datasources-web-server</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>pojo</layer>
+                                        <layer>datasources-web-server</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -2298,15 +2300,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-web-console</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-web-console</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -2314,18 +2316,18 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>web-console</layer>
-                                                <layer>datasources-web-server</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>web-console</layer>
+                                        <layer>datasources-web-server</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -2337,15 +2339,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-web-console-cloud</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-web-console-cloud</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -2353,21 +2355,20 @@
                                             <version>${testsuite.ee.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>web-console</layer>
-                                                <layer>cloud-server</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>web-console</layer>
+                                        <layer>cloud-server</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
-
                         </executions>
                     </plugin>
 
@@ -3126,21 +3127,21 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
                         <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
                                 <id>cloud-profile-provisioning</id>
                                 <goals>
-                                    <goal>provisioning</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>none</phase>
                             </execution>
                             <execution>
                                 <id>jpa-provisioning</id>
                                 <goals>
-                                    <goal>provisioning</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>none</phase>
                             </execution>
@@ -3298,21 +3299,21 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
                         <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
                                 <id>cloud-profile-provisioning</id>
                                 <goals>
-                                    <goal>provisioning</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>none</phase>
                             </execution>
                             <execution>
                                 <id>jpa-provisioning</id>
                                 <goals>
-                                    <goal>provisioning</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>none</phase>
                             </execution>
