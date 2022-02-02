@@ -26,7 +26,6 @@ import java.time.Duration;
 import java.util.Iterator;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
@@ -129,13 +128,8 @@ public class DistributableCacheFactoryBuilderServiceConfigurator<K, V extends Id
             @Override
             public Duration getTimeout() {
                 StatefulTimeoutInfo info = description.getStatefulTimeout();
-
                 // A value of -1 means the bean will never be removed due to timeout
-                if (info == null || info.getValue() < 0) {
-                    return null;
-                }
-                // TODO Once based on JDK9+, change to Duration.of(this.info.getValue(), this.info.getTimeUnit().toChronoUnit())
-                return Duration.ofMillis(TimeUnit.MILLISECONDS.convert(info.getValue(), info.getTimeUnit()));
+                return (info != null && info.getValue() >= 0) ? Duration.of(info.getValue(), info.getTimeUnit().toChronoUnit()) : null;
             }
         };
         CapabilityServiceConfigurator configurator = this.factory.getBeanManagerFactoryServiceConfigurator(context);
