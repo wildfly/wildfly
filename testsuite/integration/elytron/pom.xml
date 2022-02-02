@@ -706,6 +706,8 @@
                                         <exclude>org/wildfly/test/integration/elytron/sasl/OtpSaslTestCase.java</exclude>
                                         <!-- Needs jvm properties -->
                                         <exclude>***/UndertowSSLv2HelloTestCase</exclude>
+                                        <!-- requires welcome page -->
+                                        <exclude>org/wildfly/test/integration/elytron/web/ListenerTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -867,6 +869,8 @@
                                         <exclude>org/wildfly/test/integration/elytron/sasl/DefaultSaslConfigTestCase.java</exclude>
                                         <exclude>org/wildfly/test/integration/elytron/sasl/OtpSaslTestCase.java</exclude>
                                         <exclude>***/UndertowSSLv2HelloTestCase</exclude>
+                                        <!-- requires welcome page -->
+                                        <exclude>org/wildfly/test/integration/elytron/web/ListenerTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>

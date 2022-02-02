@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.management.api.web;
+package org.wildfly.test.integration.elytron.web;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
@@ -56,27 +56,31 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.Listener;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.WebUtil;
-import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
-import org.jboss.as.test.integration.security.common.config.realm.Authentication;
-import org.jboss.as.test.integration.security.common.config.realm.RealmKeystore;
-import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
-import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
+import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.x500.cert.SelfSignedX509CertificateAndSigningKey;
+import org.wildfly.test.security.common.AbstractElytronSetupTask;
+import org.wildfly.test.security.common.elytron.ConfigurableElement;
+import org.wildfly.test.security.common.elytron.CredentialReference;
+import org.wildfly.test.security.common.elytron.Path;
+import org.wildfly.test.security.common.elytron.SimpleKeyManager;
+import org.wildfly.test.security.common.elytron.SimpleKeyStore;
+import org.wildfly.test.security.common.elytron.SimpleServerSslContext;
+import org.wildfly.test.security.common.elytron.SimpleTrustManager;
 
 import io.undertow.util.FileUtils;
 
@@ -84,9 +88,8 @@ import io.undertow.util.FileUtils;
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 @RunWith(Arquillian.class)
-@ServerSetup(ListenerTestCase.SecurityRealmsSetup.class)
+@ServerSetup(ListenerTestCase.SslContextSetup.class)
 @RunAsClient
-@Ignore("[WFLY-15172] Update ListenerTestCase to use Elytron defined SSLContext.")
 public class ListenerTestCase extends ContainerResourceMgmtTestBase {
 
     /**
@@ -113,6 +116,8 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
     private static final String AS_7_DN = "CN=AS7, OU=JBoss, O=Red Hat, L=Raleigh, ST=North Carolina, C=US";
 
     private static final String SHA_256_RSA = "SHA256withRSA";
+
+    private static final String NAME = ListenerTestCase.class.getSimpleName();
 
     private static KeyStore loadKeyStore() throws Exception{
         KeyStore ks = KeyStore.getInstance("JKS");
@@ -344,7 +349,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
             op.get("proxy-protocol").set(true);
         }
         if (conn.isSecure()) {
-            op.get("security-realm").set("ssl-realm");
+            op.get("ssl-context").set(NAME);
         }
         steps.add(op);
         return composite;
@@ -404,35 +409,44 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
         return connNames;
     }
 
-    static class SecurityRealmsSetup extends AbstractSecurityRealmsServerSetupTask {
+    static class SslContextSetup extends AbstractElytronSetupTask {
+
         @Override
-        protected SecurityRealm[] getSecurityRealms() throws Exception {
+        protected void setup(final ModelControllerClient modelControllerClient) throws Exception {
             setUpKeyStores();
+            super.setup(modelControllerClient);
+        }
+
+        @Override
+        protected ConfigurableElement[] getConfigurableElements() {
             URL keystoreResource = Thread.currentThread().getContextClassLoader().getResource("security/server.keystore");
             URL truststoreResource = Thread.currentThread().getContextClassLoader().getResource("security/jsse.keystore");
+            return new ConfigurableElement[] {
+                    SimpleKeyStore.builder().withName(NAME + SecurityTestConstants.SERVER_KEYSTORE)
+                            .withPath(Path.builder().withPath(keystoreResource.getPath()).build())
+                            .withCredentialReference(CredentialReference.builder().withClearText("changeit").build())
+                            .build(),
+                    SimpleKeyStore.builder().withName(NAME + SecurityTestConstants.SERVER_TRUSTSTORE)
+                            .withPath(Path.builder().withPath(truststoreResource.getPath()).build())
+                            .withCredentialReference(CredentialReference.builder().withClearText("changeit").build())
+                            .build(),
+                    SimpleKeyManager.builder().withName(NAME)
+                            .withKeyStore(NAME + SecurityTestConstants.SERVER_KEYSTORE)
+                            .withCredentialReference(CredentialReference.builder().withClearText("changeit").build())
+                            .build(),
+                    SimpleTrustManager.builder().withName(NAME)
+                            .withKeyStore(NAME + SecurityTestConstants.SERVER_TRUSTSTORE)
+                            .build(),
+                    SimpleServerSslContext.builder().withName(NAME)
+                            .withKeyManagers(NAME)
+                            .withTrustManagers(NAME)
+                            .build(),
+            };
+        }
 
-            RealmKeystore keystore = new RealmKeystore.Builder()
-                    .keystorePassword("changeit")
-                    .keystorePath(keystoreResource.getPath())
-                    .build();
-
-            RealmKeystore truststore = new RealmKeystore.Builder()
-                    .keystorePassword("changeit")
-                    .keystorePath(truststoreResource.getPath())
-                    .build();
-
-            return new SecurityRealm[]{new SecurityRealm.Builder()
-                    .name("ssl-realm")
-                    .serverIdentity(
-                            new ServerIdentity.Builder()
-                                    .ssl(keystore)
-                                    .build())
-                    .authentication(
-                            new Authentication.Builder()
-                                    .truststore(truststore)
-                                    .build()
-                    )
-                    .build()};
+        @Override
+        protected void tearDown(ModelControllerClient modelControllerClient) throws Exception {
+            super.tearDown(modelControllerClient);
         }
     }
 }
