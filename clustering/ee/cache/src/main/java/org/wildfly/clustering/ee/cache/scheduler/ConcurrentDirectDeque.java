@@ -18,10 +18,7 @@
 
 package org.wildfly.clustering.ee.cache.scheduler;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Deque;
-import java.util.function.Supplier;
 
 /**
  * A concurrent deque that allows direct item removal without traversal.
@@ -32,36 +29,8 @@ import java.util.function.Supplier;
 public interface ConcurrentDirectDeque<E> extends Deque<E> {
 
     static <K> ConcurrentDirectDeque<K> newInstance() {
-        return FACTORY.get();
+        return new FastConcurrentDirectDeque<>();
     }
-
-    @SuppressWarnings("rawtypes")
-    Supplier<ConcurrentDirectDeque> FACTORY = new Supplier<ConcurrentDirectDeque>() {
-        private final Constructor<? extends ConcurrentDirectDeque> constructor = findConstructor();
-
-        private Constructor<? extends ConcurrentDirectDeque> findConstructor() {
-            Class<? extends ConcurrentDirectDeque> queueClass = PortableConcurrentDirectDeque.class;
-            try {
-                queueClass = new FastConcurrentDirectDeque().getClass();
-            } catch (Throwable e) {
-                // If sun.misc.Unsafe is unavailable
-            }
-            try {
-                return queueClass.getConstructor();
-            } catch (NoSuchMethodException e) {
-                throw new NoSuchMethodError(e.getMessage());
-            }
-        }
-
-        @Override
-        public ConcurrentDirectDeque get() {
-            try {
-                return this.constructor.newInstance();
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                throw new IllegalStateException(e);
-            }
-        }
-    };
 
     /**
      * Equivalent to {@link #offerFirst(Object)}, but returns a token used for fast removal.
