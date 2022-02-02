@@ -127,7 +127,9 @@ public class RemoteLocalCallProfileTestCase {
         jar.addAsManifestResource(
                 createPermissionsXmlAsset(
                         createFilePermission("delete",
-                                "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-"))),
+                                "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-")),
+                        createFilePermission("read",
+                                "jboss.home", Arrays.asList("standalone", "tmp", "auth", "-"))),
                 "permissions.xml");
         return jar;
     }

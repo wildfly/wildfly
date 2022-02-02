@@ -23,6 +23,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 /**
  *
@@ -30,18 +31,27 @@ import org.jboss.dmr.ModelNode;
  */
 public class TranslatedWriteAttributeHandler implements OperationStepHandler {
 
-    private final OperationAddressConverter converter;
+    private static final Logger LOG = Logger.getLogger(TranslatedWriteAttributeHandler.class);
 
-    public TranslatedWriteAttributeHandler(OperationAddressConverter converter) {
+    private final ShallowResourceDefinition converter;
+
+    public TranslatedWriteAttributeHandler(ShallowResourceDefinition converter) {
         this.converter = converter;
     }
 
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            PathAddress targetAddress = converter.convert(context, operation);
-            ModelNode op = operation.clone();
-            op.get(OP_ADDR).set(targetAddress.toModelNode());
-            OperationStepHandler writeAttributeHandler = context.getRootResourceRegistration().getAttributeAccess(targetAddress, op.get(ModelDescriptionConstants.NAME).asString()).getWriteHandler();
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        PathAddress targetAddress = converter.convert(context, operation);
+        ModelNode op = operation.clone();
+        op.get(OP_ADDR).set(targetAddress.toModelNode());
+        String attributeName = op.get(ModelDescriptionConstants.NAME).asString();
+        if (!converter.getIgnoredAttributes(context, op).contains(attributeName)) {
+            OperationStepHandler writeAttributeHandler = context.getRootResourceRegistration()
+                    .getAttributeAccess(targetAddress, attributeName).getWriteHandler();
             context.addStep(op, writeAttributeHandler, context.getCurrentStage(), true);
+        } else {
+            LOG.debugf("Ignoring write operation on resource %s, attribute %s. The attribute is ignored.",
+                    targetAddress.toString(), attributeName);
         }
     }
+}

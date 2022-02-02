@@ -141,7 +141,7 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
             config.setResteasyRoleBasedSecurity(JaxrsAttribute.RESTEASY_ROLE_BASED_SECURITY.resolveModelAttribute(context, configuration));
         }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_SECURE_RANDOM_MAX_USE)) {
-            config.setResteasySecureDisableDTDs(JaxrsAttribute.RESTEASY_SECURE_RANDOM_MAX_USE.resolveModelAttribute(context, configuration));
+            config.setResteasySecureRandomMaxUse(JaxrsAttribute.RESTEASY_SECURE_RANDOM_MAX_USE.resolveModelAttribute(context, configuration));
         }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_USE_BUILTIN_PROVIDERS)) {
             config.setResteasyUseBuiltinProviders(JaxrsAttribute.RESTEASY_USE_BUILTIN_PROVIDERS.resolveModelAttribute(context, configuration));

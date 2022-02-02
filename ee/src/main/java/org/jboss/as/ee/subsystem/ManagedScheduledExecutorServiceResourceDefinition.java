@@ -148,7 +148,7 @@ public class ManagedScheduledExecutorServiceResourceDefinition extends SimpleRes
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setDefaultValue(new ModelNode(AbstractManagedExecutorService.RejectPolicy.ABORT.toString()))
-                    .setValidator(EnumValidator.create(AbstractManagedExecutorService.RejectPolicy.class, true, true))
+                    .setValidator(EnumValidator.create(AbstractManagedExecutorService.RejectPolicy.class))
                     .build();
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, CONTEXT_SERVICE_AD, THREAD_FACTORY_AD, THREAD_PRIORITY_AD, HUNG_TASK_TERMINATION_PERIOD_AD, HUNG_TASK_THRESHOLD_AD, LONG_RUNNING_TASKS_AD, CORE_THREADS_AD, KEEPALIVE_TIME_AD, REJECT_POLICY_AD};

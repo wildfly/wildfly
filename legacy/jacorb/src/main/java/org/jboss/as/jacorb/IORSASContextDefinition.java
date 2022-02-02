@@ -53,7 +53,7 @@ public class IORSASContextDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_SAS_CONTEXT_CALLER_PROPAGATION, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(CallerPropagationValues.NONE.toString()))
-                    .setValidator(new EnumValidator<CallerPropagationValues>(CallerPropagationValues.class, true, true))
+                    .setValidator(EnumValidator.create(CallerPropagationValues.class))
                     .setAllowExpression(true)
                     .build();
 

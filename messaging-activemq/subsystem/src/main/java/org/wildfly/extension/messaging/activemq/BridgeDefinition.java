@@ -34,10 +34,12 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.STATIC_C
 
 import java.util.Arrays;
 import java.util.Collection;
+import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
+import org.jboss.as.controller.CaseParameterCorrector;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
@@ -45,6 +47,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -186,6 +189,15 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final SimpleAttributeDefinition ROUTING_TYPE = create("routing-type", STRING)
+            .setRequired(false)
+            .setDefaultValue(new ModelNode("PASS"))
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .setCorrector(CaseParameterCorrector.TO_UPPER)
+            .setValidator(EnumValidator.create(RoutingType.class, RoutingType.values()))
+            .build();
+
     public static final AttributeDefinition[] ATTRIBUTES = {
             QUEUE_NAME, FORWARDING_ADDRESS, CommonAttributes.HA,
             CommonAttributes.FILTER, CommonAttributes.TRANSFORMER_CLASS_NAME,
@@ -199,7 +211,7 @@ public class BridgeDefinition extends PersistentResourceDefinition {
             CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
             USER, PASSWORD, CREDENTIAL_REFERENCE,
             CONNECTOR_REFS, DISCOVERY_GROUP_NAME,
-            CALL_TIMEOUT
+            CALL_TIMEOUT, ROUTING_TYPE
     };
 
     private final boolean registerRuntimeOnly;
@@ -240,5 +252,9 @@ public class BridgeDefinition extends PersistentResourceDefinition {
         if (registerRuntimeOnly) {
             BridgeControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
         }
+    }
+
+   private enum RoutingType {
+       STRIP, PASS;
     }
 }

@@ -89,7 +89,7 @@ class LegacySupport {
         static {
             final ParametersValidator delegate = new ParametersValidator();
             delegate.registerValidator(CODE, new StringLengthValidator(1));
-            delegate.registerValidator(Constants.FLAG, new EnumValidator<ModuleFlag>(ModuleFlag.class, true, false));
+            delegate.registerValidator(Constants.FLAG, EnumValidator.create(ModuleFlag.class));
             delegate.registerValidator(Constants.MODULE, new StringLengthValidator(1, true));
             delegate.registerValidator(Constants.MODULE_OPTIONS, new ModelTypeValidator(ModelType.OBJECT, true));
             delegate.registerValidator(Constants.LOGIN_MODULE_STACK_REF, new StringLengthValidator(1, true));
@@ -176,7 +176,7 @@ class LegacySupport {
         static {
             final ParametersValidator delegate = new ParametersValidator();
             delegate.registerValidator(CODE, new StringLengthValidator(1));
-            delegate.registerValidator(Constants.FLAG, new EnumValidator<ModuleFlag>(ModuleFlag.class, false, false));
+            delegate.registerValidator(Constants.FLAG, EnumValidator.create(ModuleFlag.class));
             delegate.registerValidator(Constants.MODULE, new StringLengthValidator(1, true));
             delegate.registerValidator(Constants.MODULE_OPTIONS, new ModelTypeValidator(ModelType.OBJECT, true));
             validator = new ParametersOfValidator(delegate);

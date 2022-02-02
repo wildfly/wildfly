@@ -160,6 +160,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         InitialContext.addUrlContextFactory("iiop", JBossCNCtxFactory.INSTANCE);
 
         context.addStep(new AbstractDeploymentChainStep() {
+            @Override
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(IIOPExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES,
                         Phase.DEPENDENCIES_IIOP_OPENJDK, new IIOPDependencyProcessor());
@@ -332,10 +333,9 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // check which groups of initializers are to be installed.
         String installSecurity = (String) props.remove(Constants.ORB_INIT_SECURITY);
-        if (installSecurity.equalsIgnoreCase(Constants.CLIENT)) {
-            orbInitializers.addAll(Arrays.asList(IIOPInitializer.SECURITY_CLIENT.getInitializerClasses()));
-        } else if (installSecurity.equalsIgnoreCase(Constants.IDENTITY)) {
-            orbInitializers.addAll(Arrays.asList(IIOPInitializer.SECURITY_IDENTITY.getInitializerClasses()));
+        if (installSecurity.equalsIgnoreCase(Constants.CLIENT)  ||
+                installSecurity.equalsIgnoreCase(Constants.IDENTITY)) {
+            throw ROOT_LOGGER.legacySecurityUnsupported();
         } else if (installSecurity.equalsIgnoreCase(Constants.ELYTRON)) {
             final String authContext = props.getProperty(Constants.ORB_INIT_AUTH_CONTEXT);
             ElytronSASClientInterceptor.setAuthenticationContextName(authContext);

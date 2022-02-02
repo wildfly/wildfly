@@ -2,5 +2,5 @@
 
 <tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:2.0">
     <copy-artifact artifact="org.wildfly.core:wildfly-launcher" to-location="bin/launcher.jar"/>
-    <copy-artifact artifact="org.wildfly.security:wildfly-elytron-tool" to-location="bin/wildfly-elytron-tool.jar"/>
+    <copy-artifact artifact="org.wildfly.core:wildfly-elytron-tool-wrapper" to-location="bin/wildfly-elytron-tool.jar"/>
 </tasks>

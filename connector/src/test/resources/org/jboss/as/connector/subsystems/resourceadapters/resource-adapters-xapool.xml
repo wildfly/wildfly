@@ -39,7 +39,7 @@
             <!--Optional:-->
             <is-same-rm-override>true</is-same-rm-override>
             <!--Optional:-->
-            <interleaving />
+            <interleaving>false</interleaving>
             <!--Optional:-->
             <no-tx-separate-pools />
             <!--Optional:-->

@@ -42,6 +42,7 @@
         <module name="java.naming"/>
         <module name="java.security.jgss"/>
         <module name="java.sql"/>
+        <module name="java.transaction.xa"/>
         <module name="javax.security.auth.message.api" />
         <module name="sun.jdk"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->

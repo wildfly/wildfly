@@ -70,7 +70,7 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DERIVE_SIZE, ModelType.STRING, true)
                     .setAllowExpression(true)
                     // DeriveSize.NONE is no longer legal but if presented we will correct to undefined
-                    .setValidator(EnumValidator.create(DeriveSize.class, true, false, DeriveSize.LEGAL_VALUES))
+                    .setValidator(EnumValidator.create(DeriveSize.class, DeriveSize.LEGAL_VALUES))
                     .setCorrector(((newValue, currentValue) ->
                             (newValue.getType() == ModelType.STRING && DeriveSize.NONE.toString().equalsIgnoreCase(newValue.asString()))
                                     ? new ModelNode() : newValue))
@@ -111,7 +111,7 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
 
         // All values but NONE are 'legal' for use, although we provide a corrector to allow NONE as well
         // I use this convoluted mechanism to name these to make this more robust in case other values get added
-        private static DeriveSize[] LEGAL_VALUES = EnumSet.complementOf(EnumSet.of(NONE)).toArray(new DeriveSize[2]);
+        private static EnumSet<DeriveSize> LEGAL_VALUES = EnumSet.complementOf(EnumSet.of(NONE));
         private String value;
 
         DeriveSize(String value) {

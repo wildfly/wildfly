@@ -45,8 +45,10 @@ public abstract class AbstractCollectionMarshaller<T extends Collection<Object>>
 
     @Override
     public void writeTo(ProtoStreamWriter writer, T collection) throws IOException {
-        for (Object element : collection) {
-            writer.writeAny(ELEMENT_INDEX, element);
+        synchronized (collection) { // Avoid ConcurrentModificationException
+            for (Object element : collection) {
+                writer.writeAny(ELEMENT_INDEX, element);
+            }
         }
     }
 

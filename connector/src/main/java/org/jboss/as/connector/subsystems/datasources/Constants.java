@@ -227,18 +227,18 @@ public class Constants {
     static final SensitiveTargetAccessConstraintDefinition DS_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(DS_SECURITY);
 
     static final SimpleAttributeDefinition DEPLOYMENT_NAME = SimpleAttributeDefinitionBuilder.create("deployment-name", ModelType.STRING)
-            .setAllowExpression(true)
             .setRequired(false)
+            .setDeprecated(ModelVersion.create(6, 0, 0))
             .build();
 
     static final SimpleAttributeDefinition MODULE_SLOT = SimpleAttributeDefinitionBuilder.create("module-slot", ModelType.STRING)
-            .setAllowExpression(true)
             .setRequired(false)
+            .setAllowExpression(true)
             .build();
 
     static final SimpleAttributeDefinition JDBC_COMPLIANT = SimpleAttributeDefinitionBuilder.create("jdbc-compliant", ModelType.BOOLEAN)
             .setRequired(false)
-            .setAllowExpression(true)
+            .setDeprecated(ModelVersion.create(6, 0, 0))
             .build();
 
     @Deprecated
@@ -846,8 +846,8 @@ public class Constants {
             .build();
 
     static final SimpleAttributeDefinition DRIVER_MODULE_NAME = new SimpleAttributeDefinitionBuilder(DRIVER_MODULE_NAME_NAME, ModelType.STRING)
-            .setXmlName(Driver.Attribute.MODULE.getLocalName())
             .setAllowExpression(true)
+            .setXmlName(Driver.Attribute.MODULE.getLocalName())
             .build();
 
     static final SimpleAttributeDefinition DRIVER_MAJOR_VERSION = new SimpleAttributeDefinitionBuilder(DRIVER_MAJOR_VERSION_NAME, ModelType.INT)

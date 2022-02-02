@@ -23,6 +23,7 @@
 package org.wildfly.extension.microprofile.health._private;
 
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
@@ -52,4 +53,20 @@ public interface MicroProfileHealthLogger extends BasicLogger {
 
     @Message(id = 2, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
     DeploymentUnitProcessingException deploymentRequiresCapability(String deploymentName, String capabilityName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 3, value = "Reporting health down status: %s")
+    void healthDownStatus(String cause);
+
+    // 4, 5 and 6 are taken downstream
+    /*
+    @Message(id = 4, value = "")
+    OperationFailedException seeDownstream();
+
+    @Message(id = 5, value = "")
+    String seeDownstream();
+
+    @Message(id = 6, value = "")
+    OperationFailedException seeDownstream();
+    */
 }

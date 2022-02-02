@@ -836,10 +836,9 @@ public class WarJACCService extends JaccService<WarMetaData> {
          */
         public boolean isExtensionFor(PatternInfo other) {
             int offset = other.pattern.lastIndexOf('.');
-            int length = pattern.length() - 1;
             boolean isExtensionFor = false;
             if (offset > 0) {
-                isExtensionFor = pattern.regionMatches(1, other.pattern, offset, length);
+                isExtensionFor = other.pattern.endsWith(pattern.substring(1));
             }
             return isExtensionFor;
         }

@@ -40,7 +40,7 @@ public class AttributeManagerResourceDefinition extends AbstractFederationResour
         .setAlternatives(ModelElement.COMMON_CODE.getName())
         .build();
     public static final SimpleAttributeDefinition CODE = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_CODE.getName(), ModelType.STRING, true)
-        .setValidator(new EnumValidator<AttributeManagerTypeEnum>(AttributeManagerTypeEnum.class, true, true))
+        .setValidator(EnumValidator.create(AttributeManagerTypeEnum.class))
         .setAllowExpression(true)
         .setAlternatives(ModelElement.COMMON_CLASS_NAME.getName())
         .build();

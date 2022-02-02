@@ -27,7 +27,7 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 import org.apache.activemq.artemis.api.core.RoutingType;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
+import org.apache.activemq.artemis.jms.client.ActiveMQDestination;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
@@ -79,7 +79,7 @@ public class DestinationConfiguration {
     }
 
     public Queue getManagementQueue() {
-        return ActiveMQJMSClient.createQueue(this.managementQueueAddress);
+        return ActiveMQDestination.createQueue(this.managementQueueAddress);
     }
 
     private Connection createQueueConnection(ConnectionFactory cf) throws JMSException {
@@ -90,8 +90,8 @@ public class DestinationConfiguration {
     }
 
     public void createQueue(ConnectionFactory cf, Queue managementQueue, String queueName) throws JMSException, StartException {
-        try (Connection connection = createQueueConnection(cf)) {
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        try (Connection connection = createQueueConnection(cf);
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)) {
             connection.start();
             QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
             Message m = session.createMessage();
@@ -118,8 +118,8 @@ public class DestinationConfiguration {
     }
 
     public void destroyQueue(ConnectionFactory cf, Queue managementQueue, String queueName) throws JMSException {
-        try (Connection connection = createQueueConnection(cf)) {
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        try (Connection connection = createQueueConnection(cf);
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)) {
             connection.start();
             QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
             Message m = session.createMessage();
@@ -135,8 +135,8 @@ public class DestinationConfiguration {
     }
 
     public void createTopic(ConnectionFactory cf, Queue managementQueue, String topicName) throws JMSException, StartException {
-        try (Connection connection = createQueueConnection(cf)) {
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        try (Connection connection = createQueueConnection(cf);
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)) {
             connection.start();
             QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
             Message m = session.createMessage();
@@ -155,8 +155,8 @@ public class DestinationConfiguration {
     }
 
     public void destroyTopic(ConnectionFactory cf, Queue managementQueue, String topicName) throws JMSException {
-        try (Connection connection = createQueueConnection(cf)) {
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        try (Connection connection = createQueueConnection(cf);
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)) {
             connection.start();
             QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
             Message m = session.createMessage();

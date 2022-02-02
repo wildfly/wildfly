@@ -80,9 +80,11 @@ public class JaxrsServerConfig {
     public void setResteasyDisableProviders(ModelNode resteasyDisableProviders) {
         this.resteasyDisableProviders = resteasyDisableProviders;
     }
+    @Deprecated
     public ModelNode isResteasyDocumentExpandEntityReferences() {
         return resteasyDocumentExpandEntityReferences;
     }
+    @Deprecated
     public void setResteasyDocumentExpandEntityReferences(ModelNode resteasyDocumentExpandEntityReferences) {
         this.resteasyDocumentExpandEntityReferences = resteasyDocumentExpandEntityReferences;
     }
@@ -146,9 +148,11 @@ public class JaxrsServerConfig {
     public void setResteasyRoleBasedSecurity(ModelNode resteasyRoleBasedSecurity) {
         this.resteasyRoleBasedSecurity = resteasyRoleBasedSecurity;
     }
+    @Deprecated
     public ModelNode isResteasySecureDisableDTDs() {
         return resteasySecureDisableDTDs;
     }
+    @Deprecated
     public void setResteasySecureDisableDTDs(ModelNode resteasySecureDisableDTDs) {
         this.resteasySecureDisableDTDs = resteasySecureDisableDTDs;
     }

@@ -29,7 +29,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>26.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -41,15 +41,19 @@
         <!-- Directory from which source is obtained. Child modules will override this -->
         <transformer-input-dir>${project.basedir}</transformer-input-dir>
         <!-- Plugin dependency versions -->
-        <version.org.wildfly.extras.batavia>1.0.10.Final</version.org.wildfly.extras.batavia>
+        <version.org.wildfly.extras.batavia>1.0.12.Final</version.org.wildfly.extras.batavia>
     </properties>
 
     <modules>
         <module>batch-jberet</module>
         <module>bean-validation</module>
+        <module>clustering</module>
         <module>ee</module>
         <module>ee-security</module>
+        <module>jaxrs</module>
+        <module>iiop-openjdk</module>
         <module>jpa/spi</module>
+        <module>jpa/eclipselink</module>
         <module>jpa/subsystem</module>
         <module>jsf/injection</module>
         <module>jsf/subsystem</module>
@@ -64,6 +68,7 @@
         <module>weld/transactions</module>
         <module>observability/opentelemetry-api</module>
         <module>observability/opentelemetry</module>
+        <module>undertow</module>
     </modules>
 
     <build>

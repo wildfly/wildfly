@@ -68,6 +68,11 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         standardSubsystemTest("datasources-full-expression.xml", "datasources-full.xml");
     }
 
+    @Test
+    public void testElytronExpressionConfig() throws Exception {
+        standardSubsystemTest("datasources-elytron-enabled-expression.xml", "datasources-elytron-enabled_6_0.xml");
+    }
+
     protected AdditionalInitialization createAdditionalInitialization() {
         // Create a AdditionalInitialization.MANAGEMENT variant that has all the external
         // capabilities used by the various configs used in this test class

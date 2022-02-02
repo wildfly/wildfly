@@ -5,6 +5,4 @@ embed-server --admin-only=true --server-config=standalone-full.xml
 /subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
 /subsystem=iiop-openjdk:write-attribute(name=security, value=elytron)
 
-/core-service=management/access=identity:add(security-domain=ManagementDomain)
-
 stop-embedded-server

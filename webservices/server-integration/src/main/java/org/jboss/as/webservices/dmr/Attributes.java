@@ -60,7 +60,7 @@ interface Attributes {
     SimpleAttributeDefinition WSDL_URI_SCHEME = new SimpleAttributeDefinitionBuilder(Constants.WSDL_URI_SCHEME, ModelType.STRING)
             .setRequired(false)
             .setMinSize(1)
-            .setValidator(new EnumValidator<>(WsdlUriSchema.class, false, false))
+            .setValidator(EnumValidator.create(WsdlUriSchema.class))
             .setAllowExpression(true)
             .build();
     enum WsdlUriSchema {http, https}

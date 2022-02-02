@@ -48,6 +48,11 @@ public class UndertowSubsystem120TestCase extends AbstractUndertowSubsystemTestC
         return "schema/wildfly-undertow_12_0.xsd";
     }
 
+    @Override
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
+    }
+
     @Test
     public void testRuntime() throws Exception {
         setProperty();

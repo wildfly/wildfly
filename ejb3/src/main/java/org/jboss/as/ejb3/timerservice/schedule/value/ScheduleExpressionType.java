@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.value;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
+
 /**
  * Represents the type of expression used in the values of a {@link javax.ejb.ScheduleExpression}
  *
@@ -89,6 +91,28 @@ public enum ScheduleExpressionType {
      * </ul>
      * </p>
      */
-    INCREMENT
+    INCREMENT;
+
+    public static ScheduleExpressionType getType(String value) {
+        if (value == null) {
+            throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue("", value);
+        }
+        // Order of check is important.
+        // TODO: Explain why this order is important
+
+        if (value.trim().equals("*")) {
+            return ScheduleExpressionType.WILDCARD;
+        }
+        if (value.contains(",")) {
+            return ScheduleExpressionType.LIST;
+        }
+        if (value.contains("-") && RangeValue.accepts(value)) {
+            return ScheduleExpressionType.RANGE;
+        }
+        if (value.contains("/")) {
+            return ScheduleExpressionType.INCREMENT;
+        }
+        return ScheduleExpressionType.SINGLE_VALUE;
+    }
 
 }

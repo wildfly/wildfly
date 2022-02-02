@@ -943,7 +943,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     } else {
                         final String securityDomainName = SecurityDomainDependencyConfigurator.this.ejbComponentDescription.getResolvedSecurityDomain();
                         if (securityDomainName != null && !securityDomainName.isEmpty()) {
-                            throw ROOT_LOGGER.legacySecurityUnsupported();
+                            throw ROOT_LOGGER.legacySecurityUnsupported(securityDomainName);
                         }
                     }
                 }

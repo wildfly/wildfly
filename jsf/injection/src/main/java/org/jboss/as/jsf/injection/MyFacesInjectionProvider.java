@@ -31,9 +31,9 @@ import org.jboss.as.web.common.WebInjectionContainer;
  *
  * @author Dmitrii Tikhomirov dtikhomi@redhat.com (C) 2016 Red Hat Inc.
  */
-public class MyFacesInjectionProvider extends InjectionProvider {
+public class MyFacesInjectionProvider extends InjectionProvider implements AutoCloseable {
 
-    private final WebInjectionContainer injectionContainer;
+    private WebInjectionContainer injectionContainer;
 
     public MyFacesInjectionProvider() {
         this.injectionContainer = StartupContext.getInjectionContainer();
@@ -64,7 +64,13 @@ public class MyFacesInjectionProvider extends InjectionProvider {
 
     @Override
     public boolean isAvailable() {
-        return true;
+        return this.injectionContainer != null;
+    }
+
+    @Override
+    public void close() {
+        StartupContext.removeInjectionContainer();
+        this.injectionContainer = null;
     }
 
 }

@@ -43,13 +43,6 @@ public class SecureServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Principal user = request.getUserPrincipal();
-//        String validateSubject = request.getParameter("validateSubject");
-//        if (validateSubject != null && Boolean.valueOf(validateSubject).booleanValue()) {
-//            // Assert that there is a valid SecurityAssociation Subject
-//            Subject subject = SecurityContextAssociation.getSubject();
-//            if (subject == null)
-//                throw new ServletException("No valid subject found, user=" + user);
-//        }
         HttpSession session = request.getSession(false);
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();

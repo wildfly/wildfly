@@ -22,10 +22,6 @@
 
 package org.jboss.as.jpa.processor;
 
-import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
-
-
-import org.jboss.as.hibernate.Hibernate51CompatibilityTransformer;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -36,7 +32,6 @@ import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.module.DelegatingClassFileTransformer;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Deployment processor which ensures the persistence provider ClassFileTransformer are used.
@@ -45,13 +40,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor {
 
-    private final boolean hibernate51CompatibilityTransformer = Boolean.parseBoolean(
-            WildFlySecurityManager.getPropertyPrivileged("Hibernate51CompatibilityTransformer","false"));
-
     public JPAClassFileTransformerProcessor() {
-        if(hibernate51CompatibilityTransformer) {
-            ROOT_LOGGER.hibernate51CompatibilityTransformerEnabled();
-        }
     }
 
     /**
@@ -68,7 +57,7 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
         // during the call to CreateContainerEntityManagerFactory.
 
         DelegatingClassFileTransformer transformer = deploymentUnit.getAttachment(DelegatingClassFileTransformer.ATTACHMENT_KEY);
-        boolean appContainsPersistenceProviderJars = false;  // remove when we revert WFLY-10520
+
         if ( transformer != null) {
 
             for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(deploymentUnit)) {
@@ -78,18 +67,8 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
                         if (Configuration.needClassFileTransformer(pu)) {
                             transformer.addTransformer(new JPADelegatingClassFileTransformer(pu));
                         }
-                        // remove this check when we revert WFLY-10520
-                        String provider = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
-                        if (provider != null
-                                && provider.equals(Configuration.PROVIDER_MODULE_APPLICATION_SUPPLIED)) {
-                            appContainsPersistenceProviderJars = true;
-                        }
                     }
                 }
-            }
-            // WFLY-10520 Add Hibernate ORM 5.3 compatibility transformer
-            if(!appContainsPersistenceProviderJars && hibernate51CompatibilityTransformer) {
-                transformer.addTransformer(Hibernate51CompatibilityTransformer.getInstance());
             }
         }
     }

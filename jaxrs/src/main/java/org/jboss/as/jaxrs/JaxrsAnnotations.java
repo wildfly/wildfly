@@ -65,7 +65,21 @@ public enum JaxrsAnnotations {
     }
     // this can't go on the enum itself
     private static class Constants {
-        public static final DotName JAVAX = DotName.createComponentized(null, "javax");
+        public static final DotName JAVAX;
+
+        static {
+            // The odd split here of the namespace prefix is due to a custom rule in Batavia for this type
+            String p1 = "ja";
+            String p2;
+            try {
+                Class.forName("jakarta.ws.rs.ApplicationPath", false, JaxrsAnnotations.class.getClassLoader());
+                p2 = "karta";
+            } catch (ClassNotFoundException ignore) {
+                p2 = "vax";
+            }
+            JAVAX = DotName.createComponentized(null, p1 + p2);
+        }
+
         public static final DotName JAVAX_WS = DotName.createComponentized(JAVAX, "ws");
         public static final DotName JAVAX_WS_RS = DotName.createComponentized(JAVAX_WS, "rs");
         public static final DotName JAVAX_WS_CORE = DotName.createComponentized(JAVAX_WS_RS, "core");

@@ -97,7 +97,7 @@ public class JdrReport {
     }
 
     public void setStartTime() {
-        setStartTime(new Date().getTime());
+        setStartTime(System.currentTimeMillis());
     }
 
     /**
@@ -122,7 +122,7 @@ public class JdrReport {
     }
 
     public void setEndTime() {
-        setEndTime(new Date().getTime());
+        setEndTime(System.currentTimeMillis());
     }
 
     /**

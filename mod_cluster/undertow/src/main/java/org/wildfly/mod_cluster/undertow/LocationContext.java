@@ -37,9 +37,9 @@ import org.jboss.modcluster.container.Host;
 public class LocationContext implements Context {
 
     private String contextPath;
-    private Host host;
+    private UndertowHost host;
 
-    public LocationContext(String contextPath, Host host) {
+    public LocationContext(String contextPath, UndertowHost host) {
         this.contextPath = contextPath;
         this.host = host;
     }
@@ -57,7 +57,7 @@ public class LocationContext implements Context {
 
     @Override
     public boolean isStarted() {
-        return true;
+        return !this.host.isSuspended();
     }
 
     @Override

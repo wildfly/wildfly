@@ -36,6 +36,7 @@
         <module name="java.management"/>
         <module name="java.naming"/>
         <module name="java.sql"/>
+        <module name="java.transaction.xa"/>
         <module name="com.fasterxml.classmate"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="javax.annotation.api"/>

@@ -126,7 +126,7 @@ public class JMSBridgeDefinition extends ModelOnlyResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition QUALITY_OF_SERVICE = create("quality-of-service", STRING)
-            .setValidator(new EnumValidator<>(QualityOfServiceMode.class, false, false))
+            .setValidator(EnumValidator.create(QualityOfServiceMode.class))
             .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition FAILURE_RETRY_INTERVAL = create("failure-retry-interval", LONG)

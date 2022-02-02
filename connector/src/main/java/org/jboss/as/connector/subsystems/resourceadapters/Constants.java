@@ -292,7 +292,7 @@ public class Constants {
     static final SimpleAttributeDefinition TRANSACTION_SUPPORT = new SimpleAttributeDefinitionBuilder(TRANSACTIONSUPPORT_NAME, ModelType.STRING, true)
             .setXmlName(Activation.Tag.TRANSACTION_SUPPORT.getLocalName())
             .setAllowExpression(true)
-            .setValidator(new EnumValidator<TransactionSupportEnum>(TransactionSupportEnum.class, true, true))
+            .setValidator(EnumValidator.create(TransactionSupportEnum.class))
             .setRestartAllServices()
             .build();
 
@@ -491,11 +491,6 @@ public class Constants {
             .setXmlName(TimeOut.Tag.ALLOCATION_RETRY_WAIT_MILLIS.getLocalName())
             .setAllowExpression(true)
             .setRestartAllServices()
-            .build();
-
-    static SimpleAttributeDefinition USETRYLOCK = new SimpleAttributeDefinitionBuilder(USETRYLOCK_NAME, ModelType.LONG, true)
-            .setXmlName(TimeOut.Tag.USE_TRY_LOCK.getLocalName())
-            .setAllowExpression(true)
             .build();
 
     static SimpleAttributeDefinition USE_CCM = new SimpleAttributeDefinitionBuilder(USE_CCM_NAME, ModelType.BOOLEAN, true)
