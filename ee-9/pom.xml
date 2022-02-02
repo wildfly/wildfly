@@ -88,6 +88,7 @@
         <!-- Implementations -->
         <version.io.smallrye.smallrye-common>2.0.0-RC1</version.io.smallrye.smallrye-common>
         <version.io.smallrye.smallrye-config>3.0.0-RC1</version.io.smallrye.smallrye-config>
+        <version.io.smallrye.smallrye-fault-tolerance>6.0.0-RC1</version.io.smallrye.smallrye-fault-tolerance>
         <!-- MP5 - END -->
         <version.org.eclipse.yasson>2.0.3</version.org.eclipse.yasson>
         <version.org.eclipselink.version>3.0.2</version.org.eclipselink.version>
@@ -297,6 +298,27 @@
                 <groupId>io.smallrye.config</groupId>
                 <artifactId>smallrye-config-source-file-system</artifactId>
                 <version>${version.io.smallrye.smallrye-config}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-fault-tolerance</artifactId>
+                <version>${version.io.smallrye.smallrye-fault-tolerance}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-fault-tolerance-api</artifactId>
+                <version>${version.io.smallrye.smallrye-fault-tolerance}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-fault-tolerance-autoconfig-core</artifactId>
+                <version>${version.io.smallrye.smallrye-fault-tolerance}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-fault-tolerance-core</artifactId>
+                <version>${version.io.smallrye.smallrye-fault-tolerance}</version>
             </dependency>
 
             <dependency>
