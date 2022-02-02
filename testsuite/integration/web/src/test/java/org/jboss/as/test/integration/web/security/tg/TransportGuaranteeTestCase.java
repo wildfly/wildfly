@@ -22,17 +22,8 @@
 
 package org.jboss.as.test.integration.web.security.tg;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
@@ -55,11 +46,6 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
-import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
-import org.jboss.as.test.integration.security.common.config.realm.RealmKeystore;
-import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
-import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
-import org.jboss.as.test.integration.web.security.WebSecurityCommon;
 import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
@@ -242,7 +228,7 @@ public class TransportGuaranteeTestCase {
         Assert.assertFalse("Non secure transport on URL has to be prevented, but was not", result);
     }
 
-    static class ListenerSetup extends AbstractSecurityRealmsServerSetupTask implements ServerSetupTask {
+    static class ListenerSetup implements ServerSetupTask {
 
         private static final Logger log = Logger.getLogger(ListenerSetup.class);
 
@@ -269,53 +255,16 @@ public class TransportGuaranteeTestCase {
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            if (WebSecurityCommon.isElytron()) {
-                cli = new CLIWrapper(true);
-                simpleHttpsListener.remove(cli);
-                simpleSocketBinding.remove(cli);
-                simpleServerSslContext.remove(cli);
-                simpleKeyManager.remove(cli);
-                simpleKeystore.remove(cli);
-            } else {
-                final List<ModelNode> updates = new ArrayList<ModelNode>();
-
-                ModelNode op = new ModelNode();
-                op.get(OP).set(REMOVE);
-                op.get(OP_ADDR).add(SUBSYSTEM, "undertow");
-                op.get(OP_ADDR).add("server", "default-server");
-                op.get(OP_ADDR).add("https-listener", NAME);
-                // Don't rollback when the AS detects the war needs the module
-                op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
-                op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-                updates.add(op);
-
-                op = new ModelNode();
-                op.get(OP).set(REMOVE);
-                op.get(OP_ADDR).add("socket-binding-group", "standard-sockets");
-                op.get(OP_ADDR).add("socket-binding", NAME);
-                op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-                updates.add(op);
-                try {
-                    applyUpdates(managementClient.getControllerClient(), updates);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-                super.tearDown(managementClient, containerId);
-            }
+            cli = new CLIWrapper(true);
+            simpleHttpsListener.remove(cli);
+            simpleSocketBinding.remove(cli);
+            simpleServerSslContext.remove(cli);
+            simpleKeyManager.remove(cli);
+            simpleKeystore.remove(cli);
         }
 
         protected void setElytronBased(ManagementClient managementClient) throws Exception {
             setHttpsListenerSslContextBased(managementClient, cli, NAME, NAME, HTTPS_PORT, NAME, false);
-        }
-
-        @Override
-        protected SecurityRealm[] getSecurityRealms() throws Exception {
-            RealmKeystore keystore = new RealmKeystore.Builder()
-                    .keystorePassword(PASSWORD)
-                    .keystorePath(SERVER_KEYSTORE_FILE.getAbsolutePath())
-                    .build();
-            return new SecurityRealm[]{new SecurityRealm.Builder().name(NAME).serverIdentity(new
-                    ServerIdentity.Builder().ssl(keystore).build()).build()};
         }
 
         private void setHttpsListenerSslContextBased(ManagementClient managementClient, CLIWrapper cli, String
