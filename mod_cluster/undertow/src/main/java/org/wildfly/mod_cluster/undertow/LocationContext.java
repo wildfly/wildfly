@@ -22,11 +22,10 @@
 
 package org.wildfly.mod_cluster.undertow;
 
-import javax.servlet.ServletRequestListener;
-import javax.servlet.http.HttpSessionListener;
-
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Host;
+import org.jboss.modcluster.container.listeners.HttpSessionListener;
+import org.jboss.modcluster.container.listeners.ServletRequestListener;
 
 /**
  * A simulated context, for use by Jakarta Enterprise Beans/HTTP and static locations.
@@ -61,24 +60,25 @@ public class LocationContext implements Context {
     }
 
     @Override
-    public void addRequestListener(ServletRequestListener listener) {
+    public void addRequestListener(ServletRequestListener requestListener) {
 
     }
 
     @Override
-    public void removeRequestListener(ServletRequestListener listener) {
-        // Do nothing
-    }
-
-    @Override
-    public void addSessionListener(HttpSessionListener listener) {
+    public void removeRequestListener(ServletRequestListener requestListener) {
 
     }
 
     @Override
-    public void removeSessionListener(HttpSessionListener listener) {
-        // Do nothing
+    public void addSessionListener(HttpSessionListener sessionListener) {
+
     }
+
+    @Override
+    public void removeSessionListener(HttpSessionListener sessionListener) {
+
+    }
+
 
     @Override
     public int getActiveSessionCount() {

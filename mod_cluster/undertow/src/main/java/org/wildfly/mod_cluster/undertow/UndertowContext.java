@@ -29,7 +29,9 @@ import io.undertow.servlet.core.ManagedListener;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
+import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
 import org.jboss.modcluster.container.Context;
@@ -70,7 +72,18 @@ public class UndertowContext implements Context {
     }
 
     @Override
-    public void addRequestListener(ServletRequestListener listener) {
+    public void addRequestListener(org.jboss.modcluster.container.listeners.ServletRequestListener requestListener) {
+        ServletRequestListener listener = new ServletRequestListener() {
+            @Override
+            public void requestInitialized(ServletRequestEvent sre) {
+                requestListener.requestInitialized();
+            }
+
+            @Override
+            public void requestDestroyed(ServletRequestEvent sre) {
+                requestListener.requestDestroyed();
+            }
+        };
         ManagedListener ml = new ManagedListener(new ListenerInfo(ServletRequestListener.class, new ImmediateInstanceFactory<>(listener)), true);
         try {
             ml.start();
@@ -81,12 +94,23 @@ public class UndertowContext implements Context {
     }
 
     @Override
-    public void removeRequestListener(ServletRequestListener listener) {
+    public void removeRequestListener(org.jboss.modcluster.container.listeners.ServletRequestListener requestListener) {
         // Do nothing
     }
 
     @Override
-    public void addSessionListener(HttpSessionListener listener) {
+    public void addSessionListener(org.jboss.modcluster.container.listeners.HttpSessionListener sessionListener) {
+        HttpSessionListener listener = new HttpSessionListener() {
+            @Override
+            public void sessionCreated(HttpSessionEvent se) {
+                sessionListener.sessionCreated();
+            }
+
+            @Override
+            public void sessionDestroyed(HttpSessionEvent se) {
+                sessionListener.sessionDestroyed();
+            }
+        };
         ManagedListener ml = new ManagedListener(new ListenerInfo(HttpSessionListener.class, new ImmediateInstanceFactory<>(listener)), true);
         try {
             ml.start();
@@ -97,7 +121,7 @@ public class UndertowContext implements Context {
     }
 
     @Override
-    public void removeSessionListener(HttpSessionListener listener) {
+    public void removeSessionListener(org.jboss.modcluster.container.listeners.HttpSessionListener sessionListener) {
         // Do nothing
     }
 

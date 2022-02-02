@@ -32,19 +32,15 @@ import java.util.Collections;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
 
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.core.ApplicationListeners;
-import io.undertow.servlet.core.ManagedListener;
 import org.jboss.modcluster.container.Context;
+import org.jboss.modcluster.container.listeners.HttpSessionListener;
+import org.jboss.modcluster.container.listeners.ServletRequestListener;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 public class UndertowContextTestCase {
     private final Deployment deployment = mock(Deployment.class);
@@ -72,7 +68,7 @@ public class UndertowContextTestCase {
     @Test
     public void isStarted() throws ServletException {
         ServletContext context = mock(ServletContext.class);
-        ApplicationListeners listeners = new ApplicationListeners(Collections.<ManagedListener>emptyList(), context);
+        ApplicationListeners listeners = new ApplicationListeners(Collections.emptyList(), context);
 
         when(this.deployment.getApplicationListeners()).thenReturn(listeners);
 
@@ -92,8 +88,7 @@ public class UndertowContextTestCase {
         ServletRequestListener listener = mock(ServletRequestListener.class);
         ServletContext context = mock(ServletContext.class);
         ServletRequest request = mock(ServletRequest.class);
-        ApplicationListeners listeners = new ApplicationListeners(Collections.<ManagedListener>emptyList(), context);
-        ArgumentCaptor<ServletRequestEvent> event = ArgumentCaptor.forClass(ServletRequestEvent.class);
+        ApplicationListeners listeners = new ApplicationListeners(Collections.emptyList(), context);
 
         when(this.deployment.getApplicationListeners()).thenReturn(listeners);
 
@@ -102,19 +97,11 @@ public class UndertowContextTestCase {
 
         listeners.requestInitialized(request);
 
-        verify(listener).requestInitialized(event.capture());
-
-        assertSame(request, event.getValue().getServletRequest());
-        assertSame(context, event.getValue().getServletContext());
-
-        event = ArgumentCaptor.forClass(ServletRequestEvent.class);
+        verify(listener).requestInitialized();
 
         listeners.requestDestroyed(request);
 
-        verify(listener).requestDestroyed(event.capture());
-
-        assertSame(request, event.getValue().getServletRequest());
-        assertSame(context, event.getValue().getServletContext());
+        verify(listener).requestDestroyed();
     }
 
     @Test
@@ -122,8 +109,7 @@ public class UndertowContextTestCase {
         HttpSessionListener listener = mock(HttpSessionListener.class);
         ServletContext context = mock(ServletContext.class);
         HttpSession session = mock(HttpSession.class);
-        ApplicationListeners listeners = new ApplicationListeners(Collections.<ManagedListener>emptyList(), context);
-        ArgumentCaptor<HttpSessionEvent> event = ArgumentCaptor.forClass(HttpSessionEvent.class);
+        ApplicationListeners listeners = new ApplicationListeners(Collections.emptyList(), context);
 
         when(this.deployment.getApplicationListeners()).thenReturn(listeners);
 
@@ -132,16 +118,10 @@ public class UndertowContextTestCase {
 
         listeners.sessionCreated(session);
 
-        verify(listener).sessionCreated(event.capture());
-
-        assertSame(session, event.getValue().getSession());
-
-        event = ArgumentCaptor.forClass(HttpSessionEvent.class);
+        verify(listener).sessionCreated();
 
         listeners.sessionDestroyed(session);
 
-        verify(listener).sessionDestroyed(event.capture());
-
-        assertSame(session, event.getValue().getSession());
+        verify(listener).sessionDestroyed();
     }
 }
