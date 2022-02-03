@@ -44,6 +44,14 @@
     <dependencies>
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-openapi-smallrye-jakarta</artifactId>
         </dependency>
         <dependency>

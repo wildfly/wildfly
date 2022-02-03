@@ -642,6 +642,14 @@
             <exclusions>
                 <exclusion>
                     <groupId>${full.maven.groupId}</groupId>
+                    <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${full.maven.groupId}</groupId>
+                    <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${full.maven.groupId}</groupId>
                     <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
                 </exclusion>
                 <exclusion>
