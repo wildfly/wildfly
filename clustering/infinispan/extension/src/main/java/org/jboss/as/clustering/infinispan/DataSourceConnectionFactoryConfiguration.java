@@ -25,8 +25,8 @@ package org.jboss.as.clustering.infinispan;
 import javax.sql.DataSource;
 
 import org.infinispan.commons.configuration.BuiltBy;
-import org.infinispan.persistence.jdbc.configuration.ConnectionFactoryConfiguration;
-import org.infinispan.persistence.jdbc.connectionfactory.ConnectionFactory;
+import org.infinispan.persistence.jdbc.common.configuration.ConnectionFactoryConfiguration;
+import org.infinispan.persistence.jdbc.common.connectionfactory.ConnectionFactory;
 
 /**
  * Configuration for {@link DataSourceConnectionFactory}.
