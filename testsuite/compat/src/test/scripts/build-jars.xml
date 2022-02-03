@@ -80,6 +80,7 @@
 &lt;resource-root path="openjpa-all.jar"&gt;
 &lt;filter&gt;
 &lt;exclude path="javax/**" /&gt;
+&lt;exclude path="org/apache/bval/**"/&gt;
 &lt;/filter&gt;
 &lt;/resource-root&gt;
 

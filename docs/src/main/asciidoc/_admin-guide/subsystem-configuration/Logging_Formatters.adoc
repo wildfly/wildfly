@@ -67,7 +67,7 @@ NOTE: #Highlighted# symbols indicate the calculation of the caller is required w
 %C{1~.} o.~.~.Foo
 ----
 |[[timestamp]]%d
-|The timestamp the log message. Any valid {oracle-javadoc}/java/text/SimpleDateFormat.html[`SimpleDateFormat`] pattern. The
+|The timestamp the log message. Any valid {oracle-javadoc}/java.base/java/text/SimpleDateFormat.html[`SimpleDateFormat`] pattern. The
  default is `yyyy-MM-dd HH:mm:ss,SSS`.
 |
 ----

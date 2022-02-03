@@ -5,7 +5,7 @@
 == Overview
 
 Handlers define how log messages are recorded. If a message is said to be
-link:{oracle-javadocs}/java/util/logging/Logger.html#isLoggable-java.util.logging.Level-[loggable] by a
+{oracle-javadocs}/java.logging/java/util/logging/Logger.html#isLoggable-java.util.logging.Level-[loggable] by a
 <<Logging_Loggers,logger>> the message is then processed by the log handler.
 
 The following are the available handlers for {appservername};
@@ -32,7 +32,7 @@ but can be set to write to `stderr`.
 
 === custom-handler
 
-A `custom-handler` allows you to define any {oracle-javadoc}/java/util/logging/Handler.html[handler] as a handler that
+A `custom-handler` allows you to define any {oracle-javadoc}/java.logging/java/util/logging/Handler.html[handler] as a handler that
 can be assigned to a logger or a <<async-handler,`async-handler`>>.
 
 === file-handler
@@ -43,7 +43,7 @@ A `file-handler` is a handler that writes log messages to the specified file.
 
 A `periodic-rotating-file-handler` is a handler that writes log messages to the specified file. The file rotates on
 the date pattern specified in the `suffix` attribute. The suffix must be a valid pattern recognized by the
-{oracle-javadoc}/java/text/SimpleDateFormat.html[`java.text.SimpleDateFormat`] and must not rotate on seconds or
+{oracle-javadoc}/java.base/java/text/SimpleDateFormat.html[`java.text.SimpleDateFormat`] and must not rotate on seconds or
 milliseconds.
 
 NOTE: The rotate happens before the next message is written by the handler.
@@ -52,7 +52,7 @@ NOTE: The rotate happens before the next message is written by the handler.
 
 A `periodic-size-rotating-file-handler` is a handler that writes log messages to the specified file. The file rotates on
 the date pattern specified in the `suffix` attribute or the `rotate-size` attribute. The suffix must be a valid
-pattern recognized by the {oracle-javadoc}/java/text/SimpleDateFormat.html[`java.text.SimpleDateFormat`] and must
+pattern recognized by the {oracle-javadoc}/java.base/java/text/SimpleDateFormat.html[`java.text.SimpleDateFormat`] and must
 not rotate on seconds or milliseconds.
 
 The `max-backup-index` works differently on this handler than the
