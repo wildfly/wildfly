@@ -38,7 +38,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -74,7 +74,7 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = XSiteSimpleTestCase.class.getSimpleName();
 
     public XSiteSimpleTestCase() {
-        super(FOUR_NODES, FOUR_DEPLOYMENTS);
+        super(NODE_1_2_3_4);
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -198,58 +198,88 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
         }
     }
 
-    public static class CacheSetupTask extends CLIServerSetupTask {
+    public static class CacheSetupTask extends ManagementServerSetupTask {
         public CacheSetupTask() {
-            this.builder.node(NODE_1, NODE_2, NODE_3, NODE_4)
-                    .setup("/subsystem=infinispan/cache-container=foo:add")
-                    .setup("/subsystem=infinispan/cache-container=foo/transport=jgroups:add")
-                    .setup("/subsystem=infinispan/cache-container=foo/distributed-cache=bar:add")
-                    .teardown("/subsystem=infinispan/cache-container=foo/distributed-cache=bar:remove")
-                    .teardown("/subsystem=infinispan/cache-container=foo:remove")
-                    ;
+            super(NODE_1_2_3_4, createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                            .startBatch()
+                                .add("/subsystem=infinispan/cache-container=foo:add")
+                                .add("/subsystem=infinispan/cache-container=foo/transport=jgroups:add")
+                                .add("/subsystem=infinispan/cache-container=foo/distributed-cache=bar:add")
+                            .endBatch()
+                            .build())
+                    .tearDownScript(createScriptBuilder()
+                            .add("/subsystem=infinispan/cache-container=foo:remove")
+                            .build())
+                    .build());
         }
     }
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder
+            super(createContainerSetConfigurationBuilder()
                     // LON
-                    .node(NODE_1, NODE_2)
-                    .setup("/subsystem=infinispan/cache-container=foo/distributed-cache=bar/component=backups/backup=NYC:add(failure-policy=WARN,strategy=SYNC,timeout=10000,enabled=true)")
-                    .setup("/subsystem=infinispan/cache-container=foo/distributed-cache=bar/component=backups/backup=SFO:add(failure-policy=WARN,strategy=SYNC,timeout=10000,enabled=true)")
-                    .setup("/subsystem=jgroups/channel=bridge:add(stack=tcp-bridge)")
-                    .setup("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2:add(site=LON)")
-                    .setup("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2/remote-site=NYC:add(channel=bridge)")
-                    .setup("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2/remote-site=SFO:add(channel=bridge)")
-                    .setup("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-1,node-2])")
-                    .teardown("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-1,node-2,node-3,node-4])")
-                    .teardown("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2:remove")
-                    .teardown("/subsystem=jgroups/channel=bridge:remove")
-                    .teardown("/subsystem=infinispan/cache-container=foo/distributed-cache=bar/component=backups/backup=SFO:remove")
-                    .teardown("/subsystem=infinispan/cache-container=foo/distributed-cache=bar/component=backups/backup=NYC:remove")
-                    .parent()
+                    .addContainers(NODE_1_2, createContainerConfigurationBuilder()
+                        .setupScript(createScriptBuilder()
+                            .startBatch()
+                                .add("/subsystem=infinispan/cache-container=foo/distributed-cache=bar/component=backups/backup=NYC:add(failure-policy=WARN,strategy=SYNC,timeout=10000,enabled=true)")
+                                .add("/subsystem=infinispan/cache-container=foo/distributed-cache=bar/component=backups/backup=SFO:add(failure-policy=WARN,strategy=SYNC,timeout=10000,enabled=true)")
+                                .add("/subsystem=jgroups/channel=bridge:add(stack=tcp-bridge)")
+                                .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2:add(site=LON)")
+                                .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2/remote-site=NYC:add(channel=bridge)")
+                                .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2/remote-site=SFO:add(channel=bridge)")
+                                .add("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-1,node-2])")
+                            .endBatch()
+                            .build())
+                        .tearDownScript(createScriptBuilder()
+                            .startBatch()
+                                .add("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-1,node-2,node-3,node-4])")
+                                .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2:remove")
+                                .add("/subsystem=jgroups/channel=bridge:remove")
+                                .add("/subsystem=infinispan/cache-container=foo/distributed-cache=bar/component=backups/backup=SFO:remove")
+                                .add("/subsystem=infinispan/cache-container=foo/distributed-cache=bar/component=backups/backup=NYC:remove")
+                            .endBatch()
+                            .build())
+                        .build())
                     // NYC
-                    .node(NODE_3)
-                    .setup("/subsystem=jgroups/channel=bridge:add(stack=tcp-bridge)")
-                    .setup("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2:add(site=NYC)")
-                    .setup("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2/remote-site=LON:add(channel=bridge)")
-                    .setup("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2/remote-site=SFO:add(channel=bridge)")
-                    .setup("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-3])")
-                    .teardown("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-1,node-2,node-3,node-4])")
-                    .teardown("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2:remove")
-                    .teardown("/subsystem=jgroups/channel=bridge:remove")
-                    .parent()
+                    .addContainer(NODE_3, createContainerConfigurationBuilder()
+                        .setupScript(createScriptBuilder()
+                            .startBatch()
+                                .add("/subsystem=jgroups/channel=bridge:add(stack=tcp-bridge)")
+                                .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2:add(site=NYC)")
+                                .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2/remote-site=LON:add(channel=bridge)")
+                                .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2/remote-site=SFO:add(channel=bridge)")
+                                .add("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-3])")
+                            .endBatch()
+                            .build())
+                        .tearDownScript(createScriptBuilder()
+                            .startBatch()
+                                .add("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-1,node-2,node-3,node-4])")
+                                .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2:remove")
+                                .add("/subsystem=jgroups/channel=bridge:remove")
+                            .endBatch()
+                            .build())
+                        .build())
                     // SFO
-                    .node(NODE_4)
-                    .setup("/subsystem=jgroups/channel=bridge:add(stack=tcp-bridge)")
-                    .setup("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2:add(site=SFO)")
-                    .setup("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2/remote-site=LON:add(channel=bridge)")
-                    .setup("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2/remote-site=NYC:add(channel=bridge)")
-                    .setup("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-4])")
-                    .teardown("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-1,node-2,node-3,node-4])")
-                    .teardown("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2:remove")
-                    .teardown("/subsystem=jgroups/channel=bridge:remove")
-            ;
+                    .addContainer(NODE_4, createContainerConfigurationBuilder()
+                        .setupScript(createScriptBuilder()
+                            .startBatch()
+                                .add("/subsystem=jgroups/channel=bridge:add(stack=tcp-bridge)")
+                                .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2:add(site=SFO)")
+                                .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2/remote-site=LON:add(channel=bridge)")
+                                .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2/remote-site=NYC:add(channel=bridge)")
+                                .add("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-4])")
+                            .endBatch()
+                            .build())
+                        .tearDownScript(createScriptBuilder()
+                            .startBatch()
+                                .add("/subsystem=jgroups/stack=tcp/protocol=TCPPING:write-attribute(name=socket-bindings,value=[node-1,node-2,node-3,node-4])")
+                                .add("/subsystem=jgroups/stack=tcp/relay=relay.RELAY2:remove")
+                                .add("/subsystem=jgroups/channel=bridge:remove")
+                            .endBatch()
+                            .build())
+                        .build())
+                    .build());
         }
     }
 }
