@@ -281,48 +281,28 @@
                             </scripts>
                         </configuration>
                     </execution>
-                </executions>
-                <configuration>
-                    <offline>true</offline>
-                    <jboss-home>${basedir}/target/wildfly</jboss-home>
-                    <stdout>${project.build.directory}/wildfly/standalone/log/wildfly-wiremock.log</stdout>
-                    <java-opts>${modular.jdk.args}</java-opts>
-                    <system-properties>
-                        <maven.repo.local>${maven.repo.local}</maven.repo.local>
-                        <module.path>${project.build.directory}/wildfly/modules</module.path>
-                        <beansxml.path>${basedir}/beans.xml</beansxml.path>
-                    </system-properties>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.jboss.galleon</groupId>
-                <artifactId>galleon-maven-plugin</artifactId>
-                <executions>
                     <execution>
                         <id>mp-server-provisioning</id>
+                        <phase>generate-resources</phase>
                         <goals>
                             <goal>provision</goal>
                         </goals>
-                        <phase>generate-resources</phase>
                         <configuration>
-                            <install-dir>${project.build.directory}/wildfly</install-dir>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>${galleon.offline}</offline>
-                            <plugin-options>
-                                <jboss-maven-dist />
+                            <provisioning-dir>wildfly</provisioning-dir>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
+                            </galleon-options>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${full.maven.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${full.maven.version}</version>
-                                    <excluded-packages>
-                                        <name>docs</name>
-                                        <name>docs.licenses.merge</name>
-                                    </excluded-packages>
                                     <inherit-configs>false</inherit-configs>
+                                    <inherit-packages>false</inherit-packages>
                                     <included-configs>
                                         <config>
                                             <model>standalone</model>
@@ -337,6 +317,10 @@
                                             <name>standalone-microprofile.xml</name>
                                         </config>
                                     </included-configs>
+                                    <excluded-packages>
+                                        <name>docs</name>
+                                        <name>docs.licenses.merge</name>
+                                    </excluded-packages>
                                 </feature-pack>
                             </feature-packs>
                         </configuration>
@@ -363,6 +347,17 @@
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <offline>true</offline>
+                    <jboss-home>${basedir}/target/wildfly</jboss-home>
+                    <stdout>${project.build.directory}/wildfly/standalone/log/wildfly-wiremock.log</stdout>
+                    <java-opts>${modular.jdk.args}</java-opts>
+                    <system-properties>
+                        <maven.repo.local>${maven.repo.local}</maven.repo.local>
+                        <module.path>${project.build.directory}/wildfly/modules</module.path>
+                        <beansxml.path>${basedir}/beans.xml</beansxml.path>
+                    </system-properties>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.internetitem</groupId>
@@ -465,8 +460,8 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
                         <executions>
                             <execution>
                                 <!-- Disable the default provisioning -->
@@ -494,23 +489,17 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <!-- Disable the default provisioning -->
-                                <id>mp-server-provisioning</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <executions>
                             <execution>
                                 <!-- Disable the default module addition -->
                                 <id>add-wiremock-module</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <!-- Disable the default provisioning -->
+                                <id>mp-server-provisioning</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>
@@ -535,23 +524,17 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <!-- Disable the default provisioning -->
-                                <id>mp-server-provisioning</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <executions>
                             <execution>
                                 <!-- Disable the default module addition -->
                                 <id>add-wiremock-module</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <!-- Disable the default provisioning -->
+                                <id>mp-server-provisioning</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>
@@ -587,8 +570,8 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
                         <executions>
                             <execution>
                                 <!-- Disable the default provisioning -->

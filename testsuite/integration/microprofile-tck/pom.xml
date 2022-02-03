@@ -93,8 +93,9 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.jboss.galleon</groupId>
-                <artifactId>galleon-maven-plugin</artifactId>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
                 <executions>
                     <!-- Provision a server slimmed to only what we want for a particular TCK. -->
                     <execution>
@@ -106,15 +107,15 @@
                              Default is 'none', i.e. disabled. -->
                         <phase>${ts.microprofile-tck-provisioning.phase}</phase>
                         <configuration>
-                            <install-dir>${project.build.directory}/wildfly</install-dir>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>${galleon.offline}</offline>
-                            <plugin-options>
+                            <provisioning-dir>wildfly</provisioning-dir>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                 <optional-packages>passive+</optional-packages>
-                            </plugin-options>
+                            </galleon-options>
                             <feature-packs>
                                 <feature-pack>
                                     <!-- Child modules can set properties to override what feature pack is used -->
@@ -123,21 +124,21 @@
                                     <version>${ts.microprofile-tck-provisioning.fp.version}</version>
                                     <inherit-configs>false</inherit-configs>
                                     <inherit-packages>false</inherit-packages>
+                                    <included-configs>
+                                        <config>
+                                            <model>standalone</model>
+                                            <!-- Call the file standalone-microprofile.xml as that is what
+                                            arquillian.xml says to use for testing in the default maven profile-->
+                                            <name>standalone-microprofile.xml</name>
+                                        </config>
+                                    </included-configs>
                                 </feature-pack>
                             </feature-packs>
-                            <configurations>
-                                <config>
-                                    <model>standalone</model>
-                                    <!-- Call the file standalone-microprofile.xml as that is what
-                                         arquillian.xml says to use for testing in the default maven profile-->
-                                    <name>standalone-microprofile.xml</name>
-                                    <layers>
-                                        <!-- Child modules would set properties to drive the desired layers -->
-                                        <layer>${ts.microprofile-tck-provisioning.base.layer}</layer>
-                                        <layer>${ts.microprofile-tck-provisioning.decorator.layer}</layer>
-                                    </layers>
-                                </config>
-                            </configurations>
+                            <layers>
+                                <!-- Child modules would set properties to drive the desired layers -->
+                                <layer>${ts.microprofile-tck-provisioning.base.layer}</layer>
+                                <layer>${ts.microprofile-tck-provisioning.decorator.layer}</layer>
+                            </layers>
                         </configuration>
                     </execution>
                 </executions>
@@ -555,17 +556,17 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
                         <executions>
                             <execution>
                                 <!-- Override the standard tck provisioning to add EE 9 transformation settings -->
                                 <id>microprofile-tck-provisioning</id>
                                 <configuration>
-                                    <plugin-options combine-children="append">
+                                    <galleon-options combine-children="append">
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                         <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
-                                    </plugin-options>
+                                    </galleon-options>
                                 </configuration>
                             </execution>
                         </executions>
@@ -618,10 +619,9 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
                         <executions>
-                            <!-- Provision a server slimmed to only what we want for a particular TCK. -->
                             <execution>
                                 <id>microprofile-tck-provisioning</id>
                                 <phase>none</phase>
