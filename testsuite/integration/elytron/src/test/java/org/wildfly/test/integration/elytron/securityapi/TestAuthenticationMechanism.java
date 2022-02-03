@@ -64,7 +64,7 @@ public class TestAuthenticationMechanism implements HttpAuthenticationMechanism 
             }
         }
 
-        if (challenge) {
+        if (challenge || httpMessageContext.isProtected()) {
             return challenge(response, httpMessageContext);
         }
 
