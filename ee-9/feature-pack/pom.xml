@@ -777,6 +777,22 @@
                     <groupId>org.wildfly.wildfly-http-client</groupId>
                     <artifactId>wildfly-http-transaction-client</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-iiop-openjdk</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-transactions</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.narayana.jts</groupId>
+                    <artifactId>narayana-jts-idlj</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.narayana.jts</groupId>
+                    <artifactId>narayana-jts-integration</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
