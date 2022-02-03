@@ -58,14 +58,6 @@ public interface JpaLogger extends BasicLogger {
     IllegalStateException HibernateORMDidNotRegisterLifeCycleListener();
 
     /**
-     * Creates an exception indicating that Hibernate ORM did not register the expected LifeCycleListener
-     *
-     * @return an {@link IllegalStateException} for the error.
-     */
-    @Message(id = 20262, value = "Hibernate ORM already registered the LifeCycleListener")
-    IllegalStateException HibernateORMAlreadyRegisteredLifeCycleListener();
-
-    /**
      * Creates an exception indicating application is setting persistence unit property "hibernate.id.new_generator_mappings" to
      * false which indicates that the old ID generator should be used, however Hibernate ORM 6 does not include the old ID generator.
      *

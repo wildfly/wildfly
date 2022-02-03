@@ -22,6 +22,8 @@ import jakarta.enterprise.inject.spi.BeanManager;
 
 import org.hibernate.resource.beans.container.spi.ExtendedBeanManager;
 
+import java.util.ArrayList;
+
 /**
  * HibernateExtendedBeanManager helps defer the registering of entity listeners, with the Jakarta Contexts and Dependency Injection BeanManager until
  * after the persistence unit is available for lookup by Jakarta Contexts and Dependency Injection bean(s).
@@ -32,7 +34,7 @@ import org.hibernate.resource.beans.container.spi.ExtendedBeanManager;
  */
 public class HibernateExtendedBeanManager implements ExtendedBeanManager {
     private final BeanManager beanManager;
-    private volatile LifecycleListener HibernateLifeCycleListener;
+    private final ArrayList<LifecycleListener> lifecycleListeners = new ArrayList<>();
 
     public HibernateExtendedBeanManager(BeanManager beanManager) {
         this.beanManager = beanManager;
@@ -51,17 +53,16 @@ public class HibernateExtendedBeanManager implements ExtendedBeanManager {
      * to be triggered by one AfterDeploymentValidation event per deployment.
      */
     public void beanManagerIsAvailableForUse() {
-        if (HibernateLifeCycleListener == null) {
+        if (lifecycleListeners.isEmpty()) {
             throw JpaLogger.JPA_LOGGER.HibernateORMDidNotRegisterLifeCycleListener();
         }
-        HibernateLifeCycleListener.beanManagerInitialized(beanManager);
+        for (LifecycleListener hibernateCallback : lifecycleListeners) {
+            hibernateCallback.beanManagerInitialized(beanManager);
+        }
     }
 
     @Override
     public void registerLifecycleListener(LifecycleListener lifecycleListener) {
-        if (HibernateLifeCycleListener != null) {
-            throw JpaLogger.JPA_LOGGER.HibernateORMAlreadyRegisteredLifeCycleListener();
-        }
-        HibernateLifeCycleListener = lifecycleListener;
+        lifecycleListeners.add(lifecycleListener);
     }
 }
