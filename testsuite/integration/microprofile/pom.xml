@@ -428,12 +428,6 @@
                                     <goal>execute-commands</goal>
                                 </goals>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
                             <execution>
                                 <id>microprofile-provisioning</id>
                                 <goals>
@@ -441,15 +435,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -457,24 +451,24 @@
                                             <version>${full.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <!-- Call the file standalone-microprofile.xml as that is what
+                                                    arquillian.xml says to use for testing in the default maven profile-->
+                                                    <name>standalone-microprofile.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <!-- Call the file standalone-microprofile.xml as that is what
-                                                 arquillian.xml says to use for testing in the default maven profile-->
-                                            <name>standalone-microprofile.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>microprofile-platform</layer>
-                                                <layer>ejb</layer>
-                                                <!-- Dependencies for reactive specs -->
-                                                <layer>microprofile-reactive-messaging-kafka</layer>
-                                                <layer>h2-default-datasource</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>microprofile-platform</layer>
+                                        <layer>ejb</layer>
+                                        <!-- Dependencies for reactive specs -->
+                                        <layer>microprofile-reactive-messaging-kafka</layer>
+                                        <layer>h2-default-datasource</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                         </executions>
@@ -548,12 +542,6 @@
                                     <goal>execute-commands</goal>
                                 </goals>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
                             <execution>
                                 <id>microprofile-provisioning</id>
                                 <goals>
@@ -561,17 +549,17 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                         <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -579,24 +567,24 @@
                                             <version>${full.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <!-- Call the file standalone-microprofile.xml as that is what
+                                                    arquillian.xml says to use for testing in the default maven profile-->
+                                                    <name>standalone-microprofile.xml</name>
+                                                </config>
+                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <!-- Call the file standalone-microprofile.xml as that is what
-                                                 arquillian.xml says to use for testing in the default maven profile-->
-                                            <name>standalone-microprofile.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>microprofile-platform</layer>
-                                                <layer>ejb</layer>
-                                                <!-- Dependencies for reactive specs -->
-                                                <layer>microprofile-reactive-messaging-kafka</layer>
-                                                <layer>h2-default-datasource</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>microprofile-platform</layer>
+                                        <layer>ejb</layer>
+                                        <!-- Dependencies for reactive specs -->
+                                        <layer>microprofile-reactive-messaging-kafka</layer>
+                                        <layer>h2-default-datasource</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                         </executions>
@@ -760,17 +748,10 @@
                                 </goals>
                                 <phase>none</phase>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
-                            <!-- Disable the default provisioning -->
                             <execution>
                                 <id>server-provisioning</id>
                                 <goals>
-                                    <goal>provisioning</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>none</phase>
                             </execution>
@@ -852,20 +833,15 @@
                                 </goals>
                                 <phase>none</phase>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
-                            <!-- Disable the default provisioning -->
                             <execution>
+                                <!-- Disable the default provisioning -->
                                 <id>server-provisioning</id>
                                 <goals>
-                                    <goal>provisioning</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>none</phase>
                             </execution>
+
                         </executions>
                     </plugin>
                     <plugin>
