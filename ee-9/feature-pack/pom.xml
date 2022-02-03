@@ -642,6 +642,10 @@
             <exclusions>
                 <exclusion>
                     <groupId>${full.maven.groupId}</groupId>
+                    <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${full.maven.groupId}</groupId>
                     <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider</artifactId>
                 </exclusion>
                 <exclusion>
