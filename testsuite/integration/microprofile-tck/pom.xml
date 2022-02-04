@@ -122,16 +122,6 @@
                                     <groupId>${ts.microprofile-tck-provisioning.fp.groupId}</groupId>
                                     <artifactId>${ts.microprofile-tck-provisioning.fp.artifactId}</artifactId>
                                     <version>${ts.microprofile-tck-provisioning.fp.version}</version>
-                                    <inherit-configs>false</inherit-configs>
-                                    <inherit-packages>false</inherit-packages>
-                                    <included-configs>
-                                        <config>
-                                            <model>standalone</model>
-                                            <!-- Call the file standalone-microprofile.xml as that is what
-                                            arquillian.xml says to use for testing in the default maven profile-->
-                                            <name>standalone-microprofile.xml</name>
-                                        </config>
-                                    </included-configs>
                                 </feature-pack>
                             </feature-packs>
                             <layers>
