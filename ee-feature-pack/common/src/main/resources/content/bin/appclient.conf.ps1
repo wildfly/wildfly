@@ -14,13 +14,13 @@
 # this always be set). If set, then "%JAVA_HOME%\bin\java" will be used as
 # the Java VM executable; otherwise, "%JAVA%" will be used (see below).
 #
-# $JAVA_HOME="C:\opt\jdk1.8.0"
+# $JAVA_HOME="C:\opt\jdk11"
 
 #
 # Specify the exact Java VM executable to use - only used if JAVA_HOME is
 # not set. Default is "java".
 #
-# $JAVA="C:\opt\jdk1.8.0\bin\java"
+# $JAVA="C:\opt\jdk11\bin\java"
 
 #
 # Specify options to pass to the Java VM. Note, there are some additional

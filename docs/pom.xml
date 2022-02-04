@@ -65,7 +65,7 @@
                         <!-- Attributes to use in the asciidoc source files. Please leave in alphabetical order -->
                         <appservername>${full.dist.product.release.name}</appservername>
                         <javaee_version>8</javaee_version>
-                        <oracle-javadoc>https://docs.oracle.com/javase/8/docs/api</oracle-javadoc>
+                        <oracle-javadoc>https://docs.oracle.com/en/java/javase/11/docs/api</oracle-javadoc>
                         <wildflyversion>${product.docs.server.version}</wildflyversion>
 
                         <!-- Default asciidoc setting attributes -->

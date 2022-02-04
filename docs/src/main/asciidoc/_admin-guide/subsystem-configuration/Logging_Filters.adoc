@@ -5,12 +5,12 @@
 :idseparator:       -
 
 Filters are used to add fine grained control over a log message. A filter can be assigned to a logger or log handler.
-See the {oracle-javadoc}/java/util/logging/Filter.html[Filter] documentation for details on filters.
+See the {oracle-javadoc}/java.logging/java/util/logging/Filter.html[Filter] documentation for details on filters.
 
 == Filter
 
 The filter resource allows a custom filter to be used. The custom filter must reside in a module and implement the
-{oracle-javadoc}/java/util/logging/Filter.html[Filter] interface.
+{oracle-javadoc}/java.logging/java/util/logging/Filter.html[Filter] interface.
 
 It's generally suggested to add filters to a handler. By default loggers do no inherit filters. This means if a filter
 is placed on a logger named `org.jboss.as.logging` is only checked if the logger name is equal to `org.jboss.as.logging`.

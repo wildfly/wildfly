@@ -24,7 +24,6 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <iiop.endorsed.argline>-Djava.endorsed.dirs=${project.build.directory}/endorsed</iiop.endorsed.argline>
         <ts.elytron.cli>ssl-enable-elytron.cli</ts.elytron.cli>
         <wildfly>wildfly</wildfly>
         <wildfly.config.dir>${basedir}/target/${wildfly}/standalone/configuration</wildfly.config.dir>
@@ -164,7 +163,7 @@
                                 <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1} ${extra.server.jvm.args}</server.jvm2.args>
                             </systemPropertyVariables>
                             <argLine>
-                                ${modular.jdk.args} ${iiop.endorsed.argline}
+                                ${modular.jdk.args}
                                 -Dcom.sun.CORBA.ORBUseDynamicStub=true
                                 -Dcom.arjuna.ats.arjuna.common.propertiesFile=jbossts-properties.xml ${surefire.jacoco.args}
                             </argLine>
@@ -413,17 +412,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-
-        <profile>
-            <id>jdk9</id>
-            <activation>
-                <jdk>[9,)</jdk>
-            </activation>
-            <properties>
-                <!-- JDK9 does not support endorsing mechanism -->
-                <iiop.endorsed.argline/>
-            </properties>
         </profile>
     </profiles>
 </project>
