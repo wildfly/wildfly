@@ -304,6 +304,7 @@
                     Override version properties for MicroProfile 5 Implementations as we do in ee-9/pom.xml
                 -->
                 <version.io.smallrye.smallrye-config>3.0.0-RC1</version.io.smallrye.smallrye-config>
+                <version.io.smallrye.smallrye-fault-tolerance>6.0.0-RC1</version.io.smallrye.smallrye-fault-tolerance>
 
                 <!-- Test only dependencies - don't update in ee-9/pom.xml -->
                 <version.org.eclipse.microprofile.fault-tolerance.tck>${version.org.eclipse.microprofile.fault-tolerance.api}</version.org.eclipse.microprofile.fault-tolerance.tck>
