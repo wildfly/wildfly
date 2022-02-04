@@ -26,7 +26,6 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -62,14 +61,8 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V>, P
     public SimpleCache(StatefulObjectFactory<V> factory, Supplier<K> identifierFactory, StatefulTimeoutInfo timeout, ServerEnvironment environment) {
         this.factory = factory;
         this.identifierFactory = identifierFactory;
-
         // A value of -1 means the bean will never be removed due to timeout
-        if (timeout == null || timeout.getValue() < 0) {
-            this.timeout = null;
-        } else {
-            this.timeout = Duration.ofMillis(TimeUnit.MILLISECONDS.convert(timeout.getValue(), timeout.getTimeUnit()));
-        }
-
+        this.timeout = (timeout != null && timeout.getValue() >= 0) ? Duration.of(timeout.getValue(), timeout.getTimeUnit().toChronoUnit()) : null;
         this.environment = environment;
     }
 

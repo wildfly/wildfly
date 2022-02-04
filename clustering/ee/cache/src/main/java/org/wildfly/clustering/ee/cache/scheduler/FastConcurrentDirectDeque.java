@@ -24,25 +24,26 @@
 
 package org.wildfly.clustering.ee.cache.scheduler;
 
+import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
+
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.util.AbstractCollection;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
-
-import sun.misc.Unsafe;
+import java.util.function.Predicate;
 
 /**
  * A modified version of ConcurrentLinkedDeque which includes direct
- * removal. Like the original, it relies on Unsafe for better performance.
+ * removal. Like the original, it relies on {@link VarHandle} for better performance.
  *
  * More specifically, an unbounded concurrent {@linkplain Deque deque} based on linked nodes.
  * Concurrent insertion, removal, and access operations execute safely
@@ -60,12 +61,12 @@ import sun.misc.Unsafe;
  * asynchronous nature of these deques, determining the current number
  * of elements requires a traversal of the elements, and so may report
  * inaccurate results if this collection is modified during traversal.
- * Additionally, the bulk operations {@code addAll},
- * {@code removeAll}, {@code retainAll}, {@code containsAll},
- * {@code equals}, and {@code toArray} are <em>not</em> guaranteed
- * to be performed atomically. For example, an iterator operating
- * concurrently with an {@code addAll} operation might view only some
- * of the added elements.
+ *
+ * <p>Bulk operations that add, remove, or examine multiple elements,
+ * such as {@link #addAll}, {@link #removeIf} or {@link #forEach},
+ * are <em>not</em> guaranteed to be performed atomically.
+ * For example, a {@code forEach} traversal concurrent with an {@code
+ * addAll} operation might observe only some of the added elements.
  *
  * <p>This class and its iterator implement all of the <em>optional</em>
  * methods of the {@link Deque} and {@link Iterator} interfaces.
@@ -77,16 +78,21 @@ import sun.misc.Unsafe;
  * actions subsequent to the access or removal of that element from
  * the {@code ConcurrentLinkedDeque} in another thread.
  *
- * Based on revision 1.50 of ConcurrentLinkedDeque
- * (see http://gee.cs.oswego.edu/cgi-bin/viewcvs.cgi/jsr166/src/main/java/util/concurrent/ConcurrentLinkedDeque.java?revision=1.50&amp;view=markup)
- * This is the version used in JDK 1.8.0_121.
+ * <p>This class is a member of the
+ * <a href="{@docRoot}/../technotes/guides/collections/index.html">
+ * Java Collections Framework</a>.
  *
+ * Based on revision 1.88 of ConcurrentLinkedDeque
+ * (see http://gee.cs.oswego.edu/cgi-bin/viewcvs.cgi/jsr166/src/main/java/util/concurrent/ConcurrentLinkedDeque.java?revision=1.88&view=markup)
+ * This is the version used in JDK 9 b156.
+ *
+ * @since 1.7
  * @author Doug Lea
  * @author Martin Buchholz
- * @author Jason T. Greene
- * @param <E> the type of elements held in this collection
+ * @author Jason T. Grene
+ * @param <E> the type of elements held in this deque
  */
-@SuppressWarnings({ "restriction", "unqualified-field-access" })
+@SuppressWarnings("unqualified-field-access")
 public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implements ConcurrentDirectDeque<E>, Serializable {
 
     /*
@@ -287,79 +293,23 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
         volatile Node<E> prev;
         volatile E item;
         volatile Node<E> next;
+    }
 
-        Node() {  // default constructor for NEXT_TERMINATOR, PREV_TERMINATOR
-        }
-
-        /**
-         * Constructs a new node.  Uses relaxed write because item can
-         * only be seen after publication via casNext or casPrev.
-         */
-        Node(E item) {
-            UNSAFE.putObject(this, itemOffset, item);
-        }
-
-        boolean casItem(E cmp, E val) {
-            return UNSAFE.compareAndSwapObject(this, itemOffset, cmp, val);
-        }
-
-        void lazySetNext(Node<E> val) {
-            UNSAFE.putOrderedObject(this, nextOffset, val);
-        }
-
-        boolean casNext(Node<E> cmp, Node<E> val) {
-            return UNSAFE.compareAndSwapObject(this, nextOffset, cmp, val);
-        }
-
-        void lazySetPrev(Node<E> val) {
-            UNSAFE.putOrderedObject(this, prevOffset, val);
-        }
-
-        boolean casPrev(Node<E> cmp, Node<E> val) {
-            return UNSAFE.compareAndSwapObject(this, prevOffset, cmp, val);
-        }
-
-        // Unsafe mechanics
-
-        private static final sun.misc.Unsafe UNSAFE;
-        private static final long prevOffset;
-        private static final long itemOffset;
-        private static final long nextOffset;
-
-        static {
-            try {
-                UNSAFE = getUnsafe();
-                Class<?> k = Node.class;
-                prevOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("prev"));
-                itemOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("item"));
-                nextOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("next"));
-            } catch (Exception e) {
-                throw new Error(e);
-            }
-        }
-
-        private static Unsafe getUnsafe() {
-            if (System.getSecurityManager() != null) {
-                return AccessController.doPrivileged(new PrivilegedAction<Unsafe>() {
-                    @Override
-                    public Unsafe run() {
-                        return getUnsafe0();
-                    }
-                });
-            }
-            return getUnsafe0();
-        }
+    /**
+     * Returns a new node holding item.  Uses relaxed write because item
+     * can only be seen after piggy-backing publication via CAS.
+     */
+    static <E> Node<E> newNode(E item) {
+        Node<E> node = new Node<>();
+        ITEM.set(node, item);
+        return node;
     }
 
     /**
      * Links e as first element.
      */
     private Node<E> linkFirst(E e) {
-        checkNotNull(e);
-        final Node<E> newNode = new Node<>(e);
+        final Node<E> newNode = newNode(Objects.requireNonNull(e));
 
         restartFromHead:
         for (;;)
@@ -373,13 +323,13 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
                     continue restartFromHead;
                 else {
                     // p is first node
-                    newNode.lazySetNext(p); // CAS piggyback
-                    if (p.casPrev(null, newNode)) {
+                    NEXT.set(newNode, p); // CAS piggyback
+                    if (PREV.compareAndSet(p, null, newNode)) {
                         // Successful CAS is the linearization point
                         // for e to become an element of this deque,
                         // and for newNode to become "live".
-                        if (p != h) // hop two nodes at a time
-                            casHead(h, newNode);  // Failure is OK.
+                        if (p != h) // hop two nodes at a time; failure is OK
+                            HEAD.weakCompareAndSet(this, h, newNode);
                         return newNode;
                     }
                     // Lost CAS race to another thread; re-read prev
@@ -391,8 +341,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
      * Links e as last element.
      */
     private Node<E> linkLast(E e) {
-        checkNotNull(e);
-        final Node<E> newNode = new Node<>(e);
+        final Node<E> newNode = newNode(Objects.requireNonNull(e));
 
         restartFromTail:
         for (;;)
@@ -406,13 +355,13 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
                     continue restartFromTail;
                 else {
                     // p is last node
-                    newNode.lazySetPrev(p); // CAS piggyback
-                    if (p.casNext(null, newNode)) {
+                    PREV.set(newNode, p); // CAS piggyback
+                    if (NEXT.compareAndSet(p, null, newNode)) {
                         // Successful CAS is the linearization point
                         // for e to become an element of this deque,
                         // and for newNode to become "live".
-                        if (p != t) // hop two nodes at a time
-                            casTail(t, newNode);  // Failure is OK.
+                        if (p != t) // hop two nodes at a time; failure is OK
+                            TAIL.weakCompareAndSet(this, t, newNode);
                         return newNode;
                     }
                     // Lost CAS race to another thread; re-read next
@@ -527,8 +476,8 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
                 updateTail(); // Ensure x is not reachable from tail
 
                 // Finally, actually gc-unlink
-                x.lazySetPrev(isFirst ? prevTerminator() : x);
-                x.lazySetNext(isLast  ? nextTerminator() : x);
+                PREV.setRelease(x, isFirst ? prevTerminator() : x);
+                NEXT.setRelease(x, isLast  ? nextTerminator() : x);
             }
         }
     }
@@ -542,7 +491,8 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
         // assert first.item == null;
         for (Node<E> o = null, p = next, q;;) {
             if (p.item != null || (q = p.next) == null) {
-                if (o != null && p.prev != p && first.casNext(next, p)) {
+                if (o != null && p.prev != p &&
+                    NEXT.compareAndSet(first, next, p)) {
                     skipDeletedPredecessors(p);
                     if (first.prev == null &&
                         (p.next == null || p.item != null) &&
@@ -552,8 +502,8 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
                         updateTail(); // Ensure o is not reachable from tail
 
                         // Finally, actually gc-unlink
-                        o.lazySetNext(o);
-                        o.lazySetPrev(prevTerminator());
+                        NEXT.setRelease(o, o);
+                        PREV.setRelease(o, prevTerminator());
                     }
                 }
                 return;
@@ -576,7 +526,8 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
         // assert last.item == null;
         for (Node<E> o = null, p = prev, q;;) {
             if (p.item != null || (q = p.prev) == null) {
-                if (o != null && p.next != p && last.casPrev(prev, p)) {
+                if (o != null && p.next != p &&
+                    PREV.compareAndSet(last, prev, p)) {
                     skipDeletedSuccessors(p);
                     if (last.next == null &&
                         (p.prev == null || p.item != null) &&
@@ -586,8 +537,8 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
                         updateTail(); // Ensure o is not reachable from tail
 
                         // Finally, actually gc-unlink
-                        o.lazySetPrev(o);
-                        o.lazySetNext(nextTerminator());
+                        PREV.setRelease(o, o);
+                        NEXT.setRelease(o, nextTerminator());
                     }
                 }
                 return;
@@ -618,7 +569,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
                     (q = (p = q).prev) == null) {
                     // It is possible that p is PREV_TERMINATOR,
                     // but if so, the CAS is guaranteed to fail.
-                    if (casHead(h, p))
+                    if (HEAD.compareAndSet(this, h, p))
                         return;
                     continue restartFromHead;
                 }
@@ -647,7 +598,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
                     (q = (p = q).next) == null) {
                     // It is possible that p is NEXT_TERMINATOR,
                     // but if so, the CAS is guaranteed to fail.
-                    if (casTail(t, p))
+                    if (TAIL.compareAndSet(this, t, p))
                         return;
                     continue restartFromTail;
                 }
@@ -684,7 +635,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
             }
 
             // found active CAS target
-            if (prev == p || x.casPrev(prev, p))
+            if (prev == p || PREV.compareAndSet(x, prev, p))
                 return;
 
         } while (x.item != null || x.next == null);
@@ -715,7 +666,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
             }
 
             // found active CAS target
-            if (next == p || x.casNext(next, p))
+            if (next == p || NEXT.compareAndSet(x, next, p))
                 return;
 
         } while (x.item != null || x.prev == null);
@@ -760,7 +711,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
                 else if (p == h
                          // It is possible that p is PREV_TERMINATOR,
                          // but if so, the CAS is guaranteed to fail.
-                         || casHead(h, p))
+                         || HEAD.compareAndSet(this, h, p))
                     return p;
                 else
                     continue restartFromHead;
@@ -785,7 +736,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
                 else if (p == t
                          // It is possible that p is NEXT_TERMINATOR,
                          // but if so, the CAS is guaranteed to fail.
-                         || casTail(t, p))
+                         || TAIL.compareAndSet(this, t, p))
                     return p;
                 else
                     continue restartFromTail;
@@ -793,16 +744,6 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
     }
 
     // Minor convenience utilities
-
-    /**
-     * Throws NullPointerException if argument is null.
-     *
-     * @param v the element
-     */
-    private static void checkNotNull(Object v) {
-        if (v == null)
-            throw new NullPointerException();
-    }
 
     /**
      * Returns element unless it is null, in which case throws
@@ -818,26 +759,10 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
     }
 
     /**
-     * Creates an array list and fills it with elements of this list.
-     * Used by toArray.
-     *
-     * @return the array list
-     */
-    private ArrayList<E> toArrayList() {
-        ArrayList<E> list = new ArrayList<>();
-        for (Node<E> p = first(); p != null; p = succ(p)) {
-            E item = p.item;
-            if (item != null)
-                list.add(item);
-        }
-        return list;
-    }
-
-    /**
      * Constructs an empty deque.
      */
     public FastConcurrentDirectDeque() {
-        head = tail = new Node<>(null);
+        head = tail = new Node<>();
     }
 
     /**
@@ -853,13 +778,12 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
         // Copy c into a private chain of Nodes
         Node<E> h = null, t = null;
         for (E e : c) {
-            checkNotNull(e);
-            Node<E> newNode = new Node<>(e);
+            Node<E> newNode = newNode(Objects.requireNonNull(e));
             if (h == null)
                 h = t = newNode;
             else {
-                t.lazySetNext(newNode);
-                newNode.lazySetPrev(t);
+                NEXT.set(t, newNode);
+                PREV.set(newNode, t);
                 t = newNode;
             }
         }
@@ -872,12 +796,12 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
     private void initHeadTail(Node<E> h, Node<E> t) {
         if (h == t) {
             if (h == null)
-                h = t = new Node<>(null);
+                h = t = new Node<>();
             else {
                 // Avoid edge case of a single Node with non-null item.
-                Node<E> newNode = new Node<>(null);
-                t.lazySetNext(newNode);
-                newNode.lazySetPrev(t);
+                Node<E> newNode = new Node<>();
+                NEXT.set(t, newNode);
+                PREV.set(newNode, t);
                 t = newNode;
             }
         }
@@ -941,8 +865,8 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
         }
 
         @SuppressWarnings("unchecked")
-        Node<E> node = (Node<E>) token;
-        while (! node.casItem(node.item, null)) {}
+        Node<E> node = (Node<E>) (token);
+        while (! ITEM.compareAndSet(node, node.item, null)) {}
         unlink(node);
     }
 
@@ -1001,7 +925,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
     public E pollFirst() {
         for (Node<E> p = first(); p != null; p = succ(p)) {
             E item = p.item;
-            if (item != null && p.casItem(item, null)) {
+            if (item != null && ITEM.compareAndSet(p, item, null)) {
                 unlink(p);
                 return item;
             }
@@ -1013,7 +937,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
     public E pollLast() {
         for (Node<E> p = last(); p != null; p = pred(p)) {
             E item = p.item;
-            if (item != null && p.casItem(item, null)) {
+            if (item != null && ITEM.compareAndSet(p, item, null)) {
                 unlink(p);
                 return item;
             }
@@ -1038,9 +962,12 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
     }
 
     /**
-     * Removes the first element {@code e} such that
-     * {@code o.equals(e)}, if such an element exists in this deque.
+     * Removes the first occurrence of the specified element from this deque.
      * If the deque does not contain the element, it is unchanged.
+     * More formally, removes the first element {@code e} such that
+     * {@code o.equals(e)} (if such an element exists).
+     * Returns {@code true} if this deque contained the specified element
+     * (or equivalently, if this deque changed as a result of the call).
      *
      * @param o element to be removed from this deque, if present
      * @return {@code true} if the deque contained the specified element
@@ -1048,10 +975,10 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
      */
     @Override
     public boolean removeFirstOccurrence(Object o) {
-        checkNotNull(o);
+        Objects.requireNonNull(o);
         for (Node<E> p = first(); p != null; p = succ(p)) {
             E item = p.item;
-            if (item != null && o.equals(item) && p.casItem(item, null)) {
+            if (item != null && o.equals(item) && ITEM.compareAndSet(p, item, null)) {
                 unlink(p);
                 return true;
             }
@@ -1060,9 +987,12 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
     }
 
     /**
-     * Removes the last element {@code e} such that
-     * {@code o.equals(e)}, if such an element exists in this deque.
+     * Removes the last occurrence of the specified element from this deque.
      * If the deque does not contain the element, it is unchanged.
+     * More formally, removes the last element {@code e} such that
+     * {@code o.equals(e)} (if such an element exists).
+     * Returns {@code true} if this deque contained the specified element
+     * (or equivalently, if this deque changed as a result of the call).
      *
      * @param o element to be removed from this deque, if present
      * @return {@code true} if the deque contained the specified element
@@ -1070,10 +1000,10 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
      */
     @Override
     public boolean removeLastOccurrence(Object o) {
-        checkNotNull(o);
+        Objects.requireNonNull(o);
         for (Node<E> p = last(); p != null; p = pred(p)) {
             E item = p.item;
-            if (item != null && o.equals(item) && p.casItem(item, null)) {
+            if (item != null && o.equals(item) && ITEM.compareAndSet(p, item, null)) {
                 unlink(p);
                 return true;
             }
@@ -1082,19 +1012,21 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
     }
 
     /**
-     * Returns {@code true} if this deque contains at least one
-     * element {@code e} such that {@code o.equals(e)}.
+     * Returns {@code true} if this deque contains the specified element.
+     * More formally, returns {@code true} if and only if this deque contains
+     * at least one element {@code e} such that {@code o.equals(e)}.
      *
      * @param o element whose presence in this deque is to be tested
      * @return {@code true} if this deque contains the specified element
      */
     @Override
     public boolean contains(Object o) {
-        if (o == null) return false;
-        for (Node<E> p = first(); p != null; p = succ(p)) {
-            E item = p.item;
-            if (item != null && o.equals(item))
-                return true;
+        if (o != null) {
+            for (Node<E> p = first(); p != null; p = succ(p)) {
+                E item = p.item;
+                if (item != null && o.equals(item))
+                    return true;
+            }
         }
         return false;
     }
@@ -1127,13 +1059,17 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
      */
     @Override
     public int size() {
-        int count = 0;
-        for (Node<E> p = first(); p != null; p = succ(p))
-            if (p.item != null)
-                // Collection.size() spec says to max out
-                if (++count == Integer.MAX_VALUE)
-                    break;
-        return count;
+        restartFromHead: for (;;) {
+            int count = 0;
+            for (Node<E> p = first(); p != null;) {
+                if (p.item != null)
+                    if (++count == Integer.MAX_VALUE)
+                        break;  // @see Collection.size()
+                if (p == (p = p.next))
+                    continue restartFromHead;
+            }
+            return count;
+        }
     }
 
     /**
@@ -1157,13 +1093,12 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
         // Copy c into a private chain of Nodes
         Node<E> beginningOfTheEnd = null, last = null;
         for (E e : c) {
-            checkNotNull(e);
-            Node<E> newNode = new Node<>(e);
+            Node<E> newNode = newNode(Objects.requireNonNull(e));
             if (beginningOfTheEnd == null)
                 beginningOfTheEnd = last = newNode;
             else {
-                last.lazySetNext(newNode);
-                newNode.lazySetPrev(last);
+                NEXT.set(last, newNode);
+                PREV.set(newNode, last);
                 last = newNode;
             }
         }
@@ -1183,16 +1118,16 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
                     continue restartFromTail;
                 else {
                     // p is last node
-                    beginningOfTheEnd.lazySetPrev(p); // CAS piggyback
-                    if (p.casNext(null, beginningOfTheEnd)) {
+                    PREV.set(beginningOfTheEnd, p); // CAS piggyback
+                    if (NEXT.compareAndSet(p, null, beginningOfTheEnd)) {
                         // Successful CAS is the linearization point
                         // for all elements to be added to this deque.
-                        if (!casTail(t, last)) {
+                        if (!TAIL.weakCompareAndSet(this, t, last)) {
                             // Try a little harder to update tail,
                             // since we may be adding many elements.
                             t = tail;
                             if (last.next == null)
-                                casTail(t, last);
+                                TAIL.weakCompareAndSet(this, t, last);
                         }
                         return true;
                     }
@@ -1206,7 +1141,64 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
      */
     @Override
     public void clear() {
-        while (pollFirst() != null) { }
+        while (pollFirst() != null) {}
+    }
+
+    @Override
+    public String toString() {
+        String[] a = null;
+        restartFromHead: for (;;) {
+            int charLength = 0;
+            int size = 0;
+            for (Node<E> p = first(); p != null;) {
+                E item = p.item;
+                if (item != null) {
+                    if (a == null)
+                        a = new String[4];
+                    else if (size == a.length)
+                        a = Arrays.copyOf(a, 2 * size);
+                    String s = item.toString();
+                    a[size++] = s;
+                    charLength += s.length();
+                }
+                if (p == (p = p.next))
+                    continue restartFromHead;
+            }
+
+            if (size == 0)
+                return "[]";
+
+            return toString(a, size, charLength);
+        }
+    }
+
+    private Object[] toArrayInternal(Object[] a) {
+        Object[] x = a;
+        restartFromHead: for (;;) {
+            int size = 0;
+            for (Node<E> p = first(); p != null;) {
+                E item = p.item;
+                if (item != null) {
+                    if (x == null)
+                        x = new Object[4];
+                    else if (size == x.length)
+                        x = Arrays.copyOf(x, 2 * (size + 4));
+                    x[size++] = item;
+                }
+                if (p == (p = p.next))
+                    continue restartFromHead;
+            }
+            if (x == null)
+                return new Object[0];
+            else if (a != null && size <= a.length) {
+                if (a != x)
+                    System.arraycopy(x, 0, a, 0, size);
+                if (size < a.length)
+                    a[size] = null;
+                return a;
+            }
+            return (size == x.length) ? x : Arrays.copyOf(x, size);
+        }
     }
 
     /**
@@ -1224,7 +1216,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
      */
     @Override
     public Object[] toArray() {
-        return toArrayList().toArray();
+        return toArrayInternal(null);
     }
 
     /**
@@ -1250,7 +1242,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
      * The following code can be used to dump the deque into a newly
      * allocated array of {@code String}:
      *
-     *  <pre> {@code String[] y = x.toArray(new String[0]);}</pre>
+     * <pre> {@code String[] y = x.toArray(new String[0]);}</pre>
      *
      * Note that {@code toArray(new Object[0])} is identical in function to
      * {@code toArray()}.
@@ -1265,8 +1257,10 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
      * @throws NullPointerException if the specified array is null
      */
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T[] toArray(T[] a) {
-        return toArrayList().toArray(a);
+        checkNotNullParamWithNullPointerException("a", a);
+        return (T[]) toArrayInternal(a);
     }
 
     /**
@@ -1296,6 +1290,37 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
     @Override
     public Iterator<E> descendingIterator() {
         return new DescendingItr();
+    }
+
+    // From Helpers 1.2
+    // http://gee.cs.oswego.edu/cgi-bin/viewcvs.cgi/jsr166/src/main/java/util/concurrent/Helpers.java?revision=1.2
+    /**
+     * Like Arrays.toString(), but caller guarantees that size > 0,
+     * each element with index 0 <= i < size is a non-null String,
+     * and charLength is the sum of the lengths of the input Strings.
+     */
+    private static String toString(Object[] a, int size, int charLength) {
+        // assert a != null;
+        // assert size > 0;
+
+        // Copy each string into a perfectly sized char[]
+        // Length of [ , , , ] == 2 * size
+        final char[] chars = new char[charLength + 2 * size];
+        chars[0] = '[';
+        int j = 1;
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                chars[j++] = ',';
+                chars[j++] = ' ';
+            }
+            String s = (String) a[i];
+            int len = s.length();
+            s.getChars(0, len, chars, j);
+            j += len;
+        }
+        chars[j] = ']';
+        // assert j == chars.length - 1;
+        return new String(chars);
     }
 
     private abstract class AbstractItr implements Iterator<E> {
@@ -1335,7 +1360,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
             Node<E> p = (nextNode == null) ? startNode() : nextNode(nextNode);
             for (;; p = nextNode(p)) {
                 if (p == null) {
-                    // p might be active end or TERMINATOR node; both are OK
+                    // might be at active end or TERMINATOR node; both are OK
                     nextNode = null;
                     nextItem = null;
                     break;
@@ -1376,10 +1401,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
      * Forward iterator
      */
     private class Itr extends AbstractItr {
-
-        Itr() {
-            super();
-        }
+        Itr() {}
 
         @Override
         Node<E> startNode() {
@@ -1396,10 +1418,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
      * Descending iterator
      */
     private class DescendingItr extends AbstractItr {
-
-        DescendingItr() {
-            super();
-        }
+        DescendingItr() {}
 
         @Override
         Node<E> startNode() {
@@ -1413,87 +1432,83 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
     }
 
     /** A customized variant of Spliterators.IteratorSpliterator */
-    static final class CLDSpliterator<E> implements Spliterator<E> {
+    final class CLDSpliterator implements Spliterator<E> {
         static final int MAX_BATCH = 1 << 25;  // max batch array size;
-        final FastConcurrentDirectDeque<E> queue;
         Node<E> current;    // current node; null until initialized
         int batch;          // batch size for splits
         boolean exhausted;  // true when no more nodes
-        CLDSpliterator(FastConcurrentDirectDeque<E> queue) {
-            this.queue = queue;
-        }
 
         @Override
         public Spliterator<E> trySplit() {
-            Node<E> p;
-            final FastConcurrentDirectDeque<E> q = this.queue;
-            int b = batch;
-            int n = (b <= 0) ? 1 : (b >= MAX_BATCH) ? MAX_BATCH : b + 1;
-            if (!exhausted &&
-                ((p = current) != null || (p = q.first()) != null)) {
-                if (p.item == null && p == (p = p.next))
-                    current = p = q.first();
-                if (p != null && p.next != null) {
-                    Object[] a = new Object[n];
-                    int i = 0;
-                    do {
-                        if ((a[i] = p.item) != null)
-                            ++i;
-                        if (p == (p = p.next))
-                            p = q.first();
-                    } while (p != null && i < n);
-                    if ((current = p) == null)
-                        exhausted = true;
-                    if (i > 0) {
-                        batch = i;
-                        return Spliterators.spliterator
-                            (a, 0, i, Spliterator.ORDERED | Spliterator.NONNULL |
-                             Spliterator.CONCURRENT);
-                    }
+            Node<E> p, q;
+            if ((p = current()) == null || (q = p.next) == null)
+                return null;
+            int i = 0, n = batch = Math.min(batch + 1, MAX_BATCH);
+            Object[] a = null;
+            do {
+                final E e;
+                if ((e = p.item) != null) {
+                    if (a == null)
+                        a = new Object[n];
+                    a[i++] = e;
                 }
-            }
-            return null;
+                if (p == (p = q))
+                    p = first();
+            } while (p != null && (q = p.next) != null && i < n);
+            setCurrent(p);
+            return (i == 0) ? null :
+                Spliterators.spliterator(a, 0, i, (Spliterator.ORDERED |
+                                                   Spliterator.NONNULL |
+                                                   Spliterator.CONCURRENT));
         }
 
         @Override
         public void forEachRemaining(Consumer<? super E> action) {
+            Objects.requireNonNull(action);
             Node<E> p;
-            if (action == null) throw new NullPointerException();
-            final FastConcurrentDirectDeque<E> q = this.queue;
-            if (!exhausted &&
-                ((p = current) != null || (p = q.first()) != null)) {
+            if ((p = current()) != null) {
+                current = null;
                 exhausted = true;
                 do {
                     E e = p.item;
-                    if (p == (p = p.next))
-                        p = q.first();
                     if (e != null)
                         action.accept(e);
+                    if (p == (p = p.next))
+                        p = first();
                 } while (p != null);
             }
         }
 
         @Override
         public boolean tryAdvance(Consumer<? super E> action) {
+            Objects.requireNonNull(action);
             Node<E> p;
-            if (action == null) throw new NullPointerException();
-            final FastConcurrentDirectDeque<E> q = this.queue;
-            if (!exhausted &&
-                ((p = current) != null || (p = q.first()) != null)) {
+            if ((p = current()) != null) {
                 E e;
                 do {
                     e = p.item;
                     if (p == (p = p.next))
-                        p = q.first();
+                        p = first();
                 } while (e == null && p != null);
-                if ((current = p) == null)
-                    exhausted = true;
+                setCurrent(p);
                 if (e != null) {
                     action.accept(e);
                     return true;
                 }
             }
             return false;
+        }
+
+        private void setCurrent(Node<E> p) {
+            if ((current = p) == null)
+                exhausted = true;
+        }
+
+        private Node<E> current() {
+            Node<E> p;
+            if ((p = current) == null && !exhausted)
+                setCurrent(p = first());
+            return p;
         }
 
         @Override
@@ -1503,8 +1518,9 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
 
         @Override
         public int characteristics() {
-            return Spliterator.ORDERED | Spliterator.NONNULL |
-                Spliterator.CONCURRENT;
+            return (Spliterator.ORDERED |
+                    Spliterator.NONNULL |
+                    Spliterator.CONCURRENT);
         }
     }
 
@@ -1526,7 +1542,7 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
      */
     @Override
     public Spliterator<E> spliterator() {
-        return new CLDSpliterator<>(this);
+        return new CLDSpliterator();
     }
 
     /**
@@ -1567,70 +1583,96 @@ public class FastConcurrentDirectDeque<E> extends AbstractCollection<E> implemen
 
         // Read in elements until trailing null sentinel found
         Node<E> h = null, t = null;
-        Object item;
-        while ((item = s.readObject()) != null) {
+        for (Object item; (item = s.readObject()) != null; ) {
             @SuppressWarnings("unchecked")
-            Node<E> newNode = new Node<>((E) item);
+            Node<E> newNode = newNode((E) item);
             if (h == null)
                 h = t = newNode;
             else {
-                t.lazySetNext(newNode);
-                newNode.lazySetPrev(t);
+                NEXT.set(t, newNode);
+                PREV.set(newNode, t);
                 t = newNode;
             }
         }
         initHeadTail(h, t);
     }
 
-    private boolean casHead(Node<E> cmp, Node<E> val) {
-        return UNSAFE.compareAndSwapObject(this, headOffset, cmp, val);
+    /**
+     * @throws NullPointerException {@inheritDoc}
+     */
+    @Override
+    public boolean removeIf(Predicate<? super E> filter) {
+        Objects.requireNonNull(filter);
+        return bulkRemove(filter);
     }
 
-    private boolean casTail(Node<E> cmp, Node<E> val) {
-        return UNSAFE.compareAndSwapObject(this, tailOffset, cmp, val);
+    /**
+     * @throws NullPointerException {@inheritDoc}
+     */
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        Objects.requireNonNull(c);
+        return bulkRemove(e -> c.contains(e));
     }
 
-    // Unsafe mechanics
+    /**
+     * @throws NullPointerException {@inheritDoc}
+     */
+    @Override
+    public boolean retainAll(Collection<?> c) {
+        Objects.requireNonNull(c);
+        return bulkRemove(e -> !c.contains(e));
+    }
 
-    private static final sun.misc.Unsafe UNSAFE;
-    private static final long headOffset;
-    private static final long tailOffset;
+    /** Implementation of bulk remove methods. */
+    private boolean bulkRemove(Predicate<? super E> filter) {
+        boolean removed = false;
+        for (Node<E> p = first(), succ; p != null; p = succ) {
+            succ = succ(p);
+            E item = p.item;
+            if (item != null && filter.test(item) && ITEM.compareAndSet(p, item, null)) {
+                unlink(p);
+                removed = true;
+            }
+        }
+        return removed;
+    }
+
+    /**
+     * @throws NullPointerException {@inheritDoc}
+     */
+    @Override
+    public void forEach(Consumer<? super E> action) {
+        Objects.requireNonNull(action);
+        for (Node<E> p = first(); p != null; p = succ(p)) {
+            E item = p.item;
+            if (item != null)
+                action.accept(item);
+        }
+    }
+
+    // VarHandle mechanics
+    private static final VarHandle HEAD;
+    private static final VarHandle TAIL;
+    private static final VarHandle PREV;
+    private static final VarHandle NEXT;
+    private static final VarHandle ITEM;
     static {
         PREV_TERMINATOR = new Node<>();
         PREV_TERMINATOR.next = PREV_TERMINATOR;
         NEXT_TERMINATOR = new Node<>();
         NEXT_TERMINATOR.prev = NEXT_TERMINATOR;
         try {
-            UNSAFE = getUnsafe();
-            Class<?> k = FastConcurrentDirectDeque.class;
-            headOffset = UNSAFE.objectFieldOffset
-                (k.getDeclaredField("head"));
-            tailOffset = UNSAFE.objectFieldOffset
-                (k.getDeclaredField("tail"));
-        } catch (Exception e) {
+            MethodHandles.Lookup l = MethodHandles.lookup();
+            HEAD = l.findVarHandle(FastConcurrentDirectDeque.class, "head",
+                                   Node.class);
+            TAIL = l.findVarHandle(FastConcurrentDirectDeque.class, "tail",
+                                   Node.class);
+            PREV = l.findVarHandle(Node.class, "prev", Node.class);
+            NEXT = l.findVarHandle(Node.class, "next", Node.class);
+            ITEM = l.findVarHandle(Node.class, "item", Object.class);
+        } catch (ReflectiveOperationException e) {
             throw new Error(e);
-        }
-    }
-
-    private static Unsafe getUnsafe() {
-        if (System.getSecurityManager() != null) {
-            return AccessController.doPrivileged(new PrivilegedAction<Unsafe>() {
-                @Override
-                public Unsafe run() {
-                    return getUnsafe0();
-                }
-            });
-        }
-        return getUnsafe0();
-    }
-
-    static Unsafe getUnsafe0()  {
-        try {
-            Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
-            theUnsafe.setAccessible(true);
-            return (Unsafe) theUnsafe.get(null);
-        } catch (Throwable t) {
-            throw new RuntimeException("JDK did not allow accessing unsafe", t);
         }
     }
 }

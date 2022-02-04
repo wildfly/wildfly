@@ -36,6 +36,9 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
     private static final int METHOD_NAME_INDEX = 2;
     private static final int FILE_NAME_INDEX = 3;
     private static final int LINE_NUMBER_INDEX = 4;
+    private static final int CLASS_LOADER_NAME_INDEX = 5;
+    private static final int MODULE_NAME_INDEX = 6;
+    private static final int MODULE_VERSION_INDEX = 7;
 
     @Override
     public StackTraceElement readFrom(ProtoStreamReader reader) throws IOException {
@@ -43,6 +46,9 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
         String methodName = null;
         String fileName = null;
         int line = -1;
+        String classLoaderName = null;
+        String moduleName = null;
+        String moduleVersion = null;
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             switch (WireType.getTagFieldNumber(tag)) {
@@ -62,11 +68,20 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
                         line = -2;
                     }
                     break;
+                case CLASS_LOADER_NAME_INDEX:
+                    classLoaderName = reader.readAny(String.class);
+                    break;
+                case MODULE_NAME_INDEX:
+                    moduleName = reader.readAny(String.class);
+                    break;
+                case MODULE_VERSION_INDEX:
+                    moduleVersion = reader.readAny(String.class);
+                    break;
                 default:
                     reader.skipField(tag);
             }
         }
-        return new StackTraceElement(className, methodName, fileName, line);
+        return new StackTraceElement(classLoaderName, moduleName, moduleVersion, className, methodName, fileName, line);
     }
 
     @Override
@@ -81,6 +96,18 @@ public enum StackTraceElementMarshaller implements ProtoStreamMarshaller<StackTr
         boolean nativeMethod = element.isNativeMethod();
         if (nativeMethod || line > 0) {
             writer.writeUInt32(LINE_NUMBER_INDEX, nativeMethod ? 0 : line);
+        }
+        String classLoaderName = element.getClassLoaderName();
+        if (classLoaderName != null) {
+            writer.writeAny(CLASS_LOADER_NAME_INDEX, classLoaderName);
+        }
+        String moduleName = element.getModuleName();
+        if (moduleName != null) {
+            writer.writeAny(MODULE_NAME_INDEX, moduleName);
+        }
+        String moduleVersion = element.getModuleVersion();
+        if (moduleVersion != null) {
+            writer.writeAny(MODULE_VERSION_INDEX, moduleVersion);
         }
     }
 
