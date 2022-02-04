@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
-
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
@@ -52,6 +51,7 @@ import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
@@ -156,7 +156,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
             for (ViewConfiguration view : views) {
                 //TODO: Move this into a configurator
                 final EJBViewConfiguration ejbView = (EJBViewConfiguration) view;
-                final MethodIntf viewType = ejbView.getMethodIntf();
+                final MethodInterfaceType viewType = ejbView.getMethodIntf();
                 for (Method method : view.getProxyFactory().getCachedMethods()) {
                     // TODO: proxy factory exposes non-public methods, is this a bug in the no-interface view?
                     if (!Modifier.isPublic(method.getModifiers()))
@@ -180,14 +180,14 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         // TODO: use ClassReflectionIndex (low prio, because we store the result without class name) (which is a bug: AS7-905)
         Set<Method> lifeCycle = new HashSet<>(componentConfiguration.getLifecycleMethods());
         for (Method method : componentConfiguration.getComponentClass().getMethods()) {
-            this.processTxAttr(ejbComponentDescription, MethodIntf.BEAN, method);
+            this.processTxAttr(ejbComponentDescription, MethodInterfaceType.Bean, method);
             lifeCycle.remove(method);
         }
         //now handle non-public lifecycle methods declared on the bean class itself
         //see WFLY-4127
         for(Method method : lifeCycle)  {
             if(method.getDeclaringClass().equals(componentConfiguration.getComponentClass())) {
-                this.processTxAttr(ejbComponentDescription, MethodIntf.BEAN, method);
+                this.processTxAttr(ejbComponentDescription, MethodInterfaceType.Bean, method);
             }
         }
 
@@ -260,13 +260,13 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return componentDescription;
     }
 
-    protected void processTxAttr(final EJBComponentDescription ejbComponentDescription, final MethodIntf methodIntf, final Method method) {
+    protected void processTxAttr(final EJBComponentDescription ejbComponentDescription, final MethodInterfaceType methodIntf, final Method method) {
         if (this.getTransactionManagementType().equals(TransactionManagementType.BEAN)) {
             // it's a BMT bean
             return;
         }
 
-        MethodIntf defaultMethodIntf = (ejbComponentDescription instanceof MessageDrivenComponentDescription) ? MethodIntf.MESSAGE_ENDPOINT : MethodIntf.BEAN;
+        MethodInterfaceType defaultMethodIntf = (ejbComponentDescription instanceof MessageDrivenComponentDescription) ? MethodInterfaceType.MessageEndpoint : MethodInterfaceType.Bean;
         TransactionAttributeType txAttr = ejbComponentDescription.getTransactionAttributes().getAttribute(methodIntf, method, defaultMethodIntf);
         MethodTransactionAttributeKey key = new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method));
         if(txAttr != null) {

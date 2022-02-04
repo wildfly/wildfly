@@ -25,7 +25,6 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
@@ -33,7 +32,6 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -47,6 +45,7 @@ import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.ContainerTransactionMetaData;
 import org.jboss.metadata.ejb.spec.ContainerTransactionsMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.metadata.ejb.spec.MethodMetaData;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.metadata.ejb.spec.MethodsMetaData;
@@ -70,7 +69,7 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
         processTransactionTimeoutAnnotation(applicationClasses, deploymentReflectionIndex, componentClass, null, componentConfiguration);
     }
 
-    private void processTransactionAttributeAnnotation(final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, MethodIntf methodIntf, final EJBComponentDescription componentConfiguration) {
+    private void processTransactionAttributeAnnotation(final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, MethodInterfaceType methodIntf, final EJBComponentDescription componentConfiguration) {
         final RuntimeAnnotationInformation<TransactionAttributeType> data = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, TransactionAttribute.class);
         for (Map.Entry<String, List<TransactionAttributeType>> entry : data.getClassAnnotations().entrySet()) {
             if (!entry.getValue().isEmpty()) {
@@ -88,7 +87,7 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
         }
     }
 
-    private void processTransactionTimeoutAnnotation(final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, MethodIntf methodIntf, final EJBComponentDescription componentConfiguration) {
+    private void processTransactionTimeoutAnnotation(final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, MethodInterfaceType methodIntf, final EJBComponentDescription componentConfiguration) {
         final RuntimeAnnotationInformation<Integer> data = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, TransactionTimeout.class);
         for (Map.Entry<String, List<Integer>> entry : data.getClassAnnotations().entrySet()) {
             if (!entry.getValue().isEmpty()) {
@@ -143,8 +142,8 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
                         final MethodsMetaData methods = containerTx.getMethods();
                         for (final MethodMetaData method : methods) {
                             final String methodName = method.getMethodName();
-                            final MethodIntf defaultMethodIntf = (componentDescription instanceof MessageDrivenComponentDescription) ? MethodIntf.MESSAGE_ENDPOINT : MethodIntf.BEAN;
-                            final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf(), defaultMethodIntf);
+                            final MethodInterfaceType defaultMethodIntf = (componentDescription instanceof MessageDrivenComponentDescription) ? MethodInterfaceType.MessageEndpoint : MethodInterfaceType.Bean;
+                            final MethodInterfaceType methodIntf = this.getMethodIntf(method.getMethodIntf(), defaultMethodIntf);
                             if (methodName.equals("*")) {
                                 if (txAttr != null){
                                     wildcardAttributeSet = true;
@@ -177,16 +176,16 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
             if(global != null) {
                 if(!wildcardAttributeSet && global.getTransAttribute() != null) {
                     for(MethodMetaData method : global.getMethods()) {
-                        final MethodIntf defaultMethodIntf = (componentDescription instanceof MessageDrivenComponentDescription) ? MethodIntf.MESSAGE_ENDPOINT : MethodIntf.BEAN;
-                        final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf(), defaultMethodIntf);
+                        final MethodInterfaceType defaultMethodIntf = (componentDescription instanceof MessageDrivenComponentDescription) ? MethodInterfaceType.MessageEndpoint : MethodInterfaceType.Bean;
+                        final MethodInterfaceType methodIntf = this.getMethodIntf(method.getMethodIntf(), defaultMethodIntf);
                         componentDescription.getTransactionAttributes().setAttribute(methodIntf, null, global.getTransAttribute());
                     }
                 }
                 final Integer timeout = timeout(global);
                 if(!wildcardTimeoutSet && timeout != null) {
                     for(MethodMetaData method : global.getMethods()) {
-                        final MethodIntf defaultMethodIntf = (componentDescription instanceof MessageDrivenComponentDescription) ? MethodIntf.MESSAGE_ENDPOINT : MethodIntf.BEAN;
-                        final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf(), defaultMethodIntf);
+                        final MethodInterfaceType defaultMethodIntf = (componentDescription instanceof MessageDrivenComponentDescription) ? MethodInterfaceType.MessageEndpoint : MethodInterfaceType.Bean;
+                        final MethodInterfaceType methodIntf = this.getMethodIntf(method.getMethodIntf(), defaultMethodIntf);
                         componentDescription.getTransactionTimeouts().setAttribute(methodIntf, null, timeout);
                     }
                 }

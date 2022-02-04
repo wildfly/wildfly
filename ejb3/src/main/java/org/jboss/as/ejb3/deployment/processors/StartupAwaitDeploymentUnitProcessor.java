@@ -1,5 +1,8 @@
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
@@ -10,15 +13,12 @@ import org.jboss.as.ee.component.deployers.StartupCountdown;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewConfiguration;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
-
-import java.util.EnumSet;
-import java.util.Set;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 
 /**
  * Adds  StartupAwaitInterceptor to exposed methods of Jakarta Enterprise Beans, forcing users to wait until all startup beans in the deployment are done with post-construct methods.
@@ -28,7 +28,7 @@ import java.util.Set;
 // it requires a lot of rewriting in Jakarta Enterprise Beans code right now, hence this class to satisfy Enterprise Beans 3.1 spec, section 4.8.1
 // feel free to remove this class as well as StartupAwaitInterceptor and StartupCountDownInterceptor when if easier way to satisfy spec will appear
 public class StartupAwaitDeploymentUnitProcessor implements DeploymentUnitProcessor {
-  private static final Set<MethodIntf> INTFS = EnumSet.of(MethodIntf.MESSAGE_ENDPOINT, MethodIntf.REMOTE, MethodIntf.SERVICE_ENDPOINT, MethodIntf.LOCAL);
+  private static final Set<MethodInterfaceType> INTFS = EnumSet.of(MethodInterfaceType.MessageEndpoint, MethodInterfaceType.Remote, MethodInterfaceType.ServiceEndpoint, MethodInterfaceType.Local);
 
   @Override
   public void deploy(final DeploymentPhaseContext context) throws DeploymentUnitProcessingException {

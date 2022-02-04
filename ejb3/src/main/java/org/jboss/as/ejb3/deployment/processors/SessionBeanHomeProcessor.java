@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.deployment.processors;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
-
 import javax.ejb.EJBHome;
 import javax.ejb.Handle;
 
@@ -40,8 +39,6 @@ import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.deployers.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.utils.ClassLoadingUtils;
-import org.jboss.as.ejb3.component.MethodIntf;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.interceptors.EjbMetadataInterceptor;
@@ -51,11 +48,13 @@ import org.jboss.as.ejb3.component.session.InvalidRemoveExceptionMethodIntercept
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.msc.service.ServiceBuilder;
 
 /**
@@ -117,7 +116,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                         configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                         configuration.addViewInterceptor(method, factory, InterceptorOrder.View.HOME_METHOD_INTERCEPTOR);
 
-                    } else if (method.getName().equals("getEJBMetaData") && method.getParameterCount() == 0 && ((EJBViewDescription)description).getMethodIntf() == MethodIntf.HOME) {
+                    } else if (method.getName().equals("getEJBMetaData") && method.getParameterCount() == 0 && ((EJBViewDescription)description).getMethodIntf() == MethodInterfaceType.Home) {
 
                         final Class<?> ejbObjectClass;
                         try {

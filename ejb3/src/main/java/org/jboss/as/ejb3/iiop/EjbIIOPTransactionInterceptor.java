@@ -27,13 +27,13 @@ import javax.transaction.Transaction;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.wildfly.iiop.openjdk.tm.ForeignTransaction;
 import org.wildfly.iiop.openjdk.tm.TxServerInterceptor;
 
@@ -53,13 +53,13 @@ public class EjbIIOPTransactionInterceptor implements Interceptor {
 
             //for timer invocations there is no view, so the methodInf is attached directly
             //to the context. Otherwise we retrieve it from the invoked view
-            MethodIntf methodIntf = invocation.getPrivateData(MethodIntf.class);
+            MethodInterfaceType methodIntf = invocation.getPrivateData(MethodInterfaceType.class);
             if (methodIntf == null) {
                 final ComponentView componentView = invocation.getPrivateData(ComponentView.class);
                 if (componentView != null) {
-                    methodIntf = componentView.getPrivateData(MethodIntf.class);
+                    methodIntf = componentView.getPrivateData(MethodInterfaceType.class);
                 } else {
-                    methodIntf = MethodIntf.BEAN;
+                    methodIntf = MethodInterfaceType.Bean;
                 }
             }
 

@@ -1110,7 +1110,7 @@ public interface EjbLogger extends BasicLogger {
 //     * @return a {@link IllegalArgumentException} for the error.
 //     */
 //    @Message(id = 190, value = "Jakarta Enterprise Beans method identifier cannot be null while setting roles on view type: %s")
-//    IllegalArgumentException ejbMethodIsNullForViewType(MethodIntf viewType);
+//    IllegalArgumentException ejbMethodIsNullForViewType(MethodInterfaceType viewType);
 
 //    /**
 //     * Creates an exception indicating roles cannot be null while setting roles on view type
@@ -1119,7 +1119,7 @@ public interface EjbLogger extends BasicLogger {
 //     * @return a {@link IllegalArgumentException} for the error.
 //     */
 //    @Message(id = 191, value = "Roles cannot be null while setting roles on view type: %s")
-//    IllegalArgumentException rolesIsNullOnViewType(final MethodIntf viewType);
+//    IllegalArgumentException rolesIsNullOnViewType(final MethodInterfaceType viewType);
 
 //    /**
 //     * Creates an exception indicating roles cannot be null while setting roles on view type and method"
@@ -1128,7 +1128,7 @@ public interface EjbLogger extends BasicLogger {
 //     * @return a {@link IllegalArgumentException} for the error.
 //     */
 //    @Message(id = 192, value = "Roles cannot be null while setting roles on view type: %s and method: %s")
-//    IllegalArgumentException rolesIsNullOnViewTypeAndMethod(MethodIntf viewType, EJBMethodIdentifier ejbMethodIdentifier);
+//    IllegalArgumentException rolesIsNullOnViewTypeAndMethod(MethodInterfaceType viewType, EJBMethodIdentifier ejbMethodIdentifier);
 
     /**
      * Creates an exception indicating it cannot link from a null or empty security role

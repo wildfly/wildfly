@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.LockType;
 import javax.ejb.TransactionManagementType;
@@ -43,14 +42,13 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.concurrent.EJBContextHandleFactory;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.tx.CMTTxInterceptor;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -60,6 +58,7 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 
 /**
@@ -135,7 +134,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     public void addLocalBusinessInterfaceViews(final Collection<String> classNames) {
         for (final String viewClassName : classNames) {
             assertNoRemoteView(viewClassName);
-            registerView(viewClassName, MethodIntf.LOCAL);
+            registerView(viewClassName, MethodInterfaceType.Local);
         }
     }
 
@@ -146,7 +145,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
 
     public void addNoInterfaceView() {
         noInterfaceViewPresent = true;
-        final ViewDescription viewDescription = registerView(getEJBClassName(), MethodIntf.LOCAL);
+        final ViewDescription viewDescription = registerView(getEJBClassName(), MethodInterfaceType.Local);
         //set up interceptor for non-business methods
         viewDescription.getConfigurators().add(new ViewConfigurator() {
             @Override
@@ -162,13 +161,13 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     }
 
     public EJBViewDescription addWebserviceEndpointView() {
-        return registerView(getEJBClassName(), MethodIntf.SERVICE_ENDPOINT);
+        return registerView(getEJBClassName(), MethodInterfaceType.ServiceEndpoint);
     }
 
     public void addRemoteBusinessInterfaceViews(final Collection<String> classNames) {
         for (final String viewClassName : classNames) {
             assertNoLocalView(viewClassName);
-            registerView(viewClassName, MethodIntf.REMOTE);
+            registerView(viewClassName, MethodInterfaceType.Remote);
         }
     }
 
@@ -176,7 +175,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         EJBViewDescription ejbView = null;
         for (final ViewDescription view : getViews()) {
             ejbView = (EJBViewDescription) view;
-            if (viewClassName.equals(ejbView.getViewClassName()) && ejbView.getMethodIntf() == MethodIntf.REMOTE) {
+            if (viewClassName.equals(ejbView.getViewClassName()) && ejbView.getMethodIntf() == MethodInterfaceType.Remote) {
                 throw EjbLogger.ROOT_LOGGER.failToAddClassToLocalView(viewClassName, getEJBName());
             }
         }
@@ -186,7 +185,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         EJBViewDescription ejbView = null;
         for (final ViewDescription view : getViews()) {
             ejbView = (EJBViewDescription) view;
-            if (viewClassName.equals(ejbView.getViewClassName()) && ejbView.getMethodIntf() == MethodIntf.LOCAL) {
+            if (viewClassName.equals(ejbView.getViewClassName()) && ejbView.getMethodIntf() == MethodInterfaceType.Local) {
                 throw EjbLogger.ROOT_LOGGER.failToAddClassToLocalView(viewClassName, getEJBName());
             }
         }
