@@ -25,7 +25,7 @@
             <url-pattern>/area/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
-            <role-name>User</role-name>
+            <role-name>Role1</role-name>
         </auth-constraint>
     </security-constraint>
     <security-constraint>
@@ -34,7 +34,7 @@
             <url-pattern>/area51/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
-            <role-name>User</role-name>
+            <role-name>Role1</role-name>
         </auth-constraint>
     </security-constraint>
 
@@ -44,7 +44,7 @@
     </login-config>
 
     <security-role>
-        <role-name>User</role-name>
+        <role-name>Role1</role-name>
     </security-role>
 
 </web-app>

@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-package org.jboss.as.test.integration.security.jaspi;
+package org.wildfly.test.integration.elytron.securityapi;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.wildfly.test.integration.elytron.securityapi.TestAuthenticationMechanism.PASSWORD_HEADER;
+import static org.wildfly.test.integration.elytron.securityapi.TestAuthenticationMechanism.USERNAME_HEADER;
+import static org.wildfly.test.integration.elytron.securityapi.TestIdentityStore.PASSWORD;
+import static org.wildfly.test.integration.elytron.securityapi.TestIdentityStore.USERNAME;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
@@ -31,46 +35,46 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.integration.security.jacc.propagation.Manage;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.security.common.AbstractElytronSetupTask;
+import org.wildfly.test.security.common.elytron.ConfigurableElement;
+import org.wildfly.test.undertow.common.UndertowApplicationSecurityDomain;
 
 /**
- * Copeied from {@link EESecurityAuthMechanismTestCase} testing multiple constrained directories.
+ * Copied from {@link EESecurityAuthMechanismTestCase} testing multiple constrained directories.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @SuppressWarnings("MagicNumber")
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("[WFLY-15264] Convert to Elytron configuration.")
+@ServerSetup({ EESecurityAuthMechanismMultiConstraintsTestCase.ServerSetup.class })
 public class EESecurityAuthMechanismMultiConstraintsTestCase {
 
     @Deployment(name = "WFLY-12655")
     public static WebArchive warDeployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, EESecurityAuthMechanismMultiConstraintsTestCase.class.getSimpleName() + ".war");
 
-        final StringAsset usersRolesAsset = new StringAsset(Utils.createUsersFromRoles(Manage.ROLES_ALL));
-        war.addAsResource(usersRolesAsset, "users.properties")
-                .addAsResource(usersRolesAsset, "roles.properties");
-
-        //war.addAsWebInfResource(EESecurityAuthMechanismMultiConstraintsTestCase.class.getPackage(), "WFLY-12655-web.xml", "/web.xml")
-        //        .addAsWebInfResource(Utils.getJBossWebXmlAsset(JaspiSecurityDomainsSetup.SECURITY_DOMAIN_NAME), "jboss-web.xml");
-
-        // temporary. remove once the security subsystem is updated to proper consider the module option
-        war.addAsManifestResource(Utils.getJBossDeploymentStructure("org.wildfly.extension.undertow"), "jboss-deployment-structure.xml");
+        war
+            .addAsWebInfResource(EESecurityAuthMechanismMultiConstraintsTestCase.class.getPackage(), "WFLY-12655-web.xml", "/web.xml")
+            .addAsWebInfResource(Utils.getJBossWebXmlAsset("SecurityAPI"), "jboss-web.xml");
 
         war.add(new StringAsset("Welcome Area"), "area/index.jsp")
                 .add(new StringAsset("Welcome Area51"), "area51/index.jsp")
                 .add(new StringAsset("Unsecured"), "index.jsp");
-        war.addClasses(SimpleHttpAuthenticationMechanism.class, SimpleIdentityStore.class);
+
+        war
+            .addClasses(EESecurityAuthMechanismMultiConstraintsTestCase.class, AbstractElytronSetupTask.class, ServerSetup.class)
+            .addClasses(TestAuthenticationMechanism.class, TestIdentityStore.class);
+
         return war;
 
     }
@@ -83,10 +87,12 @@ public class EESecurityAuthMechanismMultiConstraintsTestCase {
     @Test
     public void testRequiresAuthentication(@ArquillianResource URL webAppURL) throws Exception {
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
-            HttpResponse httpResponse = httpClient.execute(new HttpGet(webAppURL.toURI() + "/area"));
+            HttpGet request = new HttpGet(webAppURL.toURI() + "/area");
+            HttpResponse httpResponse = httpClient.execute(request);
             assertEquals("Expected /area to require authentication.", 401, httpResponse.getStatusLine().getStatusCode());
 
-            httpResponse = httpClient.execute(new HttpGet(webAppURL.toURI() + "/area51"));
+            request = new HttpGet(webAppURL.toURI() + "/area51");
+            httpResponse = httpClient.execute(request);
             assertEquals("Expected /area51 to require authentication.", 401, httpResponse.getStatusLine().getStatusCode());
         }
     }
@@ -95,13 +101,21 @@ public class EESecurityAuthMechanismMultiConstraintsTestCase {
     public void testSuccessfulAuthentication(@ArquillianResource URL webAppURL) throws Exception {
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 
-            HttpResponse httpResponse = httpClient.execute(new HttpGet(webAppURL.toURI() + "area/?name=User&pw=User"));
+            HttpGet request = new HttpGet(webAppURL.toURI() + "area");
+            request.addHeader(USERNAME_HEADER, USERNAME);
+            request.addHeader(PASSWORD_HEADER, PASSWORD);
+
+            HttpResponse httpResponse = httpClient.execute(request);
             assertEquals(200, httpResponse.getStatusLine().getStatusCode());
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             httpResponse.getEntity().writeTo(bos);
             assertTrue(new String(bos.toByteArray(), StandardCharsets.UTF_8).contains("Welcome Area"));
 
-            httpResponse = httpClient.execute(new HttpGet(webAppURL.toURI() + "area51/?name=User&pw=User"));
+            request = new HttpGet(webAppURL.toURI() + "area51");
+            request.addHeader(USERNAME_HEADER, USERNAME);
+            request.addHeader(PASSWORD_HEADER, PASSWORD);
+
+            httpResponse = httpClient.execute(request);
             assertEquals(200, httpResponse.getStatusLine().getStatusCode());
             bos = new ByteArrayOutputStream();
             httpResponse.getEntity().writeTo(bos);
@@ -113,10 +127,18 @@ public class EESecurityAuthMechanismMultiConstraintsTestCase {
     public void testUnsuccessfulAuthentication(@ArquillianResource URL webAppURL) throws Exception {
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
 
-            HttpResponse httpResponse = httpClient.execute(new HttpGet(webAppURL.toURI() + "area/?name=Invalid&pw=User"));
+            HttpGet request = new HttpGet(webAppURL.toURI() + "area");
+            request.addHeader(USERNAME_HEADER, "evil");
+            request.addHeader(PASSWORD_HEADER, "password");
+
+            HttpResponse httpResponse = httpClient.execute(request);
             assertEquals(401, httpResponse.getStatusLine().getStatusCode());
 
-            httpResponse = httpClient.execute(new HttpGet(webAppURL.toURI() + "area51/?name=Invalid&pw=User"));
+            request = new HttpGet(webAppURL.toURI() + "area51");
+            request.addHeader(USERNAME_HEADER, "evil");
+            request.addHeader(PASSWORD_HEADER, "password");
+
+            httpResponse = httpClient.execute(request);
             assertEquals(401, httpResponse.getStatusLine().getStatusCode());
         }
     }
@@ -124,14 +146,38 @@ public class EESecurityAuthMechanismMultiConstraintsTestCase {
     @Test
     public void testAuthNotRequired(@ArquillianResource URL webAppURL) throws Exception {
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+            HttpGet request = new HttpGet(webAppURL.toURI() + "index.jsp");
 
-            HttpResponse httpResponse = httpClient.execute(new HttpGet(webAppURL.toURI() + "index.jsp"));
+            HttpResponse httpResponse = httpClient.execute(request);
             assertEquals(200, httpResponse.getStatusLine().getStatusCode());
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             httpResponse.getEntity().writeTo(bos);
             assertTrue(new String(bos.toByteArray(), StandardCharsets.UTF_8).contains("Unsecured"));
         }
+    }
+
+    static class ServerSetup extends AbstractElytronSetupTask {
+
+        @Override
+        protected ConfigurableElement[] getConfigurableElements() {
+            ConfigurableElement[] elements = new ConfigurableElement[3];
+            // 1 - Add empty JACC Policy
+            elements[0] = Policy.builder()
+                    .withName("jacc")
+                    .withJaccPolicy()
+                    .build();
+
+            // 2 - Map the application-security-domain
+            elements[1] = UndertowApplicationSecurityDomain.builder()
+                    .withName("SecurityAPI")
+                    .withSecurityDomain("ApplicationDomain")
+                    .withIntegratedJaspi(false)
+                    .build();
+
+            return elements;
+        }
+
     }
 
 }
