@@ -44,7 +44,6 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.api.Authentication;
@@ -57,7 +56,6 @@ import org.wildfly.test.api.Authentication;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(EJBClientDescriptorTestCase.EJBClientDescriptorTestCaseSetup.class)
-@Ignore("[WFLY-15171] Update EJBClientDescriptorTestCase to use an authentication context for the outbound connections.")
 public class EJBClientDescriptorTestCase {
 
     private static final Logger logger = Logger.getLogger(EJBClientDescriptorTestCase.class);
