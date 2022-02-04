@@ -142,22 +142,17 @@ public class BatchThreadPoolResourceDefinition extends SimpleResourceDefinition 
         static {
             // Common attributes as copied from the ThreadPoolResourceDescriptionResolver minus the attributes not used
             // for an UnboundedThreadPoolResourceDefinition
-            Set<String> set = new HashSet<>();
-            for (String s : Arrays.asList(
-                PoolAttributeDefinitions.ACTIVE_COUNT.getName(),
-                PoolAttributeDefinitions.COMPLETED_TASK_COUNT.getName(),
-                PoolAttributeDefinitions.CURRENT_THREAD_COUNT.getName(),
-                CommonAttributes.KEEPALIVE_TIME,
-                PoolAttributeDefinitions.LARGEST_THREAD_COUNT.getName(),
-                PoolAttributeDefinitions.MAX_THREADS.getName(),
-                PoolAttributeDefinitions.NAME.getName(),
-                PoolAttributeDefinitions.QUEUE_SIZE.getName(),
-                PoolAttributeDefinitions.TASK_COUNT.getName(),
-                PoolAttributeDefinitions.THREAD_FACTORY.getName()
-            )) {
-                set.add(s);
-            }
-            COMMON_ATTRIBUTE_NAMES = set;
+            COMMON_ATTRIBUTE_NAMES = new HashSet<>(Arrays.asList(
+                    CommonAttributes.ACTIVE_COUNT,
+                    CommonAttributes.COMPLETED_TASK_COUNT,
+                    CommonAttributes.CURRENT_THREAD_COUNT,
+                    CommonAttributes.KEEPALIVE_TIME,
+                    CommonAttributes.LARGEST_THREAD_COUNT,
+                    CommonAttributes.MAX_THREADS,
+                    CommonAttributes.NAME,
+                    CommonAttributes.QUEUE_SIZE,
+                    CommonAttributes.TASK_COUNT,
+                    CommonAttributes.THREAD_FACTORY));
         }
 
         private static final String COMMON_PREFIX = "threadpool.common";
