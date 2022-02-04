@@ -20,15 +20,12 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-ee-9-source-transform-parent</artifactId>
+        <artifactId>wildfly-microprofile-fault-tolerance-smallrye-jakarta</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -36,22 +33,34 @@
         <version>27.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-microprofile-jakarta</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor-jakarta</artifactId>
 
-    <name>WildFly: Microprofile integration modules (Jakarta Namespace)</name>
+    <name>WildFly: MicroProfile Fault Tolerance - Executor (Jakarta Namespace)</name>
 
-    <modules>
-        <module>fault-tolerance-smallrye</module>
-        <module>openapi-smallrye</module>
-        <module>reactive-streams-operators-smallrye/cdi-provider</module>
-    </modules>
+    <properties>
+        <transformer-input-dir>${project.basedir}/../../../../../microprofile/fault-tolerance-smallrye/executor</transformer-input-dir>
+    </properties>
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
+            <groupId>io.smallrye</groupId>
+            <artifactId>smallrye-fault-tolerance</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise.concurrent</groupId>
+            <artifactId>jakarta.enterprise.concurrent-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
         </dependency>
     </dependencies>
 </project>

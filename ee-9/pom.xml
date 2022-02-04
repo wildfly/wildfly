@@ -1342,6 +1342,29 @@
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor-jakarta</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension-jakarta</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-openapi-smallrye-jakarta</artifactId>
                 <version>${project.version}</version>
                 <exclusions>

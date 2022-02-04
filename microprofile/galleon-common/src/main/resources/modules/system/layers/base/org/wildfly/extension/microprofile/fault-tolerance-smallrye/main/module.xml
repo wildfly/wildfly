@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-microprofile-fault-tolerance-smallrye-extension}"/>
+        <artifact name="\${org.wildfly:wildfly-microprofile-fault-tolerance-smallrye-extension@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
