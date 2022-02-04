@@ -32,7 +32,4 @@
         <artifact name="${org.jboss.mod_cluster:mod_cluster-container-spi}"/>
     </resources>
 
-    <dependencies>
-        <module name="javax.servlet.api"/>
-    </dependencies>
 </module>

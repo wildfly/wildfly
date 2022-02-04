@@ -331,7 +331,7 @@ import org.wildfly.clustering.service.SupplierDependency;
             final SocketBinding binding = advertiseSocketDependency.get();
             builder.advertise()
                     .setAdvertiseSocketAddress(binding.getMulticastSocketAddress())
-                    .setAdvertiseInterface(binding.getNetworkInterfaceBinding().getAddress())
+                    .setAdvertiseInterface(binding.getNetworkInterfaceBinding().getNetworkInterfaces().stream().findFirst().orElse(null))
             ;
 
             // Register the binding with named registry as bound (WFLY-11447)
