@@ -508,6 +508,8 @@
                                 <exclude>io.opentelemetry:opentelemetry-sdk-trace\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-semconv\z</exclude>
                                 <exclude>io.perfmark:perfmark-api\z</exclude>
+                                <exclude>io.smallrye:smallrye-open-api-core</exclude>
+                                <exclude>io.smallrye:smallrye-open-api-jaxrs</exclude>
                                 <!-- end javax.annotations excludes -->
                                 <!-- Don't transform org.dom4j:dom4j as we don't use its package
                                      that uses jaxp -->
