@@ -23,6 +23,7 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -172,23 +173,27 @@ public class InfinispanBeanManager<I, T, C> implements BeanManager<I, T, Transac
 
     @SuppressWarnings("resource")
     @Override
-    public Bean<I, T> findBean(I id) {
+    public Bean<I, T> findBean(I id) throws TimeoutException {
         InfinispanEjbLogger.ROOT_LOGGER.tracef("Locating bean %s", id);
-        BeanEntry<I> entry = this.beanFactory.findValue(id);
-        Bean<I, T> bean = (entry != null) ? this.beanFactory.createBean(id, entry) : null;
-        if (bean == null) {
-            InfinispanEjbLogger.ROOT_LOGGER.debugf("Could not find bean %s", id);
-            return null;
+        try {
+            BeanEntry<I> entry = this.beanFactory.findValue(id);
+            Bean<I, T> bean = (entry != null) ? this.beanFactory.createBean(id, entry) : null;
+            if (bean == null) {
+                InfinispanEjbLogger.ROOT_LOGGER.debugf("Could not find bean %s", id);
+                return null;
+            }
+            if (bean.isExpired()) {
+                InfinispanEjbLogger.ROOT_LOGGER.tracef("Bean %s was found, but has expired", id);
+                this.beanFactory.remove(id, this.expiration.getRemoveListener());
+                return null;
+            }
+            if (this.scheduler != null) {
+                this.scheduler.cancel(id);
+            }
+            return new SchedulableBean<>(bean, entry, this.scheduler);
+        } catch (org.infinispan.util.concurrent.TimeoutException e) {
+            throw new TimeoutException(e.getLocalizedMessage());
         }
-        if (bean.isExpired()) {
-            InfinispanEjbLogger.ROOT_LOGGER.tracef("Bean %s was found, but has expired", id);
-            this.beanFactory.remove(id, this.expiration.getRemoveListener());
-            return null;
-        }
-        if (this.scheduler != null) {
-            this.scheduler.cancel(id);
-        }
-        return new SchedulableBean<>(bean, entry, this.scheduler);
     }
 
     @Override

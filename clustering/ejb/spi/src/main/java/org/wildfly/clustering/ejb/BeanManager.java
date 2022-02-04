@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.ejb;
 
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.ee.Batch;
@@ -37,7 +38,7 @@ import org.wildfly.clustering.ee.Restartable;
  */
 public interface BeanManager<I, T, B extends Batch> extends Restartable, AffinitySupport<I>, BeanManagerStatistics {
     Bean<I, T> createBean(I id, I group, T bean);
-    Bean<I, T> findBean(I id);
+    Bean<I, T> findBean(I id) throws TimeoutException;
 
     boolean containsBean(I id);
 

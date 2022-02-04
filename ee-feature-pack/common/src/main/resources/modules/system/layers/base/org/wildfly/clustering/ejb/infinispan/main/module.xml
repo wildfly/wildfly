@@ -33,11 +33,10 @@
     </exports>
 
     <resources>
-        <artifact name="\${org.wildfly:wildfly-clustering-ejb-infinispan@module.jakarta.suffix@}"/>
+        <artifact name="${org.wildfly:wildfly-clustering-ejb-infinispan}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.ejb.api"/>
         <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.protostream"/>
