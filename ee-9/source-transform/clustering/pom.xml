@@ -42,7 +42,6 @@
     <name>WildFly: Clustering subsystems and modules (Jakarta Namespace)</name>
 
     <modules>
-        <module>ejb</module>
         <module>web</module>
     </modules>
 
