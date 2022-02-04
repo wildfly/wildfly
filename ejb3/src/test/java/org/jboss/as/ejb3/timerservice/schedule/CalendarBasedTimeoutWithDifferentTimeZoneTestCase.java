@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.timer.schedule;
+package org.jboss.as.ejb3.timerservice.schedule;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -27,7 +27,6 @@ import java.util.TimeZone;
 
 import javax.ejb.ScheduleExpression;
 
-import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.junit.Test;
