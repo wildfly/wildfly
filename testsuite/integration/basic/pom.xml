@@ -976,7 +976,6 @@
                                 <exclude>org/jboss/as/test/integration/management/cli/objectstore/TransactionObjectStoreTestCase.java</exclude>
                                 <!-- requires welcome page -->
                                 <exclude>org/jboss/as/test/integration/management/api/SocketsAndInterfacesTestCase.java</exclude>
-                                <exclude>org/jboss/as/test/integration/management/api/web/ListenerTestCase.java</exclude>
                                 <!-- requires https-server-->
                                 <exclude>org/jboss/as/test/integration/management/cli/SecurityCommandsTestCase.java</exclude>
                                 <!-- requires legacy security -->
