@@ -30,9 +30,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.security.auth.AuthPermission;
 
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
-import org.junit.Assert;
-import org.junit.Ignore;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -40,11 +37,13 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.PropertiesValueResolver;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.permission.ElytronPermission;
@@ -53,7 +52,6 @@ import org.wildfly.security.permission.ElytronPermission;
  * A simple IIOP invocation for one AS7 server to another
  */
 @RunWith(Arquillian.class)
-@Ignore("[WFLY-15272] Update to use Elytron for authentication and identity propagation.")
 public class IIOPSecurityInvocationTestCase {
 
 
