@@ -137,6 +137,7 @@ public class VertxProxyService implements Service, VertxConstants {
     public void start(StartContext context) throws StartException {
         try {
             this.vertx = createVertx();
+            vertxProxy.setVertx(this.vertx);
         } catch (Exception e) {
             throw VERTX_LOGGER.failedToStartVertxService(vertxProxy.getName(), e);
         }
@@ -192,6 +193,7 @@ public class VertxProxyService implements Service, VertxConstants {
         } finally {
             VertxRegistry.INSTANCE.unRegister(vertxProxy.getName());
             this.vertx = null;
+            vertxProxy.setVertx(null);
         }
     }
 

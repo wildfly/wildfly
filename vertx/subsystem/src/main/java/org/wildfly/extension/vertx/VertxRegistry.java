@@ -24,27 +24,31 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author <a href="aoingl@gmail.com">Lin Gao</a>
  */
-class VertxRegistry {
+public class VertxRegistry {
     private final Map<String, VertxProxy> vertxProxyMap;
     static VertxRegistry INSTANCE = new VertxRegistry();
+
+    public static VertxRegistry getInstance() {
+        return INSTANCE;
+    }
 
     private VertxRegistry() {
         this.vertxProxyMap = new ConcurrentHashMap<>();
     }
 
-    void registerVertx(VertxProxy vertxProxy) {
+    public void registerVertx(VertxProxy vertxProxy) {
         this.vertxProxyMap.put(vertxProxy.getName(), vertxProxy);
     }
 
-    void unRegister(String name) {
+    public void unRegister(String name) {
         this.vertxProxyMap.remove(name);
     }
 
-    Collection<VertxProxy> listVertx() {
+    public Collection<VertxProxy> listVertx() {
         return this.vertxProxyMap.values();
     }
 
-    VertxProxy getVertx(String name) {
+    public VertxProxy getVertx(String name) {
         return this.vertxProxyMap.get(name);
     }
 

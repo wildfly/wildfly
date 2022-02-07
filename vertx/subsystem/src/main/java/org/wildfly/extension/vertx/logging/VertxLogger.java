@@ -79,4 +79,8 @@ public interface VertxLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 14, value = "Error to undeploy verticle: %s from Vertx: %s")
     void errorWhenUndeployVerticle(String verticleClass, String jndiName, @Cause Exception e);
+
+    @Message(id = 15, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
+    DeploymentUnitProcessingException deploymentRequiresCapability(String deploymentName, String capabilityName);
+
 }

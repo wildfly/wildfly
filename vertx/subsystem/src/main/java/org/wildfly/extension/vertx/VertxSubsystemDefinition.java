@@ -29,6 +29,7 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.vertx.deployment.processors.DeploymentInjectionProcessor;
 import org.wildfly.extension.vertx.deployment.processors.VertxDependenciesProcessor;
 import org.wildfly.extension.vertx.deployment.processors.VerticleDeploymentMarkerProcessor;
 import org.wildfly.extension.vertx.deployment.processors.VerticleDeploymentProcessor;
@@ -81,6 +82,9 @@ public class VertxSubsystemDefinition extends SimpleResourceDefinition {
                     processorTarget.addDeploymentProcessor(VertxSubsystemExtension.SUBSYSTEM_NAME,
                             VertxDependenciesProcessor.PHASE, VertxDependenciesProcessor.PRIORITY,
                             new VertxDependenciesProcessor());
+                    processorTarget.addDeploymentProcessor(VertxSubsystemExtension.SUBSYSTEM_NAME,
+                      DeploymentInjectionProcessor.PHASE, DeploymentInjectionProcessor.PRIORITY,
+                      new DeploymentInjectionProcessor());
                     processorTarget.addDeploymentProcessor(VertxSubsystemExtension.SUBSYSTEM_NAME,
                             VerticleDeploymentProcessor.PHASE, VerticleDeploymentProcessor.PRIORITY,
                             new VerticleDeploymentProcessor());

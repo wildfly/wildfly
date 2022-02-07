@@ -16,6 +16,7 @@
 
 package org.wildfly.extension.vertx;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 
 /**
@@ -41,6 +42,8 @@ public class VertxProxy {
 
     /** The channel name in jgroups subsystem configuration, this is used when creating a clustered Vertx instance **/
     private final String jgroupChannelName;
+
+    private Vertx vertx;
 
     public VertxProxy(String name, String jndiName, VertxOptions vertxOptions, boolean clustered, String jgroupChannelName) {
         this.name = name;
@@ -68,6 +71,14 @@ public class VertxProxy {
 
     public String getJndiName() {
         return jndiName;
+    }
+
+    public void setVertx(Vertx vertx) {
+        this.vertx = vertx;
+    }
+
+    public Vertx getVertx() {
+        return this.vertx;
     }
 
 }
