@@ -32,7 +32,10 @@ import org.jboss.vfs.VFS;
  * @author Steve Ebersole
  */
 public class VirtualFileSystemArchiveDescriptorFactory extends StandardArchiveDescriptorFactory {
-    public static final VirtualFileSystemArchiveDescriptorFactory INSTANCE = new VirtualFileSystemArchiveDescriptorFactory();
+    static final VirtualFileSystemArchiveDescriptorFactory INSTANCE = new VirtualFileSystemArchiveDescriptorFactory();
+
+    private VirtualFileSystemArchiveDescriptorFactory() {
+    }
 
     @Override
     public ArchiveDescriptor buildArchiveDescriptor(URL url, String entryBase) {

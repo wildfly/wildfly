@@ -36,6 +36,10 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
     private static final String PROVIDER_LABEL = "hibernate-persistence-unit";
     private static final String VERSION = "Hibernate ORM 4.3.x";
 
+    private HibernateManagementAdaptor() {
+
+    }
+
     /**
      * The management statistics are shared across all Hibernate 4 Jakarta Persistence deployments
      * @return shared instance for all Hibernate 4 Jakarta Persistence deployments

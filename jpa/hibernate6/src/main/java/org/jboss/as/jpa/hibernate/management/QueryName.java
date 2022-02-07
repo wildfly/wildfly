@@ -111,7 +111,7 @@ public class QueryName {
      *
      * @param query
      */
-    public QueryName(String query) {
+    private QueryName(String query) {
         hibernateQuery = query;
         displayQuery = displayable(query);
 
