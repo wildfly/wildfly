@@ -30,7 +30,6 @@ import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -64,7 +63,7 @@ public abstract class SessionManagementServiceConfigurator<C extends Distributab
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.granularity = ModelNodes.asEnum(GRANULARITY.resolveModelAttribute(context, model), SessionGranularity.class);
+        this.granularity = SessionGranularity.valueOf(GRANULARITY.resolveModelAttribute(context, model).asString());
         this.factory = new ServiceSupplierDependency<>(new AffinityServiceNameProvider(context.getCurrentAddress()));
         return this;
     }
