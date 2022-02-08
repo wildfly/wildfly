@@ -47,11 +47,6 @@
         </dependency>
         <!-- While provided by the server the seem to be required for tests annotated with @WrapThreadContextClassLoader -->
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-databinding-jaxb</artifactId>
             <scope>test</scope>
