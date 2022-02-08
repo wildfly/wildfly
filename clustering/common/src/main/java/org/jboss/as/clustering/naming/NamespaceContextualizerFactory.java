@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.context;
+package org.jboss.as.clustering.naming;
 
-import org.jboss.as.clustering.naming.NamespaceContextExecutor;
-import org.wildfly.security.manager.WildFlySecurityManager;
+import org.jboss.as.clustering.context.Contextualizer;
+import org.jboss.as.clustering.context.ContextualizerFactory;
+import org.kohsuke.MetaInfServices;
 
 /**
- * Default {@link org.wildfly.clustering.service.concurrent.Contextualizer} that applies the following contexts:
- * <ol>
- * <li>Thread context {@link ClassLoader}</li>
- * <li>JNDI namespace</li>
- * </ol>
  * @author Paul Ferraro
  */
-public class DefaultContextualizer extends CompositeContextualizer {
+@MetaInfServices(ContextualizerFactory.class)
+public class NamespaceContextualizerFactory implements ContextualizerFactory {
 
-    public DefaultContextualizer(Class<?> targetClass) {
-        this(WildFlySecurityManager.getClassLoaderPrivileged(targetClass));
-    }
-
-    public DefaultContextualizer(ClassLoader loader) {
-        super(new ContextReferenceExecutor<>(loader, ContextClassLoaderReference.INSTANCE), new NamespaceContextExecutor());
+    @Override
+    public Contextualizer createContextualizer(ClassLoader loader) {
+        return new NamespaceContextExecutor();
     }
 }

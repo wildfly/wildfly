@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,24 +22,33 @@
 
 package org.jboss.as.clustering.context;
 
-import org.jboss.as.clustering.naming.NamespaceContextExecutor;
-import org.wildfly.security.manager.WildFlySecurityManager;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ServiceLoader;
 
 /**
- * Default {@link org.wildfly.clustering.service.concurrent.Contextualizer} that applies the following contexts:
- * <ol>
- * <li>Thread context {@link ClassLoader}</li>
- * <li>JNDI namespace</li>
- * </ol>
  * @author Paul Ferraro
+ *
  */
-public class DefaultContextualizer extends CompositeContextualizer {
+public enum DefaultContextualizerFactory implements ContextualizerFactory {
+    INSTANCE;
 
-    public DefaultContextualizer(Class<?> targetClass) {
-        this(WildFlySecurityManager.getClassLoaderPrivileged(targetClass));
+    private final List<ContextualizerFactory> factories = new LinkedList<>();
+
+    DefaultContextualizerFactory() {
+        this.factories.add(new ClassLoaderContextualizerFactory());
+        for (ContextualizerFactory factory : ServiceLoader.load(ContextualizerFactory.class, ContextualizerFactory.class.getClassLoader())) {
+            this.factories.add(factory);
+        }
     }
 
-    public DefaultContextualizer(ClassLoader loader) {
-        super(new ContextReferenceExecutor<>(loader, ContextClassLoaderReference.INSTANCE), new NamespaceContextExecutor());
+    @Override
+    public Contextualizer createContextualizer(ClassLoader loader) {
+        List<Contextualizer> contextualizers = new ArrayList<>(this.factories.size());
+        for (ContextualizerFactory factory : this.factories) {
+            contextualizers.add(factory.createContextualizer(loader));
+        }
+        return new CompositeContextualizer(contextualizers);
     }
 }

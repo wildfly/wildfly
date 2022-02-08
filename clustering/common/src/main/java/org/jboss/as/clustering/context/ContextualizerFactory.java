@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,24 +22,26 @@
 
 package org.jboss.as.clustering.context;
 
-import org.jboss.as.clustering.naming.NamespaceContextExecutor;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * Default {@link org.wildfly.clustering.service.concurrent.Contextualizer} that applies the following contexts:
- * <ol>
- * <li>Thread context {@link ClassLoader}</li>
- * <li>JNDI namespace</li>
- * </ol>
+ * Factory for creating a {@link Contextualizer} for a {@link ClassLoader}.
  * @author Paul Ferraro
  */
-public class DefaultContextualizer extends CompositeContextualizer {
+public interface ContextualizerFactory {
+    /**
+     * Creates a {@link Contextualizer} for the specified {@link ClassLoader}.
+     * @param loader a class loader
+     * @return a contextualizer
+     */
+    Contextualizer createContextualizer(ClassLoader loader);
 
-    public DefaultContextualizer(Class<?> targetClass) {
-        this(WildFlySecurityManager.getClassLoaderPrivileged(targetClass));
-    }
-
-    public DefaultContextualizer(ClassLoader loader) {
-        super(new ContextReferenceExecutor<>(loader, ContextClassLoaderReference.INSTANCE), new NamespaceContextExecutor());
+    /**
+     * Creates a {@link Contextualizer} for the {@link ClassLoader} of the specified {@link Class}.
+     * @param targetClass a class from which to obtain a class loader
+     * @return a contextualizer
+     */
+    default Contextualizer createContextualizer(Class<?> targetClass) {
+        return this.createContextualizer(WildFlySecurityManager.getClassLoaderPrivileged(targetClass));
     }
 }
