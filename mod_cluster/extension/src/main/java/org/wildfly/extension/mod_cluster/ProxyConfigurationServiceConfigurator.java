@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.mod_cluster;
 
-import static org.jboss.as.clustering.dmr.ModelNodes.optionalString;
 import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.ADVERTISE;
 import static org.wildfly.extension.mod_cluster.ProxyConfigurationResourceDefinition.Attribute.ADVERTISE_SECURITY_KEY;
@@ -124,10 +123,9 @@ import org.wildfly.clustering.service.SupplierDependency;
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
 
         // Advertise
-        optionalString(ADVERTISE_SOCKET.resolveModelAttribute(context, model))
-                .ifPresent(advertiseSocketRef -> this.advertiseSocketDependency = new ServiceSupplierDependency<>(context.getCapabilityServiceName(CommonUnaryRequirement.SOCKET_BINDING.getName(), advertiseSocketRef, SocketBinding.class)));
-        optionalString(ADVERTISE_SECURITY_KEY.resolveModelAttribute(context, model))
-                .ifPresent(securityKey -> builder.advertise().setAdvertiseSecurityKey(securityKey));
+        String advertiseSocket = ADVERTISE_SOCKET.resolveModelAttribute(context, model).asStringOrNull();
+        this.advertiseSocketDependency = (advertiseSocket != null) ? new ServiceSupplierDependency<>(CommonUnaryRequirement.SOCKET_BINDING.getServiceName(context, advertiseSocket)) : null;
+        this.builder.advertise().setAdvertiseSecurityKey(ADVERTISE_SECURITY_KEY.resolveModelAttribute(context, model).asStringOrNull());
 
         // MCMP
 
