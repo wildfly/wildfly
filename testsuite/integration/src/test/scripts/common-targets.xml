@@ -315,8 +315,6 @@
         </sequential>
     </macrodef>
 
-    <!-- after refactor -->
-
     <macrodef name="ts.config-as.iiop.enable-server-requires-ssl" description="Creates elytron security settings and enables server-reqires-ssl setting.">
 
         <attribute name="name" default="jbossas"/>
@@ -328,6 +326,37 @@
 
             <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
                   style="${jbossas.ts.integ.dir}/src/test/xslt/iiopRequireSslSupport.xsl"
+                  extension=".xml.mod"
+                  useImplicitFileset="false">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-ha.xml"/>
+                    <include name="**/standalone.xml"/>
+                    <include name="**/standalone-full.xml"/>
+                </fileset>
+            </xslt>
+
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-ha.xml.mod"/>
+                    <include name="**/standalone.xml.mod"/>
+                    <include name="**/standalone-full.xml.mod"/>
+                </fileset>
+                <mapper type="glob" from="*.mod" to="*"/>
+            </move>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="ts.config-as.iiop.add-auth-context" description="Add an Elytron authentication-context to outflow the current identity.">
+
+        <attribute name="name" default="jbossas"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <sequential>
+            <echo message="IIOP: adding authentication-context"/>
+
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
+                  style="${jbossas.ts.integ.dir}/src/test/xslt/iiopAuthContext.xsl"
                   extension=".xml.mod"
                   useImplicitFileset="false">
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
