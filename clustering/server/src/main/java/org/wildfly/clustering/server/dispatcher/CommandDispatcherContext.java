@@ -22,7 +22,7 @@
 
 package org.wildfly.clustering.server.dispatcher;
 
-import org.jboss.as.clustering.context.Contextualizer;
+import org.wildfly.clustering.context.Contextualizer;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 
 /**

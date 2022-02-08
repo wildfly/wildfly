@@ -40,9 +40,9 @@
         <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.protostream"/>
-        <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.logging"/>
         <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.ee.cache"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.infinispan.spi"/>

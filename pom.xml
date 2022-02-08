@@ -697,6 +697,12 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-clustering-context</artifactId>
+                <version>${ee.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-ee-cache</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>

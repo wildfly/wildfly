@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.context;
+package org.wildfly.clustering.context;
 
 import static org.junit.Assert.*;
 
@@ -62,7 +62,7 @@ public class ContextReferenceExecutorTestCase {
         assertSame(result, resultRef.get());
         resultRef.set(null);
 
-        ExceptionRunnable<Exception> exceptionRunner = new ExceptionRunnable<Exception>() {
+        ExceptionRunnable<Exception> exceptionRunner = new ExceptionRunnable<>() {
             @Override
             public void run() throws Exception {
                 assertSame(target, contextRef.get());
@@ -77,7 +77,7 @@ public class ContextReferenceExecutorTestCase {
         assertSame(result, resultRef.get());
         resultRef.set(null);
 
-        Callable<Object> caller = new Callable<Object>() {
+        Callable<Object> caller = new Callable<>() {
             @Override
             public Object call() {
                 assertSame(target, contextRef.get());
@@ -89,7 +89,7 @@ public class ContextReferenceExecutorTestCase {
         assertSame(result, contextualizer.contextualize(caller).call());
         assertSame(original, contextRef.get());
 
-        Supplier<Object> supplier = new Supplier<Object>() {
+        Supplier<Object> supplier = new Supplier<>() {
             @Override
             public Object get() {
                 assertSame(target, contextRef.get());
@@ -101,7 +101,7 @@ public class ContextReferenceExecutorTestCase {
         assertSame(result, contextualizer.contextualize(supplier).get());
         assertSame(original, contextRef.get());
 
-        ExceptionSupplier<Object, Exception> exceptionSupplier = new ExceptionSupplier<Object, Exception>() {
+        ExceptionSupplier<Object, Exception> exceptionSupplier = new ExceptionSupplier<>() {
             @Override
             public Object get() {
                 assertSame(target, contextRef.get());

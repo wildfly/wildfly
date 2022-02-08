@@ -25,7 +25,7 @@ package org.wildfly.clustering.infinispan.spi;
 import java.util.concurrent.ThreadFactory;
 
 import org.infinispan.commons.executors.NonBlockingResource;
-import org.jboss.as.clustering.context.DefaultThreadFactory;
+import org.wildfly.clustering.context.DefaultThreadFactory;
 
 /**
  * Thread factory for non-blocking threads.
