@@ -46,6 +46,8 @@
         <module>health-smallrye</module>
         <module>openapi-smallrye</module>
         <module>reactive-streams-operators-smallrye/cdi-provider</module>
+        <module>opentracing-extension</module>
+        <module>opentracing-smallrye</module>
     </modules>
 
     <dependencies>

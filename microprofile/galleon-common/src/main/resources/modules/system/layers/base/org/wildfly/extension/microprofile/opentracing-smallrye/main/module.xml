@@ -22,7 +22,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-microprofile-opentracing-extension}"/>
+        <artifact name="\${org.wildfly:wildfly-microprofile-opentracing-extension@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
@@ -46,7 +46,7 @@
         <module name="io.opentracing.opentracing-noop"/>
         <module name="io.opentracing.opentracing-util"/>
         <module name="org.wildfly.microprofile.opentracing-smallrye"/>
-        <!-- Not optinal because it is required by JaegerEnvTracerConfiguration for retro-compatibility but other tracer implementations should be optional-->
+        <!-- Not optional because it is required by JaegerEnvTracerConfiguration for retro-compatibility but other tracer implementations should be optional-->
         <module name="io.jaegertracing.jaeger"/>
     </dependencies>
 </module>

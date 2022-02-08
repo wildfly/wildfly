@@ -256,6 +256,12 @@
                                         <include>modules/**/module.xml</include>
                                         <include>license/*.xml</include>
                                     </includes>
+                                    <excludes>
+                                        <exclude>modules/**/io/opentracing/contrib/opentracing-interceptors/**/module.xml</exclude>
+                                        <exclude>modules/**/io/opentracing/contrib/opentracing-jaxrs2/**/module.xml</exclude>
+                                        <exclude>modules/**/io/opentracing/contrib/opentracing-tracerresolver/**/module.xml</exclude>
+                                        <exclude>modules/**/io/opentracing/contrib/opentracing-web-servlet-filter/**/module.xml</exclude>
+                                    </excludes>
                                     <filtering>true</filtering>
                                 </resource>
                             </resources>
@@ -657,6 +663,14 @@
                     <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>${full.maven.groupId}</groupId>
+                    <artifactId>wildfly-microprofile-opentracing-smallrye</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${full.maven.groupId}</groupId>
+                    <artifactId>wildfly-microprofile-opentracing-extension</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-client-microprofile</artifactId>
                 </exclusion>
@@ -667,6 +681,22 @@
                 <exclusion>
                     <groupId>${full.maven.groupId}</groupId>
                     <artifactId>wildfly-microprofile-health-smallrye</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.opentracing.contrib</groupId>
+                    <artifactId>opentracing-jaxrs2</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.opentracing.contrib</groupId>
+                    <artifactId>opentracing-interceptors</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.opentracing.contrib</groupId>
+                    <artifactId>opentracing-tracerresolver</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.opentracing.contrib</groupId>
+                    <artifactId>opentracing-web-servlet-filter</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

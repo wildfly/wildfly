@@ -22,50 +22,46 @@
 package org.wildfly.extension.microprofile.opentracing;
 
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+import static org.wildfly.extension.microprofile.opentracing.Constants.SPAN_FINISHING_FILTER;
+import static org.wildfly.extension.microprofile.opentracing.Constants.TRACER_CLASS;
 import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.DEFAULT_TRACER_CAPABILITY_NAME;
 import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.TRACER_CAPABILITY;
 import static org.wildfly.extension.microprofile.opentracing.TracingExtensionLogger.ROOT_LOGGER;
-import static org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstants.SMALLRYE_OPENTRACING_SERVICE_NAME;
-import static org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstants.SMALLRYE_OPENTRACING_TRACER;
-import static org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstants.SMALLRYE_OPENTRACING_TRACER_CONFIGURATION;
-import static org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstants.SMALLRYE_OPENTRACING_TRACER_MANAGED;
-import static org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstants.TRACER_CONFIGURATION;
-import static org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstants.TRACER_CONFIGURATION_NAME;
+import static org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstants.*;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import io.opentracing.Tracer;
 import io.opentracing.noop.NoopTracerFactory;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentResourceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.weld.WeldCapability;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.wildfly.security.manager.WildFlySecurityManager;
-
-import java.util.ArrayList;
-import java.util.List;
-import org.jboss.msc.service.ServiceName;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.DeploymentResourceSupport;
-import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.metadata.web.spec.DispatcherType;
 import org.jboss.metadata.web.spec.FilterMappingMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.FiltersMetaData;
-import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.microprofile.opentracing.smallrye.TracingCDIExtension;
 import org.wildfly.microprofile.opentracing.smallrye.TracingLogger;
 import org.wildfly.microprofile.opentracing.smallrye.WildFlyTracerFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -164,7 +160,8 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
         }
         ParamValueMetaData restEasyDynamicFeature = getResteasyProvidersParam(jbossWebMetaData);
         if (restEasyDynamicFeature.getParamValue() != null && !restEasyDynamicFeature.getParamValue().trim().isEmpty()) {
-            restEasyDynamicFeature.setParamValue(restEasyDynamicFeature.getParamValue() + ",org.wildfly.microprofile.opentracing.smallrye.TracerDynamicFeature");
+            restEasyDynamicFeature.setParamValue(restEasyDynamicFeature.getParamValue() +
+                    ",org.wildfly.microprofile.opentracing.smallrye.TracerDynamicFeature");
         } else {
             restEasyDynamicFeature.setParamValue("org.wildfly.microprofile.opentracing.smallrye.TracerDynamicFeature");
         }
@@ -203,7 +200,7 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
                 TracingLogger.ROOT_LOGGER.alreadyRegistered();
                 tracer = (Tracer) globalTracerClass.getMethod("get").invoke(null);
             } else {
-                Class tracerResolverClass = moduleCL.loadClass("io.opentracing.contrib.tracerresolver.TracerResolver");
+                Class tracerResolverClass = moduleCL.loadClass(TRACER_CLASS);
                 tracer = (Tracer) tracerResolverClass.getMethod("resolveTracer").invoke(null);
             }
         } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
@@ -263,13 +260,13 @@ public class TracingDeploymentProcessor implements DeploymentUnitProcessor {
             jbossWebMetaData.setFilters(new FiltersMetaData());
         }
         FilterMetaData filter = new FilterMetaData();
-        filter.setFilterClass("io.opentracing.contrib.jaxrs2.server.SpanFinishingFilter");
+        filter.setFilterClass(SPAN_FINISHING_FILTER);
         filter.setAsyncSupported(true);
-        filter.setFilterName("io.opentracing.contrib.jaxrs2.server.SpanFinishingFilter");
+        filter.setFilterName(SPAN_FINISHING_FILTER);
         jbossWebMetaData.getFilters().add(filter);
 
         FilterMappingMetaData mapping = new FilterMappingMetaData();
-        mapping.setFilterName("io.opentracing.contrib.jaxrs2.server.SpanFinishingFilter");
+        mapping.setFilterName(SPAN_FINISHING_FILTER);
         mapping.setDispatchers(Collections.singletonList(DispatcherType.REQUEST));
         mapping.setUrlPatterns(Collections.singletonList("*"));
         if (jbossWebMetaData.getFilterMappings() == null) {
