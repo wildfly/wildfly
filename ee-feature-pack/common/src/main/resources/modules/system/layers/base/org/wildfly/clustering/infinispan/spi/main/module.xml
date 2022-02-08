@@ -42,6 +42,7 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jgroups" optional="true"/>
+        <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.infinispan.marshalling"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>

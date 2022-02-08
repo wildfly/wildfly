@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.context;
+package org.wildfly.clustering.context;
 
 /**
  * {@link ContextualizerFactory} that creates a thread context class loader {@link Contextualizer}.

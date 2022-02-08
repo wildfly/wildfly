@@ -20,37 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.context;
+package org.wildfly.clustering.context;
 
-import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Function;
 
-import org.wildfly.security.ParametricPrivilegedAction;
-
 /**
- * {@link ExecutorService} that performs contextual execution of submitted tasks.
+ * Set of factory implementations for creating an {@link ExecutorService} from a {@link ThreadFactory}.
  * @author Paul Ferraro
  */
-public class DefaultExecutorService extends ContextualExecutorService {
+public enum ExecutorServiceFactory implements Function<ThreadFactory, ExecutorService> {
 
-    public static final ParametricPrivilegedAction<Void, ExecutorService> SHUTDOWN_ACTION = new ParametricPrivilegedAction<>() {
+    SINGLE_THREAD() {
         @Override
-        public Void run(ExecutorService executor) {
-            executor.shutdown();
-            return null;
+        public ExecutorService apply(ThreadFactory factory) {
+            return Executors.newSingleThreadExecutor(factory);
         }
-    };
-
-    public static final ParametricPrivilegedAction<List<Runnable>, ExecutorService> SHUTDOWN_NOW_ACTION = new ParametricPrivilegedAction<>() {
+    },
+    CACHED_THREAD() {
         @Override
-        public List<Runnable> run(ExecutorService executor) {
-            return executor.shutdownNow();
+        public ExecutorService apply(ThreadFactory factory) {
+            return Executors.newCachedThreadPool(factory);
         }
-    };
-
-    public DefaultExecutorService(Class<?> targetClass, Function<ThreadFactory, ExecutorService> factory) {
-        super(factory.apply(new DefaultThreadFactory(targetClass)), DefaultContextualizerFactory.INSTANCE.createContexualizer(targetClass));
-    }
+    },
+    ;
 }

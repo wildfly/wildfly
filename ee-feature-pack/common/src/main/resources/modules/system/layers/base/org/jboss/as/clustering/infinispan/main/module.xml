@@ -77,6 +77,7 @@
         <module name="org.jgroups"/>
         <module name="org.reactivestreams"/>
         <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.ee.infinispan"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.infinispan.client"/>

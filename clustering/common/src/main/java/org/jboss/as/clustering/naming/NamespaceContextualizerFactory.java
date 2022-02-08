@@ -22,9 +22,9 @@
 
 package org.jboss.as.clustering.naming;
 
-import org.jboss.as.clustering.context.Contextualizer;
-import org.jboss.as.clustering.context.ContextualizerFactory;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.context.Contextualizer;
+import org.wildfly.clustering.context.ContextualizerFactory;
 
 /**
  * @author Paul Ferraro

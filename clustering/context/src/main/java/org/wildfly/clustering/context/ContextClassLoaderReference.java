@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.context;
+package org.wildfly.clustering.context;
 
 import java.util.AbstractMap;
 import java.util.Map;
@@ -35,14 +35,14 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public enum ContextClassLoaderReference implements ThreadContextReference<ClassLoader> {
     INSTANCE;
 
-    private static final ParametricPrivilegedAction<ClassLoader, Thread> GET_CONTEXT_CLASS_LOADER_ACTION = new ParametricPrivilegedAction<ClassLoader, Thread>() {
+    private static final ParametricPrivilegedAction<ClassLoader, Thread> GET_CONTEXT_CLASS_LOADER_ACTION = new ParametricPrivilegedAction<>() {
         @Override
         public ClassLoader run(Thread thread) {
             return thread.getContextClassLoader();
         }
     };
 
-    private static final ParametricPrivilegedAction<Void, Map.Entry<Thread, ClassLoader>> SET_CONTEXT_CLASS_LOADER_ACTION = new ParametricPrivilegedAction<Void, Map.Entry<Thread, ClassLoader>>() {
+    private static final ParametricPrivilegedAction<Void, Map.Entry<Thread, ClassLoader>> SET_CONTEXT_CLASS_LOADER_ACTION = new ParametricPrivilegedAction<>() {
         @Override
         public Void run(Map.Entry<Thread, ClassLoader> entry) {
             entry.getKey().setContextClassLoader(entry.getValue());

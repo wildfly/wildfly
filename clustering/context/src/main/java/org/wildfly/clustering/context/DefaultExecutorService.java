@@ -20,38 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.context;
+package org.wildfly.clustering.context;
 
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Function;
 
-import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.security.ParametricPrivilegedAction;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * Default {@link ThreadFactory} implementation that applies a specific context {@link ClassLoader}.
+ * {@link ExecutorService} that performs contextual execution of submitted tasks.
  * @author Paul Ferraro
  */
-public class DefaultThreadFactory extends ContextualThreadFactory<ClassLoader> {
+public class DefaultExecutorService extends ContextualExecutorService {
 
-    private enum ThreadPoolFactory implements ParametricPrivilegedAction<ThreadFactory, Class<?>> {
-        INSTANCE;
-
+    public static final ParametricPrivilegedAction<Void, ExecutorService> SHUTDOWN_ACTION = new ParametricPrivilegedAction<>() {
         @Override
-        public ThreadFactory run(Class<?> targetClass) {
-            return new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
+        public Void run(ExecutorService executor) {
+            executor.shutdown();
+            return null;
         }
-    }
+    };
 
-    public DefaultThreadFactory(Class<?> targetClass) {
-        this(WildFlySecurityManager.doUnchecked(targetClass, ThreadPoolFactory.INSTANCE), targetClass);
-    }
+    public static final ParametricPrivilegedAction<List<Runnable>, ExecutorService> SHUTDOWN_NOW_ACTION = new ParametricPrivilegedAction<>() {
+        @Override
+        public List<Runnable> run(ExecutorService executor) {
+            return executor.shutdownNow();
+        }
+    };
 
-    public DefaultThreadFactory(ThreadFactory factory) {
-        this(factory, factory.getClass());
-    }
-
-    public DefaultThreadFactory(ThreadFactory factory, Class<?> targetClass) {
-        super(factory, WildFlySecurityManager.getClassLoaderPrivileged(targetClass), ContextClassLoaderReference.INSTANCE);
+    public DefaultExecutorService(Class<?> targetClass, Function<ThreadFactory, ExecutorService> factory) {
+        super(factory.apply(new DefaultThreadFactory(targetClass)), DefaultContextualizerFactory.INSTANCE.createContexualizer(targetClass));
     }
 }
