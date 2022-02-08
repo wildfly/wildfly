@@ -17,10 +17,14 @@ package org.wildfly.extension.messaging.activemq.shallow;
 
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -60,5 +64,9 @@ public abstract class ShallowResourceDefinition extends PersistentResourceDefini
                 registry.registerReadOnlyAttribute(attr, new TranslatedReadAttributeHandler(this, this));
             }
         }
+    }
+
+    public void validateOperation(OperationContext context, PathAddress targetAddress, ModelNode translatedOperation)
+            throws OperationFailedException {
     }
 }

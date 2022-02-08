@@ -34,10 +34,13 @@ import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -128,5 +131,31 @@ public class DiscoveryGroupDefinition extends ShallowResourceDefinition {
             ignoredAttributes.add(JGROUPS_CLUSTER.getName());
         }
         return ignoredAttributes;
+    }
+
+    /**
+     * This provides more informative message when a user tries to undefine attribute that is required by the
+     * jgroups-discovery-group or socket-discovery-group resources (while it hasn't been required on the original
+     * discovery-group resource).
+     */
+    @Override
+    public void validateOperation(OperationContext context, PathAddress targetAddress, ModelNode translatedOperation) throws OperationFailedException {
+        String attributeName = translatedOperation.get(ModelDescriptionConstants.NAME).asString();
+        String resourceName = targetAddress.getLastElement().getKey();
+        String operationName = translatedOperation.get(ModelDescriptionConstants.OP).asString();
+        ModelNode value = translatedOperation.get(ModelDescriptionConstants.VALUE);
+        boolean isSocketDiscoveryGroup = CommonAttributes.SOCKET_DISCOVERY_GROUP.equals(resourceName);
+
+        // if undefining an attribute
+        if ((ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION.equals(operationName)
+                || ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION.equals(operationName))
+                && !value.isDefined()) {
+            // and the attribute is socket-binding on a socket-discovery-group,
+            // or jgroups-cluster on a jgroups-discovery-group, throw an error
+            if ((isSocketDiscoveryGroup && attributeName.equals(CommonAttributes.SOCKET_BINDING.getName()))
+                    || (!isSocketDiscoveryGroup && attributeName.equals(CommonAttributes.JGROUPS_CLUSTER.getName()))) {
+                throw ControllerLogger.ROOT_LOGGER.validationFailedRequiredParameterNotPresent(attributeName, translatedOperation.toString());
+            }
+        }
     }
 }

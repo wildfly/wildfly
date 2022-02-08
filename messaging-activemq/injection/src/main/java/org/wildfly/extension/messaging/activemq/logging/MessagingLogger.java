@@ -882,4 +882,6 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 105, value = "The %s %s is configured to use socket-binding %s, but this socket binding doesn't have the multicast-address or a multicast-port attributes configured.")
     OperationFailedException socketBindingMulticastNotSet(String resourceType, String resourceName, String socketBindingName);
 
+    @Message(id = 106, value = "Either socket-binding or jgroups-cluster attribute is required.")
+    OperationFailedException socketBindingOrJGroupsClusterRequired();
 }

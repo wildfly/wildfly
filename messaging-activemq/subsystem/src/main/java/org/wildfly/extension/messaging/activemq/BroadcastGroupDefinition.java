@@ -51,6 +51,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -197,5 +198,31 @@ public class BroadcastGroupDefinition extends ShallowResourceDefinition {
             ignoredAttributes.add(JGROUPS_CLUSTER.getName());
         }
         return ignoredAttributes;
+    }
+
+    /**
+     * This provides more informative message when a user tries to undefine attribute that is required by the
+     * jgroups-broadcast-group or socket-broadcast-group resources (while it hasn't been required on the original
+     * broadcast-group resource).
+     */
+    @Override
+    public void validateOperation(OperationContext context, PathAddress targetAddress, ModelNode translatedOperation) throws OperationFailedException {
+        String attributeName = translatedOperation.get(ModelDescriptionConstants.NAME).asString();
+        String resourceName = targetAddress.getLastElement().getKey();
+        String operationName = translatedOperation.get(ModelDescriptionConstants.OP).asString();
+        ModelNode value = translatedOperation.get(ModelDescriptionConstants.VALUE);
+        boolean isSocketBroadcastGroup = CommonAttributes.SOCKET_BROADCAST_GROUP.equals(resourceName);
+
+        // if undefining an attribute
+        if ((ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION.equals(operationName)
+                || ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION.equals(operationName))
+                && !value.isDefined()) {
+            // and the attribute is socket-binding on a socket-discovery-group,
+            // or jgroups-cluster on a jgroups-discovery-group, throw an error
+            if ((isSocketBroadcastGroup && attributeName.equals(CommonAttributes.SOCKET_BINDING.getName()))
+                    || (!isSocketBroadcastGroup && attributeName.equals(CommonAttributes.JGROUPS_CLUSTER.getName()))) {
+                throw ControllerLogger.ROOT_LOGGER.validationFailedRequiredParameterNotPresent(attributeName, translatedOperation.toString());
+            }
+        }
     }
 }
