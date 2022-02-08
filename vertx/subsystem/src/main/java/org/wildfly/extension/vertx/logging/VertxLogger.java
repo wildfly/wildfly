@@ -45,14 +45,14 @@ public interface VertxLogger extends BasicLogger {
     @Message(id = 3, value = "Vertx %s [%s] is removed")
     void vertxRemoved(String name, String jndiName);
 
-    @Message(id = 4, value = "Could not find VertxOptions from: %s")
-    IllegalStateException cannotFindVertxOptionsURL(String vertxOptionsFile);
+    @Message(id = 4, value = "Could not read VertxOptions from file: %s")
+    OperationFailedException cannotReadVertxOptionsFile(String vertxOptionsFile);
 
     @Message(id = 5, value = "No Jgroups channel is specified for clustered Vertx: %s")
     OperationFailedException noJgroupsChannelConfigured(String name);
 
     @Message(id = 6, value = "Could not find VertxOptions from: %s")
-    OperationFailedException failedToStartVertx(String vertxOptionsFile, @Cause Exception e);
+    OperationFailedException failedToReadVertxOptions(String vertxOptionsFile, @Cause Exception e);
 
     @Message(id = 7, value = "Failed to start VertxProxyService for %s")
     StartException failedToStartVertxService(String name, @Cause Throwable e);

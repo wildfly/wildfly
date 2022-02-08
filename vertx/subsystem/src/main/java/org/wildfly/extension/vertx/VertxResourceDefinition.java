@@ -38,8 +38,9 @@ import org.jboss.dmr.ModelNode;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
@@ -125,12 +126,8 @@ public class VertxResourceDefinition extends SimpleResourceDefinition {
             if (vertxOptionsFile == null) {
                 vertxOptions = new VertxOptions();
             } else {
-                try {
-                    JsonObject json = readJsonFromFile(vertxOptionsFile);
-                    vertxOptions = new VertxOptions(json);
-                } catch (IOException e) {
-                    throw VERTX_LOGGER.failedToStartVertx(name, e);
-                }
+                JsonObject json = readJsonFromFile(vertxOptionsFile);
+                vertxOptions = new VertxOptions(json);
             }
             final VertxProxy vertxProxy = new VertxProxy(name, jndiName, vertxOptions, clustered, jgroupChannel);
             if (aliases != null) {
@@ -148,39 +145,24 @@ public class VertxResourceDefinition extends SimpleResourceDefinition {
             VertxProxyService.installService(context, vertxProxy, forkedChannel);
         }
 
-        private JsonObject readJsonFromFile(String vertxOptionsFile) throws IOException {
-            URL optionURL = null;
-            String opProp = SecurityActions.getSystemProperty(VertxConstants.VERTX_OPTIONS_URL);
-            if (opProp != null) {
-                // load from system property
-                try {
-                    optionURL = new URL(opProp);
-                } catch (MalformedURLException e) {
-                    VERTX_LOGGER.warn("Wrong VertxOptions URL specified.", e);
-                }
-            } else {
-                if (vertxOptionsFile == null || vertxOptionsFile.trim().equals("")) {
-                    optionURL = getClass().getClassLoader().getResource("default-vertx-options.json");
-                } else {
-                    try {
-                        optionURL = new URL(vertxOptionsFile);
-                    } catch (MalformedURLException e) {
-                        VERTX_LOGGER.debug("not a valid URL, try to lookup class path");
-                        optionURL = getClass().getClassLoader().getResource(vertxOptionsFile);
+        private JsonObject readJsonFromFile(String vertxOptionsFile) throws OperationFailedException {
+            if (vertxOptionsFile != null && !vertxOptionsFile.trim().equals("")) {
+                Path path = vertxOptionsFile.startsWith("/") ? Paths.get(vertxOptionsFile) : Paths.get("", vertxOptionsFile);
+                if (Files.exists(path) && Files.isReadable(path)) {
+                    String jsonContent;
+                    try (InputStream inputStream = Files.newInputStream(path);
+                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                        StreamUtils.copyStream(inputStream, outputStream);
+                        jsonContent = outputStream.toString();
+                    } catch (IOException e) {
+                        throw VERTX_LOGGER.failedToReadVertxOptions(vertxOptionsFile, e);
                     }
+                    if (jsonContent != null) {
+                        return new JsonObject(jsonContent);
+                    }
+                } else {
+                    throw VERTX_LOGGER.cannotReadVertxOptionsFile(vertxOptionsFile);
                 }
-            }
-            if (optionURL == null) {
-                throw VERTX_LOGGER.cannotFindVertxOptionsURL(vertxOptionsFile);
-            }
-            String jsonContent;
-            try (InputStream inputStream = optionURL.openStream();
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                StreamUtils.copyStream(inputStream, outputStream);
-                jsonContent = outputStream.toString();
-            }
-            if (jsonContent != null) {
-                return new JsonObject(jsonContent);
             }
             return new JsonObject();
         }

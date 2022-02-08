@@ -21,7 +21,6 @@ public interface VertxConstants {
     String NAME = "name";
     String JNDI_NAME = "jndi-name";
     String VERTX_OPTIONS_FILE = "vertx-options-file";
-    String VERTX_OPTIONS_URL = "org.wildfly.vertx.options.url";
     String CLUSTERED = "clustered";
     String JGROUPS_CHANNEL = "jgroups-channel";
     String FORKED_CHANNEL = "forked-channel";
