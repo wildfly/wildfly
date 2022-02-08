@@ -19,6 +19,9 @@ package org.wildfly.extension.vertx;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * This is a resource used to manage the Vertx instances in the subsystem.
  *
@@ -43,6 +46,10 @@ public class VertxProxy {
     /** The channel name in jgroups subsystem configuration, this is used when creating a clustered Vertx instance **/
     private final String jgroupChannelName;
 
+    /** The Alias of the Vertx instance, which will be used in injection point via the member name **/
+    private List<String> aliases;
+
+    /** The Vertx reference, this will be set to null when VertxProxyService is stopped. **/
     private Vertx vertx;
 
     public VertxProxy(String name, String jndiName, VertxOptions vertxOptions, boolean clustered, String jgroupChannelName) {
@@ -79,6 +86,19 @@ public class VertxProxy {
 
     public Vertx getVertx() {
         return this.vertx;
+    }
+
+    /**
+     * Returns aliases of this VertxProxy
+     *
+     * @return the aliases of this VertxProxy, not null.
+     */
+    public List<String> getAliases() {
+        return aliases == null ? Collections.emptyList() : aliases;
+    }
+
+    public void setAliases(List<String> aliases) {
+        this.aliases = aliases;
     }
 
 }

@@ -35,7 +35,7 @@ public class CDIExtension implements Extension {
     @SuppressWarnings("unused")
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
         AnnotatedType<VertxProducer> producer = bm.createAnnotatedType(VertxProducer.class);
-        bbd.addAnnotatedType(producer);
+        bbd.addAnnotatedType(producer, null);
     }
 
 }

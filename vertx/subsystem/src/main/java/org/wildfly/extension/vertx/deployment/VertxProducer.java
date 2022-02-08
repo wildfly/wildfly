@@ -17,6 +17,7 @@
 package org.wildfly.extension.vertx.deployment;
 
 import io.vertx.core.Vertx;
+import org.wildfly.extension.vertx.VertxProxy;
 import org.wildfly.extension.vertx.VertxRegistry;
 
 import javax.enterprise.inject.Produces;
@@ -32,11 +33,12 @@ public class VertxProducer {
     @SuppressWarnings("unused")
     @Produces
     public Vertx getVertx(InjectionPoint ip) {
-        if (ip.getType().equals(Vertx.class)) {
-            String name = ip.getMember().getName();
-            return VertxRegistry.getInstance().getVertx(name).getVertx();
+        String name = ip.getMember().getName();
+        VertxProxy vp = VertxRegistry.getInstance().getByNameOrAlias(name);
+        if (vp != null) {
+            return vp.getVertx();
         }
-        return null;
+        throw new RuntimeException("Cannot inject Vertx " + name + " in " + ip.getMember().getDeclaringClass());
     }
 
 }

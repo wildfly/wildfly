@@ -16,9 +16,14 @@
 package org.wildfly.extension.vertx;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.AttributeParser;
+import org.jboss.as.controller.ParameterCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -28,41 +33,62 @@ import java.util.List;
 public abstract class VertxAttributes {
 
     public static final SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(VertxConstants.JNDI_NAME, ModelType.STRING)
-            .setRequired(false)
-            .setAllowExpression(false)
-            .setRestartAllServices()
-            .setValidator(new ModelTypeValidator(ModelType.STRING, false))
-            .build();
+        .setRequired(false)
+        .setAllowExpression(false)
+        .setRestartAllServices()
+        .setValidator(new ModelTypeValidator(ModelType.STRING, false))
+        .build();
 
     public static final SimpleAttributeDefinition VERTX_OPTIONS_FILE = new SimpleAttributeDefinitionBuilder(VertxConstants.VERTX_OPTIONS_FILE, ModelType.STRING)
-            .setRequired(false)
-            .setAllowExpression(true)
-            .setRestartAllServices()
-            .setValidator(new ModelTypeValidator(ModelType.STRING, true))
-            .build();
+        .setRequired(false)
+        .setAllowExpression(true)
+        .setRestartAllServices()
+        .setValidator(new ModelTypeValidator(ModelType.STRING, true))
+        .build();
 
     public static final SimpleAttributeDefinition CLUSTERED = new SimpleAttributeDefinitionBuilder(VertxConstants.CLUSTERED, ModelType.BOOLEAN)
-            .setRequired(false)
-            .setAllowExpression(true)
-            .setRestartAllServices()
-            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
-            .setDefaultValue(ModelNode.TRUE)
-            .build();
+        .setRequired(false)
+        .setAllowExpression(true)
+        .setRestartAllServices()
+        .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
+        .setDefaultValue(ModelNode.TRUE)
+        .build();
 
     public static final SimpleAttributeDefinition JGROUPS_CHANNEL = new SimpleAttributeDefinitionBuilder(VertxConstants.JGROUPS_CHANNEL, ModelType.STRING)
-            .setRequired(false)
-            .setAllowExpression(true)
-            .setRestartAllServices()
-            .setValidator(new ModelTypeValidator(ModelType.STRING, true))
-            .build();
+        .setRequired(false)
+        .setAllowExpression(true)
+        .setRestartAllServices()
+        .setValidator(new ModelTypeValidator(ModelType.STRING, true))
+        .build();
 
     public static final SimpleAttributeDefinition FORKED_CHANNEL = new SimpleAttributeDefinitionBuilder(VertxConstants.FORKED_CHANNEL, ModelType.BOOLEAN)
-            .setRequired(false)
-            .setAllowExpression(true)
-            .setRestartAllServices()
-            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
-            .setDefaultValue(ModelNode.FALSE)
-            .build();
+        .setRequired(false)
+        .setAllowExpression(true)
+        .setRestartAllServices()
+        .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
+        .setDefaultValue(ModelNode.FALSE)
+        .build();
+
+    public static final StringListAttributeDefinition ALIAS = new StringListAttributeDefinition.Builder(VertxConstants.ALIAS)
+        .setRequired(false)
+        .setRestartAllServices()
+        .setElementValidator(new StringLengthValidator(1))
+        .setCorrector(new ParameterCorrector() {
+            public ModelNode correct(ModelNode newValue, ModelNode currentValue) {
+                if (newValue.getType() == ModelType.UNDEFINED) {
+                    return newValue;
+                } else if (newValue.getType() == ModelType.STRING && currentValue.getType() == ModelType.STRING) {
+                    newValue.set(newValue.asString().trim());
+                    return newValue;
+                } else {
+                    return newValue;
+                }
+            }
+        })
+        .setAllowExpression(true)
+        .setAttributeParser(AttributeParser.COMMA_DELIMITED_STRING_LIST)
+        .setAttributeMarshaller(AttributeMarshaller.COMMA_STRING_LIST)
+        .build();
 
     private static final List<AttributeDefinition> ATTRS = new ArrayList<>();
     static {
@@ -71,6 +97,7 @@ public abstract class VertxAttributes {
         ATTRS.add(CLUSTERED);
         ATTRS.add(JGROUPS_CHANNEL);
         ATTRS.add(FORKED_CHANNEL);
+        ATTRS.add(ALIAS);
     }
 
     static List<AttributeDefinition> getSimpleAttributes() {

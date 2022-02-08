@@ -52,7 +52,7 @@ public interface VertxLogger extends BasicLogger {
     OperationFailedException noJgroupsChannelConfigured(String name);
 
     @Message(id = 6, value = "Could not find VertxOptions from: %s")
-    IllegalStateException failedToStartVertx(String vertxOptionsFile, @Cause Exception e);
+    OperationFailedException failedToStartVertx(String vertxOptionsFile, @Cause Exception e);
 
     @Message(id = 7, value = "Failed to start VertxProxyService for %s")
     StartException failedToStartVertxService(String name, @Cause Throwable e);
@@ -83,4 +83,6 @@ public interface VertxLogger extends BasicLogger {
     @Message(id = 15, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
     DeploymentUnitProcessingException deploymentRequiresCapability(String deploymentName, String capabilityName);
 
+    @Message(id = 16, value = "Alias %s has been used already in Vertx: %s")
+    OperationFailedException aliasUsedAlready(String alias, String vertxName);
 }

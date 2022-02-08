@@ -36,20 +36,66 @@ public class VertxRegistry {
         this.vertxProxyMap = new ConcurrentHashMap<>();
     }
 
+    /**
+     * Registers a VertxProxy to this registry. The name is used as the global unique key.
+     * <p>
+     *   This is called when VertxProxyService is started.
+     * </p>
+     *
+     * @param vertxProxy the VertxProxy to register.
+     */
     public void registerVertx(VertxProxy vertxProxy) {
         this.vertxProxyMap.put(vertxProxy.getName(), vertxProxy);
     }
 
+    /**
+     * Un-registers a VertxProxy by it's name.
+     * <p>
+     *   This is called when VertxProxyService is stopped.
+     * </p>
+     *
+     * @param name the VertxProxy name
+     */
     public void unRegister(String name) {
         this.vertxProxyMap.remove(name);
     }
 
+    /**
+     * Lists all registered VertxProxy
+     *
+     * @return the list of all registered VertxProxy
+     */
     public Collection<VertxProxy> listVertx() {
         return this.vertxProxyMap.values();
     }
 
+    /**
+     * Gets the VertxProxy by it's name
+     *
+     * @param name the name of the VertxProxy
+     * @return the VertxProxy or null if not found.
+     */
     public VertxProxy getVertx(String name) {
         return this.vertxProxyMap.get(name);
+    }
+
+    /**
+     * Gets the VertxProxy by searching the name or aliases.
+     *
+     * @param alias the alias or name to be searched.
+     * @return the VertxProxy or null if not found
+     */
+    public VertxProxy getByNameOrAlias(String alias) {
+        VertxProxy vp = getVertx(alias);
+        if (vp != null) {
+            return vp;
+        }
+        for (VertxProxy vertxProxy: listVertx()) {
+            if (vertxProxy.getAliases().contains(alias)) {
+                return vertxProxy;
+            }
+        }
+        return null;
     }
 
 }

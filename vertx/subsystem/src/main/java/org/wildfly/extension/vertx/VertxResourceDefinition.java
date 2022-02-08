@@ -120,19 +120,32 @@ public class VertxResourceDefinition extends SimpleResourceDefinition {
                 throw VERTX_LOGGER.noJgroupsChannelConfigured(name);
             }
             final boolean forkedChannel = VertxAttributes.FORKED_CHANNEL.resolveModelAttribute(context, operation).asBoolean();
-            try {
-                final VertxOptions vertxOptions;
-                if (vertxOptionsFile == null) {
-                    vertxOptions = new VertxOptions();
-                } else {
+            final List<String> aliases = operation.hasDefined(VertxConstants.ALIAS) ? VertxAttributes.ALIAS.unwrap(context, operation) : null;
+            final VertxOptions vertxOptions;
+            if (vertxOptionsFile == null) {
+                vertxOptions = new VertxOptions();
+            } else {
+                try {
                     JsonObject json = readJsonFromFile(vertxOptionsFile);
                     vertxOptions = new VertxOptions(json);
+                } catch (IOException e) {
+                    throw VERTX_LOGGER.failedToStartVertx(name, e);
                 }
-                final VertxProxy vertxProxy = new VertxProxy(name, jndiName, vertxOptions, clustered, jgroupChannel);
-                VertxProxyService.installService(context, vertxProxy, forkedChannel);
-            } catch (Exception e) {
-                throw VERTX_LOGGER.failedToStartVertx(name, e);
             }
+            final VertxProxy vertxProxy = new VertxProxy(name, jndiName, vertxOptions, clustered, jgroupChannel);
+            if (aliases != null) {
+                vertxProxy.setAliases(aliases);
+                if (aliases.contains(name)) {
+                    throw VERTX_LOGGER.aliasUsedAlready(name, name);
+                }
+                for (String alias : aliases) {
+                    VertxProxy vp = VertxRegistry.getInstance().getByNameOrAlias(alias);
+                    if (vp != null) {
+                        throw VERTX_LOGGER.aliasUsedAlready(alias, vp.getName());
+                    }
+                }
+            }
+            VertxProxyService.installService(context, vertxProxy, forkedChannel);
         }
 
         private JsonObject readJsonFromFile(String vertxOptionsFile) throws IOException {

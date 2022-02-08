@@ -25,6 +25,7 @@ public interface VertxConstants {
     String CLUSTERED = "clustered";
     String JGROUPS_CHANNEL = "jgroups-channel";
     String FORKED_CHANNEL = "forked-channel";
+    String ALIAS = "alias";
 
     String DEFAULT_CACHE_NAME = "distributed-cache";
     String SUBS_CACHE_NAME = "__vertx.subs";
