@@ -24,7 +24,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONTAINER;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.ListAttribute.ALIASES;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
@@ -53,7 +52,6 @@ import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ServiceValueCaptor;
 import org.jboss.as.clustering.controller.ServiceValueRegistry;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
@@ -137,7 +135,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
 
     @Override
     public CacheContainerServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        List<ModelNode> aliases = ModelNodes.optionalList(ALIASES.resolveModelAttribute(context, model)).orElse(Collections.emptyList());
+        List<ModelNode> aliases = ALIASES.resolveModelAttribute(context, model).asListOrEmpty();
         this.names = new ServiceName[aliases.size() + 1];
         this.names[0] = this.getServiceName();
         for (int i = 0; i < aliases.size(); ++i) {
