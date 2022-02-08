@@ -35,7 +35,7 @@ import org.wildfly.security.ParametricPrivilegedAction;
  */
 public class DefaultExecutorService extends ContextualExecutorService {
 
-    public static final ParametricPrivilegedAction<Void, ExecutorService> SHUTDOWN_ACTION = new ParametricPrivilegedAction<Void, ExecutorService>() {
+    public static final ParametricPrivilegedAction<Void, ExecutorService> SHUTDOWN_ACTION = new ParametricPrivilegedAction<>() {
         @Override
         public Void run(ExecutorService executor) {
             executor.shutdown();
@@ -43,7 +43,7 @@ public class DefaultExecutorService extends ContextualExecutorService {
         }
     };
 
-    public static final ParametricPrivilegedAction<List<Runnable>, ExecutorService> SHUTDOWN_NOW_ACTION = new ParametricPrivilegedAction<List<Runnable>, ExecutorService>() {
+    public static final ParametricPrivilegedAction<List<Runnable>, ExecutorService> SHUTDOWN_NOW_ACTION = new ParametricPrivilegedAction<>() {
         @Override
         public List<Runnable> run(ExecutorService executor) {
             return executor.shutdownNow();
@@ -51,6 +51,6 @@ public class DefaultExecutorService extends ContextualExecutorService {
     };
 
     public DefaultExecutorService(Class<?> targetClass, Function<ThreadFactory, ExecutorService> factory) {
-        super(factory.apply(new DefaultThreadFactory(targetClass)), new DefaultContextualizer(targetClass));
+        super(factory.apply(new DefaultThreadFactory(targetClass)), DefaultContextualizerFactory.INSTANCE.createContextualizer(targetClass));
     }
 }
