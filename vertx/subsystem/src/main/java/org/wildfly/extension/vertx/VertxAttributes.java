@@ -51,7 +51,7 @@ public abstract class VertxAttributes {
         .setAllowExpression(true)
         .setRestartAllServices()
         .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
-        .setDefaultValue(ModelNode.TRUE)
+        .setDefaultValue(ModelNode.FALSE)
         .build();
 
     public static final SimpleAttributeDefinition JGROUPS_CHANNEL = new SimpleAttributeDefinitionBuilder(VertxConstants.JGROUPS_CHANNEL, ModelType.STRING)
