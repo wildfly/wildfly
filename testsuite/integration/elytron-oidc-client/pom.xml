@@ -110,22 +110,22 @@
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
                 <version>${version.org.wildfly.plugin}</version>
-                <configuration>
-                    <offline>true</offline>
-                    <jboss-home>${wildfly.dir}</jboss-home>
-                    <stdout>none</stdout>
-                    <java-opts>${modular.jdk.args}</java-opts>
-                    <system-properties>
-                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                        <module.path>${jboss.dist}/modules</module.path>
-                    </system-properties>
-                </configuration>
                 <executions>
                     <execution>
                         <phase>process-test-resources</phase>
                         <goals>
                             <goal>execute-commands</goal>
                         </goals>
+                        <configuration>
+                            <offline>true</offline>
+                            <jboss-home>${wildfly.dir}</jboss-home>
+                            <stdout>none</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
+                            <system-properties>
+                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${jboss.dist}/modules</module.path>
+                            </system-properties>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -251,12 +251,6 @@
                                     <goal>execute-commands</goal>
                                 </goals>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
                             <execution>
                                 <id>elytron-oidc-client-provisioning</id>
                                 <goals>
@@ -264,15 +258,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -282,16 +276,10 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>elytron-oidc-client</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>elytron-oidc-client</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                         </executions>
@@ -365,12 +353,6 @@
                                     <goal>execute-commands</goal>
                                 </goals>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
                             <execution>
                                 <id>elytron-oidc-client-provisioning</id>
                                 <goals>
@@ -378,17 +360,17 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                         <jboss-maven-provisioning-repo>${wildfly.transformed.repo.dir}</jboss-maven-provisioning-repo>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -398,16 +380,10 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>elytron-oidc-client</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>elytron-oidc-client</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                         </executions>
@@ -571,12 +547,6 @@
                                 </goals>
                                 <phase>none</phase>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
                                 <id>server-provisioning</id>
@@ -663,12 +633,6 @@
                                 </goals>
                                 <phase>none</phase>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
                                 <id>server-provisioning</id>
