@@ -139,8 +139,7 @@ public class LifecycleCMTTxInterceptor extends CMTTxInterceptor {
                 }
                 txAttr = TransactionAttributeType.NOT_SUPPORTED;
             }
-            final LifecycleCMTTxInterceptor interceptor = new LifecycleCMTTxInterceptor(txAttr, txTimeout);
-            return interceptor;
+            return new LifecycleCMTTxInterceptor(txAttr, txTimeout);
         }
     }
 
