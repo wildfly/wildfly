@@ -40,13 +40,13 @@
     </dependencies>
     
     <properties>
-        <layers.install.dir>${project.build.directory}/layers-results</layers.install.dir>
+        <layers.install.dir>layers-results</layers.install.dir>
         <!-- Put 'servlet' installations in the same dir as others. Set this to
              a different dir if testing the servlet feature pack. -->
         <servlet.layers.install.dir>${layers.install.dir}</servlet.layers.install.dir>
         <!-- An empty layer for this will disable 'servlet dist' tests which are meant for testing
              the servlet feature pack. -->
-        <servlet.layers.install.root>${project.build.directory}/servlet-layers-results</servlet.layers.install.root>
+        <servlet.layers.install.root>servlet-layers-results</servlet.layers.install.root>
         <layers.delete.installations>true</layers.delete.installations>
         <jbossas.project.dir>${jbossas.ts.dir}/../..</jbossas.project.dir>
         
@@ -119,19 +119,20 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <configuration>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>${galleon.offline}</offline>
-                            <plugin-options>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
                                 <jboss-maven-dist/>
                                 <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
                                 <jboss-maven-provisioning-repo>${maven.repo.local}</jboss-maven-provisioning-repo>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                 <optional-packages>passive+</optional-packages>
-                            </plugin-options>
+                            </galleon-options>
                         </configuration>
                         <!--
                             Keep the executions that use Galleon layers defined only in the wildfly-galleon-pack
@@ -145,7 +146,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/cloud-server</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/cloud-server</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -155,15 +156,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -173,7 +168,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/cloud-server-clustered</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/cloud-server-clustered</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -183,16 +178,10 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>web-clustering</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>web-clustering</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -202,7 +191,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/cloud-server-decorated</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/cloud-server-decorated</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -212,17 +201,11 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>web-clustering</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>web-clustering</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -232,7 +215,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/cloud-server-h2</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/cloud-server-h2</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -242,16 +225,10 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -261,7 +238,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/cloud-server-h2</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/cloud-server-h2</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -271,20 +248,14 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>jpa-distributed</layer>
-                                                <layer>h2-default-datasource</layer>
-                                            </layers>
-                                            <excluded-layers>
-                                                <layer>jpa</layer>
-                                            </excluded-layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>jpa-distributed</layer>
+                                        <layer>h2-default-datasource</layer>
+                                    </layers>
+                                    <excluded-layers>
+                                        <layer>jpa</layer>
+                                    </excluded-layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -294,7 +265,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/datasources-web-server</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/datasources-web-server</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -304,15 +275,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>datasources-web-server</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>datasources-web-server</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -322,7 +287,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/datasources-web-server-clustered</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/datasources-web-server-clustered</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -332,16 +297,10 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>datasources-web-server</layer>
-                                                <layer>web-clustering</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>datasources-web-server</layer>
+                                        <layer>web-clustering</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -351,7 +310,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/datasources-web-server-decorated</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/datasources-web-server-decorated</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -361,18 +320,12 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>datasources-web-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>observability</layer>
-                                                <layer>web-clustering</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>datasources-web-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>observability</layer>
+                                        <layer>web-clustering</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -382,7 +335,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/datasources-web-server-h2</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/datasources-web-server-h2</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -392,16 +345,12 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>datasources-web-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>datasources-web-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>observability</layer>
+                                        <layer>web-clustering</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -411,7 +360,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/datasources-web-server-h2</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/datasources-web-server-h2</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -421,17 +370,11 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>datasources-web-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>jpa-distributed</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>datasources-web-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>jpa-distributed</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -441,7 +384,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/datasources-web-server-observability</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/datasources-web-server-observability</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -451,16 +394,10 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>datasources-web-server</layer>
-                                                <layer>observability</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>datasources-web-server</layer>
+                                        <layer>observability</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -470,7 +407,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/iiop-openjdk-server</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/iiop-openjdk-server</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -480,15 +417,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>iiop-openjdk</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>iiop-openjdk</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -498,7 +429,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/jaxrs-server</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/jaxrs-server</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -508,15 +439,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>jaxrs-server</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>jaxrs-server</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -526,7 +451,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/jaxrs-server-clustered</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/jaxrs-server-clustered</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -536,16 +461,10 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>jaxrs-server</layer>
-                                                <layer>web-clustering</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>jaxrs-server</layer>
+                                        <layer>web-clustering</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -555,7 +474,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/jaxrs-server-decorated</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/jaxrs-server-decorated</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -565,18 +484,12 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>jaxrs-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>observability</layer>
-                                                <layer>web-clustering</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>jaxrs-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>observability</layer>
+                                        <layer>web-clustering</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -586,7 +499,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/jaxrs-server-h2</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/jaxrs-server-h2</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -596,16 +509,10 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>jaxrs-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>jaxrs-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -615,7 +522,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/jaxrs-server-observability</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/jaxrs-server-observability</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -625,16 +532,10 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>jaxrs-server</layer>
-                                                <layer>observability</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>jaxrs-server</layer>
+                                        <layer>observability</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -642,27 +543,21 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>${provisioning.phase.preview.excluded}</phase>
+                                <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/jpa-distributed</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/jpa-distributed</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-test-galleon-pack</artifactId>
-                                            <version>${ee.maven.version}</version>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>jpa-distributed</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>jpa-distributed</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -672,7 +567,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/web-clustering</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/web-clustering</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -682,15 +577,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>web-clustering</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>web-clustering</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -700,7 +589,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/web-passivation</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/web-passivation</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -710,15 +599,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>web-passivation</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>web-passivation</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <!-- servlet layers. Most of these we now by default provision
@@ -726,27 +609,20 @@
                             <execution>
                                 <!-- Build the test-standalone-reference from the servlet feature pack.
                                      This is not a layer test. It's a test of the standard standalone.xml
-                                      produced by a feature pack and we have another execution that
-                                      does the same for wildfly-ee. -->
+                                     produced by a feature pack and we have another execution that
+                                     does the same for wildfly-ee. -->
                                 <id>test-standalone-reference-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
                                 <phase>${provisioning.phase.preview.excluded}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.root}/test-standalone-reference</install-dir>
+                                    <provisioning-dir>${servlet.layers.install.root}/test-standalone-reference</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.maven.groupId}</groupId>
                                             <artifactId>wildfly-servlet-galleon-pack</artifactId>
                                             <version>${ee.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <included-configs>
-                                                <config>
-                                                    <model>standalone</model>
-                                                    <name>standalone.xml</name>
-                                                </config>
-                                            </included-configs>
                                         </feature-pack>
                                     </feature-packs>
                                 </configuration>
@@ -758,7 +634,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/ee</install-dir>
+                                    <provisioning-dir>${servlet.layers.install.root}/ee</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${servlet.feature.pack.groupId}</groupId>
@@ -768,15 +644,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>ee</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>ee</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -786,7 +656,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/undertow-https</install-dir>
+                                    <provisioning-dir>${servlet.layers.install.root}/undertow-https</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${servlet.feature.pack.groupId}</groupId>
@@ -796,15 +666,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>undertow-https</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>undertow-https</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -814,7 +678,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/undertow-load-balancer</install-dir>
+                                    <provisioning-dir>${servlet.layers.install.root}/undertow-load-balancer</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${servlet.feature.pack.groupId}</groupId>
@@ -824,15 +688,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>undertow-load-balancer</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>undertow-load-balancer</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -842,7 +700,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/naming</install-dir>
+                                    <provisioning-dir>${servlet.layers.install.root}/naming</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${servlet.feature.pack.groupId}</groupId>
@@ -852,15 +710,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>naming</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>naming</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -870,7 +722,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/undertow</install-dir>
+                                    <provisioning-dir>${servlet.layers.install.root}/undertow</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${servlet.feature.pack.groupId}</groupId>
@@ -880,15 +732,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>undertow</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>undertow</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -898,7 +744,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.dir}/web-server</install-dir>
+                                    <provisioning-dir>${servlet.layers.install.root}/web-server</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${servlet.feature.pack.groupId}</groupId>
@@ -908,15 +754,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>web-server</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>web-server</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <!-- Build the test-all-layers from the servlet feature pack.
@@ -929,7 +769,7 @@
                                 </goals>
                                 <phase>${provisioning.phase.preview.excluded}</phase>
                                 <configuration>
-                                    <install-dir>${servlet.layers.install.root}/test-all-layers</install-dir>
+                                    <provisioning-dir>${servlet.layers.install.root}/test-all-layers</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.maven.groupId}</groupId>
@@ -939,24 +779,18 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>ee</layer>
-                                                <layer>undertow-load-balancer</layer>
-                                                <layer>naming</layer>
-                                                <layer>undertow</layer>
-                                                <layer>undertow-https</layer>
-                                                <layer>web-server</layer>
-                                                <!-- core-server, core-tools are from core, 
-                                                required to compare all layers with reference installation -->
-                                                <layer>core-server</layer>
-                                                <layer>core-tools</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>ee</layer>
+                                        <layer>undertow-load-balancer</layer>
+                                        <layer>naming</layer>
+                                        <layer>undertow</layer>
+                                        <layer>undertow-https</layer>
+                                        <layer>web-server</layer>
+                                        <!-- core-server, core-tools are from core,
+                                        required to compare all layers with reference installation -->
+                                        <layer>core-server</layer>
+                                        <layer>core-tools</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <!-- wildfly layers -->
@@ -967,7 +801,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/batch-jberet</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/batch-jberet</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -977,15 +811,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>batch-jberet</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>batch-jberet</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -995,7 +823,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/bean-validation</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/bean-validation</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1005,15 +833,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>bean-validation</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>bean-validation</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1023,7 +845,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/cdi</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/cdi</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1033,15 +855,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cdi</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cdi</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1051,7 +867,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/cloud-profile</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/cloud-profile</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1061,15 +877,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-profile</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-profile</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1079,7 +889,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/datasources</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/datasources</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1089,15 +899,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>datasources</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>datasources</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1107,7 +911,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/ee</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/ee</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1117,15 +921,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>ee</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>ee</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1135,7 +933,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/ee-security</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/ee-security</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1145,15 +943,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>ee-security</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>ee-security</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1163,7 +955,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/ejb</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/ejb</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1173,15 +965,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>ejb</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>ejb</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1191,7 +977,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/ejb-lite</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/ejb-lite</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1201,15 +987,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>ejb-lite</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>ejb-lite</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1219,7 +999,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/ejb-lite-dist-cache</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/ejb-lite-dist-cache</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1229,19 +1009,13 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>ejb-lite</layer>
-                                                <layer>ejb-dist-cache</layer>
-                                            </layers>
-                                            <excluded-layers>
-                                                <layer>ejb-local-cache</layer>
-                                            </excluded-layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>ejb-lite</layer>
+                                        <layer>ejb-dist-cache</layer>
+                                    </layers>
+                                    <excluded-layers>
+                                        <layer>ejb-local-cache</layer>
+                                    </excluded-layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1251,7 +1025,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/ejb-dist-cache</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/ejb-dist-cache</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1261,15 +1035,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>ejb-dist-cache</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>ejb-dist-cache</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1279,7 +1047,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/ejb-http-invoker</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/ejb-http-invoker</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1289,15 +1057,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>ejb-http-invoker</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>ejb-http-invoker</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1307,7 +1069,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/ejb-local-cache</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/ejb-local-cache</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1317,15 +1079,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>ejb-local-cache</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>ejb-local-cache</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1335,7 +1091,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/h2-datasource</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/h2-datasource</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1345,26 +1101,20 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-profile</layer>
-                                                <layer>h2-datasource</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-profile</layer>
+                                        <layer>h2-datasource</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
-                            <execution>   
+                            <execution>
                                 <id>h2-default-datasource-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/h2-default-datasource</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/h2-default-datasource</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1374,27 +1124,21 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>web-server</layer>
-                                                <layer>jpa</layer>
-                                                <layer>h2-default-datasource</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>web-server</layer>
+                                        <layer>jpa</layer>
+                                        <layer>h2-default-datasource</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
-                            <execution>   
+                            <execution>
                                 <id>h2-driver-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/h2-driver</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/h2-driver</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1404,17 +1148,11 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>web-server</layer>
-                                                <layer>jpa</layer>
-                                                <layer>h2-driver</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>web-server</layer>
+                                        <layer>jpa</layer>
+                                        <layer>h2-driver</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1424,7 +1162,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/jaxrs</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/jaxrs</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1434,15 +1172,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>jaxrs</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>jaxrs</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1452,7 +1184,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/jdr</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/jdr</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1462,15 +1194,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>jdr</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>jdr</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1480,7 +1206,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/jms-activemq</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/jms-activemq</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1490,15 +1216,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>jms-activemq</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>jms-activemq</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1508,7 +1228,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/jsonp</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/jsonp</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1518,15 +1238,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>jsonp</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>jsonp</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1536,7 +1250,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/jsonb</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/jsonb</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1546,15 +1260,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>jsonb</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>jsonb</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1564,7 +1272,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/remote-activemq</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/remote-activemq</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1574,15 +1282,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>remote-activemq</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>remote-activemq</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1592,7 +1294,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/jpa</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/jpa</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1602,15 +1304,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>jpa</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>jpa</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1620,7 +1316,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/jsf</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/jsf</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1630,15 +1326,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>jsf</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>jsf</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -1650,7 +1340,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/mail</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/mail</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1660,18 +1350,11 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>mail</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>mail</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
-
                             <execution>
                                 <id>messaging-activemq-provisioning</id>
                                 <goals>
@@ -1679,7 +1362,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/messaging-activemq</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/messaging-activemq</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1689,15 +1372,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>messaging-activemq</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>messaging-activemq</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1707,7 +1384,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/observability</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/observability</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1717,15 +1394,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>observability</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>observability</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1735,7 +1406,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/opentelemetry</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/opentelemetry</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1745,15 +1416,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>opentelemetry</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>opentelemetry</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1763,7 +1428,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/pojo</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/pojo</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1773,15 +1438,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>pojo</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>pojo</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1791,7 +1450,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/resource-adapters</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/resource-adapters</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1801,15 +1460,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>resource-adapters</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>resource-adapters</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <!-- SAR provisioning -->
@@ -1820,7 +1473,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/sar</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/sar</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1830,15 +1483,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>sar</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>sar</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1848,7 +1495,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/transactions</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/transactions</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1858,15 +1505,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>transactions</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>transactions</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1876,7 +1517,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/undertow</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/undertow</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1886,15 +1527,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>undertow</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>undertow</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1904,7 +1539,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/web-console</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/web-console</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1914,15 +1549,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>web-console</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>web-console</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1932,7 +1561,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/webservices</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/webservices</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -1942,15 +1571,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>webservices</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>webservices</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -1964,7 +1587,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-platform</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/microprofile-platform</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -1974,15 +1597,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-platform</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>microprofile-platform</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1992,7 +1609,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-config</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/microprofile-config</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -2002,15 +1619,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-config</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>microprofile-config</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -2020,7 +1631,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-health</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/microprofile-health</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -2030,15 +1641,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-health</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>microprofile-health</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -2048,7 +1653,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-metrics</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/microprofile-metrics</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -2058,15 +1663,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-metrics</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>microprofile-metrics</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -2076,7 +1675,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-openapi</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/microprofile-openapi</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -2086,15 +1685,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-openapi</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>microprofile-openapi</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -2104,7 +1697,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-fault-tolerance</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/microprofile-fault-tolerance</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -2114,15 +1707,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-fault-tolerance</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>microprofile-fault-tolerance</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -2132,7 +1719,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-jwt</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/microprofile-jwt</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -2142,15 +1729,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-jwt</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>microprofile-jwt</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -2160,7 +1741,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-standalone</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/microprofile-standalone</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -2170,21 +1751,15 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>microprofile-fault-tolerance</layer>
-                                                <layer>microprofile-jwt</layer>
-                                                <layer>microprofile-openapi</layer>
-                                                <layer>undertow-https</layer>
-                                                <layer>web-passivation</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>microprofile-fault-tolerance</layer>
+                                        <layer>microprofile-jwt</layer>
+                                        <layer>microprofile-openapi</layer>
+                                        <layer>undertow-https</layer>
+                                        <layer>web-passivation</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -2194,7 +1769,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-standalone-ha</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/microprofile-standalone-ha</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -2204,25 +1779,19 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>microprofile-fault-tolerance</layer>
-                                                <layer>microprofile-jwt</layer>
-                                                <layer>microprofile-openapi</layer>
-                                                <layer>undertow-https</layer>
-                                                <layer>jpa-distributed</layer>
-                                                <layer>web-clustering</layer>
-                                            </layers>
-                                            <excluded-layers>
-                                                <layer>jpa</layer>
-                                            </excluded-layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>microprofile-fault-tolerance</layer>
+                                        <layer>microprofile-jwt</layer>
+                                        <layer>microprofile-openapi</layer>
+                                        <layer>undertow-https</layer>
+                                        <layer>jpa-distributed</layer>
+                                        <layer>web-clustering</layer>
+                                    </layers>
+                                    <excluded-layers>
+                                        <layer>jpa</layer>
+                                    </excluded-layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -2232,7 +1801,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/open-tracing</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/open-tracing</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -2242,15 +1811,9 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-opentracing</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>microprofile-opentracing</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
@@ -2264,7 +1827,7 @@
                                 </goals>
                                 <phase>${provisioning.phase.preview.excluded}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/test-all-layers</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/test-all-layers</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -2274,86 +1837,80 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>base-server</layer>
-                                                <layer>batch-jberet</layer>
-                                                <layer>bean-validation</layer>
-                                                <layer>cdi</layer>
-                                                <layer>cloud-profile</layer>
-                                                <layer>cloud-server</layer>
-                                                <layer>core-management</layer>
-                                                <layer>core-server</layer>
-                                                <layer>core-tools</layer>
-                                                <layer>datasources</layer>
-                                                <layer>datasources-web-server</layer>
-                                                <layer>deployment-scanner</layer>
-                                                <layer>discovery</layer>
-                                                <layer>ee</layer>
-                                                <layer>ee-security</layer>
-                                                <layer>ejb</layer>
-                                                <layer>ejb-http-invoker</layer>
-                                                <layer>ejb-lite</layer>
-                                                <layer>ejb-local-cache</layer>
-                                                <layer>elytron</layer>
-                                                <layer>h2-datasource</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>h2-driver</layer>
-                                                <layer>iiop-openjdk</layer>
-                                                <layer>io</layer>
-                                                <layer>jaxrs</layer>
-                                                <layer>jaxrs-server</layer>
-                                                <layer>jdr</layer>
-                                                <layer>jms-activemq</layer>
-                                                <layer>jmx</layer>
-                                                <layer>jmx-remoting</layer>
-                                                <layer>jpa</layer>
-                                                <layer>jsf</layer>
-                                                <layer>jsonb</layer>
-                                                <layer>jsonp</layer>
-                                                <layer>logging</layer>
-                                                <layer>mail</layer>
-                                                <layer>management</layer>
-                                                <layer>messaging-activemq</layer>
-                                                <layer>naming</layer>
-                                                <layer>observability</layer>
-                                                <layer>opentelemetry</layer>
-                                                <layer>pojo</layer>
-                                                <layer>remote-activemq</layer>
-                                                <layer>remoting</layer>
-                                                <layer>request-controller</layer>
-                                                <layer>resource-adapters</layer>
-                                                <layer>sar</layer>
-                                                <layer>security-manager</layer>
-                                                <layer>transactions</layer>
-                                                <layer>undertow</layer>
-                                                <layer>undertow-https</layer>
-                                                <layer>undertow-load-balancer</layer>
-                                                <layer>web-passivation</layer>
-                                                <layer>web-console</layer>
-                                                <layer>web-server</layer>
-                                                <layer>webservices</layer>
-                                                <!--
-                                                    Galleon layers defined only in the wildfly-galleon-pack
-                                                 -->
-                                                <layer>microprofile-config</layer>
-                                                <layer>microprofile-fault-tolerance</layer>
-                                                <layer>microprofile-health</layer>
-                                                <layer>microprofile-jwt</layer>
-                                                <layer>microprofile-metrics</layer>
-                                                <layer>microprofile-openapi</layer>
-                                                <layer>microprofile-opentracing</layer>
-                                                <layer>microprofile-platform</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>base-server</layer>
+                                        <layer>batch-jberet</layer>
+                                        <layer>bean-validation</layer>
+                                        <layer>cdi</layer>
+                                        <layer>cloud-profile</layer>
+                                        <layer>cloud-server</layer>
+                                        <layer>core-management</layer>
+                                        <layer>core-server</layer>
+                                        <layer>core-tools</layer>
+                                        <layer>datasources</layer>
+                                        <layer>datasources-web-server</layer>
+                                        <layer>deployment-scanner</layer>
+                                        <layer>discovery</layer>
+                                        <layer>ee</layer>
+                                        <layer>ee-security</layer>
+                                        <layer>ejb</layer>
+                                        <layer>ejb-http-invoker</layer>
+                                        <layer>ejb-lite</layer>
+                                        <layer>ejb-local-cache</layer>
+                                        <layer>elytron</layer>
+                                        <layer>h2-datasource</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>h2-driver</layer>
+                                        <layer>iiop-openjdk</layer>
+                                        <layer>io</layer>
+                                        <layer>jaxrs</layer>
+                                        <layer>jaxrs-server</layer>
+                                        <layer>jdr</layer>
+                                        <layer>jms-activemq</layer>
+                                        <layer>jmx</layer>
+                                        <layer>jmx-remoting</layer>
+                                        <layer>jpa</layer>
+                                        <layer>jsf</layer>
+                                        <layer>jsonb</layer>
+                                        <layer>jsonp</layer>
+                                        <layer>logging</layer>
+                                        <layer>mail</layer>
+                                        <layer>management</layer>
+                                        <layer>messaging-activemq</layer>
+                                        <layer>naming</layer>
+                                        <layer>observability</layer>
+                                        <layer>opentelemetry</layer>
+                                        <layer>pojo</layer>
+                                        <layer>remote-activemq</layer>
+                                        <layer>remoting</layer>
+                                        <layer>request-controller</layer>
+                                        <layer>resource-adapters</layer>
+                                        <layer>sar</layer>
+                                        <layer>security-manager</layer>
+                                        <layer>transactions</layer>
+                                        <layer>undertow</layer>
+                                        <layer>undertow-https</layer>
+                                        <layer>undertow-load-balancer</layer>
+                                        <layer>web-passivation</layer>
+                                        <layer>web-console</layer>
+                                        <layer>web-server</layer>
+                                        <layer>webservices</layer>
+                                        <!--
+                                            Galleon layers defined only in the wildfly-galleon-pack
+                                         -->
+                                        <layer>microprofile-config</layer>
+                                        <layer>microprofile-fault-tolerance</layer>
+                                        <layer>microprofile-health</layer>
+                                        <layer>microprofile-jwt</layer>
+                                        <layer>microprofile-metrics</layer>
+                                        <layer>microprofile-openapi</layer>
+                                        <layer>microprofile-opentracing</layer>
+                                        <layer>microprofile-platform</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
 
-                           <!-- This is an all layers variant excluding jpa and adding jpa-distributed -->
+                            <!-- This is an all layers variant excluding jpa and adding jpa-distributed -->
                             <execution>
                                 <id>all-layers-jpa-distributed-provisioning-full</id>
                                 <goals>
@@ -2361,7 +1918,7 @@
                                 </goals>
                                 <phase>${provisioning.phase.preview.excluded}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/test-all-layers-jpa-distributed</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/test-all-layers-jpa-distributed</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
@@ -2371,85 +1928,79 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>base-server</layer>
-                                                <layer>batch-jberet</layer>
-                                                <layer>bean-validation</layer>
-                                                <layer>cdi</layer>
-                                                <layer>cloud-profile</layer>
-                                                <layer>cloud-server</layer>
-                                                <layer>core-management</layer>
-                                                <layer>core-server</layer>
-                                                <layer>core-tools</layer>
-                                                <layer>datasources</layer>
-                                                <layer>datasources-web-server</layer>
-                                                <layer>deployment-scanner</layer>
-                                                <layer>discovery</layer>
-                                                <layer>ee</layer>
-                                                <layer>ee-security</layer>
-                                                <layer>ejb</layer>
-                                                <layer>ejb-dist-cache</layer>
-                                                <layer>ejb-http-invoker</layer>
-                                                <layer>ejb-lite</layer>
-                                                <layer>elytron</layer>
-                                                <layer>h2-datasource</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>h2-driver</layer>
-                                                <layer>iiop-openjdk</layer>
-                                                <layer>io</layer>
-                                                <layer>jaxrs</layer>
-                                                <layer>jaxrs-server</layer>
-                                                <layer>jdr</layer>
-                                                <layer>jms-activemq</layer>
-                                                <layer>jmx</layer>
-                                                <layer>jmx-remoting</layer>
-                                                <layer>jpa-distributed</layer>
-                                                <layer>jsf</layer>
-                                                <layer>jsonb</layer>
-                                                <layer>jsonp</layer>
-                                                <layer>logging</layer>
-                                                <layer>mail</layer>
-                                                <layer>management</layer>
-                                                <layer>messaging-activemq</layer>
-                                                <layer>naming</layer>
-                                                <layer>observability</layer>
-                                                <layer>opentelemetry</layer>
-                                                <layer>pojo</layer>
-                                                <layer>remote-activemq</layer>
-                                                <layer>remoting</layer>
-                                                <layer>request-controller</layer>
-                                                <layer>resource-adapters</layer>
-                                                <layer>sar</layer>
-                                                <layer>security-manager</layer>
-                                                <layer>transactions</layer>
-                                                <layer>undertow</layer>
-                                                <layer>undertow-https</layer>
-                                                <layer>undertow-load-balancer</layer>
-                                                <layer>web-clustering</layer>
-                                                <layer>web-console</layer>
-                                                <layer>web-server</layer>
-                                                <layer>webservices</layer>
-                                                <!--
-                                                    Galleon layers defined only in the wildfly-galleon-pack
-                                                 -->
-                                                <layer>microprofile-config</layer>
-                                                <layer>microprofile-fault-tolerance</layer>
-                                                <layer>microprofile-health</layer>
-                                                <layer>microprofile-jwt</layer>
-                                                <layer>microprofile-metrics</layer>
-                                                <layer>microprofile-openapi</layer>
-                                                <layer>microprofile-opentracing</layer>
-                                                <layer>microprofile-platform</layer>
-                                            </layers>
-                                            <excluded-layers>
-                                                <layer>jpa</layer>
-                                            </excluded-layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>base-server</layer>
+                                        <layer>batch-jberet</layer>
+                                        <layer>bean-validation</layer>
+                                        <layer>cdi</layer>
+                                        <layer>cloud-profile</layer>
+                                        <layer>cloud-server</layer>
+                                        <layer>core-management</layer>
+                                        <layer>core-server</layer>
+                                        <layer>core-tools</layer>
+                                        <layer>datasources</layer>
+                                        <layer>datasources-web-server</layer>
+                                        <layer>deployment-scanner</layer>
+                                        <layer>discovery</layer>
+                                        <layer>ee</layer>
+                                        <layer>ee-security</layer>
+                                        <layer>ejb</layer>
+                                        <layer>ejb-dist-cache</layer>
+                                        <layer>ejb-http-invoker</layer>
+                                        <layer>ejb-lite</layer>
+                                        <layer>elytron</layer>
+                                        <layer>h2-datasource</layer>
+                                        <layer>h2-default-datasource</layer>
+                                        <layer>h2-driver</layer>
+                                        <layer>iiop-openjdk</layer>
+                                        <layer>io</layer>
+                                        <layer>jaxrs</layer>
+                                        <layer>jaxrs-server</layer>
+                                        <layer>jdr</layer>
+                                        <layer>jms-activemq</layer>
+                                        <layer>jmx</layer>
+                                        <layer>jmx-remoting</layer>
+                                        <layer>jpa-distributed</layer>
+                                        <layer>jsf</layer>
+                                        <layer>jsonb</layer>
+                                        <layer>jsonp</layer>
+                                        <layer>logging</layer>
+                                        <layer>mail</layer>
+                                        <layer>management</layer>
+                                        <layer>messaging-activemq</layer>
+                                        <layer>naming</layer>
+                                        <layer>observability</layer>
+                                        <layer>opentelemetry</layer>
+                                        <layer>pojo</layer>
+                                        <layer>remote-activemq</layer>
+                                        <layer>remoting</layer>
+                                        <layer>request-controller</layer>
+                                        <layer>resource-adapters</layer>
+                                        <layer>sar</layer>
+                                        <layer>security-manager</layer>
+                                        <layer>transactions</layer>
+                                        <layer>undertow</layer>
+                                        <layer>undertow-https</layer>
+                                        <layer>undertow-load-balancer</layer>
+                                        <layer>web-clustering</layer>
+                                        <layer>web-console</layer>
+                                        <layer>web-server</layer>
+                                        <layer>webservices</layer>
+                                        <!--
+                                            Galleon layers defined only in the wildfly-galleon-pack
+                                         -->
+                                        <layer>microprofile-config</layer>
+                                        <layer>microprofile-fault-tolerance</layer>
+                                        <layer>microprofile-health</layer>
+                                        <layer>microprofile-jwt</layer>
+                                        <layer>microprofile-metrics</layer>
+                                        <layer>microprofile-openapi</layer>
+                                        <layer>microprofile-opentracing</layer>
+                                        <layer>microprofile-platform</layer>
+                                    </layers>
+                                    <excluded-layers>
+                                        <layer>jpa</layer>
+                                    </excluded-layers>
                                 </configuration>
                             </execution>
                             <!-- Core Layers - These can't be tested in Core as they require Undertow -->
@@ -2460,7 +2011,7 @@
                                 </goals>
                                 <phase>${provisioning.phase}</phase>
                                 <configuration>
-                                    <install-dir>${layers.install.dir}/remoting</install-dir>
+                                    <provisioning-dir>${layers.install.dir}/remoting</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${ee.feature.pack.groupId}</groupId>
@@ -2470,49 +2021,12 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>remoting</layer>
-                                                <layer>undertow</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>remoting</layer>
+                                        <layer>undertow</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
-                            <!-- [WFLY-15001] Legacy security is being incrementally removed.
-                            <execution>
-                                <id>legacy-remoting-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase.preview.excluded}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/legacy-remoting</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
-                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>legacy-remoting</layer>
-                                                <layer>undertow</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            -->
                         </executions>
                     </plugin>
 
@@ -2522,8 +2036,8 @@
                         <configuration>
                             <systemPropertyVariables>
                                 <!-- maven.local.repo is set in parent pom.xml, system property surefire.system.args -->
-                                <servlet.layers.install.root>${servlet.layers.install.root}</servlet.layers.install.root>
-                                <layers.install.root>${layers.install.dir}</layers.install.root>
+                                <servlet.layers.install.root>${project.build.directory}/${servlet.layers.install.root}</servlet.layers.install.root>
+                                <layers.install.root>${project.build.directory}/${layers.install.dir}</layers.install.root>
                                 <jbossas.version>${project.parent.version}</jbossas.version>
                                 <cleanup.tmp>${cleanup.tmp}</cleanup.tmp>
                                 <layers.delete.installations>${layers.delete.installations}</layers.delete.installations>
