@@ -82,7 +82,9 @@
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.infinispan.client"/>
         <module name="org.wildfly.clustering.infinispan.marshalling"/>
-        <module name="org.wildfly.clustering.infinispan.spi" services="import"/>
+        <module name="org.wildfly.clustering.infinispan.embedded.api"/>
+        <module name="org.wildfly.clustering.infinispan.embedded.service"/>
+        <module name="org.wildfly.clustering.infinispan.embedded.spi"/>
         <module name="org.wildfly.clustering.jgroups.spi"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>

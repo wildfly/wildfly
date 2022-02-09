@@ -22,7 +22,7 @@
 package org.wildfly.clustering.web.infinispan.sso;
 
 import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
-import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 
 /**
  * Configuration for an SSO manager factory.

@@ -26,7 +26,7 @@ import java.util.function.Predicate;
 
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.spi.group.Group;
 

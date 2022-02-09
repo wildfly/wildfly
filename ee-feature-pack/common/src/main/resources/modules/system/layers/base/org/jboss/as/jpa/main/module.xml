@@ -71,7 +71,8 @@
         <module name="org.jboss.weld.core"/>
         <!-- Only used if capability org.wildfly.weld is available -->
         <module name="org.jboss.as.weld.common" optional="true"/>
-        <module name="org.wildfly.clustering.infinispan.spi"/>
+        <module name="org.wildfly.clustering.infinispan.embedded.api"/>
+        <module name="org.wildfly.clustering.infinispan.embedded.service"/>
         <module name="org.wildfly.transaction.client"/>
 
         <module name="java.xml"/>

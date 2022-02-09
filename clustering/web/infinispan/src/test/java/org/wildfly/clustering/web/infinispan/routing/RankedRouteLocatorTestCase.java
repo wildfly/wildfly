@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.infinispan.spi.distribution.KeyDistribution;
+import org.wildfly.clustering.infinispan.distribution.KeyDistribution;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.web.routing.RouteLocator;

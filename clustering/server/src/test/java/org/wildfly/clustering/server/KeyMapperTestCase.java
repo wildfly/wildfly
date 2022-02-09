@@ -28,7 +28,7 @@ import java.net.InetSocketAddress;
 import org.jboss.msc.service.ServiceName;
 import org.jgroups.util.UUID;
 import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyMapperTester;
+import org.wildfly.clustering.infinispan.persistence.KeyMapperTester;
 import org.wildfly.clustering.server.group.AddressableNode;
 import org.wildfly.clustering.server.group.LocalNode;
 

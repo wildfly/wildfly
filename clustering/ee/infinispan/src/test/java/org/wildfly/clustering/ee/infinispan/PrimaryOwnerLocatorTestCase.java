@@ -30,7 +30,7 @@ import java.util.function.Function;
 import org.infinispan.remoting.transport.Address;
 import org.junit.Test;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.infinispan.spi.distribution.KeyDistribution;
+import org.wildfly.clustering.infinispan.distribution.KeyDistribution;
 import org.wildfly.clustering.spi.NodeFactory;
 
 /**

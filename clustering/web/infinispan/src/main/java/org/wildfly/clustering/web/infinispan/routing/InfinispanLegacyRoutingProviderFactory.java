@@ -32,8 +32,8 @@ import org.infinispan.configuration.cache.StateTransferConfigurationBuilder;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.ConfigurationBuilderAttributesAccessor;
-import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
+import org.wildfly.clustering.infinispan.configuration.ConfigurationBuilderAttributesAccessor;
+import org.wildfly.clustering.infinispan.container.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.web.routing.LegacyRoutingProviderFactory;
 import org.wildfly.clustering.web.routing.RoutingProvider;
 
