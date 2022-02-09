@@ -750,17 +750,27 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-clustering-infinispan-embedded-api</artifactId>
+                <version>${ee.maven.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-clustering-infinispan-embedded-service</artifactId>
+                <version>${ee.maven.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-clustering-infinispan-embedded-spi</artifactId>
+                <version>${ee.maven.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-infinispan-extension</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-infinispan-marshalling</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-clustering-infinispan-spi</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
 

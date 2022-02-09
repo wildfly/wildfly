@@ -24,7 +24,7 @@ package org.wildfly.clustering.server;
 
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.DynamicKeyFormatMapper;
+import org.wildfly.clustering.infinispan.persistence.DynamicKeyFormatMapper;
 
 /**
  * @author Paul Ferraro

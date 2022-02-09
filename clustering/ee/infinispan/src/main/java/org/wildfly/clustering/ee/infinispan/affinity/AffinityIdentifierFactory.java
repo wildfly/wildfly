@@ -30,7 +30,7 @@ import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.cache.IdentifierFactory;
 import org.wildfly.clustering.ee.infinispan.GroupedKey;
-import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 
 /**
  * An {@link IdentifierFactory} that uses a {@link KeyAffinityService} to pre-generate locally hashing identifiers from a supplier.

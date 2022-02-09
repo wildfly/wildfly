@@ -46,7 +46,7 @@
 
     <modules>
         <module>client</module>
-        <module>spi</module>
+        <module>embedded</module>
         <module>extension</module>
         <module>marshalling</module>
     </modules>

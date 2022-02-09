@@ -45,8 +45,8 @@ import org.infinispan.util.concurrent.CompletableFutures;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.ee.Key;
-import org.wildfly.clustering.infinispan.spi.distribution.ConsistentHashLocality;
-import org.wildfly.clustering.infinispan.spi.distribution.Locality;
+import org.wildfly.clustering.infinispan.distribution.ConsistentHashLocality;
+import org.wildfly.clustering.infinispan.distribution.Locality;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

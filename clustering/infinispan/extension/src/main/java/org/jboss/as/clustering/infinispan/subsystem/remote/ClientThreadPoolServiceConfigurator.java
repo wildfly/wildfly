@@ -39,6 +39,7 @@ import org.infinispan.client.hotrod.impl.async.DefaultAsyncExecutorFactory;
 import org.infinispan.commons.executors.ExecutorFactory;
 import org.infinispan.commons.util.concurrent.BlockingRejectedExecutionHandler;
 import org.infinispan.commons.util.concurrent.NonBlockingRejectedExecutionHandler;
+import org.jboss.as.clustering.infinispan.DefaultNonBlockingThreadFactory;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentServiceConfigurator;
 import org.jboss.as.clustering.infinispan.subsystem.ThreadPoolDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -46,7 +47,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.context.DefaultThreadFactory;
-import org.wildfly.clustering.infinispan.spi.DefaultNonBlockingThreadFactory;
 import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
