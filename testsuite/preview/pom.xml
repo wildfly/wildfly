@@ -45,7 +45,29 @@
         <ts.skipTests>${skipTests}</ts.skipTests>
 
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
+
+        <!-- This must be aligned on properties defined in ee-9/pom.xml -->
+        <version.jakarta.ejb.jakarta-ejb-api>4.0.0</version.jakarta.ejb.jakarta-ejb-api>
+        <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
+        <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
+        <version.jakarta.persistence>3.0.0</version.jakarta.persistence>
+        <version.jakarta.transaction.jakarta-transaction-api>2.0.0</version.jakarta.transaction.jakarta-transaction-api>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>jakarta.ejb</groupId>
+                <artifactId>jakarta.ejb-api</artifactId>
+                <version>${version.jakarta.ejb.jakarta-ejb-api}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.inject</groupId>
+                <artifactId>jakarta.inject-api</artifactId>
+                <version>${version.jakarta.inject.jakarta.inject-api}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
 
@@ -73,6 +95,16 @@
                 <exclusion>
                     <groupId>*</groupId>
                     <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-testsuite-shared</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.inject</groupId>
+                    <artifactId>javax.inject</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
