@@ -28,7 +28,6 @@ import java.util.concurrent.Callable;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.security.auth.AuthPermission;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -88,9 +87,8 @@ public class IIOPSecurityInvocationTestCase {
                 .addAsManifestResource(IIOPSecurityInvocationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(ejbJar, properties)), "ejb-jar.xml")
                 // the following permission is needed because of usage of LoginContext in the test
-                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new RuntimePermission("accessDeclaredMembers"),
-                        new RuntimePermission("accessClassInPackage.sun.misc"), new ElytronPermission("getSecurityDomain"),
-                        new AuthPermission("modifyPrincipals")), "permissions.xml");
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new ElytronPermission("authenticate"),
+                        new ElytronPermission("getSecurityDomain")), "permissions.xml");
 
         return jar;
     }
