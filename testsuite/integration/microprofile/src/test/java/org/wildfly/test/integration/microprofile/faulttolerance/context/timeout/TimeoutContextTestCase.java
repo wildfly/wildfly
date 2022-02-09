@@ -24,8 +24,11 @@ package org.wildfly.test.integration.microprofile.faulttolerance.context.timeout
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.FilePermission;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -47,6 +50,9 @@ public class TimeoutContextTestCase {
     public static WebArchive createTestArchive() {
         return ShrinkWrap.create(WebArchive.class, TimeoutContextTestCase.class.getSimpleName() + ".war")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
+                        new FilePermission("<<ALL FILES>>", "read"),
+                        new RuntimePermission("getClassLoader")), "permissions.xml")
                 .addPackage(TimeoutContextTestCase.class.getPackage())
                 ;
     }
