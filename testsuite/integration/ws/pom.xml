@@ -341,8 +341,9 @@
 
                     <!-- Server provisioning and configuration. -->
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <id>webservices-provisioning</id>
@@ -351,15 +352,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-webservices</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-webservices</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -369,16 +370,10 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>webservices</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>webservices</layer>
+                                    </layers>
                                 </configuration>
                             </execution>
                             <execution>
@@ -388,15 +383,15 @@
                                 </goals>
                                 <phase>compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-webservices-ejb</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>wildfly-webservices-ejb</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -406,20 +401,14 @@
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>ejb</layer>
-                                                <layer>webservices</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <layers>
+                                        <layer>cloud-server</layer>
+                                        <layer>webservices</layer>
+                                        <layer>ejb</layer>
+                                    </layers>
                                 </configuration>
-                              </execution>
-                           </executions>
+                            </execution>
+                        </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
