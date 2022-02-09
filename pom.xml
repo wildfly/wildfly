@@ -169,6 +169,7 @@
         <!-- Modularized JDK support (various workarounds) - activated via profile -->
         <modular.jdk.args>
             --add-exports=java.desktop/sun.awt=ALL-UNNAMED
+            --add-opens=java.base/com.sun.net.ssl.internal.ssl=ALL-UNNAMED
             --add-opens=java.base/java.io=ALL-UNNAMED
             --add-opens=java.base/java.lang=ALL-UNNAMED
             --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
