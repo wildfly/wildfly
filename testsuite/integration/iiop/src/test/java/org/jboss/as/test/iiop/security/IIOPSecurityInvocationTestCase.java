@@ -88,7 +88,7 @@ public class IIOPSecurityInvocationTestCase {
                 .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(ejbJar, properties)), "ejb-jar.xml")
                 // the following permission is needed because of usage of LoginContext in the test
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new ElytronPermission("authenticate"),
-                        new ElytronPermission("getSecurityDomain")), "permissions.xml");
+                        new ElytronPermission("getSecurityDomain"), new ElytronPermission("getPrivateCredentials")), "permissions.xml");
 
         return jar;
     }
