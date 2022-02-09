@@ -51,13 +51,19 @@ public class ServletElytronDomainSetup implements ServerSetupTask {
     private PathAddress undertowDomainAddress;
 
     private final String securityDomainName;
+    private final boolean useAuthenticationFactory;
 
     public ServletElytronDomainSetup() {
         this(DEFAULT_SECURITY_DOMAIN_NAME);
     }
 
     public ServletElytronDomainSetup(final String securityDomainName) {
+        this(securityDomainName, true);
+    }
+
+    public ServletElytronDomainSetup(final String securityDomainName, final boolean useAuthenticationFactory) {
         this.securityDomainName = securityDomainName;
+        this.useAuthenticationFactory = useAuthenticationFactory;
     }
 
     protected String getSecurityDomainName() {
@@ -77,7 +83,7 @@ public class ServletElytronDomainSetup implements ServerSetupTask {
     }
 
     protected boolean useAuthenticationFactory() {
-        return true;
+        return useAuthenticationFactory;
     }
 
     @Override
