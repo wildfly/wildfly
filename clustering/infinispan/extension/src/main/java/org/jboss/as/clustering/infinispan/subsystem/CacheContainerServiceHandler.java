@@ -37,8 +37,8 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.ModulesServiceConfigurator;
-import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
 import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.naming.BinderServiceConfigurator;
 import org.jboss.as.clustering.naming.JndiNameFactory;
@@ -49,14 +49,14 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.spi.CacheContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.spi.WildFlyInfinispanModuleLifecycle;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.service.ServiceNameRegistry;
-import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
 
 /**
  * @author Paul Ferraro
@@ -78,7 +78,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
 
         ServiceTarget target = context.getServiceTarget();
 
-        new ModulesServiceConfigurator(CacheContainerComponent.MODULES.getServiceName(address), MODULES, Collections.singletonList(Module.forClass(CacheContainer.class))).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        new ModulesServiceConfigurator(CacheContainerComponent.MODULES.getServiceName(address), MODULES, Collections.singletonList(Module.forClass(WildFlyInfinispanModuleLifecycle.class))).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         GlobalConfigurationServiceConfigurator configBuilder = new GlobalConfigurationServiceConfigurator(address);
         configBuilder.configure(context, model).build(target).install();

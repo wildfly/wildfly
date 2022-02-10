@@ -48,7 +48,6 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.junit.After;
 import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.CacheContainer;
 
 /**
  * Unit test for {@link DefaultCacheContainer}.
@@ -57,31 +56,11 @@ import org.wildfly.clustering.infinispan.spi.CacheContainer;
  */
 public class DefaultCacheContainerTestCase {
     private final EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
-    private final CacheContainer subject = new DefaultCacheContainer(this.manager);
+    private final EmbeddedCacheManager subject = new DefaultCacheContainer(this.manager);
 
     @After
     public void cleanup() {
         reset(this.manager);
-    }
-
-    @Test
-    public void getName() {
-        String name = "foo";
-        GlobalConfiguration global = new GlobalConfigurationBuilder().cacheManagerName(name).build();
-
-        when(this.manager.getCacheManagerConfiguration()).thenReturn(global);
-
-        assertSame(name, this.subject.getName());
-    }
-
-    @Test
-    public void getDefaultCacheName() {
-        String defaultCache = "default";
-        GlobalConfiguration global = new GlobalConfigurationBuilder().defaultCacheName(defaultCache).build();
-
-        when(this.manager.getCacheManagerConfiguration()).thenReturn(global);
-
-        assertSame(defaultCache, this.subject.getDefaultCacheName());
     }
 
     @Test
