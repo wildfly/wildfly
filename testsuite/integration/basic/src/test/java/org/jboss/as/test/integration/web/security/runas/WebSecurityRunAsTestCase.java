@@ -36,7 +36,6 @@ import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -49,7 +48,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @Category(CommonCriteria.class)
-@Ignore("[WFLY-15261] Ensure we have an Elytron variant.")
 public class WebSecurityRunAsTestCase {
 
     @Deployment
@@ -59,9 +57,6 @@ public class WebSecurityRunAsTestCase {
 
         war.addAsWebInfResource(WebSecurityRunAsTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         war.addAsWebInfResource(WebSecurityRunAsTestCase.class.getPackage(), "web.xml", "web.xml");
-
-        war.addAsResource(WebSecurityRunAsTestCase.class.getPackage(), "users.properties", "users.properties");
-        war.addAsResource(WebSecurityRunAsTestCase.class.getPackage(), "roles.properties", "roles.properties");
 
         return war;
     }
