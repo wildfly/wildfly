@@ -34,14 +34,15 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
+import org.wildfly.security.permission.ElytronPermission;
 
 import static org.jboss.as.controller.client.helpers.Operations.createAddOperation;
 import static org.jboss.as.controller.client.helpers.Operations.createRemoveOperation;
 import static org.jboss.as.controller.client.helpers.Operations.createWriteAttributeOperation;
-import static org.junit.Assume.assumeTrue;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 
 /**
@@ -67,13 +68,13 @@ public class LegacyCompliantPrincipalPropagationTestCase {
     public static Archive<?> createTestArchive() {
         return ShrinkWrap.create(WebArchive.class).addPackage(LegacyCompliantPrincipalPropagationTestCase.class.getPackage())
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsWebInfResource(LegacyCompliantPrincipalPropagationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
-    }
-
-    @BeforeClass
-    public static void executeOnlyForElytron() {
-        // this functionality affects elytron only
-        assumeTrue(System.getProperty("elytron") != null);
+                .addAsWebInfResource(LegacyCompliantPrincipalPropagationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
+                // TODO WFLY-15289 The Elytron permissions need to be checked, should a deployment really need these?
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new ElytronPermission("getIdentity"),
+                        new ElytronPermission("createAdHocIdentity"),
+                        new ChangeRoleMapperPermission("ejb")
+                ), "permissions.xml");
     }
 
     @Test
