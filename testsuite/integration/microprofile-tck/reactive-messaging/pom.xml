@@ -108,6 +108,8 @@
                         <microprofile.jvm.args>${microprofile.jvm.args}</microprofile.jvm.args>
                         <!-- Override the standard module path that points at the shared module set from servlet-dist -->
                         <module.path>${project.build.directory}/wildfly/modules</module.path>
+                        <!-- FIXME remove once WFMP-146 is fixed -->
+                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
