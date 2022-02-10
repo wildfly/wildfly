@@ -459,6 +459,7 @@
             <modules>
                 <module>integration</module>
                 <module>layers</module>
+                <module>preview</module>
                 <module>scripts</module>
             </modules>
         </profile>
