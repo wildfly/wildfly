@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.clustering.cluster.web.authentication;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -44,23 +45,27 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.security.common.elytron.ElytronDomainSetup;
+import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 
 /**
  * Validates that a user remains authenticated following failover when using FORM authentication.
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@Ignore("[WFLY-15276] Convert to an Elytron configuration.")
+@ServerSetup({FormAuthenticationWebFailoverTestCase.ElytronDomainSetupOverride.class, FormAuthenticationWebFailoverTestCase.ServletElytronDomainSetupOverride.class})
 public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTestCase {
+
+    private static final String SECURITY_DOMAIN_NAME = "authentication";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
@@ -79,8 +84,6 @@ public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTes
         war.addClass(SecureServlet.class);
         war.setWebXML(SecureServlet.class.getPackage(), "web-form.xml");
         war.addAsWebInfResource(SecureServlet.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
-        war.addAsResource(SecureServlet.class.getPackage(), "users.properties", "users.properties");
-        war.addAsResource(SecureServlet.class.getPackage(), "roles.properties", "roles.properties");
         war.addAsWebResource(SecureServlet.class.getPackage(), "login.html", "login.html");
         war.addAsWebResource(SecureServlet.class.getPackage(), "error.html", "error.html");
         return war;
@@ -147,6 +150,22 @@ public class FormAuthenticationWebFailoverTestCase extends AbstractClusteringTes
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
+        }
+    }
+
+    static class ElytronDomainSetupOverride extends ElytronDomainSetup {
+
+        public ElytronDomainSetupOverride() {
+            super(new File(FormAuthenticationWebFailoverTestCase.class.getResource("users.properties").getFile()).getAbsolutePath(),
+                    new File(FormAuthenticationWebFailoverTestCase.class.getResource("roles.properties").getFile()).getAbsolutePath(),
+                    SECURITY_DOMAIN_NAME);
+        }
+    }
+
+    static class ServletElytronDomainSetupOverride extends ServletElytronDomainSetup {
+
+        protected ServletElytronDomainSetupOverride() {
+            super(SECURITY_DOMAIN_NAME, false);
         }
     }
 }

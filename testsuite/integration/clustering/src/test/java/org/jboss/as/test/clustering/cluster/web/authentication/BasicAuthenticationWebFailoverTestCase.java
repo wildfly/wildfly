@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.clustering.cluster.web.authentication;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,24 +43,27 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.security.common.elytron.ElytronDomainSetup;
+import org.wildfly.test.security.common.elytron.ServletElytronDomainSetup;
 
 /**
  * Validates that a user remains authenticated following failover when using BASIC authentication.
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@Ignore("[WFLY-15276] Convert to an Elytron configuration.")
+@ServerSetup({BasicAuthenticationWebFailoverTestCase.ElytronDomainSetupOverride.class, BasicAuthenticationWebFailoverTestCase.ServletElytronDomainSetupOverride.class})
 public class BasicAuthenticationWebFailoverTestCase extends AbstractClusteringTestCase {
 
     private static final String MODULE_NAME = BasicAuthenticationWebFailoverTestCase.class.getSimpleName();
+    private static final String SECURITY_DOMAIN_NAME = "authentication";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
@@ -78,8 +82,6 @@ public class BasicAuthenticationWebFailoverTestCase extends AbstractClusteringTe
         war.addClass(SecureServlet.class);
         war.setWebXML(SecureServlet.class.getPackage(), "web-basic.xml");
         war.addAsWebInfResource(SecureServlet.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
-        war.addAsResource(SecureServlet.class.getPackage(), "users.properties", "users.properties");
-        war.addAsResource(SecureServlet.class.getPackage(), "roles.properties", "roles.properties");
         return war;
     }
 
@@ -153,6 +155,22 @@ public class BasicAuthenticationWebFailoverTestCase extends AbstractClusteringTe
     private static void setCredentials(CredentialsProvider provider, String user, String password, URL... urls) {
         for (URL url: urls) {
             provider.setCredentials(new AuthScope(url.getHost(), url.getPort()), new UsernamePasswordCredentials(user, password));
+        }
+    }
+
+    static class ElytronDomainSetupOverride extends ElytronDomainSetup {
+
+        public ElytronDomainSetupOverride() {
+            super(new File(FormAuthenticationWebFailoverTestCase.class.getResource("users.properties").getFile()).getAbsolutePath(),
+                    new File(FormAuthenticationWebFailoverTestCase.class.getResource("roles.properties").getFile()).getAbsolutePath(),
+                    SECURITY_DOMAIN_NAME);
+        }
+    }
+
+    static class ServletElytronDomainSetupOverride extends ServletElytronDomainSetup {
+
+        protected ServletElytronDomainSetupOverride() {
+            super(SECURITY_DOMAIN_NAME, false);
         }
     }
 }
