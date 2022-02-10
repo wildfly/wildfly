@@ -43,6 +43,7 @@
 
     <modules>
         <module>fault-tolerance-smallrye</module>
+        <module>health-smallrye</module>
         <module>openapi-smallrye</module>
         <module>reactive-streams-operators-smallrye/cdi-provider</module>
     </modules>

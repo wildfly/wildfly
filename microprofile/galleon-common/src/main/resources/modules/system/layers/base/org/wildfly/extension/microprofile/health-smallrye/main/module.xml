@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-microprofile-health-smallrye}"/>
+        <artifact name="\${org.wildfly:wildfly-microprofile-health-smallrye@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
