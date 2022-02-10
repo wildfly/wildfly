@@ -301,22 +301,8 @@
                                     <groupId>${full.maven.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${full.maven.version}</version>
-                                    <inherit-configs>false</inherit-configs>
-                                    <inherit-packages>false</inherit-packages>
-                                    <included-configs>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                        </config>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-full.xml</name>
-                                        </config>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-microprofile.xml</name>
-                                        </config>
-                                    </included-configs>
+                                    <inherit-configs>true</inherit-configs>
+                                    <inherit-packages>true</inherit-packages>
                                     <excluded-packages>
                                         <name>docs</name>
                                         <name>docs.licenses.merge</name>
@@ -327,6 +313,10 @@
                     </execution>
                     <execution>
                         <id>microprofile-tck-provisioning</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
                         <!-- Override the inherited feature-pack setting to add a package needed for this TCK -->
                         <configuration>
                             <feature-packs>
@@ -356,6 +346,7 @@
                         <maven.repo.local>${maven.repo.local}</maven.repo.local>
                         <module.path>${project.build.directory}/wildfly/modules</module.path>
                         <beansxml.path>${basedir}/beans.xml</beansxml.path>
+                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                     </system-properties>
                 </configuration>
             </plugin>
@@ -435,7 +426,6 @@
                         <module.path>${project.build.directory}/wildfly/modules</module.path>
                         <jboss.inst>${basedir}/target/wildfly</jboss.inst>
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
-                        <jboss.server.config.file.name>standalone-microprofile.xml</jboss.server.config.file.name>
                         <microprofile.jvm.args>${microprofile.jvm.args} -Dorg.eclipse.microprofile.rest.client.tck.timeoutCushion=50 -Dorg.wildfly.unsupported.skip.jakarta.transformer=true</microprofile.jvm.args>
                         <test.url>http://localhost:8080</test.url>
                     </systemPropertyVariables>
@@ -456,6 +446,7 @@
             <properties>
                 <!-- Enable galleon provisioning -->
                 <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
+                <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
             </properties>
             <build>
                 <plugins>
@@ -469,6 +460,15 @@
                                 <phase>none</phase>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                            </systemPropertyVariables>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

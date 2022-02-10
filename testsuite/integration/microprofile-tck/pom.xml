@@ -122,6 +122,8 @@
                                     <groupId>${ts.microprofile-tck-provisioning.fp.groupId}</groupId>
                                     <artifactId>${ts.microprofile-tck-provisioning.fp.artifactId}</artifactId>
                                     <version>${ts.microprofile-tck-provisioning.fp.version}</version>
+                                    <inherit-configs>false</inherit-configs>
+                                    <inherit-packages>false</inherit-packages>
                                 </feature-pack>
                             </feature-packs>
                             <layers>
@@ -220,6 +222,8 @@
                             <systemPropertyVariables>
                                 <!-- Override the standard module path that points at the shared module set from servlet-dist -->
                                 <module.path>${project.build.directory}/wildfly/modules</module.path>
+                                <!-- FIXME? When WildFly is provisioned with wildfly-maven-plugin the config file is always named standalone.xml -->
+                                <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                             </systemPropertyVariables>
                         </configuration>
                         <executions>
