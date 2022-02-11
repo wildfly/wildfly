@@ -44,10 +44,8 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.io.IOException;
@@ -63,8 +61,8 @@ import java.util.concurrent.Future;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("[WFLY-15179] Update SSLEJBRemoteClientTestCase to use Elytron SSLContext.")
 public class SSLEJBRemoteClientTestCase {
+
     private static final Logger log = Logger.getLogger(SSLEJBRemoteClientTestCase.class);
     private static final String MODULE_NAME_STATELESS = "ssl-remote-ejb-client-test";
     private static final String MODULE_NAME_STATEFUL = "ssl-remote-ejb-client-test-stateful";
@@ -134,9 +132,6 @@ public class SSLEJBRemoteClientTestCase {
             log.trace("*** restarting server");
             container.stop(DEFAULT_JBOSSAS);
             container.start(DEFAULT_JBOSSAS);
-            managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "remote+http");
-            // write SSL realm config to output - debugging purposes
-            SSLRealmSetupTool.readSSLRealmConfig(managementClient);
             serverConfigDone = true;
         } else {
             log.trace("*** Server already prepared, skipping config procedure");
