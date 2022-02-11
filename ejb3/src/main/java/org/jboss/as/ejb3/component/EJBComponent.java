@@ -80,6 +80,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.requestcontroller.ControlPoint;
+import org.wildfly.security.auth.principal.AnonymousPrincipal;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.authz.Roles;
@@ -274,7 +275,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         }
 
         // TODO Should this return a Principal when security is not activated.
-        return null;
+        return new AnonymousPrincipal();
     }
 
     public SecurityIdentity getIncomingRunAsIdentity() {
