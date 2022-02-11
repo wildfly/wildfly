@@ -26,10 +26,10 @@
                 <iiop:as-context
                     iiop:auth-method="username_password"
                     iiop:realm="default"
-                    iiop:required="false"
+                    iiop:required="true"
                 />
                 <iiop:sas-context
-                    iiop:caller-propagation="supported"
+                    iiop:caller-propagation="none"
                 />
             </iiop:ior-security-config>
         </iiop:iiop>

@@ -36,12 +36,14 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.PropertiesValueResolver;
+import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * A simple IIOP invocation for one AS7 server to another
@@ -85,7 +87,10 @@ public class BasicIIOPInvocationTestCase {
                 BasicIIOPInvocationTestCase.class, IIOPBasicStatefulHome.class,
                 IIOPBasicStatefulRemote.class, HandleWrapper.class)
                 .addAsManifestResource(BasicIIOPInvocationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(ejbJar, properties)), "ejb-jar.xml");
+                .addAsManifestResource(new StringAsset(PropertiesValueResolver.replaceProperties(ejbJar, properties)), "ejb-jar.xml")
+                .addAsManifestResource(
+                        PermissionUtils.createPermissionsXmlAsset(new ElytronPermission("getPrivateCredentials")),
+                        "permissions.xml");
         return jar;
     }
 
