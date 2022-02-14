@@ -142,6 +142,17 @@
             <artifactId>artemis-ra</artifactId>
         </dependency>
 
+        <!-- This is only required for the MessagingExtension to initialize Netty's InternalLoggerFactory -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-common</artifactId>
+        </dependency>
+        <!-- This is only required for the HTTPUpgradeService to initialize Netty's channel -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
