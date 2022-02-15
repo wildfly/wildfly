@@ -317,7 +317,7 @@ public class EJBManagementUtil {
                     PathAddress.pathAddress(
                             PathElement.pathElement(SUBSYSTEM, "elytron"),
                             PathElement.pathElement("authentication-configuration", "outbound")));
-            final ModelNode removeAuthContext = Util.createAddOperation(
+            final ModelNode removeAuthContext = Util.createRemoveOperation(
                     PathAddress.pathAddress(
                             PathElement.pathElement(SUBSYSTEM, "elytron"),
                             PathElement.pathElement("authentication-context", "outbound")));
