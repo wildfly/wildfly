@@ -41,6 +41,7 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
@@ -56,6 +57,7 @@ import io.restassured.RestAssured;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ OidcWithDeploymentConfigTest.KeycloakAndSystemPropertySetup.class })
+@Ignore("WFLY-16049")
 public class OidcWithDeploymentConfigTest extends OidcBaseTest {
 
     private static final String OIDC_PROVIDER_URL = "oidc.provider.url";

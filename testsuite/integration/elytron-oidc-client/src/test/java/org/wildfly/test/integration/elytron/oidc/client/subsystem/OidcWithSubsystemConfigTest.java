@@ -42,6 +42,7 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.extension.elytron.oidc.ElytronOidcExtension;
@@ -58,6 +59,7 @@ import io.restassured.RestAssured;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ OidcWithSubsystemConfigTest.KeycloakAndSubsystemSetup.class })
+@Ignore("WFLY-16049")
 public class OidcWithSubsystemConfigTest extends OidcBaseTest {
 
     private static final String SUBSYSTEM_OVERRIDE_APP = "SubsystemOverrideOidcApp";
