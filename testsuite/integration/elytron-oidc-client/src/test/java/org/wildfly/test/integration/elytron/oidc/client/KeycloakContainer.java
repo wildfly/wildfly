@@ -29,7 +29,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
     public static final String ADMIN_USER = "admin";
     public static final String ADMIN_PASSWORD = "admin";
-    private static final String AUTH_PATH = "/auth";
 
     private static final String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:latest";
     private static final String SSO_IMAGE = System.getProperty("testsuite.integration.oidc.rhsso.image",KEYCLOAK_IMAGE);
@@ -51,15 +50,18 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
     @Override
     protected void configure() {
         withExposedPorts(PORT_HTTP, PORT_HTTPS);
-        waitingFor(Wait.forHttp("/auth").forPort(8080));
-        withEnv("KEYCLOAK_USER", ADMIN_USER);
-        withEnv("KEYCLOAK_PASSWORD", ADMIN_PASSWORD);
+        waitingFor(Wait.forHttp("/").forPort(8080));
+        withEnv("KEYCLOAK_ADMIN", ADMIN_USER);
+        withEnv("KEYCLOAK_ADMIN_PASSWORD", ADMIN_PASSWORD);
         withEnv("SSO_ADMIN_USERNAME", ADMIN_USER);
         withEnv("SSO_ADMIN_PASSWORD", ADMIN_PASSWORD);
         withEnv("SSO_HOSTNAME", "localhost");
+        if (SSO_IMAGE.equals(KEYCLOAK_IMAGE)) {
+            withCommand("start-dev");
+        }
     }
 
     public String getAuthServerUrl() {
-        return String.format("http://%s:%s%s", getContainerIpAddress(), useHttps ? getMappedPort(PORT_HTTPS) : getMappedPort(PORT_HTTP), AUTH_PATH);
+        return String.format("http://%s:%s", getContainerIpAddress(), useHttps ? getMappedPort(PORT_HTTPS) : getMappedPort(PORT_HTTP));
     }
 }
