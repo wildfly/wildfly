@@ -41,7 +41,6 @@ import javax.net.ssl.SSLContext;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.CredentialSourceDependency;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -84,8 +83,8 @@ public class SingleSignOnSessionFactoryServiceConfigurator extends SingleSignOnS
         this.keyStore = new ServiceSupplierDependency<>(CommonUnaryRequirement.KEY_STORE.getServiceName(context, keyStore));
         this.keyAlias = KEY_ALIAS.resolveModelAttribute(context, model).asString();
         this.credentialSource = new CredentialSourceDependency(context, CREDENTIAL, model);
-        Optional<String> sslContext = ModelNodes.optionalString(SSL_CONTEXT.resolveModelAttribute(context, model));
-        this.sslContext = sslContext.map(value -> new ServiceSupplierDependency<SSLContext>(CommonUnaryRequirement.SSL_CONTEXT.getServiceName(context, value))).orElse(null);
+        String sslContext = SSL_CONTEXT.resolveModelAttribute(context, model).asStringOrNull();
+        this.sslContext = (sslContext != null) ? new ServiceSupplierDependency<>(CommonUnaryRequirement.SSL_CONTEXT.getServiceName(context, sslContext)) : null;
         return this;
     }
 

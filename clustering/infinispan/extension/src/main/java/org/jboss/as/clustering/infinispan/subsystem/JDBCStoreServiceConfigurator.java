@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.JDBCStoreResourceDefi
 import static org.jboss.as.clustering.infinispan.subsystem.JDBCStoreResourceDefinition.Attribute.DIALECT;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
@@ -35,7 +36,6 @@ import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigu
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.DataSourceConnectionFactoryConfigurationBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -75,7 +75,7 @@ public class JDBCStoreServiceConfigurator extends StoreServiceConfigurator<JdbcS
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String dataSource = DATA_SOURCE.resolveModelAttribute(context, model).asString();
         this.dataSource = new ServiceSupplierDependency<>(CommonUnaryRequirement.DATA_SOURCE.getServiceName(context, dataSource));
-        this.dialect = ModelNodes.optionalEnum(DIALECT.resolveModelAttribute(context, model), DatabaseType.class).orElse(null);
+        this.dialect = Optional.ofNullable(DIALECT.resolveModelAttribute(context, model).asStringOrNull()).map(DatabaseType::valueOf).orElse(null);
         return super.configure(context, model);
     }
 

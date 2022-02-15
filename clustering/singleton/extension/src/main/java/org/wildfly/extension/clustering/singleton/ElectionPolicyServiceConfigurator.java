@@ -27,7 +27,6 @@ import static org.wildfly.extension.clustering.singleton.ElectionPolicyResourceD
 import static org.wildfly.extension.clustering.singleton.ElectionPolicyResourceDefinition.Capability.ELECTION_POLICY;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -36,7 +35,6 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -87,8 +85,8 @@ public abstract class ElectionPolicyServiceConfigurator extends CapabilityServic
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        List<ModelNode> socketBindingPreferences = ModelNodes.optionalList(SOCKET_BINDING_PREFERENCES.resolveModelAttribute(context, model)).orElse(Collections.emptyList());
-        List<ModelNode> namePreferences = ModelNodes.optionalList(NAME_PREFERENCES.resolveModelAttribute(context, model)).orElse(Collections.emptyList());
+        List<ModelNode> socketBindingPreferences = SOCKET_BINDING_PREFERENCES.resolveModelAttribute(context, model).asListOrEmpty();
+        List<ModelNode> namePreferences = NAME_PREFERENCES.resolveModelAttribute(context, model).asListOrEmpty();
         List<Preference> preferences = new ArrayList<>(socketBindingPreferences.size() + namePreferences.size());
         List<Dependency> dependencies = new ArrayList<>(socketBindingPreferences.size());
         for (ModelNode preference : socketBindingPreferences) {

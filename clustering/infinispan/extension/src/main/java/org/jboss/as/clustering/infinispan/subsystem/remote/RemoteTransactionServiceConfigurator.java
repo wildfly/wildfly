@@ -28,7 +28,6 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionConfiguration;
 import org.infinispan.client.hotrod.configuration.TransactionConfigurationBuilder;
 import org.infinispan.client.hotrod.transaction.manager.RemoteTransactionManager;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.jakarta.TransactionManagerAdapter;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentServiceConfigurator;
@@ -55,7 +54,7 @@ public class RemoteTransactionServiceConfigurator extends ComponentServiceConfig
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.mode = ModelNodes.asEnum(MODE.resolveModelAttribute(context, model), TransactionMode.class);
+        this.mode = TransactionMode.valueOf(MODE.resolveModelAttribute(context, model).asString());
         return this;
     }
 

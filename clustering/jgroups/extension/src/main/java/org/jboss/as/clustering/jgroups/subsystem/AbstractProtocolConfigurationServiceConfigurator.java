@@ -28,7 +28,6 @@ import static org.jboss.as.clustering.jgroups.subsystem.AbstractProtocolResource
 
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +36,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.OperationContext;
@@ -99,7 +97,7 @@ public abstract class AbstractProtocolConfigurationServiceConfigurator<P extends
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.moduleName = MODULE.resolveModelAttribute(context, model).asString();
         this.properties.clear();
-        for (Property property : ModelNodes.optionalPropertyList(PROPERTIES.resolveModelAttribute(context, model)).orElse(Collections.emptyList())) {
+        for (Property property : PROPERTIES.resolveModelAttribute(context, model).asPropertyListOrEmpty()) {
             this.properties.put(property.getName(), property.getValue().asString());
         }
         this.statisticsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBooleanOrNull();

@@ -27,7 +27,6 @@ import java.util.Set;
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.ResourceCapabilityReference;
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.Resource;
@@ -64,7 +63,7 @@ public class TransactionResourceCapabilityReference extends ResourceCapabilityRe
 
     private boolean isTransactionalSupportRequired(OperationContext context, Resource resource) {
         try {
-            TransactionMode mode = ModelNodes.asEnum(this.transactionModeAttriute.resolveModelAttribute(context, resource.getModel()), TransactionMode.class);
+            TransactionMode mode = TransactionMode.valueOf(this.transactionModeAttriute.resolveModelAttribute(context, resource.getModel()).asString());
             return !this.excludedModes.contains(mode);
         } catch (OperationFailedException | RuntimeException e) {
             // OFE would be due to an expression that can't be resolved right now (OperationContext.Stage.MODEL).
