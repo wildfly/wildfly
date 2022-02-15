@@ -214,7 +214,7 @@ public class ManagedExecutorServiceMetricsTestCase {
                 Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
                         .isDefined());
             } finally {
-                writeAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, MAX_REQUEST_ATTRIBUTE_NAME, -1, true);
+                undefineAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, MAX_REQUEST_ATTRIBUTE_NAME, true);
             }
         }
     }
@@ -397,12 +397,17 @@ public class ManagedExecutorServiceMetricsTestCase {
         Assert.assertEquals(attrName, expectedAttrValue, actualAttrValue);
     }
 
-    private void writeAttribute(PathAddress resourceAddress, String attrName, int value) throws IOException {
-        writeAttribute(resourceAddress, attrName, value, false);
+    private void undefineAttribute(PathAddress resourceAddress, String attrName, boolean allowResourseServiceRestart) throws IOException {
+        ModelNode op = Util.getUndefineAttributeOperation(resourceAddress, attrName);
+        execute(op, allowResourseServiceRestart);
     }
 
     private void writeAttribute(PathAddress resourceAddress, String attrName, int value, boolean allowResourseServiceRestart) throws IOException {
         ModelNode op = Util.getWriteAttributeOperation(resourceAddress, attrName, value);
+        execute(op, allowResourseServiceRestart);
+    }
+
+    private void execute(ModelNode op, boolean allowResourseServiceRestart) throws IOException {
         if (allowResourseServiceRestart) {
             op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         }
