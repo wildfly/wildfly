@@ -26,6 +26,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.infinispan.Cache;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.Service;
@@ -33,7 +34,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.spi.CacheContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
@@ -57,7 +57,7 @@ public class CacheServiceConfigurator<K, V> extends SimpleServiceNameProvider im
     private final String containerName;
     private final String cacheName;
 
-    private volatile SupplierDependency<CacheContainer> container;
+    private volatile SupplierDependency<EmbeddedCacheManager> container;
     private volatile Dependency configuration;
     private volatile Dependency dependency;
 

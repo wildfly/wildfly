@@ -23,6 +23,7 @@
 package org.wildfly.clustering.infinispan.spi;
 
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.UnaryRequirementServiceNameFactory;
 import org.jboss.as.clustering.controller.UnaryServiceNameFactory;
 import org.jboss.as.clustering.controller.UnaryServiceNameFactoryProvider;
@@ -34,7 +35,7 @@ import org.wildfly.clustering.service.UnaryRequirement;
  */
 public enum InfinispanRequirement implements UnaryRequirement, UnaryServiceNameFactoryProvider {
 
-    CONTAINER("org.wildfly.clustering.infinispan.cache-container", CacheContainer.class),
+    CONTAINER("org.wildfly.clustering.infinispan.cache-container", EmbeddedCacheManager.class),
     CONFIGURATION("org.wildfly.clustering.infinispan.cache-container-configuration", GlobalConfiguration.class),
     KEY_AFFINITY_FACTORY("org.wildfly.clustering.infinispan.key-affinity-factory", KeyAffinityServiceFactory.class),
     ;

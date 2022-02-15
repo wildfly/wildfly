@@ -32,13 +32,12 @@ import org.infinispan.manager.EmbeddedCacheManagerAdmin;
 import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
-import org.wildfly.clustering.infinispan.spi.CacheContainer;
 
 /**
  * EmbeddedCacheManager decorator that overrides the default cache semantics of a cache manager.
  * @author Paul Ferraro
  */
-public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManager implements CacheContainer {
+public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManager {
 
     private final EmbeddedCacheManagerAdmin administrator;
 
@@ -118,18 +117,17 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof CacheContainer)) return false;
-        CacheContainer container = (CacheContainer) object;
-        return this.getName().equals(container.getName());
+        if (!(object instanceof EmbeddedCacheManager)) return false;
+        return this.toString().equals(object.toString());
     }
 
     @Override
     public int hashCode() {
-        return this.getName().hashCode();
+        return this.toString().hashCode();
     }
 
     @Override
     public String toString() {
-        return this.getName();
+        return this.getCacheManagerConfiguration().cacheManagerName();
     }
 }

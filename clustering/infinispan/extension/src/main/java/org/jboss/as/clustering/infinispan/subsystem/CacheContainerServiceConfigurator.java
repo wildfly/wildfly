@@ -33,8 +33,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -67,7 +67,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
-import org.wildfly.clustering.infinispan.spi.CacheContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.CompositeDependency;
@@ -79,7 +78,7 @@ import org.wildfly.clustering.service.SupplierDependency;
  * @author Paul Ferraro
  */
 @Listener
-public class CacheContainerServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Function<EmbeddedCacheManager, CacheContainer>, Supplier<EmbeddedCacheManager>, Consumer<EmbeddedCacheManager> {
+public class CacheContainerServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, UnaryOperator<EmbeddedCacheManager>, Supplier<EmbeddedCacheManager>, Consumer<EmbeddedCacheManager> {
 
     private final ServiceValueRegistry<Cache<?, ?>> registry;
     private final Map<String, Registration> registrations = new ConcurrentHashMap<>();
@@ -100,7 +99,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     }
 
     @Override
-    public CacheContainer apply(EmbeddedCacheManager manager) {
+    public EmbeddedCacheManager apply(EmbeddedCacheManager manager) {
         return new DefaultCacheContainer(manager);
     }
 
@@ -150,7 +149,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
-        Consumer<CacheContainer> container = new CompositeDependency(this.configuration).register(builder).provides(this.names);
+        Consumer<EmbeddedCacheManager> container = new CompositeDependency(this.configuration).register(builder).provides(this.names);
         Service service = new FunctionalService<>(container, this, this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
     }

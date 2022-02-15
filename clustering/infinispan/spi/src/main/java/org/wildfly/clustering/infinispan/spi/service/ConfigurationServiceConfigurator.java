@@ -30,6 +30,7 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StorageType;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.Service;
@@ -37,7 +38,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.spi.CacheContainer;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
@@ -57,7 +57,7 @@ public class ConfigurationServiceConfigurator extends SimpleServiceNameProvider 
     private final String cacheName;
     private final Consumer<ConfigurationBuilder> consumer;
 
-    private volatile SupplierDependency<CacheContainer> container;
+    private volatile SupplierDependency<EmbeddedCacheManager> container;
     private volatile Dependency dependency;
 
     public ConfigurationServiceConfigurator(ServiceName name, String containerName, String cacheName, Consumer<ConfigurationBuilder> consumer) {
@@ -96,14 +96,14 @@ public class ConfigurationServiceConfigurator extends SimpleServiceNameProvider 
         builder.encoding().mediaType(builder.memory().storage() == StorageType.OFF_HEAP ? this.container.get().getCacheManagerConfiguration().serialization().marshaller().mediaType().toString() : MediaType.APPLICATION_OBJECT_TYPE);
 
         Configuration configuration = builder.build();
-        CacheContainer container = this.container.get();
+        EmbeddedCacheManager container = this.container.get();
         container.defineConfiguration(this.cacheName, configuration);
         return configuration;
     }
 
     @Override
     public void accept(Configuration configuration) {
-        CacheContainer container = this.container.get();
+        EmbeddedCacheManager container = this.container.get();
         container.undefineConfiguration(this.cacheName);
     }
 }
