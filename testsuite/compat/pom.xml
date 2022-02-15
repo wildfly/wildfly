@@ -48,6 +48,9 @@
         <jboss.dist>${jbossas.project.dir}/${wildfly.build.output.dir}</jboss.dist>
         <ts.elytron.cli>../shared/enable-elytron.cli</ts.elytron.cli>
         <version.org.hibernate>5.1.14.Final</version.org.hibernate>
+
+        <!-- Props used to control whether various plugin executions run -->
+        <antrun.phase>test-compile</antrun.phase>
     </properties>
 
     <!--
@@ -271,7 +274,7 @@
                 <executions>
                     <execution>
                         <id>ts.compat.copy-jars</id> <goals><goal>run</goal></goals>
-                        <phase>test-compile</phase>
+                        <phase>${antrun.phase}</phase>
                         <configuration>
                             <target>
                                 <property name="tests.resources.dir" value="${basedir}/src/test/resources"/>
@@ -350,6 +353,18 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>noCompile</id>
+            <activation>
+                <property>
+                    <name>noCompile</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Turn off the antrun plugin -->
+                <antrun.phase>none</antrun.phase>
+            </properties>
         </profile>
 
     </profiles>
