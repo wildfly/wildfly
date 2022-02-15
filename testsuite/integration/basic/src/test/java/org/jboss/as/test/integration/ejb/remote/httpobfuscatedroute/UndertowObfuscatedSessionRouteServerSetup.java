@@ -60,9 +60,8 @@ public class UndertowObfuscatedSessionRouteServerSetup implements ServerSetupTas
         if (failure != null)
             return;
         try {
-            final ModelNode op = Util.getWriteAttributeOperation(
-                    PathAddress.pathAddress(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME),
-                    OBFUSCATE_SESSION_ROUTE, false);
+            final ModelNode op = Util.getUndefineAttributeOperation(
+                    PathAddress.pathAddress(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), OBFUSCATE_SESSION_ROUTE);
             runOperationAndReload(op, managementClient);
         } catch (Exception e) {
             failure = e;
