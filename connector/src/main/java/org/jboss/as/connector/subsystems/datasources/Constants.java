@@ -908,7 +908,7 @@ public class Constants {
             .build();
 
     //static final SimpleOperationDefinition INSTALLED_DRIVERS_LIST = new SimpleOperationDefinitionBuilder("installed-drivers-list", DataSourcesExtension.getResourceDescriptionResolver())
-    static final SimpleOperationDefinition INSTALLED_DRIVERS_LIST = new SimpleOperationDefinitionBuilder("installed-drivers-list", new NonResolvingResourceDescriptionResolver())
+    static final SimpleOperationDefinition INSTALLED_DRIVERS_LIST = new SimpleOperationDefinitionBuilder("installed-drivers-list", NonResolvingResourceDescriptionResolver.INSTANCE)
             .setReadOnly()
             .setRuntimeOnly()
             .setReplyType(ModelType.LIST)

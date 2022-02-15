@@ -98,7 +98,7 @@ public class AppClientExtension implements Extension {
     }
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver() {
-        return new NonResolvingResourceDescriptionResolver();
+        return NonResolvingResourceDescriptionResolver.INSTANCE;
     }
 
 }
