@@ -456,8 +456,19 @@ public class EJBManagementUtil {
         }
     }
 
-    public static void enablePassByValueForRemoteInterfaceInvocations(ManagementClient managementClient) {
-        editPassByValueForRemoteInterfaceInvocations(managementClient, true);
+    public static void undefinePassByValueForRemoteInterfaceInvocations(ManagementClient managementClient) {
+        final ModelControllerClient modelControllerClient = managementClient.getControllerClient();
+        try {
+            final ModelNode undefineAttribute = Util.getUndefineAttributeOperation(
+                    PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME)),
+                    "in-vm-remote-interface-invocation-pass-by-value");
+
+            // execute the operations
+            execute(modelControllerClient, undefineAttribute);
+
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
     }
 
     public static void disablePassByValueForRemoteInterfaceInvocations(ManagementClient managementClient) {
