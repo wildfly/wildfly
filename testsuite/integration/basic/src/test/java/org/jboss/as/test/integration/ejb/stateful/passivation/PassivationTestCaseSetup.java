@@ -70,9 +70,10 @@ public class PassivationTestCaseSetup implements ServerSetupTask {
         // reset the file passivation store attributes
         ModelNode address = getPassivationStoreAddress();
         ModelNode operation = new ModelNode();
-        operation.get(OP).set("undefine-attribute");
+        operation.get(OP).set("write-attribute");
         operation.get(OP_ADDR).set(address);
         operation.get("name").set("max-size");
+        operation.get("value").set(10000);
         managementClient.getControllerClient().execute(operation);
         ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());

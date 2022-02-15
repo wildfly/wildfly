@@ -86,9 +86,10 @@ public class StatefulUnitTestCase {
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             ModelNode address = getAddress();
             ModelNode operation = new ModelNode();
-            operation.get(OP).set("undefine-attribute");
+            operation.get(OP).set("write-attribute");
             operation.get(OP_ADDR).set(address);
             operation.get("name").set("max-size");
+            operation.get("value").set(10000);
             ModelNode result = managementClient.getControllerClient().execute(operation);
             Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
             ServerReload.reloadIfRequired(managementClient);
