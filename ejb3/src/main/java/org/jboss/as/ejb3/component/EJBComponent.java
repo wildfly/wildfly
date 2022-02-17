@@ -273,8 +273,6 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         if (isSecurityDomainKnown()) {
             return getCallerSecurityIdentity().getPrincipal();
         }
-
-        // TODO Should this return a Principal when security is not activated.
         return new AnonymousPrincipal();
     }
 
