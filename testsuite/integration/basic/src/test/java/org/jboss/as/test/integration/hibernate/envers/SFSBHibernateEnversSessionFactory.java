@@ -66,7 +66,6 @@ public class SFSBHibernateEnversSessionFactory {
             Properties properties = new Properties();
             configuration = configuration.configure("hibernate.cfg.xml");
             properties.putAll(configuration.getProperties());
-            Environment.verifyProperties(properties);
             ConfigurationHelper.resolvePlaceHolders(properties);
 
             sessionFactory = configuration.buildSessionFactory();
