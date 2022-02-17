@@ -77,7 +77,6 @@ public class SFSBHibernate2LcacheStats {
             configuration = configuration.configure("hibernate.cfg.xml");
             properties.putAll(configuration.getProperties());
 
-            Environment.verifyProperties(properties);
             ConfigurationHelper.resolvePlaceHolders(properties);
 
             // build the serviceregistry
