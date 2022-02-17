@@ -23,6 +23,7 @@ import org.jboss.as.controller.PersistentResourceXMLParser;
 import java.util.List;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+import static org.wildfly.extension.vertx.VertxConstants.*;
 
 /**
  * Parser used to parse the Vertx Subsystem.
@@ -44,12 +45,12 @@ public class VertxSubsystemParser_1_0 extends PersistentResourceXMLParser {
         xmlDescription = builder(VertxSubsystemExtension.SUBSYSTEM_PATH, NAMESPACE)
                 .addChild(
                         builder(VertxResourceDefinition.INSTANCE.getPathElement())
-                        .setXmlWrapperElement("vertxes")
+                        .setXmlWrapperElement(ELEMENT_VERTXES)
                         .addAttributes(rootAttrs)
                 )
                 .addChild(
                         builder(VertxOptionFileResourceDefinition.INSTANCE.getPathElement())
-                        .setXmlWrapperElement("vertx-options")
+                        .setXmlWrapperElement(ELEMENT_VERTX_OPTIONS)
                         .addAttributes(vertxOptionsFileAttrs)
                 )
                 .build();

@@ -26,7 +26,6 @@ public interface VertxConstants {
     String ELEMENT_VERTX_OPTIONS = "vertx-options";
     String ELEMENT_VERTX_OPTIONS_FILE = "vertx-options-file";
 
-    String ATTR_DEFAULT_OPTION_NAME = "default-option-name";
     String ATTR_NAME = "name";
     String ATTR_JNDI_NAME = "jndi-name";
     String ATTR_OPTION_NAME = "option-name";
