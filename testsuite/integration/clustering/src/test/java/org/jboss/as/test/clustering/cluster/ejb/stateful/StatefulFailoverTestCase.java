@@ -87,7 +87,7 @@ public class StatefulFailoverTestCase extends AbstractClusteringTestCase {
         war.addPackage(StatefulServlet.class.getPackage());
         war.addPackage(EJBDirectory.class.getPackage());
         war.setWebXML(StatefulServlet.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(new StringAsset("<beans>" +
+        war.addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\">" +
                 "<interceptors><class>" + IncrementorDDInterceptor.class.getName() + "</class></interceptors>" +
                 "<decorators><class>" + CounterDecorator.class.getName() + "</class></decorators>" +
                 "</beans>"), "beans.xml");

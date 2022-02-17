@@ -29,7 +29,7 @@ import javax.enterprise.inject.spi.Extension;
 public class AlphaExtension implements Extension {
 
     public void registerBravo(@Observes BeforeBeanDiscovery event, BeanManager manager) {
-        event.addAnnotatedType(manager.createAnnotatedType(BravoBean.class));
-        event.addAnnotatedType(manager.createAnnotatedType(CharlieBean.class));
+        event.addAnnotatedType(manager.createAnnotatedType(BravoBean.class), null);
+        event.addAnnotatedType(manager.createAnnotatedType(CharlieBean.class), null);
     }
 }

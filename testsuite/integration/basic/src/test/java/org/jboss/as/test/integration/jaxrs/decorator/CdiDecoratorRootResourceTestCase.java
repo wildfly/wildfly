@@ -65,7 +65,7 @@ public class CdiDecoratorRootResourceTestCase {
                 "        <url-pattern>/rest/*</url-pattern>\n" +
                 "    </servlet-mapping>\n" +
                 "\n"), "web.xml");
-        war.addAsWebInfResource(new StringAsset("<beans><decorators><class>" + ResourceDecorator.class.getName() + "</class></decorators></beans>"), "beans.xml");
+        war.addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"><decorators><class>" + ResourceDecorator.class.getName() + "</class></decorators></beans>"), "beans.xml");
         return war;
     }
 
