@@ -41,7 +41,6 @@ import javax.inject.Inject;
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-//@Ignore("AS7-1181")
 public class InterceptorPackagingTestCase {
 
     @Deployment
@@ -50,12 +49,12 @@ public class InterceptorPackagingTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "mod1.jar");
         jar.addClasses(InterceptedBean.class, SimpleEjb.class, InterceptorPackagingTestCase.class);
-        jar.addAsManifestResource(new StringAsset("<beans><interceptors><class>" + SimpleInterceptor.class.getName() + "</class></interceptors></beans>"), "beans.xml");
+        jar.addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"><interceptors><class>" + SimpleInterceptor.class.getName() + "</class></interceptors></beans>"), "beans.xml");
         ear.addAsModule(jar);
 
         jar = ShrinkWrap.create(JavaArchive.class, "mod2.jar");
         jar.addClasses(SimpleInterceptor.class, SimpleEjb2.class, Intercepted.class);
-        jar.addAsManifestResource(new StringAsset("<beans><interceptors><class>" + SimpleInterceptor.class.getName() + "</class></interceptors></beans>"), "beans.xml");
+        jar.addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"><interceptors><class>" + SimpleInterceptor.class.getName() + "</class></interceptors></beans>"), "beans.xml");
         ear.addAsModule(jar);
 
         return ear;

@@ -47,7 +47,7 @@ public class WeldAlternativeTestCase {
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
         jar.addPackage(WeldAlternativeTestCase.class.getPackage());
-        jar.addAsManifestResource(new StringAsset("<beans><alternatives><class>" + AlternativeBean.class.getName() + "</class></alternatives></beans>"), "beans.xml");
+        jar.addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"><alternatives><class>" + AlternativeBean.class.getName() + "</class></alternatives></beans>"), "beans.xml");
         return jar;
     }
 

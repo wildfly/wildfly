@@ -213,7 +213,7 @@ public class ProxyServicesImpl implements ProxyServices {
         return module.getClassLoader().loadClass(classBinaryName);
     }
 
-    @Override
+    //@Override unused in Weld 3/4 and removed in Weld 5 so don't annotate it
     public boolean supportsClassDefining() {
         return true;
     }
