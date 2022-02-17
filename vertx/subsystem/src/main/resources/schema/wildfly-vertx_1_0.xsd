@@ -43,6 +43,21 @@
                 <xs:documentation>Name of the Vertx.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="clustered" type="xs:boolean">
+            <xs:annotation>
+                <xs:documentation>If it is a clustered Vertx or not.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="jgroups-channel" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>The JGroups Channel name used for a clustered Vertx instance. This is required if clustered is true </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="forked-channel" type="xs:boolean">
+            <xs:annotation>
+                <xs:documentation>If ForkedChannel should be used to construct the cluster manager. </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="option-name" type="xs:string" default="default" >
             <xs:annotation>
                 <xs:documentation>The vertx-option name which is used to refer to a VertxOptions.</xs:documentation>
@@ -64,21 +79,6 @@
         <xs:attribute name="name" type="xs:string">
             <xs:annotation>
                 <xs:documentation>Name of the vertx-option</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="clustered" type="xs:boolean">
-            <xs:annotation>
-                <xs:documentation>If it is a clustered Vertx or not.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="jgroups-channel" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>The JGroups Channel name used for a clustered Vertx instance. This is required if clustered is true </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="forked-channel" type="xs:boolean">
-            <xs:annotation>
-                <xs:documentation>If ForkedChannel should be used to construct the cluster manager. </xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:attributeGroup>
