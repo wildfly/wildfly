@@ -126,7 +126,7 @@ public class WeldClassFileInfo implements ClassFileInfo {
         return isVetoed;
     }
 
-    @Override
+    // @Override unused except in a test and removed in Weld 5 so don't annotate it
     public boolean isTopLevelClass() {
         return classInfo.nestingType() == ClassInfo.NestingType.TOP_LEVEL;
     }

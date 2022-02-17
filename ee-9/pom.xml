@@ -45,17 +45,17 @@
         <version.com.sun.faces>3.0.0.SP04</version.com.sun.faces>
         <version.com.sun.activation.jakarta.activation>2.0.0</version.com.sun.activation.jakarta.activation>
         <version.com.sun.istack>4.0.1</version.com.sun.istack>
-        <version.jakarta.annotation.jakarta-annotation-api>2.0.0</version.jakarta.annotation.jakarta-annotation-api>
+        <version.jakarta.annotation.jakarta-annotation-api>2.1.0-B1</version.jakarta.annotation.jakarta-annotation-api>
         <version.jakarta.authentication.jakarta-authentication-api>2.0.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>2.0.0</version.jakarta.authorization.jakarta-authorization-api>
         <version.jakarta.batch.jakarta.batch-api>2.0.0</version.jakarta.batch.jakarta.batch-api>
         <version.jakarta.ejb.jakarta-ejb-api>4.0.0</version.jakarta.ejb.jakarta-ejb-api>
         <version.jakarta.el.jakarta-el-api>4.0.0</version.jakarta.el.jakarta-el-api>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
-        <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
+        <version.jakarta.enterprise>4.0.0-RC2</version.jakarta.enterprise>
         <version.jakarta.faces.jakarta-faces-api>3.0.0</version.jakarta.faces.jakarta-faces-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
-        <version.jakarta.interceptor.jakarta-interceptors-api>2.0.0</version.jakarta.interceptor.jakarta-interceptors-api>
+        <version.jakarta.interceptor.jakarta-interceptors-api>2.1.0-RC3</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.jms.jakarta-jms-api>3.0.0</version.jakarta.jms.jakarta-jms-api>
         <version.jakarta.mail>2.0.1</version.jakarta.mail>
         <version.jakarta.json.bind.api>2.0.0</version.jakarta.json.bind.api>
@@ -110,8 +110,8 @@
         <version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec>
         <version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>
         <version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>
-        <version.org.jboss.weld.weld>4.0.2.Final</version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld-api>4.0.SP1</version.org.jboss.weld.weld-api>
+        <version.org.jboss.weld.weld>5.0.0.Beta1</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>5.0.Beta5</version.org.jboss.weld.weld-api>
         <version.org.jvnet.staxex>2.0.1</version.org.jvnet.staxex>
         <version.org.wildfly.security.elytron>2.0.0.Beta1</version.org.wildfly.security.elytron>
         <version.org.wildfly.security.elytron-web>2.0.0.Beta2</version.org.wildfly.security.elytron-web>

@@ -85,13 +85,14 @@ public class WeldClassFileServicesTest {
         Assert.assertEquals(AbstractAlpha.class.getName(), alphaImpl.getSuperclassName());
     }
 
-    @Test
-    public void testTopLevelClass() {
-        Assert.assertTrue(alpha.isTopLevelClass());
-        Assert.assertTrue(alpha.isTopLevelClass());
-        Assert.assertTrue(alpha.isTopLevelClass());
-        Assert.assertFalse(innerInterface.isTopLevelClass());
-    }
+    // Disabled. This test tests a method that is not used except for this test and is removed in Weld 5
+//    @Test
+//    public void testTopLevelClass() {
+//        Assert.assertTrue(alpha.isTopLevelClass());
+//        Assert.assertTrue(alpha.isTopLevelClass());
+//        Assert.assertTrue(alpha.isTopLevelClass());
+//        Assert.assertFalse(innerInterface.isTopLevelClass());
+//    }
 
     @Test
     public void testIsAssignableFrom() {
