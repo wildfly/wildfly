@@ -15,8 +15,6 @@
  */
 package org.wildfly.extension.vertx;
 
-import io.vertx.core.VertxOptions;
-import io.vertx.core.json.JsonObject;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -32,17 +30,11 @@ import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
+import static org.wildfly.extension.vertx.VertxConstants.*;
 import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
 
 /**
@@ -60,7 +52,7 @@ public class VertxResourceDefinition extends SimpleResourceDefinition {
     static VertxResourceDefinition INSTANCE = new VertxResourceDefinition();
 
     VertxResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement("vertx"),
+        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(ELEMENT_VERTX),
                 VertxSubsystemExtension.getResourceDescriptionResolver(VertxSubsystemExtension.SUBSYSTEM_NAME))
                 .setAddHandler(new VertxResourceAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
@@ -109,27 +101,20 @@ public class VertxResourceDefinition extends SimpleResourceDefinition {
         protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
             final String name = context.getCurrentAddressValue();
             final String jndiName;
-            if (operation.hasDefined(VertxConstants.JNDI_NAME)) {
+            if (operation.hasDefined(VertxConstants.ATTR_JNDI_NAME)) {
                 jndiName = VertxAttributes.JNDI_NAME.resolveModelAttribute(context, operation).asString();
             } else {
                 jndiName = VertxConstants.DEFAULT_JNDI_PREFIX + name;
             }
-            final String vertxOptionsFile = operation.hasDefined(VertxConstants.VERTX_OPTIONS_FILE) ? VertxAttributes.VERTX_OPTIONS_FILE.resolveModelAttribute(context, operation).asString() : null;
             final boolean clustered = VertxAttributes.CLUSTERED.resolveModelAttribute(context, operation).asBoolean();
-            String jgroupChannel = operation.hasDefined(VertxConstants.JGROUPS_CHANNEL) ? VertxAttributes.JGROUPS_CHANNEL.resolveModelAttribute(context, operation).asString() : null;
+            String jgroupChannel = operation.hasDefined(VertxConstants.ATTR_JGROUPS_CHANNEL) ? VertxAttributes.JGROUPS_CHANNEL.resolveModelAttribute(context, operation).asString() : null;
             if (clustered && jgroupChannel == null) {
                 throw VERTX_LOGGER.noJgroupsChannelConfigured(name);
             }
             final boolean forkedChannel = VertxAttributes.FORKED_CHANNEL.resolveModelAttribute(context, operation).asBoolean();
-            final List<String> aliases = operation.hasDefined(VertxConstants.ALIAS) ? VertxAttributes.ALIAS.unwrap(context, operation) : null;
-            final VertxOptions vertxOptions;
-            if (vertxOptionsFile == null) {
-                vertxOptions = new VertxOptions();
-            } else {
-                JsonObject json = readJsonFromFile(vertxOptionsFile);
-                vertxOptions = new VertxOptions(json);
-            }
-            final VertxProxy vertxProxy = new VertxProxy(name, jndiName, vertxOptions, clustered, jgroupChannel);
+            String optionName = operation.hasDefined(ATTR_OPTION_NAME) ? VertxAttributes.OPTION_NAME.resolveModelAttribute(context, operation).asString() : null;
+            final List<String> aliases = operation.hasDefined(VertxConstants.ATTR_ALIAS) ? VertxAttributes.ALIAS.unwrap(context, operation) : null;
+            final VertxProxy vertxProxy = new VertxProxy(name, jndiName, clustered, jgroupChannel, forkedChannel);
             if (aliases != null) {
                 vertxProxy.setAliases(aliases);
                 if (aliases.contains(name)) {
@@ -142,30 +127,9 @@ public class VertxResourceDefinition extends SimpleResourceDefinition {
                     }
                 }
             }
-            VertxProxyService.installService(context, vertxProxy, forkedChannel);
+            VertxProxyService.installService(context, vertxProxy, optionName);
         }
 
-        private JsonObject readJsonFromFile(String vertxOptionsFile) throws OperationFailedException {
-            if (vertxOptionsFile != null && !vertxOptionsFile.trim().equals("")) {
-                Path path = vertxOptionsFile.startsWith("/") ? Paths.get(vertxOptionsFile) : Paths.get("", vertxOptionsFile);
-                if (Files.exists(path) && Files.isReadable(path)) {
-                    String jsonContent;
-                    try (InputStream inputStream = Files.newInputStream(path);
-                         ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                        StreamUtils.copyStream(inputStream, outputStream);
-                        jsonContent = outputStream.toString();
-                    } catch (IOException e) {
-                        throw VERTX_LOGGER.failedToReadVertxOptions(vertxOptionsFile, e);
-                    }
-                    if (jsonContent != null) {
-                        return new JsonObject(jsonContent);
-                    }
-                } else {
-                    throw VERTX_LOGGER.cannotReadVertxOptionsFile(vertxOptionsFile);
-                }
-            }
-            return new JsonObject();
-        }
     }
 
 }

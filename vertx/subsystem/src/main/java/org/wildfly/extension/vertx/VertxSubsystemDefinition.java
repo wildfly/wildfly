@@ -30,9 +30,9 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.vertx.deployment.processors.DeploymentInjectionProcessor;
-import org.wildfly.extension.vertx.deployment.processors.VertxDependenciesProcessor;
 import org.wildfly.extension.vertx.deployment.processors.VerticleDeploymentMarkerProcessor;
 import org.wildfly.extension.vertx.deployment.processors.VerticleDeploymentProcessor;
+import org.wildfly.extension.vertx.deployment.processors.VertxDependenciesProcessor;
 
 /**
  * The root Vertx subsystem resource definition.
@@ -62,6 +62,7 @@ public class VertxSubsystemDefinition extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
         resourceRegistration.registerSubModel(VertxResourceDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(VertxOptionFileResourceDefinition.INSTANCE);
     }
 
     @Override
@@ -99,8 +100,8 @@ public class VertxSubsystemDefinition extends SimpleResourceDefinition {
             ModelNode vertx = new ModelNode();
             for (VertxProxy v: VertxRegistry.INSTANCE.listVertx()) {
                 ModelNode vp = new ModelNode();
-                vp.get(VertxConstants.NAME).set(v.getName());
-                vp.get(VertxConstants.JNDI_NAME).set(v.getJndiName());
+                vp.get(VertxConstants.ATTR_NAME).set(v.getName());
+                vp.get(VertxConstants.ATTR_JNDI_NAME).set(v.getJndiName());
                 vertx.add(vp);
             }
             context.getResult().set(vertx);

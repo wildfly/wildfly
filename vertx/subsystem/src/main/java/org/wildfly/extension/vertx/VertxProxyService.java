@@ -59,29 +59,38 @@ public class VertxProxyService implements Service, VertxConstants {
     private final VertxProxy vertxProxy;
     private final Supplier<ChannelFactory> channelFactorySupplier;
     private final Supplier<String> clusterSupplier;
+    private final Supplier<NamedVertxOptions> optionsSupplier;
     private volatile Vertx vertx;
     private volatile DefaultCacheManager defaultCacheManager;
 
-    static void installService(OperationContext context, VertxProxy vertxProxy, boolean forkedChannel) {
+    static void installService(OperationContext context, VertxProxy vertxProxy, String optionName) {
         VertxProxyService vertxProxyService;
         ServiceName vertxServiceName = VertxResourceDefinition.VERTX_RUNTIME_CAPABILITY.getCapabilityServiceName(vertxProxy.getName());
         ServiceBuilder<?> vertxServiceBuilder = context.getServiceTarget().addService(vertxServiceName);
+        Supplier<NamedVertxOptions> optionsSupplier;
+        if (optionName == null) {
+            optionsSupplier = () -> NamedVertxOptions.DEFAULT;
+        } else {
+            ServiceName optionServiceName = AbstractVertxOptionsResourceDefinition.VERTX_OPTIONS_CAPABILITY.getCapabilityServiceName(optionName);
+            optionsSupplier = vertxServiceBuilder.requires(optionServiceName);
+        }
         if (vertxProxy.isClustered()) {
+            final String jgroupChannel = vertxProxy.getJgroupChannelName();
             // channel factory can be either from source or forked.
             // new channel and transport ports need to be specified if multiple Vertx instances are to be created.
             // cluster name cannot be overridden.
             final ServiceName channelFactoryServiceName;
-            if (forkedChannel) {
-                channelFactoryServiceName = JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, vertxProxy.getJgroupChannelName());
+            if (vertxProxy.isForkedChannel()) {
+                channelFactoryServiceName = JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, jgroupChannel);
             } else {
-                channelFactoryServiceName = JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, vertxProxy.getJgroupChannelName());
+                channelFactoryServiceName = JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, jgroupChannel);
             }
             Supplier<ChannelFactory> cacheManagerSupplier = vertxServiceBuilder.requires(channelFactoryServiceName);
-            ServiceName clusterServiceName = JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, vertxProxy.getJgroupChannelName());
+            ServiceName clusterServiceName = JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, jgroupChannel);
             Supplier<String> clusterSupplier = vertxServiceBuilder.requires(clusterServiceName);
-            vertxProxyService = new VertxProxyService(cacheManagerSupplier, clusterSupplier, vertxProxy);
+            vertxProxyService = new VertxProxyService(cacheManagerSupplier, clusterSupplier, vertxProxy, optionsSupplier);
         } else  {
-            vertxProxyService = new VertxProxyService(null, null, vertxProxy);
+            vertxProxyService = new VertxProxyService(null, null, vertxProxy, optionsSupplier);
         }
         vertxServiceBuilder.setInstance(vertxProxyService);
         vertxServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
@@ -127,10 +136,12 @@ public class VertxProxyService implements Service, VertxConstants {
         return this.vertx;
     }
 
-    private VertxProxyService(Supplier<ChannelFactory> channelFactorySupplier, Supplier<String> clusterSupplier, VertxProxy vertxProxy) {
+    private VertxProxyService(Supplier<ChannelFactory> channelFactorySupplier, Supplier<String> clusterSupplier,
+                              VertxProxy vertxProxy, Supplier<NamedVertxOptions> optionsSupplier) {
         this.vertxProxy = vertxProxy;
         this.clusterSupplier = clusterSupplier;
         this.channelFactorySupplier = channelFactorySupplier;
+        this.optionsSupplier = optionsSupplier;
     }
 
     @Override
@@ -145,7 +156,10 @@ public class VertxProxyService implements Service, VertxConstants {
     }
 
     private Vertx createVertx() throws Exception {
-        VertxOptions vertxOptions = vertxProxy.getVertxOptions();
+        VertxOptions vertxOptions = optionsSupplier.get().getVertxOptions();
+        if (vertxOptions == null) {
+            vertxOptions = new VertxOptions();
+        }
         VertxBuilder vb = new VertxBuilder(vertxOptions);
         if (vertxProxy.isClustered()) {
             JChannel jChannel = channelFactorySupplier.get().createChannel(UUID.randomUUID().toString());

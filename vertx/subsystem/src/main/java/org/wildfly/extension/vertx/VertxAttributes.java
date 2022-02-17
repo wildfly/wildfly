@@ -32,44 +32,42 @@ import java.util.List;
 
 public abstract class VertxAttributes {
 
-    public static final SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(VertxConstants.JNDI_NAME, ModelType.STRING)
+    public static final SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_JNDI_NAME, ModelType.STRING)
         .setRequired(false)
         .setAllowExpression(false)
         .setRestartAllServices()
-        .setValidator(new ModelTypeValidator(ModelType.STRING, false))
         .build();
 
-    public static final SimpleAttributeDefinition VERTX_OPTIONS_FILE = new SimpleAttributeDefinitionBuilder(VertxConstants.VERTX_OPTIONS_FILE, ModelType.STRING)
+    public static final SimpleAttributeDefinition OPTION_NAME = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_OPTION_NAME, ModelType.STRING)
         .setRequired(false)
         .setAllowExpression(true)
         .setRestartAllServices()
-        .setValidator(new ModelTypeValidator(ModelType.STRING, true))
         .build();
 
-    public static final SimpleAttributeDefinition CLUSTERED = new SimpleAttributeDefinitionBuilder(VertxConstants.CLUSTERED, ModelType.BOOLEAN)
-        .setRequired(false)
-        .setAllowExpression(true)
-        .setRestartAllServices()
-        .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
-        .setDefaultValue(ModelNode.FALSE)
-        .build();
+    public static final SimpleAttributeDefinition CLUSTERED = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_CLUSTERED, ModelType.BOOLEAN)
+      .setRequired(false)
+      .setAllowExpression(true)
+      .setRestartAllServices()
+      .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
+      .setDefaultValue(ModelNode.FALSE)
+      .build();
 
-    public static final SimpleAttributeDefinition JGROUPS_CHANNEL = new SimpleAttributeDefinitionBuilder(VertxConstants.JGROUPS_CHANNEL, ModelType.STRING)
-        .setRequired(false)
-        .setAllowExpression(true)
-        .setRestartAllServices()
-        .setValidator(new ModelTypeValidator(ModelType.STRING, true))
-        .build();
+    public static final SimpleAttributeDefinition JGROUPS_CHANNEL = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_JGROUPS_CHANNEL, ModelType.STRING)
+      .setRequired(false)
+      .setAllowExpression(true)
+      .setRestartAllServices()
+      .setValidator(new ModelTypeValidator(ModelType.STRING, true))
+      .build();
 
-    public static final SimpleAttributeDefinition FORKED_CHANNEL = new SimpleAttributeDefinitionBuilder(VertxConstants.FORKED_CHANNEL, ModelType.BOOLEAN)
-        .setRequired(false)
-        .setAllowExpression(true)
-        .setRestartAllServices()
-        .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
-        .setDefaultValue(ModelNode.FALSE)
-        .build();
+    public static final SimpleAttributeDefinition FORKED_CHANNEL = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_FORKED_CHANNEL, ModelType.BOOLEAN)
+      .setRequired(false)
+      .setAllowExpression(true)
+      .setRestartAllServices()
+      .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true))
+      .setDefaultValue(ModelNode.FALSE)
+      .build();
 
-    public static final StringListAttributeDefinition ALIAS = new StringListAttributeDefinition.Builder(VertxConstants.ALIAS)
+    public static final StringListAttributeDefinition ALIAS = new StringListAttributeDefinition.Builder(VertxConstants.ATTR_ALIAS)
         .setRequired(false)
         .setRestartAllServices()
         .setElementValidator(new StringLengthValidator(1))
@@ -93,11 +91,11 @@ public abstract class VertxAttributes {
     private static final List<AttributeDefinition> ATTRS = new ArrayList<>();
     static {
         ATTRS.add(JNDI_NAME);
-        ATTRS.add(VERTX_OPTIONS_FILE);
+        ATTRS.add(OPTION_NAME);
+        ATTRS.add(ALIAS);
         ATTRS.add(CLUSTERED);
         ATTRS.add(JGROUPS_CHANNEL);
         ATTRS.add(FORKED_CHANNEL);
-        ATTRS.add(ALIAS);
     }
 
     static List<AttributeDefinition> getSimpleAttributes() {

@@ -39,10 +39,18 @@ public class VertxSubsystemParser_1_0 extends PersistentResourceXMLParser {
     static {
         final List<AttributeDefinition> rootAttrList = VertxAttributes.getSimpleAttributes();
         AttributeDefinition[] rootAttrs = rootAttrList.toArray(new AttributeDefinition[0]);
+        final List<AttributeDefinition> vertxOptionsFileAttrList = VertxOptionsAttributes.getVertxOptionsFileAttributes();
+        AttributeDefinition[] vertxOptionsFileAttrs = vertxOptionsFileAttrList.toArray(new AttributeDefinition[0]);
         xmlDescription = builder(VertxSubsystemExtension.SUBSYSTEM_PATH, NAMESPACE)
                 .addChild(
                         builder(VertxResourceDefinition.INSTANCE.getPathElement())
+                        .setXmlWrapperElement("vertxes")
                         .addAttributes(rootAttrs)
+                )
+                .addChild(
+                        builder(VertxOptionFileResourceDefinition.INSTANCE.getPathElement())
+                        .setXmlWrapperElement("vertx-options")
+                        .addAttributes(vertxOptionsFileAttrs)
                 )
                 .build();
     }

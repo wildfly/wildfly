@@ -85,4 +85,11 @@ public interface VertxLogger extends BasicLogger {
 
     @Message(id = 16, value = "Alias %s has been used already in Vertx: %s")
     OperationFailedException aliasUsedAlready(String alias, String vertxName);
+
+    @Message(id = 17, value = "path of the vertx-options-file %s must be specified")
+    OperationFailedException noOptionsFileSpecified(String optionName);
+
+    @Message(id = 18, value = "Option Name: %s is reserved by system.")
+    OperationFailedException optionNameIsReserved(String optionName);
+
 }

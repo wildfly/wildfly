@@ -17,15 +17,27 @@ package org.wildfly.extension.vertx;
 
 public interface VertxConstants {
 
+    String DEFAULT_VERTX_OPTION_NAME = "__DEFAULT__";
     String DEFAULT_JNDI_PREFIX = "java:/vertx/";
-    String NAME = "name";
-    String JNDI_NAME = "jndi-name";
-    String VERTX_OPTIONS_FILE = "vertx-options-file";
-    String CLUSTERED = "clustered";
-    String JGROUPS_CHANNEL = "jgroups-channel";
-    String FORKED_CHANNEL = "forked-channel";
-    String ALIAS = "alias";
 
+    String ELEMENT_VERTXES = "vertxes";
+    String ELEMENT_VERTX = "vertx";
+
+    String ELEMENT_VERTX_OPTIONS = "vertx-options";
+    String ELEMENT_VERTX_OPTIONS_FILE = "vertx-options-file";
+
+    String ATTR_DEFAULT_OPTION_NAME = "default-option-name";
+    String ATTR_NAME = "name";
+    String ATTR_JNDI_NAME = "jndi-name";
+    String ATTR_OPTION_NAME = "option-name";
+    String ATTR_CLUSTERED = "clustered";
+    String ATTR_JGROUPS_CHANNEL = "jgroups-channel";
+    String ATTR_FORKED_CHANNEL = "forked-channel";
+    String ATTR_ALIAS = "alias";
+    String ATTR_PATH = "path";
+
+
+    // Followings are cluster manager related settings
     String DEFAULT_CACHE_NAME = "distributed-cache";
     String SUBS_CACHE_NAME = "__vertx.subs";
     String HA_INFO_CACHE_NAME = "__vertx.haInfo";
