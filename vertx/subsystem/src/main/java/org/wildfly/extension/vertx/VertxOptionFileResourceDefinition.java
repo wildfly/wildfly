@@ -56,7 +56,7 @@ class VertxOptionFileResourceDefinition extends AbstractVertxOptionsResourceDefi
 
   VertxOptionFileResourceDefinition() {
     super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(ELEMENT_VERTX_OPTIONS_FILE),
-      VertxSubsystemExtension.getResourceDescriptionResolver(VertxSubsystemExtension.SUBSYSTEM_NAME, ELEMENT_VERTX_OPTIONS))
+      VertxSubsystemExtension.getResourceDescriptionResolver(VertxSubsystemExtension.SUBSYSTEM_NAME, ELEMENT_VERTX_OPTIONS_FILE))
       .setAddHandler(new VertxOptionFileAddHandler())
       .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
       .setCapabilities(VERTX_OPTIONS_CAPABILITY)
@@ -90,7 +90,7 @@ class VertxOptionFileResourceDefinition extends AbstractVertxOptionsResourceDefi
       Supplier<ServerEnvironment> serverEnvSupplier = vertxServiceBuilder.requires(ServerEnvironmentService.SERVICE_NAME);
       VertxOptions vertxOptions = new VertxOptions(readJsonFromFile(optionFilePath, serverEnvSupplier.get().getServerConfigurationDir()));
       NamedVertxOptions namedVertxOptions = new NamedVertxOptions(name, vertxOptions);
-      vertxServiceBuilder.setInstance(new ConfiguredVertxOptionsService(namedVertxOptions));
+      vertxServiceBuilder.setInstance(new NamedVertxOptionsService(namedVertxOptions));
       vertxServiceBuilder
         .setInitialMode(ServiceController.Mode.ACTIVE)
         .install();

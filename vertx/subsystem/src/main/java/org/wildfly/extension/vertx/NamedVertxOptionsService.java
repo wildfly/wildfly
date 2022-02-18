@@ -28,18 +28,18 @@ import org.jboss.msc.service.StopContext;
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
-public class ConfiguredVertxOptionsService implements Service<NamedVertxOptions> {
+public class NamedVertxOptionsService implements Service<NamedVertxOptions> {
 
   private final NamedVertxOptions namedVertxOptions;
 
-  ConfiguredVertxOptionsService(NamedVertxOptions namedVertxOptions) {
+  NamedVertxOptionsService(NamedVertxOptions namedVertxOptions) {
     this.namedVertxOptions = namedVertxOptions;
   }
 
   static void installService(OperationContext context, NamedVertxOptions namedVertxOptions) {
     ServiceName vertxServiceName = VertxOptionFileResourceDefinition.VERTX_OPTIONS_CAPABILITY.getCapabilityServiceName(namedVertxOptions.getName());
     ServiceBuilder<?> vertxServiceBuilder = context.getServiceTarget().addService(vertxServiceName);
-    vertxServiceBuilder.setInstance(new ConfiguredVertxOptionsService(namedVertxOptions));
+    vertxServiceBuilder.setInstance(new NamedVertxOptionsService(namedVertxOptions));
     vertxServiceBuilder
       .setInitialMode(ServiceController.Mode.LAZY)
       .install();
