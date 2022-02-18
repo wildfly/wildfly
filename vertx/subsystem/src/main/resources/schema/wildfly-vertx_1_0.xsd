@@ -75,32 +75,43 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:attributeGroup name="optionBaseGroup">
-        <xs:attribute name="name" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Name of the vertx-option</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:attributeGroup>
-
     <xs:complexType name="vertxOptionsType">
-        <xs:sequence>
+        <xs:choice>
             <xs:element name="vertx-option-file" type="vertxOptionFileType" maxOccurs="unbounded" minOccurs="0" />
-        </xs:sequence>
-        <xs:attribute name="default" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Specify the default Vertx Option.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
+            <xs:element name="vertx-option" type="vertxOptionType" maxOccurs="unbounded" minOccurs="0" />
+        </xs:choice>
     </xs:complexType>
 
     <xs:complexType name="vertxOptionFileType">
-        <xs:attributeGroup ref="optionBaseGroup"/>
+        <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="path" type="xs:string">
             <xs:annotation>
                 <xs:documentation>Specify the json file path where to read VertxOptions from.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="vertxOptionType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+
+        <xs:attribute name="event-loop-pool-size" type="xs:int"/>
+        <xs:attribute name="worker-pool-size" type="xs:int" />
+        <xs:attribute name="internal-blocking-pool-size" type="xs:int" />
+        <xs:attribute name="ha-enabled" type="xs:boolean" />
+        <xs:attribute name="ha-group" type="xs:string" />
+        <xs:attribute name="quorum-size" type="xs:int" />
+        <xs:attribute name="prefer-native-transport" type="xs:boolean" />
+        <xs:attribute name="disable-tccl" type="xs:boolean" />
+
+        <xs:attribute name="blocked-thread-check-interval" type="xs:long" />
+        <xs:attribute name="blocked-thread-check-interval-unit" type="xs:string" />
+        <xs:attribute name="max-eventloop-execute-time" type="xs:long" />
+        <xs:attribute name="max-eventloop-execute-time-unit" type="xs:string" />
+        <xs:attribute name="max-worker-execute-time" type="xs:long" />
+        <xs:attribute name="max-worker-execute-time-unit" type="xs:string" />
+        <xs:attribute name="warning-exception-time" type="xs:long" />
+        <xs:attribute name="warning-exception-time-unit" type="xs:string" />
+
     </xs:complexType>
 
 </xs:schema>

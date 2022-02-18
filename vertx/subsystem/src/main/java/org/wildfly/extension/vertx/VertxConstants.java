@@ -25,6 +25,7 @@ public interface VertxConstants {
 
     String ELEMENT_VERTX_OPTIONS = "vertx-options";
     String ELEMENT_VERTX_OPTIONS_FILE = "vertx-options-file";
+    String ELEMENT_VERTX_OPTION = "vertx-option";
 
     String ATTR_NAME = "name";
     String ATTR_JNDI_NAME = "jndi-name";
@@ -35,6 +36,23 @@ public interface VertxConstants {
     String ATTR_ALIAS = "alias";
     String ATTR_PATH = "path";
 
+    // basic vertx-option attributes
+    String ATTR_EVENTLOOP_POOL_SIZE = "event-loop-pool-size";
+    String ATTR_WORKER_POOL_SIZE = "worker-pool-size";
+    String ATTR_INTERNAL_BLOCKING_POOL_SIZE = "internal-blocking-pool-size";
+    String ATTR_HA_ENABLED = "ha-enabled";
+    String ATTR_HA_GROUP = "ha-group";
+    String ATTR_QUORUM_SIZE = "quorum-size";
+    String ATTR_PREFER_NATIVE_TRANSPORT = "prefer-native-transport";
+    String ATTR_DISABLE_TCCL = "disable-tccl";
+    String ATTR_BLOCKED_THREAD_CHECK_INTERVAL = "blocked-thread-check-interval";
+    String ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT = "blocked-thread-check-interval-unit";
+    String ATTR_MAX_EVENTLOOP_EXECUTE_TIME = "max-eventloop-execute-time";
+    String ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT = "max-eventloop-execute-time-unit";
+    String ATTR_MAX_WORKER_EXECUTE_TIME = "max-worker-execute-time";
+    String ATTR_MAX_WORKER_EXECUTE_TIME_UNIT = "max-worker-execute-time-unit";
+    String ATTR_WARNING_EXECUTION_TIME = "warning-exception-time";
+    String ATTR_WARNING_EXECUTION_TIME_UNIT = "warning-exception-time-unit";
 
     // Followings are cluster manager related settings
     String DEFAULT_CACHE_NAME = "distributed-cache";

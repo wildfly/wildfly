@@ -63,6 +63,7 @@ public class VertxSubsystemDefinition extends SimpleResourceDefinition {
         super.registerChildren(resourceRegistration);
         resourceRegistration.registerSubModel(VertxResourceDefinition.INSTANCE);
         resourceRegistration.registerSubModel(VertxOptionFileResourceDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(VertxOptionsResourceDefinition.INSTANCE);
     }
 
     @Override

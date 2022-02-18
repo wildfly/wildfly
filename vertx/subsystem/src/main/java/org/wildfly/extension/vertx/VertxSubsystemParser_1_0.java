@@ -20,9 +20,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 
-import java.util.List;
-
-import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.*;
 import static org.wildfly.extension.vertx.VertxConstants.*;
 
 /**
@@ -38,20 +36,22 @@ public class VertxSubsystemParser_1_0 extends PersistentResourceXMLParser {
 
     private static final PersistentResourceXMLDescription xmlDescription;
     static {
-        final List<AttributeDefinition> rootAttrList = VertxAttributes.getSimpleAttributes();
-        AttributeDefinition[] rootAttrs = rootAttrList.toArray(new AttributeDefinition[0]);
-        final List<AttributeDefinition> vertxOptionsFileAttrList = VertxOptionsAttributes.getVertxOptionsFileAttributes();
-        AttributeDefinition[] vertxOptionsFileAttrs = vertxOptionsFileAttrList.toArray(new AttributeDefinition[0]);
         xmlDescription = builder(VertxSubsystemExtension.SUBSYSTEM_PATH, NAMESPACE)
                 .addChild(
                         builder(VertxResourceDefinition.INSTANCE.getPathElement())
                         .setXmlWrapperElement(ELEMENT_VERTXES)
-                        .addAttributes(rootAttrs)
+                        .addAttributes(VertxAttributes.getSimpleAttributes().toArray(new AttributeDefinition[0]))
                 )
                 .addChild(
-                        builder(VertxOptionFileResourceDefinition.INSTANCE.getPathElement())
-                        .setXmlWrapperElement(ELEMENT_VERTX_OPTIONS)
-                        .addAttributes(vertxOptionsFileAttrs)
+                        decorator(ELEMENT_VERTX_OPTIONS)
+                          .addChild(
+                            builder(VertxOptionFileResourceDefinition.INSTANCE.getPathElement())
+                              .addAttributes(VertxOptionsAttributes.getVertxOptionsFileAttributes().toArray(new AttributeDefinition[0]))
+                          )
+                          .addChild(
+                            builder(VertxOptionsResourceDefinition.INSTANCE.getPathElement())
+                              .addAttributes(VertxOptionsAttributes.getVertxOptionsAttributes().toArray(new AttributeDefinition[0]))
+                          )
                 )
                 .build();
     }
