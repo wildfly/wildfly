@@ -54,6 +54,10 @@ public interface VertxConstants {
     String ATTR_WARNING_EXECUTION_TIME = "warning-exception-time";
     String ATTR_WARNING_EXECUTION_TIME_UNIT = "warning-exception-time-unit";
 
+    // file system options
+    String ATTR_FS_CLASS_PATH_RESOLVING_ENABLED = "classpath-resolving-enabled";
+    String ATTR_FS_FILE_CACHE_ENABLED = "file-cache-enabled";
+
     // Followings are cluster manager related settings
     String DEFAULT_CACHE_NAME = "distributed-cache";
     String SUBS_CACHE_NAME = "__vertx.subs";

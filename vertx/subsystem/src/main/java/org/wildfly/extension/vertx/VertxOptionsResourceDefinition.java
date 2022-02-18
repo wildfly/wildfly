@@ -22,6 +22,7 @@ import static org.wildfly.extension.vertx.logging.VertxLogger.*;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
+import io.vertx.core.file.FileSystemOptions;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -121,6 +122,14 @@ class VertxOptionsResourceDefinition extends AbstractVertxOptionsResourceDefinit
       }
       if (operation.hasDefined(ATTR_WARNING_EXECUTION_TIME_UNIT)) {
         vertxOptions.setWarningExceptionTimeUnit(TimeUnit.valueOf(VertxOptionsAttributes.ATTR_WARNING_EXECUTION_TIME_UNIT.validateOperation(operation).asString()));
+      }
+
+      // file system options
+      if (operation.hasDefined(ATTR_FS_CLASS_PATH_RESOLVING_ENABLED)) {
+        vertxOptions.getFileSystemOptions().setClassPathResolvingEnabled(VertxOptionsAttributes.ATTR_FS_CLASS_PATH_RESOLVING_ENABLED.validateOperation(operation).asBoolean());
+      }
+      if (operation.hasDefined(ATTR_FS_FILE_CACHE_ENABLED)) {
+        vertxOptions.getFileSystemOptions().setFileCachingEnabled(VertxOptionsAttributes.ATTR_FS_FILE_CACHE_ENABLED.validateOperation(operation).asBoolean());
       }
 
       return vertxOptions;

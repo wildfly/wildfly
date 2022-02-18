@@ -162,6 +162,18 @@ public abstract class VertxOptionsAttributes {
     .setRestartAllServices()
     .build();
 
+  public static final SimpleAttributeDefinition ATTR_FS_CLASS_PATH_RESOLVING_ENABLED = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_FS_CLASS_PATH_RESOLVING_ENABLED, ModelType.BOOLEAN)
+    .setRequired(false)
+    .setAllowExpression(true)
+    .setRestartAllServices()
+    .build();
+
+  public static final SimpleAttributeDefinition ATTR_FS_FILE_CACHE_ENABLED = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_FS_FILE_CACHE_ENABLED, ModelType.BOOLEAN)
+    .setRequired(false)
+    .setAllowExpression(true)
+    .setRestartAllServices()
+    .build();
+
   private static final List<AttributeDefinition> VERTX_OPTIONS_ATTRS = new ArrayList<>();
   static {
     VERTX_OPTIONS_ATTRS.add(ATTR_EVENTLOOP_POOL_SIZE);
@@ -181,6 +193,8 @@ public abstract class VertxOptionsAttributes {
     VERTX_OPTIONS_ATTRS.add(ATTR_WARNING_EXECUTION_TIME);
     VERTX_OPTIONS_ATTRS.add(ATTR_WARNING_EXECUTION_TIME_UNIT);
 
+    VERTX_OPTIONS_ATTRS.add(ATTR_FS_CLASS_PATH_RESOLVING_ENABLED);
+    VERTX_OPTIONS_ATTRS.add(ATTR_FS_FILE_CACHE_ENABLED);
   }
 
   /**
