@@ -155,7 +155,7 @@ public class ExternalJMSQueueService implements Service<Queue> {
         final ServiceBuilder<Queue> serviceBuilder = serviceTarget.addService(config.getDestinationServiceName(), service);
         serviceBuilder.addDependency(NamingService.SERVICE_NAME, NamingStore.class, service.namingStoreInjector);
         serviceBuilder.addDependency(pcf, ExternalPooledConnectionFactoryService.class, service.pcfInjector);
-        serviceBuilder.addDependencies(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(config.getResourceAdapter()));
+        serviceBuilder.requires(ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(config.getResourceAdapter()));
         serviceBuilder.install();
         return service;
     }
