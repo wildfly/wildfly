@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.batch.jberet;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -162,5 +164,23 @@ public class SubsystemOperationsTestCase extends AbstractBatchTestCase {
         final KernelServices kernelServices = boot();
         final ModelNode removeSubsystemOp = SubsystemOperations.createRemoveOperation(createAddress(null));
         executeOperation(kernelServices, removeSubsystemOp);
+    }
+
+    @Test
+    public void testEnums() {
+        for (Element e : Element.values()) {
+            assertEquals(e, Element.forName(e.getLocalName()));
+        }
+        assertEquals(Element.UNKNOWN, Element.forName("zzz"));
+
+        for (Attribute e : Attribute.values()) {
+            assertEquals(e, Attribute.forName(e.getLocalName()));
+        }
+        assertEquals(Attribute.UNKNOWN, Attribute.forName("xxx"));
+
+        for (Namespace e : Namespace.values()) {
+            assertEquals(e, Namespace.forUri(e.getUriString()));
+        }
+        assertEquals(Namespace.UNKNOWN, Namespace.forUri("yyy"));
     }
 }
