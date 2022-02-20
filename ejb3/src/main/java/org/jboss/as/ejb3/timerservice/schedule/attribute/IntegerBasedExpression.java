@@ -168,7 +168,7 @@ public abstract class IntegerBasedExpression {
 
     protected void processIncrement(IncrementValue incr) {
         String startValue = incr.getStart();
-        Integer start = startValue.equals("*") ? 0 : this.parseInt(startValue);
+        Integer start = startValue.equals("*") ? Integer.valueOf(0) : this.parseInt(startValue);
         // make sure it's a valid value
         this.assertValid(start);
         Integer interval = this.parseInt(incr.getInterval());

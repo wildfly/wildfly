@@ -900,7 +900,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * The component configuration is expected to be set with {@link EJBComponentCreateServiceFactory}, as its create
      * service factory, before this {@link EjbJarConfigurationConfigurator} is run.
      */
-    private class EjbJarConfigurationConfigurator implements ComponentConfigurator {
+    private static final class EjbJarConfigurationConfigurator implements ComponentConfigurator {
 
         @Override
         public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
@@ -918,7 +918,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * Responsible for adding a dependency on the security domain service for the EJB component, if a security domain
      * is applicable for the bean
      */
-    private class SecurityDomainDependencyConfigurator implements ComponentConfigurator {
+    private static final class SecurityDomainDependencyConfigurator implements ComponentConfigurator {
 
         private final EJBComponentDescription ejbComponentDescription;
 

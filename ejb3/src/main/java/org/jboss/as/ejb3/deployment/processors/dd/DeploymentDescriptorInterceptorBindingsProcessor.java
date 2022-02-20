@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,8 +38,8 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.subsystem.EjbNameRegexService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -51,8 +53,6 @@ import org.jboss.metadata.ejb.spec.InterceptorBindingMetaData;
 import org.jboss.metadata.ejb.spec.InterceptorMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.modules.Module;
-
-import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 /**
  * Processor that handles interceptor bindings that are defined in the deployment descriptor.
  *
@@ -288,13 +288,13 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
                 final MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifierForMethod(method);
 
                 Boolean excludeDefaultInterceptors = methodLevelExcludeDefaultInterceptors.get(method);
-                excludeDefaultInterceptors = excludeDefaultInterceptors == null ? false : excludeDefaultInterceptors;
+                excludeDefaultInterceptors = excludeDefaultInterceptors == null ? Boolean.FALSE : excludeDefaultInterceptors;
                 if (!excludeDefaultInterceptors) {
                     excludeDefaultInterceptors = componentDescription.isExcludeDefaultInterceptors() || componentDescription.isExcludeDefaultInterceptors(methodIdentifier);
                 }
 
                 Boolean excludeClassInterceptors = methodLevelExcludeClassInterceptors.get(method);
-                excludeClassInterceptors = excludeClassInterceptors == null ? false : excludeClassInterceptors;
+                excludeClassInterceptors = excludeClassInterceptors == null ? Boolean.FALSE : excludeClassInterceptors;
                 if (!excludeClassInterceptors) {
                     excludeClassInterceptors = componentDescription.isExcludeClassInterceptors(methodIdentifier);
                 }

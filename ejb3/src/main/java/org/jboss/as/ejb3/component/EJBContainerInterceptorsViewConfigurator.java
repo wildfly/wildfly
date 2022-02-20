@@ -22,7 +22,20 @@
 
 package org.jboss.as.ejb3.component;
 
-import org.jboss.as.ee.logging.EeLogger;
+import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ClassDescriptionTraversal;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -37,6 +50,7 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.interceptors.UserInterceptorFactory;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.utils.ClassLoadingUtils;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
@@ -55,20 +69,6 @@ import org.jboss.modules.Module;
 import org.jboss.msc.value.CachedValue;
 import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.Value;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * A {@link ViewConfigurator} which sets up the Jakarta Enterprise Beans view with the relevant {@link Interceptor}s
@@ -223,9 +223,9 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
     }
 
     /**
-     * Traveses the interceptor class and its class hierarchy to find the aroundinvoke and aroundtimeout methods
+     * Traverses the interceptor class and its class hierarchy to find the around-invoke and around-timeout methods
      */
-    private class InterceptorClassDescriptionTraversal extends ClassDescriptionTraversal {
+    private static final class InterceptorClassDescriptionTraversal extends ClassDescriptionTraversal {
 
         private final EEModuleDescription moduleDescription;
         private final EJBComponentDescription ejbComponentDescription;
