@@ -580,4 +580,12 @@
         <cve>CVE-2021-40525</cve>
         <cve>CVE-2021-40110</cve>
     </suppress>
+    <!-- .NET SDK of Apache Avro not found in Wildfly distribution -->
+    <suppress>
+        <notes><![CDATA[
+   file name: avro-1.7.6.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.avro/avro@.*$</packageUrl>
+        <cve>CVE-2021-43045</cve>
+    </suppress>
 </suppressions>
