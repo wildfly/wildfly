@@ -55,7 +55,7 @@
         <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
         <version.jakarta.faces.jakarta-faces-api>3.0.0</version.jakarta.faces.jakarta-faces-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
-        <version.jakarta.interceptor.jakarta-interceptors-api>2.0.0</version.jakarta.interceptor.jakarta-interceptors-api>
+        <version.jakarta.interceptor.jakarta-interceptors-api>2.1.0-RC3</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.jms.jakarta-jms-api>3.0.0</version.jakarta.jms.jakarta-jms-api>
         <version.jakarta.mail>2.0.1</version.jakarta.mail>
         <version.jakarta.json.bind.api>2.0.0</version.jakarta.json.bind.api>
