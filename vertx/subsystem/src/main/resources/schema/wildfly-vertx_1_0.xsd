@@ -112,6 +112,9 @@
         <xs:attribute name="warning-exception-time" type="xs:long" />
         <xs:attribute name="warning-exception-time-unit" type="xs:string" />
 
+        <xs:attribute name="classpath-resolving-enabled" type="xs:boolean" />
+        <xs:attribute name="file-cache-enabled" type="xs:boolean" />
+
     </xs:complexType>
 
 </xs:schema>
