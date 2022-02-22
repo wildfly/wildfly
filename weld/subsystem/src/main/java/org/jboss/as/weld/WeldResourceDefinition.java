@@ -51,6 +51,7 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
             .build();
 
     static final String REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME = "require-bean-descriptor";
+    static final String LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE_NAME = "legacy-empty-beans-xml-treatment";
     static final String NON_PORTABLE_MODE_ATTRIBUTE_NAME = "non-portable-mode";
     static final String DEVELOPMENT_MODE_ATTRIBUTE_NAME = "development-mode";
     static final String THREAD_POOL_SIZE = "thread-pool-size";
@@ -61,6 +62,13 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
             .setDefaultValue(ModelNode.FALSE)
             .setRestartAllServices()
             .build();
+
+    static final SimpleAttributeDefinition LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE =
+            new SimpleAttributeDefinitionBuilder(LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE_NAME, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(ModelNode.FALSE)
+                    .setRestartAllServices()
+                    .build();
 
     static final SimpleAttributeDefinition NON_PORTABLE_MODE_ATTRIBUTE =
             new SimpleAttributeDefinitionBuilder(NON_PORTABLE_MODE_ATTRIBUTE_NAME, ModelType.BOOLEAN, true)
@@ -83,8 +91,7 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE, NON_PORTABLE_MODE_ATTRIBUTE, DEVELOPMENT_MODE_ATTRIBUTE, THREAD_POOL_SIZE_ATTRIBUTE };
-
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE, LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE, NON_PORTABLE_MODE_ATTRIBUTE, DEVELOPMENT_MODE_ATTRIBUTE, THREAD_POOL_SIZE_ATTRIBUTE };
     static final WeldResourceDefinition INSTANCE = new WeldResourceDefinition();
 
     private WeldResourceDefinition() {

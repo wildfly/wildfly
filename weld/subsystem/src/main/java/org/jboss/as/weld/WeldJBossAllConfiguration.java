@@ -37,11 +37,13 @@ public class WeldJBossAllConfiguration {
     private final Boolean requireBeanDescriptor;
     private final Boolean nonPortableMode;
     private final Boolean developmentMode;
+    private final Boolean legacyEmptyBeansXmlTreatment;
 
-    WeldJBossAllConfiguration(Boolean requireBeanDescriptor, Boolean nonPortableMode, Boolean developmentMode) {
+    WeldJBossAllConfiguration(Boolean requireBeanDescriptor, Boolean nonPortableMode, Boolean developmentMode, Boolean legacyEmptyBeansXmlTreatment) {
         this.requireBeanDescriptor = requireBeanDescriptor;
         this.nonPortableMode = nonPortableMode;
         this.developmentMode = developmentMode;
+        this.legacyEmptyBeansXmlTreatment = legacyEmptyBeansXmlTreatment;
     }
 
     public Boolean getNonPortableMode() {
@@ -54,5 +56,9 @@ public class WeldJBossAllConfiguration {
 
     public Boolean getDevelopmentMode() {
         return developmentMode;
+    }
+
+    public Boolean getLegacyEmptyBeansXmlTreatment() {
+        return legacyEmptyBeansXmlTreatment;
     }
 }
