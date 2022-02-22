@@ -92,6 +92,13 @@
     </xs:complexType>
 
     <xs:complexType name="vertxOptionType">
+        <xs:sequence>
+            <xs:element name="address-resolver-option" type="addressResolverOptionType" maxOccurs="1" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Define the AddressResolverOptions</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
 
         <xs:attribute name="event-loop-pool-size" type="xs:int"/>
@@ -115,6 +122,24 @@
         <xs:attribute name="classpath-resolving-enabled" type="xs:boolean" />
         <xs:attribute name="file-cache-enabled" type="xs:boolean" />
 
+    </xs:complexType>
+
+    <xs:complexType name="addressResolverOptionType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="hosts-path" type="xs:string" />
+        <xs:attribute name="hosts-value" type="xs:string" />
+        <xs:attribute name="servers" type="xs:string" />
+        <xs:attribute name="opt-resource-enabled" type="xs:boolean" />
+        <xs:attribute name="cache-min-time-to-live" type="xs:int" />
+        <xs:attribute name="cache-max-time-to-live" type="xs:int" />
+        <xs:attribute name="cache-negative-time-to-live" type="xs:int" />
+        <xs:attribute name="query-time-out" type="xs:long" />
+        <xs:attribute name="max-queries" type="xs:int" />
+        <xs:attribute name="rd-flag" type="xs:boolean" />
+        <xs:attribute name="search-domains" type="xs:string" />
+        <xs:attribute name="n-dots" type="xs:int" />
+        <xs:attribute name="rotate-servers" type="xs:boolean" />
+        <xs:attribute name="round-robin-inet-address" type="xs:boolean" />
     </xs:complexType>
 
 </xs:schema>

@@ -58,6 +58,23 @@ public interface VertxConstants {
     String ATTR_FS_CLASS_PATH_RESOLVING_ENABLED = "classpath-resolving-enabled";
     String ATTR_FS_FILE_CACHE_ENABLED = "file-cache-enabled";
 
+    // address resolver options
+    String ATTR_HOSTS_PATH = "hosts-path";
+    String ATTR_HOSTS_VALUE = "hosts-value";
+    String ATTR_SERVERS = "servers";
+    String ATTR_OPT_RES_ENABLED = "opt-resource-enabled";
+    String ATTR_CACHE_MIN_TTL = "cache-min-time-to-live";
+    String ATTR_MAX_TTL = "cache-max-time-to-live";
+    String ATTR_NEGATIVE_TTL = "cache-negative-time-to-live";
+    String ATTR_QUERY_TIMEOUT = "query-time-out";
+    String ATTR_MAX_QUERIES = "max-queries";
+    String ATTR_RD_FLAG = "rd-flag";
+    String ATTR_SEARCH_DOMAIN = "search-domains";
+    String ATTR_N_DOTS = "n-dots";
+    String ATTR_ROTATE_SERVERS = "rotate-servers";
+    String ATTR_ROUND_ROBIN_INET_ADDRESS = "round-robin-inet-address";
+    String ATTR_ADDRESS_RESOLVER = "address-resolver-option";
+
     // Followings are cluster manager related settings
     String DEFAULT_CACHE_NAME = "distributed-cache";
     String SUBS_CACHE_NAME = "__vertx.subs";

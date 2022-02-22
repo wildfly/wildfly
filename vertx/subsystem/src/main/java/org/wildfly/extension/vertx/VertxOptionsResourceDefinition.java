@@ -20,9 +20,12 @@ import static org.wildfly.extension.vertx.VertxConstants.*;
 import static org.wildfly.extension.vertx.logging.VertxLogger.*;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
-import io.vertx.core.file.FileSystemOptions;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.dns.AddressResolverOptions;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -132,7 +135,62 @@ class VertxOptionsResourceDefinition extends AbstractVertxOptionsResourceDefinit
         vertxOptions.getFileSystemOptions().setFileCachingEnabled(VertxOptionsAttributes.ATTR_FS_FILE_CACHE_ENABLED.validateOperation(operation).asBoolean());
       }
 
+      // address resolver options
+      if (operation.hasDefined(ATTR_ADDRESS_RESOLVER)) {
+        AddressResolverOptions addressResolverOptions = parseAddressResolverOptions(VertxOptionsAttributes.ATTR_ADDRESS_RESOLVER.validateOperation(operation));
+        vertxOptions.setAddressResolverOptions(addressResolverOptions);
+      }
+
       return vertxOptions;
+    }
+
+    private AddressResolverOptions parseAddressResolverOptions(ModelNode operation) throws OperationFailedException {
+      AddressResolverOptions addressResolverOptions = new AddressResolverOptions();
+      if (operation.hasDefined(ATTR_HOSTS_PATH)) {
+        addressResolverOptions.setHostsPath(VertxOptionsAttributes.ATTR_HOSTS_PATH.validateOperation(operation).asString());
+      }
+      if (operation.hasDefined(ATTR_HOSTS_VALUE)) {
+        addressResolverOptions.setHostsValue(Buffer.buffer(VertxOptionsAttributes.ATTR_HOSTS_VALUE.validateOperation(operation).asString()));
+      }
+      if (operation.hasDefined(ATTR_SERVERS)) {
+        List<ModelNode> list = VertxOptionsAttributes.ATTR_SERVERS.validateOperation(operation).asList();
+        addressResolverOptions.setServers(list.stream().map(ModelNode::asString).collect(Collectors.toList()));
+      }
+      if (operation.hasDefined(ATTR_OPT_RES_ENABLED)) {
+        addressResolverOptions.setOptResourceEnabled(VertxOptionsAttributes.ATTR_OPT_RES_ENABLED.validateOperation(operation).asBoolean());
+      }
+      if (operation.hasDefined(ATTR_CACHE_MIN_TTL)) {
+        addressResolverOptions.setCacheMinTimeToLive(VertxOptionsAttributes.ATTR_CACHE_MIN_TTL.validateOperation(operation).asInt());
+      }
+      if (operation.hasDefined(ATTR_MAX_TTL)) {
+        addressResolverOptions.setCacheMaxTimeToLive(VertxOptionsAttributes.ATTR_MAX_TTL.validateOperation(operation).asInt());
+      }
+      if (operation.hasDefined(ATTR_NEGATIVE_TTL)) {
+        addressResolverOptions.setCacheNegativeTimeToLive(VertxOptionsAttributes.ATTR_NEGATIVE_TTL.validateOperation(operation).asInt());
+      }
+      if (operation.hasDefined(ATTR_QUERY_TIMEOUT)) {
+        addressResolverOptions.setQueryTimeout(VertxOptionsAttributes.ATTR_QUERY_TIMEOUT.validateOperation(operation).asLong());
+      }
+      if (operation.hasDefined(ATTR_MAX_QUERIES)) {
+        addressResolverOptions.setMaxQueries(VertxOptionsAttributes.ATTR_MAX_QUERIES.validateOperation(operation).asInt());
+      }
+      if (operation.hasDefined(ATTR_RD_FLAG)) {
+        addressResolverOptions.setRdFlag(VertxOptionsAttributes.ATTR_RD_FLAG.validateOperation(operation).asBoolean());
+      }
+      if (operation.hasDefined(ATTR_SEARCH_DOMAIN)) {
+        List<ModelNode> list = VertxOptionsAttributes.ATTR_SEARCH_DOMAIN.validateOperation(operation).asList();
+        addressResolverOptions.setSearchDomains(list.stream().map(ModelNode::asString).collect(Collectors.toList()));
+      }
+      if (operation.hasDefined(ATTR_N_DOTS)) {
+        addressResolverOptions.setNdots(VertxOptionsAttributes.ATTR_N_DOTS.validateOperation(operation).asInt());
+      }
+      if (operation.hasDefined(ATTR_ROTATE_SERVERS)) {
+        addressResolverOptions.setRotateServers(VertxOptionsAttributes.ATTR_ROTATE_SERVERS.validateOperation(operation).asBoolean());
+      }
+      if (operation.hasDefined(ATTR_ROUND_ROBIN_INET_ADDRESS)) {
+        addressResolverOptions.setRoundRobinInetAddress(VertxOptionsAttributes.ATTR_ROUND_ROBIN_INET_ADDRESS.validateOperation(operation).asBoolean());
+      }
+      return addressResolverOptions;
     }
 
   }
