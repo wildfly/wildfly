@@ -205,6 +205,7 @@ final class OidcConfigService {
     private String getJSON(ModelNode deployment) {
         ModelNode json = new ModelNode();
         ModelNode realmOrProvider = null;
+        boolean removeProvider = false;
         String realmName = deployment.get(ElytronOidcDescriptionConstants.REALM).asStringOrNull();
         if (realmName != null) {
             realmOrProvider = this.realms.get(realmName);
@@ -213,7 +214,7 @@ final class OidcConfigService {
             String providerName = deployment.get(ElytronOidcDescriptionConstants.PROVIDER).asStringOrNull();
             if (providerName != null) {
                 realmOrProvider = this.providers.get(providerName);
-                deployment.remove(ElytronOidcDescriptionConstants.PROVIDER);
+                removeProvider = true;
             }
         }
 
@@ -222,6 +223,9 @@ final class OidcConfigService {
             setJSONValues(json, realmOrProvider);
         }
         setJSONValues(json, deployment);
+        if (removeProvider) {
+            json.remove(ElytronOidcDescriptionConstants.PROVIDER);
+        }
         return json.toJSONString(true);
     }
 
