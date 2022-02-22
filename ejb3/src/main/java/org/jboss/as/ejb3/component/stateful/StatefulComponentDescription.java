@@ -98,9 +98,9 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     /**
      * Map of init method, to the corresponding home create method on the home interface
      */
-    private Map<Method, String> initMethods = new HashMap<Method, String>(0);
+    private final Map<Method, String> initMethods = new HashMap<Method, String>(0);
 
-    public class StatefulRemoveMethod {
+    public static final class StatefulRemoveMethod {
         private final MethodIdentifier methodIdentifier;
         private final boolean retainIfException;
 
