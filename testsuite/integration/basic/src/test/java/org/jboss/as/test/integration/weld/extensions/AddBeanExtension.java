@@ -32,7 +32,7 @@ import javax.enterprise.inject.spi.Extension;
 public class AddBeanExtension implements Extension {
 
     public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, final BeanManager beanManager) {
-        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(MyBean.class), null);
+        beforeBeanDiscovery.addAnnotatedType(beanManager.createAnnotatedType(MyBean.class), MyBean.class.getName());
     }
 
 }
