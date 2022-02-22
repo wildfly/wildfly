@@ -22,6 +22,7 @@
 
 package org.jboss.as.weld;
 
+import static org.jboss.as.weld.WeldResourceDefinition.LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE;
 import static org.jboss.as.weld.WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE;
 
 import java.util.ServiceLoader;
@@ -81,6 +82,7 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final ModelNode model = resource.getModel();
         final boolean requireBeanDescriptor = REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE.resolveModelAttribute(context, model).asBoolean();
+        final boolean legacyEmptyBeansXmlTreatment = LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE.resolveModelAttribute(context, model).asBoolean();
         final boolean nonPortableMode = WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE.resolveModelAttribute(context, model).asBoolean();
         final boolean developmentMode = WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE.resolveModelAttribute(context, model).asBoolean();
         final int threadPoolSize = WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE.resolveModelAttribute(context, model)
@@ -94,7 +96,7 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
                     .addParser(WeldJBossAll11Parser.ROOT_ELEMENT, WeldJBossAllConfiguration.ATTACHMENT_KEY, WeldJBossAll11Parser.INSTANCE)
                     .build();
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_WELD, jbossAllParsers);
-                processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_WELD_CONFIGURATION, new WeldConfigurationProcessor(requireBeanDescriptor, nonPortableMode, developmentMode));
+                processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_WELD_CONFIGURATION, new WeldConfigurationProcessor(requireBeanDescriptor, nonPortableMode, developmentMode, legacyEmptyBeansXmlTreatment));
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_CDI_ANNOTATIONS, new CdiAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_CDI_BEAN_DEFINING_ANNOTATIONS, new BeanDefiningAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_WELD_DEPLOYMENT, new BeansXmlProcessor());

@@ -37,11 +37,13 @@ class WeldConfiguration {
     private final boolean requireBeanDescriptor;
     private final boolean nonPortableMode;
     private final boolean developmentMode;
+    private final boolean legacyEmptyBeansXmlTreatment;
 
-    public WeldConfiguration(boolean requireBeanDescriptor, boolean nonPortableMode, boolean developmentMode) {
+    public WeldConfiguration(boolean requireBeanDescriptor, boolean nonPortableMode, boolean developmentMode, boolean legacyEmptyBeansXmlTreatment) {
         this.requireBeanDescriptor = requireBeanDescriptor;
         this.nonPortableMode = nonPortableMode;
         this.developmentMode = developmentMode;
+        this.legacyEmptyBeansXmlTreatment = legacyEmptyBeansXmlTreatment;
     }
 
     public boolean isNonPortableMode() {
@@ -56,10 +58,14 @@ class WeldConfiguration {
         return developmentMode;
     }
 
+    public boolean isLegacyEmptyBeansXmlTreatment() {
+        return legacyEmptyBeansXmlTreatment;
+    }
+
     @Override
     public String toString() {
         return "WeldConfiguration [requireBeanDescriptor=" + requireBeanDescriptor + ", nonPortableMode=" + nonPortableMode + ", developmentMode="
-                + developmentMode + "]";
+                + developmentMode + ", legacyEmptyBeansXmlTreatment=" + legacyEmptyBeansXmlTreatment + "]";
     }
 
 }

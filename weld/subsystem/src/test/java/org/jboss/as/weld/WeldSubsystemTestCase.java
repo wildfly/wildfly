@@ -23,7 +23,17 @@ package org.jboss.as.weld;
 
 import java.io.IOException;
 
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -42,7 +52,7 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-weld_4_0.xsd";
+        return "schema/jboss-as-weld_5_0.xsd";
     }
 
     @Test
@@ -61,7 +71,33 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testSubsystem40() throws Exception {
+        standardSubsystemTest("subsystem_4_0.xml", false);
+    }
+
+    @Test
     public void testExpressions() throws Exception {
         standardSubsystemTest("subsystem_with_expression.xml");
+    }
+
+    // TODO test transformer rejection; not sure how to do the setup for this one
+    @Ignore("not working ATM")
+    @Test
+    public void testTransformersRejectionEAP740() throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(4, 0, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, ModelTestControllerVersion.EAP_7_4_0, modelVersion)
+                .addMavenResourceURL("org.jboss.eap:wildfly-weld:" + ModelTestControllerVersion.EAP_7_4_0.getMavenGavVersion())
+                .dontPersistXml();
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(getSubsystemXml("subsystem-reject.xml")),
+                new FailedOperationTransformationConfig().addFailedAttribute(PathAddress.pathAddress(WeldExtension.PATH_SUBSYSTEM),
+                        FailedOperationTransformationConfig.ChainedConfig
+                                .createBuilder(WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
+                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE))
+                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(WeldResourceDefinition.LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE)).build()
+                ));
     }
 }

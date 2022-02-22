@@ -22,6 +22,7 @@
 package org.jboss.as.weld;
 
 import static org.jboss.as.weld.WeldResourceDefinition.DEVELOPMENT_MODE_ATTRIBUTE_NAME;
+import static org.jboss.as.weld.WeldResourceDefinition.LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE_NAME;
 import static org.jboss.as.weld.WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE_NAME;
 import static org.jboss.as.weld.WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME;
 
@@ -52,8 +53,8 @@ class WeldJBossAll11Parser extends AbstractWeldJBossAllParser implements JBossAl
         Boolean requireBeanDescriptor = getAttributeAsBoolean(reader, REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME);
         Boolean nonPortableMode = getAttributeAsBoolean(reader, NON_PORTABLE_MODE_ATTRIBUTE_NAME);
         Boolean developmentMode = getAttributeAsBoolean(reader, DEVELOPMENT_MODE_ATTRIBUTE_NAME);
+        Boolean legacyEmptyBeansXmlTreatment = getAttributeAsBoolean(reader, LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE_NAME);
         super.parseWeldElement(reader);
-        return new WeldJBossAllConfiguration(requireBeanDescriptor, nonPortableMode, developmentMode);
-    }
+        return new WeldJBossAllConfiguration(requireBeanDescriptor, nonPortableMode, developmentMode, legacyEmptyBeansXmlTreatment);    }
 
 }

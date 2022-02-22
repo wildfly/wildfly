@@ -26,18 +26,22 @@ import org.jboss.as.weld.deployment.PropertyReplacingBeansXmlParser;
 import org.jboss.logging.Logger;
 import org.jboss.weld.xml.BeansXmlParser;
 
+/**
+ * Temporary factory for creating instances of BeansXmlParser. This class won't be needed once Weld 5 is a direct
+ * dependency of non-preview WFLY.
+ */
 final class BeansXmlParserFactory {
 
     private static final Logger log = Logger.getLogger(BeansXmlParserFactory.class.getPackage().getName());
 
     private static final Constructor<? extends BeansXmlParser> constructor;
     static {
-        String cname = PropertyReplacingBeansXmlParser.class.getPackage().getName() + ".EmptyDiscoveryBeansXmlParser";
+        String cname = PropertyReplacingBeansXmlParser.class.getPackage().getName() + ".AlternativePropertyReplacingBeansXmlParser";
         Constructor<? extends BeansXmlParser> ctor = null;
         try {
             @SuppressWarnings("unchecked")
             Class<? extends BeansXmlParser> clazz = (Class<? extends BeansXmlParser>) BeansXmlParserFactory.class.getClassLoader().loadClass(cname);
-            ctor = clazz.getDeclaredConstructor(DeploymentUnit.class);
+            ctor = clazz.getDeclaredConstructor(DeploymentUnit.class, boolean.class);
             log.infof("Found constructor for %s", cname);
         } catch (ClassNotFoundException | NoSuchMethodException e) {
             // ignore
@@ -46,12 +50,12 @@ final class BeansXmlParserFactory {
         constructor = ctor;
     }
 
-    static BeansXmlParser getPropertyReplacingParser(DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+    static BeansXmlParser getPropertyReplacingParser(DeploymentUnit deploymentUnit, boolean legacyBeansXmlTreatment) throws DeploymentUnitProcessingException {
         if (constructor == null) {
             return new PropertyReplacingBeansXmlParser(deploymentUnit);
         }
         try {
-            return constructor.newInstance(deploymentUnit);
+            return constructor.newInstance(deploymentUnit, legacyBeansXmlTreatment);
         } catch (ReflectiveOperationException e) {
             throw new DeploymentUnitProcessingException(e);
         }

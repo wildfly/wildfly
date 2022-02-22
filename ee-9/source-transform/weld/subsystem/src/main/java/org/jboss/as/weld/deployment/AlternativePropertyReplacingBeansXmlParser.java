@@ -26,16 +26,19 @@ import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.weld.xml.BeansXmlParser;
 
 /**
- * Alternative to {@link PropertyReplacingBeansXmlParser} that provides CDI 2 / CDI 3
- * handling of empty beans.xml files instead of the new default CDI 4 behavior
- * discussed in https://github.com/eclipse-ee4j/cdi/issues/500.
+ * Temporary alternative to {@link PropertyReplacingBeansXmlParser} that can work with Weld 5 API and can therefore
+ * choose between current and legacy behavior when parsing empty beans.xml files.
+ * See also https://github.com/eclipse-ee4j/cdi/issues/500
+ *
+ * This class will no longer be needed once Weld 5 becomes a direct dependency for non-preview WFLY.
+ * The functionality should then be merged into {@link PropertyReplacingBeansXmlParser}
  */
-public final class EmptyDiscoveryBeansXmlParser  extends BeansXmlParser {
+public final class AlternativePropertyReplacingBeansXmlParser extends BeansXmlParser {
 
     private final PropertyReplacer replacer;
 
-    public EmptyDiscoveryBeansXmlParser(DeploymentUnit deploymentUnit) {
-        super(true);
+    public AlternativePropertyReplacingBeansXmlParser(DeploymentUnit deploymentUnit, boolean legacyEmptyBeansXmlTreatment) {
+        super(legacyEmptyBeansXmlTreatment);
         this.replacer = SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit);
     }
 
