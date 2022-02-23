@@ -45,17 +45,17 @@
         <version.com.sun.faces>3.0.0.SP04</version.com.sun.faces>
         <version.com.sun.activation.jakarta.activation>2.0.0</version.com.sun.activation.jakarta.activation>
         <version.com.sun.istack>4.0.1</version.com.sun.istack>
-        <version.jakarta.annotation.jakarta-annotation-api>2.0.0</version.jakarta.annotation.jakarta-annotation-api>
+        <version.jakarta.annotation.jakarta-annotation-api>2.1.0-B1</version.jakarta.annotation.jakarta-annotation-api>
         <version.jakarta.authentication.jakarta-authentication-api>2.0.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>2.0.0</version.jakarta.authorization.jakarta-authorization-api>
         <version.jakarta.batch.jakarta.batch-api>2.0.0</version.jakarta.batch.jakarta.batch-api>
         <version.jakarta.ejb.jakarta-ejb-api>4.0.0</version.jakarta.ejb.jakarta-ejb-api>
-        <version.jakarta.el.jakarta-el-api>4.0.0</version.jakarta.el.jakarta-el-api>
+        <version.jakarta.el.jakarta-el-api>5.0.0-RC1</version.jakarta.el.jakarta-el-api>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
         <version.jakarta.faces.jakarta-faces-api>3.0.0</version.jakarta.faces.jakarta-faces-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
-        <version.jakarta.interceptor.jakarta-interceptors-api>2.0.0</version.jakarta.interceptor.jakarta-interceptors-api>
+        <version.jakarta.interceptor.jakarta-interceptors-api>2.1.0-RC3</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.jms.jakarta-jms-api>3.0.0</version.jakarta.jms.jakarta-jms-api>
         <version.jakarta.mail>2.0.1</version.jakarta.mail>
         <version.jakarta.json.bind.api>2.0.0</version.jakarta.json.bind.api>
@@ -94,7 +94,7 @@
         <!-- MP5 - END -->
         <version.org.eclipse.yasson>2.0.3</version.org.eclipse.yasson>
         <version.org.eclipselink.version>3.0.2</version.org.eclipselink.version>
-        <version.org.glassfish.jakarta.el>4.0.0</version.org.glassfish.jakarta.el>
+        <version.org.glassfish.jakarta.el>5.0.0-M1</version.org.glassfish.jakarta.el>
         <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
         <!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
