@@ -418,12 +418,6 @@
                                     <artifactId>wildfly-elytron</artifactId>
                                 </dependency>
 
-                                <!-- include security: picketbox -->
-                                <dependency>
-                                    <groupId>org.picketbox</groupId>
-                                    <artifactId>picketbox-commons</artifactId>
-                                </dependency>
-
                                 <!-- other WFLY APIs to include -->
                                 <dependency>
                                     <groupId>org.wildfly.discovery</groupId>
