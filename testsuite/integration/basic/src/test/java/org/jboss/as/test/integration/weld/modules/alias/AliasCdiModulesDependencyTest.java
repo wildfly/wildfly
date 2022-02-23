@@ -55,7 +55,7 @@ public class AliasCdiModulesDependencyTest {
         testModuleImpl = ModuleUtils.createTestModuleWithEEDependencies(IMPL_MODULE_NAME);
         testModuleImpl.addResource("test-module.jar")
             .addClasses(ModuleBean.class)
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+            .addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         testModuleImpl.create();
 
         // load the module.xml file and use it to create module, we need this to have Module B as exported dependency

@@ -40,7 +40,6 @@ import org.jboss.jandex.Indexer;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -103,7 +102,7 @@ public class WeldModuleDeploymentTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "weldTest.jar");
         jar.addClasses(SimpleBean.class, ModuleEjb.class);
-        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        jar.addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
 
 
         Indexer indexer = new Indexer();
@@ -156,7 +155,7 @@ public class WeldModuleDeploymentTestCase {
         doSetup();
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "d2.jar");
         jar.addClasses(WeldModuleDeploymentTestCase.class);
-        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        jar.addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.test.weldModule meta-inf annotations\n"), "MANIFEST.MF");
         return jar;
     }

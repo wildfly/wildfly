@@ -29,7 +29,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.ee.injection.support.AroundConstructInterceptor;
 import org.jboss.as.test.integration.ee.injection.support.InjectionSupportTestCase;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -49,7 +49,7 @@ public class ManagedBeanConstructTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "managedbean.war");
         war.addPackage(ManagedBeanConstructTestCase.class.getPackage());
         war.addClasses(InjectionSupportTestCase.constructTestsHelperClasses);
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         return war;
     }
 

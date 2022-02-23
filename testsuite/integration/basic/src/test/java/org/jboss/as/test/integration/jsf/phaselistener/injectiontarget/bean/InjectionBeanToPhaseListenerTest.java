@@ -31,7 +31,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -54,7 +54,7 @@ public class InjectionBeanToPhaseListenerTest {
         war.addAsWebInfResource(InjectionBeanToPhaseListenerTest.class.getPackage(), "web.xml", "web.xml");
         war.addAsWebInfResource(InjectionBeanToPhaseListenerTest.class.getPackage(), "faces-config.xml", "faces-config.xml");
         war.addAsWebResource(InjectionBeanToPhaseListenerTest.class.getPackage(), "home.xhtml", "home.xhtml");
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         return war;
     }
 

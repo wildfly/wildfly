@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -60,7 +59,7 @@ public abstract class AbstractBundledLibraryDeploymentTestCase {
     private static void createTestModule(File bundledLibraryFile) throws IOException {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, BUNDLED_LIBRARY_NAME);
         jar.addClasses(SimpleBean.class);
-        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        jar.addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         jar.setManifest(new StringAsset("Extension-Name: " + EXTENSION_NAME + "\n"));
         jar.as(ZipExporter.class).exportTo(bundledLibraryFile, true);
     }

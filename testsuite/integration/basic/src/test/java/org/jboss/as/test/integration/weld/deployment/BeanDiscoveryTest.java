@@ -31,12 +31,12 @@ public class BeanDiscoveryTest {
                 .addClass(Alpha.class)
                 .addAsManifestResource(newBeans11Descriptor("all"), "beans.xml");
         // Empty beans.xml
-        JavaArchive bravo = ShrinkWrap.create(JavaArchive.class).addClass(Bravo.class)
+        JavaArchive bravo = ShrinkWrap.create(JavaArchive.class).addClasses(Bravo.class, Bravo_Undiscovered.class)
                 .addAsManifestResource(new StringAsset(""), "beans.xml");
         // No version beans.xml
         JavaArchive charlie = ShrinkWrap
                 .create(JavaArchive.class)
-                .addClass(Charlie.class)
+                .addClasses(Charlie.class, Bravo_Undiscovered.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         // Bean defining annotation and no beans.xml
         JavaArchive delta = ShrinkWrap.create(JavaArchive.class).addClass(Delta.class);
@@ -73,13 +73,15 @@ public class BeanDiscoveryTest {
     }
 
     @Test
-    public void testExplicitBeanArchiveEmptyDescriptor(Bravo bravo) {
+    public void testImplicitBeanArchiveEmptyDescriptor(Bravo bravo) {
         assertDiscoveredAndAvailable(bravo, Bravo.class);
+        assertNotDiscoveredAndNotAvailable(Bravo_Undiscovered.class);
     }
 
     @Test
     public void testExplicitBeanArchiveLegacyDescriptor(Charlie charlie) {
         assertDiscoveredAndAvailable(charlie, Charlie.class);
+        assertNotDiscoveredAndNotAvailable(Bravo_Undiscovered.class);
     }
 
     @Test
