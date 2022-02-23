@@ -36,7 +36,7 @@ import org.jboss.as.test.integration.ee.injection.support.Alpha;
 import org.jboss.as.test.integration.ee.injection.support.Bravo;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -59,7 +59,7 @@ public class EntityListenerInjectionSupportTestCase {
         war.addClasses(Alpha.class, Bravo.class);
         war.addAsWebInfResource(EntityListenerInjectionSupportTestCase.class.getPackage(), "persistence.xml",
                 "classes/META-INF/persistence.xml");
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
 
         ear.addAsModule(war);
         return ear;

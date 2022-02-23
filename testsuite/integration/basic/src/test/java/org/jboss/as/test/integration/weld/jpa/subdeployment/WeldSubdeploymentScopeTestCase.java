@@ -28,7 +28,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -51,7 +51,7 @@ public class WeldSubdeploymentScopeTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "cdiPuScope.ear");
         WebArchive war = ShrinkWrap.create(WebArchive.class, "simple.war");
         war.addClasses(WeldSubdeploymentScopeTestCase.class, CdiJpaInjectingBean.class);
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "util.jar");
         jar.addAsManifestResource(WeldSubdeploymentScopeTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         war.addAsLibrary(jar);

@@ -31,7 +31,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -55,7 +54,7 @@ public class BuiltInBeanWithPackagePrivateConstructorTest {
         testModule = new TestModule("test.module-accessibility", moduleXmlFile);
         JavaArchive jar = testModule.addResource("module-accessibility.jar");
         jar.addClass(BuiltInBeanWithPackagePrivateConstructor.class);
-        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        jar.addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         testModule.create(true);
 
     }
@@ -72,7 +71,7 @@ public class BuiltInBeanWithPackagePrivateConstructorTest {
         doSetup();
         return ShrinkWrap.create(WebArchive.class).addClasses(InjectedBean.class, BuiltInBeanWithPackagePrivateConstructorTest.class)
                 .addClass(TestModule.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: test.module-accessibility meta-inf\n"), "MANIFEST.MF");
 
     }

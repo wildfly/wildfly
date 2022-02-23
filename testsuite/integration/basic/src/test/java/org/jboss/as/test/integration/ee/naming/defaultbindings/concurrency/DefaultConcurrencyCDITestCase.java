@@ -46,7 +46,7 @@ public class DefaultConcurrencyCDITestCase {
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
         jar.addClasses(DefaultConcurrencyCDITestCase.class, DefaultConcurrencyTestCDIBean.class);
-        jar.addAsManifestResource(new StringAsset(""), "beans.xml");
+        jar.addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         jar.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new RuntimePermission("getClassLoader")), "permissions.xml");
         return jar;
     }

@@ -46,7 +46,7 @@ public class CDIInjectionIntoEJBInterceptorTestCase {
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
         jar.addPackage(CDIInjectionIntoEJBInterceptorTestCase.class.getPackage());
-        jar.addAsManifestResource(new StringAsset(""), "beans.xml");
+        jar.addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         return jar;
     }
 

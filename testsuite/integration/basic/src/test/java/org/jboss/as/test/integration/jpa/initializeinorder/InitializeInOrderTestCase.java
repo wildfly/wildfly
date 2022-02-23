@@ -32,7 +32,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -80,7 +80,7 @@ public class InitializeInOrderTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "web.war");
         war.addClasses(MyServlet.class, CdiJpaInjectingBean.class, QualifyEntityManagerFactory.class, CdiJpaInjectingBean.class);
         war.addAsResource( InitializeInOrderTestCase.class.getPackage(), "persistence.xml", "META-INF/persistence.xml");
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         ear.addAsModule(war);
 
         return ear;

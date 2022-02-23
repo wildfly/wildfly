@@ -27,7 +27,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -71,12 +70,12 @@ public class WeldBundledLibraryDeploymentEarTestCase extends AbstractBundledLibr
     @Deployment
     public static Archive<?> getDeployment() throws Exception {
         doSetup();
-
+        StringAsset beansXml = new StringAsset("<beans bean-discovery-mode=\"all\"></beans>");
         WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war")
                 .addClasses(WeldBundledLibraryDeploymentEarTestCase.class, AbstractBundledLibraryDeploymentTestCase.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-        JavaArchive library = ShrinkWrap.create(JavaArchive.class, "library.jar").addClasses(InjectedBean.class).addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
-        JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb-archive.jar").addClasses(InjectedSessionBean.class).addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsWebInfResource(beansXml, "beans.xml");
+        JavaArchive library = ShrinkWrap.create(JavaArchive.class, "library.jar").addClasses(InjectedBean.class).addAsManifestResource(beansXml, "beans.xml");
+        JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb-archive.jar").addClasses(InjectedSessionBean.class).addAsManifestResource(beansXml, "beans.xml");
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class);
         ear.addAsModule(war);
         ear.addAsModule(ejbJar);
