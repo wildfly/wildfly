@@ -12,6 +12,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -72,14 +73,16 @@ public class BeanDiscoveryTest {
         assertDiscoveredAndAvailable(alpha, Alpha.class);
     }
 
+    @Ignore("This test already expects Weld 5/CDI 4 behavior and can be enabled once WFLY fully moves to that version")
     @Test
     public void testImplicitBeanArchiveEmptyDescriptor(Bravo bravo) {
         assertDiscoveredAndAvailable(bravo, Bravo.class);
         assertNotDiscoveredAndNotAvailable(Bravo_Undiscovered.class);
     }
 
+    @Ignore("This test already expects Weld 5/CDI 4 behavior and can be enabled once WFLY fully moves to that version")
     @Test
-    public void testExplicitBeanArchiveLegacyDescriptor(Charlie charlie) {
+    public void testImplicitBeanArchiveLegacyDescriptor(Charlie charlie) {
         assertDiscoveredAndAvailable(charlie, Charlie.class);
         assertNotDiscoveredAndNotAvailable(Bravo_Undiscovered.class);
     }
