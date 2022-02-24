@@ -939,13 +939,7 @@
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>com.sun.xml.messaging.saaj</groupId>
-            <artifactId>saaj-impl</artifactId>
-        </dependency>
     </dependencies>
-
     <profiles>
         <profile>
             <!-- This profile should only be activated to download licenses from remote URLs
