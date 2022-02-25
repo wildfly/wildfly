@@ -29,6 +29,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jaxb.FakeJAXBContextFactory;
 import org.jboss.as.test.integration.jaxb.JAXBContextServlet;
@@ -90,7 +91,7 @@ public abstract class JAXBContextTestBase {
             final HttpEntity entity = response.getEntity();
             Assert.assertNotNull("Response message from servlet was null", entity);
             final String responseMessage = EntityUtils.toString(entity);
-            Assert.assertThat(responseMessage, CoreMatchers.containsString("/com/sun/xml/bind/v2/runtime/JAXBContextImpl"));
+            MatcherAssert.assertThat(responseMessage, CoreMatchers.containsString("/com/sun/xml/bind/v2/runtime/JAXBContextImpl"));
         }
         // test it works
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {

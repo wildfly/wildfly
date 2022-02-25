@@ -30,13 +30,13 @@ import javax.ejb.EJBException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -86,7 +86,7 @@ public class FailBecauseOfXPCNotInSFSBTestCase {
                 cause = cause.getCause();
             }
             assertTrue("expected IllegalStateException was not thrown", cause instanceof IllegalStateException);
-            Assert.assertThat("Wrong error message", cause.getMessage(), containsString(errorCode));
+            MatcherAssert.assertThat("Wrong error message", cause.getMessage(), containsString(errorCode));
         } catch (Throwable unexpected) {
             fail("unexcepted exception " + unexpected.toString());
         }

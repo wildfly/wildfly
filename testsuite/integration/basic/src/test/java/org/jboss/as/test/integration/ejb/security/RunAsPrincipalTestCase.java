@@ -30,6 +30,7 @@ import javax.ejb.EJBAccessException;
 import javax.naming.InitialContext;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -210,7 +211,7 @@ public class RunAsPrincipalTestCase  {
         } catch (Exception dex) {
             Throwable t = checkEjbException(dex);
             log.trace("Expected deployment error because the Singleton has nosecurity context per itself", dex.getCause());
-            Assert.assertThat(t.getMessage(), t.getMessage(), CoreMatchers.containsString("WFLYEJB0364"));
+            MatcherAssert.assertThat(t.getMessage(), t.getMessage(), CoreMatchers.containsString("WFLYEJB0364"));
         } finally {
             deployer.undeploy(STARTUP_SINGLETON_DEPLOYMENT);
         }
@@ -229,7 +230,7 @@ public class RunAsPrincipalTestCase  {
         } catch (Exception dex) {
             Throwable t = checkEjbException(dex);
             log.trace("Expected EJB call fail because identity should not be propagated from @PostConstruct method", dex.getCause());
-            Assert.assertThat(t.getMessage(), t.getMessage(), CoreMatchers.containsString("WFLYEJB0364"));
+            MatcherAssert.assertThat(t.getMessage(), t.getMessage(), CoreMatchers.containsString("WFLYEJB0364"));
         }
     }
 

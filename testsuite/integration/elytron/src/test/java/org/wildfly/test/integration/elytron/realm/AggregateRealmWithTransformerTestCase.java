@@ -18,6 +18,7 @@ package org.wildfly.test.integration.elytron.realm;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -28,7 +29,6 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.permission.ElytronPermission;
@@ -450,7 +450,7 @@ public class AggregateRealmWithTransformerTestCase {
 
     private void assertAttributes(URL webAppURL, String user, String password) throws Exception {
         Properties properties = getAttributes(webAppURL, user, password);
-        Assert.assertThat("Properties count", properties.size(), is(3));
+        MatcherAssert.assertThat("Properties count", properties.size(), is(3));
         assertAttribute(properties, "groups", ROLE_4);
         assertAttribute(properties, "Attribute1", "3", "4");
         assertAttribute(properties, "Attribute2", "7", "8");

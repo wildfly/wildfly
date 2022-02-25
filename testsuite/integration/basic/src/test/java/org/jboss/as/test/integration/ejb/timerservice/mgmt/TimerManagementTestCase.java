@@ -2,6 +2,7 @@ package org.jboss.as.test.integration.ejb.timerservice.mgmt;
 
 import java.io.Serializable;
 
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -75,7 +76,7 @@ public class TimerManagementTestCase extends AbstractTimerManagementTestCase {
             getTimerDetails();
         } catch (OperationFailedException ofe) {
             final ModelNode failureDescription = ofe.getFailureDescription();
-            Assert.assertThat("Wrong failure description", failureDescription.toString(), containsString("WFLYCTL0216"));
+            MatcherAssert.assertThat("Wrong failure description", failureDescription.toString(), containsString("WFLYCTL0216"));
         }
     }
 
@@ -88,7 +89,7 @@ public class TimerManagementTestCase extends AbstractTimerManagementTestCase {
             getTimerDetails();
         } catch (OperationFailedException ofe) {
             final ModelNode failureDescription = ofe.getFailureDescription();
-            Assert.assertThat("Wrong failure description", failureDescription.toString(), containsString("WFLYCTL0216"));
+            MatcherAssert.assertThat("Wrong failure description", failureDescription.toString(), containsString("WFLYCTL0216"));
         }
     }
 
@@ -101,7 +102,7 @@ public class TimerManagementTestCase extends AbstractTimerManagementTestCase {
         final ModelNode operation = Util.createOperation("suspend", address);
         ModelNode response = executeForResult(operation);
         Assert.assertFalse(Operations.isSuccessfulOutcome(response));
-        Assert.assertThat("Wrong failure description", Operations.getFailureDescription(response).toString(), containsString("WFLYEJB0526"));
+        MatcherAssert.assertThat("Wrong failure description", Operations.getFailureDescription(response).toString(), containsString("WFLYEJB0526"));
         this.waitOverTimer();
     }
 

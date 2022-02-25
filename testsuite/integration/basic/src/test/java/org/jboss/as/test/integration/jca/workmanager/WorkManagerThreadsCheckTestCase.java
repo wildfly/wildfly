@@ -26,6 +26,8 @@ import static org.hamcrest.core.AllOf.allOf;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 
 import java.io.IOException;
+
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployment;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -68,7 +70,7 @@ public class WorkManagerThreadsCheckTestCase extends JcaMgmtBase {
             Assert.fail("NOT HERE!");
         } catch (MgmtOperationException e) {
             String reason = e.getResult().get("failure-description").asString();
-            Assert.assertThat("Wrong error message", reason, allOf(
+            MatcherAssert.assertThat("Wrong error message", reason, allOf(
                     containsString("WFLYJCA0101"),
                     containsString("Long"),
                     containsString("long-running-threads"),
@@ -87,7 +89,7 @@ public class WorkManagerThreadsCheckTestCase extends JcaMgmtBase {
             Assert.fail("NOT HERE!");
         } catch (MgmtOperationException e) {
             String reason = e.getResult().get("failure-description").asString();
-            Assert.assertThat("Wrong error message", reason, allOf(
+            MatcherAssert.assertThat("Wrong error message", reason, allOf(
                     containsString("WFLYJCA0101"),
                     containsString("Short"),
                     containsString("short-running-threads"),
@@ -110,7 +112,7 @@ public class WorkManagerThreadsCheckTestCase extends JcaMgmtBase {
             Assert.fail("NOT HERE!");
         } catch (MgmtOperationException e) {
             String reason = e.getResult().get("failure-description").asString();
-            Assert.assertThat("Wrong error message", reason, allOf(
+            MatcherAssert.assertThat("Wrong error message", reason, allOf(
                     containsString("WFLYJCA0122"),
                     containsString("Short"),
                     containsString("short-running-threads"),
