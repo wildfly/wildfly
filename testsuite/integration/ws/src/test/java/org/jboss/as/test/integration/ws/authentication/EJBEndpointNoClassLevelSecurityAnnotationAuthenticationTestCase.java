@@ -32,6 +32,7 @@ import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceException;
 
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -88,7 +89,7 @@ public class EJBEndpointNoClassLevelSecurityAnnotationAuthenticationTestCase {
             Assert.fail("Test should fail, user shouldn't be allowed to invoke hello method");
         } catch (WebServiceException e) {
             // failure is expected
-            Assert.assertThat("Invocation on hello method should not be allowed", e.getCause().getMessage(), containsString("WFLYEJB0364"));
+            MatcherAssert.assertThat("Invocation on hello method should not be allowed", e.getCause().getMessage(), containsString("WFLYEJB0364"));
         }
     }
 

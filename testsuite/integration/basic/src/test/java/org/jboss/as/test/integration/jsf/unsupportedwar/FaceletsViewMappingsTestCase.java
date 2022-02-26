@@ -25,6 +25,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -75,7 +76,7 @@ public class FaceletsViewMappingsTestCase {
             Assert.assertEquals("Jakarta Server Faces deployment failed due to UnsupportedOperationException when javax.faces.FACELETS_VIEW_MAPPINGS valued wrong", HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
             HttpEntity entity = response.getEntity();
             String result = EntityUtils.toString(entity);
-            Assert.assertThat("Hello World is in place", result, CoreMatchers.containsString("Hello World!"));
+            MatcherAssert.assertThat("Hello World is in place", result, CoreMatchers.containsString("Hello World!"));
         }
     }
 }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.jndi.bad;
 
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -102,9 +103,9 @@ public class BadResourceTestCase {
 
         // asserts
         String failureDescription = result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).toString();
-        Assert.assertThat(String.format("Results doesn't contain correct error code (%s): %s", Constants.ERROR_MESSAGE, result.toString()),
+        MatcherAssert.assertThat(String.format("Results doesn't contain correct error code (%s): %s", Constants.ERROR_MESSAGE, result.toString()),
                 failureDescription, containsString(Constants.ERROR_MESSAGE));
-        Assert.assertThat(String.format("Results doesn't contain correct JNDI in error message (%s): %s", Constants.JNDI_NAME_BAD, result.toString()),
+        MatcherAssert.assertThat(String.format("Results doesn't contain correct JNDI in error message (%s): %s", Constants.JNDI_NAME_BAD, result.toString()),
                 failureDescription, containsString(Constants.JNDI_NAME_BAD));
     }
 

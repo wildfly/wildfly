@@ -23,6 +23,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 
@@ -117,7 +118,7 @@ public class AffectedDeploymentOverlayTestCase extends ContainerResourceMgmtTest
             HttpRequest.get(url + "/overlay/", 10, TimeUnit.SECONDS);
             Assert.fail("Overlay servlet shouldn't be up and working properly");
         } catch (IOException ioex) {
-            Assert.assertThat(ioex.getMessage(), CoreMatchers.containsString("HTTP Status 500 Response:"));
+            MatcherAssert.assertThat(ioex.getMessage(), CoreMatchers.containsString("HTTP Status 500 Response:"));
         }
         getModelControllerClient().execute(Operations.createOperation("redeploy-links", TEST_OVERLAY_ADDRESS.toModelNode()));
         response = HttpRequest.get(url + "/simple/", 10, TimeUnit.SECONDS);
@@ -126,7 +127,7 @@ public class AffectedDeploymentOverlayTestCase extends ContainerResourceMgmtTest
             HttpRequest.get(url + "/overlay/", 10, TimeUnit.SECONDS);
             Assert.fail("Overlay servlet shouldn't be up and working properly");
         } catch (IOException ioex) {
-            Assert.assertThat(ioex.getMessage(), CoreMatchers.containsString("HTTP Status 500 Response:"));
+            MatcherAssert.assertThat(ioex.getMessage(), CoreMatchers.containsString("HTTP Status 500 Response:"));
         }
         //add the wildcard link
         getModelControllerClient().execute(Operations.createAddOperation(TEST_WILDCARD_ADDRESS.append(ModelDescriptionConstants.DEPLOYMENT, "*.war").toModelNode()));

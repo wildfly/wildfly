@@ -27,7 +27,7 @@ import static org.jboss.as.test.integration.security.common.Utils.REDIRECT_STRAT
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import static org.wildfly.test.manual.elytron.seccontext.AbstractSecurityContextPropagationTestBase.isEjbAccessException;
 import static org.wildfly.test.manual.elytron.seccontext.SeccontextUtil.WAR_ENTRY_SERVLET_BASIC;

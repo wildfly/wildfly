@@ -39,6 +39,7 @@ import java.util.PropertyPermission;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.FileUtils;
+import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -262,9 +263,9 @@ public class GlobalDirectoryTestCase extends GlobalDirectoryBase {
             Response response = client.target("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/" + DEPLOYMENT3 + "/global-directory/get").request().get();
             String result = response.readEntity(String.class);
 
-            Assert.assertThat("C/D/F/GlobalDirectoryLibraryImpl3.jar should be used instead of C/E/GlobalDirectoryLibraryImpl3.jar.",
+            MatcherAssert.assertThat("C/D/F/GlobalDirectoryLibraryImpl3.jar should be used instead of C/E/GlobalDirectoryLibraryImpl3.jar.",
                     result, not(containsString(new File(subDirectoryC_E, "GlobalDirectoryLibraryImpl3.jar").toString())));
-            Assert.assertThat(result, containsString(new File(subDirectoryC_D_F, "GlobalDirectoryLibraryImpl3.jar").toString()));
+            MatcherAssert.assertThat(result, containsString(new File(subDirectoryC_D_F, "GlobalDirectoryLibraryImpl3.jar").toString()));
 
             checkJarLoadingOrder(new String[]{
                     "Added " + GLOBAL_DIRECTORY_FILE.getAbsolutePath() + " directory as resource root",
