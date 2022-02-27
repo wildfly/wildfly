@@ -8,6 +8,7 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 
 public class WeldTransformers implements ExtensionTransformerRegistration {
 
@@ -27,9 +28,9 @@ public class WeldTransformers implements ExtensionTransformerRegistration {
         ResourceTransformationDescriptionBuilder builder400 = chainedBuilder.createBuilder(subsystem.getCurrentSubsystemVersion(), version4_0_0);
         builder400.getAttributeBuilder()
                 // Reject if false or undefined, discard otherwise
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, WeldResourceDefinition.LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE)
-                .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(WeldResourceDefinition.LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE.getDefaultValue()), WeldResourceDefinition.LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE)
-                .setDiscard(DiscardAttributeChecker.ALWAYS, WeldResourceDefinition.LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, ModelNode.TRUE),
+                        WeldResourceDefinition.LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE)
+                .addRejectCheck(RejectAttributeChecker.ALL, WeldResourceDefinition.LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE)
                 .end();
 
         chainedBuilder.buildAndRegister(subsystem, new ModelVersion[]{version4_0_0});
