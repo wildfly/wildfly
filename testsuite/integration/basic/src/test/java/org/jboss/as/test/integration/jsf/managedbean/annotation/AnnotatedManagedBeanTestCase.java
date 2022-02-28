@@ -41,7 +41,7 @@ public class AnnotatedManagedBeanTestCase {
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "jsfmanagedbean.war");
         war.addPackage(AnnotatedManagedBeanTestCase.class.getPackage());
-        war.addAsWebInfResource(new StringAsset(""), "beans.xml");
+        war.addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         return war;
     }
 

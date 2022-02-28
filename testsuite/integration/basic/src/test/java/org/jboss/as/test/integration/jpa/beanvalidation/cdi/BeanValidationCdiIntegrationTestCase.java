@@ -40,7 +40,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,7 +59,7 @@ public class BeanValidationCdiIntegrationTestCase {
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addPackage(BeanValidationCdiIntegrationTestCase.class.getPackage());
-        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        jar.addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         jar.addAsManifestResource(BeanValidationCdiIntegrationTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         jar.addAsManifestResource(createPermissionsXmlAsset(
                 HibernateValidatorPermission.ACCESS_PRIVATE_MEMBERS

@@ -12,6 +12,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -31,12 +32,12 @@ public class BeanDiscoveryTest {
                 .addClass(Alpha.class)
                 .addAsManifestResource(newBeans11Descriptor("all"), "beans.xml");
         // Empty beans.xml
-        JavaArchive bravo = ShrinkWrap.create(JavaArchive.class).addClass(Bravo.class)
+        JavaArchive bravo = ShrinkWrap.create(JavaArchive.class).addClasses(Bravo.class, Bravo_Undiscovered.class)
                 .addAsManifestResource(new StringAsset(""), "beans.xml");
         // No version beans.xml
         JavaArchive charlie = ShrinkWrap
                 .create(JavaArchive.class)
-                .addClass(Charlie.class)
+                .addClasses(Charlie.class, Bravo_Undiscovered.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         // Bean defining annotation and no beans.xml
         JavaArchive delta = ShrinkWrap.create(JavaArchive.class).addClass(Delta.class);
@@ -72,14 +73,18 @@ public class BeanDiscoveryTest {
         assertDiscoveredAndAvailable(alpha, Alpha.class);
     }
 
+    @Ignore("This test already expects Weld 5/CDI 4 behavior and can be enabled once WFLY fully moves to that version")
     @Test
-    public void testExplicitBeanArchiveEmptyDescriptor(Bravo bravo) {
+    public void testImplicitBeanArchiveEmptyDescriptor(Bravo bravo) {
         assertDiscoveredAndAvailable(bravo, Bravo.class);
+        assertNotDiscoveredAndNotAvailable(Bravo_Undiscovered.class);
     }
 
+    @Ignore("This test already expects Weld 5/CDI 4 behavior and can be enabled once WFLY fully moves to that version")
     @Test
-    public void testExplicitBeanArchiveLegacyDescriptor(Charlie charlie) {
+    public void testImplicitBeanArchiveLegacyDescriptor(Charlie charlie) {
         assertDiscoveredAndAvailable(charlie, Charlie.class);
+        assertNotDiscoveredAndNotAvailable(Bravo_Undiscovered.class);
     }
 
     @Test

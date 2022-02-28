@@ -52,7 +52,7 @@ public class WeldExtension implements Extension {
 
     private static final String RESOURCE_NAME = WeldExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(5, 0, 0);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -69,7 +69,7 @@ public class WeldExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WeldResourceDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        subsystem.registerXMLElementWriter(WeldSubsystem40Parser.INSTANCE);
+        subsystem.registerXMLElementWriter(WeldSubsystem50Parser.INSTANCE);
 
     }
 
@@ -80,6 +80,7 @@ public class WeldExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem20Parser.NAMESPACE, () -> WeldSubsystem20Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem30Parser.NAMESPACE, () -> WeldSubsystem30Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem40Parser.NAMESPACE, () -> WeldSubsystem40Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem50Parser.NAMESPACE, () -> WeldSubsystem50Parser.INSTANCE);
     }
 
 }

@@ -52,7 +52,6 @@ import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl.BeanArchiveType;
 import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadata;
 import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadataContainer;
-import org.jboss.as.weld.deployment.PropertyReplacingBeansXmlParser;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.processors.UrlScanner.ClassFile;
 import org.jboss.as.weld.discovery.AnnotationType;
@@ -61,6 +60,7 @@ import org.jboss.as.weld.spi.ComponentSupport;
 import org.jboss.as.weld.spi.ModuleServicesProvider;
 import org.jboss.as.weld.util.Reflections;
 import org.jboss.as.weld.util.ServiceLoaders;
+import org.jboss.as.weld.util.Utils;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -124,7 +124,9 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
         deploymentUnits.add(deploymentUnit);
         deploymentUnits.addAll(deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS));
 
-        PropertyReplacingBeansXmlParser parser = new PropertyReplacingBeansXmlParser(deploymentUnit);
+        BeansXmlParser parser = BeansXmlParserFactory.getPropertyReplacingParser(deploymentUnit,
+                Utils.getRootDeploymentUnit(deploymentUnit).getAttachment(WeldConfiguration.ATTACHMENT_KEY)
+                        .isLegacyEmptyBeansXmlTreatment());
 
         final HashSet<URL> existing = new HashSet<URL>();
 

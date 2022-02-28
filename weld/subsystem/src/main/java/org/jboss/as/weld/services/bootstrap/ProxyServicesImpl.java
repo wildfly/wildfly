@@ -213,7 +213,8 @@ public class ProxyServicesImpl implements ProxyServices {
         return module.getClassLoader().loadClass(classBinaryName);
     }
 
-    @Override
+    //@Override unused in Weld 3/4 and removed in Weld 5 so don't annotate it
+    // TODO to be removed once Weld 5 is a direct dependency of non-preview WFLY
     public boolean supportsClassDefining() {
         return true;
     }

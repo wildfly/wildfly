@@ -171,6 +171,43 @@
                 <!--<version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>-->
 
             </properties>
+
+            <!-- Enable legacy empty beans.xml treatment otherwise the TCKs will fail -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>configure-weld-subsystem</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <commands>
+                                        <command>embed-server --server-config=standalone-microprofile.xml</command>
+                                        <command>/subsystem=weld:write-attribute(name=legacy-empty-beans-xml-treatment,value=true)</command>
+                                        <command>stop-embedded-server</command>
+                                    </commands>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <offline>true</offline>
+                            <jboss-home>${basedir}/target/wildfly</jboss-home>
+                            <stdout>${project.build.directory}/wildfly/standalone/log/weld-configuration.log</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
+                            <system-properties>
+                                <maven.repo.local>${maven.repo.local}</maven.repo.local>
+                                <module.path>${project.build.directory}/wildfly/modules</module.path>
+                            </system-properties>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
 
     </profiles>

@@ -86,14 +86,6 @@ public class WeldClassFileServicesTest {
     }
 
     @Test
-    public void testTopLevelClass() {
-        Assert.assertTrue(alpha.isTopLevelClass());
-        Assert.assertTrue(alpha.isTopLevelClass());
-        Assert.assertTrue(alpha.isTopLevelClass());
-        Assert.assertFalse(innerInterface.isTopLevelClass());
-    }
-
-    @Test
     public void testIsAssignableFrom() {
         Assert.assertTrue(alpha.isAssignableFrom(AlphaImpl.class));
         Assert.assertTrue(abstractAlpha.isAssignableFrom(AlphaImpl.class));

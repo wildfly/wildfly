@@ -41,7 +41,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,7 +58,7 @@ public class BeanValidationIntegrationTestCase {
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "BeanValidationIntegrationTestCase.war");
         war.addPackage(BeanValidationIntegrationTestCase.class.getPackage());
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         war.addAsManifestResource(createPermissionsXmlAsset(
                 HibernateValidatorPermission.ACCESS_PRIVATE_MEMBERS
         ), "permissions.xml");

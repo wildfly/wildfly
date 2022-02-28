@@ -1,5 +1,6 @@
-<subsystem xmlns="urn:jboss:domain:weld:4.0"
+<subsystem xmlns="urn:jboss:domain:weld:5.0"
            require-bean-descriptor="${sysprop:true}"
            non-portable-mode="${sysprop:true}"
            development-mode="${sysprop:true}"
-           thread-pool-size="${sysprop:9}"/>
+           thread-pool-size="${sysprop:9}"
+           legacy-empty-beans-xml-treatment="${sysprop:true}"/>

@@ -27,7 +27,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -57,7 +56,7 @@ public class WeldBundledLibraryDeploymentTestCase extends AbstractBundledLibrary
         doSetup();
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
         jar.addClasses(WeldBundledLibraryDeploymentTestCase.class, AbstractBundledLibraryDeploymentTestCase.class);
-        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        jar.addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
         jar.setManifest(new StringAsset("Extension-List: weld1\nweld1-Extension-Name: " + EXTENSION_NAME + "\n"));
         return jar;
     }

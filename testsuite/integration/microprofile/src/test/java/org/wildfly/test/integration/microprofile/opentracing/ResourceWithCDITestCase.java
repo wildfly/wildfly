@@ -9,6 +9,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.wildfly.test.integration.microprofile.opentracing.application.MockTracerFactory;
 import org.wildfly.test.integration.microprofile.opentracing.application.OpenTracingApplication;
 import org.wildfly.test.integration.microprofile.opentracing.application.TracedBean;
@@ -16,7 +17,6 @@ import org.wildfly.test.integration.microprofile.opentracing.application.WithBea
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,7 +43,7 @@ public class ResourceWithCDITestCase {
         war.addPackage(MockTracer.class.getPackage());
         war.addAsServiceProvider(TracerFactory.class, MockTracerFactory.class);
 
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml");
 
         war.addClass(OpenTracingApplication.class);
         war.addClass(WithBeanTracedEndpoint.class);

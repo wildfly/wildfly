@@ -41,12 +41,13 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.weld._private.WeldDeploymentMarker;
 import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadata;
 import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadataContainer;
-import org.jboss.as.weld.deployment.PropertyReplacingBeansXmlParser;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.logging.WeldLogger;
+import org.jboss.as.weld.util.Utils;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.weld.bootstrap.spi.BeanDiscoveryMode;
 import org.jboss.weld.bootstrap.spi.BeansXml;
+import org.jboss.weld.xml.BeansXmlParser;
 
 /**
  * Deployment processor that finds <literal>beans.xml</literal> files and attaches the information to the deployment
@@ -69,7 +70,9 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        PropertyReplacingBeansXmlParser parser = new PropertyReplacingBeansXmlParser(deploymentUnit);
+        BeansXmlParser parser = BeansXmlParserFactory.getPropertyReplacingParser(deploymentUnit,
+                Utils.getRootDeploymentUnit(deploymentUnit).getAttachment(WeldConfiguration.ATTACHMENT_KEY)
+                        .isLegacyEmptyBeansXmlTreatment());
 
         ResourceRoot classesRoot = null;
         List<ResourceRoot> structure = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
@@ -83,7 +86,7 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
                     VirtualFile beansXml = resourceRoot.getRoot().getChild(META_INF_BEANS_XML);
                     if (beansXml.exists() && beansXml.isFile()) {
                         WeldLogger.DEPLOYMENT_LOGGER.debugf("Found beans.xml: %s", beansXml.toString());
-                        beanArchiveMetadata.put(resourceRoot, new ExplicitBeanArchiveMetadata(beansXml, resourceRoot, parseBeansXml(beansXml, parser, deploymentUnit), false));
+                        beanArchiveMetadata.put(resourceRoot, new ExplicitBeanArchiveMetadata(beansXml, resourceRoot, parseBeansXml(beansXml, parser), false));
                     }
                 }
             }
@@ -103,20 +106,20 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
                 if (beansXmlPresent) {
                     // warn that it is not portable to use both locations at the same time
                     WeldLogger.DEPLOYMENT_LOGGER.duplicateBeansXml();
-                    beanArchiveMetadata.put(deploymentRoot, new ExplicitBeanArchiveMetadata(rootBeansXml, beansXml, classesRoot, parseBeansXml(rootBeansXml, parser, deploymentUnit), true));
+                    beanArchiveMetadata.put(deploymentRoot, new ExplicitBeanArchiveMetadata(rootBeansXml, beansXml, classesRoot, parseBeansXml(rootBeansXml, parser), true));
                 } else {
                     WeldLogger.DEPLOYMENT_LOGGER.debugf("Found beans.xml: %s", rootBeansXml);
-                    beanArchiveMetadata.put(deploymentRoot, new ExplicitBeanArchiveMetadata(rootBeansXml, classesRoot, parseBeansXml(rootBeansXml, parser, deploymentUnit), true));
+                    beanArchiveMetadata.put(deploymentRoot, new ExplicitBeanArchiveMetadata(rootBeansXml, classesRoot, parseBeansXml(rootBeansXml, parser), true));
                 }
             } else if (beansXmlPresent) {
                 WeldLogger.DEPLOYMENT_LOGGER.debugf("Found beans.xml: %s", beansXml);
-                beanArchiveMetadata.put(deploymentRoot, new ExplicitBeanArchiveMetadata(beansXml, classesRoot, parseBeansXml(beansXml, parser, deploymentUnit), true));
+                beanArchiveMetadata.put(deploymentRoot, new ExplicitBeanArchiveMetadata(beansXml, classesRoot, parseBeansXml(beansXml, parser), true));
             }
         } else if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             final VirtualFile rootBeansXml = deploymentRoot.getRoot().getChild(META_INF_BEANS_XML);
             if (rootBeansXml.exists() && rootBeansXml.isFile()) {
                 WeldLogger.DEPLOYMENT_LOGGER.debugf("Found beans.xml: %s", rootBeansXml.toString());
-                beanArchiveMetadata.put(deploymentRoot, new ExplicitBeanArchiveMetadata(rootBeansXml, deploymentRoot, parseBeansXml(rootBeansXml, parser, deploymentUnit), true));
+                beanArchiveMetadata.put(deploymentRoot, new ExplicitBeanArchiveMetadata(rootBeansXml, deploymentRoot, parseBeansXml(rootBeansXml, parser), true));
             }
         }
 
@@ -140,7 +143,7 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
         deploymentUnit.removeAttachment(ExplicitBeanArchiveMetadataContainer.ATTACHMENT_KEY);
     }
 
-    private BeansXml parseBeansXml(VirtualFile beansXmlFile, PropertyReplacingBeansXmlParser parser, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+    private BeansXml parseBeansXml(VirtualFile beansXmlFile, BeansXmlParser parser) throws DeploymentUnitProcessingException {
         try {
             return parser.parse(beansXmlFile.asFileURL());
         } catch (MalformedURLException e) {

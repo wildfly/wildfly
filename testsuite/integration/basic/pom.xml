@@ -3467,6 +3467,10 @@
                                         <exclude>org/jboss/as/test/integration/ejb/security/LifecycleTestCase.java</exclude><!-- EJBContext.getCallerIdentity was removed -->
                                         <!-- Requires the Arquillian Servlet 3.0 protocol to be overridden to Servlet 5.0 -->
                                         <exclude>org/jboss/as/test/integration/logging/config/LoggingProfileSharedTestCase.java</exclude>
+
+                                        <!-- Excluded because Hibernate doesn't conform to CDI 4 deprecated method removals -->
+                                        <exclude>org/jboss/as/test/integration/ee/injection/support/jpa/EntityListenerInjectionSupportTestCase.java</exclude>
+
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -3553,6 +3557,25 @@
                                         <exclude>org/jboss/as/test/integration/management/deploy/runtime/JaxrsRuntimeNameTestCase.java</exclude><!-- test expects javax strings in mgmt api responses -->
                                         <exclude>org/jboss/as/test/integration/weld/ejb/SessionObjectReferenceTestCase.java</exclude>
                                         <exclude>org/wildfly/test/integration/web/annotationsmodule/EarModuleDeploymentTestCase.java</exclude>
+
+                                        <!-- Excluded because Hibernate doesn't conform to CDI 4 deprecated method removals -->
+                                        <exclude>org/jboss/as/test/integration/ee/injection/support/jpa/EntityListenerInjectionSupportTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsf/phaselistener/injectiontarget/InjectionToPhaseListenerTest.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jpa/initializeinorder/InitializeInOrderTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jpa/entitylistener/EntityListenersTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ee/injection/support/jpa/beanmanager/EntityListenerBeanManagerInjectionTestCase.java</exclude>
+
+                                        <!-- Excluded because JSF impl doesn't conform to CDI 4 deprecated method removals -->
+                                        <exclude>org/jboss/as/test/integration/jsf/phaselistener/injectiontarget/bean/InjectionBeanToPhaseListenerTest.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsf/injection/FacesConverterInjectionTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsf/unsupportedwar/FaceletsViewMappingsTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsf/undertow/CallEnumParameterMethodTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsf/managedbean/xml/XmlManagedBeanTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jsf/managedbean/annotation/AnnotatedManagedBeanTestCase.java</exclude>
+                                        <!-- TODO these three tests are from different module, move the exclusions there -->
+                                        <exclude>org/jboss/as/test/integration/ws/context/application/NotAnnotatedDeployTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ws/context/application/AnnotatedDeployTestCase.java</exclude>
+                                        <exlude>org/jboss/as/test/integration/ws/cdi/CdiJsfWebServicesTestCase.java</exlude>
                                     </excludes>
                                 </configuration>
                             </execution>
