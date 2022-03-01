@@ -30,8 +30,8 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class BatchResourceDescriptionResolver {
-    private static final String RESOURCE_NAME = BatchResourceDescriptionResolver.class.getPackage().getName() + ".LocalDescriptions";
-    private static final String BASE = "batch.jberet";
+    public static final String RESOURCE_NAME = BatchResourceDescriptionResolver.class.getPackage().getName() + ".LocalDescriptions";
+    public static final String BASE = "batch.jberet";
 
     public static StandardResourceDescriptionResolver getResourceDescriptionResolver() {
         return new StandardResourceDescriptionResolver(BASE, RESOURCE_NAME, BatchSubsystemExtension.class.getClassLoader(), true, false);

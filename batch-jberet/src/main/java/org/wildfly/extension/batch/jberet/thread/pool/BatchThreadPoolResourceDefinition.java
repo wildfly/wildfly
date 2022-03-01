@@ -22,6 +22,9 @@
 
 package org.wildfly.extension.batch.jberet.thread.pool;
 
+import static org.wildfly.extension.batch.jberet.BatchResourceDescriptionResolver.BASE;
+import static org.wildfly.extension.batch.jberet.BatchResourceDescriptionResolver.RESOURCE_NAME;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Locale;
@@ -35,7 +38,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.threads.CommonAttributes;
@@ -51,8 +53,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.extension.batch.jberet.BatchResourceDescriptionResolver;
 import org.wildfly.extension.batch.jberet.BatchServiceNames;
+import org.wildfly.extension.batch.jberet.BatchSubsystemExtension;
 import org.wildfly.extension.batch.jberet._private.Capabilities;
 
 /**
@@ -134,7 +136,7 @@ public class BatchThreadPoolResourceDefinition extends SimpleResourceDefinition 
         }
     }
 
-    private static class BatchThreadPoolDescriptionResolver implements ResourceDescriptionResolver {
+    private static class BatchThreadPoolDescriptionResolver extends StandardResourceDescriptionResolver {
         static final BatchThreadPoolDescriptionResolver INSTANCE = new BatchThreadPoolDescriptionResolver();
 
         private static final Set<String> COMMON_ATTRIBUTE_NAMES;
@@ -156,20 +158,9 @@ public class BatchThreadPoolResourceDefinition extends SimpleResourceDefinition 
         }
 
         private static final String COMMON_PREFIX = "threadpool.common";
-        private final StandardResourceDescriptionResolver delegate;
 
         private BatchThreadPoolDescriptionResolver() {
-            this.delegate = BatchResourceDescriptionResolver.getResourceDescriptionResolver(NAME);
-        }
-
-        @Override
-        public ResourceBundle getResourceBundle(final Locale locale) {
-            return delegate.getResourceBundle(locale);
-        }
-
-        @Override
-        public String getResourceDescription(final Locale locale, final ResourceBundle bundle) {
-            return delegate.getResourceDescription(locale, bundle);
+            super(BASE + '.' + NAME, RESOURCE_NAME, BatchSubsystemExtension.class.getClassLoader(), true, false);
         }
 
         @Override
@@ -177,20 +168,15 @@ public class BatchThreadPoolResourceDefinition extends SimpleResourceDefinition 
             if (COMMON_ATTRIBUTE_NAMES.contains(attributeName)) {
                 return bundle.getString(getKey(attributeName));
             }
-            return delegate.getResourceAttributeDescription(attributeName, locale, bundle);
+            return super.getResourceAttributeDescription(attributeName, locale, bundle);
         }
 
         @Override
         public String getResourceAttributeValueTypeDescription(final String attributeName, final Locale locale, final ResourceBundle bundle, final String... suffixes) {
             if (COMMON_ATTRIBUTE_NAMES.contains(attributeName)) {
-                return bundle.getString(getVariableBundleKey(new String[]{attributeName}, suffixes));
+                return bundle.getString(getVariableBundleKey(COMMON_PREFIX, new String[]{attributeName}, suffixes));
             }
-            return delegate.getResourceAttributeValueTypeDescription(attributeName, locale, bundle, suffixes);
-        }
-
-        @Override
-        public String getOperationDescription(final String operationName, final Locale locale, final ResourceBundle bundle) {
-            return delegate.getOperationDescription(operationName, locale, bundle);
+            return super.getResourceAttributeValueTypeDescription(attributeName, locale, bundle, suffixes);
         }
 
         @Override
@@ -198,75 +184,19 @@ public class BatchThreadPoolResourceDefinition extends SimpleResourceDefinition 
             if (ModelDescriptionConstants.ADD.equals(operationName) && COMMON_ATTRIBUTE_NAMES.contains(paramName)) {
                 return bundle.getString(getKey(paramName));
             }
-            return delegate.getOperationParameterDescription(operationName, paramName, locale, bundle);
+            return super.getOperationParameterDescription(operationName, paramName, locale, bundle);
         }
 
         @Override
         public String getOperationParameterValueTypeDescription(final String operationName, final String paramName, final Locale locale, final ResourceBundle bundle, final String... suffixes) {
             if (ModelDescriptionConstants.ADD.equals(operationName) && COMMON_ATTRIBUTE_NAMES.contains(paramName)) {
-                return bundle.getString(getVariableBundleKey(new String[]{paramName}, suffixes));
+                return bundle.getString(getVariableBundleKey(COMMON_PREFIX, new String[]{paramName}, suffixes));
             }
-            return delegate.getOperationParameterValueTypeDescription(operationName, paramName, locale, bundle, suffixes);
+            return super.getOperationParameterValueTypeDescription(operationName, paramName, locale, bundle, suffixes);
         }
-
-        @Override
-        public String getOperationReplyDescription(final String operationName, final Locale locale, final ResourceBundle bundle) {
-            return delegate.getOperationReplyDescription(operationName, locale, bundle);
-        }
-
-        @Override
-        public String getOperationReplyValueTypeDescription(final String operationName, final Locale locale, final ResourceBundle bundle, final String... suffixes) {
-            return delegate.getOperationReplyValueTypeDescription(operationName, locale, bundle, suffixes);
-        }
-
-        @Override
-        public String getNotificationDescription(final String notificationType, final Locale locale, final ResourceBundle bundle) {
-            return delegate.getNotificationDescription(notificationType, locale, bundle);
-        }
-
-        @Override
-        public String getChildTypeDescription(final String childType, final Locale locale, final ResourceBundle bundle) {
-            return delegate.getChildTypeDescription(childType, locale, bundle);
-        }
-
-        @Override
-        public String getResourceDeprecatedDescription(final Locale locale, final ResourceBundle bundle) {
-            return delegate.getResourceDeprecatedDescription(locale, bundle);
-        }
-
-        @Override
-        public String getResourceAttributeDeprecatedDescription(final String attributeName, final Locale locale, final ResourceBundle bundle) {
-            return delegate.getResourceAttributeDeprecatedDescription(attributeName, locale, bundle);
-        }
-
-        @Override
-        public String getOperationDeprecatedDescription(final String operationName, final Locale locale, final ResourceBundle bundle) {
-            return delegate.getOperationDeprecatedDescription(operationName, locale, bundle);
-        }
-
-        @Override
-        public String getOperationParameterDeprecatedDescription(final String operationName, final String paramName, final Locale locale, final ResourceBundle bundle) {
-            return delegate.getOperationParameterDeprecatedDescription(operationName, paramName, locale, bundle);
-        }
-
 
         private String getKey(final String... args) {
-            return getVariableBundleKey(args);
-        }
-
-        private String getVariableBundleKey(final String[] fixed, final String... variable) {
-            StringBuilder sb = new StringBuilder(COMMON_PREFIX);
-            for (String arg : fixed) {
-                sb.append('.');
-                sb.append(arg);
-            }
-            if (variable != null) {
-                for (String arg : variable) {
-                    sb.append('.');
-                    sb.append(arg);
-                }
-            }
-            return sb.toString();
+            return getVariableBundleKey(COMMON_PREFIX, args);
         }
     }
 }
