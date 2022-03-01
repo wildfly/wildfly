@@ -49,7 +49,7 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
-        <module name="org.wildfly.clustering.infinispan.client"/>
+        <module name="org.wildfly.clustering.infinispan.client.service"/>
         <module name="org.wildfly.clustering.infinispan.embedded.api"/>
         <module name="org.wildfly.clustering.infinispan.embedded.service"/>
         <module name="org.wildfly.clustering.service"/>

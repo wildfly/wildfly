@@ -31,9 +31,9 @@ import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.commons.marshall.Marshaller;
+import org.jboss.as.clustering.infinispan.client.RemoteCacheManager;
 import org.wildfly.clustering.infinispan.client.NearCacheFactory;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
-import org.wildfly.clustering.infinispan.client.manager.RemoteCacheManager;
 
 /**
  * Container managed {@link RemoteCacheContainer} decorator, whose lifecycle methods are no-ops.

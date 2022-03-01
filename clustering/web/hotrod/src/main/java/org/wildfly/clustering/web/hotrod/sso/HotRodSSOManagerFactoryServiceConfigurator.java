@@ -24,8 +24,11 @@ package org.wildfly.clustering.web.hotrod.sso;
 
 import java.util.function.Consumer;
 
+import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
+import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
+import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.Service;
@@ -34,7 +37,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.infinispan.client.near.SimpleNearCacheFactory;
 import org.wildfly.clustering.infinispan.client.service.RemoteCacheServiceConfigurator;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
@@ -58,7 +60,14 @@ public class HotRodSSOManagerFactoryServiceConfigurator<A, D, S> extends SimpleS
 
         this.name = name;
         this.config = config;
-        this.configurator = new RemoteCacheServiceConfigurator<>(this.getServiceName().append("cache"), this.config.getContainerName(), this.name, this.config.getConfigurationName(), new SimpleNearCacheFactory<>(NearCacheMode.INVALIDATED));
+        String configurationName = this.config.getConfigurationName();
+        String templateName = (configurationName != null) ? configurationName : DefaultTemplate.DIST_SYNC.getTemplateName();
+        this.configurator = new RemoteCacheServiceConfigurator<>(this.getServiceName().append("cache"), this.config.getContainerName(), this.name, new Consumer<RemoteCacheConfigurationBuilder>() {
+            @Override
+            public void accept(RemoteCacheConfigurationBuilder builder) {
+                builder.forceReturnValues(false).nearCacheMode(NearCacheMode.INVALIDATED).templateName(templateName).transactionMode(TransactionMode.NONE);
+            }
+        });
     }
 
     @Override

@@ -60,7 +60,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-infinispan-client</artifactId>
+            <artifactId>wildfly-clustering-infinispan-client-service</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -97,6 +97,10 @@
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-cachestore-remote</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-query-dsl</artifactId>
         </dependency>
         <dependency>
             <groupId>org.infinispan.protostream</groupId>

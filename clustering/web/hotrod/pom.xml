@@ -53,7 +53,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-infinispan-client</artifactId>
+            <artifactId>wildfly-clustering-infinispan-client-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-infinispan-client-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

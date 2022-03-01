@@ -29,7 +29,7 @@ import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
+import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
 
