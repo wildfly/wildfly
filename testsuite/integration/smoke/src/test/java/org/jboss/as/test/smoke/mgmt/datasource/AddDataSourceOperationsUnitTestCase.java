@@ -25,7 +25,7 @@ package org.jboss.as.test.smoke.mgmt.datasource;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.io.File;
+import java.sql.Driver;
 import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -51,17 +51,15 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 
-public class AddMySqlDataSourceOperationsUnitTestCase extends DsMgmtTestBase{
+public class AddDataSourceOperationsUnitTestCase extends DsMgmtTestBase{
+
+    private static final String JDBC_DRIVER_NAME = "test-jdbc.jar";
 
     @Deployment(testable = false)
     public static Archive<?> getDeployment() {
-        File jdbcJar = new File(System.getProperty("jbossas.ts.integ.dir", "."),
-                "/smoke/src/test/resources/mysql-connector-java-5.1.15.jar");
-        if (!jdbcJar.exists()) {
-            throw new IllegalStateException("Can't find " + jdbcJar + " using ${jbossas.ts.integ.dir} == " + System.getProperty("jbossas.ts.integ.dir"));
-        }
-        Archive<?> archive = ShrinkWrap.createFromZipFile(JavaArchive.class, jdbcJar);
-        return archive;
+        return ShrinkWrap.create(JavaArchive.class, JDBC_DRIVER_NAME)
+                .addClass(TestDriver.class)
+                .addAsServiceProvider(Driver.class, TestDriver.class);
     }
 
     @Test
@@ -77,7 +75,7 @@ public class AddMySqlDataSourceOperationsUnitTestCase extends DsMgmtTestBase{
         operation.get(OP_ADDR).set(address);
 
         operation.get("jndi-name").set("java:jboss/datasources/MySqlDs");
-        operation.get("driver-name").set("mysql-connector-java-5.1.15.jar");
+        operation.get("driver-name").set(JDBC_DRIVER_NAME);
         operation.get("connection-url").set("dont_care");
         operation.get("user-name").set("sa");
         operation.get("password").set("sa");
