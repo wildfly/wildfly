@@ -99,11 +99,18 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(getSubsystemXml("subsystem-reject.xml")),
                 new FailedOperationTransformationConfig().addFailedAttribute(PathAddress.pathAddress(WeldExtension.PATH_SUBSYSTEM),
-                        FailedOperationTransformationConfig.ChainedConfig
-                                .createBuilder(WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
-                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(WeldResourceDefinition.THREAD_POOL_SIZE_ATTRIBUTE))
-                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(WeldResourceDefinition.LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE)).build()
-                ));
+                        new FailedOperationTransformationConfig.NewAttributesConfig(WeldResourceDefinition.LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE) {
+                            @Override
+                            protected boolean checkValue(String attrName, ModelNode attribute, boolean isGeneratedWriteAttribute) {
+                                return !attribute.equals(ModelNode.TRUE);
+                            }
+
+                            @Override
+                            protected ModelNode correctValue(ModelNode attribute, boolean isGeneratedWriteAttribute) {
+                                // if it's 'false' change it to undefined to test handling of undefined as well
+                                return attribute.isDefined() ? ModelNode.TRUE : new ModelNode();
+                            }
+                        }));
     }
 
     private void testTransformer(ModelTestControllerVersion controllerVersion, boolean fixLegacyEmptyXmlTreatment) throws Exception {
