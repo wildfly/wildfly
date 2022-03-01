@@ -15,7 +15,22 @@
  */
 package org.wildfly.extension.vertx;
 
+import io.vertx.core.http.ClientAuth;
+
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 public interface VertxConstants {
+
+    enum SSL_ENGINE_TYPE {
+        JDK,
+        OPENSSL
+    }
+
+    String[] SSL_ENGINE_TYPES = Arrays.stream(SSL_ENGINE_TYPE.values()).map(Enum::toString).collect(Collectors.toList()).toArray(new String[0]);
+    String[] TIME_UNITS = Arrays.stream(TimeUnit.values()).map(Enum::toString).collect(Collectors.toList()).toArray(new String[0]);
+    String[] CLIENT_AUTHS = Arrays.stream(ClientAuth.values()).map(Enum::toString).collect(Collectors.toList()).toArray(new String[0]);
 
     String DEFAULT_VERTX_OPTION_NAME = "__DEFAULT__";
     String DEFAULT_JNDI_PREFIX = "java:/vertx/";
@@ -26,6 +41,9 @@ public interface VertxConstants {
     String ELEMENT_VERTX_OPTIONS = "vertx-options";
     String ELEMENT_VERTX_OPTIONS_FILE = "vertx-option-file";
     String ELEMENT_VERTX_OPTION = "vertx-option";
+    String ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER = "address-resolver-option";
+    String ELEMENT_VERTX_EVENTBUS = "eventbus-option";
+    String ELEMENT_CLUSTER_NODE_METADATA = "cluster-node-metadata";
 
     String ATTR_NAME = "name";
     String ATTR_JNDI_NAME = "jndi-name";
@@ -73,7 +91,51 @@ public interface VertxConstants {
     String ATTR_N_DOTS = "n-dots";
     String ATTR_ROTATE_SERVERS = "rotate-servers";
     String ATTR_ROUND_ROBIN_INET_ADDRESS = "round-robin-inet-address";
-    String ATTR_ADDRESS_RESOLVER = "address-resolver-option";
+
+    // event bus options
+    String ATTR_EVENTBUS_SEND_BUFFER_SIZE = "send-buffer-size";
+    String ATTR_EVENTBUS_RECEIVE_BUFFER_SIZE = "receive-buffer-size";
+    String ATTR_EVENTBUS_TRAFFIC_CLASS = "traffic-class";
+    String ATTR_EVENTBUS_REUSE_ADDRESS = "reuse-address";
+    String ATTR_EVENTBUS_LOG_ACTIVITY = "log-activity";
+    String ATTR_EVENTBUS_REUSE_PORT = "reuse-port";
+    String ATTR_EVENTBUS_TCP_NO_DELAY = "tcp-no-delay";
+    String ATTR_EVENTBUS_TCP_KEEP_ALIVE = "tcp-keep-alive";
+    String ATTR_EVENTBUS_SO_LINGER = "so-linger";
+    String ATTR_EVENTBUS_IDLE_TIMEOUT = "idle-timeout";
+    String ATTR_EVENTBUS_READ_IDLE_TIMEOUT = "read-idle-timeout";
+    String ATTR_EVENTBUS_WRITE_IDLE_TIMEOUT = "write-idle-timeout";
+    String ATTR_EVENTBUS_IDLE_TIMEOUT_UNIT = "idle-timeout-unit";
+    String ATTR_EVENTBUS_SSL = "ssl";
+    String ATTR_EVENTBUS_SSL_HAND_SHAKE_TIMEOUT = "ssl-hand-shake-timeout";
+    String ATTR_EVENTBUS_SSL_HAND_SHAKE_TIMEOUT_UNIT = "ssl-hand-shake-timeout-unit";
+    String ATTR_EVENTBUS_ENABLED_CIPHER_SUITES = "enabled-cipher-suites";
+    String ATTR_EVENTBUS_CRL_PATHS = "crl-paths";
+    String ATTR_EVENTBUS_CRL_VALUES = "crl-values";
+    String ATTR_EVENTBUS_USE_ALPN = "use-alpn";
+    String ATTR_EVENTBUS_ENABLED_SECURE_TRANSPORT_PROTOCOLS = "enabled-secure-transport-protocols";
+    String ATTR_EVENTBUS_TCP_FAST_OPEN = "tcp-fast-open";
+    String ATTR_EVENTBUS_TCP_CORK = "tcp-cork";
+    String ATTR_EVENTBUS_TCP_QUICK_ACK = "tcp-quick-ack";
+    String ATTR_EVENTBUS_SSL_ENGINE_TYPE = "ssl-engine-type";
+    String ATTR_EVENTBUS_OPENSSL_SESSION_CACHE_ENABLED = "openssl-session-cache-enabled";
+    String ATTR_EVENTBUS_CLUSTER_PUBLIC_HOST = "cluster-public-host";
+    String ATTR_EVENTBUS_CLUSTER_PUBLIC_PORT = "cluster-public-port";
+    String ATTR_EVENTBUS_CLUSTER_PING_INTERVAL = "cluster-ping-interval";
+    String ATTR_EVENTBUS_CLUSTER_PING_REPLY_INTERVAL = "cluster-ping-reply-interval";
+    String ATTR_EVENTBUS_HOST = "host";
+    String ATTR_EVENTBUS_PORT = "port";
+    String ATTR_EVENTBUS_ACCEPT_BACKLOG = "accept-backlog";
+    String ATTR_EVENTBUS_CLIENT_AUTH = "client-auth";
+    String ATTR_EVENTBUS_RECONNECT_ATTEMPTS = "reconnect-attempts";
+    String ATTR_EVENTBUS_RECONNECT_INTERVAL = "reconnect-interval";
+    String ATTR_EVENTBUS_CONNECT_TIMEOUT = "connect-timeout";
+    String ATTR_EVENTBUS_TRUST_ALL = "trust-all";
+    String ATTR_EVENTBUS_KEY_CERT_OPTION = "key-cert-option";
+    String ATTR_EVENTBUS_TRUST_OPTION = "trust-option";
+    String ATTR_EVENTBUS_CLUSTER_NODE_METADATA = "cluster-node-metadata";
+
+    String ATTR_PROPERTIES = "properties";
 
     // Followings are cluster manager related settings
     String DEFAULT_CACHE_NAME = "distributed-cache";

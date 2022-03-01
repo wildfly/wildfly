@@ -76,10 +76,55 @@
     </xs:complexType>
 
     <xs:complexType name="vertxOptionsType">
-        <xs:choice>
-            <xs:element name="vertx-option-file" type="vertxOptionFileType" maxOccurs="unbounded" minOccurs="0" />
-            <xs:element name="vertx-option" type="vertxOptionType" maxOccurs="unbounded" minOccurs="0" />
-        </xs:choice>
+        <xs:sequence>
+            <xs:element name="vertx-option-file" type="vertxOptionFileType" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Define a VertxOptions from a Json file</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="vertx-option" type="vertxOptionType" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Define a VertxOptions by specifying each property</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <!-- Followings are the options used in the above vertx-option -->
+            <xs:element name="address-resolver-option" type="addressResolverOptionType" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Define a AddressResolverOptions</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="eventbus-option" type="eventBusOptionType" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Define a EventBusOptions</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="key-cert-option" type="keyCertOptionType" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Define a KeyCertOptions</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="trust-option" type="trustOptionType" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Define a TrustOptions</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="metrics-option" type="metricsOptionType" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Define a MetricsOptions</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="trace-option" type="traceOptionType" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Define a TraceOptions</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="cluster-node-metadata" type="clusterNodeMetaType" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Define a Json type cluster node metadata</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="vertxOptionFileType">
@@ -92,15 +137,7 @@
     </xs:complexType>
 
     <xs:complexType name="vertxOptionType">
-        <xs:sequence>
-            <xs:element name="address-resolver-option" type="addressResolverOptionType" maxOccurs="1" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation>Define the AddressResolverOptions</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-        </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
-
         <xs:attribute name="event-loop-pool-size" type="xs:int"/>
         <xs:attribute name="worker-pool-size" type="xs:int" />
         <xs:attribute name="internal-blocking-pool-size" type="xs:int" />
@@ -122,6 +159,26 @@
         <xs:attribute name="classpath-resolving-enabled" type="xs:boolean" />
         <xs:attribute name="file-cache-enabled" type="xs:boolean" />
 
+        <xs:attribute name="address-resolver-option" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>Specify the address-resolver-option name to use</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="eventbus-option" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>Specify the eventbus-option name to use</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="metrics-option" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>Specify the metrics-option name to use</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="trace-option" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>Specify the trace-option name to use</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="addressResolverOptionType">
@@ -142,4 +199,115 @@
         <xs:attribute name="round-robin-inet-address" type="xs:boolean" />
     </xs:complexType>
 
+    <xs:attributeGroup name="networkOptionsGroup">
+        <xs:attribute name="send-buffer-size" type="xs:int" />
+        <xs:attribute name="receive-buffer-size" type="xs:int" />
+        <xs:attribute name="traffic-class" type="xs:int" />
+        <xs:attribute name="reuse-address" type="xs:boolean" />
+        <xs:attribute name="log-activity" type="xs:boolean" />
+        <xs:attribute name="reuse-port" type="xs:boolean" />
+    </xs:attributeGroup>
+
+    <xs:attributeGroup name="tcpSSLOptionsGroup">
+        <xs:attributeGroup ref="networkOptionsGroup" />
+        <xs:attribute name="tcp-no-delay" type="xs:boolean" />
+        <xs:attribute name="tcp-keep-alive" type="xs:boolean" />
+        <xs:attribute name="so-linger" type="xs:int" />
+        <xs:attribute name="idle-timeout" type="xs:int" />
+        <xs:attribute name="read-idle-timeout" type="xs:int" />
+        <xs:attribute name="write-idle-timeout" type="xs:int" />
+        <xs:attribute name="idle-timeout-unit" type="xs:string" />
+        <xs:attribute name="ssl" type="xs:boolean" />
+        <xs:attribute name="ssl-hand-shake-timeout" type="xs:long" />
+        <xs:attribute name="ssl-hand-shake-timeout-unit" type="xs:string" />
+        <xs:attribute name="enabled-cipher-suites" type="xs:string" />
+        <xs:attribute name="crl-paths" type="xs:string" />
+        <xs:attribute name="crl-values" type="xs:string" />
+        <xs:attribute name="use-alpn" type="xs:boolean" />
+        <xs:attribute name="enabled-secure-transport-protocols" type="xs:string" />
+        <xs:attribute name="tcp-fast-open" type="xs:boolean" />
+        <xs:attribute name="tcp-cork" type="xs:boolean" />
+        <xs:attribute name="tcp-quick-ack" type="xs:boolean" />
+        <xs:attribute name="ssl-engine-type">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="JDK" />
+                    <xs:enumeration value="OpenSSL" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="openssl-session-cache-enabled" type="xs:boolean" />
+
+    </xs:attributeGroup>
+
+    <xs:complexType name="eventBusOptionType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attributeGroup ref="tcpSSLOptionsGroup" />
+        <xs:attribute name="cluster-public-host" type="xs:string" />
+        <xs:attribute name="cluster-public-port" type="xs:int" />
+        <xs:attribute name="cluster-ping-interval" type="xs:long" />
+        <xs:attribute name="cluster-ping-reply-interval" type="xs:long" />
+        <xs:attribute name="host" type="xs:string" />
+        <xs:attribute name="port" type="xs:int" />
+        <xs:attribute name="accept-backlog" type="xs:int" />
+        <xs:attribute name="client-auth">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="NONE" />
+                    <xs:enumeration value="REQUEST" />
+                    <xs:enumeration value="REQUIRED" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="reconnect-attempts" type="xs:int" />
+        <xs:attribute name="reconnect-interval" type="xs:long" />
+        <xs:attribute name="connect-timeout" type="xs:int" />
+        <xs:attribute name="trust-all" type="xs:boolean" />
+        <xs:attribute name="key-cert-option" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>Specify the key-cert-option name to use</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="trust-option" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>Specify the trust-option name to use</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="cluster-node-metadata" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>Specify the cluster-node-metadata name to use</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="clusterNodeMetaType">
+        <xs:sequence>
+            <xs:element name="property" type="propertyType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="name" use="required" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="propertyType" mixed="true">
+        <xs:attribute name="name" use="required" type="xs:token" />
+    </xs:complexType>
+
+    <xs:complexType name="keyCertOptionType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <!-- TODO: KeyCertOption -->
+    </xs:complexType>
+
+    <xs:complexType name="trustOptionType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <!-- TODO: TrustOption -->
+    </xs:complexType>
+
+    <xs:complexType name="metricsOptionType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <!-- TODO: Metrics Option -->
+    </xs:complexType>
+
+    <xs:complexType name="traceOptionType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <!-- TODO: Trace Option Type -->
+    </xs:complexType>
 </xs:schema>

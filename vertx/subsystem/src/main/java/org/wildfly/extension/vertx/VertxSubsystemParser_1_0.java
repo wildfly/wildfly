@@ -52,6 +52,18 @@ public class VertxSubsystemParser_1_0 extends PersistentResourceXMLParser {
                             builder(VertxOptionsResourceDefinition.INSTANCE.getPathElement())
                               .addAttributes(VertxOptionsAttributes.getVertxOptionsAttributes().toArray(new AttributeDefinition[0]))
                           )
+                          .addChild(
+                            builder(AddressResolverResourceDefinition.INSTANCE.getPathElement())
+                              .addAttributes(AddressResolverResourceDefinition.getVertxAddressResolverOptionsAttrs().toArray(new AttributeDefinition[0]))
+                          )
+                          .addChild(
+                            builder(EventBusResourceDefinition.INSTANCE.getPathElement())
+                              .addAttributes(EventBusResourceDefinition.getVertxEventbusAttrs().toArray(new AttributeDefinition[0]))
+                          )
+                          .addChild(
+                            builder(ClusterNodeMetadataResourceDefinition.INSTANCE.getPathElement())
+                              .addAttributes(ClusterNodeMetadataResourceDefinition.getClusterNodeMetaAttrs().toArray(new AttributeDefinition[0]))
+                          )
                 )
                 .build();
     }

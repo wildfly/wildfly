@@ -64,6 +64,9 @@ public class VertxSubsystemDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(VertxResourceDefinition.INSTANCE);
         resourceRegistration.registerSubModel(VertxOptionFileResourceDefinition.INSTANCE);
         resourceRegistration.registerSubModel(VertxOptionsResourceDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(AddressResolverResourceDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(EventBusResourceDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(ClusterNodeMetadataResourceDefinition.INSTANCE);
     }
 
     @Override

@@ -20,21 +20,22 @@ import static org.wildfly.extension.vertx.VertxConstants.*;
 import static org.wildfly.extension.vertx.logging.VertxLogger.*;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.dns.AddressResolverOptions;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 import io.vertx.core.VertxOptions;
 
@@ -44,6 +45,12 @@ import io.vertx.core.VertxOptions;
 class VertxOptionsResourceDefinition extends AbstractVertxOptionsResourceDefinition {
 
   static VertxOptionsResourceDefinition INSTANCE = new VertxOptionsResourceDefinition();
+
+  private static final SimpleOperationDefinition SHOW_VERTX_OPTIONS_INFO = new SimpleOperationDefinitionBuilder("show-info",
+    VertxSubsystemExtension.getResourceDescriptionResolver(VertxSubsystemExtension.SUBSYSTEM_NAME, ELEMENT_VERTX_OPTION))
+    .setReplyType(ModelType.OBJECT)
+    .setReplyValueType(ModelType.OBJECT)
+    .build();
 
   VertxOptionsResourceDefinition() {
     super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(ELEMENT_VERTX_OPTION),
@@ -57,6 +64,12 @@ class VertxOptionsResourceDefinition extends AbstractVertxOptionsResourceDefinit
   @Override
   public Collection<AttributeDefinition> getAttributes() {
     return VertxOptionsAttributes.getVertxOptionsAttributes();
+  }
+
+  @Override
+  public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+    super.registerOperations(resourceRegistration);
+    resourceRegistration.registerOperationHandler(SHOW_VERTX_OPTIONS_INFO, new ShowInfoHandler());
   }
 
   static class VertxOptionAddHandler extends AbstractAddStepHandler {
@@ -73,7 +86,16 @@ class VertxOptionsResourceDefinition extends AbstractVertxOptionsResourceDefinit
       }
       VertxOptions vertxOptions = parseOptions(operation);
       NamedVertxOptions namedVertxOptions = new NamedVertxOptions(name, vertxOptions);
-      NamedVertxOptionsService.installService(context, namedVertxOptions);
+
+      String addressResolverOptionName = null;
+      if (operation.hasDefined(ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER)) {
+        addressResolverOptionName = VertxOptionsAttributes.ATTR_VERTX_OPTION_ADDRESS_RESOLVER.validateOperation(operation).asString();
+      }
+      String eventBusName = null;
+      if (operation.hasDefined(ELEMENT_VERTX_EVENTBUS)) {
+        eventBusName = VertxOptionsAttributes.ATTR_EVENTBUS_OPTION.validateOperation(operation).asString();
+      }
+      NamedVertxOptionsService.installService(context, namedVertxOptions, addressResolverOptionName, eventBusName, null, null);
     }
 
     VertxOptions parseOptions(ModelNode operation) throws OperationFailedException {
@@ -134,67 +156,20 @@ class VertxOptionsResourceDefinition extends AbstractVertxOptionsResourceDefinit
       if (operation.hasDefined(ATTR_FS_FILE_CACHE_ENABLED)) {
         vertxOptions.getFileSystemOptions().setFileCachingEnabled(VertxOptionsAttributes.ATTR_FS_FILE_CACHE_ENABLED.validateOperation(operation).asBoolean());
       }
-
-      // address resolver options
-      if (operation.hasDefined(ATTR_ADDRESS_RESOLVER)) {
-        AddressResolverOptions addressResolverOptions = parseAddressResolverOptions(VertxOptionsAttributes.ATTR_ADDRESS_RESOLVER.validateOperation(operation));
-        vertxOptions.setAddressResolverOptions(addressResolverOptions);
-      }
-
       return vertxOptions;
-    }
-
-    private AddressResolverOptions parseAddressResolverOptions(ModelNode operation) throws OperationFailedException {
-      AddressResolverOptions addressResolverOptions = new AddressResolverOptions();
-      if (operation.hasDefined(ATTR_HOSTS_PATH)) {
-        addressResolverOptions.setHostsPath(VertxOptionsAttributes.ATTR_HOSTS_PATH.validateOperation(operation).asString());
-      }
-      if (operation.hasDefined(ATTR_HOSTS_VALUE)) {
-        addressResolverOptions.setHostsValue(Buffer.buffer(VertxOptionsAttributes.ATTR_HOSTS_VALUE.validateOperation(operation).asString()));
-      }
-      if (operation.hasDefined(ATTR_SERVERS)) {
-        List<ModelNode> list = VertxOptionsAttributes.ATTR_SERVERS.validateOperation(operation).asList();
-        addressResolverOptions.setServers(list.stream().map(ModelNode::asString).collect(Collectors.toList()));
-      }
-      if (operation.hasDefined(ATTR_OPT_RES_ENABLED)) {
-        addressResolverOptions.setOptResourceEnabled(VertxOptionsAttributes.ATTR_OPT_RES_ENABLED.validateOperation(operation).asBoolean());
-      }
-      if (operation.hasDefined(ATTR_CACHE_MIN_TTL)) {
-        addressResolverOptions.setCacheMinTimeToLive(VertxOptionsAttributes.ATTR_CACHE_MIN_TTL.validateOperation(operation).asInt());
-      }
-      if (operation.hasDefined(ATTR_MAX_TTL)) {
-        addressResolverOptions.setCacheMaxTimeToLive(VertxOptionsAttributes.ATTR_MAX_TTL.validateOperation(operation).asInt());
-      }
-      if (operation.hasDefined(ATTR_NEGATIVE_TTL)) {
-        addressResolverOptions.setCacheNegativeTimeToLive(VertxOptionsAttributes.ATTR_NEGATIVE_TTL.validateOperation(operation).asInt());
-      }
-      if (operation.hasDefined(ATTR_QUERY_TIMEOUT)) {
-        addressResolverOptions.setQueryTimeout(VertxOptionsAttributes.ATTR_QUERY_TIMEOUT.validateOperation(operation).asLong());
-      }
-      if (operation.hasDefined(ATTR_MAX_QUERIES)) {
-        addressResolverOptions.setMaxQueries(VertxOptionsAttributes.ATTR_MAX_QUERIES.validateOperation(operation).asInt());
-      }
-      if (operation.hasDefined(ATTR_RD_FLAG)) {
-        addressResolverOptions.setRdFlag(VertxOptionsAttributes.ATTR_RD_FLAG.validateOperation(operation).asBoolean());
-      }
-      if (operation.hasDefined(ATTR_SEARCH_DOMAIN)) {
-        List<ModelNode> list = VertxOptionsAttributes.ATTR_SEARCH_DOMAIN.validateOperation(operation).asList();
-        addressResolverOptions.setSearchDomains(list.stream().map(ModelNode::asString).collect(Collectors.toList()));
-      }
-      if (operation.hasDefined(ATTR_N_DOTS)) {
-        addressResolverOptions.setNdots(VertxOptionsAttributes.ATTR_N_DOTS.validateOperation(operation).asInt());
-      }
-      if (operation.hasDefined(ATTR_ROTATE_SERVERS)) {
-        addressResolverOptions.setRotateServers(VertxOptionsAttributes.ATTR_ROTATE_SERVERS.validateOperation(operation).asBoolean());
-      }
-      if (operation.hasDefined(ATTR_ROUND_ROBIN_INET_ADDRESS)) {
-        addressResolverOptions.setRoundRobinInetAddress(VertxOptionsAttributes.ATTR_ROUND_ROBIN_INET_ADDRESS.validateOperation(operation).asBoolean());
-      }
-      return addressResolverOptions;
     }
 
   }
 
+  private static class ShowInfoHandler implements OperationStepHandler {
 
-
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+      ModelNode result = new ModelNode();
+      final String name = context.getCurrentAddressValue();
+      VertxOptions vertxOptions = VertxOptionsRegistry.getInstance().getNamedVertxOptions(name).getVertxOptions();
+      result.set(ModelNode.fromJSONString(vertxOptions.toJson().encode()));
+      context.getResult().set(result);
+    }
+  }
 }
