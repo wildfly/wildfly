@@ -27,8 +27,8 @@ public class WeldTransformers implements ExtensionTransformerRegistration {
         // Differences between the current version and 4.0.0
         ResourceTransformationDescriptionBuilder builder400 = chainedBuilder.createBuilder(subsystem.getCurrentSubsystemVersion(), version4_0_0);
         builder400.getAttributeBuilder()
-                // Reject if false or undefined, discard otherwise
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, ModelNode.TRUE),
+                // Discard an explicit 'true' as that's the legacy behavior. Reject otherwise.
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, ModelNode.TRUE),
                         WeldResourceDefinition.LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE)
                 .addRejectCheck(RejectAttributeChecker.ALL, WeldResourceDefinition.LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE)
                 .end();
