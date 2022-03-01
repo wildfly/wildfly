@@ -71,7 +71,7 @@ public class JaccEarDeploymentProcessor implements DeploymentUnitProcessor {
                             service.getParentPolicyInjector());
                 }
                 CapabilityServiceSupport capabilitySupport = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-                builder.addDependencies(capabilitySupport.getCapabilityServiceName(jaccCapabilityName));
+                builder.requires(capabilitySupport.getCapabilityServiceName(jaccCapabilityName));
                 builder.setInitialMode(Mode.ACTIVE).install();
             }
         }
