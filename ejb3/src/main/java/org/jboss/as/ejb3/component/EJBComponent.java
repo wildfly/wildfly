@@ -81,6 +81,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.requestcontroller.ControlPoint;
+import org.wildfly.security.auth.principal.AnonymousPrincipal;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.authz.Roles;
@@ -281,10 +282,14 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     public Principal getCallerPrincipal() {
         if (isSecurityDomainKnown()) {
             return getCallerSecurityIdentity().getPrincipal();
-        } else if (WildFlySecurityManager.isChecking()) {
-            return WildFlySecurityManager.doUnchecked(getCaller);
+        } else if (this.serverSecurityManager != null) {
+            if (WildFlySecurityManager.isChecking()) {
+                return WildFlySecurityManager.doUnchecked(getCaller);
+            } else {
+                return this.serverSecurityManager.getCallerPrincipal();
+            }
         } else {
-            return this.serverSecurityManager.getCallerPrincipal();
+            return new AnonymousPrincipal();
         }
     }
 
