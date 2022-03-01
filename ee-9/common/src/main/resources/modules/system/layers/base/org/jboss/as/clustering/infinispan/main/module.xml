@@ -80,7 +80,8 @@
         <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.ee.infinispan"/>
         <module name="org.wildfly.clustering.ee.spi"/>
-        <module name="org.wildfly.clustering.infinispan.client"/>
+        <module name="org.wildfly.clustering.infinispan.client.api"/>
+        <module name="org.wildfly.clustering.infinispan.client.service"/>
         <module name="org.wildfly.clustering.infinispan.marshalling"/>
         <module name="org.wildfly.clustering.infinispan.embedded.api"/>
         <module name="org.wildfly.clustering.infinispan.embedded.service"/>

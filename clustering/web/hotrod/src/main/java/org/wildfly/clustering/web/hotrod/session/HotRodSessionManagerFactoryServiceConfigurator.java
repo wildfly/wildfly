@@ -26,7 +26,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.configuration.NearCacheMode;
+import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
+import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -75,7 +79,16 @@ public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, MC, LC>  
 
     @Override
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
-        this.cacheConfigurator = new RemoteCacheServiceConfigurator<>(this.getServiceName().append("cache"), this.configuration.getContainerName(), this.getDeploymentName(), this.configuration.getConfigurationName(), new SessionManagerNearCacheFactory<>(this.getMaxActiveSessions(), this.getAttributePersistenceStrategy())).configure(support);
+        Integer maxActiveSessions = this.getMaxActiveSessions();
+        NearCacheMode mode = (maxActiveSessions == null) || (maxActiveSessions == 0) ? NearCacheMode.DISABLED : NearCacheMode.INVALIDATED;
+        String configurationName = this.configuration.getConfigurationName();
+        String templateName = (configurationName != null) ? configurationName : DefaultTemplate.DIST_SYNC.getTemplateName();
+        this.cacheConfigurator = new RemoteCacheServiceConfigurator<>(this.getServiceName().append("cache"), this.configuration.getContainerName(), this.getDeploymentName(), new Consumer<RemoteCacheConfigurationBuilder>() {
+            @Override
+            public void accept(RemoteCacheConfigurationBuilder builder) {
+                builder.forceReturnValues(false).nearCacheMode(mode).templateName(templateName).transactionMode(TransactionMode.NONE);
+            }
+        }, new SessionManagerNearCacheFactory<>(maxActiveSessions, this.getAttributePersistenceStrategy())).configure(support);
         this.cache = new ServiceSupplierDependency<>(this.cacheConfigurator.getServiceName());
         return this;
     }

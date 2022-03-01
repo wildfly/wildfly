@@ -58,9 +58,8 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
-import org.wildfly.clustering.infinispan.client.marshaller.HotRodMarshallerFactory;
+import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 
 /**
