@@ -21,15 +21,14 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
-import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
-
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 
 /**
  * DayOfWeek
@@ -43,7 +42,7 @@ public class DayOfWeek extends IntegerBasedExpression {
 
     public static final Integer MIN_DAY_OF_WEEK = 0;
 
-    private static final Map<String, Integer> DAY_OF_WEEK_ALIAS = new HashMap<String, Integer>();
+    static final Map<String, Integer> DAY_OF_WEEK_ALIAS = new HashMap<>();
 
     static {
         DAY_OF_WEEK_ALIAS.put("sun", 0);
@@ -57,7 +56,7 @@ public class DayOfWeek extends IntegerBasedExpression {
 
     private static final int OFFSET = DAY_OF_WEEK_ALIAS.get("sun") - Calendar.SUNDAY;
 
-    private SortedSet<Integer> offsetAdjustedDaysOfWeek = new TreeSet<Integer>();
+    private SortedSet<Integer> offsetAdjustedDaysOfWeek = new TreeSet<>();
 
     public DayOfWeek(String value) {
         super(value);
@@ -95,11 +94,6 @@ public class DayOfWeek extends IntegerBasedExpression {
         return this.offsetAdjustedDaysOfWeek.first();
     }
 
-
-    public static Set<String> getDaysOfWeek() {
-        return DAY_OF_WEEK_ALIAS.keySet();
-    }
-
     @Override
     protected boolean accepts(ScheduleExpressionType scheduleExprType) {
         switch (scheduleExprType) {
@@ -126,12 +120,9 @@ public class DayOfWeek extends IntegerBasedExpression {
         try {
             return super.parseInt(alias);
         } catch (NumberFormatException nfe) {
-            if (DAY_OF_WEEK_ALIAS != null) {
-                String lowerCaseAlias = alias.toLowerCase(Locale.ENGLISH);
-                return DAY_OF_WEEK_ALIAS.get(lowerCaseAlias);
-            }
+            String lowerCaseAlias = alias.toLowerCase(Locale.ENGLISH);
+            return DAY_OF_WEEK_ALIAS.get(lowerCaseAlias);
         }
-        return null;
     }
 
     public Integer getNextMatch(Calendar currentCal) {
