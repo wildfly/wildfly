@@ -53,6 +53,14 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-undertow-jakarta</artifactId>
         </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-servlet-jakarta</artifactId>
+        </dependency>
 
         <!-- Other deps consistent with the javax.* mod_cluster-undertow module -->
 
