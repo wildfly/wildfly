@@ -56,6 +56,14 @@
         </dependency>
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-opentracing-extension-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-microprofile-opentracing-smallrye-jakarta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider-jakarta</artifactId>
         </dependency>
 
@@ -64,6 +72,27 @@
             <artifactId>wildfly-microprofile-health-smallrye-jakarta</artifactId>
         </dependency>
 
+
+        <dependency>
+            <groupId>io.smallrye</groupId>
+            <artifactId>smallrye-opentracing</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye</groupId>
+            <artifactId>smallrye-opentracing-contrib</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>jose-jwt</artifactId>

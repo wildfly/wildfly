@@ -23,7 +23,7 @@ package io.smallrye.opentracing.arquillian;
 
 import java.io.File;
 
-import javax.ws.rs.ext.Providers;
+import jakarta.ws.rs.ext.Providers;
 
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.test.spi.TestClass;
@@ -33,7 +33,7 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
-import io.opentracing.contrib.tracerresolver.TracerResolver;
+import io.smallrye.opentracing.contrib.resolver.TracerResolver;
 import io.opentracing.mock.MockTracer;
 import io.smallrye.opentracing.ExceptionMapper;
 import io.smallrye.opentracing.MockTracerResolver;

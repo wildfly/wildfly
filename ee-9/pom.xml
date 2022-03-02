@@ -92,6 +92,7 @@
         <version.io.smallrye.smallrye-config>3.0.0-RC1</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>6.0.0-RC1</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.0.0-RC1</version.io.smallrye.smallrye-health>
+        <version.io.smallrye.smallrye-opentracing>3.0.0-RC1</version.io.smallrye.smallrye-opentracing>
         <!-- MP5 - END -->
         <version.org.eclipse.yasson>2.0.3</version.org.eclipse.yasson>
         <version.org.eclipselink.version>3.0.2</version.org.eclipselink.version>
@@ -345,6 +346,16 @@
                 <groupId>io.smallrye</groupId>
                 <artifactId>smallrye-fault-tolerance-core</artifactId>
                 <version>${version.io.smallrye.smallrye-fault-tolerance}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-opentracing</artifactId>
+                <version>${version.io.smallrye.smallrye-opentracing}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-opentracing-contrib</artifactId>
+                <version>${version.io.smallrye.smallrye-opentracing}</version>
             </dependency>
 
             <dependency>
@@ -1488,6 +1499,30 @@
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-openapi-smallrye-jakarta</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-microprofile-opentracing-smallrye-jakarta</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-microprofile-opentracing-extension-jakarta</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>

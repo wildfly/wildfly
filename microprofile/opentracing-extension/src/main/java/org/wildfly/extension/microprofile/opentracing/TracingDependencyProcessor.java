@@ -21,27 +21,22 @@
  */
 package org.wildfly.extension.microprofile.opentracing;
 
-import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.DEFAULT_TRACER_CAPABILITY;
-import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.DEFAULT_TRACER_CAPABILITY_NAME;
+import static org.wildfly.extension.microprofile.opentracing.Constants.INTERCEPTOR_PACKAGE;
+import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.*;
+import static org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstants.SMALLRYE_OPENTRACING_TRACER_CONFIGURATION;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleLoader;
-
-import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.EXPORTED_MODULES;
-import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.MODULES;
-import static org.wildfly.extension.microprofile.opentracing.SubsystemDefinition.TRACER_CAPABILITY;
-import static org.wildfly.microprofile.opentracing.smallrye.TracerConfigurationConstants.SMALLRYE_OPENTRACING_TRACER_CONFIGURATION;
-
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.microprofile.opentracing.smallrye.WildFlyTracerFactory;
 
@@ -90,12 +85,14 @@ public class TracingDependencyProcessor implements DeploymentUnitProcessor {
         ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         ModuleLoader moduleLoader = Module.getBootModuleLoader();
         for (String module : MODULES) {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, false, false, true, false));
+            if (!module.contains(INTERCEPTOR_PACKAGE)) {
+                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, false, false, true, false));
+            }
         }
         for (String module : EXPORTED_MODULES) {
             ModuleDependency modDep = new ModuleDependency(moduleLoader, module, false, true, true, false);
             // io.opentracing.contrib.opentracing-interceptors needs to be processed by ExternalBeanArchiveProcessor
-            if (module.contains("opentracing-interceptors")) {
+            if (module.contains(INTERCEPTOR_PACKAGE)) {
                 modDep.addImportFilter(s -> s.equals("META-INF"), true);
             }
             moduleSpecification.addSystemDependency(modDep);

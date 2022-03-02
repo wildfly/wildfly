@@ -284,6 +284,7 @@
                 <!--
                     Override version properties for MicroProfile 5 as we do in ee-9/pom.xml
                 -->
+                <version.io.smallrye.smallrye-opentracing>3.0.0-RC1</version.io.smallrye.smallrye-opentracing>
                 <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
                 <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
                 <version.jakarta.json.bind.api>2.0.0</version.jakarta.json.bind.api>
@@ -294,6 +295,7 @@
                 <version.org.eclipse.microprofile.jwt.api>2.0</version.org.eclipse.microprofile.jwt.api>
                 <version.org.eclipse.microprofile.metrics.api>4.0</version.org.eclipse.microprofile.metrics.api>
                 <version.org.eclipse.microprofile.openapi>3.0</version.org.eclipse.microprofile.openapi>
+                <version.org.eclipse.microprofile.opentracing>3.0</version.org.eclipse.microprofile.opentracing>
                 <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
                 <version.org.eclipse.yasson>2.0.3</version.org.eclipse.yasson>
                 <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
@@ -347,6 +349,16 @@
                         <groupId>io.smallrye.config</groupId>
                         <artifactId>smallrye-config-source-file-system</artifactId>
                         <version>${version.io.smallrye.smallrye-config}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>io.smallrye</groupId>
+                        <artifactId>smallrye-opentracing</artifactId>
+                        <version>${version.io.smallrye.smallrye-opentracing}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>io.smallrye</groupId>
+                        <artifactId>smallrye-opentracing-contrib</artifactId>
+                        <version>${version.io.smallrye.smallrye-opentracing}</version>
                     </dependency>
 
                     <dependency>
