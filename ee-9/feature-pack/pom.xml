@@ -61,6 +61,7 @@
         <!-- WildFly Preview vs standard WildFly GAV expression properties. -->
         <module.jakarta.classifier>::jakarta</module.jakarta.classifier>
         <module.jakarta.suffix>-jakarta</module.jakarta.suffix>
+        <module.jms.suffix>jakarta</module.jms.suffix>
     </properties>
 
     <build>
@@ -475,7 +476,7 @@
                             </task-properties>
                             <jakarta-transform>true</jakarta-transform>
                             <!--<jakarta-transform-configs-dir>EXTERNAL_FOLDER</jakarta-transform-configs-dir>-->
-                            <!--<jakarta-transform-verbose>true</jakarta-transform-verbose>-->
+                            <jakarta-transform-verbose>false</jakarta-transform-verbose>
                             <jakarta-transform-excluded-artifacts>
                                 <!-- Don't transform libs that use javax.servlet to provide side
                                      functionality (e.g. consoles or similar) that we do not support. -->
@@ -534,6 +535,21 @@
                                 <exclude>org.wildfly:wildfly-clustering-infinispan-client\z</exclude>
                                 <exclude>org.wildfly:wildfly-clustering-infinispan-extension\z</exclude>
                                 <exclude>org.wildfly:wildfly-clustering-web-infinispan\z</exclude>
+
+                                <exclude>org.hornetq:.+\z</exclude>
+                                <exclude>org.apache.activemq:artemis-jakarta-client\z</exclude>
+                                <exclude>org.apache.activemq:artemis-jakarta-ra\z</exclude>
+                                <exclude>org.apache.activemq:artemis-jakarta-server\z</exclude>
+                                <exclude>org.apache.activemq:artemis-jakarta-service-extensions\z</exclude>
+                                <exclude>org.apache.activemq:artemis-journal\z</exclude>
+                                <exclude>org.apache.activemq:artemis-jdbc-store\z</exclude>
+                                <exclude>org.apache.activemq:artemis-amqp-protocol\z</exclude>
+                                <exclude>org.apache.activemq:artemis-hornetq-protocol\z</exclude>
+                                <exclude>org.apache.activemq:artemis-stomp-protocol\z</exclude>
+                                <exclude>org.apache.activemq:artemis-hqclient-protocol\z</exclude>
+                                <exclude>org.apache.activemq:artemis-selector\z</exclude>
+                                <exclude>activemq-artemis-native\z</exclude>
+                                <exclude>org.jboss.activemq.artemis.integration:artemis-wildfly-jakarta-integration\z</exclude>
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
@@ -742,6 +758,14 @@
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-mail</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-messaging-activemq-injection</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
