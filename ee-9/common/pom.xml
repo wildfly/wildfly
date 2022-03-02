@@ -284,6 +284,17 @@
         </dependency>
 
         <dependency>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-jakarta-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>org.jberet</groupId>
             <artifactId>jberet-core</artifactId>
             <exclusions>
@@ -854,6 +865,28 @@
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-mail-jakarta</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-messaging-activemq-injection-jakarta</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-messaging-activemq-subsystem-jakarta</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

@@ -1439,6 +1439,30 @@
             </dependency>
 
             <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-messaging-activemq-injection-jakarta</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-messaging-activemq-subsystem-jakarta</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor-jakarta</artifactId>
                 <version>${project.version}</version>

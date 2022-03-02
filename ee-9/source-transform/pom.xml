@@ -72,6 +72,8 @@
         <module>observability/opentelemetry-api</module>
         <module>observability/opentelemetry</module>
         <module>undertow</module>
+        <module>messaging-activemq/injection</module>
+        <module>messaging-activemq/subsystem</module>
     </modules>
 
     <build>
