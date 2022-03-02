@@ -60,7 +60,9 @@ public class BroadcastGroupControlHandler extends AbstractActiveMQComponentContr
         if (GET_CONNECTOR_PAIRS_AS_JSON.equals(operationName)) {
             BaseBroadcastGroupControl control = getActiveMQComponentControl(context, operation, false);
             try {
-                context.getResult().set(control.getConnectorPairsAsJSON());
+                if(control != null) {
+                    context.getResult().set(control.getConnectorPairsAsJSON());
+                }
             } catch (Exception e) {
                 context.getFailureDescription().set(e.getLocalizedMessage());
             }

@@ -43,7 +43,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -85,7 +84,9 @@ public abstract class AbstractActiveMQComponentControlHandler<T extends ActiveMQ
             final String name = operation.require(NAME).asString();
             if (STARTED.getName().equals(name)) {
                 ActiveMQComponentControl control = getActiveMQComponentControl(context, operation, false);
-                context.getResult().set(control.isStarted());
+                if(control != null) {
+                    context.getResult().set(control.isStarted());
+                }
             } else {
                 handleReadAttribute(name, context, operation);
             }
@@ -278,11 +279,6 @@ public abstract class AbstractActiveMQComponentControlHandler<T extends ActiveMQ
         ServiceController<?> artemisService = context.getServiceRegistry(forWrite).getService(artemisServiceName);
         ActiveMQServer server = ActiveMQServer.class.cast(artemisService.getValue());
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-         T control = getActiveMQComponentControl(server, address);
-         if (control == null) {
-             throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
-         }
-         return control;
-
+        return getActiveMQComponentControl(server, address);
     }
 }

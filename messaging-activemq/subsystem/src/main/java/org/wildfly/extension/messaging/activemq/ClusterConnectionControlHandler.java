@@ -59,10 +59,14 @@ public class ClusterConnectionControlHandler extends AbstractActiveMQComponentCo
     protected void handleReadAttribute(String attributeName, OperationContext context, ModelNode operation) throws OperationFailedException {
         if (ClusterConnectionDefinition.NODE_ID.getName().equals(attributeName)) {
             ClusterConnectionControl control = getActiveMQComponentControl(context, operation, false);
-            context.getResult().set(control.getNodeID());
+            if(control != null) {
+                context.getResult().set(control.getNodeID());
+            }
         } else if (ClusterConnectionDefinition.TOPOLOGY.getName().equals(attributeName)) {
             ClusterConnectionControl control = getActiveMQComponentControl(context, operation, false);
-            context.getResult().set(control.getTopology());
+            if(control != null) {
+                context.getResult().set(control.getTopology());
+            }
         } else {
             unsupportedAttribute(attributeName);
         }
@@ -73,11 +77,13 @@ public class ClusterConnectionControlHandler extends AbstractActiveMQComponentCo
         if (ClusterConnectionDefinition.GET_NODES.equals(operationName)) {
             ClusterConnectionControl control = getActiveMQComponentControl(context, operation, false);
             try {
-                Map<String, String> nodes = control.getNodes();
-                final ModelNode result = context.getResult();
-                result.setEmptyObject();
-                for (Map.Entry<String, String> entry : nodes.entrySet()) {
-                    result.get(entry.getKey()).set(entry.getValue());
+                if (control != null) {
+                    Map<String, String> nodes = control.getNodes();
+                    final ModelNode result = context.getResult();
+                    result.setEmptyObject();
+                    for (Map.Entry<String, String> entry : nodes.entrySet()) {
+                        result.get(entry.getKey()).set(entry.getValue());
+                    }
                 }
             } catch (Exception e) {
                 context.getFailureDescription().set(e.getLocalizedMessage());

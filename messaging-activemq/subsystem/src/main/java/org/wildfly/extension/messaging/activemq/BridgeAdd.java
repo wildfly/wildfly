@@ -40,6 +40,7 @@ import static org.wildfly.extension.messaging.activemq.BridgeDefinition.USE_DUPL
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.activemq.artemis.api.core.management.ResourceNames;
 
 import org.apache.activemq.artemis.core.config.BridgeConfiguration;
 import org.apache.activemq.artemis.core.config.TransformerConfiguration;
@@ -189,13 +190,17 @@ public class BridgeAdd extends AbstractAddStepHandler {
         return result;
     }
 
-    static void createBridge(BridgeConfiguration bridgeConfig, ActiveMQServer server) {
+    static void createBridge(BridgeConfiguration bridgeConfig, ActiveMQServer server) throws OperationFailedException {
         checkStarted(server);
         clearIO(server);
 
         try {
             server.deployBridge(bridgeConfig);
-        } catch (RuntimeException e) {
+            if(server.getManagementService().getResource(ResourceNames.BRIDGE + bridgeConfig.getName()) == null) {
+                //The bridge didn't deploy properly We can replace this once ARTEMIS-3682 is available
+                throw MessagingLogger.ROOT_LOGGER.failedBridgeDeployment(bridgeConfig.getName());
+            }
+        } catch (OperationFailedException | RuntimeException e) {
             throw e;
         } catch (Exception e) {
             // TODO should this be an OFE instead?
