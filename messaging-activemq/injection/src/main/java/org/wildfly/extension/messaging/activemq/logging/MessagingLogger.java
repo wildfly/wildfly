@@ -882,4 +882,7 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 105, value = "The %s %s is configured to use socket-binding %s, but this socket binding doesn't have the multicast-address or a multicast-port attributes configured.")
     OperationFailedException socketBindingMulticastNotSet(String resourceType, String resourceName, String socketBindingName);
 
+    @Message(id = 106, value = "The bridge %s didn't deploy.")
+    OperationFailedException failedBridgeDeployment(String bridgeName);
+
 }
