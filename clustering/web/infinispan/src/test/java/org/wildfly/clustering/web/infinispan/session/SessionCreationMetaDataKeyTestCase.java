@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,30 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.sso;
+package org.wildfly.clustering.web.infinispan.session;
 
-import java.util.function.Function;
+import java.io.IOException;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.web.infinispan.SessionKeyFormat;
+import org.junit.Test;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.spi.FormatterTester;
 
 /**
- * Resolver for {@link AuthenticationKey}
+ * Unit test for {@link SessionCreationMetaDataKey}.
  * @author Paul Ferraro
  */
-public enum AuthenticationKeyResolver implements Function<String, AuthenticationKey> {
-    INSTANCE;
+public class SessionCreationMetaDataKeyTestCase {
 
-    @Override
-    public AuthenticationKey apply(String id) {
-        return new AuthenticationKey(id);
-    }
-
-    @MetaInfServices(KeyFormat.class)
-    public static class AuthenticationKeyFormat extends SessionKeyFormat<AuthenticationKey> {
-        public AuthenticationKeyFormat() {
-            super(AuthenticationKey.class, INSTANCE);
-        }
+    @Test
+    public void test() throws IOException {
+        SessionCreationMetaDataKey key = new SessionCreationMetaDataKey("ABC123");
+        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
+        new FormatterTester<>(new SessionCreationMetaDataKeyFormatter()).test(key);
     }
 }

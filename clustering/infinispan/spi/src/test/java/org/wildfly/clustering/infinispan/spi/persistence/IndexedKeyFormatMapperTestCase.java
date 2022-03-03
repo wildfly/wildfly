@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.clustering.marshalling.spi.Formatter;
+import org.wildfly.clustering.marshalling.spi.SimpleFormatter;
 
 /**
  * @author Paul Ferraro
@@ -96,7 +98,7 @@ public class IndexedKeyFormatMapperTestCase {
     }
 
     @SuppressWarnings("unchecked")
-    private static List<? extends KeyFormat<?>> createPersistenceList(int size) {
-        return java.util.stream.IntStream.range(0, size).mapToObj(index -> new SimpleKeyFormat<>((Class<Type>) Type.values()[index].getClass(), value -> Type.valueOf(value), Type::name)).collect(Collectors.toList());
+    private static List<? extends Formatter<?>> createPersistenceList(int size) {
+        return java.util.stream.IntStream.range(0, size).mapToObj(index -> new SimpleFormatter<>((Class<Type>) Type.values()[index].getClass(), value -> Type.valueOf(value), Type::name)).collect(Collectors.toList());
     }
 }

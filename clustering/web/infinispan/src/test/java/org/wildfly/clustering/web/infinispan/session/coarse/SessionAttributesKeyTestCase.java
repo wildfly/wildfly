@@ -20,25 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.sso;
+package org.wildfly.clustering.web.infinispan.session.coarse;
 
 import java.io.IOException;
 
 import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
-import org.wildfly.clustering.web.infinispan.sso.AuthenticationKeyResolver.AuthenticationKeyFormat;
+import org.wildfly.clustering.marshalling.spi.FormatterTester;
 
 /**
- * Unit test for {@link AuthenticationKeyResolver}.
+ * Unit test for {@link SessionAttributesKey}.
  * @author Paul Ferraro
  */
-public class AuthenticationKeyResolverTestCase {
+public class SessionAttributesKeyTestCase {
 
     @Test
     public void test() throws IOException {
-        AuthenticationKey key = new AuthenticationKey("ABC123");
+        SessionAttributesKey key = new SessionAttributesKey("ABC123");
         ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
-        new KeyFormatTester<>(new AuthenticationKeyFormat()).test(key);
+        new FormatterTester<>(new SessionAttributesKeyFormatter()).test(key);
     }
 }

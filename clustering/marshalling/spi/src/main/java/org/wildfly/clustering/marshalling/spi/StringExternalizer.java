@@ -35,37 +35,37 @@ import org.wildfly.clustering.marshalling.Externalizer;
  * @author Paul Ferraro
  */
 public class StringExternalizer<T> implements Externalizer<T> {
-    private final Function<String, T> reader;
-    private final Function<T, String> writer;
-    private final Class<T> targetClass;
+    private final Formatter<T> formatter;
+
+    public StringExternalizer(Formatter<T> formatter) {
+        this.formatter = formatter;
+    }
 
     public StringExternalizer(Class<T> targetClass, Function<String, T> reader) {
-        this(targetClass, reader, Object::toString);
+        this.formatter = new SimpleFormatter<>(targetClass, reader);
     }
 
     public StringExternalizer(Class<T> targetClass, Function<String, T> reader, Function<T, String> writer) {
-        this.reader = reader;
-        this.writer = writer;
-        this.targetClass = targetClass;
+        this.formatter = new SimpleFormatter<>(targetClass, reader, writer);
     }
 
     @Override
     public void writeObject(ObjectOutput output, T object) throws IOException {
-        output.writeUTF(this.writer.apply(object));
+        output.writeUTF(this.formatter.format(object));
     }
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        return this.reader.apply(input.readUTF());
+        return this.formatter.parse(input.readUTF());
     }
 
     @Override
     public OptionalInt size(T object) {
-        return OptionalInt.of(this.writer.apply(object).length() + 1);
+        return OptionalInt.of(this.formatter.format(object).length() + 1);
     }
 
     @Override
     public Class<T> getTargetClass() {
-        return this.targetClass;
+        return this.formatter.getTargetClass();
     }
 }

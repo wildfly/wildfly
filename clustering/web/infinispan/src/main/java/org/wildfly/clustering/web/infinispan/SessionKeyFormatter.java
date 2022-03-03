@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2018, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,30 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.web.infinispan;
 
 import java.util.function.Function;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.web.infinispan.SessionKeyFormat;
+import org.wildfly.clustering.ee.infinispan.GroupedKey;
+import org.wildfly.clustering.marshalling.spi.SimpleFormatter;
 
 /**
- * Resolver for a {@link SessionCreationMetaDataKey}.
+ * Base {@link org.wildfly.clustering.marshalling.spi.Formatter} for cache keys containing session identifiers.
  * @author Paul Ferraro
  */
-public enum SessionCreationMetaDataKeyResolver implements Function<String, SessionCreationMetaDataKey> {
-    INSTANCE;
+public class SessionKeyFormatter<K extends GroupedKey<String>> extends SimpleFormatter<K> {
 
-    @Override
-    public SessionCreationMetaDataKey apply(String sessionId) {
-        return new SessionCreationMetaDataKey(sessionId);
-    }
-
-    @MetaInfServices(KeyFormat.class)
-    public static class SessionCreationMetaDataKeyFormat extends SessionKeyFormat<SessionCreationMetaDataKey> {
-        public SessionCreationMetaDataKeyFormat() {
-            super(SessionCreationMetaDataKey.class, INSTANCE);
-        }
+    protected SessionKeyFormatter(Class<K> targetClass, Function<String, K> resolver) {
+        super(targetClass, resolver, GroupedKey::getId);
     }
 }

@@ -27,6 +27,7 @@ import static org.mockito.Mockito.*;
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.clustering.marshalling.spi.Formatter;
 
 /**
  * @author Paul Ferraro
@@ -35,7 +36,7 @@ public class SimpleKeyFormatMapperTestCase {
 
     @Test
     public void test() {
-        KeyFormat<Object> keyFormat = mock(KeyFormat.class);
+        Formatter<Object> keyFormat = mock(Formatter.class);
         TwoWayKey2StringMapper mapper = new SimpleKeyFormatMapper(keyFormat);
 
         Object key = new Object();

@@ -20,29 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan.group;
+package org.wildfly.clustering.marshalling.spi;
 
-import java.io.IOException;
-import java.util.UUID;
-
-import org.jboss.ejb.client.SessionID;
-import org.jboss.ejb.client.UUIDSessionID;
-import org.junit.Test;
-import org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupKeySerializer.InfinispanBeanGroupKeyFormat;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
- * Unit test for {@link InfinispanBeanGroupKeySerializer}.
+ * {@link Formatter} for keys with multiple string fields.
  * @author Paul Ferraro
  */
-public class InfinispanBeanGroupKeySerializerTestCase {
+public class DelimitedFormatter<K> extends SimpleFormatter<K> {
 
-    @Test
-    public void test() throws IOException {
-        InfinispanBeanGroupKey<SessionID> key = new InfinispanBeanGroupKey<>(new UUIDSessionID(UUID.randomUUID()));
-
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
-        new KeyFormatTester<>(new InfinispanBeanGroupKeyFormat()).test(key);
+    public DelimitedFormatter(Class<K> targetClass, String delimiter, Function<String[], K> parser, Function<K, String[]> formatter) {
+        super(targetClass, value -> parser.apply(value.split(Pattern.quote(delimiter))), key -> String.join(delimiter, formatter.apply(key)));
     }
 }

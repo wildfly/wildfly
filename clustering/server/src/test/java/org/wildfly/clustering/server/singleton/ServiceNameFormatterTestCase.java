@@ -26,24 +26,23 @@ import java.io.IOException;
 
 import org.jboss.msc.service.ServiceName;
 import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
 import org.wildfly.clustering.marshalling.jboss.JBossMarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
-import org.wildfly.clustering.server.singleton.ServiceNameResolver.ServiceNameExternalizer;
-import org.wildfly.clustering.server.singleton.ServiceNameResolver.ServiceNameKeyFormat;
+import org.wildfly.clustering.marshalling.spi.FormatterTester;
+import org.wildfly.clustering.server.singleton.ServiceNameFormatter.ServiceNameExternalizer;
 
 /**
- * Unit test for {@link ServiceNameResolver}.
+ * Unit test for {@link ServiceNameFormatter}.
  * @author Paul Ferraro
  */
-public class ServiceNameResolverTestCase {
+public class ServiceNameFormatterTestCase {
     private final ServiceName name = ServiceName.JBOSS.append("foo", "bar");
 
     @Test
     public void test() throws IOException {
         new ExternalizerTester<>(new ServiceNameExternalizer()).test(this.name);
-        new KeyFormatTester<>(new ServiceNameKeyFormat()).test(this.name);
+        new FormatterTester<>(new ServiceNameFormatter()).test(this.name);
 
         JBossMarshallingTesterFactory.INSTANCE.createTester().test(this.name);
         ProtoStreamTesterFactory.INSTANCE.createTester().test(this.name);

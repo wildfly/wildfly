@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,29 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.ejb.infinispan.bean;
+package org.wildfly.clustering.server.group;
 
-import java.io.IOException;
-import java.util.UUID;
-
-import org.jboss.ejb.client.SessionID;
-import org.jboss.ejb.client.UUIDSessionID;
-import org.junit.Test;
-import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKeySerializer.InfinispanBeanKeyFormat;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.Formatter;
+import org.wildfly.clustering.marshalling.spi.StringExternalizer;
 
 /**
- * Unit test for {@link InfinispanBeanKeySerializer}.
+ * Resolver for a {@link LocalNode}.
  * @author Paul Ferraro
  */
-public class InfinispanBeanKeySerializerTestCase {
+@MetaInfServices(Formatter.class)
+public class LocalNodeFormatter implements Formatter<LocalNode> {
 
-    @Test
-    public void test() throws IOException {
-        InfinispanBeanKey<SessionID> key = new InfinispanBeanKey<>(new UUIDSessionID(UUID.randomUUID()));
+    @Override
+    public Class<LocalNode> getTargetClass() {
+        return LocalNode.class;
+    }
 
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
-        new KeyFormatTester<>(new InfinispanBeanKeyFormat()).test(key);
+    @Override
+    public LocalNode parse(String name) {
+        return new LocalNode(name);
+    }
+
+    @Override
+    public String format(LocalNode node) {
+        return node.getName();
+    }
+
+    @MetaInfServices(Externalizer.class)
+    public static class LocalNodeExternalizer extends StringExternalizer<LocalNode> {
+        public LocalNodeExternalizer() {
+            super(new LocalNodeFormatter());
+        }
     }
 }

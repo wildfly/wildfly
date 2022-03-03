@@ -28,9 +28,9 @@ import java.io.IOException;
 
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.BinaryKeyFormat;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.BinaryFormatter;
+import org.wildfly.clustering.marshalling.spi.Formatter;
 import org.wildfly.clustering.marshalling.spi.Serializer;
 import org.wildfly.clustering.marshalling.spi.SerializerExternalizer;
 
@@ -58,9 +58,9 @@ public enum JGroupsAddressSerializer implements Serializer<JGroupsAddress> {
         }
     }
 
-    @MetaInfServices(KeyFormat.class)
-    public static class JGroupsAddressKeyFormat extends BinaryKeyFormat<JGroupsAddress> {
-        public JGroupsAddressKeyFormat() {
+    @MetaInfServices(Formatter.class)
+    public static class JGroupsAddressFormatter extends BinaryFormatter<JGroupsAddress> {
+        public JGroupsAddressFormatter() {
             super(JGroupsAddress.class, INSTANCE);
         }
     }

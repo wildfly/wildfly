@@ -20,25 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.web.infinispan.session.fine;
 
 import java.io.IOException;
 
 import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
-import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKeyResolver.SessionCreationMetaDataKeyFormat;
+import org.wildfly.clustering.marshalling.spi.FormatterTester;
 
 /**
- * Unit test for {@link SessionCreationMetaDataKeyResolver}.
+ * Unit test for {@link SessionAttributeNamesKey}.
  * @author Paul Ferraro
  */
-public class SessionCreationMetaDataKeyResolverTestCase {
+public class SessionAttributeNamesKeyTestCase {
 
     @Test
     public void test() throws IOException {
-        SessionCreationMetaDataKey key = new SessionCreationMetaDataKey("ABC123");
+        SessionAttributeNamesKey key = new SessionAttributeNamesKey("ABC123");
         ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
-        new KeyFormatTester<>(new SessionCreationMetaDataKeyFormat()).test(key);
+        new FormatterTester<>(new SessionAttributeNamesKeyFormatter()).test(key);
     }
 }

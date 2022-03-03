@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,31 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.spi.persistence;
+package org.wildfly.clustering.web.infinispan.session;
 
-import static org.mockito.Mockito.*;
-
-import java.util.function.Function;
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.spi.Formatter;
+import org.wildfly.clustering.web.infinispan.SessionKeyFormatter;
 
 /**
+ * Formatter for a {@link SessionCreationMetaDataKey}.
  * @author Paul Ferraro
  */
-public class SimpleKeyFormatTestCase {
-    @Test
-    public void test() {
-        Function<String, Object> parser = mock(Function.class);
-        Function<Object, String> formatter = mock(Function.class);
-        KeyFormat<Object> format = new SimpleKeyFormat<>(Object.class, parser, formatter);
+@MetaInfServices(Formatter.class)
+public class SessionCreationMetaDataKeyFormatter extends SessionKeyFormatter<SessionCreationMetaDataKey> {
 
-        Object object = new Object();
-        String result = "foo";
-
-        when(formatter.apply(object)).thenReturn(result);
-        when(parser.apply(result)).thenReturn(object);
-
-        new KeyFormatTester<>(format).test(object, Assert::assertSame);
+    public SessionCreationMetaDataKeyFormatter() {
+        super(SessionCreationMetaDataKey.class, SessionCreationMetaDataKey::new);
     }
 }

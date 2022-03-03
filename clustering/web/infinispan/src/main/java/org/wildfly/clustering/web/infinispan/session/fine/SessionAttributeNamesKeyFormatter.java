@@ -21,28 +21,18 @@
  */
 package org.wildfly.clustering.web.infinispan.session.fine;
 
-import java.util.function.Function;
-
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.web.infinispan.SessionKeyFormat;
+import org.wildfly.clustering.marshalling.spi.Formatter;
+import org.wildfly.clustering.web.infinispan.SessionKeyFormatter;
 
 /**
- * Resolver for {@link SessionAttributeNamesKey}.
+ * Formatter for {@link SessionAttributeNamesKey}.
  * @author Paul Ferraro
  */
-public enum SessionAttributeNamesKeyResolver implements Function<String, SessionAttributeNamesKey> {
-    INSTANCE;
+@MetaInfServices(Formatter.class)
+public class SessionAttributeNamesKeyFormatter extends SessionKeyFormatter<SessionAttributeNamesKey> {
 
-    @Override
-    public SessionAttributeNamesKey apply(String sessionId) {
-        return new SessionAttributeNamesKey(sessionId);
-    }
-
-    @MetaInfServices(KeyFormat.class)
-    public static class SessionAttributeNamesKeyFormat extends SessionKeyFormat<SessionAttributeNamesKey> {
-        public SessionAttributeNamesKeyFormat() {
-            super(SessionAttributeNamesKey.class, INSTANCE);
-        }
+    public SessionAttributeNamesKeyFormatter() {
+        super(SessionAttributeNamesKey.class, SessionAttributeNamesKey::new);
     }
 }

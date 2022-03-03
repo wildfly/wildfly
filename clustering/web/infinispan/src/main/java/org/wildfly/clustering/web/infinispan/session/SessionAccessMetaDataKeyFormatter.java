@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,30 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session.coarse;
 
-import java.util.function.Function;
+package org.wildfly.clustering.web.infinispan.session;
 
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.web.infinispan.SessionKeyFormat;
+import org.wildfly.clustering.marshalling.spi.Formatter;
+import org.wildfly.clustering.web.infinispan.SessionKeyFormatter;
 
 /**
- * Resolver for {@link SessionAttributesKey}.
+ * Formatter for a {@link SessionAccessMetaDataKey}
  * @author Paul Ferraro
  */
-public enum SessionAttributesKeyResolver implements Function<String, SessionAttributesKey> {
-    INSTANCE;
+@MetaInfServices(Formatter.class)
+public class SessionAccessMetaDataKeyFormatter extends SessionKeyFormatter<SessionAccessMetaDataKey> {
 
-    @Override
-    public SessionAttributesKey apply(String id) {
-        return new SessionAttributesKey(id);
-    }
-
-    @MetaInfServices(KeyFormat.class)
-    public static class SessionAttributesKeyFormat extends SessionKeyFormat<SessionAttributesKey> {
-        public SessionAttributesKeyFormat() {
-            super(SessionAttributesKey.class, INSTANCE);
-        }
+    public SessionAccessMetaDataKeyFormatter() {
+        super(SessionAccessMetaDataKey.class, SessionAccessMetaDataKey::new);
     }
 }

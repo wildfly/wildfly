@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,28 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.group;
-
-import java.io.IOException;
-
-import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
-import org.jgroups.util.UUID;
-import org.junit.Test;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.marshalling.spi.FormatterTester;
-import org.wildfly.clustering.server.group.JGroupsAddressSerializer.JGroupsAddressExternalizer;
-import org.wildfly.clustering.server.group.JGroupsAddressSerializer.JGroupsAddressFormatter;
+package org.wildfly.clustering.marshalling.spi;
 
 /**
+ * Formats a cache key to a string representation and back again.
  * @author Paul Ferraro
  */
-public class JGroupsAddressSerializerTestCase {
+public interface Formatter<K> {
+    /**
+     * The implementation class of the target key of this format.
+     * @return an implementation class
+     */
+    Class<K> getTargetClass();
 
-    @Test
-    public void test() throws IOException {
-        JGroupsAddress address = new JGroupsAddress(UUID.randomUUID());
+    /**
+     * Parses the key from the specified string.
+     * @param value a string representation of the key
+     * @return the parsed key
+     */
+    K parse(String value);
 
-        new ExternalizerTester<>(new JGroupsAddressExternalizer()).test(address);
-        new FormatterTester<>(new JGroupsAddressFormatter()).test(address);
-    }
+    /**
+     * Formats the specified key to a string representation.
+     * @param key a key to format
+     * @return a string representation of the specified key.
+     */
+    String format(K key);
 }

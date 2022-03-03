@@ -29,13 +29,13 @@ import java.net.InetSocketAddress;
 import org.jgroups.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
 import org.wildfly.clustering.marshalling.ExternalizerTester;
 import org.wildfly.clustering.marshalling.Tester;
 import org.wildfly.clustering.marshalling.jboss.JBossMarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.spi.FormatterTester;
 import org.wildfly.clustering.server.group.AddressableNodeSerializer.AddressableNodeExternalizer;
-import org.wildfly.clustering.server.group.AddressableNodeSerializer.AddressableNodeKeyFormat;
+import org.wildfly.clustering.server.group.AddressableNodeSerializer.AddressableNodeFormatter;
 
 /**
  * Unit tests for {@link AddressableNodeSerializer}.
@@ -48,7 +48,7 @@ public class AddressableNodeSerializerTestCase {
     @Test
     public void test() throws IOException {
         this.test(new ExternalizerTester<>(new AddressableNodeExternalizer()));
-        this.test(new KeyFormatTester<>(new AddressableNodeKeyFormat()));
+        this.test(new FormatterTester<>(new AddressableNodeFormatter()));
         this.test(JBossMarshallingTesterFactory.INSTANCE.createTester());
         this.test(ProtoStreamTesterFactory.INSTANCE.createTester());
     }

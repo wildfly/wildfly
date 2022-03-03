@@ -20,36 +20,42 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.spi.persistence;
+package org.wildfly.clustering.marshalling.spi;
 
-import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
-import org.wildfly.clustering.marshalling.spi.Formatter;
+import java.util.function.Function;
 
 /**
- * Simple {@link TwoWayKey2StringMapper} based on a single {@link Formatter}.
+ * {@link Formatter} for keys with a simple string representation.
  * @author Paul Ferraro
  */
-public class SimpleKeyFormatMapper implements TwoWayKey2StringMapper {
+public class SimpleFormatter<K> implements Formatter<K> {
 
-    private final Formatter<Object> format;
+    private final Class<K> targetClass;
+    private final Function<String, K> parser;
+    private final Function<K, String> formatter;
 
-    @SuppressWarnings("unchecked")
-    public SimpleKeyFormatMapper(Formatter<?> format) {
-        this.format = (Formatter<Object>) format;
+    public SimpleFormatter(Class<K> targetClass, Function<String, K> parser) {
+        this(targetClass, parser, Object::toString);
+    }
+
+    public SimpleFormatter(Class<K> targetClass, Function<String, K> parser, Function<K, String> formatter) {
+        this.targetClass = targetClass;
+        this.parser = parser;
+        this.formatter = formatter;
     }
 
     @Override
-    public boolean isSupportedType(Class<?> keyType) {
-        return this.format.getTargetClass().equals(keyType);
+    public Class<K> getTargetClass() {
+        return this.targetClass;
     }
 
     @Override
-    public String getStringMapping(Object key) {
-        return this.format.format(key);
+    public K parse(String value) {
+        return this.parser.apply(value);
     }
 
     @Override
-    public Object getKeyMapping(String value) {
-        return this.format.parse(value);
+    public String format(K key) {
+        return this.formatter.apply(key);
     }
 }

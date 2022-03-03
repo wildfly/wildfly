@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,30 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.sso.coarse;
+package org.wildfly.clustering.marshalling.spi;
+
+import static org.mockito.Mockito.*;
 
 import java.util.function.Function;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.web.infinispan.SessionKeyFormat;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * Externalizer for {@link CoarseSessionsKey}.
  * @author Paul Ferraro
  */
-public enum CoarseSessionsKeyResolver implements Function<String, CoarseSessionsKey> {
-    INSTANCE;
+public class SimpleFormatterTestCase {
+    @Test
+    public void test() {
+        Function<String, Object> parser = mock(Function.class);
+        Function<Object, String> formatter = mock(Function.class);
+        Formatter<Object> format = new SimpleFormatter<>(Object.class, parser, formatter);
 
-    @Override
-    public CoarseSessionsKey apply(String id) {
-        return new CoarseSessionsKey(id);
-    }
+        Object object = new Object();
+        String result = "foo";
 
-    @MetaInfServices(KeyFormat.class)
-    public static class CoarseSessionsKeyFormat extends SessionKeyFormat<CoarseSessionsKey> {
-        public CoarseSessionsKeyFormat() {
-            super(CoarseSessionsKey.class, INSTANCE);
-        }
+        when(formatter.apply(object)).thenReturn(result);
+        when(parser.apply(result)).thenReturn(object);
+
+        new FormatterTester<>(format).test(object, Assert::assertSame);
     }
 }

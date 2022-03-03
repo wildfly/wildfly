@@ -30,11 +30,11 @@ import java.net.InetSocketAddress;
 import org.jgroups.Address;
 import org.jgroups.stack.IpAddress;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.BinaryKeyFormat;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.Serializer;
+import org.wildfly.clustering.marshalling.spi.BinaryFormatter;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
+import org.wildfly.clustering.marshalling.spi.Formatter;
 import org.wildfly.clustering.marshalling.spi.SerializerExternalizer;
 
 /**
@@ -78,9 +78,9 @@ public enum AddressableNodeSerializer implements Serializer<AddressableNode> {
         }
     }
 
-    @MetaInfServices(KeyFormat.class)
-    public static class AddressableNodeKeyFormat extends BinaryKeyFormat<AddressableNode> {
-        public AddressableNodeKeyFormat() {
+    @MetaInfServices(Formatter.class)
+    public static class AddressableNodeFormatter extends BinaryFormatter<AddressableNode> {
+        public AddressableNodeFormatter() {
             super(AddressableNode.class, INSTANCE);
         }
     }

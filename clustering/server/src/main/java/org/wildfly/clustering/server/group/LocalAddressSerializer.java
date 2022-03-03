@@ -29,9 +29,9 @@ import java.io.IOException;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.BinaryKeyFormat;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.BinaryFormatter;
+import org.wildfly.clustering.marshalling.spi.Formatter;
 import org.wildfly.clustering.marshalling.spi.Serializer;
 import org.wildfly.clustering.marshalling.spi.SerializerExternalizer;
 
@@ -59,10 +59,10 @@ public enum LocalAddressSerializer implements Serializer<Address> {
         }
     }
 
-    @MetaInfServices(KeyFormat.class)
-    public static class LocalAddressKeyFormat extends BinaryKeyFormat<Address> {
+    @MetaInfServices(Formatter.class)
+    public static class LocalAddressFormatter extends BinaryFormatter<Address> {
         @SuppressWarnings("unchecked")
-        public LocalAddressKeyFormat() {
+        public LocalAddressFormatter() {
             super((Class<Address>) (Class<?>) LocalModeAddress.class, INSTANCE);
         }
     }
