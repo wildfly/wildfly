@@ -71,26 +71,28 @@ public class HibernatePersistenceProviderAdaptor implements PersistenceProviderA
     @Override
     public void addProviderProperties(Map properties, PersistenceUnitMetadata pu) {
         putPropertyIfAbsent(pu, properties, AvailableSettings.JPAQL_STRICT_COMPLIANCE, "true"); // JIPI-24 ignore jpql aliases case
-        failOnIncompatibleSetting(pu, properties);  // fail if
+
+        failOnIncompatibleSetting(pu, properties);  // fail application deployment if application sets hibernate.id.new_generator_mappings to false
+                                                    // applications that set new_generator_mappings to false need to be migrated to Hibernate ORM 6+,
+                                                    // the database may need changes as well to deal with ensuring the "next id" counter is represented
+                                                    // correctly in the database to match what the application is changed to instead use when inserting
+                                                    // new database table rows.
+
         putPropertyIfAbsent(pu, properties, AvailableSettings.KEYWORD_AUTO_QUOTING_ENABLED,"false");
         putPropertyIfAbsent(pu, properties, AvailableSettings.IMPLICIT_NAMING_STRATEGY, NAMING_STRATEGY_JPA_COMPLIANT_IMPL);
         putPropertyIfAbsent(pu, properties, AvailableSettings.SCANNER, HibernateArchiveScanner.class);
         properties.put(AvailableSettings.CLASSLOADERS, pu.getClassLoader());
-//        putPropertyIfAbsent(pu,properties, org.hibernate.ejb.AvailableSettings.ENTITY_MANAGER_FACTORY_NAME, pu.getScopedPersistenceUnitName());
-        putPropertyIfAbsent(pu, properties, AvailableSettings.SESSION_FACTORY_NAME, pu.getScopedPersistenceUnitName());
+        // Only set SESSION_FACTORY_NAME_IS_JNDI to false if application didn't override Hibernate ORM session factory name.
         if (!pu.getProperties().containsKey(AvailableSettings.SESSION_FACTORY_NAME)) {
             putPropertyIfAbsent(pu, properties, AvailableSettings.SESSION_FACTORY_NAME_IS_JNDI, Boolean.FALSE);
         }
-        // the following properties were added to Hibernate ORM 5.3, for Jakarta Persistence 2.2 spec compliance.
+        putPropertyIfAbsent(pu, properties, AvailableSettings.SESSION_FACTORY_NAME, pu.getScopedPersistenceUnitName());
+
 //        putPropertyIfAbsent( pu, properties, AvailableSettings.PREFER_GENERATOR_NAME_AS_DEFAULT_SEQUENCE_NAME, true );
-        putPropertyIfAbsent( pu, properties, AvailableSettings.JPA_TRANSACTION_COMPLIANCE, true );
-        putPropertyIfAbsent( pu, properties, AvailableSettings.JPA_CLOSED_COMPLIANCE, true );
-        putPropertyIfAbsent( pu, properties, AvailableSettings.JPA_QUERY_COMPLIANCE, true );
-        putPropertyIfAbsent( pu, properties, AvailableSettings.JPA_LIST_COMPLIANCE, true );
-        putPropertyIfAbsent( pu, properties, AvailableSettings.JPA_CACHING_COMPLIANCE, true );
-        putPropertyIfAbsent( pu, properties, AvailableSettings.JPA_PROXY_COMPLIANCE, true );
         putPropertyIfAbsent( pu, properties, AvailableSettings.ENABLE_LAZY_LOAD_NO_TRANS, false );
-        putPropertyIfAbsent( pu, properties, AvailableSettings.JPA_ID_GENERATOR_GLOBAL_SCOPE_COMPLIANCE, true);
+
+        // Enable JPA Compliance mode
+        putPropertyIfAbsent( pu, properties, AvailableSettings.JPA_COMPLIANCE, true);
 
         // Search hint
         putPropertyIfAbsent( pu, properties,"hibernate.search.index_uninverting_allowed", "true" );
