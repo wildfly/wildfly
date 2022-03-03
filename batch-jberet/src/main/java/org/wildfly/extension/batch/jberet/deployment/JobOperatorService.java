@@ -490,23 +490,29 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
                 try {
                     // Use the deployment's class loader to stop jobs
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
-                    final Collection<String> jobNames = getJobNames();
+
+                    // getJobNames() returns both active and inactive job names, so use
+                    // jobRepository.getJobNames() to get all active job names, which will
+                    // be filtered in the loop below for valid job names for the current deployment.
+                    final Collection<String> jobNames = getJobRepository().getJobNames();
                     // Look for running jobs and attempt to stop each one
                     for (String jobName : jobNames) {
-                        // Casting to (Supplier<List<Long>>) is done here on purpose as a workaround for a bug in 1.8.0_45
-                        final List<Long> runningJobs = allowMissingJob((Supplier<List<Long>>) () -> getRunningExecutions(jobName), Collections.emptyList());
-                        for (Long id : runningJobs) {
-                            try {
-                                BatchLogger.LOGGER.stoppingJob(id, jobName, deploymentName);
-                                // We want to skip the permissions check, we need to stop jobs regardless of the
-                                // permissions
-                                stop(id);
-                                // Queue for a restart on resume if required
-                                if (queueForRestart) {
-                                    stoppedIds.add(id);
+                        if (resolver.isValidJobName(jobName)) {
+                            // Casting to (Supplier<List<Long>>) is done here on purpose as a workaround for a bug in 1.8.0_45
+                            final List<Long> runningJobs = allowMissingJob((Supplier<List<Long>>) () -> getRunningExecutions(jobName), Collections.emptyList());
+                            for (Long id : runningJobs) {
+                                try {
+                                    BatchLogger.LOGGER.stoppingJob(id, jobName, deploymentName);
+                                    // We want to skip the permissions check, we need to stop jobs regardless of the
+                                    // permissions
+                                    stop(id);
+                                    // Queue for a restart on resume if required
+                                    if (queueForRestart) {
+                                        stoppedIds.add(id);
+                                    }
+                                } catch (Exception e) {
+                                    BatchLogger.LOGGER.stoppingJobFailed(e, id, jobName, deploymentName);
                                 }
-                            } catch (Exception e) {
-                                BatchLogger.LOGGER.stoppingJobFailed(e, id, jobName, deploymentName);
                             }
                         }
                     }
