@@ -97,8 +97,7 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
                 }
                 requiredElements.remove(element);
             } else if (element == Element.JOB_REPOSITORY) {
-                final String name = AttributeParsers.readNameAttribute(reader);
-                parseJobRepository(reader, subsystemAddress, name, ops);
+                parseJobRepository(reader, subsystemAddress, ops);
                 requiredElements.remove(Element.JOB_REPOSITORY);
             } else if (element == Element.THREAD_POOL) {
                 threadsParser.parseUnboundedQueueThreadPool(reader, namespace.getUriString(),
@@ -119,7 +118,9 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
         ParseUtils.requireNoContent(reader);
     }
 
-    private void parseJobRepository(final XMLExtendedStreamReader reader, final PathAddress subsystemAddress, final String name, final List<ModelNode> ops) throws XMLStreamException {
+    protected void parseJobRepository(final XMLExtendedStreamReader reader, final PathAddress subsystemAddress, final List<ModelNode> ops) throws XMLStreamException {
+        final String name = AttributeParsers.readRequiredAttributes(reader, EnumSet.of(Attribute.NAME)).get(Attribute.NAME);
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final String localName = reader.getLocalName();
             final Element element = Element.forName(localName);

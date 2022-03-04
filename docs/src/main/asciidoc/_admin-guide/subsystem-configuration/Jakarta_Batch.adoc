@@ -59,6 +59,24 @@ can be used to share job execution data between WildFly instances.
 For example, one may start a job execution in one instance, stop and restart
 it from a different WildFly instance.
 
+=== Handling Large Job Repositories
+
+In some cases, when a job repository accumulates a large number of job
+execution records (say hundreds of thousands), application deployment times may
+be negatively impacted. This is relevant mainly to persistent job repository
+implementations, like the jdbc job repository.
+
+In order to avoid accumulating too high a number of job execution records, the
+application can delete old executions via
+`JobOperator.abandon(long executionId)`, or other means like pruning the
+database tables can be employed.
+
+If it's no possible to avoid storing large number of job execution records,
+the job repositories can be configured to limit the number of job executions
+that is returned by them by setting the `execution-records-limit` attribute.
+If the attribute is set, Wildfly will only load specified maximum number of
+job executions from the backing storage mechanism.
+
 [[deployment-descriptors]]
 == Deployment Descriptors
 

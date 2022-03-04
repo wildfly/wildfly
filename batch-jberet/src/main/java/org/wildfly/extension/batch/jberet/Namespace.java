@@ -33,17 +33,19 @@ enum Namespace {
 
     BATCH_1_0("urn:jboss:domain:batch-jberet:1.0"),
     BATCH_2_0("urn:jboss:domain:batch-jberet:2.0"),
+    BATCH_3_0("urn:jboss:domain:batch-jberet:3.0"),
     ;
 
     private static final Map<String, Namespace> MAP = Map.of(
             BATCH_1_0.name, BATCH_1_0,
-            BATCH_2_0.name, BATCH_2_0
+            BATCH_2_0.name, BATCH_2_0,
+            BATCH_3_0.name, BATCH_3_0
     );
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = BATCH_2_0;
+    public static final Namespace CURRENT = BATCH_3_0;
 
     private final String name;
 

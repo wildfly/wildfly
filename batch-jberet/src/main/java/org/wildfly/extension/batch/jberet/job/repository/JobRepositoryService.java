@@ -46,6 +46,11 @@ import org.wildfly.extension.batch.jberet._private.BatchLogger;
  */
 abstract class JobRepositoryService implements JobRepository, Service<JobRepository> {
     private volatile boolean started;
+    private final Integer executionRecordsLimit;
+
+    public JobRepositoryService(Integer executionRecordsLimit) {
+        this.executionRecordsLimit = executionRecordsLimit;
+    }
 
     @Override
     public final void start(final StartContext context) throws StartException {
@@ -208,7 +213,12 @@ abstract class JobRepositoryService implements JobRepository, Service<JobReposit
 
     @Override
     public List<Long> getJobExecutionsByJob(final String jobName) {
-        return getAndCheckDelegate().getJobExecutionsByJob(jobName);
+        return getAndCheckDelegate().getJobExecutionsByJob(jobName, executionRecordsLimit);
+    }
+
+    @Override
+    public List<Long> getJobExecutionsByJob(String jobName, Integer executionRecordsLimit) {
+        return getAndCheckDelegate().getJobExecutionsByJob(jobName, executionRecordsLimit);
     }
 
     protected abstract void startJobRepository(StartContext context) throws StartException;

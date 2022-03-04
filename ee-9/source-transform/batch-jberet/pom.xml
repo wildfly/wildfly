@@ -75,6 +75,11 @@
             <artifactId>weld-spi</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.transaction</groupId>
             <artifactId>wildfly-transaction-client-jakarta</artifactId>
         </dependency>
