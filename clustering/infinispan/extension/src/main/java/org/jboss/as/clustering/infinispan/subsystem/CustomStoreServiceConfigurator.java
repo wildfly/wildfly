@@ -24,6 +24,10 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.subsystem.CustomStoreResourceDefinition.Attribute.CLASS;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.infinispan.commons.util.AggregatedClassLoader;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StoreConfiguration;
@@ -44,13 +48,13 @@ import org.wildfly.clustering.service.SupplierDependency;
  */
 public class CustomStoreServiceConfigurator extends StoreServiceConfigurator<CustomStoreConfiguration, CustomStoreConfigurationBuilder> {
 
-    private final SupplierDependency<Module> module;
+    private final SupplierDependency<List<Module>> modules;
 
     private volatile String className;
 
     CustomStoreServiceConfigurator(PathAddress address) {
         super(address, CustomStoreConfigurationBuilder.class);
-        this.module = new ServiceSupplierDependency<>(CacheComponent.MODULES.getServiceName(address.getParent()));
+        this.modules = new ServiceSupplierDependency<>(CacheComponent.MODULES.getServiceName(address.getParent()));
     }
 
     @Override
@@ -61,16 +65,18 @@ public class CustomStoreServiceConfigurator extends StoreServiceConfigurator<Cus
 
     @Override
     public <T> ServiceBuilder<T> register(ServiceBuilder<T> builder) {
-        return super.register(this.module.register(builder));
+        return super.register(this.modules.register(builder));
     }
 
     @Override
     public PersistenceConfiguration get() {
         PersistenceConfiguration persistence = super.get();
         StoreConfiguration store = persistence.stores().get(0);
+        List<Module> modules = this.modules.get();
+        ClassLoader loader = modules.size() > 1 ? new AggregatedClassLoader(modules.stream().map(Module::getClassLoader).collect(Collectors.toList())) : modules.get(0).getClassLoader();
         try {
             @SuppressWarnings("unchecked")
-            Class<StoreConfigurationBuilder<?, ?>> storeClass = (Class<StoreConfigurationBuilder<?, ?>>) this.module.get().getClassLoader().loadClass(this.className).asSubclass(StoreConfigurationBuilder.class);
+            Class<StoreConfigurationBuilder<?, ?>> storeClass = (Class<StoreConfigurationBuilder<?, ?>>) loader.loadClass(this.className).asSubclass(StoreConfigurationBuilder.class);
             return new ConfigurationBuilder().persistence().passivation(persistence.passivation()).addStore(storeClass)
                     .async().read(store.async())
                     .fetchPersistentState(store.fetchPersistentState())
