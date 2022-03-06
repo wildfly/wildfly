@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,23 +22,18 @@
 
 package org.wildfly.clustering.web.infinispan.sso.coarse;
 
-import java.io.IOException;
-
-import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
-import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessionsKeyResolver.CoarseSessionsKeyFormat;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.spi.Formatter;
+import org.wildfly.clustering.web.infinispan.SessionKeyFormatter;
 
 /**
- * Unit test for {@link CoarseSessionsKeyResolver}.
+ * Formatter for {@link CoarseSessionsKey}.
  * @author Paul Ferraro
  */
-public class CoarseSessionsKeyResolverTestCase {
+@MetaInfServices(Formatter.class)
+public class CoarseSessionsKeyFormatter extends SessionKeyFormatter<CoarseSessionsKey> {
 
-    @Test
-    public void test() throws IOException {
-        CoarseSessionsKey key = new CoarseSessionsKey("ABC123");
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
-        new KeyFormatTester<>(new CoarseSessionsKeyFormat()).test(key);
+    public CoarseSessionsKeyFormatter() {
+        super(CoarseSessionsKey.class, CoarseSessionsKey::new);
     }
 }

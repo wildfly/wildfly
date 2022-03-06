@@ -20,30 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session;
-
-import java.util.function.Function;
+package org.wildfly.clustering.web.infinispan.sso;
 
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormat;
-import org.wildfly.clustering.web.infinispan.SessionKeyFormat;
+import org.wildfly.clustering.marshalling.spi.Formatter;
+import org.wildfly.clustering.web.infinispan.SessionKeyFormatter;
 
 /**
- * Resolver for a {@link SessionAccessMetaDataKey}
+ * Formatter for {@link AuthenticationKey}
  * @author Paul Ferraro
  */
-public enum SessionAccessMetaDataKeyResolver implements Function<String, SessionAccessMetaDataKey> {
-    INSTANCE;
+@MetaInfServices(Formatter.class)
+public class AuthenticationKeyFormatter extends SessionKeyFormatter<AuthenticationKey> {
 
-    @Override
-    public SessionAccessMetaDataKey apply(String sessionId) {
-        return new SessionAccessMetaDataKey(sessionId);
-    }
-
-    @MetaInfServices(KeyFormat.class)
-    public static class SessionAccessMetaDataKeyFormat extends SessionKeyFormat<SessionAccessMetaDataKey> {
-        public SessionAccessMetaDataKeyFormat() {
-            super(SessionAccessMetaDataKey.class, INSTANCE);
-        }
+    public AuthenticationKeyFormatter() {
+        super(AuthenticationKey.class, AuthenticationKey::new);
     }
 }

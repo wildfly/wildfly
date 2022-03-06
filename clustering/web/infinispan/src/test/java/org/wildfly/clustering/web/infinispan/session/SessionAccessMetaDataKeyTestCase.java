@@ -20,35 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.group;
+package org.wildfly.clustering.web.infinispan.session;
 
 import java.io.IOException;
 
 import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
-import org.wildfly.clustering.marshalling.ExternalizerTester;
-import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.jboss.JBossMarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
-import org.wildfly.clustering.server.group.LocalNodeResolver.LocalNodeExternalizer;
-import org.wildfly.clustering.server.group.LocalNodeResolver.LocalNodeKeyFormat;
+import org.wildfly.clustering.marshalling.spi.FormatterTester;
 
 /**
- * Unit test for {@link LocalNodeResolver}.
+ * Unit test for {@link SessionAccessMetaDataKey}.
  * @author Paul Ferraro
  */
-public class LocalNodeResolverTestCase {
-    private final LocalNode localNode = new LocalNode("name");
+public class SessionAccessMetaDataKeyTestCase {
 
     @Test
     public void test() throws IOException {
-        this.test(new ExternalizerTester<>(new LocalNodeExternalizer()));
-        this.test(new KeyFormatTester<>(new LocalNodeKeyFormat()));
-        this.test(JBossMarshallingTesterFactory.INSTANCE.createTester());
-        this.test(ProtoStreamTesterFactory.INSTANCE.createTester());
-    }
-
-    private void test(Tester<LocalNode> tester) throws IOException {
-        tester.test(this.localNode);
+        SessionAccessMetaDataKey key = new SessionAccessMetaDataKey("ABC123");
+        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
+        new FormatterTester<>(new SessionAccessMetaDataKeyFormatter()).test(key);
     }
 }

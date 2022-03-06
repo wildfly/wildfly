@@ -20,42 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.spi.persistence;
+package org.wildfly.clustering.web.infinispan.sso;
 
-import java.util.function.Function;
+import java.io.IOException;
+
+import org.junit.Test;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.spi.FormatterTester;
 
 /**
- * {@link KeyFormat} for keys with a simple string representation.
+ * Unit test for {@link AuthenticationKey}.
  * @author Paul Ferraro
  */
-public class SimpleKeyFormat<K> implements KeyFormat<K> {
+public class AuthenticationKeyTestCase {
 
-    private final Class<K> targetClass;
-    private final Function<String, K> parser;
-    private final Function<K, String> formatter;
-
-    public SimpleKeyFormat(Class<K> targetClass, Function<String, K> parser) {
-        this(targetClass, parser, Object::toString);
-    }
-
-    public SimpleKeyFormat(Class<K> targetClass, Function<String, K> parser, Function<K, String> formatter) {
-        this.targetClass = targetClass;
-        this.parser = parser;
-        this.formatter = formatter;
-    }
-
-    @Override
-    public Class<K> getTargetClass() {
-        return this.targetClass;
-    }
-
-    @Override
-    public K parse(String value) {
-        return this.parser.apply(value);
-    }
-
-    @Override
-    public String format(K key) {
-        return this.formatter.apply(key);
+    @Test
+    public void test() throws IOException {
+        AuthenticationKey key = new AuthenticationKey("ABC123");
+        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
+        new FormatterTester<>(new AuthenticationKeyFormatter()).test(key);
     }
 }

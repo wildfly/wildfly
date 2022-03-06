@@ -20,25 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session.fine;
+package org.wildfly.clustering.ejb.infinispan.group;
 
 import java.io.IOException;
+import java.util.UUID;
 
+import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.UUIDSessionID;
 import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
+import org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupKeySerializer.InfinispanBeanGroupKeyFormatter;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
-import org.wildfly.clustering.web.infinispan.session.fine.SessionAttributeNamesKeyResolver.SessionAttributeNamesKeyFormat;
+import org.wildfly.clustering.marshalling.spi.FormatterTester;
 
 /**
- * Unit test for {@link SessionAttributeNamesKeyResolver}.
+ * Unit test for {@link InfinispanBeanGroupKeySerializer}.
  * @author Paul Ferraro
  */
-public class SessionAttributeNamesKeyResolverTestCase {
+public class InfinispanBeanGroupKeyTestCase {
 
     @Test
     public void test() throws IOException {
-        SessionAttributeNamesKey key = new SessionAttributeNamesKey("ABC123");
+        InfinispanBeanGroupKey<SessionID> key = new InfinispanBeanGroupKey<>(new UUIDSessionID(UUID.randomUUID()));
+
         ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
-        new KeyFormatTester<>(new SessionAttributeNamesKeyFormat()).test(key);
+        new FormatterTester<>(new InfinispanBeanGroupKeyFormatter()).test(key);
     }
 }

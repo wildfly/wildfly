@@ -20,25 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session.coarse;
+package org.wildfly.clustering.server.group;
 
 import java.io.IOException;
 
 import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
+import org.wildfly.clustering.marshalling.ExternalizerTester;
+import org.wildfly.clustering.marshalling.Tester;
+import org.wildfly.clustering.marshalling.jboss.JBossMarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
-import org.wildfly.clustering.web.infinispan.session.coarse.SessionAttributesKeyResolver.SessionAttributesKeyFormat;
+import org.wildfly.clustering.marshalling.spi.FormatterTester;
+import org.wildfly.clustering.server.group.LocalNodeFormatter.LocalNodeExternalizer;
 
 /**
- * Unit test for {@link SessionAttributesKeyResolver}.
+ * Unit test for {@link LocalNodeFormatter}.
  * @author Paul Ferraro
  */
-public class SessionAttributesKeyResolverTestCase {
+public class LocalNodeFormatterTestCase {
+    private final LocalNode localNode = new LocalNode("name");
 
     @Test
     public void test() throws IOException {
-        SessionAttributesKey key = new SessionAttributesKey("ABC123");
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
-        new KeyFormatTester<>(new SessionAttributesKeyFormat()).test(key);
+        this.test(new ExternalizerTester<>(new LocalNodeExternalizer()));
+        this.test(new FormatterTester<>(new LocalNodeFormatter()));
+        this.test(JBossMarshallingTesterFactory.INSTANCE.createTester());
+        this.test(ProtoStreamTesterFactory.INSTANCE.createTester());
+    }
+
+    private void test(Tester<LocalNode> tester) throws IOException {
+        tester.test(this.localNode);
     }
 }

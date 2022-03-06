@@ -20,18 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.spi.persistence;
+package org.wildfly.clustering.web.infinispan.session.fine;
 
-import java.util.function.Function;
-import java.util.regex.Pattern;
+import java.io.IOException;
+import java.util.UUID;
+
+import org.junit.Test;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.spi.FormatterTester;
 
 /**
- * {@link KeyFormat} for keys with multiple string fields.
+ * Unit test for {@link SessionAttributeKey}.
  * @author Paul Ferraro
  */
-public class DelimitedKeyFormat<K> extends SimpleKeyFormat<K> {
+public class SessionAttributeKeyTestCase {
 
-    public DelimitedKeyFormat(Class<K> targetClass, String delimiter, Function<String[], K> parser, Function<K, String[]> formatter) {
-        super(targetClass, value -> parser.apply(value.split(Pattern.quote(delimiter))), key -> String.join(delimiter, formatter.apply(key)));
+    @Test
+    public void test() throws IOException {
+        SessionAttributeKey key = new SessionAttributeKey("ABC123", UUID.randomUUID());
+        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
+        new FormatterTester<>(new SessionAttributeKeyFormatter()).test(key);
     }
 }

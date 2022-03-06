@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.spi.persistence;
+package org.wildfly.clustering.marshalling.spi;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,18 +29,16 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 
-import org.wildfly.clustering.marshalling.spi.Serializer;
-
 /**
- * {@link KeyFormat} implementation for binary keys.
+ * {@link Formatter} implementation for binary keys.
  * @author Paul Ferraro
  */
-public class BinaryKeyFormat<K> implements KeyFormat<K> {
+public class BinaryFormatter<K> implements Formatter<K> {
 
     private final Class<K> targetClass;
     private final Serializer<K> serializer;
 
-    public BinaryKeyFormat(Class<K> targetClass, Serializer<K> serializer) {
+    public BinaryFormatter(Class<K> targetClass, Serializer<K> serializer) {
         this.targetClass = targetClass;
         this.serializer = serializer;
     }

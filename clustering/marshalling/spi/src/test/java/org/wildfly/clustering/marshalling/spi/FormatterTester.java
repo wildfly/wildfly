@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan;
+package org.wildfly.clustering.marshalling.spi;
 
-import java.util.function.Function;
+import static org.junit.Assert.assertTrue;
 
-import org.wildfly.clustering.ee.infinispan.GroupedKey;
-import org.wildfly.clustering.infinispan.spi.persistence.SimpleKeyFormat;
+import java.util.function.BiConsumer;
+
+import org.junit.Assert;
+import org.wildfly.clustering.marshalling.Tester;
 
 /**
- * Base {@link org.wildfly.clustering.infinispan.spi.persistence.KeyFormat} for cache keys containing session identifiers.
+ * Tester for a {@link Formatter}.
  * @author Paul Ferraro
  */
-public class SessionKeyFormat<K extends GroupedKey<String>> extends SimpleKeyFormat<K> {
+public class FormatterTester<K> implements Tester<K> {
 
-    protected SessionKeyFormat(Class<K> targetClass, Function<String, K> resolver) {
-        super(targetClass, resolver, GroupedKey::getId);
+    private final Formatter<K> format;
+
+    public FormatterTester(Formatter<K> format) {
+        this.format = format;
+    }
+
+    @Override
+    public void test(K key) {
+        this.test(key, Assert::assertEquals);
+    }
+
+    @Override
+    public void test(K subject, BiConsumer<K, K> assertion) {
+        assertTrue(this.format.getTargetClass().isInstance(subject));
+
+        String formatted = this.format.format(subject);
+
+        K result = this.format.parse(formatted);
+
+        assertion.accept(subject, result);
     }
 }

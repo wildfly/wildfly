@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,31 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.clustering.server.singleton;
 
-package org.wildfly.clustering.infinispan.spi.persistence;
+import org.jboss.msc.service.ServiceName;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.spi.Formatter;
+import org.wildfly.clustering.marshalling.spi.SimpleFormatter;
+import org.wildfly.clustering.marshalling.spi.StringExternalizer;
 
 /**
- * Formats a cache key to a string representation and back again.
+ * {@link Externalizer} for a {@link ServiceName}.
  * @author Paul Ferraro
  */
-public interface KeyFormat<K> {
-    /**
-     * The implementation class of the target key of this format.
-     * @return an implementation class
-     */
-    Class<K> getTargetClass();
+@MetaInfServices(Formatter.class)
+public class ServiceNameFormatter extends SimpleFormatter<ServiceName> {
 
-    /**
-     * Parses the key from the specified string.
-     * @param value a string representation of the key
-     * @return the parsed key
-     */
-    K parse(String value);
+    public ServiceNameFormatter() {
+        super(ServiceName.class, ServiceName::parse, ServiceName::getCanonicalName);
+    }
 
-    /**
-     * Formats the specified key to a string representation.
-     * @param key a key to format
-     * @return a string representation of the specified key.
-     */
-    String format(K key);
+    @MetaInfServices(Externalizer.class)
+    public static class ServiceNameExternalizer extends StringExternalizer<ServiceName> {
+        public ServiceNameExternalizer() {
+            super(new ServiceNameFormatter());
+        }
+    }
 }

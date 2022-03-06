@@ -20,40 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.infinispan.spi.persistence;
+package org.wildfly.clustering.web.infinispan.sso.coarse;
 
-import static org.junit.Assert.assertTrue;
+import java.io.IOException;
 
-import java.util.function.BiConsumer;
-
-import org.junit.Assert;
-import org.wildfly.clustering.marshalling.Tester;
+import org.junit.Test;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.spi.FormatterTester;
 
 /**
- * Tester for a {@link KeyFormat}.
+ * Unit test for {@link CoarseSessionsKey}.
  * @author Paul Ferraro
  */
-public class KeyFormatTester<K> implements Tester<K> {
+public class CoarseSessionsKeyTestCase {
 
-    private final KeyFormat<K> format;
-
-    public KeyFormatTester(KeyFormat<K> format) {
-        this.format = format;
-    }
-
-    @Override
-    public void test(K key) {
-        this.test(key, Assert::assertEquals);
-    }
-
-    @Override
-    public void test(K subject, BiConsumer<K, K> assertion) {
-        assertTrue(this.format.getTargetClass().isInstance(subject));
-
-        String formatted = this.format.format(subject);
-
-        K result = this.format.parse(formatted);
-
-        assertion.accept(subject, result);
+    @Test
+    public void test() throws IOException {
+        CoarseSessionsKey key = new CoarseSessionsKey("ABC123");
+        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
+        new FormatterTester<>(new CoarseSessionsKeyFormatter()).test(key);
     }
 }

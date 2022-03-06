@@ -29,9 +29,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
+import org.wildfly.clustering.marshalling.spi.Formatter;
 
 /**
- * {@link TwoWayKey2StringMapper} implementation that maps multiple {@link KeyFormat} instances.
+ * {@link TwoWayKey2StringMapper} implementation that maps multiple {@link Formatter} instances.
  * Key is mapped to an padded hexadecimal index + the formatted key.
  * @author Paul Ferraro
  */
@@ -39,12 +40,12 @@ public class IndexedKeyFormatMapper implements TwoWayKey2StringMapper {
     private static final int HEX_RADIX = 16;
 
     private final Map<Class<?>, Integer> indexes = new IdentityHashMap<>();
-    private final List<KeyFormat<Object>> keyFormats;
+    private final List<Formatter<Object>> keyFormats;
     private final int padding;
 
     @SuppressWarnings("unchecked")
-    public IndexedKeyFormatMapper(List<? extends KeyFormat<?>> keyFormats) {
-        this.keyFormats = (List<KeyFormat<Object>>) (List<?>) keyFormats;
+    public IndexedKeyFormatMapper(List<? extends Formatter<?>> keyFormats) {
+        this.keyFormats = (List<Formatter<Object>>) (List<?>) keyFormats;
         for (int i = 0; i < this.keyFormats.size(); ++i) {
             this.indexes.put(this.keyFormats.get(i).getTargetClass(), i);
         }
@@ -64,14 +65,14 @@ public class IndexedKeyFormatMapper implements TwoWayKey2StringMapper {
         if (index == null) {
             throw new IllegalArgumentException(key.getClass().getName());
         }
-        KeyFormat<Object> keyFormat = this.keyFormats.get(index);
+        Formatter<Object> keyFormat = this.keyFormats.get(index);
         return String.format("%0" + this.padding + "X%s", index, keyFormat.format(key));
     }
 
     @Override
     public Object getKeyMapping(String value) {
         int index = Integer.parseUnsignedInt(value.substring(0, this.padding), HEX_RADIX);
-        KeyFormat<Object> keyFormat = this.keyFormats.get(index);
+        Formatter<Object> keyFormat = this.keyFormats.get(index);
         return keyFormat.parse(value.substring(this.padding));
     }
 }

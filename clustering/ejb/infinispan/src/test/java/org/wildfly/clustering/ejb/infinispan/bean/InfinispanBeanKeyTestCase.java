@@ -20,25 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan.session.fine;
+package org.wildfly.clustering.ejb.infinispan.bean;
 
 import java.io.IOException;
 import java.util.UUID;
 
+import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.UUIDSessionID;
 import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyFormatTester;
+import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKeySerializer.InfinispanBeanKeyFormatter;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.spi.FormatterTester;
 
 /**
- * Unit test for {@link SessionAttributeKeyResolver}.
+ * Unit test for {@link InfinispanBeanKeySerializer}.
  * @author Paul Ferraro
  */
-public class SessionAttributeKeyResolverTestCase {
+public class InfinispanBeanKeyTestCase {
 
     @Test
     public void test() throws IOException {
-        SessionAttributeKey key = new SessionAttributeKey("ABC123", UUID.randomUUID());
+        InfinispanBeanKey<SessionID> key = new InfinispanBeanKey<>(new UUIDSessionID(UUID.randomUUID()));
+
         ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
-        new KeyFormatTester<>(new SessionAttributeKeyFormat()).test(key);
+        new FormatterTester<>(new InfinispanBeanKeyFormatter()).test(key);
     }
 }

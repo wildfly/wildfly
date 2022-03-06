@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.server;
 
+import java.util.Formatter;
 import java.util.ServiceLoader;
 
 import org.infinispan.protostream.SerializationContextInitializer;
@@ -45,6 +46,7 @@ public class ServiceLoaderTestCase {
 
     @Test
     public void load() {
+        load(Formatter.class);
         load(Externalizer.class);
         load(ClassTableContributor.class);
         load(IdentityGroupServiceConfiguratorProvider.class);
