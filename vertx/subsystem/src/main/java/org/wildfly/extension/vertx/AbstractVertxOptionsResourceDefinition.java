@@ -16,12 +16,11 @@
  */
 package org.wildfly.extension.vertx;
 
+import static org.wildfly.extension.vertx.VertxResourceDefinition.VERTX_CAPABILITY_NAME;
+
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
-
-import static org.wildfly.extension.vertx.VertxResourceDefinition.*;
 
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
@@ -30,7 +29,6 @@ abstract class AbstractVertxOptionsResourceDefinition extends PersistentResource
 
   static final RuntimeCapability<Void> VERTX_OPTIONS_CAPABILITY =
     RuntimeCapability.Builder.of(VERTX_CAPABILITY_NAME + ".options", true, NamedVertxOptions.class)
-      .setDynamicNameMapper(DynamicNameMappers.PARENT)
       .build();
 
   protected AbstractVertxOptionsResourceDefinition(SimpleResourceDefinition.Parameters parameters) {

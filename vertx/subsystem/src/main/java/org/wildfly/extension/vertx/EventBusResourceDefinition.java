@@ -19,16 +19,9 @@ package org.wildfly.extension.vertx;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.dns.AddressResolverOptions;
-import io.vertx.core.http.ClientAuth;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.OpenSSLEngineOptions;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
@@ -42,19 +35,22 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
-import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import io.vertx.core.eventbus.EventBusOptions;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.EventBusOptions;
+import io.vertx.core.http.ClientAuth;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.OpenSSLEngineOptions;
 
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
@@ -63,7 +59,6 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
 
   static final RuntimeCapability<Void> VERTX_EVENT_BUS_OPTIONS_CAPABILITY =
     RuntimeCapability.Builder.of(VertxResourceDefinition.VERTX_CAPABILITY_NAME + ".options.eventbus", true, EventBusOptions.class)
-      .setDynamicNameMapper(DynamicNameMappers.PARENT)
       .build();
 
   // EventBusOptions
@@ -326,6 +321,7 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_CLUSTER_NODE_METADATA = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_CLUSTER_NODE_METADATA, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
+    .setCapabilityReference(ClusterNodeMetadataResourceDefinition.VERTX_CLUSTER_NODE_METADATA_CAPABILITY.getName())
     .setRestartAllServices()
     .build();
 

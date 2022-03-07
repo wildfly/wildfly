@@ -15,6 +15,11 @@
  */
 package org.wildfly.extension.vertx;
 
+import static org.wildfly.extension.vertx.AbstractVertxOptionsResourceDefinition.VERTX_OPTIONS_CAPABILITY;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
@@ -27,9 +32,6 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public abstract class VertxAttributes {
 
     public static final SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_JNDI_NAME, ModelType.STRING)
@@ -41,6 +43,7 @@ public abstract class VertxAttributes {
     public static final SimpleAttributeDefinition OPTION_NAME = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_OPTION_NAME, ModelType.STRING)
         .setRequired(false)
         .setAllowExpression(true)
+        .setCapabilityReference(VERTX_OPTIONS_CAPABILITY.getName())
         .setRestartAllServices()
         .build();
 

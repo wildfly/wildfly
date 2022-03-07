@@ -34,19 +34,18 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
-import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.dns.AddressResolverOptions;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.dns.AddressResolverOptions;
 
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
@@ -55,7 +54,6 @@ class AddressResolverResourceDefinition extends PersistentResourceDefinition imp
 
   static final RuntimeCapability<Void> VERTX_OPTIONS_ADDRESS_RESOLVER_CAPABILITY =
     RuntimeCapability.Builder.of(VertxResourceDefinition.VERTX_CAPABILITY_NAME + ".options.address.resolver", true, AddressResolverOptions.class)
-      .setDynamicNameMapper(DynamicNameMappers.PARENT)
       .build();
 
   // AddressResolverOptions

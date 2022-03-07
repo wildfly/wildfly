@@ -16,8 +16,10 @@
  */
 package org.wildfly.extension.vertx;
 
-import io.vertx.core.eventbus.EventBusOptions;
-import io.vertx.core.json.JsonObject;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeParser;
@@ -27,15 +29,9 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -43,9 +39,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import io.vertx.core.json.JsonObject;
 
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
@@ -54,7 +48,6 @@ class ClusterNodeMetadataResourceDefinition extends PersistentResourceDefinition
 
   static final RuntimeCapability<Void> VERTX_CLUSTER_NODE_METADATA_CAPABILITY =
     RuntimeCapability.Builder.of(VertxResourceDefinition.VERTX_CAPABILITY_NAME + ".options.cluster-node-meta", true, JsonObject.class)
-      .setDynamicNameMapper(DynamicNameMappers.PARENT)
       .build();
 
   // AddressResolverOptions

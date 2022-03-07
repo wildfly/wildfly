@@ -16,6 +16,8 @@
  */
 package org.wildfly.extension.vertx;
 
+import static org.wildfly.extension.vertx.AddressResolverResourceDefinition.VERTX_OPTIONS_ADDRESS_RESOLVER_CAPABILITY;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -173,6 +175,7 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
   public static final SimpleAttributeDefinition ATTR_VERTX_OPTION_ADDRESS_RESOLVER = new SimpleAttributeDefinitionBuilder(VertxConstants.ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
+    .setCapabilityReference(VERTX_OPTIONS_ADDRESS_RESOLVER_CAPABILITY.getName())
     .setRestartAllServices()
     .build();
 
@@ -180,6 +183,7 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_OPTION = new SimpleAttributeDefinitionBuilder(VertxConstants.ELEMENT_VERTX_EVENTBUS, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
+    .setCapabilityReference(EventBusResourceDefinition.VERTX_EVENT_BUS_OPTIONS_CAPABILITY.getName())
     .setRestartAllServices()
     .build();
 
