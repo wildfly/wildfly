@@ -69,6 +69,16 @@
         <cve>CVE-2017-15089</cve>
         <cve>CVE-2019-10174</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: picketbox-infinispan-5.0.3.Final-redhat-00006.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.picketbox/picketbox\-infinispan@.*$</packageUrl>
+        <cve>CVE-2019-10158</cve>
+        <cve>CVE-2016-0750</cve>
+        <cve>CVE-2017-15089</cve>
+        <cve>CVE-2019-10174</cve>
+    </suppress>
 
     <!-- [wildfly] Apache ActiveMQ is not shipped with wildfly ('ActiveMQ Artemis' is not 'ActiveMQ') -->
     <suppress>
