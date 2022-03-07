@@ -16,10 +16,9 @@
  */
 package org.wildfly.extension.vertx;
 
-import io.vertx.core.dns.AddressResolverOptions;
-import io.vertx.core.eventbus.EventBusOptions;
-import io.vertx.core.metrics.MetricsOptions;
-import io.vertx.core.tracing.TracingOptions;
+import java.io.File;
+import java.util.function.Supplier;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
@@ -31,8 +30,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
-import java.io.File;
-import java.util.function.Supplier;
+import io.vertx.core.dns.AddressResolverOptions;
+import io.vertx.core.eventbus.EventBusOptions;
+import io.vertx.core.metrics.MetricsOptions;
+import io.vertx.core.tracing.TracingOptions;
 
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>

@@ -16,12 +16,14 @@
 
 package org.wildfly.extension.vertx;
 
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.decorator;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTXES;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTIONS;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
-
-import static org.jboss.as.controller.PersistentResourceXMLDescription.*;
-import static org.wildfly.extension.vertx.VertxConstants.*;
 
 /**
  * Parser used to parse the Vertx Subsystem.

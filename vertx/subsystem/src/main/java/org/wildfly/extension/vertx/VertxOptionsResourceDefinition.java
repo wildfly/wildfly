@@ -16,8 +16,29 @@
  */
 package org.wildfly.extension.vertx;
 
-import static org.wildfly.extension.vertx.VertxConstants.*;
-import static org.wildfly.extension.vertx.logging.VertxLogger.*;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_BLOCKED_THREAD_CHECK_INTERVAL;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_DISABLE_TCCL;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_EVENTLOOP_POOL_SIZE;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_FS_CLASS_PATH_RESOLVING_ENABLED;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_FS_FILE_CACHE_ENABLED;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_HA_ENABLED;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_HA_GROUP;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_INTERNAL_BLOCKING_POOL_SIZE;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_EVENTLOOP_EXECUTE_TIME;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_WORKER_EXECUTE_TIME;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_WORKER_EXECUTE_TIME_UNIT;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_PREFER_NATIVE_TRANSPORT;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_QUORUM_SIZE;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_WARNING_EXECUTION_TIME;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_WARNING_EXECUTION_TIME_UNIT;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_WORKER_POOL_SIZE;
+import static org.wildfly.extension.vertx.VertxConstants.DEFAULT_VERTX_OPTION_NAME;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_EVENTBUS;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER;
+import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
 
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;

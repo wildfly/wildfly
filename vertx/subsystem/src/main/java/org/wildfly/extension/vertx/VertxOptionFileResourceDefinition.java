@@ -16,8 +16,10 @@
  */
 package org.wildfly.extension.vertx;
 
-import static org.wildfly.extension.vertx.VertxConstants.*;
-import static org.wildfly.extension.vertx.logging.VertxLogger.*;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_PATH;
+import static org.wildfly.extension.vertx.VertxConstants.DEFAULT_VERTX_OPTION_NAME;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTIONS_FILE;
+import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -29,8 +31,6 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import io.vertx.core.VertxOptions;
-import io.vertx.core.json.JsonObject;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -46,6 +46,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+
+import io.vertx.core.VertxOptions;
+import io.vertx.core.json.JsonObject;
 
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
