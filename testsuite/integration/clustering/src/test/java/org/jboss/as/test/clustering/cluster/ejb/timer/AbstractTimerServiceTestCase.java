@@ -43,9 +43,7 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.DateUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -67,42 +65,35 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-public class DistributedTimerServiceTestCase extends AbstractClusteringTestCase {
-    private static final String MODULE_NAME = DistributedTimerServiceTestCase.class.getSimpleName();
+public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTestCase {
 
-    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(NODE_1)
-    public static Archive<?> deployment0() {
-        return createArchive();
-    }
-
-    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(NODE_2)
-    public static Archive<?> deployment1() {
-        return createArchive();
-    }
-
-    private static Archive<?> createArchive() {
-        return ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war")
+    protected static Archive<?> createArchive(Class<? extends AbstractTimerServiceTestCase> testClass) {
+        return ShrinkWrap.create(WebArchive.class, testClass.getSimpleName() + ".war")
                 .addPackage(TimerServlet.class.getPackage())
                 .addPackage(EJBDirectory.class.getPackage())
                 .addPackage(TimerBean.class.getPackage())
-                .addAsWebInfResource(DistributedTimerServiceTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
+                .addAsWebInfResource(testClass.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 ;
+    }
+
+    private final String moduleName;
+
+    protected AbstractTimerServiceTestCase() {
+        this.moduleName = this.getClass().getSimpleName();
     }
 
     @Test
     public void test(@ArquillianResource(TimerServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1, @ArquillianResource(TimerServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws IOException, URISyntaxException {
 
         Map<String, URI> uris = new TreeMap<>();
-        uris.put(NODE_1, TimerServlet.createURI(baseURL1, MODULE_NAME));
-        uris.put(NODE_2, TimerServlet.createURI(baseURL2, MODULE_NAME));
+        uris.put(NODE_1, TimerServlet.createURI(baseURL1, this.moduleName));
+        uris.put(NODE_2, TimerServlet.createURI(baseURL2, this.moduleName));
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
 
             TimeUnit.SECONDS.sleep(2);
 
-            // Create manual timers
+            // Create manual timers on node 1 only
             try (CloseableHttpResponse response = client.execute(new HttpPut(uris.get(NODE_1)))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             }
@@ -289,10 +280,8 @@ public class DistributedTimerServiceTestCase extends AbstractClusteringTestCase 
 
             TimeUnit.SECONDS.sleep(2);
 
-            for (Map.Entry<String, URI> entry : uris.entrySet()) {
-                try (CloseableHttpResponse response = client.execute(new HttpDelete(entry.getValue()))) {
-                    Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                }
+            try (CloseableHttpResponse response = client.execute(new HttpDelete(uris.get(NODE_1)))) {
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             }
 
             Instant cancellation = Instant.now();
