@@ -35,16 +35,15 @@ import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.runtimeOnlyOperation;
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.runtimeReadOnlyOperation;
 import static org.wildfly.extension.messaging.activemq.jms.JMSTopicService.JMS_TOPIC_PREFIX;
+import static org.wildfly.extension.messaging.activemq.jms.JsonUtil.toJSON;
 
 import java.util.List;
 import java.util.Map;
+import javax.json.Json;
 
-import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import javax.json.spi.JsonProvider;
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;
-import org.apache.activemq.artemis.api.core.JsonUtil;
 import org.apache.activemq.artemis.api.core.Pair;
 import org.apache.activemq.artemis.api.core.RoutingType;
 import org.apache.activemq.artemis.api.core.SimpleString;
@@ -359,7 +358,7 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
     }
 
     private String listSubscribersInfosAsJSON(final DurabilityType durability, AddressControl addressControl, ManagementService managementService) {
-        javax.json.JsonArrayBuilder array = JsonProvider.provider().createArrayBuilder();
+        javax.json.JsonArrayBuilder array = Json.createArrayBuilder();
         try {
             List<QueueControl> queues = JMSTopicReadAttributeHandler.getQueues(durability, addressControl, managementService);
             for (QueueControl queue : queues) {
@@ -380,7 +379,7 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
 
                 String filter = queue.getFilter() != null ? queue.getFilter() : null;
 
-                JsonObjectBuilder info = JsonProvider.provider().createObjectBuilder()
+                JsonObjectBuilder info = Json.createObjectBuilder()
                         .add("queueName", queue.getName())
                         .add("durable", queue.isDurable())
                         .add("messageCount", queue.getMessageCount())
@@ -423,14 +422,6 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         } catch (Exception e) {
             rethrow(e);
         }
-    }
-
-    static String toJSON(final Map<String, Object>[] messages) {
-        JsonArrayBuilder array = JsonProvider.provider().createArrayBuilder();
-        for (Map<String, Object> message : messages) {
-            array.add(JsonUtil.toJsonObject(message).toString());
-        }
-        return array.build().toString();
     }
 
     private static String createFilterFromJMSSelector(final String selectorStr) throws ActiveMQException {

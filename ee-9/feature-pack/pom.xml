@@ -554,6 +554,13 @@
                                 <exclude>org.apache.activemq:artemis-stomp-protocol\z</exclude>
                                 <exclude>org.apache.activemq:artemis-hqclient-protocol\z</exclude>
                                 <exclude>org.apache.activemq:artemis-selector\z</exclude>
+                                <exclude>org.apache.activemq:artemis-cli\z</exclude>
+                                <exclude>org.apache.activemq:artemis-commons\z</exclude>
+                                <exclude>org.apache.activemq:artemis-core-client\z</exclude>
+                                <exclude>org.apache.activemq:artemis-dto\z</exclude>
+                                <exclude>org.apache.activemq:artemis-server\z</exclude>
+                                <exclude>org.apache.geronimo.specs:geronimo-json_1.1_spec\z</exclude>
+                                <exclude>org.apache.johnzon:johnzon-core\z</exclude>
                                 <exclude>activemq-artemis-native\z</exclude>
                                 <exclude>org.jboss.activemq.artemis.integration:artemis-wildfly-jakarta-integration\z</exclude>
                             </jakarta-transform-excluded-artifacts>
