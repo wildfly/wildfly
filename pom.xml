@@ -417,7 +417,7 @@
         <version.org.hibernate>5.3.24.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.5.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>5.10.11.Final</version.org.hibernate.search>
-        <version.org.hibernate.validator>6.0.22.Final</version.org.hibernate.validator>
+        <version.org.hibernate.validator>6.0.23.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.8.Final</version.org.hornetq>
         <version.org.infinispan>13.0.6.Final</version.org.infinispan>
         <version.org.infinispan.protostream>4.4.1.Final</version.org.infinispan.protostream>
