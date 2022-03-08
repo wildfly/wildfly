@@ -21,7 +21,6 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
-import static org.wildfly.extension.messaging.activemq.MessagingServices.JBOSS_MESSAGING_ACTIVEMQ;
 
 import java.security.AccessController;
 import javax.resource.spi.work.ExecutionContext;
@@ -76,7 +75,7 @@ public class ActiveMQResourceAdapter extends org.apache.activemq.artemis.ra.Acti
                 return new CommandDispatcherBroadcastEndpointFactory(service.getCommandDispatcherFactory(key), clusterName);
             }
             assert pcf != null;
-            ExternalPooledConnectionFactoryService service = (ExternalPooledConnectionFactoryService) currentServiceContainer().getService(JMSServices.getPooledConnectionFactoryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(pcf)).getService();
+            ExternalPooledConnectionFactoryService service = (ExternalPooledConnectionFactoryService) currentServiceContainer().getService(JMSServices.getPooledConnectionFactoryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(pcf)).getService();
             return new CommandDispatcherBroadcastEndpointFactory(service.getCommandDispatcherFactory(key), clusterName);
         }
         return super.createBroadcastEndpointFactory(overrideProperties);
