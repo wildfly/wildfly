@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.batch.jberet;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -34,11 +36,16 @@ public enum Attribute {
     VALUE("value"),
     EXECUTION_RECORDS_LIMIT("execution-records-limit");
 
-    private static final Map<String, Attribute> MAP = Map.of(
-            DATA_SOURCE.name, DATA_SOURCE,
-            NAME.name, NAME,
-            VALUE.name, VALUE,
-            EXECUTION_RECORDS_LIMIT.name, EXECUTION_RECORDS_LIMIT);
+    private static final Map<String, Attribute> MAP;
+
+    static {
+        Map<String, Attribute> map = new HashMap<>();
+        map.put(DATA_SOURCE.name,DATA_SOURCE);
+        map.put(NAME.name,NAME);
+        map.put(VALUE.name,VALUE);
+        map.put(EXECUTION_RECORDS_LIMIT.name,EXECUTION_RECORDS_LIMIT);
+        MAP = Collections.unmodifiableMap(map);
+    }
 
     private final String name;
 
