@@ -48,6 +48,9 @@ import org.jboss.msc.service.StopContext;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.PemKeyCertOptions;
 
+import static org.wildfly.extension.vertx.PemTrustOptionsResourceDefinition.PEM_VALUE_MARSHALLER;
+import static org.wildfly.extension.vertx.PemTrustOptionsResourceDefinition.PEM_VALUE_PARSER;
+
 /**
  * This represents a resource at '/subsystem=vertx/pem-key-cert-option=xx' for a KeyCertOptions.
  *
@@ -68,6 +71,8 @@ class PemKeyCertOptionsResourceDefinition extends PersistentResourceDefinition i
   public static final ObjectListAttributeDefinition ATTR_PEM_KEY_CERT_KEY_VALUE = new ObjectListAttributeDefinition.Builder(VertxConstants.ATTR_PEM_KEY_CERT_KEY_VALUE, PemTrustOptionsResourceDefinition.ATTR_PEM_VALUE_OBJECT)
     .setRequired(false)
     .setRestartAllServices()
+    .setAttributeParser(PEM_VALUE_PARSER)
+    .setAttributeMarshaller(PEM_VALUE_MARSHALLER)
     .setAllowExpression(true)
     .build();
 
@@ -83,6 +88,8 @@ class PemKeyCertOptionsResourceDefinition extends PersistentResourceDefinition i
   public static final ObjectListAttributeDefinition ATTR_PEM_KEY_CERT_CERT_VALUE = new ObjectListAttributeDefinition.Builder(VertxConstants.ATTR_PEM_KEY_CERT_CERT_VALUE, PemTrustOptionsResourceDefinition.ATTR_PEM_VALUE_OBJECT)
     .setRequired(false)
     .setRestartAllServices()
+    .setAttributeParser(PEM_VALUE_PARSER)
+    .setAttributeMarshaller(PEM_VALUE_MARSHALLER)
     .setAllowExpression(true)
     .build();
 

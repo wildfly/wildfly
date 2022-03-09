@@ -16,21 +16,25 @@
  */
 package org.wildfly.extension.vertx;
 
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.AttributeMarshallers.SIMPLE_ELEMENT;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.AttributeParsers;
-import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -39,9 +43,11 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.dmr.ModelNode;
@@ -51,6 +57,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.PemTrustOptions;
@@ -86,10 +93,63 @@ class PemTrustOptionsResourceDefinition extends PersistentResourceDefinition imp
     .setRestartAllServices()
     .build();
 
-  public static final ObjectListAttributeDefinition ATTR_PEM_KEY_CERT_CERT_VALUE = new ObjectListAttributeDefinition.Builder(VertxConstants.ATTR_PEM_KEY_CERT_CERT_VALUE, ATTR_PEM_VALUE_OBJECT)
+  static final AttributeParser PEM_VALUE_PARSER = new AttributeParser() {
+
+    @Override
+    public boolean isParseAsElement() {
+      return true;
+    }
+
+    @Override
+    public void parseElement(AttributeDefinition attribute, XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {
+      SimpleListAttributeDefinition attr = (SimpleListAttributeDefinition) attribute;
+      AttributeDefinition valueType = attr.getValueType();
+      ModelNode listValue = new ModelNode();
+      listValue.setEmptyList();
+      while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+        if (valueType.getXmlName().equals(reader.getLocalName())) {
+          ModelNode op = listValue.add();
+          valueType.getParser().parseElement(valueType, reader, op);
+        } else {
+          throw ParseUtils.unexpectedElement(reader, Collections.singleton(valueType.getXmlName()));
+        }
+        if (!reader.isEndElement()) {
+          ParseUtils.requireNoContent(reader);
+        }
+      }
+      operation.get(attribute.getName()).set(listValue.asList().stream().map(m -> m.get(valueType.getXmlName())).collect(Collectors.toList()));
+    }
+  };
+
+  static final AttributeMarshaller PEM_VALUE_MARSHALLER = new AttributeMarshaller() {
+    @Override
+    public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+      SimpleListAttributeDefinition attr = (SimpleListAttributeDefinition) attribute;
+      AttributeDefinition valueType = attr.getValueType();
+      if (resourceModel.hasDefined(attribute.getName())) {
+        writer.writeStartElement(attribute.getXmlName());
+        for (ModelNode res : resourceModel.get(attribute.getName()).asList()) {
+          ModelNode subResource = new ModelNode();
+          subResource.setEmptyObject();
+          subResource.get(valueType.getName()).set(res);
+          valueType.getMarshaller().marshallAsElement(valueType, subResource, true, writer);
+        }
+        writer.writeEndElement();
+      }
+    }
+
+    @Override
+    public boolean isMarshallableAsElement() {
+      return true;
+    }
+  };
+
+  public static final SimpleListAttributeDefinition ATTR_PEM_KEY_CERT_CERT_VALUE = new SimpleListAttributeDefinition.Builder(VertxConstants.ATTR_PEM_KEY_CERT_CERT_VALUE, ATTR_PEM_VALUE)
     .setRequired(false)
     .setRestartAllServices()
     .setAllowExpression(true)
+    .setAttributeParser(PEM_VALUE_PARSER)
+    .setAttributeMarshaller(PEM_VALUE_MARSHALLER)
     .build();
 
   private static final List<AttributeDefinition> PEM_TRUST_OPTIONS_ATTRS = new ArrayList<>();
