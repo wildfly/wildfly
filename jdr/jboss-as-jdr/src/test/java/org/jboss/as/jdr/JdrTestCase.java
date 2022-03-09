@@ -116,8 +116,8 @@ public class JdrTestCase {
 
 
     @Test
-    public void testBlackListFilter() {
-        VirtualFileFilter blf = Filters.regexBlackList();
+    public void testBlockListFilter() {
+        VirtualFileFilter blf = Filters.regexBlockList();
         assertFalse(blf.accepts(VFS.getChild("/foo/bar/baz/mgmt-users.properties")));
         assertFalse(blf.accepts(VFS.getChild("/foo/bar/baz/application-users.properties")));
     }
