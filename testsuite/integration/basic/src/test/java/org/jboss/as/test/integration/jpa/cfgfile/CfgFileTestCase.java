@@ -98,9 +98,7 @@ public class CfgFileTestCase {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         Map<String, Object> props = sfsb1.getEMFProperties();
 
-        assertEquals("Value for show_sql", "true", props.get("hibernate.show_sql").toString());
-        assertEquals("Value for hibernate.default_batch_fetch_size", "5", props.get("hibernate.default_batch_fetch_size").toString());
-        assertEquals("Value for dialect", "org.hibernate.dialect.HSQLDialect", props.get("hibernate.dialect").toString());
+        assertEquals("Value for hibernate.jpa.compliance", "true", props.get("hibernate.jpa.compliance").toString());
     }
 
 }
