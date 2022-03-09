@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.domain.mixed.eap740;
 
-import org.jboss.as.test.integration.domain.mixed.ElytronOnlyMasterSmokeTestCase;
+import org.jboss.as.test.integration.domain.mixed.ElytronOnlyPrimarySmokeTestCase;
 import org.jboss.as.test.integration.domain.mixed.Version;
 import org.junit.BeforeClass;
 
@@ -30,10 +30,10 @@ import org.junit.BeforeClass;
  * @author Martin Simka
  */
 @Version(Version.AsVersion.EAP_7_4_0)
-public class ElytronOnlyMasterSmoke740TestCase extends ElytronOnlyMasterSmokeTestCase {
+public class ElytronOnlyPrimarySmoke740TestCase extends ElytronOnlyPrimarySmokeTestCase {
 
     @BeforeClass
     public static void beforeClass() {
-        ElytronOnlyMaster740TestSuite.initializeDomain();
+        ElytronOnlyPrimary740TestSuite.initializeDomain();
     }
 }

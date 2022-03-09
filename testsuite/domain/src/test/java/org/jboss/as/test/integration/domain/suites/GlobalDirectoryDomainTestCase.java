@@ -134,10 +134,10 @@ public class GlobalDirectoryDomainTestCase {
         MAIN_RUNNING_SERVER_DEPLOYMENT_ADDRESS.add(SERVER, "main-one");
         MAIN_RUNNING_SERVER_DEPLOYMENT_ADDRESS.add(DEPLOYMENT, TEST);
         MAIN_RUNNING_SERVER_DEPLOYMENT_ADDRESS.protect();
-        OTHER_RUNNING_SERVER_ADDRESS.add(HOST, "slave");
+        OTHER_RUNNING_SERVER_ADDRESS.add(HOST, "secondary");
         OTHER_RUNNING_SERVER_ADDRESS.add(SERVER, "other-two");
         OTHER_RUNNING_SERVER_ADDRESS.protect();
-        OTHER_RUNNING_SERVER_GROUP_ADDRESS.add(HOST, "slave");
+        OTHER_RUNNING_SERVER_GROUP_ADDRESS.add(HOST, "secondary");
         OTHER_RUNNING_SERVER_GROUP_ADDRESS.add(SERVER, "other-two");
         OTHER_RUNNING_SERVER_GROUP_ADDRESS.add(DEPLOYMENT, TEST);
         OTHER_RUNNING_SERVER_GROUP_ADDRESS.protect();
@@ -248,8 +248,8 @@ public class GlobalDirectoryDomainTestCase {
         registerGlobalDirectory(GLOBAL_DIRECTORY_NAME, "default");
         registerGlobalDirectory(GLOBAL_DIRECTORY_NAME, "other");
 
-        reloadServerGroup(testSupport.getDomainMasterLifecycleUtil(), PathAddress.pathAddress(MAIN_SERVER_GROUP_ADDRESS));
-        reloadServerGroup(testSupport.getDomainMasterLifecycleUtil(), PathAddress.pathAddress(OTHER_SERVER_GROUP_ADDRESS));
+        reloadServerGroup(testSupport.getDomainPrimaryLifecycleUtil(), PathAddress.pathAddress(MAIN_SERVER_GROUP_ADDRESS));
+        reloadServerGroup(testSupport.getDomainPrimaryLifecycleUtil(), PathAddress.pathAddress(OTHER_SERVER_GROUP_ADDRESS));
 
         verifyProperlyRegistered(GLOBAL_DIRECTORY_NAME, GLOBAL_DIRECTORY_PATH.toString(), "default");
         verifyProperlyRegistered(GLOBAL_DIRECTORY_NAME, GLOBAL_DIRECTORY_PATH.toString(), "other");
@@ -258,12 +258,12 @@ public class GlobalDirectoryDomainTestCase {
         ModelNode content = new ModelNode();
         content.get("url").set(url);
         ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
-        executeOnMaster(composite);
+        executeOnPrimary(composite);
 
         String response = performHttpCall(DomainTestSupport.masterAddress, 8080, "test/global-directory/library");
         assertEquals("HELLO WORLD", response);
 
-        response = performHttpCall(DomainTestSupport.slaveAddress, 8630, "test/global-directory/library");
+        response = performHttpCall(DomainTestSupport.secondaryAddress, 8630, "test/global-directory/library");
         assertEquals("HELLO WORLD", response);
 
         removeGlobalDirectory(GLOBAL_DIRECTORY_NAME, "default");
@@ -272,7 +272,7 @@ public class GlobalDirectoryDomainTestCase {
         verifyDoesNotExist(GLOBAL_DIRECTORY_NAME, "default");
         verifyDoesNotExist(GLOBAL_DIRECTORY_NAME, "other");
 
-        reloadServerGroup(testSupport.getDomainMasterLifecycleUtil(), PathAddress.pathAddress(MAIN_SERVER_GROUP_ADDRESS));
+        reloadServerGroup(testSupport.getDomainPrimaryLifecycleUtil(), PathAddress.pathAddress(MAIN_SERVER_GROUP_ADDRESS));
         reloadServerGroup(testSupport.getDomainMasterLifecycleUtil(), PathAddress.pathAddress(OTHER_SERVER_GROUP_ADDRESS));
     }
 

@@ -101,7 +101,7 @@ public abstract class DomainHostExcludesTest {
         //Unset the ignore-unused-configuration flag
         ModelNode dc = DomainTestUtils.executeForResult(
                 Util.getReadAttributeOperation(PathAddress.pathAddress(HOST), DOMAIN_CONTROLLER),
-                testSupport.getDomainSlaveLifecycleUtil().getDomainClient());
+                testSupport.getDomainSecondaryLifecycleUtil().getDomainClient());
 
         dc = dc.get("remote");
 
@@ -109,13 +109,13 @@ public abstract class DomainHostExcludesTest {
         dc.get(OP).set("write-remote-domain-controller");
         dc.get(OP_ADDR).set(PathAddress.pathAddress(HOST).toModelNode());
 
-        DomainTestUtils.executeForResult(dc, testSupport.getDomainSlaveLifecycleUtil().getDomainClient());
+        DomainTestUtils.executeForResult(dc, testSupport.getDomainSecondaryLifecycleUtil().getDomainClient());
 
-        stopSlave();
+        stopSecondary();
 
         // restarting the slave will recopy the testing-host.xml file over the top, clobbering the ignore-unused-configuration above,
         // so use setRewriteConfigFiles(false) to prevent this.
-        WildFlyManagedConfiguration slaveCfg = testSupport.getDomainSlaveConfiguration();
+        WildFlyManagedConfiguration slaveCfg = testSupport.getDomainSecondaryConfiguration();
         slaveCfg.setRewriteConfigFiles(false);
 
         // Setup a host exclude for the slave ignoring some extensions
@@ -125,10 +125,10 @@ public abstract class DomainHostExcludesTest {
         // Now, add some ignored extensions to verify they are ignored due to the host-excluded configured before
         addExtensions(true, client);
 
-        startSlave();
+        startSecondary();
     }
 
-    private static void stopSlave() throws IOException, MgmtOperationException, InterruptedException {
+    private static void stopSecondary() throws IOException, MgmtOperationException, InterruptedException {
         ModelControllerClient client = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
         executeForResult(Util.createEmptyOperation(SHUTDOWN, PathAddress.pathAddress(HOST)), client);
         boolean gone = false;
@@ -145,8 +145,8 @@ public abstract class DomainHostExcludesTest {
                 }
             }
         } while (!gone && System.currentTimeMillis() < deadline);
-        Assert.assertTrue("Slave was not removed within " + timeout + " ms", gone);
-        testSupport.getDomainSlaveLifecycleUtil().stop();
+        Assert.assertTrue("Secondary was not removed within " + timeout + " ms", gone);
+        testSupport.getDomainSecondaryLifecycleUtil().stop();
     }
 
     private static void setupExclude(ModelControllerClient client, String hostRelease, ModelVersion hostVersion) throws IOException, MgmtOperationException {
@@ -183,9 +183,9 @@ public abstract class DomainHostExcludesTest {
         }
     }
 
-    private static void startSlave() throws TimeoutException, InterruptedException {
+    private static void startSecondary() throws TimeoutException, InterruptedException {
 
-        DomainLifecycleUtil legacyUtil = testSupport.getDomainSlaveLifecycleUtil();
+        DomainLifecycleUtil legacyUtil = testSupport.getDomainSecondaryLifecycleUtil();
         long start = System.currentTimeMillis();
         legacyUtil.start();
         legacyUtil.awaitServers(start);
@@ -197,15 +197,15 @@ public abstract class DomainHostExcludesTest {
         try {
             executeForResult(createRemoveOperation(HOST_EXCLUDE), testSupport.getDomainMasterLifecycleUtil().getDomainClient());
         } finally {
-            restoreSlave();
+            restoreSecondary();
         }
     }
 
 
     @Test
-    public void test001SlaveBoot() throws Exception {
+    public void test001SecondaryBoot() throws Exception {
 
-        ModelControllerClient slaveClient = testSupport.getDomainSlaveLifecycleUtil().getDomainClient();
+        ModelControllerClient slaveClient = testSupport.getDomainSecondaryLifecycleUtil().getDomainClient();
 
         checkExtensions(slaveClient);
         checkProfiles(slaveClient);
@@ -256,7 +256,7 @@ public abstract class DomainHostExcludesTest {
     public void test003PostBootUpdates() throws IOException, MgmtOperationException {
 
         ModelControllerClient masterClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
-        ModelControllerClient slaveClient = testSupport.getDomainSlaveLifecycleUtil().getDomainClient();
+        ModelControllerClient slaveClient = testSupport.getDomainSecondaryLifecycleUtil().getDomainClient();
 
         // Tweak an ignored profile and socket-binding-group to prove slave doesn't see it
         updateExcludedProfile(masterClient);
@@ -354,10 +354,10 @@ public abstract class DomainHostExcludesTest {
         executeForResult(op, client);
     }
 
-    private static void restoreSlave() throws TimeoutException, InterruptedException {
-        DomainLifecycleUtil slaveUtil = testSupport.getDomainSlaveLifecycleUtil();
+    private static void restoreSecondary() throws TimeoutException, InterruptedException {
+        DomainLifecycleUtil slaveUtil = testSupport.getDomainSecondaryLifecycleUtil();
         if (!slaveUtil.isHostControllerStarted()) {
-            startSlave();
+            startSecondary();
         }
     }
 

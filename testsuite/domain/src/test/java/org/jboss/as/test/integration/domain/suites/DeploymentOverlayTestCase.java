@@ -191,7 +191,7 @@ public class DeploymentOverlayTestCase {
         ModelNode op = new ModelNode();
         op.get(ModelDescriptionConstants.OP_ADDR).set(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_OVERLAY);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
 
         //add an override that will not be linked via a wildcard
@@ -205,7 +205,7 @@ public class DeploymentOverlayTestCase {
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         op.get(ModelDescriptionConstants.CONTENT).get(INPUT_STREAM_INDEX).set(0);
         builder.addInputStream(getClass().getClassLoader().getResourceAsStream("deploymentoverlay/override.xml"));
-        executeOnMaster(builder.build());
+        executeOnPrimary(builder.build());
 
         //add the non-wildcard link to the server group
         op = new ModelNode();
@@ -214,7 +214,7 @@ public class DeploymentOverlayTestCase {
         addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_OVERLAY);
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
         op = new ModelNode();
         addr = new ModelNode();
@@ -223,7 +223,7 @@ public class DeploymentOverlayTestCase {
         addr.add(ModelDescriptionConstants.DEPLOYMENT, "test.war");
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        executeOnMaster(op);
+        executeOnPrimary(op);
 
 
         //add the wildard link
@@ -277,7 +277,7 @@ public class DeploymentOverlayTestCase {
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         steps.add(op);
 
-        executeOnMaster(opBuilder.build());
+        executeOnPrimary(opBuilder.build());
     }
 
 
@@ -295,13 +295,13 @@ public class DeploymentOverlayTestCase {
         ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS);
         OperationBuilder builder = new OperationBuilder(composite, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
-        executeOnMaster(builder.build());
+        executeOnPrimary(builder.build());
 
-        DomainClient client = testSupport.getDomainMasterLifecycleUtil().createDomainClient();
+        DomainClient client = testSupport.getDomainPrimaryLifecycleUtil().createDomainClient();
         Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "master", "main-one", "standard-sockets", "/test/servlet"));
-        Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "slave", "main-three", "standard-sockets", "/test/servlet"));
+        Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "secondary", "main-three", "standard-sockets", "/test/servlet"));
         Assert.assertEquals("new file", performHttpCall(client, "master", "main-one", "standard-sockets", "/test/wildcard-new-file.txt"));
-        Assert.assertEquals("new file", performHttpCall(client, "slave", "main-three", "standard-sockets", "/test/wildcard-new-file.txt"));
+        Assert.assertEquals("new file", performHttpCall(client, "secondary", "main-three", "standard-sockets", "/test/wildcard-new-file.txt"));
 
         //Remove the wildcard overlay
         ModelNode op = Operations.createRemoveOperation(PathAddress.pathAddress(ModelDescriptionConstants.SERVER_GROUP, "main-server-group")
@@ -309,21 +309,21 @@ public class DeploymentOverlayTestCase {
                 .append(ModelDescriptionConstants.DEPLOYMENT, "*.war")
                 .toModelNode());
         op.get("redeploy-affected").set(true);
-        executeOnMaster(op);
+        executeOnPrimary(op);
         Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "master", "main-one", "standard-sockets", "/test/servlet"));
-        Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "slave", "main-three", "standard-sockets", "/test/servlet"));
+        Assert.assertEquals("OVERRIDDEN", performHttpCall(client, "secondary", "main-three", "standard-sockets", "/test/servlet"));
         Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "master", "main-one", "standard-sockets", "/test/wildcard-new-file.txt"));
-        Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "slave", "main-three", "standard-sockets", "/test/wildcard-new-file.txt"));
+        Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "secondary", "main-three", "standard-sockets", "/test/wildcard-new-file.txt"));
         op = Operations.createRemoveOperation(PathAddress.pathAddress(ModelDescriptionConstants.SERVER_GROUP, "main-server-group")
                 .append(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_OVERLAY)
                 .append(ModelDescriptionConstants.DEPLOYMENT, "test.war")
                 .toModelNode());
         op.get("redeploy-affected").set(true);
-        executeOnMaster(op);
+        executeOnPrimary(op);
         Assert.assertEquals("NON OVERRIDDEN", performHttpCall(client, "master", "main-one", "standard-sockets", "/test/servlet"));
-        Assert.assertEquals("NON OVERRIDDEN", performHttpCall(client, "slave", "main-three", "standard-sockets", "/test/servlet"));
+        Assert.assertEquals("NON OVERRIDDEN", performHttpCall(client, "secondary", "main-three", "standard-sockets", "/test/servlet"));
         Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "master", "main-one", "standard-sockets", "/test/wildcard-new-file.txt"));
-        Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "slave", "main-three", "standard-sockets", "/test/wildcard-new-file.txt"));
+        Assert.assertEquals("<html><head><title>Error</title></head><body>Not Found</body></html>", performHttpCall(client, "secondary", "main-three", "standard-sockets", "/test/wildcard-new-file.txt"));
     }
 
     private String performHttpCall(DomainClient client, String host, String server, String socketBindingGroup, String path) throws Exception {
@@ -355,12 +355,12 @@ public class DeploymentOverlayTestCase {
         return content.toString();
     }
 
-    private static ModelNode executeOnMaster(ModelNode op) throws IOException {
-        return validateResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
+    private static ModelNode executeOnPrimary(ModelNode op) throws IOException {
+        return validateResponse(testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op));
     }
 
-    private static ModelNode executeOnMaster(Operation op) throws IOException {
-        return validateResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
+    private static ModelNode executeOnPrimary(Operation op) throws IOException {
+        return validateResponse(testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op));
     }
 
     private static ModelNode createDeploymentOperation(ModelNode content, ModelNode... serverGroupAddressses) {
@@ -382,7 +382,7 @@ public class DeploymentOverlayTestCase {
         ModelNode op = getEmptyOperation("read-children-names", address);
         op.get("child-type").set("deployment");
 
-        ModelNode response = testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
+        ModelNode response = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op);
         ModelNode result = validateResponse(response);
         return result.isDefined() ? result.asList() : Collections.<ModelNode>emptyList();
     }
@@ -392,7 +392,7 @@ public class DeploymentOverlayTestCase {
         deplAddr.set(address);
         deplAddr.add("deployment", deploymentName);
         ModelNode op = getEmptyOperation(REMOVE, deplAddr);
-        ModelNode response = testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op);
+        ModelNode response = testSupport.getDomainPrimaryLifecycleUtil().getDomainClient().execute(op);
         validateResponse(response);
     }
 

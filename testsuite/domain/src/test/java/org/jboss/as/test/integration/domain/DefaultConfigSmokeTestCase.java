@@ -55,7 +55,7 @@ import org.junit.Test;
 public class DefaultConfigSmokeTestCase extends BuildConfigurationTestBase {
     private static final Logger LOGGER = Logger.getLogger(DefaultConfigSmokeTestCase.class);
 
-    public static final String slaveAddress = System.getProperty("jboss.test.host.slave.address", "127.0.0.1");
+    public static final String secondaryAddress = System.getProperty("jboss.test.host.secondary.address", "127.0.0.1");
 
     @Test
     public void testStandardHost() throws Exception {
@@ -76,21 +76,21 @@ public class DefaultConfigSmokeTestCase extends BuildConfigurationTestBase {
     }
 
     @Test
-    public void testMasterAndSlave() throws Exception {
+    public void testPrimaryAndSecondary() throws Exception {
         final WildFlyManagedConfiguration masterConfig = createConfiguration("domain.xml", "host-master.xml", getClass().getSimpleName());
         final DomainLifecycleUtil masterUtils = new DomainLifecycleUtil(masterConfig);
-        final WildFlyManagedConfiguration slaveConfig = createConfiguration("domain.xml", "host-slave.xml", getClass().getSimpleName(),
-                "slave", slaveAddress, 19990);
-        final DomainLifecycleUtil slaveUtils = new DomainLifecycleUtil(slaveConfig);
+        final WildFlyManagedConfiguration secondaryConfig = createConfiguration("domain.xml", "host-secondary.xml", getClass().getSimpleName(),
+                "secondary", secondaryAddress, 19990);
+        final DomainLifecycleUtil secondaryUtils = new DomainLifecycleUtil(secondaryConfig);
         try {
             masterUtils.start();
-            slaveUtils.start();
+            secondaryUtils.start();
             // Double-check server status by confirming server-one can accept a web request to the root
-            URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(slaveAddress) + ":8080").openConnection();
+            URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(secondaryAddress) + ":8080").openConnection();
             connection.connect();
         } finally {
             try {
-                slaveUtils.stop();
+                secondaryUtils.stop();
             } finally {
                 masterUtils.stop();
             }

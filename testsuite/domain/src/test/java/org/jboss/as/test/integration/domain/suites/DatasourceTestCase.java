@@ -49,11 +49,11 @@ public class DatasourceTestCase {
 
     private static DomainTestSupport testSupport;
     private static DomainLifecycleUtil domainMasterLifecycleUtil;
-    private static DomainLifecycleUtil domainSlaveLifecycleUtil;
+    private static DomainLifecycleUtil domainSecondaryLifecycleUtil;
 
     private static final ModelNode ROOT_ADDRESS = new ModelNode().setEmptyList();
     private static final ModelNode MASTER_ROOT_ADDRESS = new ModelNode().add(HOST, "master");
-    private static final ModelNode SLAVE_ROOT_ADDRESS = new ModelNode().add(HOST, "slave");
+    private static final ModelNode SLAVE_ROOT_ADDRESS = new ModelNode().add(HOST, "secondary");
     private static final ModelNode MAIN_RUNNING_SERVER_ADDRESS = new ModelNode().add(HOST, "master").add(SERVER, "main-one");
     private static final ModelNode MAIN_RUNNING_SERVER_DS_ADDRESS = new ModelNode().add(HOST, "master")
             .add(SERVER, "main-one").add(SUBSYSTEM, "datasources").add("data-source", "ExampleDS");
@@ -70,24 +70,24 @@ public class DatasourceTestCase {
     public static void setupDomain() throws Exception {
         testSupport = DomainTestSuite.createSupport(DatasourceTestCase.class.getSimpleName());
         domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
-        domainSlaveLifecycleUtil = testSupport.getDomainSlaveLifecycleUtil();
+        domainSecondaryLifecycleUtil = testSupport.getDomainSecondaryLifecycleUtil();
     }
 
     @AfterClass
     public static void tearDownDomain() throws Exception {
         testSupport = null;
         domainMasterLifecycleUtil = null;
-        domainSlaveLifecycleUtil = null;
+        domainSecondaryLifecycleUtil = null;
         DomainTestSuite.stopSupport();
     }
 
     private DomainClient masterClient;
-    private DomainClient slaveClient;
+    private DomainClient secondaryClient;
 
     @Before
     public void setup() throws Exception {
         masterClient = domainMasterLifecycleUtil.getDomainClient();
-        slaveClient = domainSlaveLifecycleUtil.getDomainClient();
+        secondaryClient = domainSecondaryLifecycleUtil.getDomainClient();
     }
 
     @Test

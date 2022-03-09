@@ -69,7 +69,7 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
 
         serverGroups = CLITestSuite.serverGroups.keySet().toArray(new String[CLITestSuite.serverGroups.size()]);
 
-        AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
+        AbstractCliTestBase.initCLI(DomainTestSupport.primaryAddress);
     }
 
     @AfterClass

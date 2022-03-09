@@ -117,17 +117,17 @@ public class DeploymentManagementTestCase {
         OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS.add(SERVER_GROUP, "other-server-group");
         OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS.add(DEPLOYMENT, TEST);
         OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS.protect();
-        MAIN_RUNNING_SERVER_ADDRESS.add(HOST, "master");
+        MAIN_RUNNING_SERVER_ADDRESS.add(HOST, "primary");
         MAIN_RUNNING_SERVER_ADDRESS.add(SERVER, "main-one");
         MAIN_RUNNING_SERVER_ADDRESS.protect();
-        MAIN_RUNNING_SERVER_DEPLOYMENT_ADDRESS.add(HOST, "master");
+        MAIN_RUNNING_SERVER_DEPLOYMENT_ADDRESS.add(HOST, "primary");
         MAIN_RUNNING_SERVER_DEPLOYMENT_ADDRESS.add(SERVER, "main-one");
         MAIN_RUNNING_SERVER_DEPLOYMENT_ADDRESS.add(DEPLOYMENT, TEST);
         MAIN_RUNNING_SERVER_DEPLOYMENT_ADDRESS.protect();
-        OTHER_RUNNING_SERVER_ADDRESS.add(HOST, "slave");
+        OTHER_RUNNING_SERVER_ADDRESS.add(HOST, "secondary");
         OTHER_RUNNING_SERVER_ADDRESS.add(SERVER, "other-two");
         OTHER_RUNNING_SERVER_ADDRESS.protect();
-        OTHER_RUNNING_SERVER_GROUP_ADDRESS.add(HOST, "slave");
+        OTHER_RUNNING_SERVER_GROUP_ADDRESS.add(HOST, "secondary");
         OTHER_RUNNING_SERVER_GROUP_ADDRESS.add(SERVER, "other-two");
         OTHER_RUNNING_SERVER_GROUP_ADDRESS.add(DEPLOYMENT, TEST);
         OTHER_RUNNING_SERVER_GROUP_ADDRESS.protect();
@@ -191,13 +191,13 @@ public class DeploymentManagementTestCase {
         assertEquals("Deployments are removed from the domain", 0, deploymentList.size());
 
         try {
-            performHttpCall(DomainTestSupport.masterAddress, 8080);
+            performHttpCall(DomainTestSupport.primaryAddress, 8080);
             fail(TEST + " is available on main-one");
         } catch (IOException good) {
             // good
         }
         try {
-            performHttpCall(DomainTestSupport.slaveAddress, 8630);
+            performHttpCall(DomainTestSupport.secondaryAddress, 8630);
             fail(TEST + " is available on other-three");
         } catch (IOException good) {
             // good
@@ -233,8 +233,8 @@ public class DeploymentManagementTestCase {
         ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
         executeOnMaster(composite);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -247,8 +247,8 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(builder.build());
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
 
@@ -282,8 +282,8 @@ public class DeploymentManagementTestCase {
         ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
         executeOnMaster(composite);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -309,8 +309,8 @@ public class DeploymentManagementTestCase {
         ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
         executeOnMaster(composite);
 
-        performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.primaryAddress, 8080);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -323,7 +323,7 @@ public class DeploymentManagementTestCase {
         executeOnMaster(composite);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -358,7 +358,7 @@ public class DeploymentManagementTestCase {
         // Thread.sleep(1000);
 
         try {
-            performHttpCall(DomainTestSupport.slaveAddress, 8630);
+            performHttpCall(DomainTestSupport.secondaryAddress, 8630);
             fail("Webapp still accessible following undeploy");
         } catch (IOException good) {
             // desired result
@@ -393,7 +393,7 @@ public class DeploymentManagementTestCase {
         ModelNode op = getEmptyOperation("redeploy", OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
         executeOnMaster(op);
 
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -412,7 +412,7 @@ public class DeploymentManagementTestCase {
         // Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -430,7 +430,7 @@ public class DeploymentManagementTestCase {
         // Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -448,7 +448,7 @@ public class DeploymentManagementTestCase {
         // Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -466,7 +466,7 @@ public class DeploymentManagementTestCase {
         // Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -484,7 +484,7 @@ public class DeploymentManagementTestCase {
         //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -503,7 +503,7 @@ public class DeploymentManagementTestCase {
         // Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
     @Test
     public void testFullReplaceViaStream() throws Exception {
@@ -521,7 +521,7 @@ public class DeploymentManagementTestCase {
         // Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
 
@@ -540,7 +540,7 @@ public class DeploymentManagementTestCase {
         //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -563,12 +563,12 @@ public class DeploymentManagementTestCase {
 
         // Check that the original content got removed!
         testRemovedContent(testSupport.getDomainMasterLifecycleUtil(), original);
-        testRemovedContent(testSupport.getDomainSlaveLifecycleUtil(), original);
+        testRemovedContent(testSupport.getDomainSecondaryLifecycleUtil(), original);
 
         //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -587,7 +587,7 @@ public class DeploymentManagementTestCase {
         //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
 
@@ -606,7 +606,7 @@ public class DeploymentManagementTestCase {
         //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -624,7 +624,7 @@ public class DeploymentManagementTestCase {
         //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -642,7 +642,7 @@ public class DeploymentManagementTestCase {
         //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -660,7 +660,7 @@ public class DeploymentManagementTestCase {
         //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -679,7 +679,7 @@ public class DeploymentManagementTestCase {
         //Thread.sleep(1000);
 
         performHttpCall(DomainTestSupport.masterAddress, 8080);
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
     }
 
     @Test
@@ -694,7 +694,7 @@ public class DeploymentManagementTestCase {
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
         executeOnMaster(builder.build());
-        performHttpCall(DomainTestSupport.slaveAddress, 8630, "test1");
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630, "test1");
     }
 
     @Test
@@ -707,7 +707,7 @@ public class DeploymentManagementTestCase {
 
         executeOnMaster(builder.build());
 
-        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
         try {
             performHttpCall(DomainTestSupport.masterAddress, 8080);
             fail("Webapp deployed to unselected server group");
@@ -807,7 +807,7 @@ public class DeploymentManagementTestCase {
 //        executeOnMaster(builder.build());
 //
 //        performHttpCall(DomainTestSupport.masterAddress, 8080);
-//        performHttpCall(DomainTestSupport.slaveAddress, 8630);
+//        performHttpCall(DomainTestSupport.secondaryAddress, 8630);
 //
 //    }
 

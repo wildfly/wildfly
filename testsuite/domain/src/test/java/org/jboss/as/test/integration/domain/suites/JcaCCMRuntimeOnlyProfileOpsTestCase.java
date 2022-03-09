@@ -44,7 +44,7 @@ import org.junit.Test;
  */
 public class JcaCCMRuntimeOnlyProfileOpsTestCase {
     private static final PathAddress MASTER = PathAddress.pathAddress(ModelDescriptionConstants.HOST, "master");
-    private static final PathAddress SLAVE = PathAddress.pathAddress(ModelDescriptionConstants.HOST, "slave");
+    private static final PathAddress SLAVE = PathAddress.pathAddress(ModelDescriptionConstants.HOST, "secondary");
     private static final PathElement MAIN_ONE = PathElement.pathElement("server", "main-one");
     private static final PathElement MAIN_THREE = PathElement.pathElement("server", "main-three");
 
@@ -80,10 +80,10 @@ public class JcaCCMRuntimeOnlyProfileOpsTestCase {
         assertTrue(response.toString(), response.hasDefined(SERVER_GROUPS, "main-server-group", "host", "master", "main-one", "response", "result", "NonTX"));
         assertEquals(0, response.get(SERVER_GROUPS, "main-server-group", "host", "master", "main-one", "response", "result", "TX").asInt());
         assertEquals(0, response.get(SERVER_GROUPS, "main-server-group", "host", "master", "main-one", "response", "result", "NonTX").asInt());
-        assertTrue(response.toString(), response.hasDefined(SERVER_GROUPS, "main-server-group", "host", "slave", "main-three", "response", "result", "TX"));
-        assertTrue(response.toString(), response.hasDefined(SERVER_GROUPS, "main-server-group", "host", "slave", "main-three", "response", "result", "NonTX"));
-        assertEquals(0, response.get(SERVER_GROUPS, "main-server-group", "host", "slave", "main-three", "response", "result", "TX").asInt());
-        assertEquals(0, response.get(SERVER_GROUPS, "main-server-group", "host", "slave", "main-three", "response", "result", "NonTX").asInt());
+        assertTrue(response.toString(), response.hasDefined(SERVER_GROUPS, "main-server-group", "host", "secondary", "main-three", "response", "result", "TX"));
+        assertTrue(response.toString(), response.hasDefined(SERVER_GROUPS, "main-server-group", "host", "secondary", "main-three", "response", "result", "NonTX"));
+        assertEquals(0, response.get(SERVER_GROUPS, "main-server-group", "host", "secondary", "main-three", "response", "result", "TX").asInt());
+        assertEquals(0, response.get(SERVER_GROUPS, "main-server-group", "host", "secondary", "main-three", "response", "result", "NonTX").asInt());
 
         // Now check direct invocation on servers
         op = Util.createEmptyOperation(opName, MASTER.append(MAIN_ONE).append(SUBSYSTEM).append(CCM));
@@ -107,8 +107,8 @@ public class JcaCCMRuntimeOnlyProfileOpsTestCase {
         assertTrue(response.toString(), response.has(SERVER_GROUPS, "main-server-group", "host", "master", "main-one", "response", "result", "TX"));
         assertTrue(response.toString(), response.has(SERVER_GROUPS, "main-server-group", "host", "master", "main-one", "response", "result", "NonTX"));
 
-        assertTrue(response.toString(), response.has(SERVER_GROUPS, "main-server-group", "host", "slave", "main-three", "response", "result", "TX"));
-        assertTrue(response.toString(), response.has(SERVER_GROUPS, "main-server-group", "host", "slave", "main-three", "response", "result", "NonTX"));
+        assertTrue(response.toString(), response.has(SERVER_GROUPS, "main-server-group", "host", "secondary", "main-three", "response", "result", "TX"));
+        assertTrue(response.toString(), response.has(SERVER_GROUPS, "main-server-group", "host", "secondary", "main-three", "response", "result", "NonTX"));
 
         // Now check direct invocation on servers
         op = Util.createEmptyOperation(opName, MASTER.append(MAIN_ONE).append(SUBSYSTEM).append(CCM));

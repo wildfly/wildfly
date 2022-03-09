@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
 @ServerSetup(UnmarshallingFilterDisabledTestCase.ServerSetup.class)
 public class UnmarshallingFilterDisabledTestCase extends AbstactUnmarshallingFilterTestCase {
 
-    // Disables unmarshalling blacklisting.
+    // Disables unmarshalling allowlisting.
     public static class ServerSetup implements ServerSetupTask {
         private static final PathAddress PROP_ADDRESS = PathAddress.pathAddress("system-property", "jboss.ejb.unmarshalling.filter.disabled");
 
@@ -67,18 +67,18 @@ public class UnmarshallingFilterDisabledTestCase extends AbstactUnmarshallingFil
 
     @Test
     public void testRemoting() throws NamingException {
-        testBlacklistDisabled(false);
+        testAllowlistDisabled(false);
     }
 
     @Test
     public void testHttp() throws NamingException {
-        testBlacklistDisabled(true);
+        testAllowlistDisabled(true);
     }
 
-    private void testBlacklistDisabled(boolean http) throws NamingException {
+    private void testAllowlistDisabled(boolean http) throws NamingException {
         HelloRemote bean = lookup(HelloBean.class.getSimpleName(), HelloRemote.class, http);
-        Serializable blacklisted = getTemplatesImpl();
-        Response response = bean.sayHello(new Request(blacklisted));
+        Serializable allowlisted = getTemplatesImpl();
+        Response response = bean.sayHello(new Request(allowlisted));
         Assert.assertTrue(response.getGreeting(), response.getGreeting().contains("TemplatesImpl"));
     }
 }

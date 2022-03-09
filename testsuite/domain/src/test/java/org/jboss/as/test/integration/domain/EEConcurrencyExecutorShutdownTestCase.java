@@ -65,7 +65,7 @@ import static org.junit.Assert.fail;
 /**
  * The test case schedules an instance of task ReSchedulingTask.
  * Each instance of ReSchedulingTask sleeps for 10 seconds and then re-schedules another instance of its own class.
- * After the CLI command /host=master/server-config=server-one:stop() is invoked the server should stop.
+ * After the CLI command /host=primary/server-config=server-one:stop() is invoked the server should stop.
  * Test for [ WFCORE-3868 ].
  *
  * @author Daniel Cihak
@@ -82,23 +82,23 @@ public class EEConcurrencyExecutorShutdownTestCase {
     public static DomainLifecycleUtil domainMasterLifecycleUtil;
     private static File tmpDir;
 
-    private static DomainClient masterClient;
+    private static DomainClient primaryClient;
 
     @BeforeClass
     public static void setupDomain() {
         testSupport = createAndStartDefaultEESupport(EEConcurrencyExecutorShutdownTestCase.class.getSimpleName());
         domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
-        masterClient = domainMasterLifecycleUtil.getDomainClient();
+        primaryClient = domainMasterLifecycleUtil.getDomainClient();
     }
 
     private static DomainTestSupport createAndStartDefaultEESupport(final String testName) {
         try {
             final DomainTestSupport.Configuration configuration;
-            if (Boolean.getBoolean("wildfly.master.debug")) {
+            if (Boolean.getBoolean("wildfly.primary.debug")) {
                 configuration = DomainTestSupport.Configuration.createDebugMaster(testName,
-                        "domain-configs/domain-standard-ee.xml", "host-configs/host-master.xml", null);
-            } else if (Boolean.getBoolean("wildfly.slave.debug")) {
-                configuration = DomainTestSupport.Configuration.createDebugSlave(testName,
+                        "domain-configs/domain-standard-ee.xml", "host-configs/host-primary.xml", null);
+            } else if (Boolean.getBoolean("wildfly.secondary.debug")) {
+                configuration = DomainTestSupport.Configuration.createDebugSecondary(testName,
                         "domain-configs/domain-standard-ee.xml", "host-configs/host-master.xml", null);
             } else {
                 configuration = DomainTestSupport.Configuration.create(testName,

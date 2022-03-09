@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Tests of using EAP 7.4 domain.xml with a current DC and a 7.4 slave.
+ * Tests of using EAP 7.4 domain.xml with a current DC and a 7.4 secondary.
  *
  * @author Brian Stansberry
  */

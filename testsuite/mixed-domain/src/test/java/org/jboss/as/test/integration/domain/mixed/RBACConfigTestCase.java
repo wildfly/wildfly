@@ -66,7 +66,7 @@ public class RBACConfigTestCase {
 
     private static final PathAddress RBAC_BASE = PathAddress.pathAddress(PathElement.pathElement(CORE_SERVICE, MANAGEMENT),
             PathElement.pathElement(ACCESS, AUTHORIZATION));
-    private static final PathAddress SERVER_ONE = PathAddress.pathAddress(PathElement.pathElement(HOST, "slave"),
+    private static final PathAddress SERVER_ONE = PathAddress.pathAddress(PathElement.pathElement(HOST, "secondary"),
             PathElement.pathElement(RUNNING_SERVER, "server-one"));
 
 
@@ -76,8 +76,8 @@ public class RBACConfigTestCase {
     @Before
     public void init() throws Exception {
         DomainTestSupport support = KernelBehaviorTestSuite.getSupport(this.getClass());
-        masterClient = support.getDomainMasterLifecycleUtil().getDomainClient();
-        slaveClient = support.getDomainSlaveLifecycleUtil().getDomainClient();
+        masterClient = support.getDomainPrimaryLifecycleUtil().getDomainClient();
+        slaveClient = support.getDomainSecondaryLifecycleUtil().getDomainClient();
     }
 
     @AfterClass
@@ -175,17 +175,17 @@ public class RBACConfigTestCase {
         // Write the same value, so we don't need to clean up.
         executeForResult(Util.getWriteAttributeOperation(base, attribute, masterValue), masterClient);
 
-        ModelNode newMasterValue = executeForResult(Util.getReadAttributeOperation(base, attribute), masterClient);
-        assertEquals(masterValue, newMasterValue);
+        ModelNode newPrimaryValue = executeForResult(Util.getReadAttributeOperation(base, attribute), masterClient);
+        assertEquals(masterValue, newPrimaryValue);
         slaveValue = executeForResult(Util.getReadAttributeOperation(base, attribute), slaveClient);
         assertEquals(masterValue, slaveValue);
         serverValue = executeForResult(Util.getReadAttributeOperation(SERVER_ONE.append(base), attribute), masterClient);
         assertEquals(masterValue, serverValue);
     }
 
-    private void modifyTest(PathAddress base, String attribute, ModelNode newValue, boolean expectSlaveEffect) throws IOException {
+    private void modifyTest(PathAddress base, String attribute, ModelNode newValue, boolean expectSecondaryEffect) throws IOException {
         ModelNode masterValue = executeForResult(Util.getReadAttributeOperation(base, attribute), masterClient);
-        if (expectSlaveEffect) {
+        if (expectSecondaryEffect) {
             ModelNode slaveValue = executeForResult(Util.getReadAttributeOperation(base, attribute), slaveClient);
             assertEquals(masterValue, slaveValue);
             ModelNode serverValue = executeForResult(Util.getReadAttributeOperation(SERVER_ONE.append(base), attribute), masterClient);
@@ -199,9 +199,9 @@ public class RBACConfigTestCase {
         Throwable caught = null;
         executeForResult(Util.getWriteAttributeOperation(base, attribute, newValue), masterClient);
         try {
-            ModelNode newMasterValue = executeForResult(Util.getReadAttributeOperation(base, attribute), masterClient);
-            assertEquals(newValue, newMasterValue);
-            if (expectSlaveEffect) {
+            ModelNode newPrimaryValue = executeForResult(Util.getReadAttributeOperation(base, attribute), masterClient);
+            assertEquals(newValue, newPrimaryValue);
+            if (expectSecondaryEffect) {
                 ModelNode slaveValue = executeForResult(Util.getReadAttributeOperation(base, attribute), slaveClient);
                 assertEquals(newValue, slaveValue);
                 ModelNode serverValue = executeForResult(Util.getReadAttributeOperation(SERVER_ONE.append(base), attribute), masterClient);

@@ -61,10 +61,10 @@
 
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.test.host.master.address}"/>
+            <inet-address value="${jboss.test.host.primary.address}"/>
         </interface>
         <interface name="public">
-            <inet-address value="${jboss.test.host.master.address}"/>
+            <inet-address value="${jboss.test.host.primary.address}"/>
         </interface>
     </interfaces>
 
@@ -81,7 +81,7 @@
         <server name="failover-one" group="main-server-group">
             <interfaces>
                 <interface name="public">
-                    <inet-address value="${jboss.test.host.master.address}"/>
+                    <inet-address value="${jboss.test.host.primary.address}"/>
                 </interface>
             </interfaces>
             <paths>

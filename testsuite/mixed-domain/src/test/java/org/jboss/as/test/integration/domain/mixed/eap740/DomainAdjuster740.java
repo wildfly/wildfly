@@ -34,14 +34,14 @@ import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Does adjustments to the domain model for 7.4.0 legacy slaves.
+ * Does adjustments to the domain model for 7.4.0 legacy secondarys.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class DomainAdjuster740 extends DomainAdjuster {
 
     @Override
-    protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) {
+    protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withPrimaryServers) {
         final List<ModelNode> ops = new ArrayList<>();
 
         adjustRemoting(ops, profileAddress.append(SUBSYSTEM, "remoting"));

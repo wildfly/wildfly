@@ -18,7 +18,7 @@ import static org.jboss.as.test.integration.domain.management.util.DomainTestUti
 /**
  * Verifies that legacy JGroups protocols are not auto-updated by domain controller.
  *
- * (DC can be controlling older EAP version slaves, which require legacy protocols.)
+ * (DC can be controlling older EAP version secondarys, which require legacy protocols.)
  *
  * https://issues.jboss.org/browse/WFLY-12539
  */

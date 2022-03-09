@@ -43,7 +43,7 @@ import org.junit.Test;
 
 
 /**
- * Checks that the child resources that should be ordered are in fact so on a slave reconnect.
+ * Checks that the child resources that should be ordered are in fact so on a secondary reconnect.
  * At the moment this is only jgroups protocols. Although we have good tests for the indexed adds
  * working on reconnect in core, this is here as a sanity that no special describe handler is used
  * overriding the default mechanism.
@@ -53,7 +53,7 @@ import org.junit.Test;
 public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
 
 
-    public static final String slaveAddress = System.getProperty("jboss.test.host.slave.address", "127.0.0.1");
+    public static final String secondaryAddress = System.getProperty("jboss.test.host.secondary.address", "127.0.0.1");
 
     private static final int ADJUSTED_SECOND = TimeoutUtil.adjust(1000);
 
@@ -61,28 +61,28 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
     public void testOrderedChildResources() throws Exception {
         final WildFlyManagedConfiguration masterConfig = createConfiguration("domain.xml", "host-master.xml", getClass().getSimpleName());
         final DomainLifecycleUtil masterUtils = new DomainLifecycleUtil(masterConfig);
-        final WildFlyManagedConfiguration slaveConfig = createConfiguration("domain.xml", "host-slave.xml", getClass().getSimpleName(),
-                "slave", slaveAddress, 19990);
-        final DomainLifecycleUtil slaveUtils = new DomainLifecycleUtil(slaveConfig);
+        final WildFlyManagedConfiguration secondaryConfig = createConfiguration("domain.xml", "host-secondary.xml", getClass().getSimpleName(),
+                "secondary", secondaryAddress, 19990);
+        final DomainLifecycleUtil secondaryUtils = new DomainLifecycleUtil(secondaryConfig);
         try {
             masterUtils.start();
-            slaveUtils.start();
+            secondaryUtils.start();
 
             PathAddress jgroupsTcpAddr = PathAddress.pathAddress(PROFILE, "full-ha")
                     .append(SUBSYSTEM, "jgroups")
                     .append("stack", "tcp");
 
-            final ModelNode originalMasterStack = readResource(masterUtils.getDomainClient(), jgroupsTcpAddr);
-            originalMasterStack.protect();
-            final ModelNode originalSlaveStack = readResource(slaveUtils.getDomainClient(), jgroupsTcpAddr);
-            originalSlaveStack.protect();
-            Assert.assertEquals(originalMasterStack, originalSlaveStack);
+            final ModelNode originalPrimaryStack = readResource(masterUtils.getDomainClient(), jgroupsTcpAddr);
+            originalPrimaryStack.protect();
+            final ModelNode originalSecondaryStack = readResource(secondaryUtils.getDomainClient(), jgroupsTcpAddr);
+            originalSecondaryStack.protect();
+            Assert.assertEquals(originalPrimaryStack, originalSecondaryStack);
 
             //FD_ALL is normally in the middle somewhere
             final String protocolName = "FD_ALL";
             int index = -1;
             ModelNode value = null;
-            Iterator<Property> it = originalMasterStack.get(PROTOCOL).asPropertyList().iterator();
+            Iterator<Property> it = originalPrimaryStack.get(PROTOCOL).asPropertyList().iterator();
             for (int i = 0; it.hasNext(); i++) {
                 Property property = it.next();
                 if (property.getName().equals(protocolName)) {
@@ -94,24 +94,24 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
 
             //Make sure that we found the protocol and that it is not at the end
             Assert.assertTrue(0 <= index);
-            Assert.assertTrue(index < originalMasterStack.get(PROTOCOL).keys().size() - 2);
+            Assert.assertTrue(index < originalPrimaryStack.get(PROTOCOL).keys().size() - 2);
 
             //Remove the protocol
             DomainTestUtils.executeForResult(Util.createRemoveOperation(jgroupsTcpAddr.append(PROTOCOL, protocolName)),
                     masterUtils.getDomainClient());
 
             //Reload the master into admin-only and re-add the protocol
-            reloadMaster(masterUtils, true);
+            reloadPrimary(masterUtils, true);
             ModelNode add = value.clone();
             add.get(OP).set(ADD);
             add.get(OP_ADDR).set(jgroupsTcpAddr.append(PROTOCOL, protocolName).toModelNode());
             add.get(ADD_INDEX).set(index);
             DomainTestUtils.executeForResult(add, masterUtils.getDomainClient());
 
-            //Reload the master into normal mode and check the protocol is in the right place on the slave
-            reloadMaster(masterUtils, false);
-            ModelNode slaveStack = readResource(slaveUtils.getDomainClient(), jgroupsTcpAddr);
-            Assert.assertEquals(originalMasterStack, slaveStack);
+            //Reload the master into normal mode and check the protocol is in the right place on the secondary
+            reloadPrimary(masterUtils, false);
+            ModelNode secondaryStack = readResource(secondaryUtils.getDomainClient(), jgroupsTcpAddr);
+            Assert.assertEquals(originalPrimaryStack, secondaryStack);
 
             //Check that :read-operation-description has add-index defined; WFLY-6782
             ModelNode rodOp = Util.createOperation(READ_OPERATION_DESCRIPTION_OPERATION, jgroupsTcpAddr.append(PROTOCOL, protocolName));
@@ -120,7 +120,7 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
             Assert.assertTrue(result.get(REQUEST_PROPERTIES).hasDefined(ADD_INDEX));
         } finally {
             try {
-                slaveUtils.stop();
+                secondaryUtils.stop();
             } finally {
                 masterUtils.stop();
             }
@@ -132,26 +132,26 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
         return DomainTestUtils.executeForResult(rr, client);
     }
 
-    private void reloadMaster(DomainLifecycleUtil domainMasterLifecycleUtil, boolean adminOnly) throws Exception{
+    private void reloadPrimary(DomainLifecycleUtil domainPrimaryLifecycleUtil, boolean adminOnly) throws Exception{
         ModelNode restartAdminOnly = Util.createEmptyOperation("reload", PathAddress.pathAddress(HOST, "master"));
         restartAdminOnly.get("admin-only").set(adminOnly);
-        domainMasterLifecycleUtil.executeAwaitConnectionClosed(restartAdminOnly);
-        domainMasterLifecycleUtil.connect();
-        domainMasterLifecycleUtil.awaitHostController(System.currentTimeMillis());
+        domainPrimaryLifecycleUtil.executeAwaitConnectionClosed(restartAdminOnly);
+        domainPrimaryLifecycleUtil.connect();
+        domainPrimaryLifecycleUtil.awaitHostController(System.currentTimeMillis());
 
         if (!adminOnly) {
-            //Wait for the slave to reconnect, look for the slave in the list of hosts
+            //Wait for the secondary to reconnect, look for the secondary in the list of hosts
             long end = System.currentTimeMillis() + 20 * ADJUSTED_SECOND;
-            boolean slaveReconnected = false;
+            boolean secondaryReconnected = false;
             do {
                 Thread.sleep(1 * ADJUSTED_SECOND);
-                slaveReconnected = checkSlaveReconnected(domainMasterLifecycleUtil.getDomainClient());
-            } while (!slaveReconnected && System.currentTimeMillis() < end);
+                secondaryReconnected = checkSecondaryReconnected(domainPrimaryLifecycleUtil.getDomainClient());
+            } while (!secondaryReconnected && System.currentTimeMillis() < end);
 
         }
     }
 
-    private boolean checkSlaveReconnected(DomainClient masterClient) throws Exception {
+    private boolean checkSecondaryReconnected(DomainClient masterClient) throws Exception {
         ModelNode op = Util.createEmptyOperation(READ_CHILDREN_NAMES_OPERATION, PathAddress.EMPTY_ADDRESS);
         op.get(CHILD_TYPE).set(HOST);
         try {
@@ -159,7 +159,7 @@ public class OrderedChildResourcesTestCase extends BuildConfigurationTestBase {
             List<ModelNode> list = ret.asList();
             if (list.size() == 2) {
                 for (ModelNode entry : list) {
-                    if ("slave".equals(entry.asString())){
+                    if ("secondary".equals(entry.asString())){
                         return true;
                     }
                 }

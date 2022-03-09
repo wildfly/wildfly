@@ -2934,7 +2934,7 @@
                                         <exclude>org/jboss/as/test/integration/messaging/jms/external/prefix/ExternalJMSDestinationDefinitionMessagingDeploymentTestCase.java</exclude>
                                         <!-- Security is managed at the broker level -->
                                         <exclude>org/jboss/as/test/integration/messaging/security/SecurityTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/messaging/security/DeserializationBlackListTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/messaging/security/DeserializationAllowListTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/jms/deployment/DependentMessagingDeploymentTestCase.java</exclude>
                                     </excludes>
                                     <!-- Starting and stopping the remote broker -->

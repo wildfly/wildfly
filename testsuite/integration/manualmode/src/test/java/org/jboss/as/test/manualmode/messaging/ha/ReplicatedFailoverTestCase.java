@@ -43,15 +43,15 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
 public class ReplicatedFailoverTestCase extends FailoverTestCase {
-    private static final ModelNode MASTER_STORE_ADDRESS = PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-master").toModelNode();
-    private static final ModelNode SLAVE_STORE_ADDRESS = PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-slave").toModelNode();
+    private static final ModelNode primary_STORE_ADDRESS = PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-primary").toModelNode();
+    private static final ModelNode SLAVE_STORE_ADDRESS = PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-secondary").toModelNode();
 
     @Override
     protected void setUpServer1(ModelControllerClient client) throws Exception {
         configureCluster(client);
 
-        // /subsystem=messaging-activemq/server=default/ha-policy=replication-master:add(cluster-name=my-cluster, check-for-live-server=true)
-        ModelNode operation = Operations.createAddOperation(MASTER_STORE_ADDRESS);
+        // /subsystem=messaging-activemq/server=default/ha-policy=replication-primary:add(cluster-name=my-cluster, check-for-live-server=true)
+        ModelNode operation = Operations.createAddOperation(primary_STORE_ADDRESS);
         operation.get("cluster-name").set("my-cluster");
         operation.get("check-for-live-server").set(true);
         execute(client, operation);
@@ -65,7 +65,7 @@ public class ReplicatedFailoverTestCase extends FailoverTestCase {
     protected void setUpServer2(ModelControllerClient client) throws Exception {
         configureCluster(client);
 
-        // /subsystem=messaging-activemq/server=default/ha-policy=replication-slave:add(cluster-name=my-cluster, restart-backup=true)
+        // /subsystem=messaging-activemq/server=default/ha-policy=replication-secondary:add(cluster-name=my-cluster, restart-backup=true)
         ModelNode operation = Operations.createAddOperation(SLAVE_STORE_ADDRESS);
         operation.get("cluster-name").set("my-cluster");
         operation.get("restart-backup").set(true);
@@ -105,9 +105,9 @@ public class ReplicatedFailoverTestCase extends FailoverTestCase {
     }
 
     @Override
-    protected void testMasterInSyncWithReplica(ModelControllerClient client) throws Exception {
+    protected void testprimaryInSyncWithReplica(ModelControllerClient client) throws Exception {
         ModelNode operation = Operations.createReadAttributeOperation(
-                PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-master").toModelNode(),
+                PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-primary").toModelNode(),
                 "synchronized-with-backup");
         boolean synced = false;
         long start = System.currentTimeMillis();
@@ -118,17 +118,17 @@ public class ReplicatedFailoverTestCase extends FailoverTestCase {
     }
 
     @Override
-    protected void testSlaveInSyncWithReplica(ModelControllerClient client) throws Exception {
+    protected void testSecondaryInSyncWithReplica(ModelControllerClient client) throws Exception {
         ModelNode operation = Operations.createReadAttributeOperation(
-                PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-slave").toModelNode(),
+                PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-secondary").toModelNode(),
                 "synchronized-with-live");
         assertTrue(execute(client, operation).asBoolean());
     }
 
     @Override
-    protected void testMasterOutOfSyncWithReplica(ModelControllerClient client) throws Exception {
+    protected void testprimaryOutOfSyncWithReplica(ModelControllerClient client) throws Exception {
         ModelNode operation = Operations.createReadAttributeOperation(
-                PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-master").toModelNode(),
+                PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-primary").toModelNode(),
                 "synchronized-with-backup");
         boolean synced = false;
         long start = System.currentTimeMillis();
@@ -139,9 +139,9 @@ public class ReplicatedFailoverTestCase extends FailoverTestCase {
     }
 
     @Override
-    protected void testSlaveOutOfSyncWithReplica(ModelControllerClient client) throws Exception {
+    protected void testSecondaryOutOfSyncWithReplica(ModelControllerClient client) throws Exception {
         ModelNode operation = Operations.createReadAttributeOperation(
-                PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-slave").toModelNode(),
+                PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=replication-secondary").toModelNode(),
                 "synchronized-with-live");
         assertFalse(execute(client, operation).asBoolean());
     }

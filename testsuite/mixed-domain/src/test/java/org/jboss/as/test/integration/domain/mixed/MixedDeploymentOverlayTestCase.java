@@ -98,7 +98,7 @@ public class MixedDeploymentOverlayTestCase {
     public static void setupDomain() {
         testSupport = MixedDomainTestSuite.getSupport(MixedDeploymentOverlayTestCase.class, false);
         masterClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
-        slaveClient = testSupport.getDomainSlaveLifecycleUtil().getDomainClient();
+        slaveClient = testSupport.getDomainSecondaryLifecycleUtil().getDomainClient();
     }
 
     @AfterClass
