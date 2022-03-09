@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import io.vertx.core.net.KeyCertOptions;
+import io.vertx.core.net.TrustOptions;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
@@ -309,12 +311,14 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_KEY_CERT_OPTION = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_KEY_CERT_OPTION, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
+    .setCapabilityReference(KeyStoreOptionsResourceDefinition.KEY_CERT_OPTIONS_CAPABILITY.getName())
     .setRestartAllServices()
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_TRUST_OPTION = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_TRUST_OPTION, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
+    .setCapabilityReference(KeyStoreOptionsResourceDefinition.TRUST_OPTIONS_CAPABILITY.getName())
     .setRestartAllServices()
     .build();
 
@@ -407,7 +411,7 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
       final String name = context.getCurrentAddressValue();
-      EventBusOptions eventBusOptions = parseEventBusOptions(context, operation);
+      EventBusOptions eventBusOptions = parseEventBusOptions(operation);
       ServiceName addressResolverServiceName = VERTX_EVENT_BUS_OPTIONS_CAPABILITY.getCapabilityServiceName(name);
       ServiceBuilder<?> builder = context.getServiceTarget().addService(addressResolverServiceName);
       Supplier<JsonObject> clusterNodeMetaSupplier = null;
@@ -415,7 +419,19 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
         String clusterNodeMetaName = ATTR_EVENTBUS_CLUSTER_NODE_METADATA.validateOperation(operation).asString();
         clusterNodeMetaSupplier = builder.requires(ClusterNodeMetadataResourceDefinition.VERTX_CLUSTER_NODE_METADATA_CAPABILITY.getCapabilityServiceName(clusterNodeMetaName));
       }
+      Supplier<KeyCertOptions> keyCertOptionsSupplier = null;
+      if (operation.hasDefined(ATTR_EVENTBUS_KEY_CERT_OPTION.getName())) {
+        String keyCertOptionName = ATTR_EVENTBUS_KEY_CERT_OPTION.validateOperation(operation).asString();
+        keyCertOptionsSupplier = builder.requires(KeyStoreOptionsResourceDefinition.KEY_CERT_OPTIONS_CAPABILITY.getCapabilityServiceName(keyCertOptionName));
+      }
+      Supplier<TrustOptions> trustOptionsSupplier = null;
+      if (operation.hasDefined(ATTR_EVENTBUS_TRUST_OPTION.getName())) {
+        String trustOptionName = ATTR_EVENTBUS_TRUST_OPTION.validateOperation(operation).asString();
+        trustOptionsSupplier = builder.requires(KeyStoreOptionsResourceDefinition.TRUST_OPTIONS_CAPABILITY.getCapabilityServiceName(trustOptionName));
+      }
       final Supplier<JsonObject> theClusterNodeMeta = clusterNodeMetaSupplier;
+      final Supplier<KeyCertOptions> theKeyCertOptions = keyCertOptionsSupplier;
+      final Supplier<TrustOptions> theTrustOptions = trustOptionsSupplier;
         VertxOptionValueService<EventBusOptions> addressResolverService = new VertxOptionValueService<EventBusOptions>(eventBusOptions) {
 
         @Override
@@ -424,12 +440,20 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
           if (theClusterNodeMeta != null && theClusterNodeMeta.get() != null) {
             eventBusOptions.setClusterNodeMetadata(theClusterNodeMeta.get());
           }
+          if (theKeyCertOptions != null && theKeyCertOptions.get() != null) {
+            eventBusOptions.setKeyCertOptions(theKeyCertOptions.get());
+          }
+          if (theTrustOptions != null && theTrustOptions.get() != null) {
+            eventBusOptions.setTrustOptions(theTrustOptions.get());
+          }
         }
 
         @Override
         public void stop(StopContext stopContext) {
           VertxOptionsRegistry.getInstance().removeEventBusOptions(name);
           eventBusOptions.setClusterNodeMetadata(null);
+          eventBusOptions.setKeyCertOptions(null);
+          eventBusOptions.setTrustOptions(null);
         }
       };
       builder.setInstance(addressResolverService)
@@ -437,7 +461,7 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
         .install();
     }
 
-    private EventBusOptions parseEventBusOptions(OperationContext context, ModelNode operation) throws OperationFailedException {
+    private EventBusOptions parseEventBusOptions(ModelNode operation) throws OperationFailedException {
       EventBusOptions eventBusOptions = new EventBusOptions();
       if (operation.hasDefined(ATTR_EVENTBUS_SEND_BUFFER_SIZE.getName())) {
         eventBusOptions.setSendBufferSize(ATTR_EVENTBUS_SEND_BUFFER_SIZE.validateOperation(operation).asInt());
@@ -560,12 +584,6 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
       }
       if (operation.hasDefined(ATTR_EVENTBUS_TRUST_ALL.getName())) {
         eventBusOptions.setTrustAll(ATTR_EVENTBUS_TRUST_ALL.validateOperation(operation).asBoolean());
-      }
-      if (operation.hasDefined(ATTR_EVENTBUS_KEY_CERT_OPTION.getName())) {
-        // TODO:  get KeyCertOptions
-      }
-      if (operation.hasDefined(ATTR_EVENTBUS_TRUST_OPTION.getName())) {
-        // TODO: get TrustOptions
       }
       return eventBusOptions;
     }

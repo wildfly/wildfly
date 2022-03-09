@@ -99,14 +99,19 @@
                     <xs:documentation>Define a EventBusOptions</xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="key-cert-option" type="keyCertOptionType" maxOccurs="unbounded" minOccurs="0">
+            <xs:element name="key-store-option" type="keyStoreOptionType" maxOccurs="unbounded" minOccurs="0">
                 <xs:annotation>
-                    <xs:documentation>Define a KeyCertOptions</xs:documentation>
+                    <xs:documentation>Define either a KeyCertOptions or TrustOptions</xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="trust-option" type="trustOptionType" maxOccurs="unbounded" minOccurs="0">
+            <xs:element name="pem-key-cert-option" type="pemKeyCertOptionType" maxOccurs="unbounded" minOccurs="0">
                 <xs:annotation>
-                    <xs:documentation>Define a TrustOptions</xs:documentation>
+                    <xs:documentation>Define a PemKeyCertOptions</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="pem-trust-option" type="pemTrustOptionType" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>Define a PemTrustOptions</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="metrics-option" type="metricsOptionType" maxOccurs="unbounded" minOccurs="0">
@@ -291,14 +296,39 @@
         <xs:attribute name="name" use="required" type="xs:token" />
     </xs:complexType>
 
-    <xs:complexType name="keyCertOptionType">
+    <xs:complexType name="keyStoreOptionType">
         <xs:attribute name="name" use="required" type="xs:string"/>
-        <!-- TODO: KeyCertOption -->
+        <xs:attribute name="type" use="required" type="xs:string" />
+        <xs:attribute name="provider" type="xs:string" />
+        <xs:attribute name="password" type="xs:string" />
+        <xs:attribute name="path" type="xs:string" />
+        <xs:attribute name="value" type="xs:string" />
+        <xs:attribute name="alias" type="xs:string" />
+        <xs:attribute name="alias-password" type="xs:string" />
     </xs:complexType>
 
-    <xs:complexType name="trustOptionType">
+    <xs:complexType name="pemTrustOptionType">
+        <xs:sequence>
+            <xs:element name="cert-values" type="pemValuesType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
-        <!-- TODO: TrustOption -->
+        <xs:attribute name="cert-paths" type="xs:string" />
+    </xs:complexType>
+
+    <xs:complexType name="pemValuesType">
+        <xs:sequence>
+            <xs:element name="pem-value" type="xs:string" maxOccurs="unbounded" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="pemKeyCertOptionType">
+        <xs:sequence>
+            <xs:element name="key-values" type="pemValuesType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="cert-values" type="pemValuesType" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="key-paths" type="xs:string" />
+        <xs:attribute name="cert-paths" type="xs:string" />
     </xs:complexType>
 
     <xs:complexType name="metricsOptionType">

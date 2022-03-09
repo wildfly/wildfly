@@ -16,12 +16,23 @@
 package org.wildfly.extension.vertx;
 
 import io.vertx.core.http.ClientAuth;
+import io.vertx.core.net.KeyCertOptions;
+import io.vertx.core.net.TrustOptions;
+import org.jboss.as.controller.capability.RuntimeCapability;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public interface VertxConstants {
+
+    RuntimeCapability<Void> KEY_CERT_OPTIONS_CAPABILITY =
+      RuntimeCapability.Builder.of(VertxResourceDefinition.VERTX_CAPABILITY_NAME + ".key-cert.options", true, KeyCertOptions.class)
+        .build();
+
+    RuntimeCapability<Void> TRUST_OPTIONS_CAPABILITY =
+      RuntimeCapability.Builder.of(VertxResourceDefinition.VERTX_CAPABILITY_NAME + ".trust.options", true, TrustOptions.class)
+        .build();
 
     enum SSL_ENGINE_TYPE {
         JDK,
@@ -34,6 +45,8 @@ public interface VertxConstants {
 
     String DEFAULT_VERTX_OPTION_NAME = "__DEFAULT__";
     String DEFAULT_JNDI_PREFIX = "java:/vertx/";
+    String KEY_STORE_TYPE_JKS = "jks";
+    String KEY_STORE_TYPE_PKCS12 = "pkcs12";
 
     String ELEMENT_VERTXES = "vertxes";
     String ELEMENT_VERTX = "vertx";
@@ -44,6 +57,9 @@ public interface VertxConstants {
     String ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER = "address-resolver-option";
     String ELEMENT_VERTX_EVENTBUS = "eventbus-option";
     String ELEMENT_CLUSTER_NODE_METADATA = "cluster-node-metadata";
+    String ELEMENT_KEY_STORE = "key-store-option";
+    String ELEMENT_PEM_KEY_CERT = "pem-key-cert-option";
+    String ELEMENT_PEM_TRUST = "pem-trust-option";
 
     String ATTR_NAME = "name";
     String ATTR_JNDI_NAME = "jndi-name";
@@ -136,6 +152,22 @@ public interface VertxConstants {
     String ATTR_EVENTBUS_CLUSTER_NODE_METADATA = "cluster-node-metadata";
 
     String ATTR_PROPERTIES = "properties";
+
+    // key-store-option
+    String ATTR_KEYSTORE_PROVIDER = "provider";
+    String ATTR_KEYSTORE_TYPE = "type";
+    String ATTR_KEYSTORE_PASSWORD = "password";
+    String ATTR_KEYSTORE_PATH = "path";
+    String ATTR_KEYSTORE_VALUE = "value";
+    String ATTR_KEYSTORE_ALIAS = "alias";
+    String ATTR_KEYSTORE_ALIAS_PASSWORD = "alias-password";
+
+    // pem-key-cert-option
+    String ATTR_PEM_KEY_CERT_KEY_PATH = "key-paths";
+    String ATTR_PEM_KEY_CERT_KEY_VALUE = "key-values";
+    String ATTR_PEM_KEY_CERT_CERT_PATH = "cert-paths";
+    String ATTR_PEM_KEY_CERT_CERT_VALUE = "cert-values";
+    String ATTR_PEM_VALUE = "pem-value";
 
     // Followings are cluster manager related settings
     String DEFAULT_CACHE_NAME = "distributed-cache";

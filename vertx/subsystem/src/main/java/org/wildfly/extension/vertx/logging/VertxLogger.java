@@ -92,4 +92,7 @@ public interface VertxLogger extends BasicLogger {
     @Message(id = 18, value = "Option Name: %s is reserved by system.")
     OperationFailedException optionNameIsReserved(String optionName);
 
+    @Message(id = 19, value = "Either path or value should be specified for the option: %s")
+    OperationFailedException atLeastPathOrValueDefined(String optionName);
+
 }

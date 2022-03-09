@@ -19,6 +19,9 @@ package org.wildfly.extension.vertx;
 import io.vertx.core.dns.AddressResolverOptions;
 import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.KeyStoreOptionsBase;
+import io.vertx.core.net.PemKeyCertOptions;
+import io.vertx.core.net.PemTrustOptions;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,6 +41,12 @@ public final class VertxOptionsRegistry {
   private final Map<String, EventBusOptions> eventBusOptionsMap = new ConcurrentHashMap<>();
   // All defined cluster-node-metata in JsonObject
   private final Map<String, JsonObject> clusterNodeMetaMap = new ConcurrentHashMap<>();
+  // All defined KeyStoreOptionsBase
+  private final Map<String, KeyStoreOptionsBase> keyStoreOptionsBaseMap = new ConcurrentHashMap<>();
+  // All defined PemKeyCertOptions
+  private final Map<String, PemKeyCertOptions> pemKeyCertOptionsMap = new ConcurrentHashMap<>();
+  // All defined PemTrustOptions
+  private final Map<String, PemTrustOptions> pemTrustOptionsMap = new ConcurrentHashMap<>();
 
   private VertxOptionsRegistry() {}
 
@@ -109,4 +118,41 @@ public final class VertxOptionsRegistry {
   public void removeClusterNodeMeta(String name) {
     this.clusterNodeMetaMap.remove(name);
   }
+
+  public KeyStoreOptionsBase getKeyStoreOptions(String name) {
+    return this.keyStoreOptionsBaseMap.get(name);
+  }
+
+  public void addKeyStoreOptions(String name, KeyStoreOptionsBase keyStoreOptionsBase) {
+    this.keyStoreOptionsBaseMap.put(name, keyStoreOptionsBase);
+  }
+
+  public void removeKeyStoreOptions(String name) {
+    this.keyStoreOptionsBaseMap.remove(name);
+  }
+
+  public PemKeyCertOptions getPemKeyCertOptions(String name) {
+    return this.pemKeyCertOptionsMap.get(name);
+  }
+
+  public void addPemKeyCertOptions(String name, PemKeyCertOptions pemKeyCertOptions) {
+    this.pemKeyCertOptionsMap.put(name, pemKeyCertOptions);
+  }
+
+  public void removePemKeyCertOptions(String name) {
+    this.pemKeyCertOptionsMap.remove(name);
+  }
+
+  public PemTrustOptions getPemTrustOptions(String name) {
+    return this.pemTrustOptionsMap.get(name);
+  }
+
+  public void addPemTrustOptions(String name, PemTrustOptions pemTrustOptions) {
+    this.pemTrustOptionsMap.put(name, pemTrustOptions);
+  }
+
+  public void removePemTrustOptions(String name) {
+    this.pemTrustOptionsMap.remove(name);
+  }
+
 }

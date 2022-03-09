@@ -1,0 +1,25 @@
+<!--
+  Copyright (C) 2022 RedHat
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+       http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+
+<subsystem xmlns="urn:wildfly:vertx:1.0">
+  <vertxes>
+    <vertx name="default" alias="vertx"/>
+  </vertxes>
+  <vertx-options>
+    <vertx-option name="vo" eventbus-option="eo" address-resolver-option="aro" />
+    <address-resolver-option name="aro" max-queries="20"/>
+    <eventbus-option name="eo" key-cert-option="kco"/>
+    <key-store-option name="kco" type="JKS" path="jks.keystore"/>
+  </vertx-options>
+</subsystem>

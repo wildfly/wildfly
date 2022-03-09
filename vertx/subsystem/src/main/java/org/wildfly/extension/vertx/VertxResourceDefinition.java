@@ -81,12 +81,14 @@ public class VertxResourceDefinition extends SimpleResourceDefinition {
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            String name = context.getCurrentAddressValue();
-            VertxProxy vertxProxy = VertxRegistry.INSTANCE.getVertx(name);
-            if (vertxProxy == null) {
-                throw VERTX_LOGGER.vertxNotFound(name);
+            if (context.isNormalServer()) {
+                String name = context.getCurrentAddressValue();
+                VertxProxy vertxProxy = VertxRegistry.INSTANCE.getVertx(name);
+                if (vertxProxy == null) {
+                    throw VERTX_LOGGER.vertxNotFound(name);
+                }
+                context.getResult().set(vertxProxy.getJndiName());
             }
-            context.getResult().set(vertxProxy.getJndiName());
         }
     }
 

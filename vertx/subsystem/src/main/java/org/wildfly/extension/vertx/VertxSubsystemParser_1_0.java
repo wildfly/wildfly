@@ -39,35 +39,47 @@ public class VertxSubsystemParser_1_0 extends PersistentResourceXMLParser {
     private static final PersistentResourceXMLDescription xmlDescription;
     static {
         xmlDescription = builder(VertxSubsystemExtension.SUBSYSTEM_PATH, NAMESPACE)
-                .addChild(
-                        builder(VertxResourceDefinition.INSTANCE.getPathElement())
-                        .setXmlWrapperElement(ELEMENT_VERTXES)
-                        .addAttributes(VertxAttributes.getSimpleAttributes().toArray(new AttributeDefinition[0]))
-                )
-                .addChild(
-                        decorator(ELEMENT_VERTX_OPTIONS)
-                          .addChild(
-                            builder(VertxOptionFileResourceDefinition.INSTANCE.getPathElement())
-                              .addAttributes(VertxOptionsAttributes.getVertxOptionsFileAttributes().toArray(new AttributeDefinition[0]))
-                          )
-                          .addChild(
-                            builder(VertxOptionsResourceDefinition.INSTANCE.getPathElement())
-                              .addAttributes(VertxOptionsAttributes.getVertxOptionsAttributes().toArray(new AttributeDefinition[0]))
-                          )
-                          .addChild(
-                            builder(AddressResolverResourceDefinition.INSTANCE.getPathElement())
-                              .addAttributes(AddressResolverResourceDefinition.getVertxAddressResolverOptionsAttrs().toArray(new AttributeDefinition[0]))
-                          )
-                          .addChild(
-                            builder(EventBusResourceDefinition.INSTANCE.getPathElement())
-                              .addAttributes(EventBusResourceDefinition.getVertxEventbusAttrs().toArray(new AttributeDefinition[0]))
-                          )
-                          .addChild(
-                            builder(ClusterNodeMetadataResourceDefinition.INSTANCE.getPathElement())
-                              .addAttributes(ClusterNodeMetadataResourceDefinition.getClusterNodeMetaAttrs().toArray(new AttributeDefinition[0]))
-                          )
-                )
-                .build();
+          .addChild(
+            builder(VertxResourceDefinition.INSTANCE.getPathElement())
+              .setXmlWrapperElement(ELEMENT_VERTXES)
+              .addAttributes(VertxAttributes.getSimpleAttributes().toArray(new AttributeDefinition[0]))
+          )
+          .addChild(
+            decorator(ELEMENT_VERTX_OPTIONS)
+              .addChild(
+                builder(VertxOptionFileResourceDefinition.INSTANCE.getPathElement())
+                  .addAttributes(VertxOptionsAttributes.getVertxOptionsFileAttributes().toArray(new AttributeDefinition[0]))
+              )
+              .addChild(
+                builder(VertxOptionsResourceDefinition.INSTANCE.getPathElement())
+                  .addAttributes(VertxOptionsAttributes.getVertxOptionsAttributes().toArray(new AttributeDefinition[0]))
+              )
+              .addChild(
+                builder(AddressResolverResourceDefinition.INSTANCE.getPathElement())
+                  .addAttributes(AddressResolverResourceDefinition.getVertxAddressResolverOptionsAttrs().toArray(new AttributeDefinition[0]))
+              )
+              .addChild(
+                builder(EventBusResourceDefinition.INSTANCE.getPathElement())
+                  .addAttributes(EventBusResourceDefinition.getVertxEventbusAttrs().toArray(new AttributeDefinition[0]))
+              )
+              .addChild(
+                builder(ClusterNodeMetadataResourceDefinition.INSTANCE.getPathElement())
+                  .addAttributes(ClusterNodeMetadataResourceDefinition.getClusterNodeMetaAttrs().toArray(new AttributeDefinition[0]))
+              )
+              .addChild(
+                builder(KeyStoreOptionsResourceDefinition.INSTANCE.getPathElement())
+                  .addAttributes(KeyStoreOptionsResourceDefinition.getKeyStoreOptionsAttrs().toArray(new AttributeDefinition[0]))
+              )
+              .addChild(
+                builder(PemKeyCertOptionsResourceDefinition.INSTANCE.getPathElement())
+                  .addAttributes(PemKeyCertOptionsResourceDefinition.getPemKeyCertOptionsAttrs().toArray(new AttributeDefinition[0]))
+              )
+              .addChild(
+                builder(PemTrustOptionsResourceDefinition.INSTANCE.getPathElement())
+                  .addAttributes(PemTrustOptionsResourceDefinition.getPemTrustOptionsAttrs().toArray(new AttributeDefinition[0]))
+              )
+          )
+          .build();
     }
 
     @Override
