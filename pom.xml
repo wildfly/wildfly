@@ -376,7 +376,7 @@
         <version.org.apache.httpcomponents.httpasyncclient>4.1.4</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.8.4</version.org.apache.james.apache-mime4j>
         <version.org.apache.jstl>1.2.6-RC1</version.org.apache.jstl>
-        <version.org.apache.kafka>3.0.0</version.org.apache.kafka>
+        <version.org.apache.kafka>3.1.0</version.org.apache.kafka>
         <version.org.apache.lucene>5.5.5</version.org.apache.lucene>
         <version.org.apache.myfaces.core>2.3.8</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
@@ -491,15 +491,8 @@
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.reactivestreams>1.0.3</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
-        <!--
-            Temporary downgrade of Kafka for the embedded setup (the main bundled Kafka client is still defined
-            above in version.org.apache.kafka) to avoid problems on Windows until
-            https://github.com/apache/kafka/commit/145392b8c66cf5c351d11bc659a3fc80fc6b602a makes it into
-            a 3.0.1 or 3.1.0 release.
-            Tracked in https://issues.redhat.com/browse/WFLY-15799
-        -->
-        <version.org.apache.kafka.for.test>2.8.1</version.org.apache.kafka.for.test>
-        <version.org.springframework.kafka>2.7.3</version.org.springframework.kafka>
+        <!-- Test dependency -->
+        <version.org.springframework.kafka>2.8.2</version.org.springframework.kafka>
         <version.org.testcontainers.testcontainers>1.16.0</version.org.testcontainers.testcontainers>
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
         <version.org.testng>6.14.3</version.org.testng>
