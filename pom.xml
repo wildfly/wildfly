@@ -502,7 +502,6 @@
         <version.org.wildfly.http-client>1.1.10.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.14.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.transaction.client>2.0.0.Final</version.org.wildfly.transaction.client>
-        <version.org.yaml.snakeyaml>1.26</version.org.yaml.snakeyaml>
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.sun.jaxb>2.3.3-b02</version.sun.jaxb>
         <version.sun.saaj-impl>1.4.1.SP1</version.sun.saaj-impl>
@@ -9688,12 +9687,6 @@
                         <artifactId>jboss-transaction-api_1.2_spec</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.yaml</groupId>
-                <artifactId>snakeyaml</artifactId>
-                <version>${version.org.yaml.snakeyaml}</version>
             </dependency>
 
             <dependency>
