@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.xerces.ws.unit;
 
+import java.io.IOException;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
@@ -36,6 +37,8 @@ import org.jboss.as.test.integration.xerces.XercesUsageServlet;
 import org.jboss.as.test.integration.xerces.ws.XercesUsageWSEndpoint;
 import org.jboss.as.test.integration.xerces.ws.XercesUsageWebService;
 import org.jboss.logging.Logger;
+import org.jboss.modules.maven.ArtifactCoordinates;
+import org.jboss.modules.maven.MavenResolver;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -66,7 +69,7 @@ public class XercesUsageInWebServiceTestCase {
      * @return
      */
     @Deployment(name = "webservice-app-with-xerces", testable = false)
-    public static WebArchive createWebServiceDeployment() {
+    public static WebArchive createWebServiceDeployment() throws IOException {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, WEBSERVICE_WEB_APP_CONTEXT + ".war");
         war.addClasses(XercesUsageWebService.class, XercesUsageWSEndpoint.class);
         // add a web.xml containing the webservice mapping as a servlet
@@ -74,8 +77,9 @@ public class XercesUsageInWebServiceTestCase {
         // add a dummy xml to parse
         war.addAsResource(XercesUsageServlet.class.getPackage(), "dummy.xml", "dummy.xml");
 
-        // add the xerces jar in the .war/WEB-INF/lib
-        war.addAsLibrary("xerces/xercesImpl.jar", "xercesImpl.jar");
+        // add the xerces jar in the .war/WEB-INF/lib as a MavenResolver
+        war.addAsLibrary(MavenResolver.createDefaultResolver().resolveJarArtifact(new ArtifactCoordinates("xerces", "xercesImpl", "2.12.1")));
+
 
         return war;
     }
