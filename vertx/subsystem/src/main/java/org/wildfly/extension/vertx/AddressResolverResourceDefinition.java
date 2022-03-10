@@ -19,6 +19,7 @@ package org.wildfly.extension.vertx;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -38,6 +39,8 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -188,8 +191,6 @@ class AddressResolverResourceDefinition extends PersistentResourceDefinition imp
   private static class RemoveAddressResolverHandler extends ReloadRequiredRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-      final String name = context.getCurrentAddressValue();
-      VertxOptionsRegistry.getInstance().removeAddressResolverOptions(name);
       super.performRuntime(context, operation, model);
     }
   }
@@ -202,11 +203,15 @@ class AddressResolverResourceDefinition extends PersistentResourceDefinition imp
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
       final String name = context.getCurrentAddressValue();
+      ServiceName addressResolverServiceName = VERTX_OPTIONS_ADDRESS_RESOLVER_CAPABILITY.getCapabilityServiceName(name);
+      ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(addressResolverServiceName);
+      final Consumer<AddressResolverOptions> consumer = serviceBuilder.provides(addressResolverServiceName);
       AddressResolverOptions addressResolverOptions = parseAddressResolverOptions(operation);
-      VertxOptionValueService<AddressResolverOptions> addressResolverService = new VertxOptionValueService<AddressResolverOptions>(addressResolverOptions) {
+      Service addressResolverService = new Service() {
 
         @Override
         public void start(StartContext startContext) throws StartException {
+          consumer.accept(addressResolverOptions);
           VertxOptionsRegistry.getInstance().addAddressResolverOptions(name, addressResolverOptions);
         }
 
@@ -215,11 +220,10 @@ class AddressResolverResourceDefinition extends PersistentResourceDefinition imp
           VertxOptionsRegistry.getInstance().removeAddressResolverOptions(name);
         }
       };
-      ServiceName addressResolverServiceName = VERTX_OPTIONS_ADDRESS_RESOLVER_CAPABILITY.getCapabilityServiceName(name);
-      context.getServiceTarget()
-        .addService(addressResolverServiceName)
+
+      serviceBuilder
         .setInstance(addressResolverService)
-        .setInitialMode(ServiceController.Mode.LAZY)
+        .setInitialMode(ServiceController.Mode.ON_DEMAND)
         .install();
 
     }

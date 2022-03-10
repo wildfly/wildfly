@@ -24,15 +24,8 @@ import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.net.JksOptions;
-import io.vertx.core.net.KeyStoreOptions;
-import io.vertx.core.net.KeyStoreOptionsBase;
-import io.vertx.core.net.PfxOptions;
-import io.vertx.core.net.TrustOptions;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
@@ -45,11 +38,22 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.vertx.logging.VertxLogger;
+
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.net.JksOptions;
+import io.vertx.core.net.KeyCertOptions;
+import io.vertx.core.net.KeyStoreOptions;
+import io.vertx.core.net.KeyStoreOptionsBase;
+import io.vertx.core.net.PfxOptions;
+import io.vertx.core.net.TrustOptions;
 
 /**
  * This represents a resource at '/subsystem=vertx/key-store-option=xx', which can be used as either KeyCertOptions or TrustOptions.
@@ -135,8 +139,6 @@ class KeyStoreOptionsResourceDefinition extends PersistentResourceDefinition imp
   private static class RemoveHandler extends ReloadRequiredRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-      final String name = context.getCurrentAddressValue();
-      VertxOptionsRegistry.getInstance().removeKeyStoreOptions(name);
       super.performRuntime(context, operation, model);
     }
   }
@@ -150,11 +152,12 @@ class KeyStoreOptionsResourceDefinition extends PersistentResourceDefinition imp
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
       final String name = context.getCurrentAddressValue();
       KeyStoreOptionsBase keyStoreOptions = parseOption(operation, name);
-      CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget()
-        .addCapability(KEY_CERT_OPTIONS_CAPABILITY);
-      final Consumer<TrustOptions> trustOptionsConsumer = serviceBuilder.provides(TRUST_OPTIONS_CAPABILITY);
+      final ServiceName serviceName = KEY_CERT_OPTIONS_CAPABILITY.getCapabilityServiceName(name);
+      ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(serviceName);
+      final Consumer<TrustOptions> trustOptionsConsumer = serviceBuilder.provides(serviceName);
+      final Consumer<KeyCertOptions> keyCertOptionsConsumer = serviceBuilder.provides(TRUST_OPTIONS_CAPABILITY.getCapabilityServiceName(name));
       final Supplier<ServerEnvironment> serverEnvSupplier = serviceBuilder.requires(ServerEnvironmentService.SERVICE_NAME);
-      VertxOptionValueService<KeyStoreOptionsBase> optionValueService = new VertxOptionValueService<KeyStoreOptionsBase>(keyStoreOptions) {
+      Service optionValueService = new Service() {
 
         @Override
         public void start(StartContext startContext) throws StartException {
@@ -166,12 +169,12 @@ class KeyStoreOptionsResourceDefinition extends PersistentResourceDefinition imp
           }
           VertxOptionsRegistry.getInstance().addKeyStoreOptions(name, keyStoreOptions);
           trustOptionsConsumer.accept(keyStoreOptions);
+          keyCertOptionsConsumer.accept(keyStoreOptions);
         }
 
         @Override
         public void stop(StopContext stopContext) {
           VertxOptionsRegistry.getInstance().removeKeyStoreOptions(name);
-          trustOptionsConsumer.accept(null);
         }
       };
       serviceBuilder

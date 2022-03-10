@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -90,10 +91,11 @@ class VertxOptionFileResourceDefinition extends AbstractVertxOptionsResourceDefi
       }
       ServiceName vertxServiceName = VertxOptionFileResourceDefinition.VERTX_OPTIONS_CAPABILITY.getCapabilityServiceName(name);
       ServiceBuilder<?> vertxServiceBuilder = context.getServiceTarget().addService(vertxServiceName);
+      Consumer<NamedVertxOptions> consumer = vertxServiceBuilder.provides(vertxServiceName);
       Supplier<ServerEnvironment> serverEnvSupplier = vertxServiceBuilder.requires(ServerEnvironmentService.SERVICE_NAME);
       VertxOptions vertxOptions = new VertxOptions(readJsonFromFile(optionFilePath, serverEnvSupplier.get().getServerConfigurationDir()));
       NamedVertxOptions namedVertxOptions = new NamedVertxOptions(name, vertxOptions);
-      vertxServiceBuilder.setInstance(new NamedVertxOptionsService(namedVertxOptions, serverEnvSupplier));
+      vertxServiceBuilder.setInstance(new NamedVertxOptionsService(namedVertxOptions, serverEnvSupplier, consumer));
       vertxServiceBuilder
         .setInitialMode(ServiceController.Mode.ACTIVE)
         .install();

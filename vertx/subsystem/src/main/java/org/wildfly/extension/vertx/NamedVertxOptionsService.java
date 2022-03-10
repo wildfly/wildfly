@@ -17,12 +17,13 @@
 package org.wildfly.extension.vertx;
 
 import java.io.File;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -38,30 +39,33 @@ import io.vertx.core.tracing.TracingOptions;
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
-public class NamedVertxOptionsService implements Service<NamedVertxOptions> {
+public class NamedVertxOptionsService implements Service {
 
   private final NamedVertxOptions namedVertxOptions;
+  private final Consumer<NamedVertxOptions> consumer;
   private final Supplier<ServerEnvironment> serverEnvSupplier;
   private final Supplier<AddressResolverOptions> addressResolverOptionsSupplier;
   private final Supplier<EventBusOptions> eventBusOptionsSupplier;
   private final Supplier<MetricsOptions> metricsOptionsSupplier;
   private final Supplier<TracingOptions> tracingOptionsSupplier;
 
-  NamedVertxOptionsService(NamedVertxOptions namedVertxOptions, Supplier<ServerEnvironment> serverEnvSupplier) {
-    this(namedVertxOptions, serverEnvSupplier, null, null, null, null);
+  NamedVertxOptionsService(NamedVertxOptions namedVertxOptions, Supplier<ServerEnvironment> serverEnvSupplier, Consumer<NamedVertxOptions> consumer) {
+    this(namedVertxOptions, serverEnvSupplier, null, null, null, null, consumer);
   }
 
   NamedVertxOptionsService(NamedVertxOptions namedVertxOptions, Supplier<ServerEnvironment> serverEnvSupplier,
                            Supplier<AddressResolverOptions> addressResolverOptionsSupplier,
                            Supplier<EventBusOptions> eventBusOptionsSupplier,
                            Supplier<MetricsOptions> metricsOptionsSupplier,
-                           Supplier<TracingOptions> tracingOptionsSupplier) {
+                           Supplier<TracingOptions> tracingOptionsSupplier,
+                           Consumer<NamedVertxOptions> consumer) {
     this.namedVertxOptions = namedVertxOptions;
     this.serverEnvSupplier = serverEnvSupplier;
     this.addressResolverOptionsSupplier = addressResolverOptionsSupplier;
     this.eventBusOptionsSupplier = eventBusOptionsSupplier;
     this.metricsOptionsSupplier = metricsOptionsSupplier;
     this.tracingOptionsSupplier = tracingOptionsSupplier;
+    this.consumer = consumer;
   }
 
   static void installService(OperationContext context, NamedVertxOptions namedVertxOptions,
@@ -69,6 +73,7 @@ public class NamedVertxOptionsService implements Service<NamedVertxOptions> {
                              String metricsOptionName, String tracingOptionName) {
     ServiceName vertxServiceName = VertxOptionFileResourceDefinition.VERTX_OPTIONS_CAPABILITY.getCapabilityServiceName(namedVertxOptions.getName());
     ServiceBuilder<?> vertxServiceBuilder = context.getServiceTarget().addService(vertxServiceName);
+    Consumer<NamedVertxOptions> consumer = vertxServiceBuilder.provides(vertxServiceName);
     Supplier<ServerEnvironment> serverEnvSupplier = vertxServiceBuilder.requires(ServerEnvironmentService.SERVICE_NAME);
     Supplier<AddressResolverOptions> addressResolverOptionsSupplier = null;
     if (addressResolverOptionName != null) {
@@ -87,7 +92,7 @@ public class NamedVertxOptionsService implements Service<NamedVertxOptions> {
       tracingOptionsSupplier = vertxServiceBuilder.requires(ServiceName.parse("TODO"));
     }
     vertxServiceBuilder.setInstance(new NamedVertxOptionsService(namedVertxOptions, serverEnvSupplier,
-      addressResolverOptionsSupplier, eventBusOptionsSupplier, metricsOptionsSupplier, tracingOptionsSupplier));
+      addressResolverOptionsSupplier, eventBusOptionsSupplier, metricsOptionsSupplier, tracingOptionsSupplier, consumer));
     vertxServiceBuilder
       .setInitialMode(ServiceController.Mode.ACTIVE)
       .install();
@@ -108,17 +113,13 @@ public class NamedVertxOptionsService implements Service<NamedVertxOptions> {
     if (this.tracingOptionsSupplier != null && this.tracingOptionsSupplier.get() != null) {
       this.namedVertxOptions.getVertxOptions().setTracingOptions(this.tracingOptionsSupplier.get());
     }
+    this.consumer.accept(this.namedVertxOptions);
     VertxOptionsRegistry.getInstance().addVertxOptions(this.namedVertxOptions);
   }
 
   @Override
   public void stop(StopContext stopContext) {
     VertxOptionsRegistry.getInstance().removeVertxOptions(this.namedVertxOptions.getName());
-  }
-
-  @Override
-  public NamedVertxOptions getValue() throws IllegalStateException, IllegalArgumentException {
-    return namedVertxOptions;
   }
 
 }

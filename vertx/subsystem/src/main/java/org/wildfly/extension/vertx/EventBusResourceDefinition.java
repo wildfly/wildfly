@@ -20,10 +20,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import io.vertx.core.net.KeyCertOptions;
-import io.vertx.core.net.TrustOptions;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
@@ -41,6 +40,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -52,7 +52,9 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.KeyCertOptions;
 import io.vertx.core.net.OpenSSLEngineOptions;
+import io.vertx.core.net.TrustOptions;
 
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
@@ -397,8 +399,6 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
   private static class RemoveEventBusHandler extends ReloadRequiredRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-      final String name = context.getCurrentAddressValue();
-      VertxOptionsRegistry.getInstance().removeEventBusOptions(name);
       super.performRuntime(context, operation, model);
     }
   }
@@ -412,8 +412,8 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
       final String name = context.getCurrentAddressValue();
       EventBusOptions eventBusOptions = parseEventBusOptions(operation);
-      ServiceName addressResolverServiceName = VERTX_EVENT_BUS_OPTIONS_CAPABILITY.getCapabilityServiceName(name);
-      ServiceBuilder<?> builder = context.getServiceTarget().addService(addressResolverServiceName);
+      ServiceName serviceName = VERTX_EVENT_BUS_OPTIONS_CAPABILITY.getCapabilityServiceName(name);
+      ServiceBuilder<?> builder = context.getServiceTarget().addService(serviceName);
       Supplier<JsonObject> clusterNodeMetaSupplier = null;
       if (operation.hasDefined(ATTR_EVENTBUS_CLUSTER_NODE_METADATA.getName())) {
         String clusterNodeMetaName = ATTR_EVENTBUS_CLUSTER_NODE_METADATA.validateOperation(operation).asString();
@@ -432,7 +432,8 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
       final Supplier<JsonObject> theClusterNodeMeta = clusterNodeMetaSupplier;
       final Supplier<KeyCertOptions> theKeyCertOptions = keyCertOptionsSupplier;
       final Supplier<TrustOptions> theTrustOptions = trustOptionsSupplier;
-        VertxOptionValueService<EventBusOptions> addressResolverService = new VertxOptionValueService<EventBusOptions>(eventBusOptions) {
+      final Consumer<EventBusOptions> consumer = builder.provides(serviceName);
+      Service eventBusOptionService = new Service() {
 
         @Override
         public void start(StartContext startContext) throws StartException {
@@ -446,18 +447,19 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
           if (theTrustOptions != null && theTrustOptions.get() != null) {
             eventBusOptions.setTrustOptions(theTrustOptions.get());
           }
+          consumer.accept(eventBusOptions);
         }
 
         @Override
         public void stop(StopContext stopContext) {
-          VertxOptionsRegistry.getInstance().removeEventBusOptions(name);
           eventBusOptions.setClusterNodeMetadata(null);
           eventBusOptions.setKeyCertOptions(null);
           eventBusOptions.setTrustOptions(null);
+          VertxOptionsRegistry.getInstance().removeEventBusOptions(name);
         }
       };
-      builder.setInstance(addressResolverService)
-        .setInitialMode(ServiceController.Mode.LAZY)
+      builder.setInstance(eventBusOptionService)
+        .setInitialMode(ServiceController.Mode.ON_DEMAND)
         .install();
     }
 

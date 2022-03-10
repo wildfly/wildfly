@@ -16,10 +16,14 @@
  */
 package org.wildfly.extension.vertx;
 
+import static org.wildfly.extension.vertx.PemTrustOptionsResourceDefinition.PEM_VALUE_MARSHALLER;
+import static org.wildfly.extension.vertx.PemTrustOptionsResourceDefinition.PEM_VALUE_PARSER;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -39,17 +43,16 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.PemKeyCertOptions;
-
-import static org.wildfly.extension.vertx.PemTrustOptionsResourceDefinition.PEM_VALUE_MARSHALLER;
-import static org.wildfly.extension.vertx.PemTrustOptionsResourceDefinition.PEM_VALUE_PARSER;
 
 /**
  * This represents a resource at '/subsystem=vertx/pem-key-cert-option=xx' for a KeyCertOptions.
@@ -139,9 +142,11 @@ class PemKeyCertOptionsResourceDefinition extends PersistentResourceDefinition i
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
       final String name = context.getCurrentAddressValue();
       PemKeyCertOptions pemKeyCertOptions = parseOption(operation, name);
-      ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(KEY_CERT_OPTIONS_CAPABILITY.getCapabilityServiceName(name));
+      final ServiceName serviceName = KEY_CERT_OPTIONS_CAPABILITY.getCapabilityServiceName(name);
+      ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(serviceName);
       final Supplier<ServerEnvironment> serverEnvSupplier = serviceBuilder.requires(ServerEnvironmentService.SERVICE_NAME);
-      VertxOptionValueService<PemKeyCertOptions> optionValueService = new VertxOptionValueService<PemKeyCertOptions>(pemKeyCertOptions) {
+      final Consumer<PemKeyCertOptions> consumer = serviceBuilder.provides(serviceName);
+      Service optionValueService = new Service() {
 
         @Override
         public void start(StartContext startContext) throws StartException {
@@ -169,6 +174,7 @@ class PemKeyCertOptionsResourceDefinition extends PersistentResourceDefinition i
             }).collect(Collectors.toList());
             pemKeyCertOptions.setCertPaths(canonicalCertPaths);
           }
+          consumer.accept(pemKeyCertOptions);
           VertxOptionsRegistry.getInstance().addPemKeyCertOptions(name, pemKeyCertOptions);
         }
 
@@ -179,7 +185,7 @@ class PemKeyCertOptionsResourceDefinition extends PersistentResourceDefinition i
       };
       serviceBuilder
         .setInstance(optionValueService)
-        .setInitialMode(ServiceController.Mode.LAZY)
+        .setInitialMode(ServiceController.Mode.ON_DEMAND)
         .install();
     }
 

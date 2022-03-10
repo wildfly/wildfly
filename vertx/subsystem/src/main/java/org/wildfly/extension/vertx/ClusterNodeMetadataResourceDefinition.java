@@ -19,6 +19,7 @@ package org.wildfly.extension.vertx;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -33,6 +34,8 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -85,8 +88,6 @@ class ClusterNodeMetadataResourceDefinition extends PersistentResourceDefinition
   private static class RemoveClusterNodeMetaHandler extends ReloadRequiredRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-      final String name = context.getCurrentAddressValue();
-      VertxOptionsRegistry.getInstance().removeClusterNodeMeta(name);
       super.performRuntime(context, operation, model);
     }
   }
@@ -99,11 +100,15 @@ class ClusterNodeMetadataResourceDefinition extends PersistentResourceDefinition
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
       final String name = context.getCurrentAddressValue();
-      JsonObject clusterNodeMeta = parseNode(operation);
-      VertxOptionValueService<JsonObject> addressResolverService = new VertxOptionValueService<JsonObject>(clusterNodeMeta) {
+      ServiceName serviceName = VERTX_CLUSTER_NODE_METADATA_CAPABILITY.getCapabilityServiceName(name);
+      ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(serviceName);
+      final Consumer<JsonObject> consumer = serviceBuilder.provides(serviceName);
+      final JsonObject clusterNodeMeta = parseNode(operation);
+      Service service = new Service() {
 
         @Override
         public void start(StartContext startContext) throws StartException {
+          consumer.accept(clusterNodeMeta);
           VertxOptionsRegistry.getInstance().addClusterNodeMeta(name, clusterNodeMeta);
         }
 
@@ -112,11 +117,9 @@ class ClusterNodeMetadataResourceDefinition extends PersistentResourceDefinition
           VertxOptionsRegistry.getInstance().removeClusterNodeMeta(name);
         }
       };
-      ServiceName addressResolverServiceName = VERTX_CLUSTER_NODE_METADATA_CAPABILITY.getCapabilityServiceName(name);
-      context.getServiceTarget()
-        .addService(addressResolverServiceName)
-        .setInstance(addressResolverService)
-        .setInitialMode(ServiceController.Mode.LAZY)
+      serviceBuilder
+        .setInstance(service)
+        .setInitialMode(ServiceController.Mode.ON_DEMAND)
         .install();
     }
 

@@ -25,7 +25,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
-abstract class AbstractVertxOptionsResourceDefinition extends PersistentResourceDefinition {
+public abstract class AbstractVertxOptionsResourceDefinition extends PersistentResourceDefinition {
 
   static final RuntimeCapability<Void> VERTX_OPTIONS_CAPABILITY =
     RuntimeCapability.Builder.of(VERTX_CAPABILITY_NAME + ".options", true, NamedVertxOptions.class)

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -52,8 +53,10 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -181,8 +184,6 @@ class PemTrustOptionsResourceDefinition extends PersistentResourceDefinition imp
   private static class RemoveHandler extends ReloadRequiredRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-      final String name = context.getCurrentAddressValue();
-      VertxOptionsRegistry.getInstance().removePemTrustOptions(name);
       super.performRuntime(context, operation, model);
     }
   }
@@ -196,9 +197,11 @@ class PemTrustOptionsResourceDefinition extends PersistentResourceDefinition imp
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
       final String name = context.getCurrentAddressValue();
       PemTrustOptions pemTrustOptions = parseOption(operation, name);
-      ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(TRUST_OPTIONS_CAPABILITY.getCapabilityServiceName(name));
+      final ServiceName serviceName = TRUST_OPTIONS_CAPABILITY.getCapabilityServiceName(name);
+      ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(serviceName);
+      final Consumer<PemTrustOptions> consumer = serviceBuilder.provides(serviceName);
       final Supplier<ServerEnvironment> serverEnvSupplier = serviceBuilder.requires(ServerEnvironmentService.SERVICE_NAME);
-      VertxOptionValueService<PemTrustOptions> optionValueService = new VertxOptionValueService<PemTrustOptions>(pemTrustOptions) {
+      Service optionValueService = new Service() {
 
         @Override
         public void start(StartContext startContext) throws StartException {
@@ -215,6 +218,7 @@ class PemTrustOptionsResourceDefinition extends PersistentResourceDefinition imp
             certPaths.clear();
             certPaths.addAll(canonicalCertPaths);
           }
+          consumer.accept(pemTrustOptions);
           VertxOptionsRegistry.getInstance().addPemTrustOptions(name, pemTrustOptions);
         }
 
@@ -225,7 +229,7 @@ class PemTrustOptionsResourceDefinition extends PersistentResourceDefinition imp
       };
       serviceBuilder
         .setInstance(optionValueService)
-        .setInitialMode(ServiceController.Mode.LAZY)
+        .setInitialMode(ServiceController.Mode.ON_DEMAND)
         .install();
     }
 
