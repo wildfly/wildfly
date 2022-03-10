@@ -39,7 +39,7 @@ import java.util.List;
 public class CollectFiles extends JdrCommand {
 
     private VirtualFileFilter filter = Filters.TRUE;
-    private Filters.BlacklistFilter blacklistFilter = Filters.wildcardBlackList();
+    private Filters.BlocklistFilter blocklistFilter = Filters.wildcardBlockList();
     private LinkedList<Sanitizer> sanitizers = new LinkedList<Sanitizer>();
     private Comparator<VirtualFile> sorter = new Comparator<VirtualFile>() {
         @Override
@@ -77,14 +77,14 @@ public class CollectFiles extends JdrCommand {
     }
 
     public CollectFiles omit(String pattern) {
-        blacklistFilter.add(pattern);
+        blocklistFilter.add(pattern);
         return this;
     }
 
     @Override
     public void execute() throws Exception {
         VirtualFile root = VFS.getChild(this.env.getJbossHome());
-        List<VirtualFile> matches = root.getChildrenRecursively(Filters.and(this.filter, this.blacklistFilter));
+        List<VirtualFile> matches = root.getChildrenRecursively(Filters.and(this.filter, this.blocklistFilter));
 
         // order the files in some arbitrary way.. basically prep for the limiter so things like log files can
         // be gotten in chronological order.  Keep in mind everything that might be collected per the filter for

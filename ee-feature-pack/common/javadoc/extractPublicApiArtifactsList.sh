@@ -69,10 +69,10 @@ function convertModuleNameToGA() {
 convertModuleNameToGA $TARGET/modules.include.txt $TARGET/artifacts.in.tmp.txt;
 convertModuleNameToGA $TARGET/modules.exclude.txt $TARGET/artifacts.ex.tmp.txt;
 
-###  Blacklisted ->  prepend '#'.
+###  Blocklisted ->  prepend '#'.
   echo > $TARGET/artifacts.in.tmp-blist.txt;
   while read -r ARTIFACT ; do
-    if grep --quiet "$ARTIFACT\$" $DIRNAME/artifactsBlacklist.txt ; then echo -n "# " >> $TARGET/artifacts.in.tmp-blist.txt; fi
+    if grep --quiet "$ARTIFACT\$" $DIRNAME/artifactsBlocklist.txt ; then echo -n "# " >> $TARGET/artifacts.in.tmp-blist.txt; fi
     echo "$ARTIFACT" >> $TARGET/artifacts.in.tmp-blist.txt;
   done < $TARGET/artifacts.in.tmp.txt;
 
@@ -86,9 +86,9 @@ cat $TARGET/artifacts.in.tmp-blist.txt | sed '/^$/d' | sed 's#.*#    <include>\0
 echo '</dependencySourceIncludes>'
 echo '<dependencySourceExcludes>'
 cat $TARGET/artifacts.ex.tmp.txt       | sed '/^$/d' | sed 's#.*#    <exclude>\0</exclude>#'
-echo '    <!-- Blacklisted artifacts - see build/javadoc/artifactsBlacklist.txt. -->'
+echo '    <!-- Blocklisted artifacts - see build/javadoc/artifactsBlocklist.txt. -->'
 echo '    <!-- [ERROR] java.lang.ClassCastException: com.sun.tools.javadoc.ClassDocImpl cannot be cast to com.sun.javadoc.AnnotationTypeDoc -->'
-cat $DIRNAME/artifactsBlacklist.txt   | sed '/^$/d' | sed 's#.*#    <exclude>\0</exclude>#'
+cat $DIRNAME/artifactsBlocklist.txt   | sed '/^$/d' | sed 's#.*#    <exclude>\0</exclude>#'
 echo '</dependencySourceExcludes>'
 echo '</root>'
 
