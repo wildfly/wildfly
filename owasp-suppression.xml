@@ -47,6 +47,22 @@
         <cve>CVE-2021-23463</cve>
     </suppress>
 
+    <!-- [wildfly] 'In practice, this issue impacts only H2 databases which are actively using the Web Console and enabled remote access.' WildFly uses on in-memory h2 without remote access. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: h2-1.4.197.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+        <cve>CVE-2022-23221</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: h2-1.4.197.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+        <vulnerabilityName>CWE-94: Improper Control of Generation of Code ('Code Injection')</vulnerabilityName>
+    </suppress>
+
     <!-- [wildfly] Does not apply to WildFly version 21 -->
     <suppress>
         <notes><![CDATA[
