@@ -22,10 +22,7 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.function.Consumer;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -36,21 +33,18 @@ import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.ee.CompositeIterable;
+import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
 import org.wildfly.clustering.ejb.BeanManagementProvider;
-import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.container.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceConfigurator;
 import org.wildfly.clustering.service.ServiceDependency;
-import org.wildfly.clustering.service.ServiceNameRegistry;
-import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.ProvidedCacheServiceConfigurator;
+import org.wildfly.clustering.spi.group.DistributedCacheGroupServiceConfiguratorProvider;
 
 /**
  * Builds an infinispan-based {@link BeanManagerFactory}.
@@ -107,20 +101,8 @@ public class InfinispanBeanManagementProvider<I> implements BeanManagementProvid
 
         CapabilityServiceConfigurator configurationConfigurator = new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(containerName, cacheName), containerName, cacheName, templateCacheName, configurator);
         CapabilityServiceConfigurator cacheConfigurator = new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(containerName, cacheName), containerName, cacheName).require(new ServiceDependency(name.append("marshalling")));
-
-        List<Iterable<CapabilityServiceConfigurator>> configurators = new LinkedList<>();
-        configurators.add(Arrays.asList(configurationConfigurator, cacheConfigurator));
-
-        ServiceNameRegistry<ClusteringCacheRequirement> registry = new ServiceNameRegistry<ClusteringCacheRequirement>() {
-            @Override
-            public ServiceName getServiceName(ClusteringCacheRequirement requirement) {
-                return (requirement == ClusteringCacheRequirement.GROUP) ? ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, cacheName) : null;
-            }
-        };
-        for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(DistributedCacheServiceConfiguratorProvider.class, DistributedCacheServiceConfiguratorProvider.class.getClassLoader())) {
-            configurators.add(provider.getServiceConfigurators(registry, containerName, cacheName));
-        }
-        return new CompositeIterable<>(configurators);
+        CapabilityServiceConfigurator groupConfigurator = new ProvidedCacheServiceConfigurator<>(DistributedCacheGroupServiceConfiguratorProvider.class, containerName, cacheName);
+        return List.of(configurationConfigurator, cacheConfigurator, groupConfigurator);
     }
 
     @Override

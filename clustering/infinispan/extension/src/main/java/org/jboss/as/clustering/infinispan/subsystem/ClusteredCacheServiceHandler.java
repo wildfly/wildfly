@@ -28,7 +28,7 @@ import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
 /**
  * @author Paul Ferraro
  */
-public class ClusteredCacheServiceHandler extends CacheServiceHandler {
+public class ClusteredCacheServiceHandler extends CacheServiceHandler<DistributedCacheServiceConfiguratorProvider> {
 
     ClusteredCacheServiceHandler(ResourceServiceConfiguratorFactory configuratorFactory) {
         super(configuratorFactory, DistributedCacheServiceConfiguratorProvider.class);

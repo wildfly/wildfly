@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,19 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.spi;
+package org.jboss.as.clustering.controller;
+
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
+ * A {@link CapabilityServiceConfigurator} facade for collecting, configuring, and building; or removing; a set of {@link ServiceConfigurator} instances.
  * @author Paul Ferraro
  */
-public interface IdentityCacheServiceConfiguratorProvider {
-    Iterable<ServiceConfigurator> getServiceConfigurators(CapabilityServiceSupport support, String containerName, String cacheName, String targetCacheName);
+public class CompositeCapabilityServiceConfigurator extends CompositeServiceConfigurator implements CapabilityServiceConfigurator {
+    private final BiConsumer<CapabilityServiceSupport, Consumer<ServiceConfigurator>> consumer;
 
-    default Iterable<ServiceConfigurator> getServiceConfigurators(OperationContext context, String containerName, String cacheName, String targetCacheName) {
-        return this.getServiceConfigurators(context.getCapabilityServiceSupport(), containerName, cacheName, targetCacheName);
+    public CompositeCapabilityServiceConfigurator(BiConsumer<CapabilityServiceSupport, Consumer<ServiceConfigurator>> consumer) {
+        this.consumer = consumer;
+    }
+
+    @Override
+    public CompositeServiceConfigurator configure(CapabilityServiceSupport support) {
+        this.consumer.accept(support, this);
+        return this;
+    }
+
+    public void remove(OperationContext context) {
+        this.consumer.accept(context.getCapabilityServiceSupport(), configurator -> context.removeService(configurator.getServiceName()));
     }
 }

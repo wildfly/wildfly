@@ -21,16 +21,16 @@
  */
 package org.wildfly.clustering.server.registry;
 
-import java.util.Collections;
+import java.util.List;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.server.CacheCapabilityServiceConfiguratorFactory;
 import org.wildfly.clustering.server.CacheJndiNameFactory;
 import org.wildfly.clustering.server.CacheRequirementServiceConfiguratorProvider;
-import org.wildfly.clustering.service.ServiceNameRegistry;
+import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
@@ -44,12 +44,10 @@ public class RegistryFactoryServiceConfiguratorProvider extends CacheRequirement
     }
 
     @Override
-    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {
-        Iterable<CapabilityServiceConfigurator> configurators = super.getServiceConfigurators(registry, containerName, cacheName);
-        ServiceName registryServiceName = registry.getServiceName(ClusteringCacheRequirement.REGISTRY);
-        if (registryServiceName == null) return configurators;
-
-        CapabilityServiceConfigurator configurator = new RegistryServiceConfigurator<>(registryServiceName, containerName, cacheName);
-        return new CompositeIterable<>(configurators, Collections.singleton(configurator));
+    public Iterable<ServiceConfigurator> getServiceConfigurators(CapabilityServiceSupport support, String containerName, String cacheName) {
+        Iterable<ServiceConfigurator> configurators = super.getServiceConfigurators(support, containerName, cacheName);
+        ServiceName name = ClusteringCacheRequirement.REGISTRY.getServiceName(support, containerName, cacheName);
+        ServiceConfigurator configurator = new RegistryServiceConfigurator<>(name, containerName, cacheName).configure(support);
+        return new CompositeIterable<>(configurators, List.of(configurator));
     }
 }

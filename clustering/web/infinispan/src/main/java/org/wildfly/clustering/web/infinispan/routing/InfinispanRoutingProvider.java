@@ -22,25 +22,17 @@
 
 package org.wildfly.clustering.web.infinispan.routing;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ServiceLoader;
-import java.util.Set;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.infinispan.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceConfigurator;
-import org.wildfly.clustering.service.ServiceNameRegistry;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.ProvidedCacheServiceConfigurator;
+import org.wildfly.clustering.spi.group.DistributedCacheGroupServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.registry.DistributedRegistryServiceConfiguratorProvider;
 import org.wildfly.clustering.web.cache.routing.LocalRouteServiceConfigurator;
 import org.wildfly.clustering.web.routing.RoutingProvider;
 
@@ -49,7 +41,6 @@ import org.wildfly.clustering.web.routing.RoutingProvider;
  * @author Paul Ferraro
  */
 public class InfinispanRoutingProvider implements RoutingProvider {
-    static final Set<ClusteringCacheRequirement> REGISTRY_REQUIREMENTS = EnumSet.of(ClusteringCacheRequirement.REGISTRY, ClusteringCacheRequirement.REGISTRY_FACTORY, ClusteringCacheRequirement.GROUP);
 
     private final InfinispanRoutingConfiguration config;
 
@@ -66,20 +57,8 @@ public class InfinispanRoutingProvider implements RoutingProvider {
         CapabilityServiceConfigurator registryEntryConfigurator = new RouteRegistryEntryProviderServiceConfigurator(containerName, serverName);
         CapabilityServiceConfigurator configurationConfigurator = new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(containerName, serverName), containerName, serverName, cacheName, this.config);
         CapabilityServiceConfigurator cacheConfigurator = new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(containerName, serverName), containerName, serverName);
-
-        List<Iterable<CapabilityServiceConfigurator>> configurators = new LinkedList<>();
-        configurators.add(Arrays.asList(localRouteConfigurator, registryEntryConfigurator, configurationConfigurator, cacheConfigurator));
-
-        ServiceNameRegistry<ClusteringCacheRequirement> registry = new ServiceNameRegistry<ClusteringCacheRequirement>() {
-            @Override
-            public ServiceName getServiceName(ClusteringCacheRequirement requirement) {
-                return REGISTRY_REQUIREMENTS.contains(requirement) ? ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, serverName) : null;
-            }
-        };
-        for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(DistributedCacheServiceConfiguratorProvider.class, DistributedCacheServiceConfiguratorProvider.class.getClassLoader())) {
-            configurators.add(provider.getServiceConfigurators(registry, containerName, serverName));
-        }
-
-        return new CompositeIterable<>(configurators);
+        CapabilityServiceConfigurator groupConfigurator = new ProvidedCacheServiceConfigurator<>(DistributedCacheGroupServiceConfiguratorProvider.class, containerName, serverName);
+        CapabilityServiceConfigurator registryConfigurator = new ProvidedCacheServiceConfigurator<>(DistributedRegistryServiceConfiguratorProvider.class, containerName, serverName);
+        return List.of(localRouteConfigurator, registryEntryConfigurator, configurationConfigurator, cacheConfigurator, registryConfigurator, groupConfigurator);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,17 +22,25 @@
 
 package org.wildfly.clustering.spi;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import java.util.ServiceLoader;
+
+import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.clustering.controller.CompositeCapabilityServiceConfigurator;
 import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
+ * A {@link CapabilityServiceConfigurator} facade for collecting, configuring, and building; or removing; a set of {@link ServiceConfigurator} instances acquired from a {@link GroupServiceConfiguratorProvider}.
  * @author Paul Ferraro
  */
-public interface IdentityCacheServiceConfiguratorProvider {
-    Iterable<ServiceConfigurator> getServiceConfigurators(CapabilityServiceSupport support, String containerName, String cacheName, String targetCacheName);
+public class ProvidedGroupServiceConfigurator<P extends GroupServiceConfiguratorProvider> extends CompositeCapabilityServiceConfigurator {
 
-    default Iterable<ServiceConfigurator> getServiceConfigurators(OperationContext context, String containerName, String cacheName, String targetCacheName) {
-        return this.getServiceConfigurators(context.getCapabilityServiceSupport(), containerName, cacheName, targetCacheName);
+    public ProvidedGroupServiceConfigurator(Class<P> providerClass, String group) {
+        super((support, consumer) -> {
+            for (P provider : ServiceLoader.load(providerClass, providerClass.getClassLoader())) {
+                for (ServiceConfigurator configurator : provider.getServiceConfigurators(support, group)) {
+                    consumer.accept(configurator);
+                }
+            }
+        });
     }
 }

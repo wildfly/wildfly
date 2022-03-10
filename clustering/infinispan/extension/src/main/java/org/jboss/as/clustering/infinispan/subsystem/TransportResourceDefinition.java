@@ -22,11 +22,13 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.EnumMap;
+import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.Map;
+import java.util.List;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
+import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -47,13 +49,6 @@ public abstract class TransportResourceDefinition extends ChildResourceDefinitio
         return PathElement.pathElement("transport", value);
     }
 
-    static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
-    static {
-        for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
-            CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement, UnaryCapabilityNameResolver.PARENT));
-        }
-    }
-
     private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceHandler handler;
 
@@ -67,8 +62,14 @@ public abstract class TransportResourceDefinition extends ChildResourceDefinitio
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
 
+        Set<ClusteringRequirement> requirements = EnumSet.allOf(ClusteringRequirement.class);
+        List<Capability> capabilities = new ArrayList<>(requirements.size());
+        for (ClusteringRequirement requirement : requirements) {
+            capabilities.add(new UnaryRequirementCapability(requirement, UnaryCapabilityNameResolver.PARENT));
+        }
+
         ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
-                .addCapabilities(CLUSTERING_CAPABILITIES.values())
+                .addCapabilities(capabilities)
                 ;
         new SimpleResourceRegistration(descriptor, this.handler).register(registration);
 

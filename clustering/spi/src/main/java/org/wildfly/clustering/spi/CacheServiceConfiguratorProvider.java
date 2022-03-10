@@ -22,12 +22,17 @@
 
 package org.wildfly.clustering.spi;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.wildfly.clustering.service.ServiceNameRegistry;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
  * @author Paul Ferraro
  */
 public interface CacheServiceConfiguratorProvider {
-    Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName);
+    Iterable<ServiceConfigurator> getServiceConfigurators(CapabilityServiceSupport support, String containerName, String cacheName);
+
+    default Iterable<ServiceConfigurator> getServiceConfigurators(OperationContext context, String containerName, String cacheName) {
+        return this.getServiceConfigurators(context.getCapabilityServiceSupport(), containerName, cacheName);
+    }
 }

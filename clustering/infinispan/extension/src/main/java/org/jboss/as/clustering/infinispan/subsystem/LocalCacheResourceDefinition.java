@@ -27,13 +27,14 @@ import java.util.function.UnaryOperator;
 import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.controller.PathElement;
+import org.wildfly.clustering.spi.LocalCacheServiceConfiguratorProvider;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/local-cache=*
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class LocalCacheResourceDefinition extends CacheResourceDefinition {
+public class LocalCacheResourceDefinition extends CacheResourceDefinition<LocalCacheServiceConfiguratorProvider> {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
     static PathElement pathElement(String name) {
