@@ -24,13 +24,14 @@ package org.wildfly.clustering.server.registry;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.registry.DistributedRegistryServiceConfiguratorProvider;
 
 /**
  * Provides the requisite builders for a clustered {@link RegistryFactory}.
  * @author Paul Ferraro
  */
-@MetaInfServices(DistributedCacheServiceConfiguratorProvider.class)
-public class CacheRegistryFactoryServiceConfiguratorProvider extends RegistryFactoryServiceConfiguratorProvider implements DistributedCacheServiceConfiguratorProvider {
+@MetaInfServices({ DistributedCacheServiceConfiguratorProvider.class, DistributedRegistryServiceConfiguratorProvider.class })
+public class CacheRegistryFactoryServiceConfiguratorProvider extends RegistryFactoryServiceConfiguratorProvider implements DistributedRegistryServiceConfiguratorProvider {
 
     public CacheRegistryFactoryServiceConfiguratorProvider() {
         super(CacheRegistryFactoryServiceConfigurator::new);

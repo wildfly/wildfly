@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.group;
+package org.wildfly.clustering.spi.group;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.spi.LocalCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
 
 /**
- * Provides the requisite builders for a non-clustered cache-based {@link Group} service.
+ * Provides service configurators for a distributed cache {@link Group}.
  * @author Paul Ferraro
  */
-@MetaInfServices({ LocalCacheServiceConfiguratorProvider.class, org.wildfly.clustering.spi.group.LocalCacheGroupServiceConfiguratorProvider.class })
-public class LocalCacheGroupServiceConfiguratorProvider extends CacheGroupServiceConfiguratorProvider implements org.wildfly.clustering.spi.group.LocalCacheGroupServiceConfiguratorProvider {
+public interface DistributedCacheGroupServiceConfiguratorProvider extends DistributedCacheServiceConfiguratorProvider {
 
-    public LocalCacheGroupServiceConfiguratorProvider() {
-        super((name, containerName, cacheName) -> new LocalCacheGroupServiceConfigurator(name));
-    }
 }

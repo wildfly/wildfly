@@ -22,16 +22,15 @@
 
 package org.wildfly.clustering.server;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.naming.BinderServiceConfigurator;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.ServiceNameRegistry;
+import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.clustering.spi.GroupServiceConfiguratorProvider;
 
@@ -55,17 +54,15 @@ public class GroupRequirementServiceConfiguratorProvider<T> implements GroupServ
     }
 
     @Override
-    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringRequirement> registry, String group) {
-        ServiceName name = registry.getServiceName(this.requirement);
-        if (name == null) return Collections.emptySet();
-
-        CapabilityServiceConfigurator configurator = this.factory.createServiceConfigurator(name, group);
+    public Iterable<ServiceConfigurator> getServiceConfigurators(CapabilityServiceSupport support, String group) {
+        ServiceName name = this.requirement.getServiceName(support, group);
+        ServiceConfigurator configurator = this.factory.createServiceConfigurator(name, group).configure(support);
         if (this.jndiNameFactory == null) {
-            return Collections.singleton(configurator);
+            return List.of(configurator);
         }
         ContextNames.BindInfo binding = ContextNames.bindInfoFor(this.jndiNameFactory.apply(group).getAbsoluteName());
-        CapabilityServiceConfigurator binderConfigurator = new BinderServiceConfigurator(binding, configurator.getServiceName());
-        return Arrays.asList(configurator, binderConfigurator);
+        ServiceConfigurator binderConfigurator = new BinderServiceConfigurator(binding, configurator.getServiceName()).configure(support);
+        return List.of(configurator, binderConfigurator);
     }
 
     @Override

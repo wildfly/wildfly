@@ -22,12 +22,17 @@
 
 package org.wildfly.clustering.spi;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.wildfly.clustering.service.ServiceNameRegistry;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.wildfly.clustering.service.ServiceConfigurator;
 
 /**
  * @author Paul Ferraro
  */
 public interface GroupServiceConfiguratorProvider {
-    Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringRequirement> registry, String group);
+    Iterable<ServiceConfigurator> getServiceConfigurators(CapabilityServiceSupport support, String group);
+
+    default Iterable<ServiceConfigurator> getServiceConfigurators(OperationContext context, String group) {
+        return this.getServiceConfigurators(context.getCapabilityServiceSupport(), group);
+    }
 }

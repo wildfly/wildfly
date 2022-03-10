@@ -22,15 +22,16 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import java.util.Collections;
+import java.util.List;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.IdentityLegacyCapabilityServiceConfigurator;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.service.ServiceNameRegistry;
+import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
-import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
 
 /**
  * @author Paul Ferraro
@@ -40,8 +41,9 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 public class IdentitySingletonServiceBuilderFactoryBuilderProvider implements IdentityCacheServiceConfiguratorProvider {
 
     @Override
-    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName, String targetCacheName) {
-        return Collections.singleton(new IdentityLegacyCapabilityServiceConfigurator<>(registry.getServiceName(ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY), SingletonServiceBuilderFactory.class, ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, containerName, targetCacheName));
+    public Iterable<ServiceConfigurator> getServiceConfigurators(CapabilityServiceSupport support, String containerName, String cacheName, String targetCacheName) {
+        ServiceName name = ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY.getServiceName(support, containerName, cacheName);
+        return List.of(new IdentityLegacyCapabilityServiceConfigurator<>(name, SingletonServiceBuilderFactory.class, ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, containerName, targetCacheName).configure(support));
     }
 
     @Override

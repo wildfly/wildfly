@@ -22,10 +22,9 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 import org.infinispan.Cache;
 import org.infinispan.lifecycle.ComponentStatus;
@@ -59,6 +58,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.service.BinaryRequirement;
+import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
@@ -66,7 +66,7 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class CacheResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public class CacheResourceDefinition<P extends CacheServiceConfiguratorProvider> extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     enum Capability implements CapabilityProvider {
         CACHE(InfinispanCacheRequirement.CACHE),
@@ -81,13 +81,6 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         @Override
         public org.jboss.as.clustering.controller.Capability getCapability() {
             return this.capability;
-        }
-    }
-
-    static final Map<ClusteringCacheRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringCacheRequirement.class);
-    static {
-        for (ClusteringCacheRequirement requirement : EnumSet.allOf(ClusteringCacheRequirement.class)) {
-            CLUSTERING_CAPABILITIES.put(requirement, new BinaryRequirementCapability(requirement));
         }
     }
 
@@ -296,7 +289,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
     private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceHandler handler;
 
-    public CacheResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, CacheServiceHandler handler, FunctionExecutorRegistry<Cache<?, ?>> executors) {
+    public CacheResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, CacheServiceHandler<P> handler, FunctionExecutorRegistry<Cache<?, ?>> executors) {
         super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, PathElement.pathElement("cache")));
         this.configurator = configurator;
         this.handler = handler;
@@ -313,7 +306,7 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
                 .addIgnoredAttributes(EnumSet.complementOf(EnumSet.of(DeprecatedAttribute.MODULE)))
                 .addAttributeTranslation(DeprecatedAttribute.MODULE, new ListAttributeTranslation(ListAttribute.MODULES))
                 .addCapabilities(Capability.class)
-                .addCapabilities(CLUSTERING_CAPABILITIES.values())
+                .addCapabilities(EnumSet.allOf(ClusteringCacheRequirement.class).stream().map(BinaryRequirementCapability::new).collect(Collectors.toList()))
                 .addRequiredChildren(ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
                 .addRequiredSingletonChildren(HeapMemoryResourceDefinition.PATH, NoStoreResourceDefinition.PATH)
                 ;

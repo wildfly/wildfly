@@ -30,8 +30,8 @@ import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
  * Provides the requisite builders for a clustered cache-based {@link Group} service.
  * @author Paul Ferraro
  */
-@MetaInfServices(DistributedCacheServiceConfiguratorProvider.class)
-public class DistributedCacheGroupServiceConfiguratorProvider extends CacheGroupServiceConfiguratorProvider implements org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider {
+@MetaInfServices({ DistributedCacheServiceConfiguratorProvider.class, org.wildfly.clustering.spi.group.DistributedCacheGroupServiceConfiguratorProvider.class })
+public class DistributedCacheGroupServiceConfiguratorProvider extends CacheGroupServiceConfiguratorProvider implements org.wildfly.clustering.spi.group.DistributedCacheGroupServiceConfiguratorProvider {
 
     public DistributedCacheGroupServiceConfiguratorProvider() {
         super(CacheGroupServiceConfigurator::new);
