@@ -84,9 +84,16 @@ abstract class JobRepositoryService implements JobRepository, Service<JobReposit
         return getAndCheckDelegate().getJobNames();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * WildFly JBeret subsystem validates a job name before each batch job operations.
+     * If a job name is invalid, {@code NoSuchJobException} would already have been thrown.
+     * So this method is optimized to always return true.
+     */
     @Override
     public boolean jobExists(final String jobName) {
-        return getAndCheckDelegate().jobExists(jobName);
+        return true;
     }
 
     @Override
