@@ -44,6 +44,11 @@ public class TestApplication extends Application {
     static final String Y_A_OVERRIDES_B = "y-a-overrides-b";
     static final String Z_C_OVERRIDES_A = "y-c-overrides-a";
 
+    static final String NOT_AVAILABLE_NESTED_DIR_UNDER_A = "not-available-a";
+    static final String NOT_AVAILABLE_ROOT_FILE = "not-available-root-file";
+    static final String DEFAULT = "default";
+
+
     @Path("/test")
     public static class Resource {
 
@@ -71,6 +76,16 @@ public class TestApplication extends Application {
         @ConfigProperty(name = Z_C_OVERRIDES_A)
         String zCOverridesA;
 
+        @Inject
+        @ConfigProperty(name = NOT_AVAILABLE_NESTED_DIR_UNDER_A, defaultValue = DEFAULT)
+        String notAvailableA;
+
+        @Inject
+        @ConfigProperty(name = NOT_AVAILABLE_ROOT_FILE, defaultValue = DEFAULT)
+        String notAvailableRootFile;
+
+
+
         @GET
         @Produces("text/plain")
         public Response doGet() {
@@ -81,6 +96,9 @@ public class TestApplication extends Application {
             text.append(X_D_OVERRIDES_A + " = " + xDOverridesA + "\n");
             text.append(Y_A_OVERRIDES_B + " = " + yAOverridesB + "\n");
             text.append(Z_C_OVERRIDES_A + " = " + zCOverridesA + "\n");
+            text.append(NOT_AVAILABLE_NESTED_DIR_UNDER_A + " = " + notAvailableA + "\n");
+            text.append(NOT_AVAILABLE_ROOT_FILE + " = " + notAvailableRootFile + "\n");
+
             return Response.ok(text).build();
         }
     }

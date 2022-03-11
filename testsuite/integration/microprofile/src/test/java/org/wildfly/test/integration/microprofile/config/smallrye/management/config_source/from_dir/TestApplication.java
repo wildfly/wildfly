@@ -41,6 +41,11 @@ public class TestApplication extends Application {
     static final String FROM_B = "from-b";
     static final String B_OVERRIDES_A = "b-overrides-a";
 
+
+    static final String NOT_AVAILABLE_NESTED_DIR_UNDER_A = "not-available-a";
+    static final String NOT_AVAILABLE_NESTED_DIR_UNDER_B = "not-available-b";
+    static final String DEFAULT = "default";
+
     @Path("/test")
     public static class Resource {
 
@@ -56,13 +61,25 @@ public class TestApplication extends Application {
         @ConfigProperty(name = B_OVERRIDES_A)
         String bOverridesA;
 
+        @Inject
+        @ConfigProperty(name = NOT_AVAILABLE_NESTED_DIR_UNDER_A, defaultValue = DEFAULT)
+        String notAvailableA;
+
+        @Inject
+        @ConfigProperty(name = NOT_AVAILABLE_NESTED_DIR_UNDER_B, defaultValue = DEFAULT)
+        String notAvailableB;
+
+
         @GET
         @Produces("text/plain")
         public Response doGet() {
+
             StringBuilder text = new StringBuilder();
             text.append(FROM_A + " = " + fromA + "\n");
             text.append(FROM_B + " = " + fromB + "\n");
-            text.append(B_OVERRIDES_A    + " = " + bOverridesA + "\n");
+            text.append(B_OVERRIDES_A + " = " + bOverridesA + "\n");
+            text.append(NOT_AVAILABLE_NESTED_DIR_UNDER_A + " = " + notAvailableA + "\n");
+            text.append(NOT_AVAILABLE_NESTED_DIR_UNDER_B + " = " + notAvailableB + "\n");
             return Response.ok(text).build();
         }
     }

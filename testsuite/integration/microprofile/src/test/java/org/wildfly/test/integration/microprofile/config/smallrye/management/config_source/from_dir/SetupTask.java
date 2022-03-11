@@ -25,6 +25,8 @@ package org.wildfly.test.integration.microprofile.config.smallrye.management.con
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.B_OVERRIDES_A;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.FROM_A;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.FROM_B;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.NOT_AVAILABLE_NESTED_DIR_UNDER_A;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.NOT_AVAILABLE_NESTED_DIR_UNDER_B;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -74,12 +76,19 @@ public class SetupTask extends CLIServerSetupTask {
         Path dirA = createPropsDir(rootDir, PROPS_A, FROM_A, A, B_OVERRIDES_A, OVERRIDDEN_A);
         Path dirB = createPropsDir(rootDir, PROPS_B, FROM_B, B, B_OVERRIDES_A, OVERRIDDEN_B);
 
+        // Add some files which will be ignored (since the config sources we are adding here are not roots)
+        // in child directories of the config source directories
+        createPropsDir(dirA, PROPS_A, NOT_AVAILABLE_NESTED_DIR_UNDER_A, "Hello");
+        createPropsDir(dirB, PROPS_B, NOT_AVAILABLE_NESTED_DIR_UNDER_B, "Hello");
+
+
         NodeBuilder nb = builder.node(containerId);
 
 
         nb.setup(String.format("%s:add(dir={path=\"%s\"})", ADDR_A, escapePath(dirA)));
         nb.setup(String.format("/path=mp-config-test:add(path=\"%s\")", escapePath(dirB.getParent())));
-        nb.setup(String.format("%s:add(dir={relative-to=mp-config-test, path=\"%s\"}, ordinal=300)", ADDR_B, dirB.getFileName()));
+        // Make this one explicitly set root=false for test coverage
+        nb.setup(String.format("%s:add(dir={relative-to=mp-config-test, path=\"%s\", root=false}, ordinal=300)", ADDR_B, dirB.getFileName()));
         nb.setup(String.format("%s:add(dir={path=\"%s\"})", ADDR_NON_EXISTENT, escapePath(nonExistent)));
 
         nb.teardown(String.format("%s:remove", ADDR_A));

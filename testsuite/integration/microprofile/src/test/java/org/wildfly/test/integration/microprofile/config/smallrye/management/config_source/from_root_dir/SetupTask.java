@@ -22,6 +22,8 @@
 
 package org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir;
 
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.NOT_AVAILABLE_NESTED_DIR_UNDER_A;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.NOT_AVAILABLE_ROOT_FILE;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.Y_A_OVERRIDES_B;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.X_D_OVERRIDES_A;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.FROM_A1;
@@ -84,7 +86,7 @@ public class SetupTask extends CLIServerSetupTask {
         Assert.assertFalse(Files.exists(nonExistent));
 
         // Since PROPS_A is alphabetically lower than PROPS_B, Y will come from PROPS_A
-        createPropsDir(rootDir1, PROPS_A, FROM_A1, A1, FROM_A2, A2, X_D_OVERRIDES_A, X_FROM_A, Y_A_OVERRIDES_B, Y_FROM_A, Z_C_OVERRIDES_A, Z_FROM_A);
+        Path dirA = createPropsDir(rootDir1, PROPS_A, FROM_A1, A1, FROM_A2, A2, X_D_OVERRIDES_A, X_FROM_A, Y_A_OVERRIDES_B, Y_FROM_A, Z_C_OVERRIDES_A, Z_FROM_A);
         createPropsDir(rootDir1, PROPS_B, FROM_B, B, Y_A_OVERRIDES_B, Y_FROM_B);
         // Since PROPS_C has a higher ordinal, Z will come from PROPS_A
         createPropsDir(rootDir1, PROPS_C, "config_ordinal", "500", Z_C_OVERRIDES_A, Z_FROM_C);
@@ -93,6 +95,12 @@ public class SetupTask extends CLIServerSetupTask {
         createPropsDir(rootDir2, PROPS_D, X_D_OVERRIDES_A, X_FROM_D);
 
         NodeBuilder nb = builder.node(containerId);
+
+        //Create some files in locations that should not be considered as properties for a config source root director
+        // 1) in the root directory itself
+        Files.write(rootDir1.resolve(NOT_AVAILABLE_ROOT_FILE), Collections.singletonList("Hello"));
+        // 2) in a nested folder under one of the folders under the root dirctory
+        createPropsDir(dirA, PROPS_A, NOT_AVAILABLE_NESTED_DIR_UNDER_A, "Hello");
 
 
         nb.setup(String.format("%s:add(dir={root=true, path=\"%s\"})", ROOT_A, escapePath(rootDir1)));
@@ -128,6 +136,7 @@ public class SetupTask extends CLIServerSetupTask {
         }
         return sourceDir.toAbsolutePath().normalize();
     }
+
 
     @Override
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {

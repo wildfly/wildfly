@@ -25,8 +25,11 @@ package org.wildfly.test.integration.microprofile.config.smallrye.management.con
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.SetupTask.A;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.SetupTask.B;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.B_OVERRIDES_A;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.DEFAULT;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.FROM_A;
 import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.FROM_B;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.NOT_AVAILABLE_NESTED_DIR_UNDER_A;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.NOT_AVAILABLE_NESTED_DIR_UNDER_B;
 
 import java.net.URL;
 
@@ -80,6 +83,8 @@ public class ConfigSourceFromDirTestCase extends AbstractMicroProfileConfigTestC
             AssertUtils.assertTextContainsProperty(text, FROM_A, A);
             AssertUtils.assertTextContainsProperty(text, FROM_B, B);
             AssertUtils.assertTextContainsProperty(text, B_OVERRIDES_A, SetupTask.OVERRIDDEN_B);
+            AssertUtils.assertTextContainsProperty(text, NOT_AVAILABLE_NESTED_DIR_UNDER_A, DEFAULT);
+            AssertUtils.assertTextContainsProperty(text, NOT_AVAILABLE_NESTED_DIR_UNDER_B, DEFAULT);
         }
     }
 }
