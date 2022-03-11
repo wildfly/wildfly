@@ -531,6 +531,14 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         this.persistTimer(timer, true);
         // now "start" the timer. This involves, moving the timer to an ACTIVE state
         // and scheduling the timer task
+
+        // If an auto timer has been persisted by another node, it will be marked as CANCELED
+        // during the persistTimer(timer, true) call above. This timer will be created or started.
+        if (timeoutMethod != null && timer.getState() == TimerState.CANCELED) {
+            EJB3_TIMER_LOGGER.debugv("The auto timer was already created by other node: {0}", timer);
+            return timer;
+        }
+
         this.startTimer(timer);
         // return the timer
         return timer;
