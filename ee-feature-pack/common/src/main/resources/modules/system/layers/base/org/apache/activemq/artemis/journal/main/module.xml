@@ -38,7 +38,7 @@
         <!-- required for ARTEMIS-298 -->
         <module name="com.google.guava"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
-        <module name="javax.json.api"/>
+        <module name="internal.javax.json.api.ee8" services="import"/>
         <module name="org.apache.commons.beanutils" />
         <module name="org.jboss.logging"/>
         <module name="org.jctools"/>

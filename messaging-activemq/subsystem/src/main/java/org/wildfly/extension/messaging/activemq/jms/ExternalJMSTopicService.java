@@ -90,16 +90,16 @@ public class ExternalJMSTopicService implements Service<Topic> {
                         public void nodeUP(TopologyMember member, boolean last) {
                             try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getLive())) {
                                 factory.getServerLocator().setProtocolManagerFactory(protocolManagerFactory);
-                                MessagingLogger.ROOT_LOGGER.infof("Creating topic %s on node UP %s - %s", topicName, member.getNodeId(), member.getLive().toJson());
+                                MessagingLogger.ROOT_LOGGER.infof("Creating topic %s on node UP %s - %s", topicName, member.getNodeId(), member.getLive().toString());
                                 config.createTopic(factory, managementQueue, topicName);
                             } catch (JMSException | StartException ex) {
-                                MessagingLogger.ROOT_LOGGER.errorf(ex, "Creating topic %s on node UP %s failed", topicName, member.getLive().toJson());
+                                MessagingLogger.ROOT_LOGGER.errorf(ex, "Creating topic %s on node UP %s failed", topicName, member.getLive().toString());
                                 throw new RuntimeException(ex);
                             }
                             if (member.getBackup() != null) {
                                 try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getBackup())) {
                                     factory.getServerLocator().setProtocolManagerFactory(protocolManagerFactory);
-                                    MessagingLogger.ROOT_LOGGER.infof("Creating topic %s on backup node UP %s - %s", topicName, member.getNodeId(), member.getBackup().toJson());
+                                    MessagingLogger.ROOT_LOGGER.infof("Creating topic %s on backup node UP %s - %s", topicName, member.getNodeId(), member.getBackup().toString());
                                     config.createTopic(factory, managementQueue, topicName);
                                 } catch (JMSException | StartException ex) {
                                     throw new RuntimeException(ex);
