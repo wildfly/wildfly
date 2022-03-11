@@ -292,7 +292,7 @@
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
         <version.com.github.fge.msg-simple>1.1</version.com.github.fge.msg-simple>
-        <version.com.github.spullara.mustache>0.9.6</version.com.github.spullara.mustache>
+        <version.com.github.spullara.mustache>0.9.10</version.com.github.spullara.mustache>
         <version.com.github.tomakehurst.wiremock>2.27.2</version.com.github.tomakehurst.wiremock>
         <version.com.google.android.annotations>4.1.1.4</version.com.google.android.annotations>
         <version.com.google.api.grpc>2.0.1</version.com.google.api.grpc>
