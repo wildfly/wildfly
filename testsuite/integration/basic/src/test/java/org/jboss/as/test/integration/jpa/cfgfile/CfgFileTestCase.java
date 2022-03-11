@@ -22,10 +22,6 @@
 
 package org.jboss.as.test.integration.jpa.cfgfile;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.util.Map;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -93,15 +89,4 @@ public class CfgFileTestCase {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.getEmployeeNoTX(1);
     }
-
-    @Test
-    public void testProperties() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
-        Map<String, Object> props = sfsb1.getEMFProperties();
-
-        assertNotNull("EntityManagerFactory.getProperties() must not return null", props);
-        assertNotNull("EntityManagerFactory.getProperties().get(\"hibernate.jpa.compliance\") must not return null", props.get("hibernate.jpa.compliance"));
-        assertEquals("Value for hibernate.jpa.compliance", "true", props.get("hibernate.jpa.compliance").toString());
-    }
-
 }
