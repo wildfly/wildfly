@@ -94,7 +94,7 @@
                    entries="${jms-topic.entry:topic/client-test}"
                    enable-amq1-prefix="false"/>
 
-    <server name="default">
+    <server name="default" address-queue-scan-period="100">
 
         <security elytron-domain="elytronDomain"/>
         <cluster user="testuser">

@@ -49,6 +49,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.PAGING_D
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.SECURITY_SETTING;
 import static org.wildfly.extension.messaging.activemq.PathDefinition.PATHS;
 import static org.wildfly.extension.messaging.activemq.PathDefinition.RELATIVE_TO;
+import static org.wildfly.extension.messaging.activemq.ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.ASYNC_CONNECTION_EXECUTION_ENABLED;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CLUSTER_PASSWORD;
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CLUSTER_USER;
@@ -575,7 +576,7 @@ class ServerAdd extends AbstractAddStepHandler {
             configuration.setName(serverName);
             //To avoid the automatic reloading of the logging.properties by the broker.
             configuration.setConfigurationFileRefreshPeriod(-1);
-
+            configuration.setAddressQueueScanPeriod(ADDRESS_QUEUE_SCAN_PERIOD.resolveModelAttribute(context, model).asLong());
             configuration.setEnabledAsyncConnectionExecution(ASYNC_CONNECTION_EXECUTION_ENABLED.resolveModelAttribute(context, model).asBoolean());
 
             configuration.setClusterPassword(CLUSTER_PASSWORD.resolveModelAttribute(context, model).asString());
