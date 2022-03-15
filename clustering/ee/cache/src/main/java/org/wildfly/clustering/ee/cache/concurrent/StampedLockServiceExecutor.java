@@ -20,22 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.service.concurrent;
+package org.wildfly.clustering.ee.cache.concurrent;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.StampedLock;
 import java.util.function.Supplier;
 
+import org.wildfly.clustering.ee.concurrent.ServiceExecutor;
 import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * {@link ServiceExecutor} implemented via a {@link StampedLock}.
  * @author Paul Ferraro
- * @deprecated To be removed without replacement
  */
-@Deprecated
 public class StampedLockServiceExecutor implements ServiceExecutor {
 
     private final StampedLock lock = new StampedLock();
