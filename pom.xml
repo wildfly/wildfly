@@ -355,17 +355,17 @@
         <version.io.smallrye.open-api>2.1.21</version.io.smallrye.open-api>
         <version.io.smallrye.opentracing>2.0.0</version.io.smallrye.opentracing>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
-        <version.io.smallrye.smallrye-common>1.8.0</version.io.smallrye.smallrye-common>
-        <version.io.smallrye.smallrye-config>2.6.1</version.io.smallrye.smallrye-config>
+        <version.io.smallrye.smallrye-common>1.10.0</version.io.smallrye.smallrye-common>
+        <version.io.smallrye.smallrye-config>2.9.1</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>5.3.2</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>3.2.0</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>3.1.1</version.io.smallrye.smallrye-jwt>
-        <version.io.smallrye.smallrye-metrics>3.0.3</version.io.smallrye.smallrye-metrics>
+        <version.io.smallrye.smallrye-metrics>3.0.4</version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.smallrye-mutiny>1.1.2</version.io.smallrye.smallrye-mutiny>
-        <version.io.smallrye.smallrye-mutiny-vertx>2.15.1</version.io.smallrye.smallrye-mutiny-vertx>
-        <version.io.smallrye.smallrye-reactive-messaging>3.13.0</version.io.smallrye.smallrye-reactive-messaging>
+        <version.io.smallrye.smallrye-mutiny-vertx>2.16.2</version.io.smallrye.smallrye-mutiny-vertx>
+        <version.io.smallrye.smallrye-reactive-messaging>3.15.0</version.io.smallrye.smallrye-reactive-messaging>
         <version.io.undertow.jastow>2.0.10.Final</version.io.undertow.jastow>
-        <version.io.vertx.vertx>4.2.1</version.io.vertx.vertx>
+        <version.io.vertx.vertx>4.2.5</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
         <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
         <version.jakarta.json.bind.api>1.0.2</version.jakarta.json.bind.api>
@@ -2629,6 +2629,12 @@
             <dependency>
                 <groupId>io.smallrye.common</groupId>
                 <artifactId>smallrye-common-function</artifactId>
+                <version>${version.io.smallrye.smallrye-common}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.common</groupId>
+                <artifactId>smallrye-common-vertx-context</artifactId>
                 <version>${version.io.smallrye.smallrye-common}</version>
             </dependency>
 
