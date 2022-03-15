@@ -25,11 +25,11 @@ import java.util.List;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.server.service.CacheCapabilityServiceConfiguratorFactory;
 import org.wildfly.clustering.server.service.ClusteringCacheRequirement;
 import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.common.iteration.CompositeIterable;
 import org.wildfly.extension.clustering.server.CacheJndiNameFactory;
 import org.wildfly.extension.clustering.server.CacheRequirementServiceConfiguratorProvider;
 

@@ -43,7 +43,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.wildfly.clustering.ee.CompositeIterable;
+import org.wildfly.common.iteration.CompositeIterable;
 
 /**
  * XML writer for current Infinispan subsystem schema version.
