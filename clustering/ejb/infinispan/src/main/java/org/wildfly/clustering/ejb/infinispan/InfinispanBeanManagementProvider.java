@@ -33,18 +33,18 @@ import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
+import org.wildfly.clustering.ejb.BeanManagementProvider;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
-import org.wildfly.clustering.ejb.BeanManagementProvider;
+import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.container.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceConfigurator;
+import org.wildfly.clustering.server.service.ProvidedCacheServiceConfigurator;
+import org.wildfly.clustering.server.service.group.DistributedCacheGroupServiceConfiguratorProvider;
 import org.wildfly.clustering.service.ServiceDependency;
-import org.wildfly.clustering.spi.ProvidedCacheServiceConfigurator;
-import org.wildfly.clustering.spi.group.DistributedCacheGroupServiceConfiguratorProvider;
 
 /**
  * Builds an infinispan-based {@link BeanManagerFactory}.

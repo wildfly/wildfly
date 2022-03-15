@@ -41,13 +41,13 @@ import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
 import org.wildfly.clustering.infinispan.configuration.ConfigurationBuilderAttributesAccessor;
 import org.wildfly.clustering.infinispan.container.DataContainerConfigurationBuilder;
-import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.CacheServiceConfigurator;
+import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceConfigurator;
+import org.wildfly.clustering.server.service.ProvidedCacheServiceConfigurator;
+import org.wildfly.clustering.server.service.group.DistributedCacheGroupServiceConfiguratorProvider;
+import org.wildfly.clustering.server.service.registry.DistributedRegistryServiceConfiguratorProvider;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.spi.ProvidedCacheServiceConfigurator;
-import org.wildfly.clustering.spi.group.DistributedCacheGroupServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.registry.DistributedRegistryServiceConfiguratorProvider;
 
 /**
  * The legacy version of the client mappings registry provider, used when no distributable-ejb subsystem is present.

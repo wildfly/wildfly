@@ -57,9 +57,10 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
+import org.wildfly.clustering.server.service.CacheServiceConfiguratorProvider;
+import org.wildfly.clustering.server.service.ClusteringCacheRequirement;
 import org.wildfly.clustering.service.BinaryRequirement;
-import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.singleton.SingletonCacheRequirement;
 
 /**
  * Base class for cache resources which require common cache attributes only.
@@ -307,6 +308,7 @@ public class CacheResourceDefinition<P extends CacheServiceConfiguratorProvider>
                 .addAttributeTranslation(DeprecatedAttribute.MODULE, new ListAttributeTranslation(ListAttribute.MODULES))
                 .addCapabilities(Capability.class)
                 .addCapabilities(EnumSet.allOf(ClusteringCacheRequirement.class).stream().map(BinaryRequirementCapability::new).collect(Collectors.toList()))
+                .addCapabilities(EnumSet.allOf(SingletonCacheRequirement.class).stream().map(BinaryRequirementCapability::new).collect(Collectors.toList()))
                 .addRequiredChildren(ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
                 .addRequiredSingletonChildren(HeapMemoryResourceDefinition.PATH, NoStoreResourceDefinition.PATH)
                 ;

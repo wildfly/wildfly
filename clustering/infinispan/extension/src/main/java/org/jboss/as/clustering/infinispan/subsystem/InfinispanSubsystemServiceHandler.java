@@ -29,9 +29,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
-import org.wildfly.clustering.spi.ProvidedGroupServiceConfigurator;
-import org.wildfly.clustering.spi.ProvidedIdentityGroupServiceConfigurator;
-import org.wildfly.clustering.spi.LocalGroupServiceConfiguratorProvider;
+import org.wildfly.clustering.server.service.LocalGroupServiceConfiguratorProvider;
+import org.wildfly.clustering.server.service.ProvidedGroupServiceConfigurator;
+import org.wildfly.clustering.server.service.ProvidedIdentityGroupServiceConfigurator;
 
 /**
  * @author Paul Ferraro

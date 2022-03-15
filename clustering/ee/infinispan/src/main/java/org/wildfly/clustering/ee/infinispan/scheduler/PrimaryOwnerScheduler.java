@@ -34,7 +34,7 @@ import org.wildfly.clustering.ee.Invoker;
 import org.wildfly.clustering.ee.cache.retry.RetryingInvoker;
 import org.wildfly.clustering.ee.infinispan.logging.Logger;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.common.function.ExceptionSupplier;
 
 /**
@@ -82,7 +82,7 @@ public class PrimaryOwnerScheduler<I, K, M> implements org.wildfly.clustering.ee
         K key = this.keyFactory.apply(id);
         Function<K, Node> primaryOwnerLocator = this.primaryOwnerLocator;
         CommandDispatcher<Scheduler<I, M>> dispatcher = this.dispatcher;
-        ExceptionSupplier<CompletionStage<Void>, CommandDispatcherException> action = new ExceptionSupplier<CompletionStage<Void>, CommandDispatcherException>() {
+        ExceptionSupplier<CompletionStage<Void>, CommandDispatcherException> action = new ExceptionSupplier<>() {
             @Override
             public CompletionStage<Void> get() throws CommandDispatcherException {
                 Node node = primaryOwnerLocator.apply(key);

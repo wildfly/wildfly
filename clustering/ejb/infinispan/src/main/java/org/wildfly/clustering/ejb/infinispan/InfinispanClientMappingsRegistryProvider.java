@@ -22,6 +22,8 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
+import java.util.List;
+
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.network.ClientMapping;
@@ -29,12 +31,10 @@ import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
 import org.wildfly.clustering.infinispan.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceConfigurator;
+import org.wildfly.clustering.server.service.ProvidedCacheServiceConfigurator;
+import org.wildfly.clustering.server.service.group.DistributedCacheGroupServiceConfiguratorProvider;
+import org.wildfly.clustering.server.service.registry.DistributedRegistryServiceConfiguratorProvider;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.spi.ProvidedCacheServiceConfigurator;
-import org.wildfly.clustering.spi.group.DistributedCacheGroupServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.registry.DistributedRegistryServiceConfiguratorProvider;
-
-import java.util.List;
 
 /**
  * The non-legacy version of the client mappings registry provider, used when the distributable-ejb subsystem is present.

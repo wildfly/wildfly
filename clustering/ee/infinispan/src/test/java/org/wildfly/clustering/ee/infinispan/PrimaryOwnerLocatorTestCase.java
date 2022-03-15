@@ -22,8 +22,9 @@
 
 package org.wildfly.clustering.ee.infinispan;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.function.Function;
 
@@ -31,7 +32,7 @@ import org.infinispan.remoting.transport.Address;
 import org.junit.Test;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.distribution.KeyDistribution;
-import org.wildfly.clustering.spi.NodeFactory;
+import org.wildfly.clustering.server.NodeFactory;
 
 /**
  * @author Paul Ferraro

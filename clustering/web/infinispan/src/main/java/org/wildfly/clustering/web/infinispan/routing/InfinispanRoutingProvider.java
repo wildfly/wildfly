@@ -29,10 +29,10 @@ import org.jboss.as.controller.ServiceNameFactory;
 import org.wildfly.clustering.infinispan.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceConfigurator;
+import org.wildfly.clustering.server.service.ProvidedCacheServiceConfigurator;
+import org.wildfly.clustering.server.service.group.DistributedCacheGroupServiceConfiguratorProvider;
+import org.wildfly.clustering.server.service.registry.DistributedRegistryServiceConfiguratorProvider;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.spi.ProvidedCacheServiceConfigurator;
-import org.wildfly.clustering.spi.group.DistributedCacheGroupServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.registry.DistributedRegistryServiceConfiguratorProvider;
 import org.wildfly.clustering.web.cache.routing.LocalRouteServiceConfigurator;
 import org.wildfly.clustering.web.routing.RoutingProvider;
 

@@ -33,8 +33,8 @@ import static org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinitio
 import java.util.EnumSet;
 
 import org.jboss.as.clustering.controller.ModuleServiceConfigurator;
-import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
 import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition.Capability;
 import org.jboss.as.clustering.naming.BinderServiceConfigurator;
@@ -46,9 +46,9 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.server.service.DistributedGroupServiceConfiguratorProvider;
+import org.wildfly.clustering.server.service.ProvidedGroupServiceConfigurator;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
-import org.wildfly.clustering.spi.DistributedGroupServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.ProvidedGroupServiceConfigurator;
 
 /**
  * @author Paul Ferraro
