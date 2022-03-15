@@ -5,7 +5,7 @@
 
         <feature spec="subsystem.infinispan.cache-container">
             <param name="cache-container" value="server"/>
-            <param name="modules" value="[org.wildfly.clustering.server]"/>
+            <param name="modules" value="[org.wildfly.clustering.singleton.server]"/>
             <param name="marshaller" value="PROTOSTREAM"/>
             <param name="default-cache" value="default"/>
             <feature spec="subsystem.infinispan.cache-container.local-cache">

@@ -22,15 +22,4 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.singleton">
-
-    <resources>
-        <artifact name="${org.wildfly:wildfly-clustering-singleton-api}"/>
-    </resources>
-
-    <dependencies>
-        <module name="org.jboss.msc"/>
-        <module name="org.wildfly.clustering.api"/>
-        <module name="org.wildfly.clustering.service" export="true"/>
-    </dependencies>
-</module>
+<module-alias xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.singleton" target-name="org.wildfly.clustering.singleton.api"/>

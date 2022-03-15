@@ -100,6 +100,8 @@ public class MessagingDependencies {
             String.format("%s:wildfly-clustering-jgroups-extension:%s", groupId, version.getMavenGavVersion()),
             String.format("%s:wildfly-clustering-jgroups-spi:%s", groupId, version.getMavenGavVersion()),
             String.format("%s:wildfly-clustering-service:%s", groupId, version.getMavenGavVersion()),
+            String.format("%s:wildfly-clustering-api:%s", groupId, version.getMavenGavVersion()),
+            String.format("%s:wildfly-clustering-spi:%s", groupId, version.getMavenGavVersion()),
             "org.jgroups:jgroups:3.6.12.Final-redhat-1",};
     }
 }

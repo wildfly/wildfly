@@ -42,9 +42,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.service.UnaryRequirement;
 import org.wildfly.clustering.singleton.Singleton;
+import org.wildfly.clustering.singleton.SingletonCacheRequirement;
+import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
 import org.wildfly.clustering.singleton.SingletonRequirement;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.wildfly.clustering.spi.ClusteringDefaultCacheRequirement;
 
 /**
  * Definition of a singleton policy resource.
@@ -79,7 +79,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setRequired(true)
-                        .setCapabilityReference(new CapabilityReference(Capability.POLICY, ClusteringDefaultCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY))
+                        .setCapabilityReference(new CapabilityReference(Capability.POLICY, SingletonDefaultCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY))
                         ;
             }
         },
@@ -87,7 +87,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setRequired(false)
-                        .setCapabilityReference(new CapabilityReference(Capability.POLICY, ClusteringCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY, CACHE_CONTAINER))
+                        .setCapabilityReference(new CapabilityReference(Capability.POLICY, SingletonCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY, CACHE_CONTAINER))
                         ;
             }
         },
