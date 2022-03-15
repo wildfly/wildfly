@@ -31,8 +31,6 @@
     </resources>
 
     <dependencies>
-        <module name="io.opentelemetry.api"/>
-        <module name="io.opentelemetry.context"/>
         <module name="io.reactivex.rxjava2.rxjava"/>
         <module name="io.smallrye.config" services="import"/>
         <module name="io.smallrye.common.annotation"/>
@@ -58,6 +56,7 @@
         <module name="org.jboss.weld.spi"/>
         <module name="org.reactivestreams"/>
         <module name="org.wildfly.reactive.messaging.config" optional="true" export="true" services="export"/>
+        <module name="org.wildfly.reactive.messaging.dummyopentelemetry"/>
         <module name="org.slf4j"/>
     </dependencies>
 </module>
