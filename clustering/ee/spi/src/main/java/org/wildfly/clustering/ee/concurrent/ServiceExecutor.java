@@ -20,20 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.service.concurrent;
+package org.wildfly.clustering.ee.concurrent;
 
 import java.util.Optional;
+import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
+import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.common.function.ExceptionSupplier;
 
 /**
  * Allows safe invocation of tasks that require resources not available after {@link #close(Runnable)} to block a service from stopping.
  * @author Paul Ferraro
- * @deprecated To be removed without replacement
  */
-@Deprecated
 public interface ServiceExecutor extends Executor {
+
+    /**
+     * Executes the specified runner.
+     * @param <E> the exception type
+     * @param runner a runnable task
+     * @throws E if execution fails
+     */
+    <E extends Exception> void execute(ExceptionRunnable<E> runner) throws E;
 
     /**
      * Executes the specified task, but only if the service was not already closed.

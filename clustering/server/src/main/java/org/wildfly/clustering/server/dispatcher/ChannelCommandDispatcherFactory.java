@@ -59,6 +59,8 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.ee.cache.concurrent.StampedLockServiceExecutor;
+import org.wildfly.clustering.ee.concurrent.ServiceExecutor;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Membership;
@@ -69,8 +71,6 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.server.group.AddressableNode;
 import org.wildfly.clustering.server.logging.ClusteringServerLogger;
-import org.wildfly.clustering.service.concurrent.ServiceExecutor;
-import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.common.function.Functions;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -177,14 +177,14 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
         Contextualizer contextualizer = context.getContextualizer();
         MarshalledValue<Command<Object, Object>, Object> value = entry.getValue();
         Command<Object, Object> command = value.get(context.getMarshalledValueFactory().getMarshallingContext());
-        ExceptionSupplier<Object, Exception> commandExecutionTask = new ExceptionSupplier<Object, Exception>() {
+        ExceptionSupplier<Object, Exception> commandExecutionTask = new ExceptionSupplier<>() {
             @Override
             public Object get() throws Exception {
                 return context.getMarshalledValueFactory().createMarshalledValue(command.execute(commandContext));
             }
         };
         ServiceExecutor executor = this.executor;
-        return new ExceptionSupplier<Object, Exception>() {
+        return new ExceptionSupplier<>() {
             @Override
             public Object get() throws Exception {
                 return executor.execute(contextualizer.contextualize(commandExecutionTask)).orElse(NO_SUCH_SERVICE);
@@ -202,7 +202,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
         ByteBufferMarshaller dispatcherMarshaller = this.marshallerFactory.apply(loader);
         MarshalledValueFactory<ByteBufferMarshaller> factory = new ByteBufferMarshalledValueFactory(dispatcherMarshaller);
         Contextualizer contextualizer = DefaultContextualizerFactory.INSTANCE.createContextualizer(loader);
-        CommandDispatcherContext<C, ByteBufferMarshaller> context = new CommandDispatcherContext<C, ByteBufferMarshaller>() {
+        CommandDispatcherContext<C, ByteBufferMarshaller> context = new CommandDispatcherContext<>() {
             @Override
             public C getCommandContext() {
                 return commandContext;

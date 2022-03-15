@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.service.concurrent;
+package org.wildfly.clustering.ee.cache.concurrent;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -34,6 +34,7 @@ import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 import org.junit.Test;
+import org.wildfly.clustering.ee.concurrent.ServiceExecutor;
 import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.common.function.ExceptionSupplier;
 
