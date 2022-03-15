@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb.infinispan;
+package org.jboss.as.ejb3.subsystem;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactory;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactoryProvider;
+import java.util.function.UnaryOperator;
+
+import org.jboss.as.ejb3.cache.simple.SimpleCacheFactoryBuilderServiceConfigurator;
 
 /**
+ * Defines a CacheFactoryBuilder instance which, during deployment, is used to configure, build and install a CacheFactory for the SFSB being deployed.
+ * The CacheFactory resource instances defined here produce bean caches which are non distributed and do not have passivation-enabled.
+ *
  * @author Paul Ferraro
+ * @author Richard Achmatowicz
  */
-@MetaInfServices(BeanManagerFactoryServiceConfiguratorFactoryProvider.class)
-public class InfinispanBeanManagerFactoryServiceConfiguratorFactoryProvider implements BeanManagerFactoryServiceConfiguratorFactoryProvider {
+public class SimpleCacheFactoryResourceDefinition extends CacheFactoryResourceDefinition {
 
-    @Override
-    public BeanManagerFactoryServiceConfiguratorFactory getBeanManagerFactoryBuilder(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
-        return new InfinispanBeanManagerFactoryServiceConfiguratorFactory<>(name, config);
+    public SimpleCacheFactoryResourceDefinition() {
+        super(EJB3SubsystemModel.SIMPLE_CACHE_PATH, UnaryOperator.identity(), SimpleCacheFactoryBuilderServiceConfigurator::new);
     }
 }

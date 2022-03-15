@@ -40,7 +40,7 @@ import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.ejb.StatefulBeanConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorFactory;
+import org.wildfly.clustering.ejb.BeanManagementProvider;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
@@ -60,7 +60,7 @@ import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
  * @param <G> the group identifier type
  * @param <I> the bean identifier type
  */
-public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implements BeanManagerFactoryServiceConfiguratorFactory {
+public class InfinispanBeanManagementProvider<I> implements BeanManagementProvider {
 
     static String getCacheName(ServiceName deploymentUnitServiceName, String beanManagerFactoryName) {
         List<String> parts = new ArrayList<>(3);
@@ -75,7 +75,7 @@ public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implement
     private final String name;
     private final BeanManagerFactoryServiceConfiguratorConfiguration config;
 
-    public InfinispanBeanManagerFactoryServiceConfiguratorFactory(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
+    public InfinispanBeanManagementProvider(String name, BeanManagerFactoryServiceConfiguratorConfiguration config) {
         this.name = name;
         this.config = config;
     }
@@ -95,9 +95,9 @@ public class InfinispanBeanManagerFactoryServiceConfiguratorFactory<I> implement
                 InfinispanEjbLogger.ROOT_LOGGER.expirationDisabled(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, templateCacheName));
             }
 
-            int size = this.config.getMaxSize();
-            EvictionStrategy strategy = (size > 0) ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL;
-            builder.memory().storage(StorageType.HEAP).whenFull(strategy).maxCount(size);
+            Integer size = this.config.getMaxActiveBeans();
+            EvictionStrategy strategy = (size != null) ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL;
+            builder.memory().storage(StorageType.HEAP).whenFull(strategy).maxCount((size != null) ? size.longValue() : 0);
             if (strategy.isEnabled()) {
                 // Only evict bean group entries
                 // We will cascade eviction to the associated beans

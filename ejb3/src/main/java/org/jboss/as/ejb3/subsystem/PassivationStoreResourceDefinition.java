@@ -29,6 +29,7 @@ import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
  *
  * @author Paul Ferraro
  */
+@Deprecated
 public class PassivationStoreResourceDefinition extends SimpleResourceDefinition {
 
     public static final String PASSIVATION_STORE_CAPABILITY_NAME = "org.wildfly.ejb.passivation-store";
@@ -80,6 +81,7 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
                 .setRemoveHandler(new PassivationStoreRemove(ADD_HANDLER, PASSIVATION_STORE_CAPABILITY))
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setCapabilities(PASSIVATION_STORE_CAPABILITY));
+        this.setDeprecated(EJB3Model.VERSION_10_0_0.getVersion());
     }
 
     @Override

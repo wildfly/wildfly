@@ -42,7 +42,7 @@ import org.jboss.ejb3.annotation.SecurityDomain;
 @SecurityDomain("other")
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})
 @RunAs("Role3")
-@Cache("passivating")
+@Cache("distributable")
 @StatefulTimeout(value = 2, unit = TimeUnit.HOURS)
 @TransactionManagement(TransactionManagementType.BEAN)
 @LocalBean

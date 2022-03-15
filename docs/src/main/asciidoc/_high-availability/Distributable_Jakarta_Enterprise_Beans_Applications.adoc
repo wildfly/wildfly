@@ -1,10 +1,97 @@
-[[Jakarta_Enterprise_Beans_Services]]
-= Jakarta Enterprise Beans Services
+[[Distributable_Jakarta_Enterprise_Beans_Applications]]
+= Distributable Jakarta Enterprise Beans Applications
 
-This chapter explains how clustering of EJBs works in WildFly.
+Just as with standard web applications, session state of stateful session beans (SFSB) contained in a standard EJB application
+is not guaranteed to survive beyond the lifespan of the Jakarta Enterprise Beans container. And, as with standard web applications, there *is* a way to
+allow session state of SFSBs to survive beyond the lifespan of a single server, either through persistence or by replicating state to
+other nodes in the cluster.
 
-[[ejb-subsystem]]
-== EJB Subsystem
+A _distributable_ SFSB is one whose state is made available on multiple nodes in a cluster and which supports failover of invocation attempts: if the node
+on which the SFSB was created fails, the invocation will be retried on another node in the cluster where the SFSB state is present.
+
+In the case of Jakarta Enterprise Beans applications, whether or not a bean is distributable is determined globally or on a per-bean basis, rather than on
+an application-wide basis as in the case of distributed HttpSessions.
+
+A stateful session bean within an Jakarta Enterprise Beans application indicates its intention to be distributable by using a passivation-capable cache
+to store its session state. Cache factories were discussed in the link:Admin_Guide{outfilesuffix}#caches[Jakarta Enterprise Beans section of the Wildfly Admin Guide].
+Additionally, the EJB application needs to be deployed into a server which uses an High Availability (HA) server profile, such as standalone-ha.xml
+or standalone-full-ha.xml.
+
+Since Jakarta Enterprise Beans are passivation-capable by default, generally, users already using an HA profile will not need to make any configuration changes
+for their beans to be distributable and, consequently, to support failover. More fine-grained control over whether a bean is distrubutable can be
+achieved using the _passivationCapable_ attribute of the @Stateful annotation (or the equivalent deployment descriptor override). A bean which is marked as
+@Stateful(passivationCapable=false) will not exhibit distributable behavior (i.e. failover), even when the application containing it is deployed in a cluster.
+
+NOTE: More information on passivation-capable beans can be found in Section 4.6.5 of the Jakarta Enterprise Beans specification.
+
+In the sections that follow, we discuss some aspects of configuring distributable Jakarta Enterprise Beans applications in Wildfly.
+
+[[distributable-ejb-subsystem]]
+== Distributable EJB Subsystem
+
+The purpose of the distributable-ejb subsystem is to permit configuration of clustering abstractions
+required to support those resources of the ejb3 subsystem which support clustered operation. The key resources
+of the ejb3 subsystem which require clustering abstractions are:
+
+* `cache factories`
+Passivating cache factories depend on a bean management provider to provide passivation and persistence of SFSB
+session states in a local or distributed environment.
+
+* `client mappings registries`
+Supporting remote invocation on SFSB deployed in a cluster require storing client mappings information in a
+ client mappings registry. The registry may be tailored for a local or a distributed environment.
+
+These clustering abstractions are made available to the ejb3 subsystem via the specification and configuration of
+clustering abstraction 'providers'. We describe the available providers below.
+
+[[bean-management-providers]]
+=== Bean management providers
+
+A bean management provider provides access to a given implementation of a bean manager,
+used by passivation-capable cache factories defined in the ejb3 subsystem to manage passivation and persistence.
+
+Bean management provider elements are named, and represent different implementation and configuration choices for bean management.
+At least one named bean management provider must be defined in the distributable-ejb subsystem and of those, one
+instance must be identified as the default bean management provider, using the `default-bean-management` attribute of
+the distributable-ejb subsystem.
+
+The available bean management provider is:
+
+[[infinispan-bean-management]]
+==== infinispan-bean-management
+
+The infinispan-bean-management provider element represents a bean manager implementation based on an Infinispan cache. The
+attributes for the infinispan-bean-manager element are:
+
+* `cache-container` specifies a cache container defined in the Infinispan subsystem used to support the session state cache
+* `cache` specifies the session state cache and its configured properties
+* `max-active-beans` specifies the maximum number of non-passivated session state entries allowed in the cache
+
+
+[[client-mappings-registries]]
+=== Client mappings registries
+
+A client mappings registry provider provides access to a given implementation of a client mappings registry, used by
+the EJB client invocation mechanism to store information about client mappings for each node in the cluster. Client mappings
+are defined in the socket bindings configuration of a server and required to allow an EJB client application to connect
+to servers which are multi-homed (i.e. clients may access the same server from different networks using a different IP address
+ad port for each interface on the multi-homed server).
+
+The available client mappings registry providers are:
+
+[[infinispan-client-mappings-registry]]
+==== infinispan-client-mappings-registry
+
+The infinispan-client-mappings-registry provider is a provider based on an Infinispan cache and suitable for a clustered server.
+
+* `cache-container` specifies a cache container defined in the Infinispan subsystem used to support the client mappings registry
+* `cache` specifies the cache and its configured properties used to support the client mappings registry
+
+[[local-client-mappings-registry]]
+==== local-client-mappings-registry
+
+The client mappings registry provider suitable for a local, non-clustered server.
+
 
 [[ejb-timer]]
 == EJB Timer
@@ -13,7 +100,7 @@ WildFly now supports clustered database backed timers. For details have
 a look to the link:Developer_Guide{outfilesuffix}#EJB3_Clustered_Database_Timers[EJB3 reference section].
 
 [[deploying-clustered-ejbs]]
-=== Deploying clustered EJBs
+== Deploying clustered EJBs
 
 Clustering support is available in the HA profiles of WildFly. In this
 chapter we'll be using the standalone server for explaining the details.
@@ -78,7 +165,7 @@ we'll still explain it separately so as to make sure there aren't any
 unanswered questions.
 
 [[remote-standalone-clients]]
-==== Remote standalone clients
+=== Remote standalone clients
 
 In this section we'll consider a remote standalone client (i.e. a client
 which runs in a separate JVM and _isn't_ running within another WildFly
@@ -109,7 +196,7 @@ remote.cluster.ejb.connect.options.org.xnio.Options.SSL_ENABLED=false
 ----
 
 [[cluster-topology-communication]]
-==== Cluster topology communication
+=== Cluster topology communication
 
 When a client connects to a server, the JBoss EJB client implementation
 (internally) communicates with the server for cluster topology
@@ -169,7 +256,7 @@ Effectively, the invocation has now failed over to a different node
 within the cluster.
 
 [[remote-clients-on-another-instance]]
-==== Remote clients on another instance of WildFly
+=== Remote clients on another instance of WildFly
 
 So far we discussed remote standalone clients which typically use either
 the EJB client API or the jboss-ejb-client.properties based approach to

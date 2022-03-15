@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.subsystem;
+package org.jboss.as.test.clustering.single.ejb.bean;
 
-import org.jboss.as.controller.ServiceRemoveStepHandler;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilderServiceNameProvider;
-import org.jboss.msc.service.ServiceName;
+import javax.ejb.Remote;
+import javax.ejb.Stateful;
 
-/**
- * @author Paul Ferraro
- */
-public class CacheFactoryRemove extends ServiceRemoveStepHandler {
-
-    CacheFactoryRemove(CacheFactoryAdd addHandler) {
-        super(null, addHandler);
-    }
-
-    @Override
-    protected ServiceName serviceName(final String name) {
-        return new CacheFactoryBuilderServiceNameProvider(name).getServiceName();
-    }
+@Stateful
+@Remote(Incrementor.class)
+public class StatefulIncrementorBean extends IncrementorBean {
 }

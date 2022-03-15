@@ -48,6 +48,7 @@ public enum EJB3SubsystemXMLElement {
     DEFAULT_SECURITY_DOMAIN("default-security-domain"),
     DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS(EJB3SubsystemModel.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS),
     DISABLE_DEFAULT_EJB_PERMISSIONS(EJB3SubsystemModel.DISABLE_DEFAULT_EJB_PERMISSIONS),
+    DISTRIBUTABLE_CACHE(EJB3SubsystemModel.DISTRIBUTABLE_CACHE),
     ENABLE_GRACEFUL_TXN_SHUTDOWN(EJB3SubsystemModel.ENABLE_GRACEFUL_TXN_SHUTDOWN),
 
     FILE_DATA_STORE("file-data-store"),
@@ -59,7 +60,7 @@ public enum EJB3SubsystemXMLElement {
 
     POOLS("pools"),
 
-    CACHE("cache"),
+    @Deprecated CACHE("cache"),
     CACHES("caches"),
     CHANNEL_CREATION_OPTIONS("channel-creation-options"),
 
@@ -69,8 +70,8 @@ public enum EJB3SubsystemXMLElement {
     OPTION("option"),
     OUTBOUND_CONNECTION_REF("outbound-connection-ref"),
 
-    PASSIVATION_STORE("passivation-store"),
-    PASSIVATION_STORES("passivation-stores"),
+    @Deprecated PASSIVATION_STORE("passivation-store"),
+    @Deprecated PASSIVATION_STORES("passivation-stores"),
     PROFILE("profile"),
     PROFILES("profiles"),
     PROPERTY("property"),
@@ -84,6 +85,7 @@ public enum EJB3SubsystemXMLElement {
     RESOURCE_ADAPTER_REF("resource-adapter-ref"),
 
     SESSION_BEAN("session-bean"),
+    SIMPLE_CACHE("simple-cache"),
     SINGLETON("singleton"),
     STATEFUL("stateful"),
     STATELESS("stateless"),

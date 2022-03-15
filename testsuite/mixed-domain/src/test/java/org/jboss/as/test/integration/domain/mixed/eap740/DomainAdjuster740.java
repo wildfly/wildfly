@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.domain.mixed.eap740;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,7 @@ public class DomainAdjuster740 extends DomainAdjuster {
 
         adjustRemoting(ops, profileAddress.append(SUBSYSTEM, "remoting"));
         adjustUndertow(ops, profileAddress.append(SUBSYSTEM, "undertow"));
+        removeDistributableEjb(ops, profileAddress.append(SUBSYSTEM, "distributable-ejb"));
 
         return ops;
     }
@@ -70,4 +72,19 @@ public class DomainAdjuster740 extends DomainAdjuster {
         ops.add(Util.getUndefineAttributeOperation(httpInvoker, "http-authentication-factory"));
         ops.add(Util.getWriteAttributeOperation(httpInvoker, "security-realm", "ApplicationRealm"));
     }
+
+    /**
+     * Remove the distributable-ejb subsystem from the domain model for EAP 7.4.0 slaves as they
+     * do not support this subsystem or its associated module org.wildfly.clustering.ejb.
+     *
+     * @param ops   list of operations used to adjust the domain model for EAP 7.4.0
+     * @param subsystem the root of the subsystem to be adjusted/removed
+     */
+    private static void removeDistributableEjb(final List<ModelNode> ops, final PathAddress subsystem) {
+        // remove the distributable-ejb subsystem in its entirety from the domain model
+        ops.add(Util.createRemoveOperation(subsystem));
+        // remove its extension from the list of extensions
+        ops.add(Util.createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.clustering.ejb")));
+    }
+
 }
