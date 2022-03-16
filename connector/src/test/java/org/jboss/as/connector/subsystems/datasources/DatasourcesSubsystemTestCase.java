@@ -87,7 +87,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testElytronExpressionConfig() throws Exception {
-        standardSubsystemTest("datasources-elytron-enabled-expression.xml", "datasources-elytron-enabled_6_0.xml");
+        standardSubsystemTest("datasources-elytron-enabled-expression.xml", "datasources-elytron-enabled.xml");
     }
 
     @Test
