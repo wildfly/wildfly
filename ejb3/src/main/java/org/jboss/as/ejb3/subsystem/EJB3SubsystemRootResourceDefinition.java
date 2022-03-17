@@ -344,7 +344,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         final EJBDefaultMissingMethodPermissionsWriteHandler defaultMissingMethodPermissionsWriteHandler = new EJBDefaultMissingMethodPermissionsWriteHandler(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, missingMethodPermissionsDenyAccessMergingProcessor);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, null, defaultMissingMethodPermissionsWriteHandler);
 
-        resourceRegistration.registerReadWriteAttribute(DISABLE_DEFAULT_EJB_PERMISSIONS, null, new AbstractWriteAttributeHandler<Void>() {
+        resourceRegistration.registerReadWriteAttribute(DISABLE_DEFAULT_EJB_PERMISSIONS, null, new AbstractWriteAttributeHandler<Void>(DISABLE_DEFAULT_EJB_PERMISSIONS) {
             protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final HandbackHolder<Void> handbackHolder) throws OperationFailedException {
                 if (resolvedValue.asBoolean()) {
                     throw EjbLogger.ROOT_LOGGER.disableDefaultEjbPermissionsCannotBeTrue();

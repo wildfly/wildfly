@@ -65,7 +65,7 @@ public class MdbDeliveryGroupResourceDefinition extends SimpleResourceDefinition
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(ACTIVE, null,
-                new AbstractWriteAttributeHandler<Void>() {
+                new AbstractWriteAttributeHandler<Void>(ACTIVE) {
                     @Override
                     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation,
                                                            String attributeName, ModelNode resolvedValue, ModelNode currentValue,
