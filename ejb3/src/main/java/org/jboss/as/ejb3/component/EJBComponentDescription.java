@@ -265,8 +265,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     private Boolean missingMethodPermissionsDenyAccess = null;
 
-    private String policyContextID;
-
     private final ShutDownInterceptorFactory shutDownInterceptorFactory = new ShutDownInterceptorFactory();
 
     private BooleanSupplier outflowSecurityDomainsConfigured;
@@ -337,7 +335,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 if (deploymentUnit.getParent() != null) {
                     contextID = deploymentUnit.getParent().getName() + "!" + contextID;
                 }
-                policyContextID = contextID;
                 //make sure java:comp/env is always available, even if nothing is bound there
                 if (description.getNamingMode() == ComponentNamingMode.CREATE) {
                     description.getBindingConfigurations().add(new BindingConfiguration("java:comp/env", new ContextInjectionSource("env", "java:comp/env")));
@@ -360,7 +357,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     final boolean securityRequired = hasBeanLevelSecurityMetadata();
                     ejbComponentDescription.setSecurityRequired(securityRequired);
                     if (ejbComponentDescription.getSecurityDomainServiceName() != null) {
-                        final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(policyContextID, ejbComponentDescription.requiresJacc(), true);
+                        final HashMap<Integer, InterceptorFactory> elytronInterceptorFactories = getElytronInterceptorFactories(contextID, ejbComponentDescription.requiresJacc(), true);
                         elytronInterceptorFactories.forEach((priority, elytronInterceptorFactory) -> configuration.addTimeoutViewInterceptor(elytronInterceptorFactory, priority));
                     }
                     final Set<Method> classMethods = configuration.getClassIndex().getClassMethods();
@@ -1131,14 +1128,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void setServerInterceptorCache(ServerInterceptorCache serverInterceptorCache) {
         this.serverInterceptorCache = serverInterceptorCache;
-    }
-
-    public String getPolicyContextID() {
-        return policyContextID;
-    }
-
-    public void setPolicyContextID(String policyContextID) {
-        this.policyContextID = policyContextID;
     }
 
     public ShutDownInterceptorFactory getShutDownInterceptorFactory() {

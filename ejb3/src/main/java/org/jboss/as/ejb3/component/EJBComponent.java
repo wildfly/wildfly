@@ -114,7 +114,6 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     private final String earApplicationName;
     private final String moduleName;
     private final String distinctName;
-    private final String policyContextID;
 
     private final InvocationMetrics invocationMetrics = new InvocationMetrics();
     private final EJBSuspendHandlerService ejbSuspendHandlerService;
@@ -166,7 +165,6 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.applicationName = ejbComponentCreateService.getApplicationName();
         this.earApplicationName = ejbComponentCreateService.getEarApplicationName();
         this.distinctName = ejbComponentCreateService.getDistinctName();
-        this.policyContextID = ejbComponentCreateService.getPolicyContextID();
         this.moduleName = ejbComponentCreateService.getModuleName();
         this.ejbObjectViewServiceName = ejbComponentCreateService.getEjbObject();
         this.ejbLocalObjectViewServiceName = ejbComponentCreateService.getEjbLocalObject();
