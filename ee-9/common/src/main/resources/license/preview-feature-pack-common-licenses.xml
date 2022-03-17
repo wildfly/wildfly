@@ -57,6 +57,22 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.eclipse.angus</groupId>
+      <artifactId>angus-mail</artifactId>
+      <licenses>
+        <license>
+          <name>Eclipse Public License 2.0</name>
+          <url>https://www.eclipse.org/legal/epl-v20.html</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License v2.0 only, with Classpath exception</name>
+          <url>https://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-ejb-client-jakarta</artifactId>
       <licenses>

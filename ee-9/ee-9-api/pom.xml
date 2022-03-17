@@ -142,8 +142,8 @@
         <!-- EE 9 API - Full -->
 
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
         </dependency>
 
         <dependency>

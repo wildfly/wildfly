@@ -58,7 +58,7 @@
         <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.interceptor.jakarta-interceptors-api>2.1.0-RC3</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.jms.jakarta-jms-api>3.0.0</version.jakarta.jms.jakarta-jms-api>
-        <version.jakarta.mail>2.0.1</version.jakarta.mail>
+        <version.jakarta.mail-api>2.1.0</version.jakarta.mail-api>
         <version.jakarta.json.bind.api>2.0.0</version.jakarta.json.bind.api>
         <version.jakarta.json.jakarta-json-api>2.0.0</version.jakarta.json.jakarta-json-api>
         <version.jakarta.jws.jakarta-jws-api>3.0.0</version.jakarta.jws.jakarta-jws-api>
@@ -75,6 +75,7 @@
         <!--<version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.0</version.jakarta.xml.bind.jakarta-xml-bind-api>-->
         <version.org.apache.myfaces.core>3.0.1</version.org.apache.myfaces.core>
         <version.org.eclipse.angus.angus-activation>1.0.0</version.org.eclipse.angus.angus-activation>
+        <version.org.eclipse.angus.angus-mail>1.0.0</version.org.eclipse.angus.angus-mail>
         <!--
             Overrides for MP5. Also make sure to update these in testsuite/integration/microprofile-tck/pom.xml
         -->
@@ -224,9 +225,9 @@
             </dependency>
 
             <dependency>
-                <groupId>com.sun.mail</groupId>
-                <artifactId>jakarta.mail</artifactId>
-                <version>${version.jakarta.mail}</version>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
+                <version>${version.jakarta.mail-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -718,6 +719,18 @@
                 <groupId>org.eclipse.angus</groupId>
                 <artifactId>angus-activation</artifactId>
                 <version>${version.org.eclipse.angus.angus-activation}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.angus</groupId>
+                <artifactId>angus-mail</artifactId>
+                <version>${version.org.eclipse.angus.angus-mail}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
