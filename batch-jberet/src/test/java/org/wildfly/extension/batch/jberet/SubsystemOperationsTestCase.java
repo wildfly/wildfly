@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.batch.jberet;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -35,8 +37,12 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.SubsystemOperations;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.extension.batch.jberet.job.repository.CommonAttributes;
 import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 public class SubsystemOperationsTestCase extends AbstractBatchTestCase {
 
@@ -45,7 +51,7 @@ public class SubsystemOperationsTestCase extends AbstractBatchTestCase {
     }
 
     @Override
-    protected void standardSubsystemTest(final String configId) throws Exception {
+    protected void standardSubsystemTest(final String configId) {
         // do nothing as this is not a subsystem parsing test
     }
 
@@ -61,7 +67,10 @@ public class SubsystemOperationsTestCase extends AbstractBatchTestCase {
             @Override
             protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
                 super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration, capabilityRegistry);
-                registerCapabilities(capabilityRegistry, "org.wildfly.batch.thread.pool.new-job-repo", "org.wildfly.transactions.global-default-local-provider");
+                registerCapabilities(capabilityRegistry,
+                        "org.wildfly.batch.thread.pool.new-job-repo",
+                        "org.wildfly.transactions.global-default-local-provider",
+                        "org.wildfly.data-source.ExampleDS");
             }
         };
     }
@@ -162,5 +171,38 @@ public class SubsystemOperationsTestCase extends AbstractBatchTestCase {
         final KernelServices kernelServices = boot();
         final ModelNode removeSubsystemOp = SubsystemOperations.createRemoveOperation(createAddress(null));
         executeOperation(kernelServices, removeSubsystemOp);
+    }
+
+    @Test
+    public void testEnums() {
+        for (Element e : Element.values()) {
+            assertEquals(e, Element.forName(e.getLocalName()));
+        }
+        assertEquals(Element.UNKNOWN, Element.forName("zzz"));
+
+        for (Attribute e : Attribute.values()) {
+            assertEquals(e, Attribute.forName(e.getLocalName()));
+        }
+        assertEquals(Attribute.UNKNOWN, Attribute.forName("xxx"));
+
+        for (Namespace e : Namespace.values()) {
+            assertEquals(e, Namespace.forUri(e.getUriString()));
+        }
+        assertEquals(Namespace.UNKNOWN, Namespace.forUri("yyy"));
+    }
+
+    @Test
+    public void testWriteExecutionRecordsLimit() throws Exception {
+        String[] resourcePath = new String[] {SUBSYSTEM, BatchSubsystemDefinition.NAME, InMemoryJobRepositoryDefinition.NAME, "in-memory"};
+
+        final KernelServices kernelServices = boot();
+        Assert.assertEquals(200, kernelServices.readWholeModel().get(resourcePath).get("execution-records-limit").asInt());
+
+        final ModelNode address = createAddress(InMemoryJobRepositoryDefinition.NAME, "in-memory");
+        ModelNode operation = SubsystemOperations.createWriteAttributeOperation(address, CommonAttributes.EXECUTION_RECORDS_LIMIT, 250);
+
+        executeOperation(kernelServices, operation);
+
+        Assert.assertEquals(250, kernelServices.readWholeModel().get(resourcePath).get("execution-records-limit").asInt());
     }
 }

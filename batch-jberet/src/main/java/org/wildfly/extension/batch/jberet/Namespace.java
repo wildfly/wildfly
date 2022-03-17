@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.batch.jberet;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,12 +35,23 @@ enum Namespace {
 
     BATCH_1_0("urn:jboss:domain:batch-jberet:1.0"),
     BATCH_2_0("urn:jboss:domain:batch-jberet:2.0"),
+    BATCH_3_0("urn:jboss:domain:batch-jberet:3.0"),
     ;
+
+    private static final Map<String, Namespace> MAP ;
+
+    static {
+        Map<String, Namespace> map = new HashMap<>();
+        map.put(BATCH_1_0.name, BATCH_1_0);
+        map.put(BATCH_2_0.name, BATCH_2_0);
+        map.put(BATCH_3_0.name, BATCH_3_0);
+        MAP = Collections.unmodifiableMap(map);
+    }
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = BATCH_2_0;
+    public static final Namespace CURRENT = BATCH_3_0;
 
     private final String name;
 
@@ -56,20 +68,10 @@ enum Namespace {
         return name;
     }
 
-    private static final Map<String, Namespace> MAP;
-
-    static {
-        final Map<String, Namespace> map = new HashMap<String, Namespace>();
-        for (Namespace namespace : values()) {
-            final String name = namespace.getUriString();
-            if (name != null) {
-                map.put(name, namespace);
-            }
-        }
-        MAP = map;
-    }
-
     public static Namespace forUri(String uri) {
+        if (uri == null) {
+            return UNKNOWN;
+        }
         final Namespace element = MAP.get(uri);
         return element == null ? UNKNOWN : element;
     }

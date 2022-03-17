@@ -47,6 +47,10 @@ public class JdbcJobRepositoryService extends JobRepositoryService implements Se
     private final InjectedValue<ExecutorService> executor = new InjectedValue<>();
     private volatile JdbcRepository jobRepository;
 
+    public JdbcJobRepositoryService(Integer executionRecordsLimit) {
+        super(executionRecordsLimit);
+    }
+
     @Override
     public void startJobRepository(final StartContext context) throws StartException {
         final ExecutorService service = executor.getValue();

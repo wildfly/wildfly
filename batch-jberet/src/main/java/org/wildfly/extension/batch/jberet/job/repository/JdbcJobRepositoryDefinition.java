@@ -50,7 +50,7 @@ import org.wildfly.extension.batch.jberet._private.Capabilities;
 public class JdbcJobRepositoryDefinition extends SimpleResourceDefinition {
 
     public static final String NAME = "jdbc-job-repository";
-    static final PathElement PATH = PathElement.pathElement(NAME);
+    public static final PathElement PATH = PathElement.pathElement(NAME);
 
     /**
      * A data-source attribute which requires the {@link Capabilities#DATA_SOURCE_CAPABILITY}.
@@ -72,13 +72,16 @@ public class JdbcJobRepositoryDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadWriteAttribute(DATA_SOURCE, null, new ReloadRequiredWriteAttributeHandler(DATA_SOURCE));
+        resourceRegistration.registerReadWriteAttribute(DATA_SOURCE, null,
+                new ReloadRequiredWriteAttributeHandler(DATA_SOURCE));
+        resourceRegistration.registerReadWriteAttribute(CommonAttributes.EXECUTION_RECORDS_LIMIT, null,
+                new ReloadRequiredWriteAttributeHandler(CommonAttributes.EXECUTION_RECORDS_LIMIT));
     }
 
     private static class JdbcRepositoryAddHandler extends AbstractAddStepHandler {
 
         JdbcRepositoryAddHandler() {
-            super(Capabilities.JOB_REPOSITORY_CAPABILITY, DATA_SOURCE);
+            super(Capabilities.JOB_REPOSITORY_CAPABILITY, DATA_SOURCE, CommonAttributes.EXECUTION_RECORDS_LIMIT);
         }
 
         @Override
@@ -86,8 +89,9 @@ public class JdbcJobRepositoryDefinition extends SimpleResourceDefinition {
             super.performRuntime(context, operation, model);
             final String name = context.getCurrentAddressValue();
             final String dsName = DATA_SOURCE.resolveModelAttribute(context, model).asString();
+            final Integer executionRecordsLimit = CommonAttributes.EXECUTION_RECORDS_LIMIT.resolveModelAttribute(context, model).asIntOrNull();
             final ServiceTarget target = context.getServiceTarget();
-            final JdbcJobRepositoryService service = new JdbcJobRepositoryService();
+            final JdbcJobRepositoryService service = new JdbcJobRepositoryService(executionRecordsLimit);
             Services.addServerExecutorDependency(
                     target.addService(context.getCapabilityServiceName(Capabilities.JOB_REPOSITORY_CAPABILITY.getName(), name, JobRepository.class), service),
                     service.getExecutorServiceInjector())
