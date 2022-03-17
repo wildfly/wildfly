@@ -259,7 +259,7 @@
         <version.org.jboss.galleon>4.2.8.Final</version.org.jboss.galleon>
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.common>1.5.2.Final</version.org.wildfly.common>
+        <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
         <version.org.wildfly.component-matrix-plugin>1.0.3.Final</version.org.wildfly.component-matrix-plugin>
         <version.org.wildfly.galleon-plugins>5.2.7.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>7.0.0.Final</version.org.wildfly.jar.plugin>
