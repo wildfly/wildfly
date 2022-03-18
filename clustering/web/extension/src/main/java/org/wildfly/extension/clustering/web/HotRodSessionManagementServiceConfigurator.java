@@ -30,10 +30,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagementConfiguration;
-import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagementProvider;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
-import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
+import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManagementConfiguration;
+import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManagementProvider;
 
 /**
  * @author Paul Ferraro

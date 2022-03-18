@@ -35,7 +35,7 @@ import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.clustering.service.UnaryRequirement;
-import org.wildfly.clustering.web.WebProviderRequirement;
+import org.wildfly.clustering.web.service.WebProviderRequirement;
 
 /**
  * Base definition for single sign-on management resources.

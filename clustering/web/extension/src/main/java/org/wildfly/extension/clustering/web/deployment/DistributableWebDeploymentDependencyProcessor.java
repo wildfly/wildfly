@@ -41,8 +41,8 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.web.WebProviderRequirement;
-import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.service.WebProviderRequirement;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 
 /**
  * {@link DeploymentUnitProcessor} that establishes the requisite {@link DistributableSessionManagementProvider} dependency

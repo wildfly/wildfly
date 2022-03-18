@@ -35,15 +35,15 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXMLParser;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.wildfly.clustering.web.cache.routing.LocalRouteLocatorServiceConfiguratorFactory;
-import org.wildfly.clustering.web.cache.routing.NullRouteLocatorServiceConfiguratorFactory;
-import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagementProvider;
-import org.wildfly.clustering.web.infinispan.routing.PrimaryOwnerRouteLocatorServiceConfiguratorFactory;
-import org.wildfly.clustering.web.infinispan.routing.RankedRouteLocatorServiceConfiguratorFactory;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
-import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementProvider;
-import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
 import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
+import org.wildfly.extension.clustering.web.routing.LocalRouteLocatorServiceConfiguratorFactory;
+import org.wildfly.extension.clustering.web.routing.NullRouteLocatorServiceConfiguratorFactory;
+import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
+import org.wildfly.extension.clustering.web.routing.infinispan.PrimaryOwnerRouteLocatorServiceConfiguratorFactory;
+import org.wildfly.extension.clustering.web.routing.infinispan.RankedRouteLocatorServiceConfiguratorFactory;
+import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManagementProvider;
+import org.wildfly.extension.clustering.web.session.infinispan.InfinispanSessionManagementProvider;
 
 /**
  * Parser for both jboss-all.xml distributable-web namespace parsing its standalone deployment descriptor counterpart.

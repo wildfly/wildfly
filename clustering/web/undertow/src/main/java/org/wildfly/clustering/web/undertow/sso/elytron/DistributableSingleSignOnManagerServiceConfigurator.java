@@ -47,11 +47,11 @@ import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SimpleSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.web.WebDefaultProviderRequirement;
-import org.wildfly.clustering.web.WebProviderRequirement;
 import org.wildfly.clustering.web.container.SecurityDomainSingleSignOnManagementConfiguration;
-import org.wildfly.clustering.web.sso.DistributableSSOManagementProvider;
-import org.wildfly.clustering.web.sso.LegacySSOManagementProviderFactory;
+import org.wildfly.clustering.web.service.WebDefaultProviderRequirement;
+import org.wildfly.clustering.web.service.WebProviderRequirement;
+import org.wildfly.clustering.web.service.sso.DistributableSSOManagementProvider;
+import org.wildfly.clustering.web.service.sso.LegacySSOManagementProviderFactory;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
@@ -93,7 +93,7 @@ public class DistributableSingleSignOnManagerServiceConfigurator extends SimpleS
         ServiceName managerServiceName = this.getServiceName().append("manager");
         this.manager = new ServiceSupplierDependency<>(managerServiceName);
         this.provider = provider;
-        this.installer = new Consumer<ServiceTarget>() {
+        this.installer = new Consumer<>() {
             @Override
             public void accept(ServiceTarget target) {
                 ServiceConfigurator factoryConfigurator = provider.get().getServiceConfigurator(securityDomainName).configure(support);

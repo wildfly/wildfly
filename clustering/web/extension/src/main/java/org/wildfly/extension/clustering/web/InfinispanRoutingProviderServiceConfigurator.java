@@ -31,9 +31,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.web.infinispan.routing.InfinispanRoutingProvider;
-import org.wildfly.clustering.web.infinispan.routing.InfinispanRoutingConfiguration;
-import org.wildfly.clustering.web.routing.RoutingProvider;
+import org.wildfly.clustering.web.service.routing.RoutingProvider;
+import org.wildfly.extension.clustering.web.routing.infinispan.InfinispanRoutingConfiguration;
+import org.wildfly.extension.clustering.web.routing.infinispan.InfinispanRoutingProvider;
 
 /**
  * Service configurator for the Infinispan routing provider.

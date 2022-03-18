@@ -40,15 +40,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.wildfly.clustering.web.cache.routing.NullRouteLocatorServiceConfiguratorFactory;
-import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagementConfiguration;
-import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagementProvider;
-import org.wildfly.clustering.web.infinispan.routing.RankedRouteLocatorServiceConfiguratorFactory;
 import org.wildfly.clustering.web.infinispan.routing.RankedRoutingConfiguration;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
-import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementProvider;
-import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import org.wildfly.extension.clustering.web.routing.NullRouteLocatorServiceConfiguratorFactory;
+import org.wildfly.extension.clustering.web.routing.infinispan.RankedRouteLocatorServiceConfiguratorFactory;
+import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManagementConfiguration;
+import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManagementProvider;
+import org.wildfly.extension.clustering.web.session.infinispan.InfinispanSessionManagementProvider;
 
 /**
  * @author Paul Ferraro
