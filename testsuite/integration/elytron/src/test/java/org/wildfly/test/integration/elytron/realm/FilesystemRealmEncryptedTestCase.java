@@ -121,9 +121,6 @@ public class FilesystemRealmEncryptedTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, java.lang.String s) throws Exception {
-            try (CLIWrapper cli = new CLIWrapper(true)) {
-                cli.sendLine("/subsystem=elytron/simple-role-decoder=from-roles-attribute:add(attribute=Roles)");
-            }
             setUpTestDomain(DOMAIN_NAME, REALM_NAME, "filesystem", USER, PASSWORD, DEPLOYMENT_ENCRYPTED, CREDENTIAL_STORE, SECRET_KEY, INVALID_CREDENTIAL_STORE);
             SetUpTask.managementClient = managementClient;
             ServerReload.reloadIfRequired(managementClient);
@@ -140,7 +137,7 @@ public class FilesystemRealmEncryptedTestCase {
                         realmName, username, password));
                 cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:add-identity-attribute(identity=%s, name=Roles, value=[JBossAdmin])",
                         realmName, username));
-                cli.sendLine(String.format("/subsystem=elytron/security-domain=%1$s:add(realms=[{realm=%2$s,role-decoder=from-roles-attribute}],default-realm=%2$s,permission-mapper=default-permission-mapper)",
+                cli.sendLine(String.format("/subsystem=elytron/security-domain=%1$s:add(realms=[{realm=%2$s}],default-realm=%2$s,permission-mapper=default-permission-mapper)",
                         domainName, realmName));
                 cli.sendLine(String.format(
                         "/subsystem=undertow/application-security-domain=%s:add(security-domain=%s)",
@@ -162,9 +159,6 @@ public class FilesystemRealmEncryptedTestCase {
         public void tearDown(ManagementClient managementClient, java.lang.String s) throws Exception {
             SetUpTask.managementClient = managementClient;
             tearDownDomain(DEPLOYMENT_ENCRYPTED, DOMAIN_NAME, REALM_NAME, USER, CREDENTIAL_STORE, INVALID_CREDENTIAL_STORE);
-            try (CLIWrapper cli = new CLIWrapper(true)) {
-                cli.sendLine("/subsystem=elytron/simple-role-decoder=from-roles-attribute:remove()");
-            }
             ServerReload.reloadIfRequired(managementClient);
         }
 
