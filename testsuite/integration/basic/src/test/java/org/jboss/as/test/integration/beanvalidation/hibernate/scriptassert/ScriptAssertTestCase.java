@@ -31,6 +31,7 @@ import javax.validation.Validator;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -38,6 +39,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,6 +56,12 @@ import org.junit.runner.RunWith;
 public class ScriptAssertTestCase {
 
     private static final Logger logger = Logger.getLogger(ScriptAssertTestCase.class);
+
+    @BeforeClass
+    public static void beforeClass() {
+        // https://issues.redhat.com/browse/WFLY-15719
+        AssumeTestGroupUtil.assumeJDKVersionBefore(15);
+    }
 
     @Before
     public void runOnlyAgainstSunJDK() {
