@@ -30,9 +30,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.web.infinispan.sso.InfinispanSSOManagementProvider;
-import org.wildfly.clustering.web.infinispan.sso.InfinispanSSOManagementConfiguration;
-import org.wildfly.clustering.web.sso.DistributableSSOManagementProvider;
+import org.wildfly.clustering.web.service.sso.DistributableSSOManagementProvider;
+import org.wildfly.extension.clustering.web.sso.infinispan.InfinispanSSOManagementConfiguration;
+import org.wildfly.extension.clustering.web.sso.infinispan.InfinispanSSOManagementProvider;
 
 /**
  * Service configurator for Infinispan single sign-on management providers.

@@ -43,10 +43,10 @@ import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
-import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
 
 /**
  * Abstract service configurator for session management providers.

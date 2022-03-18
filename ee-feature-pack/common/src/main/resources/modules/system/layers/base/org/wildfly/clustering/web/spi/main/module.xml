@@ -33,20 +33,10 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.as.clustering.common"/>
-        <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.server"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.metadata.web"/>
-        <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.ee.spi"/>
-        <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
-        <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.web.api"/>
-        <!-- Enable dynamic installation of legacy session management provider -->
-        <module name="org.wildfly.clustering.web.infinispan" services="import" optional="true"/>
-        <!-- Enable dynamic discovery of session identifier serializer and server runtime handler -->
+        <!-- Enable dynamic discovery of session identifier serializer -->
         <module name="org.wildfly.clustering.web.undertow" services="import" optional="true"/>
     </dependencies>
 </module>

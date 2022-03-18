@@ -30,10 +30,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.web.infinispan.routing.RankedRouteLocatorServiceConfiguratorFactory;
 import org.wildfly.clustering.web.infinispan.routing.RankedRoutingConfiguration;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
-import org.wildfly.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
+import org.wildfly.extension.clustering.web.routing.RouteLocatorServiceConfiguratorFactory;
+import org.wildfly.extension.clustering.web.routing.infinispan.RankedRouteLocatorServiceConfiguratorFactory;
 
 /**
  * @author Paul Ferraro

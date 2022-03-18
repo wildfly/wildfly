@@ -24,7 +24,7 @@ package org.wildfly.extension.clustering.web.deployment;
 
 import java.util.function.UnaryOperator;
 
-import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagementConfiguration;
+import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManagementConfiguration;
 
 /**
  * @author Paul Ferraro

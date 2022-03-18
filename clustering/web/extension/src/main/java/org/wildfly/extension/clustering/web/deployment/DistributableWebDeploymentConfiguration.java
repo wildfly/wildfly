@@ -24,7 +24,7 @@ package org.wildfly.extension.clustering.web.deployment;
 
 import java.util.List;
 
-import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 
 /**
  * Configuration of a distributable web deployment.

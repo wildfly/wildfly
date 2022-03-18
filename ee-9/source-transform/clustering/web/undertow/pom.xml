@@ -65,7 +65,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-web-spi</artifactId>
+            <artifactId>wildfly-clustering-web-service</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

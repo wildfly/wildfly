@@ -47,6 +47,7 @@
     <modules>
         <module>api</module>
         <module>spi</module>
+        <module>service</module>
         <module>cache</module>
         <module>container</module>
         <module>undertow</module>

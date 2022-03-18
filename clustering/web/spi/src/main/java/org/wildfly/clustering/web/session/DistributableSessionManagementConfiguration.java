@@ -23,7 +23,7 @@
 package org.wildfly.clustering.web.session;
 
 /**
- * Encapsulates the configuration of a {@link DistributableSessionManagementProvider} profile.
+ * Encapsulates the configuration of a session management provider.
  * @author Paul Ferraro
  */
 public interface DistributableSessionManagementConfiguration {
