@@ -875,6 +875,10 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.jboss</groupId>
+                    <artifactId>jboss-iiop-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss</groupId>
                     <artifactId>jboss-ejb-client</artifactId>
                 </exclusion>
                 <exclusion>
