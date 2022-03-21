@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.jpa.hibernate.entitytest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.Set;
 import javax.naming.InitialContext;
@@ -42,6 +43,7 @@ import org.jboss.as.test.integration.jpa.hibernate.entity.Ticket;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -70,6 +72,11 @@ public class EntityTestCase {
         return interfaceType.cast(iniCtx.lookup(name));
     }
 
+    // This test needs to be recompiled against Hibernater ORM 6 (WFLY-16178) in order to pass.
+    @BeforeClass
+    public static void beforeClass() {
+        assumeTrue(System.getProperty("ts.ee9") == null);
+    }
 
     @Deployment
     public static Archive<?> deploy() {
