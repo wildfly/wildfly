@@ -102,7 +102,6 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
 import org.jboss.logging.annotations.Signature;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -3199,7 +3198,7 @@ public interface EjbLogger extends BasicLogger {
     RuntimeException serverInterceptorInvalidMethod(String methodName, String interceptorClass, String annotationClass, @Cause Exception e);
 
     @Message(id = 514, value = "Cannot load server interceptor module %s")
-    RuntimeException cannotLoadServerInterceptorModule(ModuleIdentifier moduleId, @Cause Exception e);
+    RuntimeException cannotLoadServerInterceptorModule(String moduleId, @Cause Exception e);
 
     @LogMessage(level = WARN)
     @Message(id = 515, value = "[Jakarta Enterprise Beans 3.2 spec, section 4.9.2] Singleton session beans are not allowed to implement 'javax.ejb.SessionBean' interface. This interface on bean '%s' is going to be ignored and should be removed.")
