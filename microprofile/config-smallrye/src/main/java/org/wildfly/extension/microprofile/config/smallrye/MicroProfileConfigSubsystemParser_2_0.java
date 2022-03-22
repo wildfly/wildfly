@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -27,14 +27,11 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 
-/**
- * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
- */
-class MicroProfileConfigSubsystemParser_1_0 extends PersistentResourceXMLParser {
+class MicroProfileConfigSubsystemParser_2_0 extends PersistentResourceXMLParser {
     /**
      * The name space used for the {@code subsystem} element
      */
-    public static final String NAMESPACE = "urn:wildfly:microprofile-config-smallrye:1.0";
+    public static final String NAMESPACE = "urn:wildfly:microprofile-config-smallrye:2.0";
 
     private static final PersistentResourceXMLDescription xmlDescription;
 
@@ -45,7 +42,7 @@ class MicroProfileConfigSubsystemParser_1_0 extends PersistentResourceXMLParser 
                                 ConfigSourceDefinition.ORDINAL,
                                 ConfigSourceDefinition.PROPERTIES,
                                 ConfigSourceDefinition.CLASS,
-                                ConfigSourceDefinition.DIR_1_0))
+                                ConfigSourceDefinition.DIR))
                 .addChild(builder(MicroProfileConfigExtension.CONFIG_SOURCE_PROVIDER_PATH)
                         .addAttributes(
                                 ConfigSourceProviderDefinition.CLASS))

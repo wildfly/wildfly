@@ -20,16 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir;
+package org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir;
 
-import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.SetupTask.A;
-import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.SetupTask.B;
-import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.B_OVERRIDES_A;
-import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.DEFAULT;
-import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.FROM_A;
-import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.FROM_B;
-import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.NOT_AVAILABLE_NESTED_DIR_UNDER_A;
-import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_dir.TestApplication.NOT_AVAILABLE_NESTED_DIR_UNDER_B;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.DEFAULT;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.NOT_AVAILABLE_NESTED_DIR_UNDER_A;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.NOT_AVAILABLE_ROOT_FILE;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.X_D_OVERRIDES_A;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.FROM_A1;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.FROM_A2;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.FROM_B;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.Y_A_OVERRIDES_B;
+import static org.wildfly.test.integration.microprofile.config.smallrye.management.config_source.from_root_dir.TestApplication.Z_C_OVERRIDES_A;
 
 import java.net.URL;
 
@@ -54,14 +55,14 @@ import org.wildfly.test.integration.microprofile.config.smallrye.AbstractMicroPr
 import org.wildfly.test.integration.microprofile.config.smallrye.AssertUtils;
 
 /**
- * Load a ConfigSource from a class (in a module).
+ * Tests Root directory config sources
  *
- * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
+ * @author Kabir Khan
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(SetupTask.class)
-public class ConfigSourceFromDirTestCase extends AbstractMicroProfileConfigTestCase {
+public class ConfigSourceRootTestCase extends AbstractMicroProfileConfigTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
@@ -80,11 +81,14 @@ public class ConfigSourceFromDirTestCase extends AbstractMicroProfileConfigTestC
             HttpResponse response = client.execute(new HttpGet(url + "custom-config-source/test"));
             Assert.assertEquals(200, response.getStatusLine().getStatusCode());
             String text = EntityUtils.toString(response.getEntity());
-            AssertUtils.assertTextContainsProperty(text, FROM_A, A);
-            AssertUtils.assertTextContainsProperty(text, FROM_B, B);
-            AssertUtils.assertTextContainsProperty(text, B_OVERRIDES_A, SetupTask.OVERRIDDEN_B);
+            AssertUtils.assertTextContainsProperty(text, FROM_A1, SetupTask.A1);
+            AssertUtils.assertTextContainsProperty(text, FROM_A2, SetupTask.A2);
+            AssertUtils.assertTextContainsProperty(text, FROM_B, SetupTask.B);
+            AssertUtils.assertTextContainsProperty(text, X_D_OVERRIDES_A, SetupTask.X_FROM_D);
+            AssertUtils.assertTextContainsProperty(text, Y_A_OVERRIDES_B, SetupTask.Y_FROM_A);
+            AssertUtils.assertTextContainsProperty(text, Z_C_OVERRIDES_A, SetupTask.Z_FROM_C);
             AssertUtils.assertTextContainsProperty(text, NOT_AVAILABLE_NESTED_DIR_UNDER_A, DEFAULT);
-            AssertUtils.assertTextContainsProperty(text, NOT_AVAILABLE_NESTED_DIR_UNDER_B, DEFAULT);
+            AssertUtils.assertTextContainsProperty(text, NOT_AVAILABLE_ROOT_FILE, DEFAULT);
         }
     }
 }
