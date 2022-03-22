@@ -102,14 +102,22 @@ import io.netty.util.internal.logging.JdkLoggerFactory;
  * Domain extension that integrates Apache ActiveMQ 6.
  *
  * <dl>
- * <dt><strong>Current</strong> - WildFly 23</dt>
+ * <dt><strong>Current</strong> - WildFly 26.1</dt>
+ *   <dd>
+ *     <ul>
+ *       <li>XML namespace: urn:jboss:domain:messaging-activemq:13.1
+ *       <li>Management model: 13.0.0
+ *     </ul>
+ *   </dd>
+ * <dt>
+ * <dt> WildFly 23</dt>
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging-activemq:13.0
  *       <li>Management model: 13.0.0
  *     </ul>
  *   </dd>
- * <dt></strong> - WildFly 22</dt>
+ * <dt>WildFly 22</dt>
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging-activemq:12.0
@@ -250,6 +258,7 @@ public class MessagingExtension implements Extension {
 
     static final String RESOURCE_NAME = MessagingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
+    protected static final ModelVersion VERSION_13_1_0 = ModelVersion.create(13, 1, 0);
     protected static final ModelVersion VERSION_13_0_0 = ModelVersion.create(13, 0, 0);
     protected static final ModelVersion VERSION_12_0_0 = ModelVersion.create(12, 0, 0);
     protected static final ModelVersion VERSION_11_0_0 = ModelVersion.create(11, 0, 0);
@@ -263,9 +272,9 @@ public class MessagingExtension implements Extension {
     protected static final ModelVersion VERSION_3_0_0 = ModelVersion.create(3, 0, 0);
     protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_13_0_0;
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_13_1_0;
 
-    private static final MessagingSubsystemParser_13_0 CURRENT_PARSER = new MessagingSubsystemParser_13_0();
+    private static final MessagingSubsystemParser_13_1 CURRENT_PARSER = new MessagingSubsystemParser_13_1();
 
     // ARTEMIS-2273 introduced audit logging at a info level which is rather verbose. We need to use static loggers
     // to ensure the log levels are set to WARN and there is a strong reference to the loggers. This hack will likely
@@ -389,6 +398,7 @@ public class MessagingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_10_0.NAMESPACE, MessagingSubsystemParser_10_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_11_0.NAMESPACE, MessagingSubsystemParser_11_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_12_0.NAMESPACE, MessagingSubsystemParser_12_0::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_13_0.NAMESPACE, CURRENT_PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_13_0.NAMESPACE, MessagingSubsystemParser_13_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MessagingSubsystemParser_13_1.NAMESPACE, CURRENT_PARSER);
     }
 }

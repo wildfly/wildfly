@@ -71,6 +71,7 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
 
+        registerTransformers_WF_26_1(builder.createBuilder(MessagingExtension.VERSION_13_1_0, MessagingExtension.VERSION_13_0_0));
         registerTransformers_WF_23(builder.createBuilder(MessagingExtension.VERSION_13_0_0, MessagingExtension.VERSION_12_0_0));
         registerTransformers_WF_22(builder.createBuilder(MessagingExtension.VERSION_12_0_0, MessagingExtension.VERSION_11_0_0));
         registerTransformers_WF_21(builder.createBuilder(MessagingExtension.VERSION_11_0_0, MessagingExtension.VERSION_10_0_0));
@@ -88,7 +89,13 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
             MessagingExtension.VERSION_3_0_0, MessagingExtension.VERSION_4_0_0, MessagingExtension.VERSION_5_0_0,
             MessagingExtension.VERSION_6_0_0, MessagingExtension.VERSION_7_0_0, MessagingExtension.VERSION_8_0_0,
             MessagingExtension.VERSION_9_0_0, MessagingExtension.VERSION_10_0_0, MessagingExtension.VERSION_11_0_0,
-            MessagingExtension.VERSION_12_0_0, MessagingExtension.VERSION_13_0_0});
+            MessagingExtension.VERSION_12_0_0, MessagingExtension.VERSION_13_0_0, MessagingExtension.VERSION_13_1_0});
+    }
+
+    private static void registerTransformers_WF_26_1(ResourceTransformationDescriptionBuilder subsystem) {
+        ResourceTransformationDescriptionBuilder server = subsystem
+                .addChildResource(MessagingExtension.SERVER_PATH);
+        rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD);
     }
 
     private static void registerTransformers_WF_23(ResourceTransformationDescriptionBuilder subsystem) {
