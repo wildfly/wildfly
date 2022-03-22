@@ -33,6 +33,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.Pool;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DsPool;
+import org.jboss.modules.ModuleClassLoader;
 
 /**
  * Runtime attribute handler for XML datasources
@@ -298,6 +299,15 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
                 return;
             }
             setStringIfNotNull(context, dataSource.getValidation().getExceptionSorter().getClassName());
+        }
+        else if (attributeName.equals(Constants.EXCEPTION_SORTER_MODULE.getName())) {
+            if (dataSource.getValidation() == null) {
+                return;
+            }
+            if (dataSource.getValidation().getExceptionSorter() == null) {
+                return;
+            }
+            setStringIfNotNull(context, ((ModuleClassLoader)dataSource.getValidation().getExceptionSorter().getClassLoader()).getModule().toString());
         } else if (attributeName.equals(Constants.EXCEPTION_SORTER_PROPERTIES.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
@@ -320,6 +330,14 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
                 return;
             }
             setStringIfNotNull(context, dataSource.getValidation().getStaleConnectionChecker().getClassName());
+        } else if (attributeName.equals(Constants.STALE_CONNECTION_CHECKER_MODULE.getName())) {
+            if (dataSource.getValidation() == null) {
+                return;
+            }
+            if (dataSource.getValidation().getStaleConnectionChecker() == null) {
+                return;
+            }
+            setStringIfNotNull(context, ((ModuleClassLoader)dataSource.getValidation().getStaleConnectionChecker().getClassLoader()).getModule().toString());
         } else if (attributeName.equals(Constants.STALE_CONNECTION_CHECKER_PROPERTIES.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
@@ -342,6 +360,14 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
                 return;
             }
             setStringIfNotNull(context, dataSource.getValidation().getValidConnectionChecker().getClassName());
+        } else if (attributeName.equals(Constants.VALID_CONNECTION_CHECKER_MODULE.getName())) {
+            if (dataSource.getValidation() == null) {
+                return;
+            }
+            if (dataSource.getValidation().getValidConnectionChecker() == null) {
+                return;
+            }
+            setStringIfNotNull(context, ((ModuleClassLoader)dataSource.getValidation().getValidConnectionChecker().getClassLoader()).getModule().toString());
         } else if (attributeName.equals(Constants.VALID_CONNECTION_CHECKER_PROPERTIES.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
