@@ -1,0 +1,34 @@
+[[distributed-realm]]
+= Distributed Realm
+
+The distributed realm allows combining identities located across multiple security realms of any type into a single security realm.
+
+The `distributed-realm` resource contains the following attributes: -
+
+* `realms` - List of realms in the order they should be queried
+* `ignore-unavailable-realm` - Whether subsequent realms should be checked after an unavailable realm is reached. The default value is false.
+* `emit-events` - Whether a SecurityEvent signifying realm unavailability should be emitted. The default value is true.
+
+== Defining a Distributed Realm
+
+Assuming realms `properties-realm`, `ldap-realm` and `jdbc-realm` already exist then `distributed-realm` combining these three can be created with the following command.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/distributed-realm=distributedRealmExample:add(realms=[properties-realm, ldap-realm, jdbc-realm])
+----
+
+When, for example, `ldap-realm` is unavailable, adding `ignore-unavailable-realm` will ensure that subsequent realms will be checked.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/distributed-realm=distributedRealmExample:add(realms=[properties-realm, ldap-realm, jdbc-realm], ignore-unavailable-realm=true)
+----
+
+While `ignore-unavailable-realm` is set to true, `emit-events` is by default set to true, so the SecurityEvent will be emitted in case any of the queried realms is unavailable.
+It can be turned off by setting `emit-events` to false.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/distributed-realm=distributedRealmExample:add(realms=[properties-realm, ldap-realm, jdbc-realm], ignore-unavailable-realm=true, emit-events=false)
+----
