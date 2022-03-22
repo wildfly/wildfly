@@ -46,6 +46,7 @@ import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
@@ -60,6 +61,7 @@ public class VertxProxyService implements Service, VertxConstants {
     private final Supplier<ChannelFactory> channelFactorySupplier;
     private final Supplier<String> clusterSupplier;
     private final Supplier<NamedVertxOptions> optionsSupplier;
+    final Consumer<VertxProxy> vertxProxytConsumer;
     private volatile Vertx vertx;
     private volatile DefaultCacheManager defaultCacheManager;
 
@@ -67,6 +69,7 @@ public class VertxProxyService implements Service, VertxConstants {
         VertxProxyService vertxProxyService;
         ServiceName vertxServiceName = VertxResourceDefinition.VERTX_RUNTIME_CAPABILITY.getCapabilityServiceName(vertxProxy.getName());
         ServiceBuilder<?> vertxServiceBuilder = context.getServiceTarget().addService(vertxServiceName);
+        final Consumer<VertxProxy> vertxProxytConsumer = vertxServiceBuilder.provides(vertxServiceName);
         Supplier<NamedVertxOptions> optionsSupplier;
         if (optionName == null) {
             optionsSupplier = () -> NamedVertxOptions.DEFAULT;
@@ -88,9 +91,9 @@ public class VertxProxyService implements Service, VertxConstants {
             Supplier<ChannelFactory> cacheManagerSupplier = vertxServiceBuilder.requires(channelFactoryServiceName);
             ServiceName clusterServiceName = JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, jgroupChannel);
             Supplier<String> clusterSupplier = vertxServiceBuilder.requires(clusterServiceName);
-            vertxProxyService = new VertxProxyService(cacheManagerSupplier, clusterSupplier, vertxProxy, optionsSupplier);
+            vertxProxyService = new VertxProxyService(cacheManagerSupplier, clusterSupplier, vertxProxy, optionsSupplier, vertxProxytConsumer);
         } else  {
-            vertxProxyService = new VertxProxyService(null, null, vertxProxy, optionsSupplier);
+            vertxProxyService = new VertxProxyService(null, null, vertxProxy, optionsSupplier, vertxProxytConsumer);
         }
         vertxServiceBuilder.setInstance(vertxProxyService);
         vertxServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
@@ -137,11 +140,13 @@ public class VertxProxyService implements Service, VertxConstants {
     }
 
     private VertxProxyService(Supplier<ChannelFactory> channelFactorySupplier, Supplier<String> clusterSupplier,
-                              VertxProxy vertxProxy, Supplier<NamedVertxOptions> optionsSupplier) {
+                              VertxProxy vertxProxy, Supplier<NamedVertxOptions> optionsSupplier,
+                              Consumer<VertxProxy> vertxProxytConsumer) {
         this.vertxProxy = vertxProxy;
         this.clusterSupplier = clusterSupplier;
         this.channelFactorySupplier = channelFactorySupplier;
         this.optionsSupplier = optionsSupplier;
+        this.vertxProxytConsumer = vertxProxytConsumer;
     }
 
     @Override
@@ -153,6 +158,7 @@ public class VertxProxyService implements Service, VertxConstants {
             throw VERTX_LOGGER.failedToStartVertxService(vertxProxy.getName(), e);
         }
         VertxRegistry.INSTANCE.registerVertx(vertxProxy);
+        vertxProxytConsumer.accept(vertxProxy);
     }
 
     private Vertx createVertx() throws Exception {

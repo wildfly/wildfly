@@ -67,7 +67,7 @@ public class VertxProxy {
         return jndiName;
     }
 
-    public void setVertx(Vertx vertx) {
+    void setVertx(Vertx vertx) {
         this.vertx = vertx;
     }
 
@@ -81,10 +81,10 @@ public class VertxProxy {
      * @return the aliases of this VertxProxy, not null.
      */
     public List<String> getAliases() {
-        return aliases == null ? Collections.emptyList() : aliases;
+        return aliases == null ? Collections.emptyList() : Collections.unmodifiableList(aliases);
     }
 
-    public void setAliases(List<String> aliases) {
+    void setAliases(List<String> aliases) {
         this.aliases = aliases;
     }
 
