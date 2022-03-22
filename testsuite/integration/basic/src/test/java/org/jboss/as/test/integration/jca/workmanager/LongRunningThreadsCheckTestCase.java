@@ -140,7 +140,7 @@ public class LongRunningThreadsCheckTestCase {
         ja.addPackage(MultipleConnectionFactory1.class.getPackage()).addClasses(LongRunningThreadsCheckTestCase.class,
                 JcaMgmtServerSetupTask.class, JcaMgmtBase.class, JcaTestsUtil.class);
         ja.addPackage(AbstractMgmtTestBase.class.getPackage());
-        ja.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.connector, org.jboss.threads"),
+        ja.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.connector, org.jboss.ironjacamar.api, org.jboss.threads"),
                 "MANIFEST.MF");
 
         ResourceAdapterArchive ra1 = ShrinkWrap.create(ResourceAdapterArchive.class, "wm1.rar");
