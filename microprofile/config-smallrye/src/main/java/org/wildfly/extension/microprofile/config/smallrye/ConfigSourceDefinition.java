@@ -33,6 +33,7 @@ import java.util.Collection;
 
 import io.smallrye.config.PropertiesConfigSource;
 import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
@@ -94,7 +95,21 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
             .setAllowExpression(false)
             .build();
 
-    static ObjectTypeAttributeDefinition DIR = ObjectTypeAttributeDefinition.Builder.of("dir", PATH, RELATIVE_TO)
+    static AttributeDefinition ROOT = create("root", ModelType.STRING, true)
+            .setAllowExpression(true)
+            .setDefaultValue(ModelNode.FALSE)
+            .build();
+
+    // For the 1.0 parser, in 2.0 we introduce the ROOT nested attribute
+    static ObjectTypeAttributeDefinition DIR_1_0 = ObjectTypeAttributeDefinition.Builder.of("dir", PATH, RELATIVE_TO)
+            .setAlternatives("properties", "class")
+            .setRequired(false)
+            .setAttributeMarshaller(AttributeMarshaller.ATTRIBUTE_OBJECT)
+            .setRestartAllServices()
+            .setCapabilityReference("org.wildfly.management.path-manager")
+            .build();
+
+    static ObjectTypeAttributeDefinition DIR = ObjectTypeAttributeDefinition.Builder.of("dir", PATH, RELATIVE_TO, ROOT)
             .setAlternatives("properties", "class")
             .setRequired(false)
             .setAttributeMarshaller(AttributeMarshaller.ATTRIBUTE_OBJECT)
@@ -104,10 +119,10 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
 
     static AttributeDefinition[] ATTRIBUTES = {ORDINAL, PROPERTIES, CLASS, DIR};
 
-    protected ConfigSourceDefinition(Registry<ConfigSource> sources) {
+    protected ConfigSourceDefinition(Registry<ConfigSourceProvider> providers, Registry<ConfigSource> sources) {
         super(new SimpleResourceDefinition.Parameters(MicroProfileConfigExtension.CONFIG_SOURCE_PATH,
                 MicroProfileConfigExtension.getResourceDescriptionResolver(MicroProfileConfigExtension.CONFIG_SOURCE_PATH.getKey()))
-                .setAddHandler(new ConfigSourceDefinitionAddHandler(sources))
+                .setAddHandler(new ConfigSourceDefinitionAddHandler(providers, sources))
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE));
     }
 
@@ -130,10 +145,12 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
     }
 
     private static class ConfigSourceDefinitionAddHandler extends AbstractAddStepHandler {
+        private Registry<ConfigSourceProvider> providers;
         private final Registry<ConfigSource> sources;
 
-        ConfigSourceDefinitionAddHandler(Registry<ConfigSource> sources) {
+        ConfigSourceDefinitionAddHandler(Registry<ConfigSourceProvider> providers, Registry<ConfigSource> sources) {
             super(ATTRIBUTES);
+            this.providers = providers;
             this.sources = sources;
         }
 
@@ -155,12 +172,14 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
                     throw new OperationFailedException(e);
                 }
             } else if (dirModel.isDefined()) {
-                DirConfigSourceRegistrationService.install(context,
-                        name,
-                        PATH.resolveModelAttribute(context, dirModel).asString(),
-                        RELATIVE_TO.resolveModelAttribute(context, dirModel).asStringOrNull(),
-                        ordinal,
-                        sources);
+                String path = PATH.resolveModelAttribute(context, dirModel).asString();
+                String relativeTo = RELATIVE_TO.resolveModelAttribute(context, dirModel).asStringOrNull();
+                boolean root = ROOT.resolveModelAttribute(context, dirModel).asBoolean();
+                if (root) {
+                    ConfigSourceRootRegistrationService.install(context, name, path, relativeTo, ordinal, providers);
+                } else {
+                    DirConfigSourceRegistrationService.install(context, name, path, relativeTo, ordinal, sources);
+                }
             } else {
                 PropertiesConfigSourceRegistrationService.install(context,
                         name,

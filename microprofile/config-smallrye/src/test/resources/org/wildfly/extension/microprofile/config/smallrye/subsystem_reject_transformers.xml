@@ -1,0 +1,7 @@
+<subsystem xmlns="urn:wildfly:microprofile-config-smallrye:2.0">
+    <config-source name="my-config-source-with-ordinal-expression"
+                   ordinal="${my.ordinal:201}" />
+    <config-source name="my-config-source-with-root">
+        <dir path="myConfigDir" relative-to="jboss.home.dir" root="true"/>
+    </config-source>
+</subsystem>

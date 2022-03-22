@@ -68,7 +68,7 @@ This results in the XML configuration:
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
+<subsystem xmlns="urn:wildfly:microprofile-config-smallrye:2.0">
     <config-source name="file-props">
         <dir path="/etc/config/numbers-app"/>
     </config-source>
@@ -95,6 +95,82 @@ int numMax; // <2>
 This corresponds to the layout used by https://docs.openshift.com/enterprise/3.2/dev_guide/configmaps.html[OpenShift ConfigMaps].
 The `dir` value corresponds to the `mountPath` in the ConfigMap definition in OpenShift or Kubernetes.
 
+==== ConfigSources from Root directory
+You can also point to a root directory by adjusting the examples in the preceding section to include
+`root=true` when defining them. Top level directories within this root directory each become an
+individual `ConfigSource` reading from a directory similar to what we saw earlier in
+<<configsource-from-directory, ConfigSource from Directory>>. Any directories below the top-level
+directories are ignored. Also, any files in the root directory are ignored; only files in the top
+level directories within the root directory will be used for the configuration.
+
+This is especially useful when running on OpenShift where constructs such as `ConfigMap` and
+`ServiceBinding` instances get mapped under
+a common known location. For example if there are two `ConfigMap` instances (for this example,
+we will call them `map-a`, and `map-b`) used by your application pod, they will
+each get mapped under `/etc/config`. So you would have `/etc/config/map-a` and `/etc/config/map-b`
+directories.
+
+Each of these directories will have files where the file name is the name of the property and the file
+content is the value of the property, like we saw earlier.
+
+We can thus simply run the following CLI command to pick up all these child directories as
+a `ConfigSource` each:
+[source,options="nowrap"]
+----
+/subsystem=microprofile-config-smallrye/config-source=config-map-root:add(dir={path=/etc/config, root=true})
+----
+
+This results in the XML configuration:
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:wildfly:microprofile-config-smallrye:2.0">
+    <config-source name="config-map-root">
+        <dir path="/etc/config" root="true"/>
+    </config-source>
+</subsystem>
+----
+Assuming the `/etc/config` directory contains the `map-a` and `map-b` directories we are using
+for this example, the above is analogous to doing:
+----
+/subsystem=microprofile-config-smallrye/config-source=file-props:add(dir={path=/etc/config/map-a})
+/subsystem=microprofile-config-smallrye/config-source=file-props:add(dir={path=/etc/config/map-b})
+----
+Specifying the root directory rather than each individual directory removes the need to know the
+exact names of each entry under the common parent directory (this is especially useful in some
+OpenShift scenarios where the names of these directories are auto-generated).
+
+The situation where two `ConfigSource` entries under the same root both contain the same property
+should be avoided. However, to make this situation deterministic, the directories representing each
+`ConfigSource` are sorted by their name according to standard Java sorting rules before doing the
+lookup of values. To make this more concrete, if we have the following entries:
+* `/etc/config/map-a/name` contains `kabir`
+* `/etc/config/map-b/name` contains `jeff`
+
+Since `map-a` will come before `map-b` after sorting, in the following scenario `kabir` (coming from
+`map-a`) will be injected for the following `username` field:
+
+[source,java,options="nowrap"]
+----
+@Inject
+@ConfigProperty(name = "name")
+String username;
+----
+
+
+You may override this default sorting by including a file called `config_ordinal` in a directory. The
+ordinal specified in that file will be used for config values coming from that directory. Building
+on our previous example, if we had:
+* `/etc/config/map-a/config_ordinal` contains `120`
+* `/etc/config/map-b/config_ordinal` contains `140`
+
+Since now `map-b` has a higher ordinal (`140`) than `map-a` (`120`), we will instead inject the value
+`jeff` for the earlier `username` field.
+
+If there is no `config_ordinal` file in a top-level directory under the root directory, the
+ordinal used when specifying the `ConfigSource` will be used for that directory.
+
+
 === ConfigSource from Class
 
 You can create a specific type of `ConfigSource` implementation by creating a `config-source` resource
@@ -111,7 +187,7 @@ This results in the XML configuration:
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
+<subsystem xmlns="urn:wildfly:microprofile-config-smallrye:2.0">
     <config-source name="my-config-source">
         <class name="org.example.MyConfigSource" module="org.example"/>
     </config-source>
@@ -136,7 +212,7 @@ This results in the XML configuration:
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0">
+<subsystem xmlns="urn:wildfly:microprofile-config-smallrye:2.0">
     <config-source-provider name="my-config-source-provider">
          <class name="org.example.MyConfigSourceProvider" module="org.example"/>
     </config-source-provider>
