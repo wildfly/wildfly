@@ -974,4 +974,7 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 129, value = "Wrong module name %s")
     OperationFailedException wrongModuleName(@Cause ModuleLoadException exception, String moduleName);
+
+    @Message(id = 130, value = "Report directory %s does not exist")
+    OperationFailedException reportDirectoryDoesNotExist(String reportDirectory);
 }
