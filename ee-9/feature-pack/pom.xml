@@ -505,13 +505,14 @@
                                 <exclude>io.grpc:grpc-protobuf-lite\z</exclude>
                                 <exclude>io.grpc:grpc-stub\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-api\z</exclude>
-                                <exclude>io.opentelemetry:opentelemetry-api-metrics\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-context\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-exporter-jaeger\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-exporter-otlp-common\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-exporter-otlp-trace\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-sdk\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-sdk-common\z</exclude>
+                                <exclude>io.opentelemetry:opentelemetry-sdk-logs\z</exclude>
+                                <exclude>io.opentelemetry:opentelemetry-sdk-metrics\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-sdk-trace\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-semconv\z</exclude>
                                 <exclude>io.perfmark:perfmark-api\z</exclude>
