@@ -103,4 +103,5 @@
             </admin-objects>
         </resource-adapter>
     </resource-adapters>
+    <report-directory path="/tmp"/>
 </subsystem>
