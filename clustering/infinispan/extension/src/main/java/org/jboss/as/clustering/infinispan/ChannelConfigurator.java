@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan;
 import java.util.List;
 
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelConfigurator;
+import org.jgroups.ChannelListener;
 import org.jgroups.JChannel;
 import org.jgroups.conf.ProtocolConfiguration;
 import org.jgroups.util.SocketFactory;
@@ -65,6 +66,11 @@ public class ChannelConfigurator implements JGroupsChannelConfigurator {
 
     @Override
     public void setSocketFactory(SocketFactory socketFactory) {
+        // Do nothing
+    }
+
+    @Override
+    public void addChannelListener(ChannelListener listener) {
         // Do nothing
     }
 }
