@@ -42,6 +42,8 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -59,6 +61,10 @@ public class FilesystemRealmEncryptedTestCase {
     private static final String USER = "plainUser";
     private static final String PASSWORD = "secretPassword";
 
+    @BeforeClass
+    public static void assumeNotBootable() {
+        Assume.assumeTrue("WFLY-16019", System.getProperty("ts.bootable") == null);
+    }
 
     @Deployment(name = DEPLOYMENT_ENCRYPTED)
     public static WebArchive deploymentWithCharsetAndEncoded() {
