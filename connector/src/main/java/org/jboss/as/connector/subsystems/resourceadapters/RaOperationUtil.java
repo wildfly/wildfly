@@ -59,8 +59,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MCP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVER_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVER_PLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
@@ -296,7 +296,7 @@ public class RaOperationUtil {
                 credential = new CredentialImpl(recoveryUsername, recoveryPassword,
                         recoveryElytronEnabled ? recoveryAuthenticationContext : recoverySecurityDomain, recoveryElytronEnabled, recoveryCredentialSourceSupplier);
 
-            Extension recoverPlugin = ModelNodeUtil.extractExtension(context, connDefModel, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
+            Extension recoverPlugin = ModelNodeUtil.extractExtension(context, connDefModel, RECOVER_PLUGIN_CLASSNAME, RECOVER_PLUGIN_PROPERTIES);
 
             if (noRecovery == null)
                 noRecovery = Boolean.FALSE;

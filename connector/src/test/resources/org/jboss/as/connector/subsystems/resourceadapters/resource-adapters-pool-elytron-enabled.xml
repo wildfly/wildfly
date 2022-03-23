@@ -2,7 +2,7 @@
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
-    <resource-adapter id="myRA" statistics-enabled="false">
+    <resource-adapter id="myRA" statistics-enabled="true">
       <!--Optional:-->
       <module id="moduleID" slot="main"/>
       <!--Optional:-->
@@ -12,28 +12,21 @@
         <bean-validation-group>group</bean-validation-group>
       </bean-validation-groups>
       <!--Optional:-->
-      <transaction-support>NoTransaction</transaction-support>
       <!--Zero or more repetitions:-->
+      <transaction-support>NoTransaction</transaction-support>
       <config-property name="config1">value</config-property>
-      <workmanager>
-        <security>
-          <domain>domain</domain>
-          <default-groups>
-            <group>group</group>
-          </default-groups>
-          <mappings>
-            <groups>
-              <map from="from" to="to"/>
-            </groups>
-          </mappings>
-        </security>
-      </workmanager>
+        <workmanager>
+            <security>
+                <mapping-required>true</mapping-required>
+                <elytron-security-domain>ApplicationDomain</elytron-security-domain>
+            </security>
+        </workmanager>
       <!--Optional:-->
       <connection-definitions>
         <!--1 or more repetitions:-->
         <connection-definition use-ccm="true" sharable="false" enlistment="true" class-name="token" jndi-name="java:jboss/cf/PoolName"
-                               enabled="true" use-java-context="true" pool-name="poolName" connectable="true"
-                               enlistment-trace="true" mcp="org.ironjcamar.myclass">
+                               enabled="true" use-java-context="true" pool-name="poolName" connectable="true" tracking="true"
+                               enlistment-trace="true" mcp="org.ironjacamar.myClass">
           <!--Zero or more repetitions:-->
           <config-property name="config2">value</config-property>
           <!--You have a CHOICE of the next 2 items at this level-->
@@ -56,7 +49,8 @@
           <security>
             <!--You have a CHOICE of the next 3 items at this level-->
             <!--Optional:-->
-            <security-domain-and-application>domain</security-domain-and-application>
+            <elytron-enabled>true</elytron-enabled>
+            <authentication-context-and-application>SomeAuthenticationContext</authentication-context-and-application>
           </security>
           <!--Optional:-->
           <timeout>
@@ -87,9 +81,10 @@
               <!--Optional:-->
               <user-name>userName</user-name>
               <!--Optional:-->
-              <password>pwd</password>
+              <credential-reference store="teststore" alias="myalias"/>
               <!--Optional:-->
-              <security-domain>token</security-domain>
+              <elytron-enabled>true</elytron-enabled>
+              <authentication-context>AnotherAuthenticationContext</authentication-context>
             </recover-credential>
             <!--Optional:-->
             <recover-plugin class-name="aClass">

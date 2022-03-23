@@ -87,6 +87,11 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
         standardSubsystemTest("resource-adapters-xapool-expression.xml", "resource-adapters-xapool.xml", true);
     }
 
+    @Test
+    public void testExpressionConfigElytron() throws Exception {
+        standardSubsystemTest("resource-adapters-pool-elytron-enabled.xml", "resource-adapters-pool-elytron-enabled-expression.xml", true);
+    }
+
 
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.MANAGEMENT

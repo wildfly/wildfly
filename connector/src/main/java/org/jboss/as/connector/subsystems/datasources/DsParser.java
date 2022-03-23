@@ -66,6 +66,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.ELYTRON_EN
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
@@ -97,6 +98,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.SET_TX_QUE
 import static org.jboss.as.connector.subsystems.datasources.Constants.SHARE_PREPARED_STATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACK_STATEMENTS;
@@ -110,6 +112,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_C
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_TRY_LOCK;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATE_ON_MATCH;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_MODULE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
@@ -225,8 +228,11 @@ public class DsParser extends AbstractParser {
                                 case DATASOURCES_3_0:
                                     parseDataSource_3_0(reader, list, parentAddress);
                                     break;
-                                default:
+                                case DATASOURCES_4_0:
                                     parseDataSource_4_0(reader, list, parentAddress);
+                                    break;
+                                default:
+                                    parseDataSource_7_0(reader, list, parentAddress);
                                     break;
                             }
                             break;
@@ -243,8 +249,11 @@ public class DsParser extends AbstractParser {
                                 case DATASOURCES_3_0:
                                     parseXADataSource_3_0(reader, list, parentAddress);
                                     break;
-                                default:
+                                case DATASOURCES_4_0:
                                     parseXADataSource_4_0(reader, list, parentAddress);
+                                    break;
+                                default:
+                                    parseXADataSource_7_0(reader, list, parentAddress);
                                     break;
                             }
                             break;
@@ -456,7 +465,7 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case VALIDATION: {
-                            parseValidationSetting(reader, operation);
+                            parseValidationSettings(reader, operation);
                             break;
                         }
                         default:
@@ -635,7 +644,7 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case VALIDATION: {
-                            parseValidationSetting(reader, operation);
+                            parseValidationSettings(reader, operation);
                             break;
                         }
                         case RECOVERY: {
@@ -681,9 +690,10 @@ public class DsParser extends AbstractParser {
                 case MODULE: {
                     String moduleName = rawAttributeText(reader, DRIVER_MODULE_NAME.getXmlName());
                     String slot = null;
-                    if (moduleName.contains(":")) {
-                        slot = moduleName.substring(moduleName.indexOf(":") + 1);
-                        moduleName = moduleName.substring(0, moduleName.indexOf(":"));
+                    int slotId = findSlot(moduleName);
+                    if(slotId != -1) {
+                        slot = moduleName.substring(slotId + 1);
+                        moduleName = moduleName.substring(0, slotId);
                     }
                     DRIVER_MODULE_NAME.parseAndSetParameter(moduleName, operation, reader);
                     if (slot != null) {
@@ -907,7 +917,7 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case VALIDATION: {
-                            parseValidationSetting(reader, operation);
+                            parseValidationSettings(reader, operation);
                             break;
                         }
                         case RECOVERY: {
@@ -1097,7 +1107,7 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case VALIDATION: {
-                            parseValidationSetting(reader, operation);
+                            parseValidationSettings(reader, operation);
                             break;
                         }
                         case RECOVERY: {
@@ -1307,7 +1317,217 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case VALIDATION: {
-                            parseValidationSetting(reader, operation);
+                            parseValidationSettings(reader, operation);
+                            break;
+                        }
+                        case RECOVERY: {
+                            parseRecovery(reader, operation);
+                            break;
+                        }
+                        default:
+                            throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
+                    }
+                    break;
+                }
+            }
+        }
+        throw new ParserException(bundle.unexpectedEndOfDocument());
+    }
+
+    private void parseXADataSource_7_0(XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException, ParserException,
+            ValidateException {
+
+        String poolName = null;
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(ADD);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final XaDataSource.Attribute attribute = XaDataSource.Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case ENABLED: {
+                    final String value = rawAttributeText(reader, ENABLED.getXmlName());
+                    if (value != null) {
+                        ENABLED.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case JNDI_NAME: {
+                    final String jndiName = rawAttributeText(reader, JNDI_NAME.getXmlName());
+                    JNDI_NAME.parseAndSetParameter(jndiName, operation, reader);
+                    break;
+                }
+                case POOL_NAME: {
+                    poolName = rawAttributeText(reader, POOLNAME_NAME);
+                    break;
+                }
+                case USE_JAVA_CONTEXT: {
+                    final String value = rawAttributeText(reader, USE_JAVA_CONTEXT.getXmlName());
+                    if (value != null) {
+                        USE_JAVA_CONTEXT.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case SPY: {
+                    final String value = rawAttributeText(reader, SPY.getXmlName());
+                    if (value != null) {
+                        SPY.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case USE_CCM: {
+                    final String value = rawAttributeText(reader, USE_CCM.getXmlName());
+                    if (value != null) {
+                        USE_CCM.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case CONNECTABLE: {
+                    final String value = rawAttributeText(reader, CONNECTABLE.getXmlName());
+                    if (value != null) {
+                        CONNECTABLE.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case MCP: {
+                    final String value = rawAttributeText(reader, MCP.getXmlName());
+                    if (value != null) {
+                        MCP.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case ENLISTMENT_TRACE: {
+                    final String value = rawAttributeText(reader, ENLISTMENT_TRACE.getXmlName());
+                    ENLISTMENT_TRACE.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                case TRACKING: {
+                    final String value = rawAttributeText(reader, TRACKING.getXmlName());
+                    if (value != null) {
+                        TRACKING.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                default:
+                    if (Constants.STATISTICS_ENABLED.getName().equals(reader.getAttributeLocalName(i))) {
+                        final String value = rawAttributeText(reader, Constants.STATISTICS_ENABLED.getXmlName());
+                        if (value != null) {
+                            Constants.STATISTICS_ENABLED.parseAndSetParameter(value, operation, reader);
+                        }
+                        break;
+
+                    } else {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+            }
+        }
+
+
+        final ModelNode dsAddress = parentAddress.clone();
+        dsAddress.add(XA_DATASOURCE, poolName);
+        dsAddress.protect();
+
+        operation.get(OP_ADDR).set(dsAddress);
+        List<ModelNode> xadatasourcePropertiesOperations = new ArrayList<ModelNode>(0);
+
+        //elements reading
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    if (DataSources.Tag.forName(reader.getLocalName()) == DataSources.Tag.XA_DATASOURCE) {
+
+                        list.add(operation);
+                        list.addAll(xadatasourcePropertiesOperations);
+
+                        return;
+                    } else {
+                        if (XaDataSource.Tag.forName(reader.getLocalName()) == XaDataSource.Tag.UNKNOWN) {
+                            throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
+                        }
+                    }
+                    break;
+                }
+                case START_ELEMENT: {
+                    switch (XaDataSource.Tag.forName(reader.getLocalName())) {
+                        case XA_DATASOURCE_PROPERTY: {
+                            String name = rawAttributeText(reader, "name");
+                            String value = rawElementText(reader);
+
+                            final ModelNode configOperation = new ModelNode();
+                            configOperation.get(OP).set(ADD);
+
+                            final ModelNode configAddress = dsAddress.clone();
+                            configAddress.add(XADATASOURCE_PROPERTIES.getName(), name);
+                            configAddress.protect();
+
+                            configOperation.get(OP_ADDR).set(configAddress);
+                            XADATASOURCE_PROPERTY_VALUE.parseAndSetParameter(value, configOperation, reader);
+                            xadatasourcePropertiesOperations.add(configOperation);
+                            break;
+                        }
+                        case XA_DATASOURCE_CLASS: {
+                            String value = rawElementText(reader);
+                            XA_DATASOURCE_CLASS.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case DRIVER: {
+                            String value = rawElementText(reader);
+                            DATASOURCE_DRIVER.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case XA_POOL: {
+                            parseXaPool(reader, operation);
+                            break;
+                        }
+                        case NEW_CONNECTION_SQL: {
+                            String value = rawElementText(reader);
+                            NEW_CONNECTION_SQL.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case URL_DELIMITER: {
+                            String value = rawElementText(reader);
+                            URL_DELIMITER.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case URL_PROPERTY: {
+                            String value = rawElementText(reader);
+                            URL_PROPERTY.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case URL_SELECTOR_STRATEGY_CLASS_NAME: {
+                            String value = rawElementText(reader);
+                            URL_SELECTOR_STRATEGY_CLASS_NAME.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case TRANSACTION_ISOLATION: {
+                            String value = rawElementText(reader);
+                            TRANSACTION_ISOLATION.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case SECURITY: {
+                            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                                // This method is only called for version 4 and later.
+                                case DATASOURCES_4_0:
+                                    parseDsSecurity(reader, operation);
+                                    break;
+                                default:
+                                    parseDsSecurity_5_0(reader, operation);
+                                    break;
+                            }
+                            break;
+                        }
+                        case STATEMENT: {
+                            parseStatementSettings(reader, operation);
+                            break;
+                        }
+                        case TIMEOUT: {
+                            parseTimeOutSettings(reader, operation);
+                            break;
+                        }
+                        case VALIDATION: {
+                            parseValidationSetting_7_0(reader, operation);
                             break;
                         }
                         case RECOVERY: {
@@ -1606,7 +1826,7 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case VALIDATION: {
-                            parseValidationSetting(reader, operation);
+                            parseValidationSettings(reader, operation);
                             break;
                         }
                         default:
@@ -1804,7 +2024,7 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case VALIDATION: {
-                            parseValidationSetting(reader, operation);
+                            parseValidationSettings(reader, operation);
                             break;
                         }
                         default:
@@ -2021,7 +2241,224 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case VALIDATION: {
-                            parseValidationSetting(reader, operation);
+                            parseValidationSettings(reader, operation);
+                            break;
+                        }
+                        default:
+                            throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
+                    }
+                    break;
+                }
+            }
+        }
+        throw new ParserException(bundle.unexpectedEndOfDocument());
+    }
+
+    private void parseDataSource_7_0(final XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode parentAddress) throws XMLStreamException, ParserException,
+            ValidateException {
+
+        String poolName = null;
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(ADD);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final DataSource.Attribute attribute = DataSource.Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case ENABLED: {
+                    final String value = rawAttributeText(reader, ENABLED.getXmlName());
+                    if (value != null) {
+                        ENABLED.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case JNDI_NAME: {
+                    final String jndiName = rawAttributeText(reader, JNDI_NAME.getXmlName());
+                    JNDI_NAME.parseAndSetParameter(jndiName, operation, reader);
+                    break;
+                }
+                case POOL_NAME: {
+                    poolName = rawAttributeText(reader, POOLNAME_NAME);
+                    break;
+                }
+                case USE_JAVA_CONTEXT: {
+                    final String value = rawAttributeText(reader, USE_JAVA_CONTEXT.getXmlName());
+                    if (value != null) {
+                        USE_JAVA_CONTEXT.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case SPY: {
+                    final String value = rawAttributeText(reader, SPY.getXmlName());
+                    if (value != null) {
+                        SPY.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case USE_CCM: {
+                    final String value = rawAttributeText(reader, USE_CCM.getXmlName());
+                    if (value != null) {
+                        USE_CCM.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case JTA: {
+                    final String value = rawAttributeText(reader, JTA.getXmlName());
+                    if (value != null) {
+                        JTA.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case CONNECTABLE: {
+                    final String value = rawAttributeText(reader, CONNECTABLE.getXmlName());
+                    if (value != null) {
+                        CONNECTABLE.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case MCP: {
+                    final String value = rawAttributeText(reader, MCP.getXmlName());
+                    if (value != null) {
+                        MCP.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case ENLISTMENT_TRACE: {
+                    final String value = rawAttributeText(reader, ENLISTMENT_TRACE.getXmlName());
+                    ENLISTMENT_TRACE.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                case TRACKING: {
+                    final String value = rawAttributeText(reader, TRACKING.getXmlName());
+                    if (value != null) {
+                        TRACKING.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                default:
+                    if (Constants.STATISTICS_ENABLED.getName().equals(reader.getAttributeLocalName(i))) {
+                        final String value = rawAttributeText(reader, Constants.STATISTICS_ENABLED.getXmlName());
+                        if (value != null) {
+                            Constants.STATISTICS_ENABLED.parseAndSetParameter(value, operation, reader);
+                        }
+                        break;
+
+                    } else {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+            }
+        }
+        final ModelNode dsAddress = parentAddress.clone();
+        dsAddress.add(DATA_SOURCE, poolName);
+        dsAddress.protect();
+
+        operation.get(OP_ADDR).set(dsAddress);
+
+
+        List<ModelNode> configPropertiesOperations = new ArrayList<ModelNode>(0);
+        //elements reading
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    if (DataSources.Tag.forName(reader.getLocalName()) == DataSources.Tag.DATASOURCE) {
+
+                        list.add(operation);
+                        list.addAll(configPropertiesOperations);
+                        return;
+                    } else {
+                        if (DataSource.Tag.forName(reader.getLocalName()) == DataSource.Tag.UNKNOWN) {
+                            throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
+                        }
+                    }
+                    break;
+                }
+                case START_ELEMENT: {
+                    switch (DataSource.Tag.forName(reader.getLocalName())) {
+                        case CONNECTION_PROPERTY: {
+                            String name = rawAttributeText(reader, "name");
+                            String value = rawElementText(reader);
+
+                            final ModelNode configOperation = new ModelNode();
+                            configOperation.get(OP).set(ADD);
+
+                            final ModelNode configAddress = dsAddress.clone();
+                            configAddress.add(CONNECTION_PROPERTIES.getName(), name);
+                            configAddress.protect();
+
+                            configOperation.get(OP_ADDR).set(configAddress);
+                            CONNECTION_PROPERTY_VALUE.parseAndSetParameter(value, configOperation, reader);
+                            configPropertiesOperations.add(configOperation);
+                            break;
+                        }
+                        case CONNECTION_URL: {
+                            String value = rawElementText(reader);
+                            CONNECTION_URL.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case DRIVER_CLASS: {
+                            String value = rawElementText(reader);
+                            DRIVER_CLASS.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case DATASOURCE_CLASS: {
+                            String value = rawElementText(reader);
+                            DATASOURCE_CLASS.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case DRIVER: {
+                            String value = rawElementText(reader);
+                            DATASOURCE_DRIVER.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case POOL: {
+                            parsePool(reader, operation);
+                            break;
+                        }
+                        case NEW_CONNECTION_SQL: {
+                            String value = rawElementText(reader);
+                            NEW_CONNECTION_SQL.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case URL_DELIMITER: {
+                            String value = rawElementText(reader);
+                            URL_DELIMITER.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case URL_SELECTOR_STRATEGY_CLASS_NAME: {
+                            String value = rawElementText(reader);
+                            URL_SELECTOR_STRATEGY_CLASS_NAME.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case TRANSACTION_ISOLATION: {
+                            String value = rawElementText(reader);
+                            TRANSACTION_ISOLATION.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case SECURITY: {
+                            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                                // This method is only called for version 4 and later.
+                                case DATASOURCES_4_0:
+                                    parseDsSecurity(reader, operation);
+                                    break;
+                                default:
+                                    parseDsSecurity_5_0(reader, operation);
+                                    break;
+                            }
+                            break;
+                        }
+                        case STATEMENT: {
+                            parseStatementSettings(reader, operation);
+                            break;
+                        }
+                        case TIMEOUT: {
+                            parseTimeOutSettings(reader, operation);
+                            break;
+                        }
+                        case VALIDATION: {
+                            parseValidationSetting_7_0(reader, operation);
                             break;
                         }
                         default:
@@ -2222,41 +2659,41 @@ public class DsParser extends AbstractParser {
     }
 
     private void parseCapacity(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
-                ValidateException {
+            ValidateException {
 
-            while (reader.hasNext()) {
-                switch (reader.nextTag()) {
-                    case END_ELEMENT: {
-                        if (DsPool.Tag.forName(reader.getLocalName()) == DsPool.Tag.CAPACITY ) {
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    if (DsPool.Tag.forName(reader.getLocalName()) == DsPool.Tag.CAPACITY) {
 
-                            return;
-                        } else {
-                            if (Capacity.Tag.forName(reader.getLocalName()) == Capacity.Tag.UNKNOWN) {
-                                throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
-                            }
+                        return;
+                    } else {
+                        if (Capacity.Tag.forName(reader.getLocalName()) == Capacity.Tag.UNKNOWN) {
+                            throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
                         }
-                        break;
                     }
-                    case START_ELEMENT: {
-                        switch (Capacity.Tag.forName(reader.getLocalName())) {
-                            case INCREMENTER: {
-                                parseExtension(reader, reader.getLocalName(), operation, CAPACITY_INCREMENTER_CLASS , CAPACITY_INCREMENTER_PROPERTIES);
-                                break;
-                            }
-                            case DECREMENTER: {
-                                parseExtension(reader, reader.getLocalName(), operation, CAPACITY_DECREMENTER_CLASS , CAPACITY_DECREMENTER_PROPERTIES);
-                                break;
-                            }
-
-                            default:
-                                throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
+                    break;
+                }
+                case START_ELEMENT: {
+                    switch (Capacity.Tag.forName(reader.getLocalName())) {
+                        case INCREMENTER: {
+                            parseExtension(reader, reader.getLocalName(), operation, CAPACITY_INCREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES);
+                            break;
                         }
-                        break;
+                        case DECREMENTER: {
+                            parseExtension(reader, reader.getLocalName(), operation, CAPACITY_DECREMENTER_CLASS, CAPACITY_DECREMENTER_PROPERTIES);
+                            break;
+                        }
+
+                        default:
+                            throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
                     }
+                    break;
                 }
             }
-            throw new ParserException(bundle.unexpectedEndOfDocument());
         }
+        throw new ParserException(bundle.unexpectedEndOfDocument());
+    }
 
 
     private void parseRecovery(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
@@ -2420,7 +2857,7 @@ public class DsParser extends AbstractParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    private void parseValidationSetting(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+    private void parseValidationSettings(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
             ValidateException {
 
         while (reader.hasNext()) {
@@ -2475,6 +2912,74 @@ public class DsParser extends AbstractParser {
                         }
                         case VALID_CONNECTION_CHECKER: {
                             parseExtension(reader, currTag.getLocalName(), operation, VALID_CONNECTION_CHECKER_CLASSNAME, VALID_CONNECTION_CHECKER_PROPERTIES);
+                            break;
+                        }
+                        default: {
+                            throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        throw new ParserException(bundle.unexpectedEndOfDocument());
+    }
+
+    private void parseValidationSetting_7_0(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+            ValidateException {
+
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    if (DataSource.Tag.forName(reader.getLocalName()) == DataSource.Tag.VALIDATION) {
+
+                        return;
+
+                    } else {
+                        if (Validation.Tag.forName(reader.getLocalName()) == Validation.Tag.UNKNOWN) {
+                            throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
+                        }
+                    }
+                    break;
+                }
+                case START_ELEMENT: {
+                    Validation.Tag currTag = Validation.Tag.forName(reader.getLocalName());
+                    switch (currTag) {
+                        case BACKGROUND_VALIDATION: {
+                            String value = rawElementText(reader);
+                            BACKGROUNDVALIDATION.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case BACKGROUND_VALIDATION_MILLIS: {
+                            String value = rawElementText(reader);
+                            BACKGROUNDVALIDATIONMILLIS.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case CHECK_VALID_CONNECTION_SQL: {
+                            String value = rawElementText(reader);
+                            CHECK_VALID_CONNECTION_SQL.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case EXCEPTION_SORTER: {
+                            parseModuleExtension(reader, currTag.getLocalName(), operation, EXCEPTION_SORTER_CLASSNAME, EXCEPTION_SORTER_MODULE, EXCEPTION_SORTER_PROPERTIES);
+                            break;
+                        }
+                        case STALE_CONNECTION_CHECKER: {
+                            parseModuleExtension(reader, currTag.getLocalName(), operation, STALE_CONNECTION_CHECKER_CLASSNAME, STALE_CONNECTION_CHECKER_MODULE, STALE_CONNECTION_CHECKER_PROPERTIES);
+                            break;
+                        }
+                        case USE_FAST_FAIL: {
+                            String value = rawElementText(reader);
+                            USE_FAST_FAIL.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case VALIDATE_ON_MATCH: {
+                            String value = rawElementText(reader);
+                            VALIDATE_ON_MATCH.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case VALID_CONNECTION_CHECKER: {
+                            parseModuleExtension(reader, currTag.getLocalName(), operation, VALID_CONNECTION_CHECKER_CLASSNAME, VALID_CONNECTION_CHECKER_MODULE, VALID_CONNECTION_CHECKER_PROPERTIES);
                             break;
                         }
                         default: {
@@ -2601,6 +3106,29 @@ public class DsParser extends AbstractParser {
             }
         }
         throw new ParserException(bundle.unexpectedEndOfDocument());
+    }
+
+    private int findSlot(String moduleName) {
+        boolean insideVariable = false;
+        int i = 0;
+        while (i < moduleName.length()) {
+            if (!insideVariable) {
+                if (moduleName.charAt(i) == ':') {
+                    return i;
+                }
+                if ((moduleName.charAt(i) == '$') && (i + 1 < moduleName.length()) && (moduleName.charAt(i+1) == '{')) {
+                    insideVariable = true;
+                    i += 2;
+                    continue;
+                }
+            } else {
+                if (moduleName.charAt(i) == '}') {
+                    insideVariable = false;
+                }
+            }
+            i++;
+        }
+        return -1;
     }
 
     /**
