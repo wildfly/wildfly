@@ -22,6 +22,7 @@
 package org.jboss.as.jdr.util;
 
 import static org.jboss.as.jdr.logger.JdrLogger.ROOT_LOGGER;
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -38,6 +39,8 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
 import org.jboss.vfs.VirtualFileFilter;
+import org.wildfly.common.xml.DocumentBuilderFactoryUtil;
+import org.wildfly.common.xml.TransformerFactoryUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -54,15 +57,16 @@ public class XMLSanitizer extends AbstractSanitizer {
     public XMLSanitizer(String pattern, VirtualFileFilter filter) throws Exception {
         this.filter = filter;
         XPathFactory factory = XPathFactory.newInstance();
+        factory.setFeature(FEATURE_SECURE_PROCESSING, true);
         XPath xpath = factory.newXPath();
         expression = xpath.compile(pattern);
 
-        DocumentBuilderFactory DBfactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory DBfactory = DocumentBuilderFactoryUtil.create();
         DBfactory.setNamespaceAware(true);
         builder = DBfactory.newDocumentBuilder();
         builder.setErrorHandler(null);
 
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        TransformerFactory transformerFactory = TransformerFactoryUtil.create();
         transformer = transformerFactory.newTransformer();
 
     }
