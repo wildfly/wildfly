@@ -32,4 +32,7 @@ end-if
     socket-binding="https",\
     security-realm="WCC_SSL_Realm")
 
+# enable audit-log records
+/core-service=management/access=audit/logger=audit-log:write-attribute(name=enabled,value=true)
+
 stop-embedded-server
