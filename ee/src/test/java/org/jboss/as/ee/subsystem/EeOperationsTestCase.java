@@ -22,21 +22,17 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
-import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.common.cpu.ProcessorInfo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertThrows;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -208,32 +204,6 @@ public class EeOperationsTestCase extends AbstractSubsystemBaseTest {
         assertEquals(1, res.get(ClientConstants.RESULT).asList().size());
         ModelNode actualModule = res.get(ClientConstants.RESULT).asList().get(0);
         assertTrue(actualModule.get(GlobalModulesDefinition.META_INF).asBoolean());
-    }
-
-    @Test
-    public void testAddExistingComponent(){
-        EEModuleDescription eeModuleDescription = new EEModuleDescription("appName","module1",
-                "ear1",false);
-        ComponentDescription description1 = new ComponentDescription("comp1",
-                "org.test.comp1",
-                eeModuleDescription,
-                ServiceName.of("name"));
-        ComponentDescription description2 = new ComponentDescription("comp1",
-                "org.test.comp2",
-                eeModuleDescription,
-                ServiceName.of("name"));
-
-        eeModuleDescription.addComponent(description1);
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            eeModuleDescription.addComponent(description2);
-        });
-
-        String expectedMessage = "WFLYEE0040: Component 'comp1' in class 'org.test.comp2' " +
-                "is already defined in class 'org.test.comp1'";
-        String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.equalsIgnoreCase(expectedMessage));
-        assertTrue(exception instanceof IllegalArgumentException);
-
     }
 
     private void addModule(KernelServices kernelServices, ModelNode address, ModelNode module) {
