@@ -473,8 +473,8 @@ public interface EeLogger extends BasicLogger {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 40, value = "A component named '%s' is already defined in this module")
-    IllegalArgumentException componentAlreadyDefined(String name);
+    @Message(id = 40, value = "Component '%s' in class '%s' is already defined in class '%s'")
+    IllegalArgumentException componentAlreadyDefined(String commonName, String addedClassName, String existingClassname);
 
     /**
      * Creates an exception indicating the component class, represented by the {@code className} parameter, for the
