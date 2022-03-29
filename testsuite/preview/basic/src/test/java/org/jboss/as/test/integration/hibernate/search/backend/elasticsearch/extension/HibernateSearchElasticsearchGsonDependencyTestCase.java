@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.hibernate.search.backend.elasticsearch.extension;
 
 import com.google.gson.JsonObject;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.search.backend.elasticsearch.ElasticsearchExtension;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
@@ -45,7 +46,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.GeneratedValue;
@@ -119,7 +119,7 @@ public class HibernateSearchElasticsearchGsonDependencyTestCase {
         assertEquals(1, searchBean.searchWithNativeQuery("mytoken").size());
     }
 
-    @Singleton
+    @ApplicationScoped
     @Transactional
     public static class SearchBean {
 

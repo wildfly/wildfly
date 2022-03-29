@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.hibernate.search.coordination;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
@@ -42,7 +43,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.GeneratedValue;
@@ -136,7 +136,7 @@ public class HibernateSearchOutboxPollingTestCase {
         throw lastError;
     }
 
-    @Singleton
+    @ApplicationScoped
     @Transactional
     public static class SearchBean {
 

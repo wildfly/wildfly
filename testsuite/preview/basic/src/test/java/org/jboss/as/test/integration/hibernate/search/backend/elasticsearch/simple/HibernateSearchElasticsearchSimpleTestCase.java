@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.hibernate.search.backend.elasticsearch.simple;
 
+import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.core.api.annotation.Observer;
 import org.jboss.arquillian.junit.Arquillian;
@@ -39,8 +40,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import jakarta.ejb.EJB;
 
 import static org.junit.Assert.assertEquals;
 
@@ -95,7 +94,7 @@ public class HibernateSearchElasticsearchSimpleTestCase {
         return new StringAsset(persistenceXml);
     }
 
-    @EJB(mappedName = "java:module/SearchBean")
+    @Inject
     private SearchBean searchBean;
 
     @Before

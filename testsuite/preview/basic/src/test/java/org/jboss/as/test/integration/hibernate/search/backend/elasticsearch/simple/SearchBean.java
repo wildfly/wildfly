@@ -21,17 +21,17 @@
  */
 package org.jboss.as.test.integration.hibernate.search.backend.elasticsearch.simple;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.search.engine.search.common.BooleanOperator;
 import org.hibernate.search.mapper.orm.Search;
 
-import jakarta.ejb.Stateful;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.transaction.Transactional;
 import java.util.List;
 
-@Stateful
+@ApplicationScoped
 @Transactional
 public class SearchBean {
 

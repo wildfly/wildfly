@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.hibernate.search.backend.lucene.extension;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
 import org.hibernate.search.backend.lucene.LuceneExtension;
@@ -44,7 +45,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.GeneratedValue;
@@ -114,7 +114,7 @@ public class HibernateSearchLuceneDependencyTestCase {
         assertEquals(1, searchBean.searchWithNativeQuery("mytoken").size());
     }
 
-    @Singleton
+    @ApplicationScoped
     @Transactional
     public static class SearchBean {
 

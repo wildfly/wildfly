@@ -21,12 +21,12 @@
  */
 package org.jboss.as.test.integration.hibernate.search.cdi.beans.i18n;
 
-import jakarta.inject.Singleton;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-@Singleton
+@ApplicationScoped
 public class LocalizationService {
 
     private final Map<Pair<InternationalizedValue, Language>, String> localizationMap = new HashMap<>();

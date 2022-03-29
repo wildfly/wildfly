@@ -23,8 +23,7 @@ package org.jboss.as.test.integration.hibernate.search.backend.lucene.simple;
 
 import static org.junit.Assert.assertEquals;
 
-import jakarta.ejb.EJB;
-
+import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
@@ -54,7 +53,7 @@ public class HibernateSearchLuceneSimpleTestCase {
         AssumeTestGroupUtil.assumeSecurityManagerDisabled();
     }
 
-    @EJB(mappedName = "java:module/SearchBean")
+    @Inject
     private SearchBean searchBean;
 
     @Before
