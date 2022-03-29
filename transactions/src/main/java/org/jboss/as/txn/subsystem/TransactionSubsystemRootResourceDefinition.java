@@ -22,17 +22,12 @@
 
 package org.jboss.as.txn.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import javax.transaction.TransactionSynchronizationRegistry;
-
+import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
+import com.arjuna.ats.arjuna.common.arjPropertyManager;
+import com.arjuna.ats.arjuna.common.recoveryPropertyManager;
+import com.arjuna.ats.arjuna.coordinator.TxControl;
+import com.arjuna.ats.internal.jta.recovery.arjunacore.RecoveryXids;
+import com.arjuna.ats.jta.common.jtaPropertyManager;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -58,15 +53,22 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.txn.logging.TransactionLogger;
+import org.jboss.as.txn.service.TransactionRuntimeConfigurator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.transaction.client.ContextTransactionManager;
-
-import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
-import com.arjuna.ats.arjuna.common.arjPropertyManager;
-import com.arjuna.ats.arjuna.coordinator.TxControl;
 import org.wildfly.transaction.client.provider.remoting.RemotingTransactionService;
+
+import javax.transaction.TransactionSynchronizationRegistry;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the root resource of the transaction subsystem.
@@ -97,6 +99,10 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             RuntimeCapability.Builder.of("org.wildfly.transactions.xa-resource-recovery-registry", XAResourceRecoveryRegistry.class)
                     .build();
 
+    public static final RuntimeCapability<TransactionRuntimeConfigurator> TRANSACTION_RUNTIME_CONFIGURATOR_CAPABILITY =
+            RuntimeCapability.Builder.of("org.wildfly.transactions.configurator", new TransactionRuntimeConfigurator())
+                    .build();
+
     //recovery environment
     public static final SimpleAttributeDefinition BINDING = new SimpleAttributeDefinitionBuilder(CommonAttributes.BINDING, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1))
@@ -120,6 +126,26 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setXmlName(Attribute.RECOVERY_LISTENER.getLocalName())
             .setAllowExpression(true).build();
 
+    public static final SimpleAttributeDefinition RECOVERY_PERIOD = new SimpleAttributeDefinitionBuilder(CommonAttributes.RECOVERY_PERIOD, ModelType.INT, true)
+            .setDefaultValue(new ModelNode().set(120)) // in seconds
+            .setValidator(new IntRangeValidator(0, false, true))
+            .setFlags(AttributeAccess.Flag.RESTART_NONE)
+            .setXmlName(Attribute.RECOVERY_PERIOD.getLocalName())
+            .setAllowExpression(true).build();
+
+    public static final SimpleAttributeDefinition RECOVERY_BACKOFF_PERIOD = new SimpleAttributeDefinitionBuilder(CommonAttributes.RECOVERY_BACKOFF_PERIOD, ModelType.INT, true)
+            .setDefaultValue(new ModelNode().set(10)) // in seconds
+            .setValidator(new IntRangeValidator(0, false, true))
+            .setFlags(AttributeAccess.Flag.RESTART_NONE)
+            .setXmlName(Attribute.RECOVERY_BACKOFF_PERIOD.getLocalName())
+            .setAllowExpression(true).build();
+
+    public static final SimpleAttributeDefinition DISABLE_RECOVERY_BEFORE_SUSPEND = new SimpleAttributeDefinitionBuilder(CommonAttributes.DISABLE_RECOVERY_BEFORE_SUSPEND, ModelType.BOOLEAN, true)
+            .setDefaultValue(ModelNode.TRUE)
+            .setFlags(AttributeAccess.Flag.RESTART_NONE)
+            .setXmlName(Attribute.DISABLE_RECOVERY_BEFORE_SUSPEND.getLocalName())
+            .setAllowExpression(true).build();
+
     //core environment
     public static final SimpleAttributeDefinition NODE_IDENTIFIER = new SimpleAttributeDefinitionBuilder(CommonAttributes.NODE_IDENTIFIER, ModelType.STRING, true)
             .setDefaultValue(new ModelNode().set("1"))
@@ -127,6 +153,13 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true)
             .setValidator(new StringBytesLengthValidator(0,23,true,true))
             .build();
+
+    public static final SimpleAttributeDefinition ORPHAN_SAFETY_INTERVAL = new SimpleAttributeDefinitionBuilder(CommonAttributes.ORPHAN_SAFETY_INTERVAL, ModelType.INT, true)
+            .setDefaultValue(new ModelNode().set(20000)) // in millis
+            .setValidator(new IntRangeValidator(0, false, true))
+            .setFlags(AttributeAccess.Flag.RESTART_NONE)
+            .setXmlName(Attribute.ORPHAN_SAFETY_INTERVAL.getLocalName())
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition PROCESS_ID_UUID = new SimpleAttributeDefinitionBuilder("process-id-uuid", ModelType.BOOLEAN, true)
             .setDefaultValue(ModelNode.FALSE)
@@ -248,10 +281,10 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true).build();
     public static final SimpleAttributeDefinition JDBC_ACTION_STORE_TABLE_PREFIX =
             new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_ACTION_STORE_TABLE_PREFIX, ModelType.STRING, true)
-            .setFlags(AttributeAccess.Flag.RESTART_JVM)
-            .setXmlName(Attribute.TABLE_PREFIX.getLocalName())
-            .setAllowExpression(true)
-            .setRequires(CommonAttributes.USE_JDBC_STORE).build();
+                    .setFlags(AttributeAccess.Flag.RESTART_JVM)
+                    .setXmlName(Attribute.TABLE_PREFIX.getLocalName())
+                    .setAllowExpression(true)
+                    .setRequires(CommonAttributes.USE_JDBC_STORE).build();
     public static final SimpleAttributeDefinition JDBC_ACTION_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_ACTION_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
             .setDefaultValue(ModelNode.FALSE)
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
@@ -293,12 +326,13 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     TransactionSubsystemRootResourceDefinition(boolean registerRuntimeOnly) {
         super(new Parameters(TransactionExtension.SUBSYSTEM_PATH,
-                TransactionExtension.getResourceDescriptionResolver())
-                .setAddHandler(TransactionSubsystemAdd.INSTANCE)
-                .setRemoveHandler(TransactionSubsystemRemove.INSTANCE)
-                .setCapabilities(TRANSACTION_CAPABILITY, LOCAL_PROVIDER_CAPABILITY,
-                        TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY,
-                        XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY)
+                        TransactionExtension.getResourceDescriptionResolver())
+                        .setAddHandler(TransactionSubsystemAdd.INSTANCE)
+                        .setRemoveHandler(TransactionSubsystemRemove.INSTANCE)
+                        .setCapabilities(TRANSACTION_CAPABILITY, LOCAL_PROVIDER_CAPABILITY,
+                                TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY,
+                                XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY,
+                                TRANSACTION_RUNTIME_CONFIGURATOR_CAPABILITY)
                 // Configuring these is not required as these are defaulted based on our add/remove handler types
                 //OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES
         );
@@ -312,13 +346,14 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USE_HORNETQ_STORE_PARAM, USE_JOURNAL_STORE_PARAM, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
             JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX,
-            JOURNAL_STORE_ENABLE_ASYNC_IO, ENABLE_STATISTICS, HORNETQ_STORE_ENABLE_ASYNC_IO, STALE_TRANSACTION_TIME
+            JOURNAL_STORE_ENABLE_ASYNC_IO, ENABLE_STATISTICS, HORNETQ_STORE_ENABLE_ASYNC_IO, STALE_TRANSACTION_TIME,
+            RECOVERY_PERIOD, RECOVERY_BACKOFF_PERIOD, ORPHAN_SAFETY_INTERVAL, DISABLE_RECOVERY_BEFORE_SUSPEND,
     };
 
     static final AttributeDefinition[] attributes_1_2 = new AttributeDefinition[] {USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
-                JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX,
-                JDBC_COMMUNICATION_STORE_DROP_TABLE, JDBC_COMMUNICATION_STORE_TABLE_PREFIX,
-                JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX
+            JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX,
+            JDBC_COMMUNICATION_STORE_DROP_TABLE, JDBC_COMMUNICATION_STORE_TABLE_PREFIX,
+            JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX
     };
 
     @Override
@@ -341,6 +376,10 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         attributesWithoutMutuals.remove(ENABLE_STATISTICS);
         attributesWithoutMutuals.remove(HORNETQ_STORE_ENABLE_ASYNC_IO);
 
+        attributesWithoutMutuals.remove(ORPHAN_SAFETY_INTERVAL);
+        attributesWithoutMutuals.remove(RECOVERY_PERIOD);
+        attributesWithoutMutuals.remove(RECOVERY_BACKOFF_PERIOD);
+        attributesWithoutMutuals.remove(DISABLE_RECOVERY_BEFORE_SUSPEND);
 
         OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(attributesWithoutMutuals);
         for(final AttributeDefinition def : attributesWithoutMutuals) {
@@ -369,6 +408,11 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         resourceRegistration.registerReadWriteAttribute(STATISTICS_ENABLED, null, new StatisticsEnabledHandler(STATISTICS_ENABLED));
         AliasedHandler esh = new AliasedHandler(STATISTICS_ENABLED.getName());
         resourceRegistration.registerReadWriteAttribute(ENABLE_STATISTICS, esh, esh);
+
+        resourceRegistration.registerReadWriteAttribute(ORPHAN_SAFETY_INTERVAL, null, new OrphanSafetyIntervalWriteHandler(ORPHAN_SAFETY_INTERVAL));
+        resourceRegistration.registerReadWriteAttribute(RECOVERY_PERIOD, null, new RecoveryPeriodWriteHandler(RECOVERY_PERIOD));
+        resourceRegistration.registerReadWriteAttribute(RECOVERY_BACKOFF_PERIOD, null, new RecoveryBackoffPeriodWriteHandler(RECOVERY_BACKOFF_PERIOD));
+        resourceRegistration.registerReadWriteAttribute(DISABLE_RECOVERY_BEFORE_SUSPEND, null, new DisableRecoveryBeforeSuspendHandler(DISABLE_RECOVERY_BEFORE_SUSPEND));
 
         AliasedHandler hsh = new AliasedHandler(USE_JOURNAL_STORE.getName());
         resourceRegistration.registerReadWriteAttribute(USE_HORNETQ_STORE, hsh, hsh);
@@ -564,7 +608,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
                                                final String attributeName, final ModelNode resolvedValue,
                                                final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
-            throws OperationFailedException {
+                throws OperationFailedException {
             int timeout = resolvedValue.asInt();
 
             // TxControl allow timeout to be set to 0 with meaning of no timeout at all
@@ -583,30 +627,136 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
                                              final String attributeName, final ModelNode valueToRestore,
                                              final ModelNode valueToRevert, final Void handback)
-            throws OperationFailedException {
+                throws OperationFailedException {
             arjPropertyManager.getCoordinatorEnvironmentBean().setDefaultTimeout(valueToRestore.asInt());
             TxControl.setDefaultTimeout(valueToRestore.asInt());
             ContextTransactionManager.setGlobalDefaultTransactionTimeout(valueToRestore.asInt());
         }
     }
 
-    private static class MaximumTimeoutHandler extends AbstractWriteAttributeHandler<Void> {
-       public MaximumTimeoutHandler(final AttributeDefinition... definitions) {
-           super(definitions);
-       }
+    private static class OrphanSafetyIntervalWriteHandler extends AbstractWriteAttributeHandler<Void> {
+        public OrphanSafetyIntervalWriteHandler(final AttributeDefinition... definitions) {
+            super(definitions);
+        }
 
-       @Override
-       protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
-                                              final String attributeName, final ModelNode resolvedValue,
-                                              final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
-               throws OperationFailedException {
-           int maximum_timeout = resolvedValue.asInt();
-           if (TxControl.getDefaultTimeout() == 0) {
-               TransactionLogger.ROOT_LOGGER.timeoutValueIsSetToMaximum(maximum_timeout);
-               ContextTransactionManager.setGlobalDefaultTransactionTimeout(maximum_timeout);
-           }
-           return false;
-       }
+        @Override
+        protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                               final String attributeName, final ModelNode resolvedValue,
+                                               final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
+                throws OperationFailedException {
+            int orphanSafetyInterval = resolvedValue.asInt();
+            jtaPropertyManager.getJTAEnvironmentBean().setOrphanSafetyInterval(orphanSafetyInterval);
+            RecoveryXids.setSafetyIntervalMillis(orphanSafetyInterval);
+            return false;
+        }
+
+        @Override
+        protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                             final String attributeName, final ModelNode valueToRestore,
+                                             final ModelNode valueToRevert, final Void handback)
+                throws OperationFailedException {
+            int orphanSafetyInterval = valueToRestore.asInt();
+            jtaPropertyManager.getJTAEnvironmentBean().setOrphanSafetyInterval(orphanSafetyInterval);
+            RecoveryXids.setSafetyIntervalMillis(orphanSafetyInterval);
+        }
+    }
+
+    private static class RecoveryPeriodWriteHandler extends AbstractWriteAttributeHandler<Void> {
+        public RecoveryPeriodWriteHandler(final AttributeDefinition... definitions) {
+            super(definitions);
+        }
+
+        @Override
+        protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                               final String attributeName, final ModelNode resolvedValue,
+                                               final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
+                throws OperationFailedException {
+            int recoveryPeriod = resolvedValue.asInt();
+            recoveryPropertyManager.getRecoveryEnvironmentBean().setPeriodicRecoveryPeriod(recoveryPeriod);
+            return false;
+        }
+
+        @Override
+        protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                             final String attributeName, final ModelNode valueToRestore,
+                                             final ModelNode valueToRevert, final Void handback)
+                throws OperationFailedException {
+            int recoveryPeriod = valueToRestore.asInt();
+            recoveryPropertyManager.getRecoveryEnvironmentBean().setPeriodicRecoveryPeriod(recoveryPeriod);
+        }
+    }
+
+    private static class RecoveryBackoffPeriodWriteHandler extends AbstractWriteAttributeHandler<Void> {
+        public RecoveryBackoffPeriodWriteHandler(final AttributeDefinition... definitions) {
+            super(definitions);
+        }
+
+        @Override
+        protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                               final String attributeName, final ModelNode resolvedValue,
+                                               final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
+                throws OperationFailedException {
+            int recoveryBackoffPeriod = resolvedValue.asInt();
+            recoveryPropertyManager.getRecoveryEnvironmentBean().setRecoveryBackoffPeriod(recoveryBackoffPeriod);
+            return false;
+        }
+
+        @Override
+        protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                             final String attributeName, final ModelNode valueToRestore,
+                                             final ModelNode valueToRevert, final Void handback)
+                throws OperationFailedException {
+            int recoveryBackoffPeriod = valueToRestore.asInt();
+            recoveryPropertyManager.getRecoveryEnvironmentBean().setRecoveryBackoffPeriod(recoveryBackoffPeriod);
+        }
+    }
+
+    private static class DisableRecoveryBeforeSuspendHandler extends AbstractWriteAttributeHandler<Void> {
+        public DisableRecoveryBeforeSuspendHandler(final AttributeDefinition... definitions) {
+            super(definitions);
+        }
+
+        @Override
+        protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                               final String attributeName, final ModelNode resolvedValue,
+                                               final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
+                throws OperationFailedException {
+            boolean isDisableRecoveryBeforeSuspendValue = resolvedValue.asBoolean();
+            TransactionRuntimeConfigurator configurator =
+                    context.getCapabilityRuntimeAPI(TRANSACTION_RUNTIME_CONFIGURATOR_CAPABILITY.getName(), TransactionRuntimeConfigurator.class);
+            configurator.setDisableRecoveryBeforeSuspend(isDisableRecoveryBeforeSuspendValue);
+            return false;
+        }
+
+        @Override
+        protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                             final String attributeName, final ModelNode valueToRestore,
+                                             final ModelNode valueToRevert, final Void handback)
+                throws OperationFailedException {
+            boolean isStopRecoveryWhenSuspendedRevertValue = valueToRevert.asBoolean();
+            TransactionRuntimeConfigurator configurator =
+                    context.getCapabilityRuntimeAPI(TRANSACTION_RUNTIME_CONFIGURATOR_CAPABILITY.getName(), TransactionRuntimeConfigurator.class);
+            configurator.setDisableRecoveryBeforeSuspend(isStopRecoveryWhenSuspendedRevertValue);
+        }
+    }
+
+    private static class MaximumTimeoutHandler extends AbstractWriteAttributeHandler<Void> {
+        public MaximumTimeoutHandler(final AttributeDefinition... definitions) {
+            super(definitions);
+        }
+
+        @Override
+        protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
+                                               final String attributeName, final ModelNode resolvedValue,
+                                               final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
+                throws OperationFailedException {
+            int maximum_timeout = resolvedValue.asInt();
+            if (TxControl.getDefaultTimeout() == 0) {
+                TransactionLogger.ROOT_LOGGER.timeoutValueIsSetToMaximum(maximum_timeout);
+                ContextTransactionManager.setGlobalDefaultTransactionTimeout(maximum_timeout);
+            }
+            return false;
+        }
 
         @Override
         protected void revertUpdateToRuntime(OperationContext operationContext, ModelNode modelNode, String s, ModelNode modelNode1, ModelNode modelNode2, Void aVoid) throws OperationFailedException {
@@ -627,7 +777,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation,
                                                final String attributeName, final ModelNode resolvedValue,
                                                final ModelNode currentValue, final HandbackHolder<Void> handbackHolder)
-            throws OperationFailedException {
+                throws OperationFailedException {
             if (this.coordinatorEnvironmentBean == null) {
                 this.coordinatorEnvironmentBean = arjPropertyManager.getCoordinatorEnvironmentBean();
             }
@@ -639,7 +789,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
                                              final String attributeName, final ModelNode valueToRestore,
                                              final ModelNode valueToRevert, final Void handback)
-            throws OperationFailedException {
+                throws OperationFailedException {
             if (this.coordinatorEnvironmentBean == null) {
                 this.coordinatorEnvironmentBean = arjPropertyManager.getCoordinatorEnvironmentBean();
             }

@@ -356,6 +356,8 @@
                         <arquillian.launch>manual-mode</arquillian.launch>
                         <jboss.config.file.name>standalone-ha.xml</jboss.config.file.name>
                         <ryuk.container.timeout>60</ryuk.container.timeout>
+                        <!-- to be configured shorter than recovery backoff period -->
+                        <recovery.backoff.period.timeout>9</recovery.backoff.period.timeout>
                         <!-- needed for SSLEJBRemoteClientTestCase only, however setting them from within the test itself isn't possible -->
                         <javax.net.ssl.trustStore>${basedir}/target/test-classes/ejb3/ssl/jbossClient.truststore</javax.net.ssl.trustStore>
                         <javax.net.ssl.keyStore>${basedir}/target/test-classes/ejb3/ssl/jbossClient.keystore</javax.net.ssl.keyStore>
