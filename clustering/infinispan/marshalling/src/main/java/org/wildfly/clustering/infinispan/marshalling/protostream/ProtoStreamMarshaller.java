@@ -26,7 +26,7 @@ import java.util.function.UnaryOperator;
 
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.wildfly.clustering.infinispan.marshalling.AbstractUserMarshaller;
+import org.wildfly.clustering.infinispan.marshalling.UserMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
@@ -34,18 +34,13 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilde
 /**
  * @author Paul Ferraro
  */
-public class ProtoStreamMarshaller extends AbstractUserMarshaller {
+public class ProtoStreamMarshaller extends UserMarshaller {
 
     public ProtoStreamMarshaller(ClassLoaderMarshaller loaderMarshaller, UnaryOperator<SerializationContextBuilder> builder) {
         this(builder.apply(new SerializationContextBuilder(loaderMarshaller).register(new IOSerializationContextInitializer())).build());
     }
 
     public ProtoStreamMarshaller(ImmutableSerializationContext context) {
-        super(new ProtoStreamByteBufferMarshaller(context));
-    }
-
-    @Override
-    public MediaType mediaType() {
-        return MediaType.APPLICATION_PROTOSTREAM;
+        super(MediaType.APPLICATION_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(context));
     }
 }

@@ -27,17 +27,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.OptionalInt;
 
+import org.infinispan.commons.dataconversion.MediaType;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
 /**
- * An abstract user marshaller that delegates marshalling to a {@link ByteBufferMarshaller}.
+ * A user marshaller that delegates marshalling to a {@link ByteBufferMarshaller}.
  * @author Paul Ferraro
  */
-public abstract class AbstractUserMarshaller extends AbstractMarshaller {
+public class UserMarshaller extends AbstractMarshaller {
 
+    private final MediaType type;
     private final ByteBufferMarshaller marshaller;
 
-    public AbstractUserMarshaller(ByteBufferMarshaller marshaller) {
+    public UserMarshaller(MediaType type, ByteBufferMarshaller marshaller) {
+        this.type = type;
         this.marshaller = marshaller;
     }
 
@@ -60,5 +63,10 @@ public abstract class AbstractUserMarshaller extends AbstractMarshaller {
     @Override
     public void writeObject(Object object, OutputStream output) throws IOException {
         this.marshaller.writeTo(output, object);
+    }
+
+    @Override
+    public MediaType mediaType() {
+        return this.type;
     }
 }
