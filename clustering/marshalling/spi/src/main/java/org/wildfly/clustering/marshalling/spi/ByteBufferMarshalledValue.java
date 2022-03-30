@@ -27,10 +27,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.jboss.logging.Logger;
 
 /**
+ * {@link MarshalledValue} implementation that uses a {@link ByteBufferMarshaller}.
  * @author Paul Ferraro
  * @param <T> the type wrapped by this marshalled value
  */
@@ -45,10 +47,6 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
     public ByteBufferMarshalledValue(T object, ByteBufferMarshaller marshaller) {
         this.marshaller = marshaller;
         this.object = object;
-    }
-
-    public ByteBufferMarshalledValue() {
-        this(null);
     }
 
     public ByteBufferMarshalledValue(ByteBuffer buffer) {
@@ -88,8 +86,7 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
 
     @Override
     public int hashCode() {
-        Object object = this.object;
-        return (object != null) ? object.hashCode() : 0;
+        return Objects.hashCode(this.object);
     }
 
     @Override

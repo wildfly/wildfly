@@ -20,27 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.protostream;
+package org.wildfly.clustering.marshalling.jboss;
 
-import java.nio.ByteBuffer;
-
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValue;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledKeyFactoryTestCase;
 
 /**
  * @author Paul Ferraro
  */
-public enum MarshallingMarshallerProvider implements ProtoStreamMarshallerProvider {
-    BYTE_BUFFER_MARSHALLED_KEY(new ByteBufferMarshalledKeyMarshaller()),
-    BYTE_BUFFER_MARSHALLED_VALUE(new FunctionalScalarMarshaller<>(Scalar.BYTE_BUFFER.cast(ByteBuffer.class), () -> new ByteBufferMarshalledValue<>(null), ByteBufferMarshalledValue::isEmpty, ByteBufferMarshalledValue::getBuffer, ByteBufferMarshalledValue::new)),
-    ;
-    private final ProtoStreamMarshaller<?> marshaller;
+public class JBossByteBufferMarshalledKeyFactoryTestCase extends ByteBufferMarshalledKeyFactoryTestCase {
 
-    MarshallingMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
-        this.marshaller = marshaller;
-    }
-
-    @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
-        return this.marshaller;
+    public JBossByteBufferMarshalledKeyFactoryTestCase() {
+        super(TestJBossByteBufferMarshaller.INSTANCE);
     }
 }

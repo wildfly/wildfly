@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,23 +22,32 @@
 
 package org.wildfly.clustering.marshalling.spi;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import org.wildfly.clustering.marshalling.Externalizer;
 
 /**
+ * Externalizer for a {@link ByteBufferMarshalledKey}.
  * @author Paul Ferraro
  */
-public enum MarshallingExternalizerProvider implements ExternalizerProvider {
-    MARSHALLED_KEY(new ByteBufferMarshalledKeyExternalizer()),
-    MARSHALLED_VALUE(new ByteBufferMarshalledValueExternalizer()),
-    ;
-    private final Externalizer<?> externalizer;
+public class ByteBufferMarshalledKeyExternalizer implements Externalizer<ByteBufferMarshalledKey<Object>> {
 
-    MarshallingExternalizerProvider(Externalizer<?> externalizer) {
-        this.externalizer = externalizer;
+    @Override
+    public void writeObject(ObjectOutput output, ByteBufferMarshalledKey<Object> value) throws IOException {
+        ByteBufferMarshalledValueExternalizer.writeBuffer(output, value.getBuffer());
+        output.writeInt(value.hashCode());
     }
 
     @Override
-    public Externalizer<?> getExternalizer() {
-        return this.externalizer;
+    public ByteBufferMarshalledKey<Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        return new ByteBufferMarshalledKey<>(ByteBufferMarshalledValueExternalizer.readBuffer(input), input.readInt());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Class<ByteBufferMarshalledKey<Object>> getTargetClass() {
+        return (Class<ByteBufferMarshalledKey<Object>>) (Class<?>) ByteBufferMarshalledKey.class;
     }
 }
