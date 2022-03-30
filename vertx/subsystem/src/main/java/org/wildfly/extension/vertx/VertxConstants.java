@@ -67,6 +67,7 @@ public interface VertxConstants {
     String ATTR_CLUSTERED = "clustered";
     String ATTR_JGROUPS_CHANNEL = "jgroups-channel";
     String ATTR_FORKED_CHANNEL = "forked-channel";
+    String ATTR_JGROUPS_STACK_FILE = "jgroups-stack-file";
     String ATTR_ALIAS = "alias";
     String ATTR_PATH = "path";
 
@@ -169,11 +170,6 @@ public interface VertxConstants {
     String ATTR_PEM_KEY_CERT_CERT_VALUE = "cert-values";
     String ATTR_PEM_VALUE = "pem-value";
 
-    // Followings are cluster manager related settings
-    String DEFAULT_CACHE_NAME = "distributed-cache";
-    String SUBS_CACHE_NAME = "__vertx.subs";
-    String HA_INFO_CACHE_NAME = "__vertx.haInfo";
-    String NODE_INFO_CACHE_NAME = "__vertx.nodeInfo";
-    String CACHE_CONFIGURATION = "__vertx.distributed.cache.configuration";
-
+    // default infinispan.xml file from which to read the cache configurations.
+    String DEFAULT_INFINISPAN_FILE = "infinispan-config.xml";
 }

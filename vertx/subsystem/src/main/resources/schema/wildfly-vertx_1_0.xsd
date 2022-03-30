@@ -50,12 +50,17 @@
         </xs:attribute>
         <xs:attribute name="jgroups-channel" type="xs:string">
             <xs:annotation>
-                <xs:documentation>The JGroups Channel name used for a clustered Vertx instance. This is required if clustered is true </xs:documentation>
+                <xs:documentation>The JGroups Channel name used for a clustered Vertx instance.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="forked-channel" type="xs:boolean">
             <xs:annotation>
                 <xs:documentation>If ForkedChannel should be used to construct the cluster manager. </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="jgroups-stack-file" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>The JGroups stack file used for a clustered Vertx instance.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="option-name" type="xs:string" default="default" >

@@ -104,7 +104,10 @@ class VertxOptionFileResourceDefinition extends AbstractVertxOptionsResourceDefi
   }
 
   static JsonObject readJsonFromFile(String vertxOptionsFile, File configDir) throws OperationFailedException {
-    Path path = vertxOptionsFile.startsWith("/") ? Paths.get(vertxOptionsFile) : Paths.get(configDir.getPath(), vertxOptionsFile);
+    Path path = Paths.get(vertxOptionsFile);
+    if (!path.isAbsolute()) {
+      path = Paths.get(configDir.getPath(), vertxOptionsFile);
+    }
     if (Files.exists(path) && Files.isReadable(path)) {
       String jsonContent;
       try (InputStream inputStream = Files.newInputStream(path);

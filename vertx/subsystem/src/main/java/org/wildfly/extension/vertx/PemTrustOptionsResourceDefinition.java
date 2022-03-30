@@ -19,7 +19,7 @@ package org.wildfly.extension.vertx;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.AttributeMarshallers.SIMPLE_ELEMENT;
 
-import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -209,9 +209,7 @@ class PemTrustOptionsResourceDefinition extends PersistentResourceDefinition imp
           if (certPaths != null && certPaths.size() > 0) {
             List<String> canonicalCertPaths = certPaths.stream().map(path -> {
               if (path != null && path.trim().length() > 0) {
-                if (!path.startsWith("/")) {
-                  return new File(serverEnvSupplier.get().getServerConfigurationDir(), path).getAbsolutePath();
-                }
+                return Paths.get(path).isAbsolute() ? path : Paths.get(serverEnvSupplier.get().getServerConfigurationDir().getPath(), path).toString();
               }
               return path;
             }).collect(Collectors.toList());

@@ -50,10 +50,6 @@ public class VertxDependenciesProcessor implements DeploymentUnitProcessor {
     public static final int PRIORITY = 0x4000;
 
     private static final String MODULE_VERTX_EXTENSION = "org.wildfly.extension.vertx";
-    private static final String MODULE_IO_VERTX_CORE = "io.vertx.core";
-    private static final String MODULE_IO_VERTX_INFINISPAN = "io.vertx.infinispan";
-    private static final String MODULE_IO_VERTX_AUTH = "io.vertx.auth";
-    private static final String MODULE_IO_VERTX_CLIENT = "io.vertx.client";
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
@@ -64,11 +60,7 @@ public class VertxDependenciesProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         List<ModuleDependency> dependencies = new ArrayList<>();
-        dependencies.add(new ModuleDependency(moduleLoader, MODULE_VERTX_EXTENSION, false, false, false, false));
-        dependencies.add(new ModuleDependency(moduleLoader, MODULE_IO_VERTX_CORE, false, true, true, false));
-        dependencies.add(new ModuleDependency(moduleLoader, MODULE_IO_VERTX_INFINISPAN, true, true, true, false));
-        dependencies.add(new ModuleDependency(moduleLoader, MODULE_IO_VERTX_AUTH, true, true, true, false));
-        dependencies.add(new ModuleDependency(moduleLoader, MODULE_IO_VERTX_CLIENT, true, true, true, false));
+        dependencies.add(new ModuleDependency(moduleLoader, MODULE_VERTX_EXTENSION, false, true, true, false));
         moduleSpecification.addSystemDependencies(dependencies);
     }
 

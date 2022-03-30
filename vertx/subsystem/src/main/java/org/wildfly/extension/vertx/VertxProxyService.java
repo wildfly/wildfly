@@ -22,15 +22,17 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.VertxBuilder;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.cluster.infinispan.InfinispanClusterManager;
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
+import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.LifecycleEvent;
 import org.jboss.msc.service.LifecycleListener;
@@ -44,6 +46,7 @@ import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 
+import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -61,6 +64,8 @@ public class VertxProxyService implements Service, VertxConstants {
     private final Supplier<ChannelFactory> channelFactorySupplier;
     private final Supplier<String> clusterSupplier;
     private final Supplier<NamedVertxOptions> optionsSupplier;
+    private final Supplier<ServerEnvironment> serverEnvSupplier;
+    private final String jgroupsStackFile;
     final Consumer<VertxProxy> vertxProxytConsumer;
     private volatile Vertx vertx;
     private volatile DefaultCacheManager defaultCacheManager;
@@ -69,6 +74,7 @@ public class VertxProxyService implements Service, VertxConstants {
         VertxProxyService vertxProxyService;
         ServiceName vertxServiceName = VertxResourceDefinition.VERTX_RUNTIME_CAPABILITY.getCapabilityServiceName(vertxProxy.getName());
         ServiceBuilder<?> vertxServiceBuilder = context.getServiceTarget().addService(vertxServiceName);
+        Supplier<ServerEnvironment> serverEnvSupplier = vertxServiceBuilder.requires(ServerEnvironmentService.SERVICE_NAME);
         final Consumer<VertxProxy> vertxProxytConsumer = vertxServiceBuilder.provides(vertxServiceName);
         Supplier<NamedVertxOptions> optionsSupplier;
         if (optionName == null) {
@@ -79,21 +85,25 @@ public class VertxProxyService implements Service, VertxConstants {
         }
         if (vertxProxy.isClustered()) {
             final String jgroupChannel = vertxProxy.getJgroupChannelName();
+            final String jgroupsStackFile = vertxProxy.getJgroupsStackFile();
             // channel factory can be either from source or forked.
             // new channel and transport ports need to be specified if multiple Vertx instances are to be created.
             // cluster name cannot be overridden.
-            final ServiceName channelFactoryServiceName;
-            if (vertxProxy.isForkedChannel()) {
-                channelFactoryServiceName = JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, jgroupChannel);
-            } else {
-                channelFactoryServiceName = JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, jgroupChannel);
+            Supplier<ChannelFactory> cacheManagerSupplier = null;
+            if (jgroupChannel != null) {
+                final ServiceName channelFactoryServiceName;
+                if (vertxProxy.isForkedChannel()) {
+                    channelFactoryServiceName = JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, jgroupChannel);
+                } else {
+                    channelFactoryServiceName = JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, jgroupChannel);
+                }
+                cacheManagerSupplier = vertxServiceBuilder.requires(channelFactoryServiceName);
             }
-            Supplier<ChannelFactory> cacheManagerSupplier = vertxServiceBuilder.requires(channelFactoryServiceName);
             ServiceName clusterServiceName = JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, jgroupChannel);
             Supplier<String> clusterSupplier = vertxServiceBuilder.requires(clusterServiceName);
-            vertxProxyService = new VertxProxyService(cacheManagerSupplier, clusterSupplier, vertxProxy, optionsSupplier, vertxProxytConsumer);
+            vertxProxyService = new VertxProxyService(cacheManagerSupplier, clusterSupplier, vertxProxy, optionsSupplier, vertxProxytConsumer, serverEnvSupplier, jgroupsStackFile);
         } else  {
-            vertxProxyService = new VertxProxyService(null, null, vertxProxy, optionsSupplier, vertxProxytConsumer);
+            vertxProxyService = new VertxProxyService(null, null, vertxProxy, optionsSupplier, vertxProxytConsumer, serverEnvSupplier, null);
         }
         vertxServiceBuilder.setInstance(vertxProxyService);
         vertxServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
@@ -141,12 +151,16 @@ public class VertxProxyService implements Service, VertxConstants {
 
     private VertxProxyService(Supplier<ChannelFactory> channelFactorySupplier, Supplier<String> clusterSupplier,
                               VertxProxy vertxProxy, Supplier<NamedVertxOptions> optionsSupplier,
-                              Consumer<VertxProxy> vertxProxytConsumer) {
+                              Consumer<VertxProxy> vertxProxytConsumer,
+                              Supplier<ServerEnvironment> serverEnvSupplier,
+                              String jgroupsStackFile) {
         this.vertxProxy = vertxProxy;
         this.clusterSupplier = clusterSupplier;
         this.channelFactorySupplier = channelFactorySupplier;
         this.optionsSupplier = optionsSupplier;
         this.vertxProxytConsumer = vertxProxytConsumer;
+        this.serverEnvSupplier = serverEnvSupplier;
+        this.jgroupsStackFile = jgroupsStackFile;
     }
 
     @Override
@@ -168,19 +182,25 @@ public class VertxProxyService implements Service, VertxConstants {
         }
         VertxBuilder vb = new VertxBuilder(vertxOptions);
         if (vertxProxy.isClustered()) {
-            JChannel jChannel = channelFactorySupplier.get().createChannel(UUID.randomUUID().toString());
-            String clusterName = clusterSupplier.get() != null ? clusterSupplier.get() : vertxProxy.getJgroupChannelName();
             ClassLoader classLoader = getClass().getClassLoader();
-            GlobalConfigurationBuilder globalConfigBuilder = new GlobalConfigurationBuilder()
-                    .classLoader(classLoader).defaultCacheName(DEFAULT_CACHE_NAME);
-            globalConfigBuilder.transport().transport(new JGroupsTransport(jChannel)).clusterName(clusterName);
-            ConfigurationBuilderHolder configurationBuilderHolder = new ConfigurationBuilderHolder(classLoader, globalConfigBuilder);
-            configurationBuilderHolder.newConfigurationBuilder(DEFAULT_CACHE_NAME).clustering().cacheMode(CacheMode.DIST_SYNC);
-            configurationBuilderHolder.newConfigurationBuilder(SUBS_CACHE_NAME).clustering().cacheMode(CacheMode.REPL_SYNC);
-            configurationBuilderHolder.newConfigurationBuilder(HA_INFO_CACHE_NAME).clustering().cacheMode(CacheMode.REPL_SYNC);
-            configurationBuilderHolder.newConfigurationBuilder(NODE_INFO_CACHE_NAME).clustering().cacheMode(CacheMode.REPL_SYNC);
-            configurationBuilderHolder.newConfigurationBuilder(CACHE_CONFIGURATION).template(true).clustering().cacheMode(CacheMode.DIST_SYNC);
-            defaultCacheManager = new DefaultCacheManager(configurationBuilderHolder, true);
+            ConfigurationBuilderHolder builderHolder = new ParserRegistry(classLoader)
+              .parseFile(DEFAULT_INFINISPAN_FILE);
+            TransportConfigurationBuilder transport = builderHolder.getGlobalConfigurationBuilder()
+              .transport()
+              .defaultTransport();
+            if (channelFactorySupplier != null) {
+                JChannel jChannel = channelFactorySupplier.get().createChannel(UUID.randomUUID().toString());
+                String clusterName = clusterSupplier.get() != null ? clusterSupplier.get() : vertxProxy.getJgroupChannelName();
+                transport.removeProperty(JGroupsTransport.CHANNEL_CONFIGURATOR)
+                  .transport(new JGroupsTransport(jChannel))
+                  .clusterName(clusterName);
+            } else if (jgroupsStackFile != null) {
+                String jgroupsFile = Paths.get(jgroupsStackFile).isAbsolute() ? jgroupsStackFile :
+                  Paths.get(serverEnvSupplier.get().getServerConfigurationDir().getPath(), jgroupsStackFile).toString();
+                transport.removeProperty(JGroupsTransport.CHANNEL_CONFIGURATOR)
+                  .addProperty(JGroupsTransport.CONFIGURATION_FILE, jgroupsFile);
+            }
+            defaultCacheManager = new DefaultCacheManager(builderHolder, true);
             ClusterManager clusterManager = new InfinispanClusterManager(defaultCacheManager);
             vertxOptions.setClusterManager(clusterManager);
             vb.clusterManager(clusterManager);

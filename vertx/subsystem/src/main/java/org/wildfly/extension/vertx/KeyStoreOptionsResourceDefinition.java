@@ -17,6 +17,7 @@
 package org.wildfly.extension.vertx;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -163,9 +164,8 @@ class KeyStoreOptionsResourceDefinition extends PersistentResourceDefinition imp
         public void start(StartContext startContext) throws StartException {
           String path = keyStoreOptions.getPath();
           if (path != null && path.trim().length() > 0) {
-            if (!path.startsWith("/")) {
-              keyStoreOptions.setPath(new File(serverEnvSupplier.get().getServerConfigurationDir(), path).getAbsolutePath());
-            }
+            final String filePath = Paths.get(path).isAbsolute() ? path : Paths.get(serverEnvSupplier.get().getServerConfigurationDir().getPath(), path).toString();
+            keyStoreOptions.setPath(filePath);
           }
           VertxOptionsRegistry.getInstance().addKeyStoreOptions(name, keyStoreOptions);
           trustOptionsConsumer.accept(keyStoreOptions);

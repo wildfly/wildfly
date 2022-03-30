@@ -19,7 +19,7 @@ package org.wildfly.extension.vertx;
 import static org.wildfly.extension.vertx.PemTrustOptionsResourceDefinition.PEM_VALUE_MARSHALLER;
 import static org.wildfly.extension.vertx.PemTrustOptionsResourceDefinition.PEM_VALUE_PARSER;
 
-import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -154,9 +154,7 @@ class PemKeyCertOptionsResourceDefinition extends PersistentResourceDefinition i
           if (keyPaths != null && keyPaths.size() > 0) {
             List<String> canonicalKeyPaths = keyPaths.stream().map(path -> {
               if (path != null && path.trim().length() > 0) {
-                if (!path.startsWith("/")) {
-                  return new File(serverEnvSupplier.get().getServerConfigurationDir(), path).getAbsolutePath();
-                }
+                return Paths.get(path).isAbsolute() ? path : Paths.get(serverEnvSupplier.get().getServerConfigurationDir().getPath(), path).toString();
               }
               return path;
             }).collect(Collectors.toList());
@@ -166,9 +164,7 @@ class PemKeyCertOptionsResourceDefinition extends PersistentResourceDefinition i
           if (certPaths != null && certPaths.size() > 0) {
             List<String> canonicalCertPaths = certPaths.stream().map(path -> {
               if (path != null && path.trim().length() > 0) {
-                if (!path.startsWith("/")) {
-                  return new File(serverEnvSupplier.get().getServerConfigurationDir(), path).getAbsolutePath();
-                }
+                return Paths.get(path).isAbsolute() ? path : Paths.get(serverEnvSupplier.get().getServerConfigurationDir().getPath(), path).toString();
               }
               return path;
             }).collect(Collectors.toList());

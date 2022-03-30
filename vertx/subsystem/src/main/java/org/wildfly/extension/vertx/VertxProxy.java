@@ -45,18 +45,22 @@ public class VertxProxy {
     /** The channel name in jgroups subsystem configuration, this is used when creating a clustered Vertx instance **/
     private final String jgroupChannelName;
 
+    /** The alternative jgroups stack file for the jgroups transport **/
+    private final String jgroupsStackFile;
+
     /** Flag that if the forked channel should be used when creating a clustered Vertx instance **/
     private final boolean forkedChannel;
 
     /** The Vertx reference, this will be set to null when VertxProxyService is stopped. **/
     private Vertx vertx;
 
-    public VertxProxy(String name, String jndiName, boolean clustered, String jgroupChannelName, boolean forkedChannel) {
+    public VertxProxy(String name, String jndiName, boolean clustered, String jgroupChannelName, boolean forkedChannel, String jgroupsStackFile) {
         this.name = name;
         this.jndiName = jndiName;
         this.clustered = clustered;
         this.jgroupChannelName = jgroupChannelName;
         this.forkedChannel = forkedChannel;
+        this.jgroupsStackFile = jgroupsStackFile;
     }
 
     public String getName() {
@@ -73,6 +77,10 @@ public class VertxProxy {
 
     public Vertx getVertx() {
         return this.vertx;
+    }
+
+    public String getJgroupsStackFile() {
+        return jgroupsStackFile;
     }
 
     /**

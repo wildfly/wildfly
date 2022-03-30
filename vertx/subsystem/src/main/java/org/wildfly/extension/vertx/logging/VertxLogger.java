@@ -48,51 +48,48 @@ public interface VertxLogger extends BasicLogger {
     @Message(id = 4, value = "Could not read VertxOptions from file: %s")
     OperationFailedException cannotReadVertxOptionsFile(String vertxOptionsFile);
 
-    @Message(id = 5, value = "No Jgroups channel is specified for clustered Vertx: %s")
-    OperationFailedException noJgroupsChannelConfigured(String name);
-
-    @Message(id = 6, value = "Could not find VertxOptions from: %s")
+    @Message(id = 5, value = "Could not find VertxOptions from: %s")
     OperationFailedException failedToReadVertxOptions(String vertxOptionsFile, @Cause Exception e);
 
-    @Message(id = 7, value = "Failed to start VertxProxyService for %s")
+    @Message(id = 6, value = "Failed to start VertxProxyService for %s")
     StartException failedToStartVertxService(String name, @Cause Throwable e);
 
     @LogMessage(level = WARN)
-    @Message(id = 8, value = "Error when closing the Vertx: %s")
+    @Message(id = 7, value = "Error when closing the Vertx: %s")
     void errorWhenClosingVertx(String name, @Cause Exception e);
 
-    @Message(id = 9, value = "Vertx: %s was not found.")
+    @Message(id = 8, value = "Vertx: %s was not found.")
     OperationFailedException vertxNotFound(String name);
 
-    @Message(id = 10, value = "Failed to read content from VirtualFile: %s .")
+    @Message(id = 9, value = "Failed to read content from VirtualFile: %s .")
     DeploymentUnitProcessingException failedToReadConfig(String name, @Cause Throwable e);
 
-    @Message(id = 11, value = "No verticle-class defined in deployment: %s")
+    @Message(id = 10, value = "No verticle-class defined in deployment: %s")
     DeploymentUnitProcessingException noVerticleClassDefined(String deploymentName);
 
-    @Message(id = 12, value = "Failed to lookup Vertx instance with JNDI name: %s")
+    @Message(id = 11, value = "Failed to lookup Vertx instance with JNDI name: %s")
     StartException failedToLookupVertx(String jndiName, @Cause Throwable e);
 
-    @Message(id = 13, value = "Failed to deploy verticle: %s to Vertx: %s")
+    @Message(id = 12, value = "Failed to deploy verticle: %s to Vertx: %s")
     StartException failedToDeployVerticle(String verticleClass, String jndiName, @Cause Throwable e);
 
     @LogMessage(level = WARN)
-    @Message(id = 14, value = "Error to undeploy verticle: %s from Vertx: %s")
+    @Message(id = 13, value = "Error to undeploy verticle: %s from Vertx: %s")
     void errorWhenUndeployVerticle(String verticleClass, String jndiName, @Cause Exception e);
 
-    @Message(id = 15, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
+    @Message(id = 14, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
     DeploymentUnitProcessingException deploymentRequiresCapability(String deploymentName, String capabilityName);
 
-    @Message(id = 16, value = "Alias %s has been used already in Vertx: %s")
+    @Message(id = 15, value = "Alias %s has been used already in Vertx: %s")
     OperationFailedException aliasUsedAlready(String alias, String vertxName);
 
-    @Message(id = 17, value = "path of the vertx-options-file %s must be specified")
+    @Message(id = 16, value = "path of the vertx-options-file %s must be specified")
     OperationFailedException noOptionsFileSpecified(String optionName);
 
-    @Message(id = 18, value = "Option Name: %s is reserved by system.")
+    @Message(id = 17, value = "Option Name: %s is reserved by system.")
     OperationFailedException optionNameIsReserved(String optionName);
 
-    @Message(id = 19, value = "Either path or value should be specified for the option: %s")
+    @Message(id = 18, value = "Either path or value should be specified for the option: %s")
     OperationFailedException atLeastPathOrValueDefined(String optionName);
 
 }

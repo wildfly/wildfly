@@ -70,6 +70,13 @@ public abstract class VertxAttributes {
       .setDefaultValue(ModelNode.FALSE)
       .build();
 
+    public static final SimpleAttributeDefinition JGROUPS_STACK_FILE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_JGROUPS_STACK_FILE, ModelType.STRING)
+      .setRequired(false)
+      .setAllowExpression(true)
+      .setRestartAllServices()
+      .setValidator(new ModelTypeValidator(ModelType.STRING, true))
+      .build();
+
     public static final StringListAttributeDefinition ALIAS = new StringListAttributeDefinition.Builder(VertxConstants.ATTR_ALIAS)
         .setRequired(false)
         .setRestartAllServices()
@@ -99,6 +106,7 @@ public abstract class VertxAttributes {
         ATTRS.add(CLUSTERED);
         ATTRS.add(JGROUPS_CHANNEL);
         ATTRS.add(FORKED_CHANNEL);
+        ATTRS.add(JGROUPS_STACK_FILE);
     }
 
     static List<AttributeDefinition> getSimpleAttributes() {
