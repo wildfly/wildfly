@@ -57,6 +57,7 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.logmanager" services="import"/>
         <module name="org.jboss.vfs"/>
+        <module name="org.wildfly.common"/>
         <module name="java.xml"/>
     </dependencies>
 </module>
