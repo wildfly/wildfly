@@ -24,6 +24,7 @@ package org.jboss.as.test.clustering.cluster.ejb.timer.beans;
 
 import java.util.function.Function;
 
+import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
@@ -49,7 +50,15 @@ public abstract class AbstractManualTimerBean extends AbstractTimerBean implemen
     @Override
     public void cancel() {
         for (Timer timer : this.service.getTimers()) {
-            timer.cancel();
+            try {
+                timer.cancel();
+            } catch (NoSuchObjectLocalException e) {
+                // This can happen if timer expired concurrently
+                // In this case, verify that a fresh call to getTimers() no longer returns it.
+                if (this.service.getTimers().contains(timer)) {
+                    throw e;
+                }
+            }
         }
     }
 
