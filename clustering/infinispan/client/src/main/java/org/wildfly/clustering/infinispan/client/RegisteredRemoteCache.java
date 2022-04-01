@@ -25,6 +25,7 @@ package org.wildfly.clustering.infinispan.client;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
@@ -339,5 +340,10 @@ public class RegisteredRemoteCache<K, V> extends RemoteCacheSupport<K, V> implem
     @Override
     public CompletableFuture<Long> sizeAsync() {
         return this.cache.sizeAsync();
+    }
+
+    @Override
+    public CompletionStage<ServerStatistics> serverStatisticsAsync() {
+        return this.cache.serverStatisticsAsync();
     }
 }
