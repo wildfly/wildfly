@@ -90,9 +90,8 @@ public class HibernateEntityCacheStatistics extends HibernateAbstractStatistics 
         String scopedPersistenceUnitName = pathAddress.getValue(HibernateStatistics.PROVIDER_LABEL);
         SessionFactory sessionFactory = entityManagerFactoryaccess.entityManagerFactory(scopedPersistenceUnitName).unwrap(SessionFactory.class);
         if (sessionFactory != null) {
-            // Statistics#getDomainDataRegionStatistics() only expects the entity class name to be specified.
-            return sessionFactory.getStatistics().getDomainDataRegionStatistics(
-                    pathAddress.getValue(HibernateStatistics.ENTITYCACHE));
+            // Statistics#getCacheRegionStatistics() only expects the entity class name to be specified.
+            return sessionFactory.getStatistics().getCacheRegionStatistics(pathAddress.getValue(HibernateStatistics.ENTITYCACHE));
         }
         return null;
     }
