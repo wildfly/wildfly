@@ -1,0 +1,109 @@
+[[YAML_Configuration_file]]
+= (YAML) Configuration file (Experimental))
+
+In order to provide some way to separate customization from the configuration provisionned by Galleon we want to *experiment* with a new feature where this customization is provided by YAML files.
+Because this feature is *EXPERIMENTAL* we are disabling it by default and you can *NOT* rely on it being present or compatible in the future releases.
+
+[[activate_yaml_feature]]
+== Active the YAML support feature
+
+To enable that feature you need to add a ServiceLoader configuration in the `org.jboss.as.controller` module.
+You need to create the following file: `META-INF/services/org.jboss.as.controller.persistence.ConfigurationExtension` containing a single line *org.jboss.as.controller.persistence.yaml.YamlConfigurationExtension* in the dir folder of the `org.jboss.as.controller` module.
+
+[source,options="nowrap"]
+----
+mkdir -p $WILDFLY_HOME/modules/system/layers/base/org/jboss/as/controller/main/dir/META-INF/services/
+echo 'org.jboss.as.controller.persistence.yaml.YamlConfigurationExtension' > $WILDFLY_HOME/modules/system/layers/base/org/jboss/as/controller/main/dir/META-INF/services/org.jboss.as.controller.persistence.ConfigurationExtension
+----
+
+[[starting_with_yaml_files]]
+== Starting with YAML files
+
+Using the `--yaml` or `-y` argument you can pass a list of YAML files. Each path needs to be separated by the `File.pathSeparator`.  It is a semicolon (;) on Windows and colon (:) on Mac and Unix-based operating systems.
+Paths can be absolute, relative to the current execution directory or relative to the standalone configuration directory.
+
+[source,options="nowrap"]
+----
+./standalone.sh -y=/home/ehsavoie/dev/wildfly/config2.yml:config.yml -c standalone-full.xml
+----
+
+[[what_is_in_yaml]]
+== What is in the YAML
+
+The YAML root node must be *wildfly-configuration*, then you can follow the model tree to add or update resources.
+
+Sample YAML file to define a new PostGresql datasource:
+[source,options="nowrap"]
+----
+wildfly-configuration:
+  subsystem:
+    datasources:
+      jdbc-driver:
+        postgresql:
+          driver-name: postgresql
+          driver-xa-datasource-class-name: org.postgresql.xa.PGXADataSource
+          driver-module-name: org.postgresql.jdbc
+      data-source:
+        PostgreSQLDS:
+          enabled: true
+          exception-sorter-class-name: org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter
+          jndi-name: java:jboss/datasources/PostgreSQLDS
+          jta: true
+          max-pool-size: 20
+          min-pool-size: 0
+          connection-url: "jdbc:postgresql://localhost:5432}/demo"
+          driver-name: postgresql
+          user-name: postgres
+          password: postgres
+          validate-on-match: true
+          background-validation: false
+          background-validation-millis: 10000
+          flush-strategy: FailingConnectionOnly
+          statistics-enable: false
+          stale-connection-checker-class-name: org.jboss.jca.adapters.jdbc.extensions.novendor.NullStaleConnectionChecker
+          valid-connection-checker-class-name: org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker
+          transaction-isolation: TRANSACTION_READ_COMMITTED
+----
+
+We also provide three operations using tags:
+
+* *!undefine*: to undefine an attribute
+
+Sample YAML file to undefine the CONSOLE logger level:
+[source,options="nowrap"]
+----
+wildfly-configuration:
+    subsystem:
+        logging:
+          console-handler:
+            CONSOLE:
+              level: !undefine
+----
+
+* *!remove*: to remove the resource
+
+Sample YAML file to remove the MicroProfile Smallrye JWT subsystem:
+[source,options="nowrap"]
+----
+wildfly-configuration:
+    subsystem:
+        microprofile-jwt-smallrye: !remove 
+----
+
+* *!list-add*: to add an element to a list (with an optionnal index).
+
+Sample YAML file to add a RemoteTransactionPermission to the permissions list at the position 0:
+[source,options="nowrap"]
+----
+wildfly-configuration:
+    subsystem:
+        elytron:
+          permission-set:
+           default-permissions: 
+             permissions: !list-add 
+              - class-name: org.wildfly.transaction.client.RemoteTransactionPermission
+                module: org.wildfly.transaction.client
+                target-name: "*"
+                index: 0
+----
+
