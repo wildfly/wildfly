@@ -44,7 +44,7 @@
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
         <module name="internal.jakarta.transaction.api"/>
         <module name="internal.javax.transaction.api"/>
-        <!-- The netty-common module is only require to initialize Netty's InternalLoggingFactory -->
+        <!-- The netty-common module is only required to initialize Netty's InternalLoggingFactory -->
         <module name="io.netty.netty-common"/>
         <module name="io.reactivex.rxjava3.rxjava"/>
         <module name="net.jcip"/>
