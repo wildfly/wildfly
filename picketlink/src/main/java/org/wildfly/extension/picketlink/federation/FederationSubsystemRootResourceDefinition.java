@@ -49,5 +49,6 @@ public class FederationSubsystemRootResourceDefinition extends SimpleResourceDef
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(new FederationResourceDefinition());
+        MigrateOperation.registerOperations(resourceRegistration, getResourceDescriptionResolver());
     }
 }
