@@ -20,30 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.context;
+package org.wildfly.clustering.context;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
- * Set of factory implementations for creating an {@link ExecutorService} from a {@link ThreadFactory}.
+ * Reference that can be associated with an arbitrary thread.
  * @author Paul Ferraro
  */
-public enum ExecutorServiceFactory implements Function<ThreadFactory, ExecutorService> {
+public interface ThreadContextReference<C> extends ContextReference<C>, Function<Thread, C>, BiConsumer<Thread, C> {
 
-    SINGLE_THREAD() {
-        @Override
-        public ExecutorService apply(ThreadFactory factory) {
-            return Executors.newSingleThreadExecutor(factory);
-        }
-    },
-    CACHED_THREAD() {
-        @Override
-        public ExecutorService apply(ThreadFactory factory) {
-            return Executors.newCachedThreadPool(factory);
-        }
-    },
-    ;
+    @Override
+    default void accept(C context) {
+        this.accept(Thread.currentThread(), context);
+    }
+
+    @Override
+    default C get() {
+        return this.apply(Thread.currentThread());
+    }
 }

@@ -20,12 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.context;
+package org.jboss.as.clustering.naming;
 
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.wildfly.clustering.context.ContextualExecutor;
 import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.common.function.ExceptionSupplier;
 

@@ -213,6 +213,17 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-context</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-service</artifactId>
             <exclusions>
                 <exclusion>

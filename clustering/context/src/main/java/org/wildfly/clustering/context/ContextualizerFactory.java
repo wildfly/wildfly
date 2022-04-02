@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.context;
+package org.wildfly.clustering.context;
 
-import java.util.function.BiConsumer;
-import java.util.function.Function;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * Reference that can be associated with an arbitrary thread.
+ * Factory for creating a {@link Contextualizer} for a {@link ClassLoader}.
  * @author Paul Ferraro
  */
-public interface ThreadContextReference<C> extends ContextReference<C>, Function<Thread, C>, BiConsumer<Thread, C> {
+public interface ContextualizerFactory {
+    /**
+     * Creates a {@link Contextualizer} for the specified {@link ClassLoader}.
+     * @param loader a class loader
+     * @return a contextualizer
+     */
+    Contextualizer createContextualizer(ClassLoader loader);
 
-    @Override
-    default void accept(C context) {
-        this.accept(Thread.currentThread(), context);
-    }
-
-    @Override
-    default C get() {
-        return this.apply(Thread.currentThread());
+    /**
+     * Creates a {@link Contextualizer} for the {@link ClassLoader} of the specified {@link Class}.
+     * @param targetClass a class from which to obtain a class loader
+     * @return a contextualizer
+     */
+    default Contextualizer createContextualizer(Class<?> targetClass) {
+        return this.createContextualizer(WildFlySecurityManager.getClassLoaderPrivileged(targetClass));
     }
 }

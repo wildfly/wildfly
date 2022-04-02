@@ -43,8 +43,8 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivate
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
 import org.infinispan.util.concurrent.CompletableFutures;
-import org.jboss.as.clustering.context.DefaultExecutorService;
-import org.jboss.as.clustering.context.ExecutorServiceFactory;
+import org.wildfly.clustering.context.DefaultExecutorService;
+import org.wildfly.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.Remover;

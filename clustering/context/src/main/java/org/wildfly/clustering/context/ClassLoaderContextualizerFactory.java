@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
+ * Copyright 2022, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,14 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.context;
-
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+package org.wildfly.clustering.context;
 
 /**
- * Reference to some context.
+ * {@link ContextualizerFactory} that creates a thread context class loader {@link Contextualizer}.
  * @author Paul Ferraro
  */
-public interface ContextReference<C> extends Supplier<C>, Consumer<C> {
+public class ClassLoaderContextualizerFactory implements ContextualizerFactory {
+
+    @Override
+    public Contextualizer createContextualizer(ClassLoader loader) {
+        return new ContextReferenceExecutor<>(loader, ContextClassLoaderReference.INSTANCE);
+    }
 }

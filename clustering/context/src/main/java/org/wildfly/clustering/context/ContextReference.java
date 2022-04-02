@@ -20,25 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.context;
+package org.wildfly.clustering.context;
 
-import org.wildfly.security.manager.WildFlySecurityManager;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
- * Default {@link org.wildfly.clustering.service.concurrent.Contextualizer} that applies the following contexts:
- * <ol>
- * <li>Thread context {@link ClassLoader}</li>
- * <li>JNDI namespace</li>
- * </ol>
+ * Reference to some context.
  * @author Paul Ferraro
  */
-public class DefaultContextualizer extends CompositeContextualizer {
-
-    public DefaultContextualizer(Class<?> targetClass) {
-        this(WildFlySecurityManager.getClassLoaderPrivileged(targetClass));
-    }
-
-    public DefaultContextualizer(ClassLoader loader) {
-        super(new ContextReferenceExecutor<>(loader, ContextClassLoaderReference.INSTANCE), new NamespaceContextExecutor());
-    }
+public interface ContextReference<C> extends Supplier<C>, Consumer<C> {
 }

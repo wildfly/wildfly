@@ -48,6 +48,7 @@
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.ee.cache" services="import"/>
         <module name="org.wildfly.clustering.ee.hotrod"/>
         <module name="org.wildfly.clustering.ee.spi"/>

@@ -20,12 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.context;
+package org.wildfly.clustering.context;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.service.concurrent.Executor;
 import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.common.function.ExceptionSupplier;
 
@@ -34,6 +34,14 @@ import org.wildfly.common.function.ExceptionSupplier;
  * @author Paul Ferraro
  */
 public interface ContextualExecutor extends Contextualizer, Executor {
+
+    /**
+     * Executes the specified runner.
+     * @param <E> the exception type
+     * @param runner a runnable task
+     * @throws E if execution fails
+     */
+    <E extends Exception> void execute(ExceptionRunnable<E> runner) throws E;
 
     /**
      * Executes the specified caller with a given context.
@@ -74,7 +82,7 @@ public interface ContextualExecutor extends Contextualizer, Executor {
 
     @Override
     default <E extends Exception> ExceptionRunnable<E> contextualize(ExceptionRunnable<E> runner) {
-        return new ExceptionRunnable<E>() {
+        return new ExceptionRunnable<>() {
             @Override
             public void run() throws E {
                 ContextualExecutor.this.execute(runner);
@@ -84,7 +92,7 @@ public interface ContextualExecutor extends Contextualizer, Executor {
 
     @Override
     default <T> Callable<T> contextualize(Callable<T> caller) {
-        return new Callable<T>() {
+        return new Callable<>() {
             @Override
             public T call() throws Exception {
                 return ContextualExecutor.this.execute(caller);
@@ -94,7 +102,7 @@ public interface ContextualExecutor extends Contextualizer, Executor {
 
     @Override
     default <T> Supplier<T> contextualize(Supplier<T> supplier) {
-        return new Supplier<T>() {
+        return new Supplier<>() {
             @Override
             public T get() {
                 return ContextualExecutor.this.execute(supplier);
@@ -104,7 +112,7 @@ public interface ContextualExecutor extends Contextualizer, Executor {
 
     @Override
     default <T, E extends Exception> ExceptionSupplier<T, E> contextualize(ExceptionSupplier<T, E> supplier) {
-        return new ExceptionSupplier<T, E>() {
+        return new ExceptionSupplier<>() {
             @Override
             public T get() throws E {
                 return ContextualExecutor.this.execute(supplier);

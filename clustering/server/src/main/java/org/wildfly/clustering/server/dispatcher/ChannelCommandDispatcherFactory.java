@@ -37,10 +37,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-import org.jboss.as.clustering.context.Contextualizer;
-import org.jboss.as.clustering.context.DefaultExecutorService;
-import org.jboss.as.clustering.context.DefaultThreadFactory;
-import org.jboss.as.clustering.context.ExecutorServiceFactory;
 import org.jboss.as.clustering.logging.ClusteringLogger;
 import org.jgroups.Address;
 import org.jgroups.Event;
@@ -56,6 +52,11 @@ import org.jgroups.blocks.Response;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.util.NameCache;
 import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.context.Contextualizer;
+import org.wildfly.clustering.context.DefaultContextualizerFactory;
+import org.wildfly.clustering.context.DefaultExecutorService;
+import org.wildfly.clustering.context.DefaultThreadFactory;
+import org.wildfly.clustering.context.ExecutorServiceFactory;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.group.Group;
@@ -95,14 +96,12 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     private final MessageDispatcher dispatcher;
     private final Duration timeout;
     private final Function<ClassLoader, ByteBufferMarshaller> marshallerFactory;
-    private final Function<ClassLoader, Contextualizer> contextualizerFactory;
 
     @SuppressWarnings("resource")
     public ChannelCommandDispatcherFactory(ChannelCommandDispatcherFactoryConfiguration config) {
         this.marshaller = config.getMarshaller();
         this.timeout = config.getTimeout();
         this.marshallerFactory = config.getMarshallerFactory();
-        this.contextualizerFactory = config.getContextualizerFactory();
         JChannel channel = config.getChannel();
         RequestCorrelator correlator = new RequestCorrelator(channel.getProtocolStack(), this, channel.getAddress()).setMarshaller(new CommandResponseMarshaller(config));
         this.dispatcher = new MessageDispatcher()
@@ -202,7 +201,7 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C commandContext, ClassLoader loader) {
         ByteBufferMarshaller dispatcherMarshaller = this.marshallerFactory.apply(loader);
         MarshalledValueFactory<ByteBufferMarshaller> factory = new ByteBufferMarshalledValueFactory(dispatcherMarshaller);
-        Contextualizer contextualizer = this.contextualizerFactory.apply(loader);
+        Contextualizer contextualizer = DefaultContextualizerFactory.INSTANCE.createContextualizer(loader);
         CommandDispatcherContext<C, ByteBufferMarshaller> context = new CommandDispatcherContext<C, ByteBufferMarshaller>() {
             @Override
             public C getCommandContext() {

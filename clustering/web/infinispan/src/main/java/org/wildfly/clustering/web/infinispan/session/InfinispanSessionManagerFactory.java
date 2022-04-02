@@ -31,9 +31,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.context.DefaultExecutorService;
-import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.Registrar;
+import org.wildfly.clustering.context.DefaultExecutorService;
+import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.Recordable;
