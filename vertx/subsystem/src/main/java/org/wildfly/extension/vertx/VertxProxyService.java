@@ -116,6 +116,7 @@ public class VertxProxyService implements Service, VertxConstants {
         binderService.getManagedObjectInjector().inject(valueManagedReferenceFactory);
         final ServiceBuilder<?> builder = context.getServiceTarget().addService(bindInfo.getBinderServiceName());
         builder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
+        builder.addDependency(vertxServiceName);
         builder.setInstance(binderService)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(new LifecycleListener() {
