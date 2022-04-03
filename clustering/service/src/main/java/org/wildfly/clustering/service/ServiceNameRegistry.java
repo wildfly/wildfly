@@ -28,6 +28,7 @@ import org.jboss.msc.service.ServiceName;
  * Registry of services names for a set of requirements.
  * @author Paul Ferraro
  */
+@Deprecated
 public interface ServiceNameRegistry<R extends Requirement> {
     /**
      * Returns the service name for the specified requirement

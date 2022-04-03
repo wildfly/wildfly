@@ -22,12 +22,7 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import org.infinispan.commons.configuration.attributes.AttributeSet;
@@ -42,20 +37,17 @@ import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.network.ClientMapping;
-import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
 import org.wildfly.clustering.infinispan.configuration.ConfigurationBuilderAttributesAccessor;
 import org.wildfly.clustering.infinispan.container.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.CacheServiceConfigurator;
 import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceConfigurator;
-import org.wildfly.clustering.service.ServiceNameRegistry;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.ProvidedCacheServiceConfigurator;
+import org.wildfly.clustering.spi.group.DistributedCacheGroupServiceConfiguratorProvider;
+import org.wildfly.clustering.spi.registry.DistributedRegistryServiceConfiguratorProvider;
 
 /**
  * The legacy version of the client mappings registry provider, used when no distributable-ejb subsystem is present.
@@ -64,7 +56,6 @@ import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
  */
 @MetaInfServices(ClientMappingsRegistryProvider.class)
 public class LegacyInfinispanClientMappingsRegistryProvider implements ClientMappingsRegistryProvider, Consumer<ConfigurationBuilder> {
-    static final Set<ClusteringCacheRequirement> REGISTRY_REQUIREMENTS = EnumSet.of(ClusteringCacheRequirement.REGISTRY, ClusteringCacheRequirement.REGISTRY_FACTORY, ClusteringCacheRequirement.GROUP);
 
     private final String containerName;
 
@@ -77,19 +68,9 @@ public class LegacyInfinispanClientMappingsRegistryProvider implements ClientMap
         CapabilityServiceConfigurator configurationConfigurator = new TemplateConfigurationServiceConfigurator(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(this.containerName, connectorName), this.containerName, connectorName, null, this);
         CapabilityServiceConfigurator cacheConfigurator = new CacheServiceConfigurator<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.getName()).append(this.containerName, connectorName), this.containerName, connectorName);
         CapabilityServiceConfigurator registryEntryConfigurator = new ClientMappingsRegistryEntryServiceConfigurator(this.containerName, connectorName, clientMappings);
-        List<Iterable<CapabilityServiceConfigurator>> configurators = new LinkedList<>();
-        configurators.add(Arrays.asList(configurationConfigurator, cacheConfigurator, registryEntryConfigurator));
-        String containerName = this.containerName;
-        ServiceNameRegistry<ClusteringCacheRequirement> routingRegistry = new ServiceNameRegistry<ClusteringCacheRequirement>() {
-            @Override
-            public ServiceName getServiceName(ClusteringCacheRequirement requirement) {
-                return REGISTRY_REQUIREMENTS.contains(requirement) ? ServiceNameFactory.parseServiceName(requirement.getName()).append(containerName, connectorName) : null;
-            }
-        };
-        for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(DistributedCacheServiceConfiguratorProvider.class, DistributedCacheServiceConfiguratorProvider.class.getClassLoader())) {
-            configurators.add(provider.getServiceConfigurators(routingRegistry, this.containerName, connectorName));
-        }
-        return new CompositeIterable<>(configurators);
+        CapabilityServiceConfigurator registryConfigurator = new ProvidedCacheServiceConfigurator<>(DistributedRegistryServiceConfiguratorProvider.class, this.containerName, connectorName);
+        CapabilityServiceConfigurator groupConfigurator = new ProvidedCacheServiceConfigurator<>(DistributedCacheGroupServiceConfiguratorProvider.class, this.containerName, connectorName);
+        return List.of(configurationConfigurator, cacheConfigurator, registryEntryConfigurator, registryConfigurator, groupConfigurator);
     }
 
     @Override

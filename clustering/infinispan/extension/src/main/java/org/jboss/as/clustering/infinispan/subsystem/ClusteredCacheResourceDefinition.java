@@ -46,13 +46,14 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
 
 /**
  * Base class for cache resources which require common cache attributes and clustered cache attributes.
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
+public class ClusteredCacheResourceDefinition extends CacheResourceDefinition<DistributedCacheServiceConfiguratorProvider> {
 
     enum Capability implements org.jboss.as.clustering.controller.Capability {
         TRANSPORT("org.wildfly.clustering.infinispan.cache-container.cache.transport"),

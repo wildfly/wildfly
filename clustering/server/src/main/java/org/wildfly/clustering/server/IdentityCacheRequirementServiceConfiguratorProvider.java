@@ -22,18 +22,17 @@
 
 package org.wildfly.clustering.server;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.function.BiFunction;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.controller.IdentityCapabilityServiceConfigurator;
 import org.jboss.as.clustering.naming.BinderServiceConfigurator;
 import org.jboss.as.clustering.naming.JndiNameFactory;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.service.ServiceNameRegistry;
+import org.wildfly.clustering.service.IdentityServiceConfigurator;
+import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
 
@@ -55,17 +54,16 @@ public class IdentityCacheRequirementServiceConfiguratorProvider implements Iden
     }
 
     @Override
-    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName, String targetCacheName) {
-        ServiceName name = registry.getServiceName(this.requirement);
-        if (name == null) return Collections.emptySet();
-
-        CapabilityServiceConfigurator configurator = new IdentityCapabilityServiceConfigurator<>(name, this.requirement, containerName, targetCacheName);
+    public Iterable<ServiceConfigurator> getServiceConfigurators(CapabilityServiceSupport support, String containerName, String cacheName, String targetCacheName) {
+        ServiceName name = this.requirement.getServiceName(support, containerName, cacheName);
+        ServiceName targetName = this.requirement.getServiceName(support, containerName, targetCacheName);
+        ServiceConfigurator configurator = new IdentityServiceConfigurator<>(name, targetName);
         if ((this.jndiNameFactory == null) || JndiNameFactory.DEFAULT_LOCAL_NAME.equals(targetCacheName)) {
-            return Collections.singleton(configurator);
+            return List.of(configurator);
         }
         ContextNames.BindInfo binding = ContextNames.bindInfoFor(this.jndiNameFactory.apply(containerName, cacheName).getAbsoluteName());
-        CapabilityServiceConfigurator binderConfigurator = new BinderServiceConfigurator(binding, configurator.getServiceName());
-        return Arrays.asList(configurator, binderConfigurator);
+        ServiceConfigurator binderConfigurator = new BinderServiceConfigurator(binding, configurator.getServiceName()).configure(support);
+        return List.of(configurator, binderConfigurator);
     }
 
     @Override
