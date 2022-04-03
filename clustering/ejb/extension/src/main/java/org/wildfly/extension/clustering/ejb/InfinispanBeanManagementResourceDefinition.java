@@ -39,8 +39,8 @@ import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.EjbProviderRequirement;
-import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 
 import java.util.function.UnaryOperator;

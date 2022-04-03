@@ -31,8 +31,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.spi.InfinispanDefaultCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
 
 /**
  * Definition of the /subsystem=distributable-web/infinispan-single-sign-on-management=* resource.

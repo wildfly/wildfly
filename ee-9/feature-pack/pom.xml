@@ -540,6 +540,7 @@
                                 <exclude>org.wildfly:wildfly-clustering-ee-infinispan\z</exclude>
                                 <exclude>org.wildfly:wildfly-clustering-ee-hotrod\z</exclude>
                                 <exclude>org.wildfly:wildfly-clustering-infinispan-client\z</exclude>
+                                <exclude>org.wildfly:wildfly-clustering-infinispan-embedded-.+\z</exclude>
                                 <exclude>org.wildfly:wildfly-clustering-infinispan-extension\z</exclude>
                                 <exclude>org.wildfly:wildfly-clustering-web-infinispan\z</exclude>
 

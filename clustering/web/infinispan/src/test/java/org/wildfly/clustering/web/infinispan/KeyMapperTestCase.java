@@ -25,7 +25,7 @@ package org.wildfly.clustering.web.infinispan;
 import java.util.UUID;
 
 import org.junit.Test;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyMapperTester;
+import org.wildfly.clustering.infinispan.persistence.KeyMapperTester;
 import org.wildfly.clustering.web.infinispan.session.SessionAccessMetaDataKey;
 import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKey;
 import org.wildfly.clustering.web.infinispan.session.coarse.SessionAttributesKey;

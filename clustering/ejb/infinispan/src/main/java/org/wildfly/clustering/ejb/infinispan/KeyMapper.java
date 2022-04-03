@@ -24,7 +24,7 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.infinispan.spi.persistence.DynamicKeyFormatMapper;
+import org.wildfly.clustering.infinispan.persistence.DynamicKeyFormatMapper;
 
 /**
  * {@link TwoWayKey2StringMapper} for Jakarta Enterprise Beans cache keys.

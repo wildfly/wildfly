@@ -45,7 +45,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
+import org.wildfly.clustering.infinispan.service.CacheServiceConfigurator;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
 import org.wildfly.clustering.service.ServiceNameProvider;
 import org.wildfly.clustering.service.ServiceNameRegistry;

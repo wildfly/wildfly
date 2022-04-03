@@ -65,7 +65,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.context.DefaultThreadFactory;
-import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
