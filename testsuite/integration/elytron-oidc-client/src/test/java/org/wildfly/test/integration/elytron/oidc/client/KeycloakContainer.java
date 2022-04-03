@@ -57,18 +57,28 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
     @Override
     protected void configure() {
         withExposedPorts(PORT_HTTP, PORT_HTTPS);
-        waitingFor(Wait.forHttp("/").forPort(8080));
         withEnv("KEYCLOAK_ADMIN", ADMIN_USER);
         withEnv("KEYCLOAK_ADMIN_PASSWORD", ADMIN_PASSWORD);
         withEnv("SSO_ADMIN_USERNAME", ADMIN_USER);
         withEnv("SSO_ADMIN_PASSWORD", ADMIN_PASSWORD);
-        withEnv("SSO_HOSTNAME", "localhost");
-        if (SSO_IMAGE.equals(KEYCLOAK_IMAGE)) {
+        if (isUsedRHSSOImage()) {
+            waitingFor(Wait.forHttp("/auth").forPort(PORT_HTTP));
+        }else{
+            waitingFor(Wait.forHttp("/").forPort(PORT_HTTP));
             withCommand("start-dev");
         }
     }
 
     public String getAuthServerUrl() {
-        return String.format("http://%s:%s", getContainerIpAddress(), useHttps ? getMappedPort(PORT_HTTPS) : getMappedPort(PORT_HTTP));
+        Integer port = useHttps ? getMappedPort(PORT_HTTPS) : getMappedPort(PORT_HTTP);
+        String authServerUrl = String.format("http://%s:%s", getContainerIpAddress(), port);
+        if(isUsedRHSSOImage()){
+            authServerUrl += "/auth";
+        }
+        return authServerUrl;
+    }
+
+    private boolean isUsedRHSSOImage(){
+        return SSO_IMAGE.contains("rh-sso");
     }
 }
