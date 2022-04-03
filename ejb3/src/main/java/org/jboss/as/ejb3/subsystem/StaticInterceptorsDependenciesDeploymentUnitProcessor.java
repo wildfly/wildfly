@@ -23,6 +23,8 @@
 package org.jboss.as.ejb3.subsystem;
 
 
+import java.util.Collection;
+import java.util.HashSet;
 
 import org.jboss.as.ejb3.interceptor.server.ServerInterceptorMetaData;
 import org.jboss.as.server.deployment.Attachments;
@@ -33,11 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
-
-import java.util.Collection;
-import java.util.HashSet;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
@@ -58,8 +56,7 @@ public class StaticInterceptorsDependenciesDeploymentUnitProcessor implements De
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification deploymentModuleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         for(final String interceptorModule : interceptorModules) {
-            final ModuleIdentifier interceptorModuleId = ModuleIdentifier.create(interceptorModule);
-            deploymentModuleSpec.addSystemDependency(new ModuleDependency(moduleLoader, interceptorModuleId, false, false, true, false));
+            deploymentModuleSpec.addSystemDependency(new ModuleDependency(moduleLoader, interceptorModule, false, false, true, false));
         }
     }
 }
