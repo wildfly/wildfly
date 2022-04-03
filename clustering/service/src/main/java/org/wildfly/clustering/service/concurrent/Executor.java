@@ -27,7 +27,9 @@ import org.wildfly.common.function.ExceptionRunnable;
 /**
  * Extends {@link java.util.concurrent.Executor} to additionally support a {@link ExceptonRunnable}.
  * @author Paul Ferraro
+ * @deprecated To be removed without replacement
  */
+@Deprecated
 public interface Executor extends java.util.concurrent.Executor {
 
     /**
