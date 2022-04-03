@@ -29,9 +29,9 @@ import org.infinispan.protostream.SerializationContextInitializer;
 import org.junit.Test;
 import org.wildfly.clustering.ejb.LegacyBeanManagementProviderFactory;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.spi.IdentityCacheServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.LocalCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.server.service.DistributedCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.server.service.IdentityCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.server.service.LocalCacheServiceConfiguratorProvider;
 
 /**
  * Validates loading of services.

@@ -40,8 +40,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.server.service.ProvidedIdentityGroupServiceConfigurator;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
-import org.wildfly.clustering.spi.ProvidedIdentityGroupServiceConfigurator;
 
 /**
  * @author Paul Ferraro

@@ -23,7 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.server.service.DistributedCacheServiceConfiguratorProvider;
 
 /**
  * @author Paul Ferraro

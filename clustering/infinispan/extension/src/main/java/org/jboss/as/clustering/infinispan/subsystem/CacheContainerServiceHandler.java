@@ -48,8 +48,8 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.lifecycle.WildFlyInfinispanModuleLifecycle;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
+import org.wildfly.clustering.server.service.ProvidedIdentityCacheServiceConfigurator;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
-import org.wildfly.clustering.spi.ProvidedIdentityCacheServiceConfigurator;
 
 /**
  * @author Paul Ferraro

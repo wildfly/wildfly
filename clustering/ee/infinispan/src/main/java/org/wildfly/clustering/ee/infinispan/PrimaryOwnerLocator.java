@@ -29,7 +29,7 @@ import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.distribution.CacheKeyDistribution;
 import org.wildfly.clustering.infinispan.distribution.KeyDistribution;
-import org.wildfly.clustering.spi.NodeFactory;
+import org.wildfly.clustering.server.NodeFactory;
 
 /**
  * Function that returns the primary owner for a given cache key.

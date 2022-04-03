@@ -22,16 +22,16 @@
 
 package org.wildfly.extension.clustering.ejb;
 
+import java.util.List;
+
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.network.ClientMapping;
 import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
 import org.wildfly.clustering.ejb.infinispan.ClientMappingsRegistryEntryServiceConfigurator;
+import org.wildfly.clustering.server.service.ProvidedCacheServiceConfigurator;
+import org.wildfly.clustering.server.service.group.LocalCacheGroupServiceConfiguratorProvider;
+import org.wildfly.clustering.server.service.registry.LocalRegistryServiceConfiguratorProvider;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.spi.ProvidedCacheServiceConfigurator;
-import org.wildfly.clustering.spi.group.LocalCacheGroupServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.registry.LocalRegistryServiceConfiguratorProvider;
-
-import java.util.List;
 
 /**
  * A local client mappings registry provider implementation.

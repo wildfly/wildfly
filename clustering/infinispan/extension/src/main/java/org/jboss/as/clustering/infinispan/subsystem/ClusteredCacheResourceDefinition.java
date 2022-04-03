@@ -26,7 +26,6 @@ import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
@@ -36,6 +35,7 @@ import org.jboss.as.clustering.controller.ReadAttributeTranslationHandler;
 import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
@@ -46,7 +46,7 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.spi.DistributedCacheServiceConfiguratorProvider;
+import org.wildfly.clustering.server.service.DistributedCacheServiceConfiguratorProvider;
 
 /**
  * Base class for cache resources which require common cache attributes and clustered cache attributes.

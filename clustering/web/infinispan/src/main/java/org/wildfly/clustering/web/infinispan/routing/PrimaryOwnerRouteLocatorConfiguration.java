@@ -26,7 +26,7 @@ import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.spi.NodeFactory;
+import org.wildfly.clustering.server.NodeFactory;
 
 /**
  * @author Paul Ferraro

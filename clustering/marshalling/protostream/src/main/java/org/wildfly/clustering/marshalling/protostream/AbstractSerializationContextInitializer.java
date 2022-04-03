@@ -71,4 +71,9 @@ public abstract class AbstractSerializationContextInitializer implements Seriali
             throw new UncheckedIOException(e);
         }
     }
+
+    @Override
+    public String toString() {
+        return this.resourceName;
+    }
 }

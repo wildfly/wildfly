@@ -22,7 +22,7 @@
 
 package org.wildfly.clustering.web.infinispan.routing;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -37,7 +37,7 @@ import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.distribution.KeyDistribution;
 import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.spi.NodeFactory;
+import org.wildfly.clustering.server.NodeFactory;
 import org.wildfly.clustering.web.routing.RouteLocator;
 
 /**

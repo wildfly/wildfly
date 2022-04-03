@@ -35,7 +35,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
-import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
+import org.wildfly.clustering.server.service.ClusteringDefaultRequirement;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>

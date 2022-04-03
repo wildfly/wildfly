@@ -40,11 +40,11 @@ import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanFactory;
 import org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupFactory;
 import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.spi.group.Group;
+import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.group.Group;
 
 /**
  * Factory for creating an infinispan-based {@link BeanManager}.
@@ -71,7 +71,7 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
         CacheProperties properties = new InfinispanCacheProperties(groupCache.getCacheConfiguration());
         String beanName = this.configuration.getBeanConfiguration().getName();
         BeanPassivationConfiguration passivationConfig = this.configuration.getPassivationConfiguration();
-        PassivationConfiguration<T> passivation = new PassivationConfiguration<T>() {
+        PassivationConfiguration<T> passivation = new PassivationConfiguration<>() {
             @Override
             public PassivationListener<T> getPassivationListener() {
                 return passivationListener;
@@ -91,7 +91,7 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
         KeyAffinityServiceFactory affinityFactory = this.configuration.getKeyAffinityServiceFactory();
         CommandDispatcherFactory dispatcherFactory = this.configuration.getCommandDispatcherFactory();
         Duration timeout = this.configuration.getBeanConfiguration().getTimeout();
-        ExpirationConfiguration<T> expiration = new ExpirationConfiguration<T>() {
+        ExpirationConfiguration<T> expiration = new ExpirationConfiguration<>() {
             @Override
             public Duration getTimeout() {
                 return timeout;
@@ -103,7 +103,7 @@ public class InfinispanBeanManagerFactory<I, T> implements BeanManagerFactory<I,
             }
         };
         String name = this.configuration.getName();
-        InfinispanBeanManagerConfiguration<I, T> configuration = new InfinispanBeanManagerConfiguration<I, T>() {
+        InfinispanBeanManagerConfiguration<I, T> configuration = new InfinispanBeanManagerConfiguration<>() {
             @Override
             public String getName() {
                 return name;

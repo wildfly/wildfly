@@ -76,7 +76,6 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jgroups"/>
         <module name="org.reactivestreams"/>
-        <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.ee.infinispan"/>
         <module name="org.wildfly.clustering.ee.spi"/>
@@ -91,8 +90,11 @@
         <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
+        <module name="org.wildfly.clustering.server.api"/>
+        <module name="org.wildfly.clustering.server.service"/>
+        <module name="org.wildfly.clustering.server.spi"/>
         <module name="org.wildfly.clustering.service"/>
-        <module name="org.wildfly.clustering.spi"/>
+        <module name="org.wildfly.clustering.singleton.api"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.wildfly.transaction.client"/>

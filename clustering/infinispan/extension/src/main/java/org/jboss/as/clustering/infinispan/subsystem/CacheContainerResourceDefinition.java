@@ -61,8 +61,9 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.marshall.InfinispanMarshallerFactory;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
+import org.wildfly.clustering.server.service.ClusteringDefaultCacheRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
-import org.wildfly.clustering.spi.ClusteringDefaultCacheRequirement;
+import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X
@@ -136,7 +137,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setDefaultValue(new ModelNode(InfinispanMarshallerFactory.LEGACY.name()))
-                        .setValidator(new EnumValidator<InfinispanMarshallerFactory>(InfinispanMarshallerFactory.class) {
+                        .setValidator(new EnumValidator<>(InfinispanMarshallerFactory.class) {
                             @Override
                             public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
                                 super.validateParameter(parameterName, value);
@@ -279,6 +280,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                 .addCapabilities(Capability.class)
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), DEFAULT_CAPABILITIES.values())
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), EnumSet.allOf(ClusteringDefaultCacheRequirement.class).stream().map(UnaryRequirementCapability::new).collect(Collectors.toList()))
+                .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), EnumSet.allOf(SingletonDefaultCacheRequirement.class).stream().map(UnaryRequirementCapability::new).collect(Collectors.toList()))
                 .addRequiredChildren(EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT)))
                 .addRequiredChildren(ScheduledThreadPoolResourceDefinition.class)
                 .addRequiredSingletonChildren(NoTransportResourceDefinition.PATH)
