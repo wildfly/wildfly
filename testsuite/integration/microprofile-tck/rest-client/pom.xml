@@ -209,7 +209,7 @@
                         </goals>
                         <configuration>
                             <dir>target/classes</dir>
-                            <params>--port=8765</params>
+                            <params>--port=8765 --disable-banner</params>
                         </configuration>
                     </execution>
                 </executions>
