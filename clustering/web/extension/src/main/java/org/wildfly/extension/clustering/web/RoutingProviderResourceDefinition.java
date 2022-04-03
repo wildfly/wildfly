@@ -36,7 +36,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.clustering.service.Requirement;
-import org.wildfly.clustering.web.WebRequirement;
+import org.wildfly.clustering.web.service.WebRequirement;
 
 /**
  * Base definition for routing provider resources.

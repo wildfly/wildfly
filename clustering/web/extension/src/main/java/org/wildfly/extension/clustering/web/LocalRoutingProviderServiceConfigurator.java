@@ -23,8 +23,8 @@
 package org.wildfly.extension.clustering.web;
 
 import org.jboss.as.controller.PathAddress;
-import org.wildfly.clustering.web.cache.routing.LocalRoutingProvider;
-import org.wildfly.clustering.web.routing.RoutingProvider;
+import org.wildfly.clustering.web.service.routing.RoutingProvider;
+import org.wildfly.extension.clustering.web.routing.LocalRoutingProvider;
 
 /**
  * Service configurator for the local routing provider.

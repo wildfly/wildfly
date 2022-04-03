@@ -31,8 +31,8 @@ import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.web.container.SecurityDomainSingleSignOnManagementConfiguration;
 import org.wildfly.clustering.web.container.SecurityDomainSingleSignOnManagementProvider;
-import org.wildfly.clustering.web.sso.DistributableSSOManagementProvider;
-import org.wildfly.clustering.web.sso.LegacySSOManagementProviderFactory;
+import org.wildfly.clustering.web.service.sso.DistributableSSOManagementProvider;
+import org.wildfly.clustering.web.service.sso.LegacySSOManagementProviderFactory;
 import org.wildfly.extension.undertow.session.SessionManagementProviderFactory;
 
 /**

@@ -34,8 +34,8 @@ import org.jboss.modules.Module;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ee.immutable.SimpleImmutability;
 import org.wildfly.clustering.web.container.SessionManagementProvider;
-import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
-import org.wildfly.clustering.web.session.LegacySessionManagementProviderFactory;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.service.session.LegacySessionManagementProviderFactory;
 import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
 import org.wildfly.extension.undertow.session.SessionManagementProviderFactory;
 

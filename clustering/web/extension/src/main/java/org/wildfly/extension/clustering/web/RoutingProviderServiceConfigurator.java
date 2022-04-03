@@ -35,7 +35,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.FunctionalService;
-import org.wildfly.clustering.web.routing.RoutingProvider;
+import org.wildfly.clustering.web.service.routing.RoutingProvider;
 
 /**
  * Abstract service configurator for routing providers.

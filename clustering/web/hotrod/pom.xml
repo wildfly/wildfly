@@ -49,7 +49,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-infinispan-client-service</artifactId>
+            <artifactId>wildfly-clustering-infinispan-client-api</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

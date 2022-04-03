@@ -42,8 +42,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.service.UnaryRequirement;
-import org.wildfly.clustering.web.WebProviderRequirement;
-import org.wildfly.clustering.web.WebRequirement;
+import org.wildfly.clustering.web.service.WebProviderRequirement;
+import org.wildfly.clustering.web.service.WebRequirement;
 
 /**
  * Base definition for session management resources.

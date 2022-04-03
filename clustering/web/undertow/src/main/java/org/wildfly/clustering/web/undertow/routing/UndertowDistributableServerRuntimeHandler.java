@@ -38,9 +38,9 @@ import org.wildfly.clustering.service.FunctionSupplierDependency;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.web.WebRequirement;
-import org.wildfly.clustering.web.routing.LegacyRoutingProviderFactory;
-import org.wildfly.clustering.web.routing.RoutingProvider;
+import org.wildfly.clustering.web.service.WebRequirement;
+import org.wildfly.clustering.web.service.routing.LegacyRoutingProviderFactory;
+import org.wildfly.clustering.web.service.routing.RoutingProvider;
 import org.wildfly.clustering.web.undertow.UndertowUnaryRequirement;
 import org.wildfly.clustering.web.undertow.logging.UndertowClusteringLogger;
 import org.wildfly.extension.undertow.Server;
@@ -65,13 +65,13 @@ public class UndertowDistributableServerRuntimeHandler implements DistributableS
 
     @Override
     public void execute(OperationContext context, String serverName) {
-        SupplierDependency<RoutingProvider> provider = getRoutingProvider(context, serverName);
+        SupplierDependency<RoutingProvider> provider = this.getRoutingProvider(context, serverName);
         if (provider != null) {
             ServiceTarget target = context.getServiceTarget();
             CapabilityServiceSupport support = context.getCapabilityServiceSupport();
             SupplierDependency<Server> server = new ServiceSupplierDependency<>(UndertowUnaryRequirement.SERVER.getServiceName(context, serverName));
             SupplierDependency<String> route = new FunctionSupplierDependency<>(server, Server::getRoute);
-            Consumer<ServiceTarget> installer = new Consumer<ServiceTarget>() {
+            Consumer<ServiceTarget> installer = new Consumer<>() {
                 @Override
                 public void accept(ServiceTarget target) {
                     for (CapabilityServiceConfigurator configurator : provider.get().getServiceConfigurators(serverName, route)) {
