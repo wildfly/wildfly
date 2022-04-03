@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.MetadataValue;
-import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.event.impl.ClientListenerNotifier;
 import org.infinispan.client.hotrod.near.NearCacheService;
 import org.wildfly.clustering.infinispan.client.NearCacheFactory;
@@ -64,11 +63,6 @@ public class SessionManagerNearCacheFactory<K, V> implements NearCacheFactory<K,
     @Override
     public NearCacheService<K, V> createService(ClientListenerNotifier notifier) {
         return new CaffeineNearCacheService<>(this, notifier);
-    }
-
-    @Override
-    public NearCacheMode getMode() {
-        return (this.maxActiveSessions == null) || (this.maxActiveSessions == 0) ? NearCacheMode.DISABLED : NearCacheMode.INVALIDATED;
     }
 
     @Override
