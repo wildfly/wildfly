@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -34,7 +33,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
-import java.util.PropertyPermission;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -106,7 +104,6 @@ public class RankedAffinityTestCase extends AbstractClusteringTestCase {
                 .addClasses(SimpleServlet.class, Mutable.class)
                 .setWebXML(SimpleServlet.class.getPackage(), "web.xml");
         ClusterTestUtil.addTopologyListenerDependencies(war);
-        war.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read")), "permissions.xml");
         return war;
     }
 
