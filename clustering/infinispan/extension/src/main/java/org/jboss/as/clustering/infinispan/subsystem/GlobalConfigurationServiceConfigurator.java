@@ -69,6 +69,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.marshall.InfinispanMarshallerFactory;
+import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -175,7 +176,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         // * The 2LC stack already overrides the interceptor for distribution caches
         // * This renders Infinispan default 2LC configuration unusable as it results in a default media type of application/unknown for keys and values
         // See ISPN-12252 for details
-        builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(modules.stream().map(Module::getName).noneMatch("org.infinispan.hibernate-cache"::equals));
+        builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(marshaller.mediaType().equals(ProtoStreamMarshaller.MEDIA_TYPE));
 
         String path = InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + this.name;
         ServerEnvironment environment = this.environment.get();

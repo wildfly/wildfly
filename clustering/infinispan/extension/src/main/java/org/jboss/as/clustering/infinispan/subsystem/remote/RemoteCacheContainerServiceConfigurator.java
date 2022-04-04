@@ -34,7 +34,9 @@ import org.jboss.as.clustering.infinispan.client.RemoteCacheManager;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -43,6 +45,7 @@ import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
+import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
@@ -56,6 +59,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 public class RemoteCacheContainerServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Function<RemoteCacheManager, RemoteCacheContainer>, Supplier<RemoteCacheManager>, Consumer<RemoteCacheManager> {
 
     private final String name;
+    private final SupplierDependency<ModuleLoader> loader;
 
     private volatile SupplierDependency<Configuration> configuration;
     private volatile Registrar<String> registrar;
@@ -63,6 +67,7 @@ public class RemoteCacheContainerServiceConfigurator extends CapabilityServiceNa
     public RemoteCacheContainerServiceConfigurator(PathAddress address) {
         super(RemoteCacheContainerResourceDefinition.Capability.CONTAINER, address);
         this.name = address.getLastElement().getValue();
+        this.loader = new ServiceSupplierDependency<>(Services.JBOSS_SERVICE_MODULE_LOADER);
     }
 
     @Override
@@ -75,7 +80,7 @@ public class RemoteCacheContainerServiceConfigurator extends CapabilityServiceNa
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
-        Consumer<RemoteCacheContainer> container = this.configuration.register(builder).provides(this.getServiceName());
+        Consumer<RemoteCacheContainer> container = new CompositeDependency(this.configuration, this.loader).register(builder).provides(this.getServiceName());
         Service service = new FunctionalService<>(container, this, this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
@@ -97,6 +102,6 @@ public class RemoteCacheContainerServiceConfigurator extends CapabilityServiceNa
 
     @Override
     public RemoteCacheContainer apply(RemoteCacheManager container) {
-        return new ManagedRemoteCacheContainer(container);
+        return new ManagedRemoteCacheContainer(container, this.loader.get());
     }
 }

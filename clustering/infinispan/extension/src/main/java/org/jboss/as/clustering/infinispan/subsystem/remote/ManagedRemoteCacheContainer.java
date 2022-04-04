@@ -22,21 +22,28 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
-import javax.transaction.TransactionManager;
-
+import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
 import org.infinispan.client.hotrod.configuration.Configuration;
-import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.Marshaller;
 import org.jboss.as.clustering.infinispan.client.RemoteCacheManager;
+import org.jboss.as.clustering.infinispan.dataconversion.MediaTypeFactory;
+import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.infinispan.client.NearCacheFactory;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
+import org.wildfly.clustering.infinispan.marshalling.ByteBufferMarshallerFactory;
+import org.wildfly.clustering.infinispan.marshalling.UserMarshaller;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * Container managed {@link RemoteCacheContainer} decorator, whose lifecycle methods are no-ops.
+ * Container managed {@link RemoteCacheManager} decorator, whose lifecycle methods are no-ops.
  *
  * @author Radoslav Husar
  * @author Paul Ferraro
@@ -44,9 +51,11 @@ import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
 
     private final RemoteCacheManager manager;
+    private final Function<ClassLoader, ByteBufferMarshaller> marshallerFactory;
 
-    public ManagedRemoteCacheContainer(RemoteCacheManager container) {
-        this.manager = container;
+    public ManagedRemoteCacheContainer(RemoteCacheManager manager, ModuleLoader loader) {
+        this.manager = manager;
+        this.marshallerFactory = new ByteBufferMarshallerFactory(manager.getConfiguration().marshaller().mediaType(), loader);
     }
 
     @Override
@@ -66,22 +75,34 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
 
     @Override
     public <K, V> RemoteCache<K, V> getCache() {
-        return this.manager.getCache();
+        return this.getCache("");
     }
 
     @Override
     public <K, V> RemoteCache<K, V> getCache(String cacheName) {
-        return this.manager.getCache(cacheName);
-    }
-
-    @Override
-    public <K, V> RemoteCache<K, V> getCache(String cacheName, TransactionMode transactionMode, TransactionManager transactionManager) {
-        return this.manager.getCache(cacheName, transactionMode, transactionManager);
-    }
-
-    @Override
-    public <K, V> RemoteCache<K, V> getCache(String cacheName, boolean forceReturnValue, TransactionMode transactionMode, TransactionManager transactionManager) {
-        return this.manager.getCache(cacheName, forceReturnValue, transactionMode, transactionManager);
+        RemoteCache<K, V> cache = this.manager.getCache(cacheName);
+        if (cache == null) return null;
+        Marshaller defaultMarshaller = this.manager.getMarshaller();
+        DataFormat.Builder builder = DataFormat.builder().from(cache.getDataFormat())
+                .keyType(defaultMarshaller.mediaType())
+                .valueType(defaultMarshaller.mediaType())
+                ;
+        ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        Map.Entry<MediaType, MediaType> types = MediaTypeFactory.INSTANCE.apply(loader);
+        boolean overrideKeyMarshaller = !types.getKey().equals(MediaType.APPLICATION_OBJECT);
+        boolean overrideValueMarshaller = !types.getValue().equals(MediaType.APPLICATION_OBJECT);
+        if (overrideKeyMarshaller || overrideValueMarshaller) {
+            Marshaller marshaller = new UserMarshaller(defaultMarshaller.mediaType(), this.marshallerFactory.apply(loader));
+            if (overrideKeyMarshaller) {
+                builder.keyType(marshaller.mediaType());
+                builder.keyMarshaller(marshaller);
+            }
+            if (overrideValueMarshaller) {
+                builder.valueType(marshaller.mediaType());
+                builder.valueMarshaller(marshaller);
+            }
+        }
+        return cache.withDataFormat(builder.build());
     }
 
     @Override

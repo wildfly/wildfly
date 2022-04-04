@@ -22,16 +22,37 @@
 
 package org.jboss.as.clustering.infinispan;
 
+import static org.infinispan.util.logging.Log.CONFIG;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
+import javax.security.auth.Subject;
+
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.cache.impl.AbstractDelegatingAdvancedCache;
+import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.internal.PrivateGlobalConfiguration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.EmbeddedCacheManagerAdmin;
 import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
+import org.jboss.as.clustering.infinispan.dataconversion.MediaTypeFactory;
+import org.jboss.modules.ModuleLoader;
+import org.wildfly.clustering.infinispan.marshall.EncoderRegistry;
+import org.wildfly.clustering.infinispan.marshalling.ByteBufferMarshallerFactory;
+import org.wildfly.clustering.infinispan.marshalling.MarshalledValueTranscoder;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledKeyFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * EmbeddedCacheManager decorator that overrides the default cache semantics of a cache manager.
@@ -40,10 +61,16 @@ import org.infinispan.remoting.transport.LocalModeAddress;
 public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManager {
 
     private final EmbeddedCacheManagerAdmin administrator;
+    private final Function<ClassLoader, ByteBufferMarshaller> marshallerFactory;
 
-    public DefaultCacheContainer(EmbeddedCacheManager container) {
+    public DefaultCacheContainer(EmbeddedCacheManager container, ModuleLoader loader) {
+        this(container, new ByteBufferMarshallerFactory(container.getCacheManagerConfiguration().serialization().marshaller().mediaType(), loader));
+    }
+
+    private DefaultCacheContainer(EmbeddedCacheManager container, Function<ClassLoader, ByteBufferMarshaller> marshallerFactory) {
         super(container);
         this.administrator = new DefaultCacheContainerAdmin(this);
+        this.marshallerFactory = marshallerFactory;
     }
 
     @Override
@@ -76,22 +103,58 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
 
     @Override
     public <K, V> Cache<K, V> getCache() {
-        return this.wrap(this.cm.<K, V>getCache());
+        return this.getCache(this.cm.getCacheManagerConfiguration().defaultCacheName().orElseThrow(CONFIG::noDefaultCache));
     }
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName) {
-        return this.wrap(this.cm.<K, V>getCache(cacheName));
+        return this.getCache(cacheName, true);
     }
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, boolean createIfAbsent) {
-        Cache<K, V> cache = this.cm.<K, V>getCache(cacheName, createIfAbsent);
-        return (cache != null) ? this.wrap(cache) : null;
-    }
-
-    private <K, V> Cache<K, V> wrap(Cache<K, V> cache) {
-        return new DefaultCache<>(this, cache.getAdvancedCache());
+        Cache<K, V> cache = this.cm.getCache(cacheName, createIfAbsent);
+        if (cache == null) return null;
+        Configuration configuration = cache.getCacheConfiguration();
+        CacheMode mode = configuration.clustering().cacheMode();
+        boolean hasStore = configuration.persistence().usingStores();
+        // Bypass deployment-specific media types for local cache w/out a store or for hibernate 2LC
+        if ((!mode.isClustered() && !hasStore) || !this.cm.getCacheManagerConfiguration().module(PrivateGlobalConfiguration.class).isServerMode()) {
+            return new DefaultCache<>(this, cache);
+        }
+        ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        Map.Entry<MediaType, MediaType> types = MediaTypeFactory.INSTANCE.apply(loader);
+        MediaType keyType = types.getKey();
+        MediaType valueType = (!mode.isInvalidation() || hasStore) ? types.getValue() : MediaType.APPLICATION_OBJECT;
+        @SuppressWarnings("deprecation")
+        EncoderRegistry registry = (EncoderRegistry) this.cm.getGlobalComponentRegistry().getComponent(org.infinispan.marshall.core.EncoderRegistry.class);
+        synchronized (registry) {
+            boolean registerKeyMediaType = !registry.isConversionSupported(keyType, MediaType.APPLICATION_OBJECT);
+            boolean registerValueMediaType = !registry.isConversionSupported(valueType, MediaType.APPLICATION_OBJECT);
+            if (registerKeyMediaType || registerValueMediaType) {
+                ByteBufferMarshaller marshaller = this.marshallerFactory.apply(loader);
+                if (registerKeyMediaType) {
+                    MarshalledValueFactory<ByteBufferMarshaller> keyFactory = new ByteBufferMarshalledKeyFactory(marshaller);
+                    registry.registerTranscoder(new MarshalledValueTranscoder<>(keyType, keyFactory));
+                }
+                if (registerValueMediaType) {
+                    MarshalledValueFactory<ByteBufferMarshaller> valueFactory = new ByteBufferMarshalledValueFactory(marshaller);
+                    registry.registerTranscoder(new MarshalledValueTranscoder<>(valueType, valueFactory));
+                }
+            }
+            return new DefaultCache<>(this, cache.getAdvancedCache().withMediaType(keyType, valueType)) {
+                @Override
+                public void stop() {
+                    super.stop();
+                    if (registerKeyMediaType) {
+                        registry.unregisterTranscoder(keyType);
+                    }
+                    if (registerValueMediaType) {
+                        registry.unregisterTranscoder(valueType);
+                    }
+                }
+            };
+        }
     }
 
     @Override
@@ -111,8 +174,8 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     }
 
     @Override
-    public void undefineConfiguration(String configurationName) {
-        super.undefineConfiguration(configurationName);
+    public EmbeddedCacheManager withSubject(Subject subject) {
+        return new DefaultCacheContainer(this.cm.withSubject(subject), this.marshallerFactory);
     }
 
     @Override
@@ -129,5 +192,41 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     @Override
     public String toString() {
         return this.getCacheManagerConfiguration().cacheManagerName();
+    }
+
+    private static class DefaultCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
+        private final EmbeddedCacheManager manager;
+
+        DefaultCache(EmbeddedCacheManager manager, Cache<K, V> cache) {
+            this(manager, cache.getAdvancedCache());
+        }
+
+        DefaultCache(EmbeddedCacheManager manager, AdvancedCache<K, V> cache) {
+            super(cache);
+            this.manager = manager;
+        }
+
+        @Override
+        public EmbeddedCacheManager getCacheManager() {
+            return this.manager;
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (!(object instanceof Cache)) return false;
+            Cache<?, ?> cache = (Cache<?, ?>) object;
+            return this.manager.equals(cache.getCacheManager()) && this.getName().equals(cache.getName());
+        }
+
+        @Override
+        public int hashCode() {
+            return this.cache.hashCode();
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public AdvancedCache rewrap(AdvancedCache delegate) {
+            return new DefaultCache<>(this.manager, delegate);
+        }
     }
 }

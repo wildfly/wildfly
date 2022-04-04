@@ -56,7 +56,9 @@ import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -83,6 +85,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     private final PathAddress address;
     private final String name;
     private final SupplierDependency<GlobalConfiguration> configuration;
+    private final SupplierDependency<ModuleLoader> loader;
 
     private volatile ExecutorService executor;
     private volatile Registrar<String> registrar;
@@ -93,12 +96,13 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         this.address = address;
         this.name = address.getLastElement().getValue();
         this.configuration = new ServiceSupplierDependency<>(CacheContainerResourceDefinition.Capability.CONFIGURATION.getServiceName(address));
+        this.loader = new ServiceSupplierDependency<>(Services.JBOSS_SERVICE_MODULE_LOADER);
         this.registry = registry;
     }
 
     @Override
     public EmbeddedCacheManager apply(EmbeddedCacheManager manager) {
-        return new DefaultCacheContainer(manager);
+        return new DefaultCacheContainer(manager, this.loader.get());
     }
 
     @Override
@@ -147,7 +151,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
-        Consumer<EmbeddedCacheManager> container = new CompositeDependency(this.configuration).register(builder).provides(this.names);
+        Consumer<EmbeddedCacheManager> container = new CompositeDependency(this.configuration, this.loader).register(builder).provides(this.names);
         Service service = new FunctionalService<>(container, this, this, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
     }
