@@ -29,6 +29,8 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
+import org.wildfly.common.function.ThreadLocalStack;
+
 /**
  * Close the non tx invocations on transaction scoped entity manager
  *
