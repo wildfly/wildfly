@@ -20,11 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem.remote;
+package org.jboss.as.clustering.infinispan.persistence.hotrod;
 
 
-import static org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreConfiguration.CACHE_CONFIGURATION;
-import static org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreConfiguration.REMOTE_CACHE_CONTAINER;
+import static org.jboss.as.clustering.infinispan.persistence.hotrod.HotRodStoreConfiguration.CACHE_CONFIGURATION;
+import static org.jboss.as.clustering.infinispan.persistence.hotrod.HotRodStoreConfiguration.REMOTE_CACHE_CONTAINER;
 
 import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.configuration.cache.AbstractStoreConfiguration;

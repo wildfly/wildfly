@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,33 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan;
+package org.jboss.as.clustering.infinispan.tx;
 
-import javax.sql.DataSource;
+import org.infinispan.transaction.lookup.TransactionSynchronizationRegistryLookup;
 
-import org.infinispan.commons.configuration.BuiltBy;
-import org.infinispan.persistence.jdbc.common.configuration.ConnectionFactoryConfiguration;
-import org.infinispan.persistence.jdbc.common.connectionfactory.ConnectionFactory;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 /**
- * Configuration for {@link DataSourceConnectionFactory}.
- * @author Paul Ferraro
+ * Passes the TransactionSynchronizationRegistry to Infinispan.
+ *
+ * @author Scott Marlow
  */
-@BuiltBy(DataSourceConnectionFactoryConfigurationBuilder.class)
-public class DataSourceConnectionFactoryConfiguration implements ConnectionFactoryConfiguration {
+public class TransactionSynchronizationRegistryProvider implements TransactionSynchronizationRegistryLookup {
 
-    private final DataSource dataSource;
+    private final TransactionSynchronizationRegistry tsr;
 
-    public DataSourceConnectionFactoryConfiguration(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    public DataSource getDataSource() {
-        return this.dataSource;
+    public TransactionSynchronizationRegistryProvider(TransactionSynchronizationRegistry tsr) {
+        this.tsr = tsr;
     }
 
     @Override
-    public Class<? extends ConnectionFactory> connectionFactoryClass() {
-        return DataSourceConnectionFactory.class;
+    public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
+        return this.tsr;
     }
 }

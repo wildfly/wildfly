@@ -20,29 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan;
+package org.jboss.as.clustering.infinispan.jmx;
 
-import javax.transaction.TransactionManager;
+import java.util.Properties;
 
-import org.infinispan.commons.tx.lookup.TransactionManagerLookup;
+import javax.management.MBeanServer;
+
+import org.infinispan.commons.jmx.MBeanServerLookup;
 
 /**
  * @author Paul Ferraro
  */
-public class TransactionManagerProvider implements TransactionManagerLookup {
+public class MBeanServerProvider implements MBeanServerLookup {
 
-    private final TransactionManager tm;
+    private final MBeanServer server;
 
-    public TransactionManagerProvider(TransactionManager tm) {
-        this.tm = tm;
+    public MBeanServerProvider(MBeanServer server) {
+        this.server = server;
     }
 
     /**
      * {@inheritDoc}
-     * @see org.infinispan.transaction.lookup.TransactionManagerLookup#getTransactionManager()
+     * @see org.infinispan.jmx.MBeanServerLookup#getMBeanServer(java.util.Properties)
      */
     @Override
-    public TransactionManager getTransactionManager() {
-        return this.tm;
+    public MBeanServer getMBeanServer(Properties properties) {
+        return this.server;
     }
 }

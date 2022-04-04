@@ -21,7 +21,7 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.infinispan.logging.InfinispanLogger.ROOT_LOGGER;
 
 import java.util.EnumSet;
 import java.util.LinkedHashMap;

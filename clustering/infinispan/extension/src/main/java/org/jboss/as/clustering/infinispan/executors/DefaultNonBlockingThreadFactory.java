@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,31 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan;
+package org.jboss.as.clustering.infinispan.executors;
 
-import java.util.Properties;
+import java.util.concurrent.ThreadFactory;
 
-import javax.management.MBeanServer;
-
-import org.infinispan.commons.jmx.MBeanServerLookup;
+import org.infinispan.commons.executors.NonBlockingResource;
+import org.wildfly.clustering.context.DefaultThreadFactory;
 
 /**
+ * Thread factory for non-blocking threads.
  * @author Paul Ferraro
  */
-public class MBeanServerProvider implements MBeanServerLookup {
+public class DefaultNonBlockingThreadFactory extends DefaultThreadFactory implements NonBlockingResource {
 
-    private final MBeanServer server;
-
-    public MBeanServerProvider(MBeanServer server) {
-        this.server = server;
+    public DefaultNonBlockingThreadFactory(Class<?> targetClass) {
+        super(targetClass);
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.infinispan.jmx.MBeanServerLookup#getMBeanServer(java.util.Properties)
-     */
-    @Override
-    public MBeanServer getMBeanServer(Properties properties) {
-        return this.server;
+    public DefaultNonBlockingThreadFactory(ThreadFactory factory) {
+        super(factory);
+    }
+
+    public DefaultNonBlockingThreadFactory(ThreadFactory factory, Class<?> targetClass) {
+        super(factory, targetClass);
     }
 }

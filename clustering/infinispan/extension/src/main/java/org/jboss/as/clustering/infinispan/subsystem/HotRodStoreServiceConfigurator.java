@@ -26,8 +26,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.HotRodStoreResourceDefinition.Attribute.CACHE_CONFIGURATION;
 import static org.jboss.as.clustering.infinispan.subsystem.HotRodStoreResourceDefinition.Attribute.REMOTE_CACHE_CONTAINER;
 
-import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreConfiguration;
-import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreConfigurationBuilder;
+import org.jboss.as.clustering.infinispan.persistence.hotrod.HotRodStoreConfiguration;
+import org.jboss.as.clustering.infinispan.persistence.hotrod.HotRodStoreConfigurationBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;

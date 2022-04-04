@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem.remote;
+package org.jboss.as.clustering.infinispan.client;
 
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +32,6 @@ import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.Marshaller;
-import org.jboss.as.clustering.infinispan.client.RemoteCacheManager;
 import org.jboss.as.clustering.infinispan.dataconversion.MediaTypeFactory;
 import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.infinispan.client.NearCacheFactory;

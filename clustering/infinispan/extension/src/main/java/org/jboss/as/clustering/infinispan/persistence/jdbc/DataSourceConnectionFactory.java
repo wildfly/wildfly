@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan;
+package org.jboss.as.clustering.infinispan.persistence.jdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -30,6 +30,7 @@ import javax.sql.DataSource;
 import org.infinispan.persistence.jdbc.common.configuration.ConnectionFactoryConfiguration;
 import org.infinispan.persistence.jdbc.common.connectionfactory.ConnectionFactory;
 import org.infinispan.persistence.spi.PersistenceException;
+import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 
 /**
  * A connection factory using an injected {@link DataSource}.

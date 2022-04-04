@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,28 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan;
+package org.jboss.as.clustering.infinispan.persistence.jdbc;
 
-import java.util.concurrent.ThreadFactory;
+import javax.sql.DataSource;
 
-import org.infinispan.commons.executors.NonBlockingResource;
-import org.wildfly.clustering.context.DefaultThreadFactory;
+import org.infinispan.commons.configuration.BuiltBy;
+import org.infinispan.persistence.jdbc.common.configuration.ConnectionFactoryConfiguration;
+import org.infinispan.persistence.jdbc.common.connectionfactory.ConnectionFactory;
 
 /**
- * Thread factory for non-blocking threads.
+ * Configuration for {@link DataSourceConnectionFactory}.
  * @author Paul Ferraro
  */
-public class DefaultNonBlockingThreadFactory extends DefaultThreadFactory implements NonBlockingResource {
+@BuiltBy(DataSourceConnectionFactoryConfigurationBuilder.class)
+public class DataSourceConnectionFactoryConfiguration implements ConnectionFactoryConfiguration {
 
-    public DefaultNonBlockingThreadFactory(Class<?> targetClass) {
-        super(targetClass);
+    private final DataSource dataSource;
+
+    public DataSourceConnectionFactoryConfiguration(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
-    public DefaultNonBlockingThreadFactory(ThreadFactory factory) {
-        super(factory);
+    public DataSource getDataSource() {
+        return this.dataSource;
     }
 
-    public DefaultNonBlockingThreadFactory(ThreadFactory factory, Class<?> targetClass) {
-        super(factory, targetClass);
+    @Override
+    public Class<? extends ConnectionFactory> connectionFactoryClass() {
+        return DataSourceConnectionFactory.class;
     }
 }

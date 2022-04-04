@@ -20,27 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan;
+package org.jboss.as.clustering.infinispan.tx;
 
-import org.infinispan.transaction.lookup.TransactionSynchronizationRegistryLookup;
+import javax.transaction.TransactionManager;
 
-import javax.transaction.TransactionSynchronizationRegistry;
+import org.infinispan.commons.tx.lookup.TransactionManagerLookup;
 
 /**
- * Passes the TransactionSynchronizationRegistry to Infinispan.
- *
- * @author Scott Marlow
+ * @author Paul Ferraro
  */
-public class TransactionSynchronizationRegistryProvider implements TransactionSynchronizationRegistryLookup {
+public class TransactionManagerProvider implements TransactionManagerLookup {
 
-    private final TransactionSynchronizationRegistry tsr;
+    private final TransactionManager tm;
 
-    public TransactionSynchronizationRegistryProvider(TransactionSynchronizationRegistry tsr) {
-        this.tsr = tsr;
+    public TransactionManagerProvider(TransactionManager tm) {
+        this.tm = tm;
     }
 
+    /**
+     * {@inheritDoc}
+     * @see org.infinispan.transaction.lookup.TransactionManagerLookup#getTransactionManager()
+     */
     @Override
-    public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
-        return this.tsr;
+    public TransactionManager getTransactionManager() {
+        return this.tm;
     }
 }
