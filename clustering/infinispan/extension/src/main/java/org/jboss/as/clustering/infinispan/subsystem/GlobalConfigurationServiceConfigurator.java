@@ -170,14 +170,12 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
                 .enabled(this.server != null)
                 ;
 
+        // Disable triangle algorithm - we optimize for originator as primary owner
         // Do not enable server-mode for the Hibernate 2LC use case:
         // * The 2LC stack already overrides the interceptor for distribution caches
         // * This renders Infinispan default 2LC configuration unusable as it results in a default media type of application/unknown for keys and values
         // See ISPN-12252 for details
-        if (modules.stream().map(Module::getName).noneMatch("org.infinispan.hibernate-cache"::equals)) {
-            // Disable triangle algorithm - we optimize for originator as primary owner
-            builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(true);
-        }
+        builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(modules.stream().map(Module::getName).noneMatch("org.infinispan.hibernate-cache"::equals));
 
         String path = InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + this.name;
         ServerEnvironment environment = this.environment.get();
