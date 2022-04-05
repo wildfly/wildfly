@@ -40,6 +40,7 @@ public class ManagedEmbeddedCacheManagerProvider implements EmbeddedCacheManager
     public static final String DEFAULT_CACHE_CONTAINER = "hibernate";
     public static final String SHARED = "hibernate.cache.infinispan.shared";
     public static final String DEFAULT_SHARED = "true";
+    public static final String STATISTICS = "hibernate.cache.infinispan.statistics";
 
     @Override
     public EmbeddedCacheManager getEmbeddedCacheManager(Properties properties) {
@@ -63,7 +64,11 @@ public class ManagedEmbeddedCacheManagerProvider implements EmbeddedCacheManager
         }
 
         try {
-            return new JipiJapaCacheManager(Notification.startCache(Classification.INFINISPAN, settings));
+            EmbeddedCacheManager manager = new JipiJapaCacheManager(Notification.startCache(Classification.INFINISPAN, settings));
+            if (manager.getCacheManagerConfiguration().statistics()) {
+                settings.setProperty(STATISTICS, Boolean.TRUE.toString());
+            }
+            return manager;
         } catch (CacheException e) {
             throw e;
         } catch (Exception e) {
