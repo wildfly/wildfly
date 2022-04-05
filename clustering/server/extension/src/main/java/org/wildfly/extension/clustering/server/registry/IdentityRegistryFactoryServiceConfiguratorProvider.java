@@ -28,10 +28,10 @@ import org.jboss.as.clustering.controller.IdentityCapabilityServiceConfigurator;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.server.service.ClusteringCacheRequirement;
 import org.wildfly.clustering.server.service.IdentityCacheServiceConfiguratorProvider;
 import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.common.iteration.CompositeIterable;
 import org.wildfly.extension.clustering.server.IdentityCacheRequirementServiceConfiguratorProvider;
 
 /**
