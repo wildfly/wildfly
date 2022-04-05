@@ -668,14 +668,17 @@ public abstract class AbstractResourceAdapterDeploymentService {
             if (securityMetadata == null)
                 return null;
             final String securityDomain = securityMetadata.resolveSecurityDomain();
-            if (securityDomain == null || securityDomain.trim().equals("")) {
-                return null;
-            } else {
+            if (securityMetadata instanceof org.jboss.as.connector.metadata.api.common.SecurityMetadata &&
+                    ((org.jboss.as.connector.metadata.api.common.SecurityMetadata)securityMetadata).isElytronEnabled()) {
                 try {
                     return new ElytronSubjectFactory(null, new URI(jndiName));
                 } catch (URISyntaxException e) {
                     throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);
                 }
+            } else if (securityDomain == null || securityDomain.trim().equals("")) {
+                return null;
+            } else {
+                throw ConnectorLogger.ROOT_LOGGER.legacySecurityNotAvailable();
             }
         }
 
