@@ -20,4 +20,6 @@ include::management-tasks/Configuration_file_history.adoc[]
 
 include::management-tasks/Configuration_file_git_history.adoc[]
 
+include::management-tasks/YAML_Configuration_file.adoc[]
+
 :leveloffset: -1
