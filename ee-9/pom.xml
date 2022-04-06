@@ -92,7 +92,7 @@
         <version.io.smallrye.open-api>3.0.0-RC1</version.io.smallrye.open-api>
         <version.io.smallrye.smallrye-common>2.0.0-RC2</version.io.smallrye.smallrye-common>
         <version.io.smallrye.smallrye-config>3.0.0-RC1</version.io.smallrye.smallrye-config>
-        <version.io.smallrye.smallrye-fault-tolerance>6.0.0-RC1</version.io.smallrye.smallrye-fault-tolerance>
+        <version.io.smallrye.smallrye-fault-tolerance>6.0.0-RC2</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.0.0-RC1</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-metrics>4.0.0-RC1</version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.smallrye-opentracing>3.0.0-RC1</version.io.smallrye.smallrye-opentracing>
