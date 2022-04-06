@@ -36,6 +36,7 @@
         <module name="org.infinispan.protostream"/>
         <module name="org.jboss.ejb-client"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
+        <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.common"/>
     </dependencies>
