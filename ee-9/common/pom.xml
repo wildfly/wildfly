@@ -351,6 +351,17 @@
 
         <dependency>
             <groupId>org.jboss</groupId>
+            <artifactId>jboss-iiop-client-jakarta</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client-jakarta</artifactId>
             <exclusions>
                 <exclusion>
