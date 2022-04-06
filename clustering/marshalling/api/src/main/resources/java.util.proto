@@ -361,3 +361,49 @@ message UUID {
 	optional	sfixed64	high	= 1;
 	optional	sfixed64	low	= 2;
 }
+
+// Unmodifiable collections
+
+/**
+ * @TypeId(54)
+ */
+message List12 {
+	repeated	bytes	element	 = 1;
+}
+
+/**
+ * @TypeId(55)
+ */
+message ListN {
+	repeated	bytes	element	 = 1;
+}
+
+/**
+ * @TypeId(56)
+ */
+message Map1 {
+	optional	bytes	key	 = 1;
+	optional	bytes	value	 = 2;
+}
+
+/**
+ * @TypeId(57)
+ */
+message MapN {
+	repeated	bytes	key	 = 1;
+	repeated	bytes	value	 = 2;
+}
+
+/**
+ * @TypeId(58)
+ */
+message Set12 {
+	repeated	bytes	element	 = 1;
+}
+
+/**
+ * @TypeId(59)
+ */
+message SetN {
+	repeated	bytes	element	 = 1;
+}
