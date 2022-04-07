@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.manager;
 
 import static org.infinispan.util.logging.Log.CONFIG;
 
+import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -155,6 +156,30 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
                 }
             };
         }
+    }
+
+    @Override
+    public Configuration defineConfiguration(String cacheName, Configuration configuration) {
+        EmbeddedCacheManager manager = this.cm;
+        PrivilegedAction<Configuration> action = new PrivilegedAction<>() {
+            @Override
+            public Configuration run() {
+                return manager.defineConfiguration(cacheName, configuration);
+            }
+        };
+        return WildFlySecurityManager.doUnchecked(action);
+    }
+
+    @Override
+    public Configuration defineConfiguration(String cacheName, String templateCacheName, Configuration configurationOverride) {
+        EmbeddedCacheManager manager = this.cm;
+        PrivilegedAction<Configuration> action = new PrivilegedAction<>() {
+            @Override
+            public Configuration run() {
+                return manager.defineConfiguration(cacheName, templateCacheName, configurationOverride);
+            }
+        };
+        return WildFlySecurityManager.doUnchecked(action);
     }
 
     @Override
