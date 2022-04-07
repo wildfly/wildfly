@@ -1,0 +1,51 @@
+<subsystem xmlns="urn:jboss:domain:picketlink-federation:2.0">
+    <federation name="federation-without-signatures">
+        <saml token-timeout="4000" clock-skew="0"/>
+        <identity-provider name="idp.war" security-domain="idp" support-signatures="false" url="http://localhost:8080/idp/">
+            <trust>
+                <trust-domain name="localhost"/>
+                <trust-domain name="mycompany.com2"/>
+                <trust-domain name="mycompany.com3"/>
+                <trust-domain name="mycompany.com4"/>
+            </trust>
+            <attribute-manager name="attrib1" class-name="org.picketlink.TestManager"/>
+        </identity-provider>
+        <service-providers>
+            <service-provider name="sales-redirect.war"
+                              post-binding="false" security-domain="sp"
+                              url="http://localhost:8080/sales-redirect/" support-signatures="false"/>
+            <service-provider name="sales-post.war"
+                              post-binding="true" security-domain="sp"
+                              url="http://localhost:8080/sales-post/" support-signatures="false"/>
+            <service-provider name="fake.war" post-binding="true"
+                              security-domain="sp" url="http://localhost:8080/fake/"
+                              support-signatures="false"/>
+        </service-providers>
+    </federation>
+    <federation name="federation-with-signatures">
+        <saml token-timeout="4000" clock-skew="0"/>
+        <key-store password="changeit" sign-key-alias="localhost" sign-key-password="changeit" file="jbid_test_keystore.jks" relative-to="jboss.server.data.dir">
+            <keys>
+                <key name="servercert" host="localhost" />
+                <key name="keyAlias" host="jboss.org,127.0.0.1" />
+            </keys>
+        </key-store>
+        <identity-provider name="idp-sig.war"
+                           security-domain="idp" support-signatures="true"
+                           url="http://localhost:8080/idp-sig/" strict-post-binding="false">
+            <trust>
+                <trust-domain name="localhost" />
+                <trust-domain name="127.0.0.1" />
+            </trust>
+        </identity-provider>
+        <service-providers>
+            <service-provider name="sales-post-sig.war"
+                              post-binding="true" security-domain="sp"
+                              url="http://localhost:8080/sales-post-sig/" support-signatures="true"/>
+            <service-provider name="sales-redirect-sig.war"
+                              post-binding="false" security-domain="sp"
+                              url="http://localhost:8080/sales-redirect-sig/" support-signatures="true"
+                              strict-post-binding="false"/>
+        </service-providers>
+    </federation>
+</subsystem>
