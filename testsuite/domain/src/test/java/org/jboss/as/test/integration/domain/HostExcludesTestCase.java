@@ -81,9 +81,9 @@ import org.junit.Test;
  */
 public class HostExcludesTestCase extends BuildConfigurationTestBase {
 
-    private static DomainLifecycleUtil primaryUtils;
-    private static DomainClient primaryClient;
-    private static WildFlyManagedConfiguration primaryConfig;
+    private static DomainLifecycleUtil masterUtils;
+    private static DomainClient masterClient;
+    private static WildFlyManagedConfiguration masterConfig;
     private static final  BiFunction<Set<String>, Set<String>, Set<String>> diff = (a, b) -> a.stream().filter(e -> !b.contains(e)).collect(Collectors.toSet());
     private final boolean isEeGalleonPack = "ee-".equals(System.getProperty("testsuite.default.build.project.prefix"));
 
@@ -165,7 +165,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 // This extension was added in WF17, however we add it here because WF16/WF17/WF18 use the same management
                 // kernel API, which is 10.0.0. Adding a host-exclusion for this extension on WF16 could affect to WF17/WF18
                 // We decided to add the host-exclusion only for WF15 and below. It means potentially a DC running on WF17
-                // with an WF16 as secondary will not exclude this extension. It is not a problem at all since mixed domains in
+                // with an WF16 as slave will not exclude this extension. It is not a problem at all since mixed domains in
                 // WildFly is not supported.
                 "org.wildfly.extension.clustering.web"
         )),
@@ -295,16 +295,16 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
 
     @BeforeClass
     public static void setUp() throws IOException {
-        primaryConfig = createConfiguration("domain.xml", "host-primary.xml", HostExcludesTestCase.class.getSimpleName());
-        primaryUtils = new DomainLifecycleUtil(primaryConfig);
-        primaryUtils.start();
-        primaryClient = primaryUtils.getDomainClient();
+        masterConfig = createConfiguration("domain.xml", "host-master.xml", HostExcludesTestCase.class.getSimpleName());
+        masterUtils = new DomainLifecycleUtil(masterConfig);
+        masterUtils.start();
+        masterClient = masterUtils.getDomainClient();
     }
 
     @AfterClass
     public static void tearDown() {
-        if (primaryUtils != null) {
-            primaryUtils.stop();
+        if (masterUtils != null) {
+            masterUtils.stop();
         }
     }
 

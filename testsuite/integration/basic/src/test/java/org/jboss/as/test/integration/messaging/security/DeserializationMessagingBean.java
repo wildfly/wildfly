@@ -57,14 +57,14 @@ import javax.naming.NamingException;
 @JMSConnectionFactoryDefinitions(
         value = {
                 @JMSConnectionFactoryDefinition(
-                        name = "java:comp/env/myAllowListCF",
+                        name = "java:comp/env/myBlackListCF",
                         interfaceName = "javax.jms.QueueConnectionFactory",
                         properties = {
                                 "connectors=${org.jboss.messaging.default-connector:in-vm}",
                                 "deserialization-black-list=java.util.UUID"
                         }),
                 @JMSConnectionFactoryDefinition(
-                        name = "java:comp/env/myBlocklistCF",
+                        name = "java:comp/env/myWhiteListCF",
                         interfaceName = "javax.jms.QueueConnectionFactory",
                         properties = {
                                 "connectors=${org.jboss.messaging.default-connector:in-vm}",
@@ -76,9 +76,9 @@ import javax.naming.NamingException;
 @Stateless
 public class DeserializationMessagingBean {
 
-    public static final String BLACK_LIST_CF_LOOKUP = "java:comp/env/myAllowListCF";
-    public static final String WHITE_LIST_CF_LOOKUP = "java:comp/env/myBlocklistCF";
-    public static final String BLACK_LIST_REGULAR_CF_LOOKUP = "java:/jms/myAllowListCF";
+    public static final String BLACK_LIST_CF_LOOKUP = "java:comp/env/myBlackListCF";
+    public static final String WHITE_LIST_CF_LOOKUP = "java:comp/env/myWhiteListCF";
+    public static final String BLACK_LIST_REGULAR_CF_LOOKUP = "java:/jms/myBlackListCF";
     static final Logger log = Logger.getLogger(DeserializationMessagingBean.class);
 
     @Resource(lookup = "java:comp/env/myQueue")

@@ -70,7 +70,7 @@ public class KeycloakConfiguration {
                 .param("password", KeycloakContainer.ADMIN_PASSWORD)
                 .param("client_id", "admin-cli")
                 .when()
-                .post(authServerUrl + "/realms/primary/protocol/openid-connect/token")
+                .post(authServerUrl + "/realms/master/protocol/openid-connect/token")
                 .as(AccessTokenResponse.class).getToken();
     }
 

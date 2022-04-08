@@ -76,7 +76,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
         this.legacyConfig = legacyConfig;
         this.withMasterServers = withMasterServers;
         this.profile = profile;
-        configureSecondaryJavaHome();
+        configureSlaveJavaHome();
     }
 
     private static WildFlyManagedConfiguration configWithDisabledAsserts(String jbossHome){
@@ -126,11 +126,11 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
         if (!legacyConfig) {
             // The non-legacy config tests assume host=slave/server=server-one is auto-start and running
-            startSecondaryServer();
+            startSlaveServer();
         }
     }
 
-    private void startSecondaryServer() {
+    private void startSlaveServer() {
         DomainClient client = getDomainMasterLifecycleUtil().getDomainClient();
         PathElement hostElement = PathElement.pathElement("host", "slave");
 
@@ -163,10 +163,10 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             }
         } while (System.currentTimeMillis() < expired);
 
-        Assert.fail("Secondary server-one did not start within " + timeout + " ms");
+        Assert.fail("Slave server-one did not start within " + timeout + " ms");
     }
 
-    private void configureSecondaryJavaHome() {
+    private void configureSlaveJavaHome() {
         // Look for properties pointing to a java home to use for the legacy host.
         // Look for homes for the max JVM version the host can handle, working back to the min it can handle.
         // We could start with the oldest and work forward, but that would likely result in all versions testing
@@ -178,7 +178,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
         }
 
         if (javaHome != null) {
-            WildFlyManagedConfiguration  cfg = getDomainSecondaryConfiguration();
+            WildFlyManagedConfiguration  cfg = getDomainSlaveConfiguration();
             cfg.setJavaHome(javaHome);
             cfg.setControllerJavaHome(javaHome);
             System.out.println("Set legacy host controller to use " + javaHome + " as JAVA_HOME");
@@ -214,7 +214,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             masterUtil.awaitHostController(System.currentTimeMillis());
 
             //Start the slaves
-            DomainLifecycleUtil slaveUtil = getDomainSecondaryLifecycleUtil();
+            DomainLifecycleUtil slaveUtil = getDomainSlaveLifecycleUtil();
             if (slaveUtil != null) {
                 //slaveUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
                 slaveUtil.start();

@@ -112,7 +112,7 @@ public class JVMServerPropertiesTestCase {
 
         testSupport = DomainTestSupport.create(configuration);
 
-        masterLifecycleUtil = testSupport.getDomainPrimaryLifecycleUtil();
+        masterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
 
         // Prepares the application deployment file
         WebArchive deployment = createDeployment();

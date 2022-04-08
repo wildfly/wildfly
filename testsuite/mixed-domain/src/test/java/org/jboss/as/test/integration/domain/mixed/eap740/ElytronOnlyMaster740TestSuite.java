@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.domain.mixed.eap740;
 
-import org.jboss.as.test.integration.domain.mixed.ElytronOnlyPrimaryTestSuite;
+import org.jboss.as.test.integration.domain.mixed.ElytronOnlyMasterTestSuite;
 import org.jboss.as.test.integration.domain.mixed.Version;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -32,12 +32,12 @@ import org.junit.runners.Suite;
  * @author Martin Simka
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses(value= {ElytronOnlyPrimarySmoke740TestCase.class})
+@Suite.SuiteClasses(value= {ElytronOnlyMasterSmoke740TestCase.class})
 @Version(Version.AsVersion.EAP_7_4_0)
-public class ElytronOnlyPrimary740TestSuite extends ElytronOnlyPrimaryTestSuite {
+public class ElytronOnlyMaster740TestSuite extends ElytronOnlyMasterTestSuite {
 
     @BeforeClass
     public static void initializeDomain() {
-        ElytronOnlyPrimaryTestSuite.getSupport(ElytronOnlyPrimary740TestSuite.class);
+        ElytronOnlyMasterTestSuite.getSupport(ElytronOnlyMaster740TestSuite.class);
     }
 }

@@ -23,7 +23,7 @@
 <host xmlns="urn:jboss:domain:19.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:domain:10.0 wildfly-config_10_0.xsd"
-      name="primary">
+      name="master">
 
     <paths>
         <path name="domainTestPath" path="/tmp" />
@@ -80,10 +80,10 @@
 
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.test.host.primary.address}"/>
+            <inet-address value="${jboss.test.host.master.address}"/>
         </interface>
         <interface name="public">
-            <inet-address value="${jboss.test.host.primary.address}"/>
+            <inet-address value="${jboss.test.host.master.address}"/>
         </interface>
     </interfaces>
 
@@ -109,6 +109,6 @@
     </jvms>
 
     <servers>
-        <server name="primary-a" group="server-group-a"/>
+        <server name="master-a" group="server-group-a"/>
     </servers>
 </host>

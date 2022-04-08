@@ -85,12 +85,12 @@ public class MessagingTestCase extends TestBase {
         assertContains(errorLog, "remote-acceptor");
         assertContains(errorLog, "remote-connector");
         assertContains(errorLog, "replication-colocated");
-        assertContains(errorLog, "replication-primary");
-        assertContains(errorLog, "replication-secondary");
+        assertContains(errorLog, "replication-master");
+        assertContains(errorLog, "replication-slave");
         assertContains(errorLog, "security-setting");
         assertContains(errorLog, "shared-store-colocated");
-        assertContains(errorLog, "shared-store-primary");
-        assertContains(errorLog, "shared-store-secondary");
+        assertContains(errorLog, "shared-store-master");
+        assertContains(errorLog, "shared-store-slave");
     }
 
     /*
@@ -208,12 +208,12 @@ public class MessagingTestCase extends TestBase {
         assertContains(errorLog, "connector-service          remote-acceptor");
         assertContains(errorLog, "divert                     remote-connector");
         assertContains(errorLog, "grouping-handler           replication-colocated");
-        assertContains(errorLog, "http-acceptor              replication-primary");
-        assertContains(errorLog, "http-connector             replication-secondary");
+        assertContains(errorLog, "http-acceptor              replication-master");
+        assertContains(errorLog, "http-connector             replication-slave");
         assertContains(errorLog, "in-vm-acceptor             security-setting");
         assertContains(errorLog, "in-vm-connector            shared-store-colocated");
-        assertContains(errorLog, "jgroups-broadcast-group    shared-store-primary");
-        assertContains(errorLog, "jgroups-discovery-group    shared-store-secondary");
+        assertContains(errorLog, "jgroups-broadcast-group    shared-store-master");
+        assertContains(errorLog, "jgroups-discovery-group    shared-store-slave");
         assertContains(errorLog, "jms-queue                  socket-broadcast-group");
         assertContains(errorLog, "jms-topic                  socket-discovery-group");
         assertContains(errorLog, "'security' is allowed in elements:");

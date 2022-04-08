@@ -78,7 +78,7 @@ public class DomainAdjuster {
     private final String OTHER_SERVER_GROUP = "other-server-group";
     private static final Set<String> UNUSED_SERVER_GROUP_ATTRIBUTES = new HashSet<>(Arrays.asList("management-subsystem-endpoint", "deployment", "deployment-overlay", "jvm", "system-property"));
 
-    static void adjustForVersion(final DomainClient client, final Version.AsVersion asVersion, final String profile, final boolean withPrimaryServers) throws Exception {
+    static void adjustForVersion(final DomainClient client, final Version.AsVersion asVersion, final String profile, final boolean withMasterServers) throws Exception {
 
         final DomainAdjuster adjuster;
         switch (asVersion) {
@@ -88,10 +88,10 @@ public class DomainAdjuster {
             default:
                 adjuster = new DomainAdjuster();
         }
-        adjuster.adjust(client, profile, withPrimaryServers);
+        adjuster.adjust(client, profile, withMasterServers);
     }
 
-    final void adjust(final DomainClient client, String profile, boolean withPrimaryServers) throws Exception {
+    final void adjust(final DomainClient client, String profile, boolean withMasterServers) throws Exception {
         //Trim it down so we have only
         //profile=full-ha,
         //the main-server-group and other-server-group
@@ -125,8 +125,8 @@ public class DomainAdjuster {
         removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "opentelemetry"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.opentelemetry"));
 
         //Version specific changes
-        final List<ModelNode> adjustments = adjustForVersion(client, PathAddress.pathAddress(PROFILE, profile), withPrimaryServers);
-        if (withPrimaryServers) {
+        final List<ModelNode> adjustments = adjustForVersion(client, PathAddress.pathAddress(PROFILE, profile), withMasterServers);
+        if (withMasterServers) {
             adjustments.addAll(reconfigureServers());
         }
 
@@ -153,11 +153,11 @@ public class DomainAdjuster {
      *
      * @param client           The domain client.
      * @param profileAddress   The address of the profile that is being used.
-     * @param withPrimaryServer Whether the Dc has managed servers.
+     * @param withMasterServer Whether the Dc has managed servers.
      * @return The List of Operations that need to be executed to adjust the domain.
      * @throws Exception
      */
-    protected List<ModelNode> adjustForVersion(final DomainClient client, final PathAddress profileAddress, final boolean withPrimaryServer) throws Exception {
+    protected List<ModelNode> adjustForVersion(final DomainClient client, final PathAddress profileAddress, final boolean withMasterServer) throws Exception {
         return Collections.emptyList();
     }
 

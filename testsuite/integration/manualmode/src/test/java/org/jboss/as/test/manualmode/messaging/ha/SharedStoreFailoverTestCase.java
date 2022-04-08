@@ -51,8 +51,8 @@ import org.junit.BeforeClass;
 public class SharedStoreFailoverTestCase extends FailoverTestCase {
 
     private static final File SHARED_STORE_DIR = new File(System.getProperty("java.io.tmpdir"), "activemq");
-    private static final ModelNode primary_STORE_ADDRESS = PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=shared-store-primary").toModelNode();
-    private static final ModelNode SLAVE_STORE_ADDRESS = PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=shared-store-secondary").toModelNode();
+    private static final ModelNode MASTER_STORE_ADDRESS = PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=shared-store-master").toModelNode();
+    private static final ModelNode SLAVE_STORE_ADDRESS = PathAddress.parseCLIStyleAddress("/subsystem=messaging-activemq/server=default/ha-policy=shared-store-slave").toModelNode();
 
     @BeforeClass
     public static void beforeClass() {
@@ -72,8 +72,8 @@ public class SharedStoreFailoverTestCase extends FailoverTestCase {
     }
     @Override
     protected void setUpServer1(ModelControllerClient client) throws Exception {
-        // /subsystem=messaging-activemq/server=default/ha-policy=shared-store-primary:add(failover-on-server-shutdown=true)
-        ModelNode operation = Operations.createAddOperation(primary_STORE_ADDRESS);
+        // /subsystem=messaging-activemq/server=default/ha-policy=shared-store-master:add(failover-on-server-shutdown=true)
+        ModelNode operation = Operations.createAddOperation(MASTER_STORE_ADDRESS);
         operation.get("failover-on-server-shutdown").set(true);
         execute(client, operation);
 
@@ -85,7 +85,7 @@ public class SharedStoreFailoverTestCase extends FailoverTestCase {
 
     @Override
     protected void setUpServer2(ModelControllerClient client) throws Exception {
-        // /subsystem=messaging-activemq/server=default/ha-policy=shared-store-secondary:add(restart-backup=true)
+        // /subsystem=messaging-activemq/server=default/ha-policy=shared-store-slave:add(restart-backup=true)
         ModelNode operation = Operations.createAddOperation(SLAVE_STORE_ADDRESS);
         operation.get("restart-backup").set(true);
         execute(client, operation);

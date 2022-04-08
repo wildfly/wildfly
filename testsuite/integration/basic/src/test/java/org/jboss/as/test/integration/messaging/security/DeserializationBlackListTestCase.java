@@ -52,12 +52,12 @@ import org.junit.runner.RunWith;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2017 Red Hat inc.
  */
 @RunWith(Arquillian.class)
-@ServerSetup(DeserializationAllowListTestCase.SetupTask.class)
-public class DeserializationAllowListTestCase {
+@ServerSetup(DeserializationBlackListTestCase.SetupTask.class)
+public class DeserializationBlackListTestCase {
 
     static class SetupTask implements ServerSetupTask {
 
-        private static final String CF_NAME = "myAllowListCF";
+        private static final String CF_NAME = "myBlackListCF";
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             managementClient.getControllerClient().execute(Operations.createWriteAttributeOperation(new ModelNode().add("subsystem", "ee"), "annotation-property-replacement", true));
@@ -83,7 +83,7 @@ public class DeserializationAllowListTestCase {
 
     @Deployment
     public static JavaArchive createArchive() {
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "DeserializationAllowListTestCase.jar")
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "DeserializationBlackListTestCase.jar")
                 .addClass(DeserializationMessagingBean.class)
                 .addAsManifestResource(
                         EmptyAsset.INSTANCE,
@@ -96,7 +96,7 @@ public class DeserializationAllowListTestCase {
     private DeserializationMessagingBean bean;
 
     @Test
-    public void testDeserializationAllowList() throws NamingException {
+    public void testDeserializationBlackList() throws NamingException {
         // UUID is black listed, any other Serializable must be deserialized.
         UUID uuid = UUID.randomUUID();
         Date date = new Date();
@@ -108,7 +108,7 @@ public class DeserializationAllowListTestCase {
     }
 
     @Test
-    public void testDeserializationAllowListFromRegularConnectionFactory() throws NamingException {
+    public void testDeserializationBlackListFromRegularConnectionFactory() throws NamingException {
         // all classes are black listed
         UUID uuid = UUID.randomUUID();
         Date date = new Date();
@@ -120,7 +120,7 @@ public class DeserializationAllowListTestCase {
     }
 
     @Test
-    public void testDeserializationBlocklist() throws NamingException {
+    public void testDeserializationWhiteList() throws NamingException {
         // UUID is white listed, any other Serializable must not be deserialized.
         UUID uuid = UUID.randomUUID();
         Date date = new Date();

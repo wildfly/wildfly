@@ -21,7 +21,7 @@ package org.jboss.as.test.integration.domain.mixed;
 /**
  * Base class for a test suite that uses a minimal domain config and master host that has only elytron security
  */
-public class ElytronOnlyPrimaryTestSuite extends MixedDomainTestSuite {
+public class ElytronOnlyMasterTestSuite extends MixedDomainTestSuite {
 
 
     protected static MixedDomainTestSupport getSupport(Class<?> testClass) {
