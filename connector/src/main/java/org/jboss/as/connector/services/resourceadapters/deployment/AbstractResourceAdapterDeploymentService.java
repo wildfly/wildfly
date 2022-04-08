@@ -584,7 +584,11 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
         @Override
         protected File getReportDirectory() {
-            return resourceAdaptersSubsystem.getValue().getReportDirectory();
+            if (resourceAdaptersSubsystem.getOptionalValue() != null) {
+                return resourceAdaptersSubsystem.getValue().getReportDirectory();
+            } else {
+                return null;
+            }
         }
 
         @Override
