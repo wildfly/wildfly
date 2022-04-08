@@ -56,10 +56,10 @@ import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.infinispan.spi.distribution.CacheLocality;
-import org.wildfly.clustering.infinispan.spi.distribution.Locality;
-import org.wildfly.clustering.infinispan.spi.distribution.SimpleLocality;
-import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.infinispan.distribution.CacheLocality;
+import org.wildfly.clustering.infinispan.distribution.Locality;
+import org.wildfly.clustering.infinispan.distribution.SimpleLocality;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 
 /**
  * A {@link BeanManager} implementation backed by an infinispan cache.

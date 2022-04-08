@@ -21,10 +21,9 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
@@ -32,9 +31,9 @@ import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
@@ -49,8 +48,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.server.service.ClusteringRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
-import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * Definition for /subsystem=jgroups/channel=* resources
@@ -81,13 +80,6 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
         @Override
         public org.jboss.as.clustering.controller.Capability getCapability() {
             return this.capability;
-        }
-    }
-
-    static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
-    static {
-        for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
-            CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement));
         }
     }
 
@@ -186,7 +178,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)
-                .addCapabilities(CLUSTERING_CAPABILITIES.values())
+                .addCapabilities(EnumSet.allOf(ClusteringRequirement.class).stream().map(UnaryRequirementCapability::new).collect(Collectors.toList()))
                 .addAlias(DeprecatedAttribute.STATS_ENABLED, Attribute.STATISTICS_ENABLED)
                 .setAddOperationTransformation(new AddOperationTransformation())
                 .addRuntimeResourceRegistration(new ChannelRuntimeResourceRegistration(executors))

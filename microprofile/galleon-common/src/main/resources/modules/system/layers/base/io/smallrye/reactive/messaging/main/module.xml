@@ -37,6 +37,7 @@
 
     <dependencies>
         <module name="io.reactivex.rxjava2.rxjava"/>
+        <module name="io.smallrye.common.vertx-context"/>
         <module name="io.smallrye.config" services="import"/>
         <module name="io.smallrye.reactive.converters.api"/>
         <module name="io.smallrye.reactive.messaging.connector"/>

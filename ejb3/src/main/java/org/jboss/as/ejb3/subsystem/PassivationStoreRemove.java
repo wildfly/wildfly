@@ -48,6 +48,7 @@ import java.util.Set;
  *
  * @author Paul Ferraro
  */
+@Deprecated
 public class PassivationStoreRemove extends ServiceRemoveStepHandler {
 
     private final Set<RuntimeCapability> unavailableCapabilities;

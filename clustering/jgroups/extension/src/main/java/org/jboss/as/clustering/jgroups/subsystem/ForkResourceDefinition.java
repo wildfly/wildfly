@@ -22,9 +22,8 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
@@ -40,8 +39,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.server.service.ClusteringRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
-import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * Definition of a fork resource.
@@ -74,13 +73,6 @@ public class ForkResourceDefinition extends ChildResourceDefinition<ManagementRe
         }
     }
 
-    static final Map<ClusteringRequirement, org.jboss.as.clustering.controller.Capability> CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringRequirement.class);
-    static {
-        for (ClusteringRequirement requirement : EnumSet.allOf(ClusteringRequirement.class)) {
-            CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement));
-        }
-    }
-
     static class ForkChannelFactoryServiceConfiguratorFactory implements ResourceServiceConfiguratorFactory {
         @Override
         public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
@@ -101,7 +93,7 @@ public class ForkResourceDefinition extends ChildResourceDefinition<ManagementRe
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addCapabilities(Capability.class)
-                .addCapabilities(CLUSTERING_CAPABILITIES.values())
+                .addCapabilities(EnumSet.allOf(ClusteringRequirement.class).stream().map(UnaryRequirementCapability::new).collect(Collectors.toList()))
                 ;
         ResourceServiceConfiguratorFactory serviceConfiguratorFactory = new ForkChannelFactoryServiceConfiguratorFactory();
         ResourceServiceHandler handler = new ForkServiceHandler(serviceConfiguratorFactory);

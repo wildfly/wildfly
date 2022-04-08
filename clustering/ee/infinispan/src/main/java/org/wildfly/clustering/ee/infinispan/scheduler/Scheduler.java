@@ -22,7 +22,7 @@
 
 package org.wildfly.clustering.ee.infinispan.scheduler;
 
-import org.wildfly.clustering.infinispan.spi.distribution.Locality;
+import org.wildfly.clustering.infinispan.distribution.Locality;
 
 /**
  * A task scheduler.

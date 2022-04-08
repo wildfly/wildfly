@@ -47,7 +47,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-common</artifactId>
+            <artifactId>wildfly-clustering-context</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -60,10 +60,6 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-service</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>

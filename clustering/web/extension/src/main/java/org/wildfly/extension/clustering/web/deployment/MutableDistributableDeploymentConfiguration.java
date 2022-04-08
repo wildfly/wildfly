@@ -31,7 +31,7 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.ee.structure.JBossDescriptorPropertyReplacement;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.metadata.property.PropertyReplacer;
-import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
 
 /**
  * @author Paul Ferraro

@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.CLUSTERING_CAPABILITIES;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.CACHE;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.Capability.CONFIGURATION;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheResourceDefinition.ListAttribute.MODULES;
@@ -30,9 +29,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.TransactionResourceDe
 
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.ServiceLoader;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.ModulesServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -45,23 +42,20 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.spi.service.CacheServiceConfigurator;
+import org.wildfly.clustering.infinispan.service.CacheServiceConfigurator;
+import org.wildfly.clustering.server.service.CacheServiceConfiguratorProvider;
+import org.wildfly.clustering.server.service.ProvidedCacheServiceConfigurator;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
-import org.wildfly.clustering.service.ServiceNameProvider;
-import org.wildfly.clustering.service.ServiceNameRegistry;
-import org.wildfly.clustering.spi.CacheServiceConfiguratorProvider;
-import org.wildfly.clustering.spi.CapabilityServiceNameRegistry;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * @author Paul Ferraro
  */
-public class CacheServiceHandler implements ResourceServiceHandler {
+public class CacheServiceHandler<P extends CacheServiceConfiguratorProvider> implements ResourceServiceHandler {
 
     private final ResourceServiceConfiguratorFactory configuratorFactory;
-    private final Class<? extends CacheServiceConfiguratorProvider> providerClass;
+    private final Class<P> providerClass;
 
-    CacheServiceHandler(ResourceServiceConfiguratorFactory configuratorFactory, Class<? extends CacheServiceConfiguratorProvider> providerClass) {
+    CacheServiceHandler(ResourceServiceConfiguratorFactory configuratorFactory, Class<P> providerClass) {
         this.configuratorFactory = configuratorFactory;
         this.providerClass = providerClass;
     }
@@ -93,13 +87,7 @@ public class CacheServiceHandler implements ResourceServiceHandler {
         new BinderServiceConfigurator(InfinispanBindingFactory.createCacheConfigurationBinding(containerName, cacheName), CONFIGURATION.getServiceName(cacheAddress)).build(target).install();
         new BinderServiceConfigurator(InfinispanBindingFactory.createCacheBinding(containerName, cacheName), CACHE.getServiceName(cacheAddress)).build(target).install();
 
-        ServiceNameRegistry<ClusteringCacheRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, cacheAddress);
-
-        for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
-            for (CapabilityServiceConfigurator configurator : provider.getServiceConfigurators(registry, containerName, cacheName)) {
-                configurator.configure(context).build(target).install();
-            }
-        }
+        new ProvidedCacheServiceConfigurator<>(this.providerClass, containerName, cacheName).configure(context).build(target).install();
     }
 
     @Override
@@ -110,13 +98,7 @@ public class CacheServiceHandler implements ResourceServiceHandler {
         String containerName = containerAddress.getLastElement().getValue();
         String cacheName = cacheAddress.getLastElement().getValue();
 
-        ServiceNameRegistry<ClusteringCacheRequirement> registry = new CapabilityServiceNameRegistry<>(CLUSTERING_CAPABILITIES, cacheAddress);
-
-        for (CacheServiceConfiguratorProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
-            for (ServiceNameProvider configurator : provider.getServiceConfigurators(registry, containerName, cacheName)) {
-                context.removeService(configurator.getServiceName());
-            }
-        }
+        new ProvidedCacheServiceConfigurator<>(this.providerClass, containerName, cacheName).remove(context);
 
         context.removeService(InfinispanBindingFactory.createCacheBinding(containerName, cacheName).getBinderServiceName());
         context.removeService(InfinispanBindingFactory.createCacheConfigurationBinding(containerName, cacheName).getBinderServiceName());

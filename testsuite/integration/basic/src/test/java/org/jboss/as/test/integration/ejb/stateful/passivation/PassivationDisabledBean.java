@@ -34,7 +34,7 @@ import org.jboss.ejb3.annotation.Cache;
  * @author Jaikiran Pai
  */
 @Stateful(passivationCapable = false)
-@Cache("passivating")
+@Cache("distributable")
 @Local(Bean.class)
 public class PassivationDisabledBean implements Bean {
 

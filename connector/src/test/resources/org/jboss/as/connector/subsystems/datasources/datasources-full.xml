@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:datasources:6.0">
+<subsystem xmlns="urn:jboss:domain:datasources:7.0">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool" jta="false"
                     use-java-context="true" spy="false" use-ccm="true" connectable="false" statistics-enabled="true" tracking="true">
@@ -58,7 +58,7 @@
                 </reauth-plugin>
             </security>
             <validation>
-                <valid-connection-checker class-name="someClass2">
+                <valid-connection-checker class-name="someClass2" module="someModule2">
                     <config-property name="name">Property2</config-property>
                 </valid-connection-checker>
                 <check-valid-connection-sql>
@@ -76,10 +76,10 @@
                 <use-fast-fail>
                     true
                 </use-fast-fail>
-                <stale-connection-checker class-name="someClass3">
+                <stale-connection-checker class-name="someClass3" module="someModule3">
                     <config-property name="name">Property3</config-property>
                 </stale-connection-checker>
-                <exception-sorter class-name="someClass4">
+                <exception-sorter class-name="someClass4" module="someModule4">
                     <config-property name="name">Property4</config-property>
                 </exception-sorter>
             </validation>
@@ -186,7 +186,7 @@
                 </recover-plugin>
             </recovery>
             <validation>
-                <valid-connection-checker class-name="someClass2">
+                <valid-connection-checker class-name="someClass2" module="someModule2">
                     <config-property name="name">Property2</config-property>
                 </valid-connection-checker>
                 <check-valid-connection-sql>
@@ -204,10 +204,10 @@
                 <use-fast-fail>
                     true
                 </use-fast-fail>
-                <stale-connection-checker class-name="someClass3">
+                <stale-connection-checker class-name="someClass3" module="someModule3">
                     <config-property name="name">Property3</config-property>
                 </stale-connection-checker>
-                <exception-sorter class-name="someClass4">
+                <exception-sorter class-name="someClass4" module="someModule4">
                     <config-property name="name">Property4</config-property>
                 </exception-sorter>
             </validation>

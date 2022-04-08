@@ -209,7 +209,7 @@
                         </goals>
                         <configuration>
                             <dir>target/classes</dir>
-                            <params>--port=8765</params>
+                            <params>--port=8765 --disable-banner</params>
                         </configuration>
                     </execution>
                 </executions>
@@ -618,8 +618,8 @@
                     <artifactId>jakarta.enterprise.cdi-api</artifactId>
                 </dependency>
                 <dependency>
-                    <groupId>org.jboss.spec.javax.ws.rs</groupId>
-                    <artifactId>jboss-jaxrs-api_3.0_spec</artifactId>
+                    <groupId>jakarta.ws.rs</groupId>
+                    <artifactId>jakarta.ws.rs-api</artifactId>
                     <scope>test</scope>
                 </dependency>
                 <dependency>

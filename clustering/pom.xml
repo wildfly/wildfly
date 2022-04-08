@@ -46,8 +46,8 @@
     </description>
 
     <modules>
-        <module>api</module>
         <module>common</module>
+        <module>context</module>
         <module>ee</module>
         <module>ejb</module>
         <module>infinispan</module>
@@ -56,7 +56,6 @@
         <module>server</module>
         <module>service</module>
         <module>singleton</module>
-        <module>spi</module>
         <module>web</module>
     </modules>
 

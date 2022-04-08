@@ -85,20 +85,15 @@ class AddressSettingAdd extends AbstractAddStepHandler {
             final AddressFullMessagePolicy addressPolicy = AddressFullMessagePolicy.valueOf(AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY.resolveModelAttribute(context, config).asString());
             settings.setAddressFullMessagePolicy(addressPolicy);
         }
+        // always set the auto-create|delete-jms-queues attributes as their default attribute values differ from Artemis defaults.
+        settings.setAutoCreateJmsQueues(AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES.resolveModelAttribute(context, config).asBoolean());
+        settings.setAutoDeleteJmsQueues(AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES.resolveModelAttribute(context, config).asBoolean());
+        settings.setAutoCreateQueues(AddressSettingDefinition.AUTO_CREATE_QUEUES.resolveModelAttribute(context, config).asBoolean());
+        settings.setAutoDeleteQueues(AddressSettingDefinition.AUTO_DELETE_QUEUES.resolveModelAttribute(context, config).asBoolean());
+        settings.setAutoCreateAddresses(AddressSettingDefinition.AUTO_CREATE_ADDRESSES.resolveModelAttribute(context, config).asBoolean());
+        settings.setAutoDeleteAddresses(AddressSettingDefinition.AUTO_DELETE_ADDRESSES.resolveModelAttribute(context, config).asBoolean());
         if (config.hasDefined(DEAD_LETTER_ADDRESS.getName())) {
             settings.setDeadLetterAddress(asSimpleString(DEAD_LETTER_ADDRESS.resolveModelAttribute(context, config), null));
-        }
-        if (config.hasDefined(AddressSettingDefinition.LAST_VALUE_QUEUE.getName())) {
-            settings.setDefaultLastValueQueue(AddressSettingDefinition.LAST_VALUE_QUEUE.resolveModelAttribute(context, config).asBoolean());
-        }
-        if (config.hasDefined(AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS.getName())) {
-            settings.setMaxDeliveryAttempts(AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS.resolveModelAttribute(context, config).asInt());
-        }
-        if (config.hasDefined(AddressSettingDefinition.MAX_SIZE_BYTES.getName())) {
-            settings.setMaxSizeBytes(AddressSettingDefinition.MAX_SIZE_BYTES.resolveModelAttribute(context, config).asLong());
-        }
-        if (config.hasDefined(AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT.getName())) {
-            settings.setMessageCounterHistoryDayLimit(AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT.resolveModelAttribute(context, config).asInt());
         }
         if (config.hasDefined(CommonAttributes.EXPIRY_ADDRESS.getName())) {
             settings.setExpiryAddress(asSimpleString(EXPIRY_ADDRESS.resolveModelAttribute(context, config), null));
@@ -106,23 +101,35 @@ class AddressSettingAdd extends AbstractAddStepHandler {
         if (config.hasDefined(AddressSettingDefinition.EXPIRY_DELAY.getName())) {
             settings.setExpiryDelay(AddressSettingDefinition.EXPIRY_DELAY.resolveModelAttribute(context, config).asLong());
         }
+        if (config.hasDefined(AddressSettingDefinition.LAST_VALUE_QUEUE.getName())) {
+            settings.setDefaultLastValueQueue(AddressSettingDefinition.LAST_VALUE_QUEUE.resolveModelAttribute(context, config).asBoolean());
+        }
+        if (config.hasDefined(AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS.getName())) {
+            settings.setMaxDeliveryAttempts(AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS.resolveModelAttribute(context, config).asInt());
+        }
+        if (config.hasDefined(AddressSettingDefinition.MAX_REDELIVERY_DELAY.getName())) {
+            settings.setMaxRedeliveryDelay(AddressSettingDefinition.MAX_REDELIVERY_DELAY.resolveModelAttribute(context, config).asLong());
+        }
+        if (config.hasDefined(AddressSettingDefinition.MAX_SIZE_BYTES.getName())) {
+            settings.setMaxSizeBytes(AddressSettingDefinition.MAX_SIZE_BYTES.resolveModelAttribute(context, config).asLong());
+        }
+        if (config.hasDefined(AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT.getName())) {
+            settings.setMessageCounterHistoryDayLimit(AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT.resolveModelAttribute(context, config).asInt());
+        }
+        if (config.hasDefined(AddressSettingDefinition.PAGE_MAX_CACHE_SIZE.getName())) {
+            settings.setPageCacheMaxSize(AddressSettingDefinition.PAGE_MAX_CACHE_SIZE.resolveModelAttribute(context, config).asInt());
+        }
+        if (config.hasDefined(AddressSettingDefinition.PAGE_SIZE_BYTES.getName())) {
+            settings.setPageSizeBytes(AddressSettingDefinition.PAGE_SIZE_BYTES.resolveModelAttribute(context, config).asInt());
+        }
         if (config.hasDefined(AddressSettingDefinition.REDELIVERY_DELAY.getName())) {
             settings.setRedeliveryDelay(AddressSettingDefinition.REDELIVERY_DELAY.resolveModelAttribute(context, config).asLong());
         }
         if (config.hasDefined(AddressSettingDefinition.REDELIVERY_MULTIPLIER.getName())) {
             settings.setRedeliveryMultiplier(AddressSettingDefinition.REDELIVERY_MULTIPLIER.resolveModelAttribute(context, config).asDouble());
         }
-        if (config.hasDefined(AddressSettingDefinition.MAX_REDELIVERY_DELAY.getName())) {
-            settings.setMaxRedeliveryDelay(AddressSettingDefinition.MAX_REDELIVERY_DELAY.resolveModelAttribute(context, config).asLong());
-        }
         if (config.hasDefined(AddressSettingDefinition.REDISTRIBUTION_DELAY.getName())) {
             settings.setRedistributionDelay(AddressSettingDefinition.REDISTRIBUTION_DELAY.resolveModelAttribute(context, config).asLong());
-        }
-        if (config.hasDefined(AddressSettingDefinition.PAGE_SIZE_BYTES.getName())) {
-            settings.setPageSizeBytes(AddressSettingDefinition.PAGE_SIZE_BYTES.resolveModelAttribute(context, config).asInt());
-        }
-        if (config.hasDefined(AddressSettingDefinition.PAGE_MAX_CACHE_SIZE.getName())) {
-            settings.setPageCacheMaxSize(AddressSettingDefinition.PAGE_MAX_CACHE_SIZE.resolveModelAttribute(context, config).asInt());
         }
         if (config.hasDefined(AddressSettingDefinition.SEND_TO_DLA_ON_NO_ROUTE.getName())) {
             settings.setSendToDLAOnNoRoute(AddressSettingDefinition.SEND_TO_DLA_ON_NO_ROUTE.resolveModelAttribute(context, config).asBoolean());
@@ -137,13 +144,6 @@ class AddressSettingAdd extends AbstractAddStepHandler {
         if (config.hasDefined(AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD.getName())) {
             settings.setSlowConsumerThreshold(AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD.resolveModelAttribute(context, config).asLong());
         }
-        // always set the auto-create|delete-jms-queues attributes as their default attribute values differ from Artemis defaults.
-        settings.setAutoCreateJmsQueues(AddressSettingDefinition.AUTO_CREATE_JMS_QUEUES.resolveModelAttribute(context, config).asBoolean());
-        settings.setAutoDeleteJmsQueues(AddressSettingDefinition.AUTO_DELETE_JMS_QUEUES.resolveModelAttribute(context, config).asBoolean());
-        settings.setAutoCreateQueues(AddressSettingDefinition.AUTO_CREATE_QUEUES.resolveModelAttribute(context, config).asBoolean());
-        settings.setAutoDeleteQueues(AddressSettingDefinition.AUTO_DELETE_QUEUES.resolveModelAttribute(context, config).asBoolean());
-        settings.setAutoCreateAddresses(AddressSettingDefinition.AUTO_CREATE_ADDRESSES.resolveModelAttribute(context, config).asBoolean());
-        settings.setAutoDeleteAddresses(AddressSettingDefinition.AUTO_DELETE_ADDRESSES.resolveModelAttribute(context, config).asBoolean());
         return settings;
     }
 

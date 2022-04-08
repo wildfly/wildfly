@@ -25,6 +25,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -57,11 +58,12 @@ import org.jboss.as.controller.operations.global.ListOperations;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
-import org.wildfly.clustering.infinispan.spi.marshalling.InfinispanMarshallerFactory;
+import org.wildfly.clustering.infinispan.marshall.InfinispanMarshallerFactory;
+import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
+import org.wildfly.clustering.server.service.ClusteringDefaultCacheRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X
@@ -101,13 +103,6 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         }
     }
 
-    static final Map<ClusteringCacheRequirement, org.jboss.as.clustering.controller.Capability> DEFAULT_CLUSTERING_CAPABILITIES = new EnumMap<>(ClusteringCacheRequirement.class);
-    static {
-        for (ClusteringCacheRequirement requirement : EnumSet.allOf(ClusteringCacheRequirement.class)) {
-            DEFAULT_CLUSTERING_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement.getDefaultRequirement()));
-        }
-    }
-
     @Deprecated
     static final AttributeDefinition ALIAS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING)
             .setAllowExpression(false)
@@ -142,7 +137,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setDefaultValue(new ModelNode(InfinispanMarshallerFactory.LEGACY.name()))
-                        .setValidator(new EnumValidator<InfinispanMarshallerFactory>(InfinispanMarshallerFactory.class) {
+                        .setValidator(new EnumValidator<>(InfinispanMarshallerFactory.class) {
                             @Override
                             public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
                                 super.validateParameter(parameterName, value);
@@ -284,7 +279,8 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                 .addAttributeTranslation(DeprecatedAttribute.MODULE, new ListAttributeTranslation(ListAttribute.MODULES))
                 .addCapabilities(Capability.class)
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), DEFAULT_CAPABILITIES.values())
-                .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), DEFAULT_CLUSTERING_CAPABILITIES.values())
+                .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), EnumSet.allOf(ClusteringDefaultCacheRequirement.class).stream().map(UnaryRequirementCapability::new).collect(Collectors.toList()))
+                .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), EnumSet.allOf(SingletonDefaultCacheRequirement.class).stream().map(UnaryRequirementCapability::new).collect(Collectors.toList()))
                 .addRequiredChildren(EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT)))
                 .addRequiredChildren(ScheduledThreadPoolResourceDefinition.class)
                 .addRequiredSingletonChildren(NoTransportResourceDefinition.PATH)

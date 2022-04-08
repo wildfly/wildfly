@@ -35,7 +35,9 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.staxmapper.XMLElementWriter;
 
 
 /**
@@ -56,9 +58,12 @@ public class MicroProfileConfigExtension implements Extension {
 
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
     protected static final ModelVersion VERSION_1_1_0 = ModelVersion.create(1, 1, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_1_1_0;
+    protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_2_0_0;
 
-    private static final MicroProfileConfigSubsystemParser_1_0 CURRENT_PARSER = new MicroProfileConfigSubsystemParser_1_0();
+    private static final MicroProfileConfigSubsystemParser_1_0 PARSER_1_0 = new MicroProfileConfigSubsystemParser_1_0();
+    private static final MicroProfileConfigSubsystemParser_2_0 PARSER_2_0 = new MicroProfileConfigSubsystemParser_2_0();
+    private static final XMLElementWriter<SubsystemMarshallingContext> CURRENT_WRITER = PARSER_2_0;
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         return getResourceDescriptionResolver(true, keyPrefix);
@@ -78,7 +83,7 @@ public class MicroProfileConfigExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        subsystem.registerXMLElementWriter(CURRENT_PARSER);
+        subsystem.registerXMLElementWriter(CURRENT_WRITER);
 
         IterableRegistry<ConfigSourceProvider> providers = new IterableRegistry<>();
         IterableRegistry<ConfigSource> sources = new IterableRegistry<>();
@@ -86,13 +91,14 @@ public class MicroProfileConfigExtension implements Extension {
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new MicroProfileSubsystemDefinition(providers, sources));
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
-        registration.registerSubModel(new ConfigSourceDefinition(sources));
+        registration.registerSubModel(new ConfigSourceDefinition(providers, sources));
         registration.registerSubModel(new ConfigSourceProviderDefinition(providers));
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MicroProfileConfigSubsystemParser_1_0.NAMESPACE, CURRENT_PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MicroProfileConfigSubsystemParser_1_0.NAMESPACE, PARSER_1_0);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MicroProfileConfigSubsystemParser_2_0.NAMESPACE, PARSER_2_0);
     }
 
 }

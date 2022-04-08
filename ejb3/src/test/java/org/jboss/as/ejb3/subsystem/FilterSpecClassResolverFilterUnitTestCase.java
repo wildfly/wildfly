@@ -218,7 +218,7 @@ public class FilterSpecClassResolverFilterUnitTestCase {
     }
 
     @Test
-    public void testAllowListExceptions() {
+    public void testAllowlistExceptions() {
         exceptionTest("!foo.bar.Baz;foo.bar.*");
         exceptionTest("foo.bar.*;!foo.bar.Baz");
         exceptionTest("!foo.bar.Baz;foo.bar.**");

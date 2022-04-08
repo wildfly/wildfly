@@ -37,8 +37,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.infinispan.client.InfinispanClientRequirement;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
+import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
 
 /**
  * @author Paul Ferraro

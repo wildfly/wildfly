@@ -109,8 +109,11 @@ public interface EJB3SubsystemModel {
     String USE_QUALIFIED_NAME = "use-qualified-name";
     String ENABLE_BY_DEFAULT = "enable-by-default";
 
-    String CACHE = "cache";
-    String PASSIVATION_STORE = "passivation-store";
+    @Deprecated String CACHE = "cache";
+    String SIMPLE_CACHE = "simple-cache";
+    String DISTRIBUTABLE_CACHE = "distributable-cache";
+    String BEAN_MANAGEMENT = "bean-management";
+    @Deprecated String PASSIVATION_STORE = "passivation-store";
 
     String MDB_DELIVERY_GROUP="mdb-delivery-group";
     String MDB_DELVIERY_GROUP_ACTIVE = "active";
@@ -152,6 +155,8 @@ public interface EJB3SubsystemModel {
     PathElement MDB_DELIVERY_GROUP_PATH = PathElement.pathElement(MDB_DELIVERY_GROUP);
     PathElement STRICT_MAX_BEAN_INSTANCE_POOL_PATH = PathElement.pathElement(STRICT_MAX_BEAN_INSTANCE_POOL);
     PathElement REMOTING_PROFILE_PATH = PathElement.pathElement(REMOTING_PROFILE);
+    PathElement SIMPLE_CACHE_PATH = PathElement.pathElement(SIMPLE_CACHE);
+    PathElement DISTRIBUTABLE_CACHE_PATH = PathElement.pathElement(DISTRIBUTABLE_CACHE);
 
     String BASE_EJB_THREAD_POOL_NAME = "ejb3";
     ServiceName BASE_THREAD_POOL_SERVICE_NAME = ThreadsServices.EXECUTOR.append(BASE_EJB_THREAD_POOL_NAME);

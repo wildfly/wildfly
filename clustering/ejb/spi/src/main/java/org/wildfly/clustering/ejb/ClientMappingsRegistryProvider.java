@@ -29,9 +29,11 @@ import org.jboss.as.network.ClientMapping;
 import org.wildfly.clustering.service.SupplierDependency;
 
 /**
+ * interface defining ClientMappingsRegistryProvider instances, used to install configured ClientMappingsRegistry services.
+ *
  * @author Paul Ferraro
  */
 public interface ClientMappingsRegistryProvider {
 
-    Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String containerName, String connectorName, SupplierDependency<List<ClientMapping>> clientMappings);
+    Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String connectorName, SupplierDependency<List<ClientMapping>> clientMappings);
 }

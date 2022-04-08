@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.jsf.version;
 
 import java.io.FilePermission;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,6 +53,8 @@ import org.jboss.as.test.integration.jsf.version.war.JSFVersion;
 import org.jboss.as.test.shared.TestLogHandlerSetupTask;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.as.test.shared.util.LoggingUtil;
+import org.jboss.modules.maven.ArtifactCoordinates;
+import org.jboss.modules.maven.MavenResolver;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -61,6 +64,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 
 /**
  * Tests different ways to add Jakarta Server Faces implementation in ear files
@@ -102,7 +106,7 @@ public class JSFDeploymentProcessorTestCase {
      * @return
      */
     @Deployment(name = WEB_BUNDLED_JSF, testable = false, managed = false)
-    public static EnterpriseArchive createDeployment1() {
+    public static EnterpriseArchive createDeployment1() throws IOException {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, WEB_BUNDLED_JSF + ".ear");
 
         ear.addAsManifestResource(JSFDeploymentProcessorTestCase.class.getPackage(), WEB_BUNDLED_JSF + "-application.xml", "application.xml");
@@ -123,11 +127,13 @@ public class JSFDeploymentProcessorTestCase {
         war.addAsWebInfResource(JSFVersion.class.getPackage(), WEB_BUNDLED_JSF_WEB_XML, "web.xml");
 
         //add Jakarta Server Faces as webapp lib
-        war.addAsLibrary("myfaces/commons-beanutils-1.9.3.jar", "commons-beanutils-1.9.3.jar");
-        war.addAsLibrary("myfaces/commons-collections-3.2.2.jar", "commons-collections-3.2.2.jar");
-        war.addAsLibrary("myfaces/commons-digester-1.8.jar", "commons-digester-1.8.jar");
-        war.addAsLibrary("myfaces/myfaces-api-2.0.24.jar", "myfaces-api-2.0.24.jar");
-        war.addAsLibrary("myfaces/myfaces-impl-2.0.24.jar", "myfaces-impl-2.0.24.jar");
+
+        war.addAsLibrary(MavenResolver.createDefaultResolver().resolveJarArtifact(new ArtifactCoordinates("commons-beanutils", "commons-beanutils", "1.9.3")));
+        war.addAsLibrary(MavenResolver.createDefaultResolver().resolveJarArtifact(new ArtifactCoordinates("commons-collections", "commons-collections", "3.2.2")));
+        war.addAsLibrary(MavenResolver.createDefaultResolver().resolveJarArtifact(new ArtifactCoordinates("commons-digester", "commons-digester", "1.8")));
+        war.addAsLibrary(MavenResolver.createDefaultResolver().resolveJarArtifact(new ArtifactCoordinates("org.apache.myfaces.core", "myfaces-api", "2.0.24")));
+        war.addAsLibrary(MavenResolver.createDefaultResolver().resolveJarArtifact(new ArtifactCoordinates("org.apache.myfaces.core", "myfaces-impl", "2.0.24")));
+
         // add the .war
         ear.addAsModule(war);
         return ear;

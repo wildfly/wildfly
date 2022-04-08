@@ -152,7 +152,7 @@ final class FilterSpecClassResolverFilter implements Function<String, Boolean> {
 
             parsedFilterSpecs = new ArrayList<>(Arrays.asList(filterSpec.split(";")));
             unmarshallingFilters = new ArrayList<>(parsedFilterSpecs.size());
-            ExactMatchFilter exactMatchALLOWLIST = null;
+            ExactMatchFilter exactMatchAllowlist = null;
             ExactMatchFilter exactMatchBlocklist = null;
             boolean allowlist = false;
 

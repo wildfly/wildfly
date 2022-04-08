@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.wildfly.clustering.ee.Immutability;
 
@@ -46,13 +47,19 @@ public class CollectionImmutability implements Immutability {
                 Collections.unmodifiableList(Collections.emptyList()).getClass(),
                 Collections.unmodifiableNavigableSet(Collections.emptyNavigableSet()).getClass(),
                 Collections.unmodifiableSet(Collections.emptySet()).getClass(),
-                Collections.unmodifiableSortedSet(Collections.emptySortedSet()).getClass());
+                Collections.unmodifiableSortedSet(Collections.emptySortedSet()).getClass(),
+                List.of().getClass(), // ListN
+                List.of(Boolean.TRUE).getClass(), // List12
+                Set.of().getClass(), // SetN
+                Set.of(Boolean.TRUE).getClass()); // Set12
 
     private final List<Class<?>> unmodifiableMapClasses = Arrays.asList(
                 Collections.singletonMap(null, null).getClass(),
                 Collections.unmodifiableMap(Collections.emptyMap()).getClass(),
                 Collections.unmodifiableNavigableMap(Collections.emptyNavigableMap()).getClass(),
-                Collections.unmodifiableSortedMap(Collections.emptySortedMap()).getClass());
+                Collections.unmodifiableSortedMap(Collections.emptySortedMap()).getClass(),
+                Map.ofEntries().getClass(), // MapN
+                Map.ofEntries(Map.entry(Boolean.TRUE, Boolean.TRUE)).getClass()); // Map1
 
     private final Immutability elementImmutability;
 

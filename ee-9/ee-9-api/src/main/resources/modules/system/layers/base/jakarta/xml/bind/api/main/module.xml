@@ -34,6 +34,7 @@
         <module name="java.logging"/>
         <module name="java.xml"/>
         <module name="javax.activation.api" export="true"/>
+        <module name="org.eclipse.angus.activation" services="export" export="true"/>
         <module name="javax.xml.stream.api"/>
         <module name="com.sun.xml.bind" services="import"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->

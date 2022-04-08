@@ -92,14 +92,16 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     }
 
     private static void registerTransformers_WF_25(ResourceTransformationDescriptionBuilder subsystem) {
-        ResourceTransformationDescriptionBuilder bridge = subsystem
-                .addChildResource(MessagingExtension.SERVER_PATH)
+        ResourceTransformationDescriptionBuilder externaljmsqueue = subsystem.addChildResource(MessagingExtension.EXTERNAL_JMS_QUEUE_PATH);
+        rejectDefinedAttributeWithDefaultValue(externaljmsqueue, ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
+        ResourceTransformationDescriptionBuilder externaljmstopic = subsystem.addChildResource(MessagingExtension.EXTERNAL_JMS_TOPIC_PATH);
+        rejectDefinedAttributeWithDefaultValue(externaljmstopic, ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
+        ResourceTransformationDescriptionBuilder server = subsystem
+                .addChildResource(MessagingExtension.SERVER_PATH);
+        rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD);
+        ResourceTransformationDescriptionBuilder bridge = server
                 .addChildResource(MessagingExtension.BRIDGE_PATH);
         rejectDefinedAttributeWithDefaultValue(bridge, BridgeDefinition.ROUTING_TYPE);
-        ResourceTransformationDescriptionBuilder externaljmsqueue = subsystem.addChildResource(MessagingExtension.EXTERNAL_JMS_QUEUE_PATH);
-        rejectDefinedAttributeWithDefaultValue(externaljmsqueue,ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
-        ResourceTransformationDescriptionBuilder externaljmstopic = subsystem.addChildResource(MessagingExtension.EXTERNAL_JMS_TOPIC_PATH);
-        rejectDefinedAttributeWithDefaultValue(externaljmstopic,ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
     }
 
     private static void registerTransformers_WF_23(ResourceTransformationDescriptionBuilder subsystem) {

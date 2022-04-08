@@ -31,15 +31,15 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionActivationListener;
 
-import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.immutable.CompositeImmutability;
 import org.wildfly.clustering.ee.immutable.DefaultImmutability;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.web.session.SpecificationProvider;
 import org.wildfly.clustering.web.session.SessionAttributeImmutability;
+import org.wildfly.clustering.web.session.SpecificationProvider;
+import org.wildfly.common.iteration.CompositeIterable;
 
 /**
  * @author Paul Ferraro

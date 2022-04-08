@@ -94,7 +94,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final String earApplicationName;
     private final String moduleName;
     private final String distinctName;
-    private final String policyContextID;
 
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<ControlPoint> controlPoint = new InjectedValue<>();
@@ -124,7 +123,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         this.transactionManagementType = ejbComponentDescription.getTransactionManagementType();
 
         this.timerService = ejbComponentDescription.getTimerService();
-        this.policyContextID = ejbComponentDescription.getPolicyContextID();
 
         // CMTTx
         if (transactionManagementType.equals(TransactionManagementType.CONTAINER)) {
@@ -359,10 +357,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public Injector<ControlPoint> getControlPointInjector() {
         return this.controlPoint;
-    }
-
-    public String getPolicyContextID() {
-        return this.policyContextID;
     }
 
     InjectedValue<AtomicBoolean> getExceptionLoggingEnabledInjector() {

@@ -3202,7 +3202,8 @@
                                         <!-- For bootable-jar, custom modules have to be prepared aside in the time of jar packinging,
                                         which is not sustainable for all tests. -->
                                         <exclude>org/jboss/as/test/integration/weld/modules/deployment/ModuleBeanDiscoveryModeTest.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
+					<exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
+					<exclude>org/jboss/as/test/integration/jca/classloading/custommodule/DatasourceCustomModulesTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>

@@ -22,7 +22,13 @@
 
 package org.wildfly.extension.messaging.activemq.broadcast;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,7 +42,7 @@ import org.wildfly.clustering.group.Group;
  */
 public class ConcurrentBroadcastCommandDispatcherFactoryTestCase {
 
-    private final org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory factory = mock(org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory.class);
+    private final org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory factory = mock(org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory.class);
 
     @Test
     public void registration() {

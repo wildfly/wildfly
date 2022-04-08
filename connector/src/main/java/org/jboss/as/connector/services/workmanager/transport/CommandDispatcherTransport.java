@@ -44,12 +44,12 @@ import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
+import org.wildfly.clustering.ee.cache.concurrent.StampedLockServiceExecutor;
+import org.wildfly.clustering.ee.concurrent.ServiceExecutor;
 import org.wildfly.clustering.group.GroupListener;
 import org.wildfly.clustering.group.Membership;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.service.concurrent.ServiceExecutor;
-import org.wildfly.clustering.service.concurrent.StampedLockServiceExecutor;
-import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -119,7 +119,7 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
     protected Serializable sendMessage(Node physicalAddress, Request request, Serializable... parameters) throws WorkException {
         Command<?, CommandDispatcherTransport> command = createCommand(request, parameters);
         CommandDispatcher<CommandDispatcherTransport> dispatcher = this.dispatcher;
-        ExceptionSupplier<Optional<Serializable>, WorkException> task = new ExceptionSupplier<Optional<Serializable>, WorkException>() {
+        ExceptionSupplier<Optional<Serializable>, WorkException> task = new ExceptionSupplier<>() {
             @Override
             public Optional<Serializable> get() throws WorkException {
                 try {
@@ -138,7 +138,7 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
 
     private void broadcast(Command<Void, CommandDispatcherTransport> command) throws WorkException {
         CommandDispatcher<CommandDispatcherTransport> dispatcher = this.dispatcher;
-        ExceptionRunnable<WorkException> task = new ExceptionRunnable<WorkException>() {
+        ExceptionRunnable<WorkException> task = new ExceptionRunnable<>() {
             @Override
             public void run() throws WorkException {
                 try {

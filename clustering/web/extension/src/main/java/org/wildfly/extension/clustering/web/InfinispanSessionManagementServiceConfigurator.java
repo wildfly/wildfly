@@ -31,8 +31,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
-import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementProvider;
-import org.wildfly.clustering.web.session.DistributableSessionManagementProvider;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
+import org.wildfly.extension.clustering.web.session.infinispan.InfinispanSessionManagementProvider;
 
 /**
  * Service configurator for Infinispan session management providers.

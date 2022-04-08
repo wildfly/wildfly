@@ -44,6 +44,7 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
 
@@ -970,4 +971,10 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 128, value = "Legacy security is not available")
     IllegalStateException legacySecurityNotAvailable();
+
+    @Message(id = 129, value = "Wrong module name %s")
+    OperationFailedException wrongModuleName(@Cause ModuleLoadException exception, String moduleName);
+
+    @Message(id = 130, value = "Report directory %s does not exist")
+    OperationFailedException reportDirectoryDoesNotExist(String reportDirectory);
 }

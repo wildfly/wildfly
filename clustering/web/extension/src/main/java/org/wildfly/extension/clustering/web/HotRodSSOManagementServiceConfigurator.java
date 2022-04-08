@@ -29,9 +29,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.web.hotrod.sso.HotRodSSOManagementConfiguration;
-import org.wildfly.clustering.web.hotrod.sso.HotRodSSOManagementProvider;
-import org.wildfly.clustering.web.sso.DistributableSSOManagementProvider;
+import org.wildfly.clustering.web.service.sso.DistributableSSOManagementProvider;
+import org.wildfly.extension.clustering.web.sso.hotrod.HotRodSSOManagementConfiguration;
+import org.wildfly.extension.clustering.web.sso.hotrod.HotRodSSOManagementProvider;
 
 /**
  * @author Paul Ferraro

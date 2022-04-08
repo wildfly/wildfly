@@ -205,7 +205,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-spi</artifactId>
+            <artifactId>wildfly-clustering-server-service</artifactId>
         </dependency>
 
         <dependency>

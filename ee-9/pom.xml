@@ -43,22 +43,22 @@
 
         <!-- Version properties for dependency management items -->
         <version.com.sun.faces>3.0.0.SP04</version.com.sun.faces>
-        <version.com.sun.activation.jakarta.activation>2.0.0</version.com.sun.activation.jakarta.activation>
         <version.com.sun.istack>4.0.1</version.com.sun.istack>
         <version.com.sun.xml.messaging.saaj>2.0.0.SP1</version.com.sun.xml.messaging.saaj>
+        <version.jakarta.activation.jakarta.activation-api>2.1.0</version.jakarta.activation.jakarta.activation-api>
         <version.jakarta.annotation.jakarta-annotation-api>2.1.0-B1</version.jakarta.annotation.jakarta-annotation-api>
         <version.jakarta.authentication.jakarta-authentication-api>2.0.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>2.0.0</version.jakarta.authorization.jakarta-authorization-api>
-        <version.jakarta.batch.jakarta.batch-api>2.0.0</version.jakarta.batch.jakarta.batch-api>
+        <version.jakarta.batch.jakarta.batch-api>2.1.0-M2</version.jakarta.batch.jakarta.batch-api>
         <version.jakarta.ejb.jakarta-ejb-api>4.0.0</version.jakarta.ejb.jakarta-ejb-api>
         <version.jakarta.el.jakarta-el-api>5.0.0-RC1</version.jakarta.el.jakarta-el-api>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <version.jakarta.enterprise>4.0.0-RC2</version.jakarta.enterprise>
         <version.jakarta.faces.jakarta-faces-api>3.0.0</version.jakarta.faces.jakarta-faces-api>
-        <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
+        <version.jakarta.inject.jakarta.inject-api>2.0.1</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.interceptor.jakarta-interceptors-api>2.1.0-RC3</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.jms.jakarta-jms-api>3.0.0</version.jakarta.jms.jakarta-jms-api>
-        <version.jakarta.mail>2.0.1</version.jakarta.mail>
+        <version.jakarta.mail-api>2.1.0</version.jakarta.mail-api>
         <version.jakarta.json.bind.api>2.0.0</version.jakarta.json.bind.api>
         <version.jakarta.json.jakarta-json-api>2.0.0</version.jakarta.json.jakarta-json-api>
         <version.jakarta.jws.jakarta-jws-api>3.0.0</version.jakarta.jws.jakarta-jws-api>
@@ -71,9 +71,11 @@
         <version.jakarta.transaction.jakarta-transaction-api>2.0.0</version.jakarta.transaction.jakarta-transaction-api>
         <version.jakarta.validation.jakarta-validation-api>3.0.0</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.0.0</version.jakarta.websocket.jakarta-websocket-api>
-        <!--<version.jakarta.ws.rs.jakarta-ws-rs-api>3.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>-->
+        <version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0.RC1-jbossorg-1</version.jakarta.ws.rs.jakarta-ws-rs-api>
         <!--<version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.0</version.jakarta.xml.bind.jakarta-xml-bind-api>-->
         <version.org.apache.myfaces.core>3.0.1</version.org.apache.myfaces.core>
+        <version.org.eclipse.angus.angus-activation>1.0.0</version.org.eclipse.angus.angus-activation>
+        <version.org.eclipse.angus.angus-mail>1.0.0</version.org.eclipse.angus.angus-mail>
         <!--
             Overrides for MP5. Also make sure to update these in testsuite/integration/microprofile-tck/pom.xml
         -->
@@ -88,7 +90,7 @@
         <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
         <!-- Implementations -->
         <version.io.smallrye.open-api>3.0.0-RC1</version.io.smallrye.open-api>
-        <version.io.smallrye.smallrye-common>2.0.0-RC1</version.io.smallrye.smallrye-common>
+        <version.io.smallrye.smallrye-common>2.0.0-RC2</version.io.smallrye.smallrye-common>
         <version.io.smallrye.smallrye-config>3.0.0-RC1</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>6.0.0-RC1</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.0.0-RC1</version.io.smallrye.smallrye-health>
@@ -107,11 +109,10 @@
         <version.org.hibernate.validator>7.0.2.Final</version.org.hibernate.validator>
         <version.org.jberet>2.0.4.Final</version.org.jberet>
         <version.org.jboss.invocation>1.7.0.Final</version.org.jboss.invocation>
-        <version.org.jboss.resteasy.ee9>6.0.0.Final</version.org.jboss.resteasy.ee9>
+        <version.org.jboss.resteasy.6>6.1.0.Alpha1</version.org.jboss.resteasy.6>
         <version.org.jboss.resteasy.microprofile>2.0.0.Beta1</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>3.0.0</version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>
         <version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec>
-        <version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec>
         <version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>
         <version.org.jboss.weld.weld>5.0.0.Beta1</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>5.0.Beta5</version.org.jboss.weld.weld-api>
@@ -175,9 +176,9 @@
             </dependency>
 
             <dependency>
-                <groupId>com.sun.activation</groupId>
-                <artifactId>jakarta.activation</artifactId>
-                <version>${version.com.sun.activation.jakarta.activation}</version>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+                <version>${version.jakarta.activation.jakarta.activation-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -223,9 +224,9 @@
             </dependency>
 
             <dependency>
-                <groupId>com.sun.mail</groupId>
-                <artifactId>jakarta.mail</artifactId>
-                <version>${version.jakarta.mail}</version>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
+                <version>${version.jakarta.mail-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -637,6 +638,18 @@
             </dependency>
 
             <dependency>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>${version.jakarta.ws.rs.jakarta-ws-rs-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>artemis-jakarta-client</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
@@ -709,6 +722,30 @@
                     <exclusion>
                         <groupId>org.glassfish</groupId>
                         <artifactId>jakarta.json</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.angus</groupId>
+                <artifactId>angus-activation</artifactId>
+                <version>${version.org.eclipse.angus.angus-activation}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.angus</groupId>
+                <artifactId>angus-mail</artifactId>
+                <version>${version.org.eclipse.angus.angus-mail}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -989,9 +1026,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.spec.javax.ws.rs</groupId>
-                <artifactId>jboss-jaxrs-api_3.0_spec</artifactId>
-                <version>${version.org.jboss.spec.jakarta.ws.rs.jboss-jaxrs-api_3.0_spec}</version>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-iiop-client-jakarta</artifactId>
+                <version>${version.org.jboss.iiop-client}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1027,7 +1064,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>jose-jwt</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1039,19 +1076,19 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-client</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-client-api</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-core</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1063,7 +1100,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-core-spi</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1075,19 +1112,19 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-atom-provider</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-cdi</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-crypto</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1099,7 +1136,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jackson2-provider</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1111,19 +1148,19 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-json-binding-provider</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-json-p-provider</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jaxb-provider</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1135,25 +1172,25 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jsapi</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-multipart-provider</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-rxjava2</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-validator-provider</artifactId>
-                <version>${version.org.jboss.resteasy.ee9}</version>
+                <version>${version.org.jboss.resteasy.6}</version>
             </dependency>
 
             <dependency>

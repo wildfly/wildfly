@@ -57,6 +57,7 @@ import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryService
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.services.workmanager.NamedWorkManager;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemService;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.as.connector.util.JCAValidatorFactory;
@@ -127,6 +128,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
     protected final InjectedValue<TransactionIntegration> txInt = new InjectedValue<TransactionIntegration>();
     protected final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
     protected final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<ExecutorService>();
+    protected final InjectedValue<ResourceAdaptersSubsystemService> resourceAdaptersSubsystem = new InjectedValue<>();
 
     protected String raRepositoryRegistrationId;
     protected String connectorServicesRegistrationName;
@@ -280,6 +282,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     public Injector<ExecutorService> getExecutorServiceInjector() {
         return executorServiceInjector;
+    }
+
+    public Injector<ResourceAdaptersSubsystemService> getResourceAdaptersSubsystem() {
+        return resourceAdaptersSubsystem;
     }
 
     protected final ExecutorService getLifecycleExecutorService() {
@@ -578,9 +584,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
         @Override
         protected File getReportDirectory() {
-            // TODO: evaluate if provide something in config about that. atm
-            // returning null and so skip its use
-            return null;
+            return resourceAdaptersSubsystem.getValue().getReportDirectory();
         }
 
         @Override
@@ -660,17 +664,14 @@ public abstract class AbstractResourceAdapterDeploymentService {
             if (securityMetadata == null)
                 return null;
             final String securityDomain = securityMetadata.resolveSecurityDomain();
-            if (securityMetadata instanceof org.jboss.as.connector.metadata.api.common.SecurityMetadata &&
-                    ((org.jboss.as.connector.metadata.api.common.SecurityMetadata)securityMetadata).isElytronEnabled()) {
+            if (securityDomain == null || securityDomain.trim().equals("")) {
+                return null;
+            } else {
                 try {
                     return new ElytronSubjectFactory(null, new URI(jndiName));
                 } catch (URISyntaxException e) {
                     throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);
                 }
-            } else if (securityDomain == null || securityDomain.trim().equals("")) {
-                return null;
-            } else {
-                throw ConnectorLogger.ROOT_LOGGER.legacySecurityNotAvailable();
             }
         }
 

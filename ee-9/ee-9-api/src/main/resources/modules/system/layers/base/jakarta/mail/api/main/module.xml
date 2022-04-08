@@ -25,15 +25,13 @@
 <module xmlns="urn:jboss:module:1.9" name="jakarta.mail.api">
 
     <resources>
-        <artifact name="${com.sun.mail:jakarta.mail}"/>
+        <artifact name="${jakarta.mail:jakarta.mail-api}"/>
     </resources>
 
     <dependencies>
         <module name="java.desktop"/>
         <module name="java.logging"/>
-        <module name="java.security.sasl"/>
         <module name="javax.activation.api" />
-        <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
-        <module name="java.xml"/>
+        <module name="org.eclipse.angus.mail" services="import" />
     </dependencies>
 </module>

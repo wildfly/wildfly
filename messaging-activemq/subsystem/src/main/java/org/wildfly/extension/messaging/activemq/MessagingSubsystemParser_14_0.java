@@ -168,6 +168,7 @@ public class MessagingSubsystemParser_14_0 extends PersistentResourceXMLParser {
                                         ServerDefinition.WILD_CARD_ROUTING_ENABLED,
                                         ServerDefinition.CONNECTION_TTL_OVERRIDE,
                                         ServerDefinition.ASYNC_CONNECTION_EXECUTION_ENABLED,
+                                        ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD,
                                         // security
                                         ServerDefinition.SECURITY_ENABLED,
                                         ServerDefinition.SECURITY_DOMAIN,

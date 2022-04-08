@@ -505,13 +505,14 @@
                                 <exclude>io.grpc:grpc-protobuf-lite\z</exclude>
                                 <exclude>io.grpc:grpc-stub\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-api\z</exclude>
-                                <exclude>io.opentelemetry:opentelemetry-api-metrics\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-context\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-exporter-jaeger\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-exporter-otlp-common\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-exporter-otlp-trace\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-sdk\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-sdk-common\z</exclude>
+                                <exclude>io.opentelemetry:opentelemetry-sdk-logs\z</exclude>
+                                <exclude>io.opentelemetry:opentelemetry-sdk-metrics\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-sdk-trace\z</exclude>
                                 <exclude>io.opentelemetry:opentelemetry-semconv\z</exclude>
                                 <exclude>io.perfmark:perfmark-api\z</exclude>
@@ -538,7 +539,8 @@
                                 <exclude>org.wildfly:wildfly-clustering-ee-cache\z</exclude>
                                 <exclude>org.wildfly:wildfly-clustering-ee-infinispan\z</exclude>
                                 <exclude>org.wildfly:wildfly-clustering-ee-hotrod\z</exclude>
-                                <exclude>org.wildfly:wildfly-clustering-infinispan-client\z</exclude>
+                                <exclude>org.wildfly:wildfly-clustering-infinispan-client-.*\z</exclude>
+                                <exclude>org.wildfly:wildfly-clustering-infinispan-embedded-.+\z</exclude>
                                 <exclude>org.wildfly:wildfly-clustering-infinispan-extension\z</exclude>
                                 <exclude>org.wildfly:wildfly-clustering-web-infinispan\z</exclude>
 
@@ -554,6 +556,13 @@
                                 <exclude>org.apache.activemq:artemis-stomp-protocol\z</exclude>
                                 <exclude>org.apache.activemq:artemis-hqclient-protocol\z</exclude>
                                 <exclude>org.apache.activemq:artemis-selector\z</exclude>
+                                <exclude>org.apache.activemq:artemis-cli\z</exclude>
+                                <exclude>org.apache.activemq:artemis-commons\z</exclude>
+                                <exclude>org.apache.activemq:artemis-core-client\z</exclude>
+                                <exclude>org.apache.activemq:artemis-dto\z</exclude>
+                                <exclude>org.apache.activemq:artemis-server\z</exclude>
+                                <exclude>org.apache.geronimo.specs:geronimo-json_1.1_spec\z</exclude>
+                                <exclude>org.apache.johnzon:johnzon-core\z</exclude>
                                 <exclude>activemq-artemis-native\z</exclude>
                                 <exclude>org.jboss.activemq.artemis.integration:artemis-wildfly-jakarta-integration\z</exclude>
                             </jakarta-transform-excluded-artifacts>
@@ -864,6 +873,10 @@
                 <exclusion>
                     <groupId>org.jboss.ironjacamar</groupId>
                     <artifactId>ironjacamar-validator</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss</groupId>
+                    <artifactId>jboss-iiop-client</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.jboss</groupId>

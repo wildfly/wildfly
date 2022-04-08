@@ -42,10 +42,10 @@ final class BeansXmlParserFactory {
             @SuppressWarnings("unchecked")
             Class<? extends BeansXmlParser> clazz = (Class<? extends BeansXmlParser>) BeansXmlParserFactory.class.getClassLoader().loadClass(cname);
             ctor = clazz.getDeclaredConstructor(DeploymentUnit.class, boolean.class);
-            log.infof("Found constructor for %s", cname);
+            log.debugf("Found constructor for %s", cname);
         } catch (ClassNotFoundException | NoSuchMethodException e) {
             // ignore
-            log.infof(e, "Cannot find constructor for %s", cname);
+            log.debugf(e, "Cannot find constructor for %s", cname);
         }
         constructor = ctor;
     }

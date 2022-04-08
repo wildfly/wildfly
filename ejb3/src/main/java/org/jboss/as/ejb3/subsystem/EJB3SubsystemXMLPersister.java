@@ -22,6 +22,19 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.threads.ThreadsParser;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamException;
+import java.util.EnumSet;
+import java.util.List;
+
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ALLOW_EJB_NAME_REGEX;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.APPLICATION_SECURITY_DOMAIN;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
@@ -51,17 +64,6 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STATISTICS_ENABLED;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
 
-import java.util.List;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.threads.ThreadsParser;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
 /**
  * The {@link XMLElementWriter} that handles the EJB subsystem. As we only write out the most recent version of
  * a subsystem we only need to keep the latest version around.
@@ -78,7 +80,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_9_0.getUriString(), false);
+        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_10_0.getUriString(), false);
         writeElements(writer, context);
         // write the subsystem end element
         writer.writeEndElement();
@@ -161,11 +163,15 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         }
 
         // write the caches element
-        if (model.hasDefined(EJB3SubsystemModel.CACHE)) {
+        if (model.hasDefined(EJB3SubsystemModel.CACHE)
+                || model.hasDefined(EJB3SubsystemModel.SIMPLE_CACHE)
+                || model.hasDefined(EJB3SubsystemModel.DISTRIBUTABLE_CACHE)) {
             // <caches>
             writer.writeStartElement(EJB3SubsystemXMLElement.CACHES.getLocalName());
             // write the caches
             this.writeCaches(writer, model);
+            this.writeSimpleCaches(writer, model);
+            this.writeDistributableCaches(writer, model);
             // </caches>
             writer.writeEndElement();
         }
@@ -175,7 +181,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
                 || model.hasDefined(EJB3SubsystemModel.FILE_PASSIVATION_STORE)) {
             // <passivation-stores>
             writer.writeStartElement(EJB3SubsystemXMLElement.PASSIVATION_STORES.getLocalName());
-            // write the caches
+            // write the stores
             this.writePassivationStores(writer, model);
             this.writeFilePassivationStores(writer, model);
             this.writeClusterPassivationStores(writer, model);
@@ -513,14 +519,63 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     }
 
     private void writeCaches(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
-        List<Property> caches = model.get(EJB3SubsystemModel.CACHE).asPropertyList();
-        for (Property property : caches) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.CACHE.getLocalName());
-            ModelNode cache = property.getValue();
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
-            CacheFactoryResourceDefinition.PASSIVATION_STORE.marshallAsAttribute(cache, writer);
-            writeAttribute(writer, cache, CacheFactoryResourceDefinition.ALIASES);
-            writer.writeEndElement();
+        // cache
+        if (model.hasDefined(EJB3SubsystemModel.CACHE)) {
+            List<Property> caches = model.get(EJB3SubsystemModel.CACHE).asPropertyList();
+            for (Property property : caches) {
+                writer.writeStartElement(EJB3SubsystemXMLElement.CACHE.getLocalName());
+                ModelNode cache = property.getValue();
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
+                LegacyCacheFactoryResourceDefinition.PASSIVATION_STORE.marshallAsAttribute(cache, writer);
+                writeAttribute(writer, cache, LegacyCacheFactoryResourceDefinition.ALIASES);
+                writer.writeEndElement();
+            }
+        }
+    }
+
+    /**
+     * Writes out the <simple-cache> element
+     *
+     * @param writer          XML writer
+     * @param model The <simple-cache> element {@link org.jboss.dmr.ModelNode}
+     * @throws javax.xml.stream.XMLStreamException
+     *
+     */
+    private void writeSimpleCaches(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
+        // simple-cache
+        if (model.hasDefined(EJB3SubsystemModel.SIMPLE_CACHE)) {
+            List<Property> simpleCaches = model.get(EJB3SubsystemModel.SIMPLE_CACHE).asPropertyList();
+            for (Property property : simpleCaches) {
+                writer.writeStartElement(EJB3SubsystemXMLElement.SIMPLE_CACHE.getLocalName());
+                ModelNode simpleCache = property.getValue();
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
+                // no attributes
+                writer.writeEndElement();
+            }
+        }
+    }
+
+    /**
+     * Writes out the <distributable-cache> element
+     *
+     * @param writer          XML writer
+     * @param model The <distributable-cache> element {@link org.jboss.dmr.ModelNode}
+     * @throws javax.xml.stream.XMLStreamException
+     *
+     */
+    private void writeDistributableCaches(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
+        // distributable-cache
+        if (model.hasDefined(EJB3SubsystemModel.DISTRIBUTABLE_CACHE)) {
+            List<Property> distributableCaches = model.get(EJB3SubsystemModel.DISTRIBUTABLE_CACHE).asPropertyList();
+            for (Property property : distributableCaches) {
+                writer.writeStartElement(EJB3SubsystemXMLElement.DISTRIBUTABLE_CACHE.getLocalName());
+                ModelNode distributableCache = property.getValue();
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
+                for (Attribute attribute : EnumSet.allOf(DistributableCacheFactoryResourceDefinition.Attribute.class)) {
+                    attribute.getDefinition().getMarshaller().marshallAsAttribute(attribute.getDefinition(), distributableCache, false, writer);
+                }
+                writer.writeEndElement();
+            }
         }
     }
 

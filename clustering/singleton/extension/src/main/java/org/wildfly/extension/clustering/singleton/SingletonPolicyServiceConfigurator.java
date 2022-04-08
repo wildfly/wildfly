@@ -55,7 +55,7 @@ import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.SingletonPolicy;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.singleton.service.SingletonCacheRequirement;
 
 /**
  * Builds a service that provides a {@link SingletonPolicy}.
@@ -89,7 +89,7 @@ public class SingletonPolicyServiceConfigurator extends CapabilityServiceNamePro
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String containerName = CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
         String cacheName = CACHE.resolveModelAttribute(context, model).asStringOrNull();
-        this.factory = new ServiceSupplierDependency<>(ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY.getServiceName(context, containerName, cacheName));
+        this.factory = new ServiceSupplierDependency<>(SingletonCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY.getServiceName(context, containerName, cacheName));
         this.quorum = QUORUM.resolveModelAttribute(context, model).asInt();
         this.registrar = (SingletonPolicyResource) context.readResource(PathAddress.EMPTY_ADDRESS);
         return this;

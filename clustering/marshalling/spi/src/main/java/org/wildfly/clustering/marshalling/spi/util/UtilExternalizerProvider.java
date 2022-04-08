@@ -82,7 +82,11 @@ public enum UtilExternalizerProvider implements ExternalizerProvider {
     LINKED_HASH_MAP(new LinkedHashMapExternalizer()),
     LINKED_HASH_SET(new HashSetExternalizer<>(LinkedHashSet.class, LinkedHashSet::new)),
     LINKED_LIST(new UnboundedCollectionExternalizer<>(LinkedList.class, LinkedList::new)),
+    LIST12(new UnmodifiableCollectionExternalizer<>(List.of(Boolean.TRUE).getClass().asSubclass(List.class), List::of)),
+    LISTN(new UnmodifiableCollectionExternalizer<>(List.of().getClass().asSubclass(List.class), List::of)),
     LOCALE(new StringExternalizer<>(Locale.class, Locale::forLanguageTag, Locale::toLanguageTag)),
+    MAP1(new UnmodifiableMapExternalizer<>(Map.of(Boolean.TRUE, Boolean.FALSE).getClass().asSubclass(Map.class), Map::ofEntries)),
+    MAPN(new UnmodifiableMapExternalizer<>(Map.of().getClass().asSubclass(Map.class), Map::ofEntries)),
     NATURAL_ORDER_COMPARATOR(new ValueExternalizer<>(Comparator.naturalOrder())),
     @SuppressWarnings({ "unchecked", "rawtypes" })
     OPTIONAL(new ObjectExternalizer<Optional>(Optional.class, Optional::ofNullable, optional -> optional.orElse(null)) {
@@ -95,6 +99,8 @@ public enum UtilExternalizerProvider implements ExternalizerProvider {
     OPTIONAL_INT(new OptionalIntExternalizer()),
     OPTIONAL_LONG(new OptionalLongExternalizer()),
     REVERSE_ORDER_COMPARATOR(new ValueExternalizer<>(Collections.reverseOrder())),
+    SET12(new UnmodifiableCollectionExternalizer<>(Set.of(Boolean.TRUE).getClass().asSubclass(Set.class), Set::of)),
+    SETN(new UnmodifiableCollectionExternalizer<>(Set.of().getClass().asSubclass(Set.class), Set::of)),
     SIMPLE_ENTRY(new MapEntryExternalizer<>(AbstractMap.SimpleEntry.class, AbstractMap.SimpleEntry::new)),
     SIMPLE_IMMUTABLE_ENTRY(new MapEntryExternalizer<>(AbstractMap.SimpleImmutableEntry.class, AbstractMap.SimpleImmutableEntry::new)),
     SINGLETON_LIST(new SingletonCollectionExternalizer<>(Collections::singletonList)),

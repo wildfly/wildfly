@@ -33,7 +33,9 @@ import org.wildfly.common.function.ExceptionSupplier;
 /**
  * {@link ServiceExecutor} implemented via a {@link StampedLock}.
  * @author Paul Ferraro
+ * @deprecated To be removed without replacement
  */
+@Deprecated
 public class StampedLockServiceExecutor implements ServiceExecutor {
 
     private final StampedLock lock = new StampedLock();

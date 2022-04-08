@@ -25,17 +25,12 @@
 <module xmlns="urn:jboss:module:1.9" name="jakarta.activation.api">
 
     <resources>
-        <artifact name="${com.sun.activation:jakarta.activation}"/>
+        <artifact name="${jakarta.activation:jakarta.activation-api}"/>
     </resources>
 
     <dependencies>
         <module name="java.logging" />
-        <module name="javax.api" />
-        <module name="javax.mail.api" optional="true">
-            <imports><include path="META-INF"/></imports>
-        </module>
-        <module name="com.sun.xml.messaging.saaj" optional="true"/>
-        <module name="org.jboss.ws.native.jbossws-native-core" optional="true"/>
-        <module name="org.apache.cxf" optional="true"/>
+        <module name="java.desktop" />
     </dependencies>
+
 </module>

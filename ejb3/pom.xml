@@ -60,10 +60,6 @@ vi:ts=4:sw=4:expandtab
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
         </dependency>
         <dependency>
@@ -76,11 +72,15 @@ vi:ts=4:sw=4:expandtab
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-infinispan-embedded-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-spi</artifactId>
+            <artifactId>wildfly-clustering-server-service</artifactId>
         </dependency>
 
         <dependency>
@@ -274,7 +274,7 @@ projects that depend on this project.-->
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-infinispan-spi</artifactId>
+            <artifactId>wildfly-clustering-infinispan-embedded-service</artifactId>
         </dependency>
 
         <dependency>

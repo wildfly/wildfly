@@ -29,7 +29,7 @@ import org.jboss.ejb.client.UUIDSessionID;
 import org.junit.Test;
 import org.wildfly.clustering.ejb.infinispan.bean.InfinispanBeanKey;
 import org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupKey;
-import org.wildfly.clustering.infinispan.spi.persistence.KeyMapperTester;
+import org.wildfly.clustering.infinispan.persistence.KeyMapperTester;
 
 /**
  * @author Paul Ferraro

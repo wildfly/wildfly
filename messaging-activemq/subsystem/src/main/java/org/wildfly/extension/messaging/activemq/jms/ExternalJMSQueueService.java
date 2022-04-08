@@ -88,16 +88,16 @@ public class ExternalJMSQueueService implements Service<Queue> {
                         public void nodeUP(TopologyMember member, boolean last) {
                             try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getLive())) {
                                 factory.getServerLocator().setProtocolManagerFactory(protocolManagerFactory);
-                                MessagingLogger.ROOT_LOGGER.infof("Creating queue %s on node UP %s - %s", queueName, member.getNodeId(), member.getLive().toJson());
+                                MessagingLogger.ROOT_LOGGER.infof("Creating queue %s on node UP %s - %s", queueName, member.getNodeId(), member.getLive().toString());
                                 config.createQueue(factory, managementQueue, queueName);
                             } catch (JMSException | StartException ex) {
-                                MessagingLogger.ROOT_LOGGER.errorf(ex, "Creating queue %s on node UP %s failed", queueName, member.getLive().toJson());
+                                MessagingLogger.ROOT_LOGGER.errorf(ex, "Creating queue %s on node UP %s failed", queueName, member.getLive().toString());
                                 throw new RuntimeException(ex);
                             }
                             if (member.getBackup() != null) {
                                 try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getBackup())) {
                                     factory.getServerLocator().setProtocolManagerFactory(protocolManagerFactory);
-                                    MessagingLogger.ROOT_LOGGER.infof("Creating queue %s on backup node UP %s - %s", queueName, member.getNodeId(), member.getBackup().toJson());
+                                    MessagingLogger.ROOT_LOGGER.infof("Creating queue %s on backup node UP %s - %s", queueName, member.getNodeId(), member.getBackup().toString());
                                     config.createQueue(factory, managementQueue, queueName);
                                 } catch (JMSException | StartException ex) {
                                     throw new RuntimeException(ex);

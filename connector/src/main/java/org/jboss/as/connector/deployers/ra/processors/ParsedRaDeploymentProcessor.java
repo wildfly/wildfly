@@ -29,8 +29,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.as.connector.annotations.repository.jandex.JandexAnnotationRepositoryImpl;
-import org.jboss.as.connector.logging.ConnectorLogger;
-import org.jboss.as.connector.metadata.api.resourceadapter.ActivationSecurityUtil;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
@@ -38,6 +36,7 @@ import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterDeploymentService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemService;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -121,7 +120,6 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         final ClassLoader classLoader = module.getClassLoader();
 
         Map<ResourceRoot, Index> annotationIndexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
-
 
         ServiceBuilder builder = process(connectorXmlDescriptor, ironJacamarXmlDescriptor, classLoader, serviceTarget, annotationIndexes, deploymentUnit.getServiceName(),registration, deploymentResource, support);
         if (builder != null) {
@@ -210,7 +208,9 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class, raDeploymentService.getManagementRepositoryInjector())
                 .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, raDeploymentService.getRegistryInjector())
                 .addDependency(support.getCapabilityServiceName(ConnectorServices.TRANSACTION_INTEGRATION_CAPABILITY_NAME), TransactionIntegration.class, raDeploymentService.getTxIntegrationInjector())
-                .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, raDeploymentService.getConfigInjector());
+                .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, raDeploymentService.getConfigInjector())
+                .addDependency(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, ResourceAdaptersSubsystemService.class, raDeploymentService.getResourceAdaptersSubsystem());
+
             builder.requires(ConnectorServices.IDLE_REMOVER_SERVICE);
             builder.requires(ConnectorServices.CONNECTION_VALIDATOR_SERVICE);
             builder.requires(support.getCapabilityServiceName(NamingService.CAPABILITY_NAME));
@@ -218,9 +218,6 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 builder.addDependency(ConnectorServices.NON_TX_CCM_SERVICE, CachedConnectionManager.class, raDeploymentService.getCcmInjector());
             } else {
                 builder.addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, raDeploymentService.getCcmInjector());
-            }
-            if (activation != null && ActivationSecurityUtil.isLegacySecurityRequired(activation)) {
-                throw ConnectorLogger.DS_DEPLOYER_LOGGER.legacySecurityNotAvailableForRa(connectorXmlDescriptor.getDeploymentName());
             }
 
             return builder;

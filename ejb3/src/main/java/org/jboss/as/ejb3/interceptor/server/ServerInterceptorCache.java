@@ -47,7 +47,6 @@ import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.value.CachedValue;
 import org.jboss.msc.value.ConstructedValue;
@@ -90,7 +89,7 @@ public class ServerInterceptorCache {
         serverInterceptorsAroundTimeout = new ArrayList<>();
         for (final ServerInterceptorMetaData si: serverInterceptorMetaData) {
             final Class<?> interceptorClass;
-            final ModuleIdentifier moduleId = ModuleIdentifier.create(si.getModule());
+            final String moduleId = si.getModule();
             try {
                 final Module module = Module.getCallerModuleLoader().loadModule(moduleId);
                 interceptorClass = ClassLoadingUtils.loadClass(si.getClazz(), module);

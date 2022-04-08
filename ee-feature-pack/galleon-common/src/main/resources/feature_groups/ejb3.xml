@@ -10,13 +10,11 @@
         <param name="default-missing-method-permissions-deny-access" value="true"/>
         <param name="log-system-exceptions" value="true"/>
         <param name="statistics-enabled" value="${wildfly.ejb3.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
-        <feature spec="subsystem.ejb3.cache">
-            <param name="cache" value="simple"/>
+        <feature spec="subsystem.ejb3.simple-cache">
+            <param name="simple-cache" value="simple"/>
         </feature>
-        <feature spec="subsystem.ejb3.cache">
-            <param name="cache" value="distributable"/>
-            <param name="passivation-store" value="infinispan"/>
-            <param name="aliases" value="[passivating,clustered]"/>
+        <feature spec="subsystem.ejb3.distributable-cache">
+            <param name="distributable-cache" value="distributable"/>
         </feature>
         <feature spec="subsystem.ejb3.strict-max-bean-instance-pool">
             <param name="strict-max-bean-instance-pool" value="mdb-strict-max-pool"/>
@@ -29,11 +27,6 @@
             <param name="derive-size" value="from-worker-pools"/>
             <param name="timeout" value="5"/>
             <param name="timeout-unit" value="MINUTES"/>
-        </feature>
-        <feature spec="subsystem.ejb3.passivation-store">
-            <param name="passivation-store" value="infinispan"/>
-            <param name="cache-container" value="ejb"/>
-            <param name="max-size" value="10000"/>
         </feature>
         <feature spec="subsystem.ejb3.service.async">
             <param name="thread-pool-name" value="default"/>

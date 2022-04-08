@@ -451,12 +451,40 @@ public abstract class AbstractUtilTestCase {
     public void testUnmodifiableList() throws IOException {
         MarshallingTester<List<Object>> tester = this.factory.createTester();
         tester.test(Collections.synchronizedList(new LinkedList<>(BASIS.keySet())), AbstractUtilTestCase::assertCollectionEquals);
+
+        tester.test(List.of(), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(List.of(0), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(List.of(0, 1), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(List.of(0, 1, 2, 3), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(List.of(0, 1, 2, 3, 4), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(List.of(0, 1, 2, 3, 4, 5), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(List.of(0, 1, 2, 3, 4, 5, 6), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(List.of(0, 1, 2, 3, 4, 5, 6, 7), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(List.of(0, 1, 2, 3, 4, 5, 6, 7), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(List.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), AbstractUtilTestCase::assertCollectionEquals);
     }
 
     @Test
     public void testUnmodifiableMap() throws IOException {
         MarshallingTester<Map<Object, Object>> tester = this.factory.createTester();
         tester.test(Collections.synchronizedMap(new HashMap<>(BASIS)), AbstractUtilTestCase::assertMapEquals);
+
+        tester.test(Map.of(), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Map.of(0, "0"), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Map.of(0, "0", 1, "1"), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Map.of(0, "0", 1, "1", 2, "2"), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Map.of(0, "0", 1, "1", 2, "2", 3, "3"), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4"), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4", 5, "5"), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4", 5, "5", 6, "6"), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4", 5, "5", 6, "6", 7, "7"), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4", 5, "5", 6, "6", 7, "7", 8, "8"), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Map.of(0, "0", 1, "1", 2, "2", 3, "3", 4, "4", 5, "5", 6, "6", 7, "7", 8, "8", 9, "9"), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Map.ofEntries(Map.entry(0, "1")), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Map.ofEntries(Map.entry(0, "0"), Map.entry(1, "1")), AbstractUtilTestCase::assertMapEquals);
+        tester.test(Map.ofEntries(Map.entry(0, "0"), Map.entry(1, "1"), Map.entry(2, "2")), AbstractUtilTestCase::assertMapEquals);
     }
 
     @Test
@@ -485,6 +513,19 @@ public abstract class AbstractUtilTestCase {
     public void testUnmodifiableSet() throws IOException {
         MarshallingTester<Set<Object>> tester = this.factory.createTester();
         tester.test(Collections.synchronizedSet(new HashSet<>(BASIS.keySet())), AbstractUtilTestCase::assertCollectionEquals);
+
+        tester.test(Set.of(), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Set.of(0), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Set.of(0, 1), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Set.of(0, 1, 2, 3), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Set.of(0, 1, 2, 3, 4), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Set.of(0, 1, 2, 3, 4, 5), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Set.of(0, 1, 2, 3, 4, 5, 6), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Set.of(0, 1, 2, 3, 4, 5, 6, 7), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Set.of(0, 1, 2, 3, 4, 5, 6, 7), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Set.of(0, 1, 2, 3, 4, 5, 6, 7, 8), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Set.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), AbstractUtilTestCase::assertCollectionEquals);
+        tester.test(Set.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), AbstractUtilTestCase::assertCollectionEquals);
     }
 
     @Test

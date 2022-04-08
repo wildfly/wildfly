@@ -38,7 +38,7 @@
     <artifactId>wildfly-mail-jakarta</artifactId>
 
     <name>WildFly: Mail subsystem (Jakarta Namespace)</name>
-	
+
     <packaging>jar</packaging>
 
     <properties>
@@ -48,14 +48,19 @@
     <dependencies>
 
         <!-- Jakarta-namespace specific deps -->
-		
+
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
         </dependency>
 
         <!-- Other deps consistent with the javax.* mail module -->
-		
+
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller</artifactId>

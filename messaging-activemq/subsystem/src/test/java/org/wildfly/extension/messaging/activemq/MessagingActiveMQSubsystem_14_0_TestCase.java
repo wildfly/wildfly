@@ -62,8 +62,8 @@ import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
-import org.wildfly.clustering.spi.ClusteringDefaultRequirement;
-import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.server.service.ClusteringDefaultRequirement;
+import org.wildfly.clustering.server.service.ClusteringRequirement;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
@@ -286,7 +286,8 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                                 ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
                                 ServerDefinition.CRITICAL_ANALYZER_POLICY,
                                 ServerDefinition.CRITICAL_ANALYZER_TIMEOUT,
-                                ServerDefinition.JOURNAL_MAX_ATTIC_FILES
+                                ServerDefinition.JOURNAL_MAX_ATTIC_FILES,
+                                ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD
                         ))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_MASTER_PATH),
                         new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
@@ -352,7 +353,8 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                                 ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
                                 ServerDefinition.CRITICAL_ANALYZER_POLICY,
                                 ServerDefinition.CRITICAL_ANALYZER_TIMEOUT,
-                                ServerDefinition.JOURNAL_MAX_ATTIC_FILES
+                                ServerDefinition.JOURNAL_MAX_ATTIC_FILES,
+                                ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD
                         ))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY))
@@ -382,7 +384,8 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                             ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
                             ServerDefinition.CRITICAL_ANALYZER_POLICY,
                             ServerDefinition.CRITICAL_ANALYZER_TIMEOUT,
-                            ServerDefinition.JOURNAL_MAX_ATTIC_FILES));
+                            ServerDefinition.JOURNAL_MAX_ATTIC_FILES,
+                            ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH),
                     new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
@@ -407,7 +410,8 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                     ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
                     ServerDefinition.CRITICAL_ANALYZER_POLICY,
                     ServerDefinition.CRITICAL_ANALYZER_TIMEOUT,
-                    ServerDefinition.JOURNAL_MAX_ATTIC_FILES
+                    ServerDefinition.JOURNAL_MAX_ATTIC_FILES,
+                    ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD
             ));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
@@ -527,7 +531,8 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                     ServerDefinition.CRITICAL_ANALYZER_CHECK_PERIOD,
                     ServerDefinition.CRITICAL_ANALYZER_POLICY,
                     ServerDefinition.CRITICAL_ANALYZER_TIMEOUT,
-                    ServerDefinition.JOURNAL_MAX_ATTIC_FILES
+                    ServerDefinition.JOURNAL_MAX_ATTIC_FILES,
+                    ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD
             ));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
                     BridgeDefinition.CALL_TIMEOUT, BridgeDefinition.ROUTING_TYPE));

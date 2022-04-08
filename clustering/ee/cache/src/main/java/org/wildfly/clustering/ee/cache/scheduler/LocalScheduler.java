@@ -34,8 +34,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import org.jboss.as.clustering.context.DefaultExecutorService;
-import org.jboss.as.clustering.context.DefaultThreadFactory;
+import org.wildfly.clustering.context.DefaultExecutorService;
+import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.security.manager.WildFlySecurityManager;
 

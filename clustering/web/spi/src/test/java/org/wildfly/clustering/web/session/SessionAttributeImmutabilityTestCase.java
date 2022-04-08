@@ -29,12 +29,12 @@ import java.util.Collections;
 import java.util.EnumSet;
 
 import org.junit.Test;
-import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.immutable.CompositeImmutability;
 import org.wildfly.clustering.ee.immutable.DefaultImmutability;
 import org.wildfly.clustering.ee.immutable.DefaultImmutabilityTestCase;
 import org.wildfly.clustering.web.annotation.Immutable;
+import org.wildfly.common.iteration.CompositeIterable;
 
 /**
  * @author Paul Ferraro

@@ -40,5 +40,6 @@
         <module name="org.wildfly.clustering.ee.spi"/>
         <!-- Enable dynamic loading of distributable bean manager provider -->
         <module name="org.wildfly.clustering.ejb.infinispan" services="import" optional="true"/>
+        <module name="org.wildfly.clustering.service"/>
     </dependencies>
 </module>

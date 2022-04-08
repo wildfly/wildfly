@@ -798,6 +798,7 @@
         <xs:attribute name="wild-card-routing-enabled" type="xs:boolean" use="optional" />
         <xs:attribute name="connection-ttl-override" type="xs:long" use="optional" />
         <xs:attribute name="async-connection-execution-enabled" type="xs:boolean" use="optional" />
+        <xs:attribute name="address-queue-scan-period" type="xs:long" use="optional" />
     </xs:complexType>
 
     <xs:simpleType name="stringList">

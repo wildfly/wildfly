@@ -11,6 +11,8 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
+import javax.mail.Session;
+
 /**
  * @author Stuart Douglas
  */
@@ -19,6 +21,8 @@ public class MailDependenciesProcessor implements DeploymentUnitProcessor {
 
     private static final ModuleIdentifier MAIL_API = ModuleIdentifier.create("javax.mail.api");
     private static final ModuleIdentifier ACTIVATION_API = ModuleIdentifier.create("javax.activation.api");
+    private static final String ANGUS_MAIL_IMPL = "org.eclipse.angus.mail";
+    private static final String ANGUS_ACTIVATION_IMPL = "org.eclipse.angus.activation";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -28,5 +32,9 @@ public class MailDependenciesProcessor implements DeploymentUnitProcessor {
         moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, MAIL_API, false, false, true, false));
         moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ACTIVATION_API, false, false, true, false));
 
+        if (!Session.class.getName().startsWith("javax")) {
+            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ANGUS_MAIL_IMPL, false, false, true, false));
+            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ANGUS_ACTIVATION_IMPL, false, false, true, false));
+        }
     }
 }

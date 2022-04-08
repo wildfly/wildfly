@@ -34,7 +34,7 @@ import org.jboss.ejb3.annotation.Cache;
  * stateful session bean
  */
 @Stateful
-@Cache("passivating")
+@Cache("distributable")
 @StatefulTimeout(value = 1000, unit = TimeUnit.MILLISECONDS)
 public class PassivatingBean2 {
     static volatile boolean preDestroy;
