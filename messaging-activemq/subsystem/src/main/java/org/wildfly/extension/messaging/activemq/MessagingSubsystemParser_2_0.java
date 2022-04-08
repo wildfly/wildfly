@@ -478,8 +478,8 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
                                                         ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
                                                         ConnectionFactoryAttributes.Common.GROUP_ID,
-                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST,
+                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST,
                                                         // regular
                                                         ConnectionFactoryAttributes.Regular.FACTORY_TYPE))
                                 .addChild(
@@ -561,8 +561,8 @@ public class MessagingSubsystemParser_2_0 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
                                                         ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
                                                         ConnectionFactoryAttributes.Common.GROUP_ID,
-                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST,
+                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST,
                                                         // pooled
                                                         // inbound config
                                                         ConnectionFactoryAttributes.Pooled.USE_JNDI,

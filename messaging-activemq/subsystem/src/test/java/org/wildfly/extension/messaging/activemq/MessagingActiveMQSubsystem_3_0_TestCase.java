@@ -193,16 +193,16 @@ public class MessagingActiveMQSubsystem_3_0_TestCase extends AbstractSubsystemBa
                                 ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
-                                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                                ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST))
+                                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST,
+                                ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ConnectionFactoryAttributes.Pooled.ALLOW_LOCAL_TRANSACTIONS,
                                 ConnectionFactoryAttributes.Pooled.REBALANCE_CONNECTIONS,
                                 ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED,
                                 ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE,
-                                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                                ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST))
+                                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST,
+                                ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST))
                 ;
         }
 

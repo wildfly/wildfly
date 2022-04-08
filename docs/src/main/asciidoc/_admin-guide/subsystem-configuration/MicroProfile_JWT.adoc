@@ -128,7 +128,7 @@ The SmallRye JWT specific properties allow for a lot of customisation not covere
 |60
 |The refresh inerval where `mp.jwt.verify.publickey.location` points to a HTTPS location.
 
-|smallrye.jwt.whitelist.algorithms
+|smallrye.jwt.allowlist.algorithms
 |RS256
 |List of supported algorithms.
 

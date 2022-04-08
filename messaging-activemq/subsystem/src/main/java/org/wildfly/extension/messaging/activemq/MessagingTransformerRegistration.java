@@ -179,8 +179,8 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
                 ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
                 ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
                 ConnectionFactoryAttributes.Common.GROUP_ID,
-                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST,
+                ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST,
                 ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE);
     }
 
@@ -374,8 +374,8 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         // reject producer-window-size introduced in management version 2.0.0 if it is defined and different from the default value.
         rejectDefinedAttributeWithDefaultValue(clusterConnection, ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE);
         ResourceTransformationDescriptionBuilder connectionFactory = server.addChildResource(MessagingExtension.CONNECTION_FACTORY_PATH);
-        rejectDefinedAttributeWithDefaultValue(connectionFactory, ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST);
+        rejectDefinedAttributeWithDefaultValue(connectionFactory, ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST,
+                ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST);
         connectionFactory.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, CommonAttributes.CALL_FAILOVER_TIMEOUT);
         ResourceTransformationDescriptionBuilder pooledConnectionFactory = server.addChildResource(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH);
         // reject rebalance-connections introduced in management version 2.0.0 if it is defined and different from the default value.
@@ -386,8 +386,8 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         // reject min-pool-size whose default value has been changed in  management version 2.0.0
         pooledConnectionFactory.getAttributeBuilder().setValueConverter(AttributeConverter.DEFAULT_VALUE, ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE, CommonAttributes.CALL_FAILOVER_TIMEOUT, ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE);
         rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE,
-                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST,
+                ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST,
                 ConnectionFactoryAttributes.Pooled.ALLOW_LOCAL_TRANSACTIONS);
     }
 

@@ -144,8 +144,8 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
                 factory.setConnectionTTL(config.getConnectionTTL());
                 factory.setConsumerMaxRate(config.getConsumerMaxRate());
                 factory.setConsumerWindowSize(config.getConsumerWindowSize());
-                factory.setDeserializationBlackList(config.getDeserializationBlackList());
-                factory.setDeserializationWhiteList(config.getDeserializationWhiteList());
+                factory.setDeserializationBlockList(config.getDeserializationBlockList());
+                factory.setDeserializationAllowList(config.getDeserializationAllowList());
                 factory.setDupsOKBatchSize(config.getDupsOKBatchSize());
                 factory.setEnableSharedClientID(config.isEnableSharedClientID());
                 factory.setFailoverOnInitialConnection(config.isFailoverOnInitialConnection());

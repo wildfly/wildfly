@@ -86,20 +86,20 @@ public class Filters {
         };
     }
 
-    public static BlacklistFilter wildcardBlackList() {
-        return new WildcardBlacklistFilter();
+    public static BlocklistFilter wildcardBlockList() {
+        return new WildcardBlocklistFilter();
     }
 
-    public static BlacklistFilter wildcardBlacklistFilter(final String... patterns){
-        return new WildcardBlacklistFilter(patterns);
+    public static BlocklistFilter wildcardBlocklistFilter(final String... patterns){
+        return new WildcardBlocklistFilter(patterns);
     }
 
-    public static BlacklistFilter regexBlackList() {
-        return new RegexBlacklistFilter();
+    public static BlocklistFilter regexBlockList() {
+        return new RegexBlocklistFilter();
     }
 
-    public static BlacklistFilter regexBlackList(String... patterns) {
-        return new RegexBlacklistFilter(patterns);
+    public static BlocklistFilter regexBlockList(String... patterns) {
+        return new RegexBlocklistFilter(patterns);
     }
 
     public static VirtualFileFilter suffix(final String s){
@@ -111,20 +111,20 @@ public class Filters {
         };
     }
 
-    public interface BlacklistFilter extends VirtualFileFilter {
+    public interface BlocklistFilter extends VirtualFileFilter {
         void add(final String... patterns);
     }
 
-    private static class WildcardBlacklistFilter implements BlacklistFilter {
+    private static class WildcardBlocklistFilter implements BlocklistFilter {
 
         private final List<WildcardPattern> patterns;
 
-        public WildcardBlacklistFilter() {
+        public WildcardBlocklistFilter() {
             patterns = new ArrayList<WildcardPattern>();
             patterns.add(new WildcardPattern("*-users.properties"));
         }
 
-        public WildcardBlacklistFilter(final String... patterns) {
+        public WildcardBlocklistFilter(final String... patterns) {
             this.patterns = new ArrayList<WildcardPattern>(patterns.length);
             add(patterns);
         }
@@ -146,14 +146,14 @@ public class Filters {
         }
     }
 
-    private static class RegexBlacklistFilter implements BlacklistFilter {
+    private static class RegexBlocklistFilter implements BlocklistFilter {
         private final List<Pattern> patterns;
 
-        public RegexBlacklistFilter(){
+        public RegexBlocklistFilter(){
             this.patterns = Arrays.asList(Pattern.compile(".*-users.properties"));
         }
 
-        public RegexBlacklistFilter(final String... patterns){
+        public RegexBlocklistFilter(final String... patterns){
             this.patterns = new ArrayList<Pattern>(patterns.length);
             add(patterns);
         }
