@@ -10,6 +10,7 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.filter.PathFilters;
 
 import javax.mail.Session;
 
@@ -33,7 +34,9 @@ public class MailDependenciesProcessor implements DeploymentUnitProcessor {
         moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ACTIVATION_API, false, false, true, false));
 
         if (!Session.class.getName().startsWith("javax")) {
-            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ANGUS_MAIL_IMPL, false, false, true, false));
+            ModuleDependency angusMailModDep = new ModuleDependency(moduleLoader, ANGUS_MAIL_IMPL, false, false, true, false);
+            angusMailModDep.addImportFilter(PathFilters.getMetaInfFilter(), true);
+            moduleSpec.addSystemDependency(angusMailModDep);
             moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, ANGUS_ACTIVATION_IMPL, false, false, true, false));
         }
     }
