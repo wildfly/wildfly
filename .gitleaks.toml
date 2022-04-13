@@ -1,0 +1,43 @@
+# Gitleaks is a tool that detects potential leaks of secrets. This file defines an allowlist to avoid false positives.
+# The tool checks the commit history, some files that are not present anymore but contained example secrets has to be put in the allowlist as well
+[allowlist]
+    description = "Allowlist"
+    # ignore secrets present in the below test folders
+    paths = [
+        '''tests\/base\/src\/test\/java\/org\/wildfly\/security\/util''',
+        '''testsuite\/integration\/basic\/src\/test\/java\/org\/jboss\/as\/test\/integration\/security\/loginmodules\/common''',
+        '''testsuite\/integration\/basic\/src\/test\/java\/org\/jboss\/as\/test\/integration\/management\/api\/web''',
+        '''testsuite\/integration\/basic\/src\/test\/resources\/org\/wildfly\/test\/integration\/microprofile\/jwt''',
+        '''testsuite\/integration\/elytron\/src\/test\/resources''',
+        '''testsuite\/integration\/manualmode\/src\/test\/java\/org\/jboss\/as\/test\/manualmode\/ejb\/ssl''',
+        '''testsuite\/integration\/manualmode\/src\/test\/java\/org\/jboss\/as\/test\/manualmode\/ejb\/client\/outbound\/connection\/security''',
+        '''testsuite\/integration\/microprofile\/src\/test\/resources\/jwt''',
+        '''testsuite\/integration\/multinode\/src\/test\/resources''',
+        '''testsuite\/integration\/src\/test\/scripts''',
+        # ignore this file
+        '''^\.?gitleaks.toml$''',
+    ]
+    # ignore secrets from the below commits
+    commits = [
+        # all below commits contained language translations and LocalDescriptions properties files which contained string with the following format:
+        # "secret=Konfiguration", "secret=Configuration", "secret=Configuraci\\u00F3n", etc. These files are not present in the codebase anymore
+        '4e6b31242c7c5b8c4040484b28bd075815d40deb',
+        '6267c40213a7bfc853737e3d4a6fed68a2afcef5',
+        'de57ad8c007deb54ca02852663c763434ba37e9b',
+        '27b56ae78a60f42139d615b289efa32c21aecc69',
+        '8d4712f2f54417f44c85ba8ceecf9d1ae78911dc',
+        '3dfbb2963b0bc4452e1d8cfd1fba0850136a8caf',
+        '8c9cb5d32b091590a0e3aa034db554510c672ae1',
+    ]
+    # ignore secrets that contain the below regexes
+    regexes = [
+        # below example secrets are not present anymore
+        'someRandomWrongPass',
+        'wrongPasswordForVault',
+        'somearbitrarycrazystringthatdoesnotmatter',
+        'password=JBossPassword',
+        'password=whoami',
+        'secret=Configuration',
+        # present in "testsuite/mixed-domain/pom.xml" file
+        'password=ILoveWildfly',
+    ]
