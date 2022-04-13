@@ -20,12 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.protostream;
+package org.wildfly.clustering.marshalling.protostream.reflect;
 
 import java.io.IOException;
 import java.util.function.UnaryOperator;
 
-import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
  * A decorator marshaller that writes the decorated object while holding its monitor lock.
@@ -46,11 +46,8 @@ public class SynchronizedDecoratorMarshaller<T> extends DecoratorMarshaller<T> {
 
     @Override
     public void writeTo(ProtoStreamWriter writer, T value) throws IOException {
-        T decorated = WildFlySecurityManager.doUnchecked(value, this);
-        if (decorated != null) {
-            synchronized (value) {
-                writer.writeAny(DECORATED_INDEX, decorated);
-            }
+        synchronized (value) {
+            super.writeTo(writer, value);
         }
     }
 }
