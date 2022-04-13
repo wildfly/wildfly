@@ -26,7 +26,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-ejb3}"/>
+        <artifact name="\${org.wildfly:wildfly-ejb3@module.jakarta.suffix@}"/>
         <resource-root path="timers" />
     </resources>
 
