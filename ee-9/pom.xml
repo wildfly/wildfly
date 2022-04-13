@@ -49,7 +49,7 @@
         <version.jakarta.annotation.jakarta-annotation-api>2.1.0</version.jakarta.annotation.jakarta-annotation-api>
         <version.jakarta.authentication.jakarta-authentication-api>2.0.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>2.0.0</version.jakarta.authorization.jakarta-authorization-api>
-        <version.jakarta.batch.jakarta.batch-api>2.1.0-M2</version.jakarta.batch.jakarta.batch-api>
+        <version.jakarta.batch.jakarta.batch-api>2.1.0</version.jakarta.batch.jakarta.batch-api>
         <version.jakarta.ejb.jakarta-ejb-api>4.0.0</version.jakarta.ejb.jakarta-ejb-api>
         <version.jakarta.el.jakarta-el-api>5.0.0-RC1</version.jakarta.el.jakarta-el-api>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
