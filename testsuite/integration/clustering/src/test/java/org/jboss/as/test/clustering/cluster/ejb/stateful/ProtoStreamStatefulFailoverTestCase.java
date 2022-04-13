@@ -40,9 +40,9 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-public class StatefulFailoverTestCase extends AbstractStatefulFailoverTestCase {
+public class ProtoStreamStatefulFailoverTestCase extends AbstractStatefulFailoverTestCase {
 
-    private static final String MODULE_NAME = StatefulFailoverTestCase.class.getSimpleName();
+    private static final String MODULE_NAME = ProtoStreamStatefulFailoverTestCase.class.getSimpleName();
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)
@@ -67,10 +67,11 @@ public class StatefulFailoverTestCase extends AbstractStatefulFailoverTestCase {
                 "<decorators><class>" + CounterDecorator.class.getName() + "</class></decorators>" +
                 "</beans>"), "beans.xml");
         war.addAsResource(PersistenceIncrementorBean.class.getPackage(), "persistence.xml", "/META-INF/persistence.xml");
+        war.addAsWebInfResource(StatefulServlet.class.getPackage(), "distributable-web.xml", "distributable-web.xml");
         return war;
     }
 
-    public StatefulFailoverTestCase() {
+    public ProtoStreamStatefulFailoverTestCase() {
         super(MODULE_NAME);
     }
 }
