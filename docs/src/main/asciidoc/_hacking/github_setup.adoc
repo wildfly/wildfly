@@ -52,7 +52,7 @@ Add a remote ref to upstream, for pulling future updates
 
 [source,options="nowrap"]
 ----
-git remote add upstream git://github.com/wildfly/wildfly.git
+git remote add upstream git@github.com:wildfly/wildfly.git
 ----
 [[safety]]
 == Safety
@@ -72,7 +72,7 @@ Pulling later updates from upstream
 ----
 $ git checkout -f main
 $ git pull --rebase upstream main
-From git://github.com/wildfly/wildfly
+From github.com:wildfly/wildfly
  * branch            main     -> FETCH_HEAD
 Updating 3382570..1fa25df
 Fast-forward
