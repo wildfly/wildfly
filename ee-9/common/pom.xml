@@ -197,7 +197,7 @@
 
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcjmail-jdk15on</artifactId>
+            <artifactId>bcjmail-jdk18on</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
