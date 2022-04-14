@@ -30,7 +30,7 @@ public class JpaRemoteBean implements JpaRemote {
 
     @Override
     public Set<String> getEmployees() {
-        final List<Employee> emps = entityManager.createQuery("from Employee").getResultList();
+        final List<Employee> emps = entityManager.createQuery("select e from Employee e").getResultList();
         final Set<String> ret = new HashSet<String>();
         for (Employee e : emps) {
             ret.add(e.getName());
