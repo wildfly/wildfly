@@ -19,6 +19,8 @@ package org.wildfly.extension.vertx;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
 
+import io.netty.util.internal.logging.InternalLoggerFactory;
+import io.netty.util.internal.logging.JdkLoggerFactory;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -55,6 +57,7 @@ public class VertxSubsystemExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
+        InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);
         VERTX_LOGGER.debug("Activating WildFly Vertx Extension.");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new VertxSubsystemDefinition());
