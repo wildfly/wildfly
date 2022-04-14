@@ -187,18 +187,17 @@ public class VertxProxyService implements Service, VertxConstants {
             ConfigurationBuilderHolder builderHolder = new ParserRegistry(classLoader)
               .parseFile(DEFAULT_INFINISPAN_FILE);
             TransportConfigurationBuilder transport = builderHolder.getGlobalConfigurationBuilder()
-              .transport()
-              .defaultTransport();
+              .transport();
             if (channelFactorySupplier != null) {
                 JChannel jChannel = channelFactorySupplier.get().createChannel(UUID.randomUUID().toString());
                 String clusterName = clusterSupplier.get() != null ? clusterSupplier.get() : vertxProxy.getJgroupChannelName();
-                transport.removeProperty(JGroupsTransport.CHANNEL_CONFIGURATOR)
+                transport.defaultTransport().removeProperty(JGroupsTransport.CHANNEL_CONFIGURATOR)
                   .transport(new JGroupsTransport(jChannel))
                   .clusterName(clusterName);
             } else if (jgroupsStackFile != null) {
                 String jgroupsFile = Paths.get(jgroupsStackFile).isAbsolute() ? jgroupsStackFile :
                   Paths.get(serverEnvSupplier.get().getServerConfigurationDir().getPath(), jgroupsStackFile).toString();
-                transport.removeProperty(JGroupsTransport.CHANNEL_CONFIGURATOR)
+                transport.defaultTransport().removeProperty(JGroupsTransport.CHANNEL_CONFIGURATOR)
                   .addProperty(JGroupsTransport.CONFIGURATION_FILE, jgroupsFile);
             }
             defaultCacheManager = new DefaultCacheManager(builderHolder, true);
