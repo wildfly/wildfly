@@ -828,6 +828,10 @@
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-weld-ejb</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-weld-jpa</artifactId>
                 </exclusion>
                 <exclusion>
