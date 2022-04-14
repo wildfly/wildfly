@@ -151,7 +151,7 @@
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
-      <artifactId>bcmail-jdk15on</artifactId>
+      <artifactId>bcmail-jdk18on</artifactId>
       <licenses>
         <license>
           <name>MIT License</name>
