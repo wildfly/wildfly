@@ -21,16 +21,17 @@
  */
 package org.wildfly.microprofile.opentracing.smallrye;
 
-import io.opentracing.Tracer;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
-
+import javax.enterprise.context.RequestScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.BeforeShutdown;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
+
+import io.opentracing.Tracer;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 public class TracingCDIExtension implements Extension {
@@ -42,9 +43,10 @@ public class TracingCDIExtension implements Extension {
     }
 
     public void registerTracerBean(@Observes AfterBeanDiscovery abd) {
-        abd.addBean().addTransitiveTypeClosure(Tracer.class).produceWith(i -> {
-            return TRACERS.get(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
-        });
+        abd.addBean()
+                .scope(RequestScoped.class)
+                .addTransitiveTypeClosure(Tracer.class).produceWith(i ->
+                        TRACERS.get(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged()));
     }
 
     public void skipTracerBeans(@Observes ProcessAnnotatedType<? extends Tracer> processAnnotatedType) {
