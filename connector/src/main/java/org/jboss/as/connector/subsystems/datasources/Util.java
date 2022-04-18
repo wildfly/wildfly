@@ -46,7 +46,7 @@ public class Util {
      */
     public static String getJndiName(final OperationContext context, final ModelNode modelNode) throws OperationFailedException {
         final String rawJndiName = JNDI_NAME.resolveModelAttribute(context, modelNode).asString();
-        return cleanJndiName(rawJndiName, modelNode.hasDefined(USE_JAVA_CONTEXT.getName()) && modelNode.get(USE_JAVA_CONTEXT.getName()).asBoolean());
+        return cleanJndiName(rawJndiName, USE_JAVA_CONTEXT.resolveModelAttribute(context, modelNode).asBoolean());
     }
 
     public static String cleanJndiName(String rawJndiName, boolean useJavaContext) {

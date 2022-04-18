@@ -106,7 +106,8 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         operation.get("name").set("MyNewDs");
         operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
         operation.get("enabled").set(true);
-
+        // WFLY-16272 test a simple use-java-context with expression value in "test-connection-in-pool" operation.
+        operation.get("use-java-context").set("${env.db_java_context:true}");
 
         operation.get("driver-name").set("h2");
         operation.get("pool-name").set("MyNewDs_Pool");
