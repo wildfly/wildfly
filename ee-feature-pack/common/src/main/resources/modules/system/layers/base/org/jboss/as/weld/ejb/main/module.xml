@@ -33,7 +33,7 @@
     </exports>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-weld-ejb}"/>
+        <artifact name="\${org.wildfly:wildfly-weld-ejb@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
