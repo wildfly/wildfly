@@ -58,6 +58,7 @@ import org.jboss.jca.common.api.metadata.common.TimeOut;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.common.Validation;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activations;
 import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
 import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
 import org.jboss.jca.common.api.metadata.spec.Activationspec;
@@ -555,7 +556,7 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
 
     private static Activation createActivation(ConnectionDefinition common, TransactionSupportEnum transactionSupport) {
         List<ConnectionDefinition> definitions = Collections.singletonList(common);
-        return new ActivationImpl(null, null, transactionSupport, definitions, Collections.<AdminObject>emptyList(), Collections.<String, String>emptyMap(), Collections.<String>emptyList(), null, null);
+        return new ActivationImpl(Activations.CURRENT_VERSION, null, null, transactionSupport, definitions, Collections.<AdminObject>emptyList(), Collections.<String, String>emptyMap(), Collections.<String>emptyList(), null, null);
     }
 
     private static ConnectionDefinition createConnDef(TransactionSupportEnum transactionSupport, String jndiName, int minPoolSize, int maxPoolSize, String managedConnectionPoolClassName, Boolean enlistmentTrace) throws ValidateException {

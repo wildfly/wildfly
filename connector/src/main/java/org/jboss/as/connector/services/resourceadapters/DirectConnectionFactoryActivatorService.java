@@ -45,6 +45,7 @@ import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.Pool;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activations;
 import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
 import org.jboss.jca.common.api.metadata.spec.ConnectionDefinition;
 import org.jboss.jca.common.api.metadata.spec.Connector;
@@ -225,7 +226,7 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
                     Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Defaults.CONNECTABLE, Defaults.TRACKING,
                     Defaults.MCP, Defaults.ENLISTMENT_TRACE, pool, null, null, security, null, isXA);
 
-            Activation activation = new ActivationImpl(null, null, transactionSupportValue, Collections.singletonList(cd), Collections.<AdminObject>emptyList(), raConfigProperties, Collections.<String>emptyList(), null, null);
+            Activation activation = new ActivationImpl(Activations.CURRENT_VERSION, null, null, transactionSupportValue, Collections.singletonList(cd), Collections.<AdminObject>emptyList(), raConfigProperties, Collections.<String>emptyList(), null, null);
 
             String serviceName = jndiName;
             serviceName = serviceName.replace(':', '_');

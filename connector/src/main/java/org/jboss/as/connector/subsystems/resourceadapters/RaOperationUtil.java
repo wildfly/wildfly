@@ -102,7 +102,6 @@ import org.jboss.as.connector.deployers.ra.processors.RaDeploymentParsingProcess
 import org.jboss.as.connector.deployers.ra.processors.RaNativeProcessor;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Credential;
-import org.jboss.as.connector.metadata.api.common.SecurityMetadata;
 import org.jboss.as.connector.metadata.common.CredentialImpl;
 import org.jboss.as.connector.metadata.common.SecurityImpl;
 import org.jboss.as.connector.metadata.resourceadapter.WorkManagerSecurityImpl;
@@ -419,7 +418,7 @@ public class RaOperationUtil {
             for (ConnectionDefinition cd : resourceAdapter.getConnectionDefinitions()) {
                 Security security = cd.getSecurity();
                 if (security != null) {
-                    final boolean elytronEnabled = (security instanceof SecurityMetadata && ((SecurityMetadata) security).isElytronEnabled());
+                    final boolean elytronEnabled = security.isElytronEnabled();
                     if (security.getSecurityDomain() != null) {
                         if (!elytronEnabled) {
                             builder.requires(SECURITY_DOMAIN_SERVICE.append(security.getSecurityDomain()));

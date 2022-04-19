@@ -64,6 +64,7 @@ import org.jboss.jca.common.api.metadata.common.TimeOut;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.common.Validation;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activations;
 import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
 import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
 import org.jboss.jca.common.api.metadata.spec.Activationspec;
@@ -521,7 +522,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
         boolean ignoreJTA = transactionSupport == TransactionSupportEnum.NoTransaction;
         //attribute is propagated only if it means to ignore JTA transaction; in case of not ignoring, default behavior is used
         Map<String, String> configProperties = ignoreJTA ? Collections.<String, String>singletonMap(IGNORE_JTA, String.valueOf(ignoreJTA)) : Collections.emptyMap();
-        return new ActivationImpl(null, null, transactionSupport, definitions, Collections.<AdminObject>emptyList(), configProperties, Collections.<String>emptyList(), null, null);
+        return new ActivationImpl(Activations.CURRENT_VERSION, null, null, transactionSupport, definitions, Collections.<AdminObject>emptyList(), configProperties, Collections.<String>emptyList(), null, null);
     }
 
 
