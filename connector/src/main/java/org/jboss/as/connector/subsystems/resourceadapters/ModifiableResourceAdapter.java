@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activations;
 import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
 import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
 import org.jboss.jca.common.api.metadata.resourceadapter.WorkManager;
@@ -40,7 +41,7 @@ public class ModifiableResourceAdapter extends ActivationImpl {
     public ModifiableResourceAdapter(String id, String archive, TransactionSupportEnum transactionSupport, List<ConnectionDefinition> connectionDefinitions,
                                      List<AdminObject> adminObjects, Map<String, String> configProperties, List<String> beanValidationGroups,
                                      String bootstrapContext, WorkManager workmanager) {
-        super(id, archive, transactionSupport, connectionDefinitions, adminObjects, configProperties, beanValidationGroups, bootstrapContext, workmanager);
+        super(Activations.CURRENT_VERSION, id, archive, transactionSupport, connectionDefinitions, adminObjects, configProperties, beanValidationGroups, bootstrapContext, workmanager);
     }
 
     public synchronized void addConfigProperty(String name, String value) {

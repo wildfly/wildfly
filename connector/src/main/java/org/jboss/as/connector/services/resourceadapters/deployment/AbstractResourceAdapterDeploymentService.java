@@ -668,8 +668,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
             if (securityMetadata == null)
                 return null;
             final String securityDomain = securityMetadata.resolveSecurityDomain();
-            if (securityMetadata instanceof org.jboss.as.connector.metadata.api.common.SecurityMetadata &&
-                    ((org.jboss.as.connector.metadata.api.common.SecurityMetadata)securityMetadata).isElytronEnabled()) {
+            if (securityMetadata.isElytronEnabled()) {
                 try {
                     return new ElytronSubjectFactory(null, new URI(jndiName));
                 } catch (URISyntaxException e) {

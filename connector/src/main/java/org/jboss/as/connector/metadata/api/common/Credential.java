@@ -22,7 +22,7 @@ import org.jboss.as.controller.security.CredentialReference;
  *
  * @author Flavia Rainone
  */
-public interface Credential extends org.jboss.jca.common.api.metadata.common.Credential, SecurityMetadata {
+public interface Credential extends org.jboss.jca.common.api.metadata.common.Credential {
    /**
     *
     * A Tag.

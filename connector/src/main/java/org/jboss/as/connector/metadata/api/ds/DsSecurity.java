@@ -15,14 +15,13 @@
  */
 package org.jboss.as.connector.metadata.api.ds;
 
-import org.jboss.as.connector.metadata.api.common.SecurityMetadata;
 
 /**
  * Extension of {@link org.jboss.jca.common.api.metadata.ds.DsSecurity} with added Elytron support.
  *
  * @author Flavia Rainone
  */
-public interface DsSecurity extends org.jboss.jca.common.api.metadata.ds.DsSecurity, SecurityMetadata {
+public interface DsSecurity extends org.jboss.jca.common.api.metadata.ds.DsSecurity {
    /**
     *
     * A Tag.

@@ -37,6 +37,7 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activations;
 import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
 import org.jboss.jca.common.api.metadata.spec.AdminObject;
 import org.jboss.jca.common.api.metadata.spec.Connector;
@@ -141,7 +142,7 @@ public class DirectAdminObjectActivatorService implements Service<ContextNames.B
 
             org.jboss.jca.common.api.metadata.resourceadapter.AdminObject ao = new AdminObjectImpl(aoConfigProperties, aoClass, jndiName, poolName(aoClass, className), Boolean.TRUE, Boolean.TRUE);
 
-            Activation activation = new ActivationImpl(null, null, TransactionSupportEnum.LocalTransaction, Collections.<ConnectionDefinition>emptyList(), Collections.singletonList(ao),
+            Activation activation = new ActivationImpl(Activations.CURRENT_VERSION, null, null, TransactionSupportEnum.LocalTransaction, Collections.<ConnectionDefinition>emptyList(), Collections.singletonList(ao),
                     null, Collections.<String>emptyList(), null, null);
 
             String serviceName = jndiName;

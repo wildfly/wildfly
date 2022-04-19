@@ -70,8 +70,7 @@ public final class ActivationSecurityUtil {
         if (security == null)
             return false;
         // security uses elytron
-        if (security instanceof org.jboss.as.connector.metadata.api.common.SecurityMetadata &&
-                ((org.jboss.as.connector.metadata.api.common.SecurityMetadata) security).isElytronEnabled())
+        if (security.isElytronEnabled())
             return false;
         // check if legacy domain is non-null
         final String domain = security.resolveSecurityDomain();
