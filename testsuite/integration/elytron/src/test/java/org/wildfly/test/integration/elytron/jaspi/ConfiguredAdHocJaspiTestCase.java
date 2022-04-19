@@ -29,7 +29,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.shared.categories.RequiresTransformedClass;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
@@ -41,6 +43,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ ConfiguredAdHocJaspiTestCase.ServerSetup.class })
+@Category(RequiresTransformedClass.class)
 public class ConfiguredAdHocJaspiTestCase extends ConfiguredJaspiTestBase {
 
     private static final String NAME = ConfiguredAdHocJaspiTestCase.class.getSimpleName();
