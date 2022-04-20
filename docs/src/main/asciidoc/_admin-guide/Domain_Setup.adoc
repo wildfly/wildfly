@@ -265,7 +265,7 @@ file and setting the `ignore-unused-configuration` attribute:
 <domain-controller>
     <remote authentication-context="hcAuthContext" ignore-unused-configuration="false">
         <discovery-options>
-            <static-discovery name="primary" protocol="${jboss.domain.master.protocol:remote}" host="${jboss.domain.master.address}" port="${jboss.domain.master.port:9999}"/>
+            <static-discovery name="primary" protocol="${jboss.domain.primary.protocol:remote}" host="${jboss.domain.primary.address}" port="${jboss.domain.primary.port:9999}"/>
         </discovery-options>
     </remote>
 </domain-controller>
@@ -286,7 +286,7 @@ installed on the Domain Controller and on some slaves, but not this one:
             <instance name="org.example.foo"/>
         </ignored-resources>
         <discovery-options>
-            <static-discovery name="primary" protocol="${jboss.domain.master.protocol:remote}" host="${jboss.domain.master.address}" port="${jboss.domain.master.port:9999}"/>
+            <static-discovery name="primary" protocol="${jboss.domain.primary.protocol:remote}" host="${jboss.domain.primary.address}" port="${jboss.domain.primary.port:9999}"/>
         </discovery-options>
     </remote>
 </domain-controller>
