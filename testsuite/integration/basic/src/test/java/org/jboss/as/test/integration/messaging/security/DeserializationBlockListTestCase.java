@@ -97,7 +97,7 @@ public class DeserializationBlockListTestCase {
 
     @Test
     public void testDeserializationBlockList() throws NamingException {
-        // UUID is black listed, any other Serializable must be deserialized.
+        // UUID is block listed, any other Serializable must be deserialized.
         UUID uuid = UUID.randomUUID();
         Date date = new Date();
 
@@ -109,7 +109,7 @@ public class DeserializationBlockListTestCase {
 
     @Test
     public void testDeserializationBlockListFromRegularConnectionFactory() throws NamingException {
-        // all classes are black listed
+        // all classes are block listed
         UUID uuid = UUID.randomUUID();
         Date date = new Date();
 
@@ -121,7 +121,7 @@ public class DeserializationBlockListTestCase {
 
     @Test
     public void testDeserializationAllowList() throws NamingException {
-        // UUID is white listed, any other Serializable must not be deserialized.
+        // UUID is allow listed, any other Serializable must not be deserialized.
         UUID uuid = UUID.randomUUID();
         Date date = new Date();
 
