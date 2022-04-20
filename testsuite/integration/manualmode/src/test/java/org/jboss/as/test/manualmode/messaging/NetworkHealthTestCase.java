@@ -72,7 +72,7 @@ public class NetworkHealthTestCase {
 
     @BeforeClass
     public static void avoidWFLY16277() {
-        Assume.assumeFalse(TestSuiteEnvironment.isWindows());
+        Assume.assumeFalse("WFLY-16277", TestSuiteEnvironment.isWindows());
     }
 
     @Before
