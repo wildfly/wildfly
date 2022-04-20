@@ -503,6 +503,7 @@
         <version.org.reactivestreams>1.0.3</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <!-- Test dependency -->
+        <version.org.keycloak.keycloak-saml-wildfly-subsystem>17.0.1</version.org.keycloak.keycloak-saml-wildfly-subsystem>
         <version.org.springframework.kafka>2.8.2</version.org.springframework.kafka>
         <version.org.testcontainers.testcontainers>1.16.0</version.org.testcontainers.testcontainers>
         <version.org.testcontainers>1.16.0</version.org.testcontainers>
@@ -9462,6 +9463,13 @@
                         <artifactId>activation</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-saml-wildfly-subsystem</artifactId>
+                <version>${version.org.keycloak.keycloak-saml-wildfly-subsystem}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
