@@ -22,18 +22,19 @@
 
 package org.wildfly.microprofile.opentracing.smallrye;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.spi.CDI;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.ws.rs.client.ClientBuilder;
+
 import io.opentracing.Tracer;
 import io.opentracing.contrib.concurrent.TracedExecutorService;
 import io.smallrye.opentracing.SmallRyeClientTracingFeature;
 import org.eclipse.microprofile.opentracing.ClientTracingRegistrarProvider;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-
-import javax.enterprise.inject.spi.CDI;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.ws.rs.client.ClientBuilder;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class WildFlyClientTracingRegistrarProvider implements ClientTracingRegistrarProvider {
     @Override
@@ -51,7 +52,11 @@ public class WildFlyClientTracingRegistrarProvider implements ClientTracingRegis
 
     @Override
     public ClientBuilder configure(ClientBuilder clientBuilder, ExecutorService executorService) {
-        Tracer tracer = CDI.current().select(Tracer.class).get();
+        // Create new Instance<Tracer> instead of using CDI.current().select()
+        // this prevents leaks of @Dependent Tracer beans resolved here because the Instance<Tracer> will be GCed
+        // NOTE: instance.destroy(tracer) is deliberately skipped because WFLY uses them as if they were app scoped
+        Instance<Tracer> instance = CDI.current().getBeanManager().createInstance().select(Tracer.class);
+        Tracer tracer = instance.get();
 
         ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) clientBuilder;
         return resteasyClientBuilder
