@@ -35,8 +35,8 @@
             </packages>
             <default-configs inherit="false">
                 <include name="host.xml" model="host"/>
-                <include name="host-master.xml" model="host"/>
-                <include name="host-slave.xml" model="host"/>
+                <include name="host-primary.xml" model="host"/>
+                <include name="host-secondary.xml" model="host"/>
                 <include name="standalone-load-balancer.xml" model="standalone"/>
             </default-configs>
         </dependency>
@@ -59,8 +59,8 @@
     <config name="standalone-microprofile-ha.xml" model="standalone"/>
     <config name="domain.xml" model="domain"/>
     <config name="host.xml" model="host"/>
-    <config name="host-master.xml" model="host"/>
-    <config name="host-slave.xml" model="host"/>
+    <config name="host-primary.xml" model="host"/>
+    <config name="host-secondary.xml" model="host"/>
 
     <plugins>
         <plugin artifact="org.wildfly.galleon-plugins:wildfly-galleon-plugins"/>
