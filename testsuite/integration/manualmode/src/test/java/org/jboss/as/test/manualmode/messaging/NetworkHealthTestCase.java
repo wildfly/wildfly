@@ -48,7 +48,9 @@ import org.jboss.as.test.shared.util.LoggingUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -67,6 +69,11 @@ public class NetworkHealthTestCase {
     protected static ContainerController container;
     private LoggerSetup loggerSetup;
     private ManagementClient managementClient;
+
+    @BeforeClass
+    public static void avoidWFLY16277() {
+        Assume.assumeFalse(TestSuiteEnvironment.isWindows());
+    }
 
     @Before
     public void setup() throws Exception {
