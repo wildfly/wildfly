@@ -4,7 +4,7 @@
 
     <feature-group name="core-host-slave">
         <exclude spec="host.core-service.management.management-interface.http-interface"/>
-        <include feature-id="host:host=slave">
+        <include feature-id="host:host=secondary">
             <feature spec="host.jvm">
                 <param name="jvm" value="default"/>
                 <param name="heap-size" value="64m"/>
@@ -16,7 +16,7 @@
     </feature-group>
 
     <feature spec="host">
-        <param name="host" value="slave"/>
+        <param name="host" value="secondary"/>
         
         <!-- TODO Add an authentication client example.
 
