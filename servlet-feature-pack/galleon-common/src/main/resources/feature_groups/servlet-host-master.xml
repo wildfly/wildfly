@@ -24,7 +24,7 @@
     <feature-group name="core-host-master"/>
 
     <feature spec="host">
-        <param name="host" value="master"/>
+        <param name="host" value="primary"/>
 
         <!-- TODO Track back and check why this override is needed. --> 
         <feature spec="host.core-service.management.management-interface.http-interface">

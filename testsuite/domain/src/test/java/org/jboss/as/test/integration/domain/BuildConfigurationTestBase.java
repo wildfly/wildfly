@@ -47,7 +47,7 @@ public abstract class BuildConfigurationTestBase {
     static final File CONFIG_DIR = new File("target/wildfly/domain/configuration/");
 
     static WildFlyManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName, final String testConfiguration) {
-        return createConfiguration(domainXmlName, hostXmlName, testConfiguration, "master", masterAddress, 9990);
+        return createConfiguration(domainXmlName, hostXmlName, testConfiguration, "primary", masterAddress, 9990);
     }
 
     static WildFlyManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName,

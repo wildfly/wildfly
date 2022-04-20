@@ -120,7 +120,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         addTestResources();
 
         Map<PathAddress, Map<String, ModelNode>> expectedValues = new HashMap<PathAddress, Map<String, ModelNode>>();
-        setExpressions(PathAddress.EMPTY_ADDRESS, "master", expectedValues);
+        setExpressions(PathAddress.EMPTY_ADDRESS, "primary", expectedValues);
 
         LOGGER.trace("Update statistics:");
         LOGGER.trace("==================");
@@ -139,7 +139,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
 
         // restart back to normal mode
         ModelNode op = new ModelNode();
-        op.get(OP_ADDR).add(HOST, "master");
+        op.get(OP_ADDR).add(HOST, "primary");
         op.get(OP).set("reload");
         op.get("admin-only").set(false);
         domainMasterLifecycleUtil.executeAwaitConnectionClosed(op);
@@ -150,7 +150,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         // check that the servers are up
         domainMasterLifecycleUtil.awaitServers(System.currentTimeMillis());
 
-        validateExpectedValues(PathAddress.EMPTY_ADDRESS, expectedValues, "master");
+        validateExpectedValues(PathAddress.EMPTY_ADDRESS, expectedValues, "primary");
     }
 
     @Before
@@ -187,7 +187,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         op.get(BOOT_TIME).set(true);
         executeForResult(op, domainMasterLifecycleUtil.getDomainClient());
 
-        PathAddress hostSpAddr = PathAddress.pathAddress(PathElement.pathElement(HOST, "master"), PathElement.pathElement(SYSTEM_PROPERTY, "host-test"));
+        PathAddress hostSpAddr = PathAddress.pathAddress(PathElement.pathElement(HOST, "primary"), PathElement.pathElement(SYSTEM_PROPERTY, "host-test"));
         op.get(OP_ADDR).set(hostSpAddr.toModelNode());
         executeForResult(op, domainMasterLifecycleUtil.getDomainClient());
 
@@ -197,7 +197,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         op.get(PATH).set("test");
         executeForResult(op, domainMasterLifecycleUtil.getDomainClient());
 
-        PathAddress hostPathAddr = PathAddress.pathAddress(PathElement.pathElement(HOST, "master"), PathElement.pathElement(PATH, "host-path-test"));
+        PathAddress hostPathAddr = PathAddress.pathAddress(PathElement.pathElement(HOST, "primary"), PathElement.pathElement(PATH, "host-path-test"));
         op.get(OP_ADDR).set(hostPathAddr.toModelNode());
         executeForResult(op, domainMasterLifecycleUtil.getDomainClient());
     }
