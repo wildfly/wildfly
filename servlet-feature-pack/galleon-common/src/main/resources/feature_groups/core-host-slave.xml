@@ -27,10 +27,10 @@
         <feature spec="host.core-service.discovery-options">
             <feature spec="host.core-service.discovery-options.static-discovery">
                 <param name="static-discovery" value="primary"/>
-                <param name="protocol" value="${jboss.domain.master.protocol:remote+http}"/>
-                <param name="host-feature" value="${jboss.domain.master.address}"/>
+                <param name="protocol" value="${jboss.domain.primary.protocol:remote+http}"/>
+                <param name="host-feature" value="${jboss.domain.primary.address}"/>
                 <param name="host" value="slave"/>
-                <param name="port" value="${jboss.domain.master.port:9990}"/>
+                <param name="port" value="${jboss.domain.primary.port:9990}"/>
             </feature>
         </feature>
 

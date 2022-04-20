@@ -58,7 +58,7 @@ public abstract class BuildConfigurationTestBase {
         configuration.setHostControllerManagementAddress(hostAddress);
         configuration.setHostControllerManagementPort(hostPort);
         configuration.setHostControllerManagementProtocol("remote+http");
-        configuration.setHostCommandLineProperties("-Djboss.domain.master.address=" + masterAddress +
+        configuration.setHostCommandLineProperties("-Djboss.domain.primary.address=" + masterAddress +
                 " -Djboss.management.http.port=" + hostPort);
         configuration.setDomainConfigFile(hackFixDomainConfig(new File(CONFIG_DIR, domainXmlName)).getAbsolutePath());
         configuration.setHostConfigFile(hackFixHostConfig(new File(CONFIG_DIR, hostXmlName), hostName, hostAddress).getAbsolutePath());

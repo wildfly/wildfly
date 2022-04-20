@@ -56,7 +56,7 @@
     <domain-controller>
         <local/>
         <!-- Alternative remote domain controller configuration with a host and port -->
-        <!-- <remote protocol="remote" host="${jboss.domain.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm"/> -->
+        <!-- <remote protocol="remote" host="${jboss.domain.primary.address}" port="${jboss.domain.primary.port:9999}" security-realm="ManagementRealm"/> -->
     </domain-controller>
     <interfaces>
         <interface name="management">

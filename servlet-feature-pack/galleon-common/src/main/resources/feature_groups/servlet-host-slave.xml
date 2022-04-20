@@ -46,8 +46,8 @@
         <feature spec="host.core-service.discovery-options">
             <feature spec="host.core-service.discovery-options.static-discovery">
                 <param name="static-discovery" value="primary"/>
-                <param name="protocol" value="${jboss.domain.master.protocol:remote+http}"/>
-                <param name="port" value="${jboss.domain.master.port:9990}"/>
+                <param name="protocol" value="${jboss.domain.primary.protocol:remote+http}"/>
+                <param name="port" value="${jboss.domain.primary.port:9990}"/>
             </feature>
         </feature>
     </feature>
