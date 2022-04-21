@@ -130,6 +130,20 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private MarshallingConfiguration configuration;
     private RefreshTask refreshTask;
 
+    /** database values */
+    private static final String POSTGRES = "postgres";
+    private static final String POSTGRESQL = "postgresql";
+    private static final String MYSQL = "mysql";
+    private static final String MARIADB = "mariadb";
+    private static final String DB2 = "db2";
+    private static final String HSQL = "hsql";
+    private static final String HYPERSONIC = "hypersonic";
+    private static final String H2 = "h2";
+    private static final String ORACLE = "oracle";
+    private static final String MSSQL = "mssql";
+    private static final String SYBASE = "sybase";
+    private static final String JCONNECT = "jconnect";
+
     /** Names for the different SQL commands stored in the properties*/
     private static final String CREATE_TABLE = "create-table";
     private static final String CREATE_TIMER = "create-timer";
@@ -218,6 +232,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private void loadSqlProperties() throws StartException {
         final InputStream stream = DatabaseTimerPersistence.class.getClassLoader().getResourceAsStream("timer-sql.properties");
         sql = new Properties();
+
         try {
             sql.load(stream);
         } catch (IOException e) {
@@ -225,6 +240,17 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         } finally {
             safeClose(stream);
         }
+
+        // Update the create-auto-timer statements for DB specifics
+        switch (database) {
+            case DB2:
+                adjustCreateAutoTimerStatement("FROM SYSIBM.SysDummy1 ");
+            break;
+            case ORACLE:
+                adjustCreateAutoTimerStatement("FROM DUAL ");
+            break;
+        }
+
         final Iterator<Map.Entry<Object, Object>> iterator = sql.entrySet().iterator();
         while (iterator.hasNext()) {
             final Map.Entry<Object, Object> next = iterator.next();
@@ -293,26 +319,24 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
 
         if (name != null) {
             name = name.toLowerCase(Locale.ROOT);
-            if (name.contains("postgres")) {
-               unified = "postgresql";
-            } else if (name.contains("mysql")) {
-                unified = "mysql";
-            } else if (name.contains("mariadb")) {
-                unified = "mariadb";
-            } else if (name.contains("db2")) {
-                unified = "db2";
-                adjustCreateAutoTimerStatement("FROM SYSIBM.SysDummy1 ");
-            } else if (name.contains("hsql") || name.contains("hypersonic")) {
-                unified = "hsql";
-            } else if (name.contains("h2")) {
-                unified = "h2";
-            } else if (name.contains("oracle")) {
-                unified = "oracle";
-                adjustCreateAutoTimerStatement("FROM DUAL ");
+            if (name.contains(POSTGRES)) {
+               unified = POSTGRESQL;
+            } else if (name.contains(MYSQL)) {
+                unified = MYSQL;
+            } else if (name.contains(MARIADB)) {
+                unified = MARIADB;
+            } else if (name.contains(DB2)) {
+                unified = DB2;
+            } else if (name.contains(HSQL) || name.contains(HYPERSONIC)) {
+                unified = HSQL;
+            } else if (name.contains(H2)) {
+                unified = H2;
+            } else if (name.contains(ORACLE)) {
+                unified = ORACLE;
             } else if (MSSQL_PATTERN.matcher(name).find()) {
-                unified = "mssql";
-            } else if (name.contains("sybase") || name.contains("jconnect")) {
-                unified = "sybase";
+                unified = MSSQL;
+            } else if (name.contains(SYBASE) || name.contains(JCONNECT)) {
+                unified = SYBASE;
             }
          }
         EjbLogger.EJB3_TIMER_LOGGER.debugf("Check dialect for '%s', result is '%s'", name, unified);
