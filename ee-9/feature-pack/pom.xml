@@ -544,6 +544,7 @@
                                 <exclude>org.wildfly:wildfly-clustering-infinispan-extension\z</exclude>
                                 <exclude>org.wildfly:wildfly-clustering-web-infinispan\z</exclude>
 
+                                <exclude>org.wildfly:wildfly-microprofile-jwt-smallrye\z</exclude>
                                 <exclude>org.wildfly.security:wildfly-elytron-jwt\z</exclude>
 
                                 <exclude>org.hornetq:.+\z</exclude>
