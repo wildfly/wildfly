@@ -56,7 +56,7 @@ jobs:
       - name: Build base
         working-directory: base
         run: |
-          mvn -B install -DskipTests -pl $MODULES_TO_CHECK -am
+          mvn -B -ntp install -DskipTests -pl $MODULES_TO_CHECK -am
 
       - name: Grab base dependencies
         id: base-versions
@@ -67,7 +67,7 @@ jobs:
           for module in $(echo "${MODULES_TO_CHECK}" | sed "s/,/ /g")
           do
             baseVersionFile="_base-versions-$i.txt"
-            mvn -B dependency:tree -pl "${module}" -DoutputFile="${ARTIFACTS}/${baseVersionFile}" || exit 1
+            mvn -B -ntp dependency:tree -pl "${module}" -DoutputFile="${ARTIFACTS}/${baseVersionFile}" || exit 1
 
             if [ $i -gt 0 ]; then
               baseVersionFiles="${baseVersionFiles},${baseVersionFile}"
@@ -81,7 +81,7 @@ jobs:
       - name: Build PR
         working-directory: pr
         run: |
-          mvn -B install -DskipTests -pl $MODULES_TO_CHECK -am
+          mvn -B -ntp install -DskipTests -pl $MODULES_TO_CHECK -am
 
       - name: Grab PR Dependencies
         working-directory: pr
@@ -92,7 +92,7 @@ jobs:
           for module in $(echo "${MODULES_TO_CHECK}" | sed "s/,/ /g")
           do
             newVersionFile="_new-versions-$i.txt"
-            mvn -B dependency:tree -pl "${module}" -DoutputFile="${ARTIFACTS}/${newVersionFile}" || exit 1
+            mvn -B -ntp dependency:tree -pl "${module}" -DoutputFile="${ARTIFACTS}/${newVersionFile}" || exit 1
 
             if [ $i -gt 0 ]; then
               newVersionFiles="${newVersionFiles},${newVersionFile}"
