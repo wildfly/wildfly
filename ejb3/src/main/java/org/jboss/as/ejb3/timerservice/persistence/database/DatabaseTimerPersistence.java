@@ -337,6 +337,8 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 unified = MSSQL;
             } else if (name.contains(SYBASE) || name.contains(JCONNECT)) {
                 unified = SYBASE;
+            } else {
+                EjbLogger.EJB3_TIMER_LOGGER.unknownDatabaseName(name);
             }
          }
         EjbLogger.EJB3_TIMER_LOGGER.debugf("Check dialect for '%s', result is '%s'", name, unified);
