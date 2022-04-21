@@ -297,7 +297,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
 
     @BeforeClass
     public static void setUp() throws IOException {
-        masterConfig = createConfiguration("domain.xml", "host-master.xml", HostExcludesTestCase.class.getSimpleName());
+        masterConfig = createConfiguration("domain.xml", "host-primary.xml", HostExcludesTestCase.class.getSimpleName());
         masterUtils = new DomainLifecycleUtil(masterConfig);
         masterUtils.start();
         masterClient = masterUtils.getDomainClient();
