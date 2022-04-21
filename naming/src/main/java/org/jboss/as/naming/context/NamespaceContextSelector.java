@@ -24,7 +24,7 @@ package org.jboss.as.naming.context;
 
 import javax.naming.Context;
 
-import org.jboss.as.naming.util.ThreadLocalStack;
+import org.wildfly.common.function.ThreadLocalStack;
 
 /**
  * Selects a naming context based on the provided identifier (eg. comp).  Maintains a thread local used to managed the current selector.

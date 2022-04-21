@@ -22,10 +22,10 @@
 package org.jboss.as.ejb3.context;
 
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
-import org.jboss.as.ejb3.util.ThreadLocalStack;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.InterceptorContext;
+import org.wildfly.common.function.ThreadLocalStack;
 
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>

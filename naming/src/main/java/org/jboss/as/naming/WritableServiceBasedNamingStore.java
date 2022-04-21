@@ -26,7 +26,6 @@ import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.deployment.RuntimeBindReleaseService;
 import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.as.naming.service.BinderService;
-import org.jboss.as.naming.util.ThreadLocalStack;
 import org.jboss.msc.service.LifecycleEvent;
 import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceBuilder;
@@ -35,6 +34,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
+import org.wildfly.common.function.ThreadLocalStack;
 
 import javax.naming.Context;
 import javax.naming.Name;
