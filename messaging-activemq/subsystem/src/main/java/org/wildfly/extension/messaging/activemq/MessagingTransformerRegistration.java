@@ -70,7 +70,8 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
-        registerTransformers_WF_25(builder.createBuilder(MessagingExtension.VERSION_14_0_0, MessagingExtension.VERSION_13_0_0));
+        registerTransformers_WF_27(builder.createBuilder(MessagingExtension.VERSION_14_0_0, MessagingExtension.VERSION_13_1_0));
+        registerTransformers_WF_26_1(builder.createBuilder(MessagingExtension.VERSION_13_1_0, MessagingExtension.VERSION_13_0_0));
         registerTransformers_WF_23(builder.createBuilder(MessagingExtension.VERSION_13_0_0, MessagingExtension.VERSION_12_0_0));
         registerTransformers_WF_22(builder.createBuilder(MessagingExtension.VERSION_12_0_0, MessagingExtension.VERSION_11_0_0));
         registerTransformers_WF_21(builder.createBuilder(MessagingExtension.VERSION_11_0_0, MessagingExtension.VERSION_10_0_0));
@@ -88,20 +89,23 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
             MessagingExtension.VERSION_3_0_0, MessagingExtension.VERSION_4_0_0, MessagingExtension.VERSION_5_0_0,
             MessagingExtension.VERSION_6_0_0, MessagingExtension.VERSION_7_0_0, MessagingExtension.VERSION_8_0_0,
             MessagingExtension.VERSION_9_0_0, MessagingExtension.VERSION_10_0_0, MessagingExtension.VERSION_11_0_0,
-            MessagingExtension.VERSION_12_0_0, MessagingExtension.VERSION_13_0_0, MessagingExtension.VERSION_14_0_0});
+            MessagingExtension.VERSION_12_0_0, MessagingExtension.VERSION_13_0_0, MessagingExtension.VERSION_13_1_0,
+            MessagingExtension.VERSION_14_0_0});
     }
 
-    private static void registerTransformers_WF_25(ResourceTransformationDescriptionBuilder subsystem) {
+    private static void registerTransformers_WF_27(ResourceTransformationDescriptionBuilder subsystem) {
         ResourceTransformationDescriptionBuilder externaljmsqueue = subsystem.addChildResource(MessagingExtension.EXTERNAL_JMS_QUEUE_PATH);
         rejectDefinedAttributeWithDefaultValue(externaljmsqueue, ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
         ResourceTransformationDescriptionBuilder externaljmstopic = subsystem.addChildResource(MessagingExtension.EXTERNAL_JMS_TOPIC_PATH);
         rejectDefinedAttributeWithDefaultValue(externaljmstopic, ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
+        ResourceTransformationDescriptionBuilder bridge = subsystem.addChildResource(MessagingExtension.SERVER_PATH).addChildResource(MessagingExtension.BRIDGE_PATH);
+        rejectDefinedAttributeWithDefaultValue(bridge, BridgeDefinition.ROUTING_TYPE);
+    }
+
+    private static void registerTransformers_WF_26_1(ResourceTransformationDescriptionBuilder subsystem) {
         ResourceTransformationDescriptionBuilder server = subsystem
                 .addChildResource(MessagingExtension.SERVER_PATH);
         rejectDefinedAttributeWithDefaultValue(server, ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD);
-        ResourceTransformationDescriptionBuilder bridge = server
-                .addChildResource(MessagingExtension.BRIDGE_PATH);
-        rejectDefinedAttributeWithDefaultValue(bridge, BridgeDefinition.ROUTING_TYPE);
     }
 
     private static void registerTransformers_WF_23(ResourceTransformationDescriptionBuilder subsystem) {

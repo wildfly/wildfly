@@ -67,20 +67,20 @@ import org.wildfly.clustering.server.service.ClusteringRequirement;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
-public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemBaseTest {
+public class MessagingActiveMQSubsystem_13_1_TestCase extends AbstractSubsystemBaseTest {
 
-    public MessagingActiveMQSubsystem_14_0_TestCase() {
+    public MessagingActiveMQSubsystem_13_1_TestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_14_0.xml");
+        return readResource("subsystem_13_1.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-messaging-activemq_14_0.xsd";
+        return "schema/wildfly-messaging-activemq_13_1.xsd";
     }
 
     @Override
@@ -89,6 +89,11 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
         properties.put("messaging.cluster.user.name", "myClusterUser");
         properties.put("messaging.cluster.user.password", "myClusterPassword");
         return properties;
+    }
+
+    @Override
+    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        return super.standardSubsystemTest(configId, false);
     }
 
     @Test
@@ -124,17 +129,16 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
 
     @Test
     public void testHAPolicyConfiguration() throws Exception {
-        standardSubsystemTest("subsystem_14_0_ha-policy.xml");
+        standardSubsystemTest("subsystem_13_1_ha-policy.xml");
     }
 
     ///////////////////////
     // Transformers test //
     ///////////////////////
     @Test
-    public void testTransformersWildfly26_1() throws Exception {
+    public void testTransformersWildfly261() throws Exception {
         testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_13_1_0);
     }
-
     @Test
     public void testTransformersWildfly25() throws Exception {
         testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_13_0_0);
@@ -204,7 +208,7 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXmlResource("subsystem_14_0_transform.xml");
+                .setSubsystemXmlResource("subsystem_13_1_transform.xml");
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
                 .addMavenResourceURL(getMessagingActiveMQGAV(controllerVersion))
                 .addMavenResourceURL(getActiveMQDependencies(controllerVersion))
@@ -241,7 +245,7 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
         assertTrue(mainServices.isSuccessfulBoot());
         assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXmlResource("subsystem_14_0_reject_transform.xml");
+        List<ModelNode> ops = builder.parseXmlResource("subsystem_13_1_reject_transform.xml");
 //        System.out.println("ops = " + ops);
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
 
@@ -310,8 +314,7 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 BridgeDefinition.PRODUCER_WINDOW_SIZE,
-                                BridgeDefinition.CALL_TIMEOUT,
-                                BridgeDefinition.ROUTING_TYPE))
+                                BridgeDefinition.CALL_TIMEOUT))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, CLUSTER_CONNECTION_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
                                 ClusterConnectionDefinition.PRODUCER_WINDOW_SIZE))
@@ -369,7 +372,7 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                                 ConnectionFactoryAttributes.Common.USE_TOPOLOGY))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(
-                                BridgeDefinition.CALL_TIMEOUT, BridgeDefinition.ROUTING_TYPE));
+                                BridgeDefinition.CALL_TIMEOUT));
         } else if(messagingVersion.compareTo(MessagingExtension.VERSION_5_0_0) > 0 ){
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH),
                     new FailedOperationTransformationConfig.NewAttributesConfig(
@@ -391,16 +394,11 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                             ServerDefinition.CRITICAL_ANALYZER_TIMEOUT,
                             ServerDefinition.JOURNAL_MAX_ATTIC_FILES,
                             ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD));
-            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH),
-                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
-            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH),
-                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
+            config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, POOLED_CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH),
-                    new FailedOperationTransformationConfig.NewAttributesConfig( BridgeDefinition.CALL_TIMEOUT, BridgeDefinition.ROUTING_TYPE));
-            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_QUEUE_PATH),
-                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
-            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_TOPIC_PATH),
-                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
+                    new FailedOperationTransformationConfig.NewAttributesConfig(
+                            BridgeDefinition.CALL_TIMEOUT));
         } else if (messagingVersion.compareTo(MessagingExtension.VERSION_6_0_0) > 0 ) {
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
                     ServerDefinition.JOURNAL_FILE_OPEN_TIMEOUT,
@@ -425,7 +423,7 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, JGroupsDiscoveryGroupDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, SocketDiscoveryGroupDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
-                            BridgeDefinition.CALL_TIMEOUT, BridgeDefinition.ROUTING_TYPE));
+                            BridgeDefinition.CALL_TIMEOUT));
         }
 
         if (messagingVersion.compareTo(MessagingExtension.VERSION_4_0_0) > 0) {
@@ -449,8 +447,7 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
             config.addFailedAttribute(subsystemAddress.append(SocketDiscoveryGroupDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
         } else if (messagingVersion.compareTo(MessagingExtension.VERSION_6_0_0) > 0) {
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, MessagingExtension.QUEUE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(QueueDefinition.ROUTING_TYPE));
-            config.addFailedAttribute(subsystemAddress.append(POOLED_CONNECTION_FACTORY_PATH),
-                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX, ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
+            config.addFailedAttribute(subsystemAddress.append(POOLED_CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX, ConnectionFactoryAttributes.Common.USE_TOPOLOGY));
             config.addFailedAttribute(subsystemAddress.append(CONNECTION_FACTORY_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
                     ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX,
                     ConnectionFactoryAttributes.Common.USE_TOPOLOGY,
@@ -540,11 +537,7 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                     ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD
             ));
             config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, BRIDGE_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(
-                    BridgeDefinition.CALL_TIMEOUT, BridgeDefinition.ROUTING_TYPE));
-            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_QUEUE_PATH),
-                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
-            config.addFailedAttribute(subsystemAddress.append(EXTERNAL_JMS_TOPIC_PATH),
-                    new FailedOperationTransformationConfig.NewAttributesConfig(ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX));
+                    BridgeDefinition.CALL_TIMEOUT));
         }
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);
         mainServices.shutdown();
