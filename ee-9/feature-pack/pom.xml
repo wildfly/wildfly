@@ -544,9 +544,6 @@
                                 <exclude>org.wildfly:wildfly-clustering-infinispan-extension\z</exclude>
                                 <exclude>org.wildfly:wildfly-clustering-web-infinispan\z</exclude>
 
-                                <!-- Contains module names which have been aliased, additional transformation not required. -->
-                                <exclude>org.wildfly:wildfly-microprofile-jwt-smallrye\z</exclude>
-
                                 <exclude>org.hornetq:.+\z</exclude>
                                 <exclude>org.apache.activemq:artemis-jakarta-client\z</exclude>
                                 <exclude>org.apache.activemq:artemis-jakarta-ra\z</exclude>
@@ -681,6 +678,10 @@
                 <exclusion>
                     <groupId>${full.maven.groupId}</groupId>
                     <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${full.maven.groupId}</groupId>
+                    <artifactId>wildfly-microprofile-jwt-smallrye</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>${full.maven.groupId}</groupId>
