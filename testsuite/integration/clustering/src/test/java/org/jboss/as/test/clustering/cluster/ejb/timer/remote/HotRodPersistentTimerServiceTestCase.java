@@ -34,7 +34,7 @@ import org.junit.rules.TestRule;
 /**
  * @author Paul Ferraro
  */
-@ServerSetup({ InfinispanServerSetupTask.class, HotRodPersistentTimerServiceTestCase.ServerSetupTask.class })
+@ServerSetup({ InfinispanServerSetupTask.class, HotRodPersistentTimerServiceTestCase.TimerManagementSetupTask.class, HotRodPersistentTimerServiceTestCase.TimerServiceSetupTask.class })
 public class HotRodPersistentTimerServiceTestCase extends AbstractTimerServiceTestCase {
 
     @ClassRule
@@ -56,8 +56,8 @@ public class HotRodPersistentTimerServiceTestCase extends AbstractTimerServiceTe
         return createArchive(HotRodPersistentTimerServiceTestCase.class);
     }
 
-    static class ServerSetupTask extends CLIServerSetupTask {
-        ServerSetupTask() {
+    static class TimerManagementSetupTask extends CLIServerSetupTask {
+        TimerManagementSetupTask() {
             this.builder.node(THREE_NODES)
                     .setup("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent:add")
                     .setup("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent/component=expiration:add(interval=0)")
@@ -67,6 +67,17 @@ public class HotRodPersistentTimerServiceTestCase extends AbstractTimerServiceTe
                     .setup("/subsystem=distributable-ejb/infinispan-timer-management=hotrod:add(cache-container=ejb, cache=hotrod-persistent)")
                     .teardown("/subsystem=distributable-ejb/infinispan-timer-management=hotrod:remove")
                     .teardown("/subsystem=infinispan/cache-container=ejb/invalidation-cache=hotrod-persistent:remove")
+                    ;
+        }
+    }
+
+    static class TimerServiceSetupTask extends CLIServerSetupTask {
+        TimerServiceSetupTask() {
+            this.builder.node(THREE_NODES)
+                    .setup("/subsystem=ejb3/service=timer-service:undefine-attribute(name=default-data-store)")
+                    .setup("/subsystem=ejb3/service=timer-service:write-attribute(name=default-persistent-timer-management, value=hotrod)")
+                    .teardown("/subsystem=ejb3/service=timer-service:undefine-attribute(name=default-persistent-timer-management)")
+                    .teardown("/subsystem=ejb3/service=timer-service:write-attribute(name=default-data-store, value=file")
                     ;
         }
     }

@@ -56,7 +56,6 @@ import org.jboss.as.test.clustering.cluster.ejb.timer.beans.TimerBean;
 import org.jboss.as.test.clustering.cluster.ejb.timer.servlet.TimerServlet;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -70,12 +69,11 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTestCase {
 
-    protected static Archive<?> createArchive(Class<? extends AbstractTimerServiceTestCase> testClass) {
+    protected static WebArchive createArchive(Class<? extends AbstractTimerServiceTestCase> testClass) {
         return ShrinkWrap.create(WebArchive.class, testClass.getSimpleName() + ".war")
                 .addPackage(TimerServlet.class.getPackage())
                 .addPackage(EJBDirectory.class.getPackage())
                 .addPackage(TimerBean.class.getPackage())
-                .addAsWebInfResource(testClass.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 ;
     }
 

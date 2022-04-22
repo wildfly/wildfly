@@ -44,6 +44,6 @@ public class DistributedTimerServiceTestCase extends AbstractTimerServiceTestCas
     }
 
     private static Archive<?> createArchive() {
-        return createArchive(DistributedTimerServiceTestCase.class);
+        return createArchive(DistributedTimerServiceTestCase.class).addAsWebInfResource(DistributedTimerServiceTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
     }
 }
