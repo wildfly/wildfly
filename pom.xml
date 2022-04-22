@@ -442,7 +442,7 @@
         <version.org.jboss.mod_cluster>1.4.4.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>5.12.5.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>8.1.7.Final</version.org.jboss.openjdk-orb>
-        <version.org.jboss.resteasy>4.7.4.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>4.7.6.Final</version.org.jboss.resteasy>
         <!-- This is required for the RESTEasy 6.0.0.Beta1 upgrade. As of RESTEasy 5 there is no more MP related implementations -->
         <version.org.jboss.resteasy.microprofile>1.0.0.Final</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
