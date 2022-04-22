@@ -53,7 +53,7 @@
         <version.jakarta.ejb.jakarta-ejb-api>4.0.0</version.jakarta.ejb.jakarta-ejb-api>
         <version.jakarta.el.jakarta-el-api>5.0.0-RC1</version.jakarta.el.jakarta-el-api>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
-        <version.jakarta.enterprise>4.0.0-RC2</version.jakarta.enterprise>
+        <version.jakarta.enterprise>4.0.0</version.jakarta.enterprise>
         <version.jakarta.faces.jakarta-faces-api>3.0.0</version.jakarta.faces.jakarta-faces-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.1</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.interceptor.jakarta-interceptors-api>2.1.0</version.jakarta.interceptor.jakarta-interceptors-api>
@@ -115,8 +115,8 @@
         <version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>3.0.0</version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>
         <version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec>
         <version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>
-        <version.org.jboss.weld.weld>5.0.0.Beta1</version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld-api>5.0.Beta5</version.org.jboss.weld.weld-api>
+        <version.org.jboss.weld.weld>5.0.0.CR2</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>5.0.CR2</version.org.jboss.weld.weld-api>
         <version.org.jvnet.staxex>2.0.1</version.org.jvnet.staxex>
         <version.org.wildfly.security.elytron>2.0.0.Beta1</version.org.wildfly.security.elytron>
         <version.org.wildfly.security.elytron-mp>2.0.0.Beta3</version.org.wildfly.security.elytron-mp>
@@ -438,6 +438,18 @@
             <dependency>
                 <groupId>jakarta.enterprise</groupId>
                 <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                <version>${version.jakarta.enterprise}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.lang-model</artifactId>
                 <version>${version.jakarta.enterprise}</version>
                 <exclusions>
                     <exclusion>
@@ -1247,6 +1259,18 @@
                 <artifactId>weld-core-impl</artifactId>
                 <version>${version.org.jboss.weld.weld}</version>
                 <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-lite-extension-translator</artifactId>
+                <version>${version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
