@@ -678,4 +678,12 @@
         <packageUrl regex="true">^pkg:maven/org\.jgroups\.kubernetes/jgroups\-kubernetes@.*$</packageUrl>
         <cve>CVE-2016-2141</cve>
     </suppress>
+		<!-- [wildfly] (CVE-2017-18214) Red Hat JBoss Enterprise Application Platform are Not affected -->
+	<suppress>
+		<notes><![CDATA[
+   file name: javascript/bootstrap@3.3.1 (from weld-probe-core-3.1.5.Final.jar)
+   ]]></notes>
+		<packageUrl regex="true">^pkg:javascript/bootstrap@.*$</packageUrl>
+		<cve>CVE-2017-18214</cve>
+	</suppress>
 </suppressions>
