@@ -119,7 +119,7 @@
         <version.org.jboss.weld.weld-api>5.0.Beta5</version.org.jboss.weld.weld-api>
         <version.org.jvnet.staxex>2.0.1</version.org.jvnet.staxex>
         <version.org.wildfly.security.elytron>2.0.0.Beta1</version.org.wildfly.security.elytron>
-        <version.org.wildfly.security.elytron-mp>2.0.0.Beta2</version.org.wildfly.security.elytron-mp>
+        <version.org.wildfly.security.elytron-mp>2.0.0.Beta3</version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.security.elytron-web>2.0.0.Beta2</version.org.wildfly.security.elytron-web>
         <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta2</version.org.wildfly.security.jakarta.elytron-ee>
 
