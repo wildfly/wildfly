@@ -24,7 +24,6 @@ package org.jboss.as.test.clustering.cluster.ejb.timer.beans;
 import javax.ejb.Local;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import javax.ejb.TimerConfig;
 
 /**
  * @author Paul Ferraro
@@ -32,9 +31,9 @@ import javax.ejb.TimerConfig;
 @Singleton
 @Startup
 @Local(ManualTimerBean.class)
-public class SingleActionTimerBean extends AbstractManualTimerBean {
+public class CalendarTransientTimerBean extends AbstractCalendarTimerBean {
 
-    public SingleActionTimerBean() {
-        super(service -> service.createSingleActionTimer(1000, new TimerConfig("single", true)));
+    public CalendarTransientTimerBean() {
+        super(false);
     }
 }

@@ -12,6 +12,7 @@
         <t:timer-service>
             <ejb-name>*</ejb-name>
             <t:persistent-timer-management>distributed</t:persistent-timer-management>
+            <t:transient-timer-management>transient</t:transient-timer-management>
         </t:timer-service>
     </assembly-descriptor>
 </jboss:ejb-jar>

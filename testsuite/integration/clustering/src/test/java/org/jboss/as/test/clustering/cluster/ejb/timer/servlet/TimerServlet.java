@@ -30,6 +30,8 @@ import java.time.Instant;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -37,11 +39,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jboss.as.test.clustering.cluster.ejb.timer.beans.AutoTimerBean;
-import org.jboss.as.test.clustering.cluster.ejb.timer.beans.CalendarTimerBean;
-import org.jboss.as.test.clustering.cluster.ejb.timer.beans.IntervalTimerBean;
+import org.jboss.as.test.clustering.cluster.ejb.timer.beans.AutoPersistentTimerBean;
+import org.jboss.as.test.clustering.cluster.ejb.timer.beans.AutoTransientTimerBean;
+import org.jboss.as.test.clustering.cluster.ejb.timer.beans.CalendarPersistentTimerBean;
+import org.jboss.as.test.clustering.cluster.ejb.timer.beans.CalendarTransientTimerBean;
+import org.jboss.as.test.clustering.cluster.ejb.timer.beans.IntervalPersistentTimerBean;
+import org.jboss.as.test.clustering.cluster.ejb.timer.beans.IntervalTransientTimerBean;
 import org.jboss.as.test.clustering.cluster.ejb.timer.beans.ManualTimerBean;
-import org.jboss.as.test.clustering.cluster.ejb.timer.beans.SingleActionTimerBean;
+import org.jboss.as.test.clustering.cluster.ejb.timer.beans.SingleActionPersistentTimerBean;
+import org.jboss.as.test.clustering.cluster.ejb.timer.beans.SingleActionTransientTimerBean;
 import org.jboss.as.test.clustering.cluster.ejb.timer.beans.TimerBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.LocalEJBDirectory;
@@ -57,8 +63,14 @@ public class TimerServlet extends HttpServlet {
     static final String SERVLET_PATH = "/" + SERVLET_NAME;
     private static final String MODULE = "module";
 
-    public static final Set<Class<? extends TimerBean>> TIMER_CLASSES = Set.of(AutoTimerBean.class, CalendarTimerBean.class, IntervalTimerBean.class, SingleActionTimerBean.class);
-    public static final Set<Class<? extends ManualTimerBean>> MANUAL_TIMER_CLASSES = Set.of(CalendarTimerBean.class, IntervalTimerBean.class, SingleActionTimerBean.class);
+    public static final Set<Class<? extends TimerBean>> PERSISTENT_TIMER_CLASSES = Set.of(AutoPersistentTimerBean.class, CalendarPersistentTimerBean.class, IntervalPersistentTimerBean.class, SingleActionPersistentTimerBean.class);
+    public static final Set<Class<? extends TimerBean>> TRANSIENT_TIMER_CLASSES = Set.of(AutoTransientTimerBean.class, CalendarTransientTimerBean.class, IntervalTransientTimerBean.class, SingleActionTransientTimerBean.class);
+    public static final Set<Class<? extends TimerBean>> TIMER_CLASSES = Stream.of(PERSISTENT_TIMER_CLASSES, TRANSIENT_TIMER_CLASSES).flatMap(Set::stream).collect(Collectors.toSet());
+    public static final Set<Class<? extends ManualTimerBean>> MANUAL_PERSISTENT_TIMER_CLASSES = Set.of(CalendarPersistentTimerBean.class, IntervalPersistentTimerBean.class, SingleActionPersistentTimerBean.class);
+    public static final Set<Class<? extends ManualTimerBean>> MANUAL_TRANSIENT_TIMER_CLASSES = Set.of(CalendarTransientTimerBean.class, IntervalTransientTimerBean.class, SingleActionTransientTimerBean.class);
+    public static final Set<Class<? extends ManualTimerBean>> MANUAL_TIMER_CLASSES = Stream.of(MANUAL_PERSISTENT_TIMER_CLASSES, MANUAL_TRANSIENT_TIMER_CLASSES).flatMap(Set::stream).collect(Collectors.toSet());
+    public static final Set<Class<? extends TimerBean>> AUTO_TIMER_CLASSES = Set.of(AutoPersistentTimerBean.class, AutoTransientTimerBean.class);
+    public static final Set<Class<? extends TimerBean>> SINGLE_ACTION_TIMER_CLASSES = Set.of(SingleActionPersistentTimerBean.class, SingleActionTransientTimerBean.class);
 
     public static URI createURI(URL baseURL, String module) throws URISyntaxException {
         return baseURL.toURI().resolve(new StringBuilder(SERVLET_NAME).append('?').append(MODULE).append('=').append(module).toString());
@@ -91,7 +103,9 @@ public class TimerServlet extends HttpServlet {
             for (Class<? extends ManualTimerBean> beanClass : MANUAL_TIMER_CLASSES) {
                 beans.put(beanClass, directory.lookupSingleton(beanClass, ManualTimerBean.class));
             }
-            beans.put(AutoTimerBean.class, directory.lookupSingleton(AutoTimerBean.class, TimerBean.class));
+            for (Class<? extends TimerBean> beanClass : AUTO_TIMER_CLASSES) {
+                beans.put(beanClass, directory.lookupSingleton(beanClass, TimerBean.class));
+            }
             for (Map.Entry<Class<? extends TimerBean>, TimerBean> entry : beans.entrySet()) {
                 for (Instant timeout : entry.getValue().getTimeouts()) {
                     response.addDateHeader(entry.getKey().getName(), timeout.toEpochMilli());
@@ -110,7 +124,9 @@ public class TimerServlet extends HttpServlet {
             for (Class<? extends ManualTimerBean> beanClass : MANUAL_TIMER_CLASSES) {
                 beans.put(beanClass, directory.lookupSingleton(beanClass, ManualTimerBean.class));
             }
-            beans.put(AutoTimerBean.class, directory.lookupSingleton(AutoTimerBean.class, TimerBean.class));
+            for (Class<? extends TimerBean> beanClass : AUTO_TIMER_CLASSES) {
+                beans.put(beanClass, directory.lookupSingleton(beanClass, TimerBean.class));
+            }
             for (Map.Entry<Class<? extends TimerBean>, TimerBean> entry : beans.entrySet()) {
                 response.addIntHeader(entry.getKey().getName(), entry.getValue().getTimers());
             }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2022, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,12 +22,23 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.timer.beans;
 
+import javax.ejb.Local;
+import javax.ejb.Schedule;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
 import javax.ejb.Timer;
 
 /**
  * @author Paul Ferraro
  */
-public interface AutoTimerBean {
+@Singleton
+@Startup
+@Local(TimerBean.class)
+public class AutoTransientTimerBean extends AbstractTimerBean implements AutoTimerBean {
 
-    void timeout(Timer timer);
+    @Override
+    @Schedule(year = "*", month = "*", dayOfMonth = "*", hour = "*", minute = "*", second = "*", info = "auto", persistent = false)
+    public void timeout(Timer timer) {
+        this.record(timer);
+    }
 }

@@ -22,12 +22,14 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.timer.beans;
 
-import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
 
 /**
  * @author Paul Ferraro
  */
-public interface AutoTimerBean {
+public class AbstractSingleActionTimerBean extends AbstractManualTimerBean {
 
-    void timeout(Timer timer);
+    public AbstractSingleActionTimerBean(boolean persistent) {
+        super(service -> service.createSingleActionTimer(1000, new TimerConfig("single", persistent)));
+    }
 }

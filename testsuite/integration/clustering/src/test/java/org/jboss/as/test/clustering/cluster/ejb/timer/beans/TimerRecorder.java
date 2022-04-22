@@ -27,7 +27,7 @@ import javax.ejb.Timer;
 /**
  * @author Paul Ferraro
  */
-public interface AutoTimerBean {
+public interface TimerRecorder {
 
-    void timeout(Timer timer);
+    void record(Timer timer);
 }

@@ -22,12 +22,15 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.timer.beans;
 
-import javax.ejb.Timer;
+import javax.ejb.ScheduleExpression;
+import javax.ejb.TimerConfig;
 
 /**
  * @author Paul Ferraro
  */
-public interface AutoTimerBean {
+public class AbstractCalendarTimerBean extends AbstractManualTimerBean {
 
-    void timeout(Timer timer);
+    public AbstractCalendarTimerBean(boolean persistent) {
+        super(service -> service.createCalendarTimer(new ScheduleExpression().second("*").minute("*").hour("*").dayOfMonth("*").year("*"), new TimerConfig("calendar", persistent)));
+    }
 }

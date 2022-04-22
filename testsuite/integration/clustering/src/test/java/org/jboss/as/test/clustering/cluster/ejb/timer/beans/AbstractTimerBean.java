@@ -37,7 +37,7 @@ import org.wildfly.clustering.group.Group;
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractTimerBean implements TimerBean {
+public abstract class AbstractTimerBean implements TimerBean, TimerRecorder {
 
     private final BlockingQueue<Instant> timeouts = new LinkedBlockingQueue<>();
 
@@ -56,9 +56,10 @@ public abstract class AbstractTimerBean implements TimerBean {
         return this.group.getMembership().isCoordinator();
     }
 
-    void record(Timer timer) {
+    @Override
+    public void record(Timer timer) {
         Instant now = Instant.now();
-        System.out.println(String.format("%s received %s(%s) timeout @ %s", this.getNodeName(), this.getClass().getName(), timer.getInfo(), now));
+        System.out.println(String.format("%s received %s(info=%s, persistent=%s) timeout @ %s", this.getNodeName(), this.getClass().getName(), timer.getInfo(), timer.isPersistent(), now));
         this.timeouts.add(now);
     }
 
