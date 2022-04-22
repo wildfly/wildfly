@@ -548,6 +548,17 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-lite-extension-translator</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.weld.module</groupId>
             <artifactId>weld-ejb</artifactId>
             <exclusions>
