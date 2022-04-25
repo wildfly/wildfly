@@ -48,11 +48,6 @@ public abstract class AbstractProtoStreamWriter extends DefaultProtoStreamOperat
     }
 
     @Override
-    public void writeTag(int number, int wireType) throws IOException {
-        this.writer.writeTag(number, wireType);
-    }
-
-    @Override
     public void writeTag(int number, WireType wireType) throws IOException {
         this.writer.writeTag(number, wireType);
     }
@@ -94,11 +89,13 @@ public abstract class AbstractProtoStreamWriter extends DefaultProtoStreamOperat
         this.writer.writeEnum(index, value);
     }
 
+    @Deprecated
     @Override
     public void writeInt32(int index, int value) throws IOException {
         this.writer.writeInt32(index, value);
     }
 
+    @Deprecated
     @Override
     public void writeFixed32(int index, int value) throws IOException {
         this.writer.writeFixed32(index, value);
@@ -119,11 +116,13 @@ public abstract class AbstractProtoStreamWriter extends DefaultProtoStreamOperat
         this.writer.writeSFixed32(index, value);
     }
 
+    @Deprecated
     @Override
     public void writeInt64(int index, long value) throws IOException {
         this.writer.writeInt64(index, value);
     }
 
+    @Deprecated
     @Override
     public void writeFixed64(int index, long value) throws IOException {
         this.writer.writeFixed64(index, value);
