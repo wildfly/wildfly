@@ -680,6 +680,10 @@
                 </exclusion>
                 <exclusion>
                     <groupId>${full.maven.groupId}</groupId>
+                    <artifactId>wildfly-microprofile-jwt-smallrye</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${full.maven.groupId}</groupId>
                     <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
                 </exclusion>
                 <exclusion>
