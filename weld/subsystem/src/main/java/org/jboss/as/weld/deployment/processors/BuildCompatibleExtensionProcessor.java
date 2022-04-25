@@ -93,12 +93,12 @@ public class BuildCompatibleExtensionProcessor implements DeploymentUnitProcesso
 
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final ClassLoader classLoader = module.getClassLoader();
-        final ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
+        final ClassLoader oldCl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             // Have to set the deployment module class loader as the build compatible extension
             // loader and translator use the TCCL to search for BuildCompatibleExtensions using
             // SerivceLoader
-            setContextClassLoader(classLoader);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
             if(hasBuildCompatibleExtensions()) {
                 // there are build compatible extensions visible, register the translator
                 WeldPortableExtensions.getPortableExtensions(deploymentUnit)
@@ -107,20 +107,7 @@ public class BuildCompatibleExtensionProcessor implements DeploymentUnitProcesso
                 log.debugf("Registered %s for %s", LITE_EXTENSION_TRANSLATOR, deploymentUnit.getName());
             }
         } finally {
-            setContextClassLoader(currentClassLoader);
-        }
-    }
-
-    private void setContextClassLoader(ClassLoader classLoader) {
-        if (WildFlySecurityManager.isChecking()) {
-            AccessController.doPrivileged(new PrivilegedAction<Void>() {
-                public Void run() {
-                    Thread.currentThread().setContextClassLoader(classLoader);
-                    return null;
-                }
-            });
-        } else {
-            Thread.currentThread().setContextClassLoader(classLoader);
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldCl);
         }
     }
 }
