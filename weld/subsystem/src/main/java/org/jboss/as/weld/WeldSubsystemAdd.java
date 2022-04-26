@@ -43,7 +43,6 @@ import org.jboss.as.weld.deployment.CdiAnnotationProcessor;
 import org.jboss.as.weld.deployment.processors.BeanArchiveProcessor;
 import org.jboss.as.weld.deployment.processors.BeanDefiningAnnotationProcessor;
 import org.jboss.as.weld.deployment.processors.BeansXmlProcessor;
-import org.jboss.as.weld.deployment.processors.BuildCompatibleExtensionProcessor;
 import org.jboss.as.weld.deployment.processors.DevelopmentModeProcessor;
 import org.jboss.as.weld.deployment.processors.EarApplicationScopedObserverMethodProcessor;
 import org.jboss.as.weld.deployment.processors.ExternalBeanArchiveProcessor;
@@ -107,7 +106,6 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_DEVELOPMENT_MODE, new DevelopmentModeProcessor());
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_BEAN_ARCHIVE, new BeanArchiveProcessor());
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_EXTERNAL_BEAN_ARCHIVE, new ExternalBeanArchiveProcessor());
-                processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS, new BuildCompatibleExtensionProcessor());
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS, new WeldPortableExtensionProcessor());
                 // TODO add processor priority to Phase
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, 0x0F10, new EarApplicationScopedObserverMethodProcessor());
