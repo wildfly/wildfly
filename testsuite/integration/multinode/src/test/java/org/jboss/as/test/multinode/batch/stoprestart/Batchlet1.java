@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.multinode.batch.stoprestart;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.batch.api.BatchProperty;
 import javax.batch.api.Batchlet;
 import javax.inject.Inject;
@@ -29,19 +31,32 @@ import javax.inject.Named;
 
 @Named
 public class Batchlet1 implements Batchlet {
+    private final AtomicBoolean stopRequested = new AtomicBoolean();
+
     @Inject
     @BatchProperty
     long seconds;
 
+    @Inject
+    @BatchProperty
+    int interval;
+
     @Override
     public String process() throws Exception {
         if (seconds > 0) {
-            Thread.sleep(seconds * 1000);
+            long startTime = System.currentTimeMillis();
+            long targetDuration = seconds * 1000;
+            long sleepAmount;
+            while((sleepAmount = System.currentTimeMillis() - startTime) < targetDuration && !stopRequested.get()) {
+                Thread.sleep(interval);
+            }
+            return "Slept " + TimeUnit.MILLISECONDS.toSeconds(sleepAmount) + " seconds";
         }
-        return "Slept " + seconds;
+        return "Direct return no sleep";
     }
 
     @Override
     public void stop() throws Exception {
+        stopRequested.set(true);
     }
 }
