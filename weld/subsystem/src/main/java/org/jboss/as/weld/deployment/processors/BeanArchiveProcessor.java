@@ -86,6 +86,9 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class BeanArchiveProcessor implements DeploymentUnitProcessor {
 
+    // TODO this variable be removed once WFLY fully depends on CDI 4 and we can reference the class directly!
+    private static final String buildCompatExtensionName = "jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension";
+    private static final DotName BUILD_COMPAT_EXTENSION_NAME = DotName.createSimple(buildCompatExtensionName);
     private static final DotName EXTENSION_NAME = DotName.createSimple(Extension.class.getName());
 
     @Override
@@ -276,8 +279,10 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
 
                 /*
                  * An archive which contains an extension and no beans.xml file is not a bean archive.
+                 * An archive which contains a build compatible extension and no beans.xml file is not a bean archive.
                  */
-                if (metadata == null && !index.getAllKnownImplementors(EXTENSION_NAME).isEmpty()) {
+                if (metadata == null &&
+                        (!index.getAllKnownImplementors(EXTENSION_NAME).isEmpty() || !index.getAllKnownImplementors(BUILD_COMPAT_EXTENSION_NAME).isEmpty())) {
                     return null;
                 }
 
