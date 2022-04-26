@@ -123,7 +123,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     /**
      * Holds the {@link java.util.concurrent.Future} of each of the timer tasks that have been scheduled
      */
-    private final Map<String, java.util.TimerTask> scheduledTimerFutures = new HashMap<String, java.util.TimerTask>();
+    private final ConcurrentMap<String, java.util.TimerTask> scheduledTimerFutures = new ConcurrentHashMap<>();
 
     /**
      * Key that is used to store timers that are waiting on transaction completion in the transaction local
@@ -904,71 +904,72 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * Creates and schedules a {@link TimerTask} for the next timeout of the passed <code>timer</code>
      */
     protected void scheduleTimeout(TimerImpl timer, boolean newTimer) {
-        synchronized (scheduledTimerFutures) {
-            if (!newTimer && !scheduledTimerFutures.containsKey(timer.getId())) {
-                //this timer has been cancelled by another thread. We just return
-                return;
-            }
+        if (!newTimer && !scheduledTimerFutures.containsKey(timer.getId())) {
+            //this timer has been cancelled by another thread. We just return
+            return;
+        }
 
-            Date nextExpiration = timer.getNextExpiration();
-            if (nextExpiration == null) {
-                EJB3_TIMER_LOGGER.nextExpirationIsNull(timer);
-                return;
+        Date nextExpiration = timer.getNextExpiration();
+        if (nextExpiration == null) {
+            EJB3_TIMER_LOGGER.nextExpirationIsNull(timer);
+            return;
+        }
+        // create the timer task
+        final TimerTask<?> timerTask = timer.getTimerTask();
+        // find out how long is it away from now
+        final long currentTime = System.currentTimeMillis();
+        long delay = nextExpiration.getTime() - currentTime;
+        long intervalDuration = timer.getInterval();
+        final Task task = new Task(timerTask, ejbComponentInjectedValue.getValue().getControlPoint());
+        if (intervalDuration > 0) {
+            EJB3_TIMER_LOGGER.debugv("Scheduling timer {0} at fixed rate, starting at {1} milliseconds from now with repeated interval={2}",
+                    timer, delay, intervalDuration);
+            // if in past, then trigger immediately
+            if (delay < 0) {
+                delay = 0;
             }
-            // create the timer task
-            final TimerTask<?> timerTask = timer.getTimerTask();
-            // find out how long is it away from now
-            final long currentTime = System.currentTimeMillis();
-            long delay = nextExpiration.getTime() - currentTime;
-            long intervalDuration = timer.getInterval();
-            final Task task = new Task(timerTask, ejbComponentInjectedValue.getValue().getControlPoint());
-            if (intervalDuration > 0) {
-                EJB3_TIMER_LOGGER.debugv("Scheduling timer {0} at fixed rate, starting at {1} milliseconds from now with repeated interval={2}",
-                        timer, delay, intervalDuration);
-                // if in past, then trigger immediately
-                if (delay < 0) {
-                    delay = 0;
+        } else {
+            EJB3_TIMER_LOGGER.debugv("Scheduling a single action timer {0} starting at {1} milliseconds from now", timer, delay);
+            // if in past, then trigger immediately; if overdue by 5 minutes, set next expiration to current time
+            if (delay < 0) {
+                if (delay < -300000) {
+                    timer.nextExpiration = new Date(currentTime);
                 }
-                // schedule the task
-                this.timerInjectedValue.getValue().scheduleAtFixedRate(task, delay, intervalDuration);
-                // maintain it in timerservice for future use (like cancellation)
-                this.scheduledTimerFutures.put(timer.getId(), task);
-            } else {
-                EJB3_TIMER_LOGGER.debugv("Scheduling a single action timer {0} starting at {1} milliseconds from now", timer, delay);
-                // if in past, then trigger immediately; if overdue by 5 minutes, set next expiration to current time
-                if (delay < 0) {
-                    if (delay < -300000) {
-                        timer.nextExpiration = new Date(currentTime);
-                    }
-                    delay = 0;
-                }
-                // schedule the task
-                this.timerInjectedValue.getValue().schedule(task, delay);
-                // maintain it in timerservice for future use (like cancellation)
-                this.scheduledTimerFutures.put(timer.getId(), task);
+                delay = 0;
             }
         }
+        final long delayFinal = delay;
+        // maintain it in timerservice for future use (like cancellation)
+        scheduledTimerFutures.compute(timer.getId(), (k, v) -> {
+            if (timer.isCanceled()) {
+                return null;
+            } else {
+                // schedule the task
+                if (intervalDuration > 0) {
+                    this.timerInjectedValue.getValue().scheduleAtFixedRate(task, delayFinal, intervalDuration);
+                } else {
+                    this.timerInjectedValue.getValue().schedule(task, delayFinal);
+                }
+                return task;
+            }
+        });
     }
 
     /**
      * Cancels any scheduled {@link java.util.concurrent.Future} corresponding to the passed <code>timer</code>
      *
-     * @param timer
+     * @param timer the timer to cancel
      */
     protected void cancelTimeout(final TimerImpl timer) {
-        synchronized (this.scheduledTimerFutures) {
-            java.util.TimerTask timerTask = this.scheduledTimerFutures.remove(timer.getId());
-            if (timerTask != null) {
-                timerTask.cancel();
-            }
-        }
+        scheduledTimerFutures.computeIfPresent(timer.getId(), (k, v) -> {
+            v.cancel();
+            return null;
+        });
     }
 
 
     public boolean isScheduled(final String tid) {
-        synchronized (this.scheduledTimerFutures) {
-            return this.scheduledTimerFutures.containsKey(tid);
-        }
+        return this.scheduledTimerFutures.containsKey(tid);
     }
 
     /**
