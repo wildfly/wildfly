@@ -65,12 +65,77 @@ public class ClusterConnectionControlHandler extends AbstractActiveMQComponentCo
         } else if (ClusterConnectionDefinition.TOPOLOGY.getName().equals(attributeName)) {
             ClusterConnectionControl control = getActiveMQComponentControl(context, operation, false);
             if(control != null) {
-                context.getResult().set(control.getTopology());
+                context.getResult().set(formatTopology(control.getTopology()));
             }
         } else {
             unsupportedAttribute(attributeName);
         }
     }
+
+    public static String formatTopology(String topology) {
+        String prefix = "";
+        StringBuilder builder = new StringBuilder();
+        boolean params = false;
+        char previous = ' ';
+        for (char c : topology.toCharArray()) {
+            switch (c) {
+                case '[':
+                case '{':
+                case '(':
+                    builder.append(c);
+                    prefix += TAB;
+                    break;
+                case '?':
+                    if(' ' == previous) {
+                        builder.deleteCharAt(builder.length()-1);
+                        builder.append(',').append(NEW).append(prefix);
+                    }
+                    params = true;
+                    prefix += TAB;
+                    builder.append('{').append(NEW).append(prefix);
+                    break;
+                case '&':
+                    builder.append(',').append(NEW).append(prefix);
+                    break;
+                case ',':
+                    if(params) {
+                        prefix = prefix.substring(0, prefix.length() - TAB.length());
+                        builder.append(NEW).append(prefix).append('}').append(c).append(NEW).append(prefix);
+                    } else {
+                        builder.append(c);
+                    }
+                    params = false;
+                    break;
+                case ']':
+                case '}':
+                    prefix = prefix.substring(0, prefix.length() - TAB.length());
+                    builder.append(NEW).append(prefix);
+                    builder.append(c);
+                    break;
+                case ')':
+                    prefix = prefix.substring(0, prefix.length() - TAB.length());
+                    builder.append(c);
+                    break;
+                case ' ':
+                    if (',' != previous) {
+                        builder.append(c);
+                    }
+                    break;
+                default:
+                    if (',' == previous) {
+                        builder.append(NEW).append(prefix);
+                    }
+                    builder.append(c);
+            }
+            if (c != ' ' || previous != ',') {
+                previous = c;
+            }
+        }
+        return builder.toString().trim();
+    }
+
+    private static final String TAB = "\t";
+    private static final String NEW = System.lineSeparator();
 
     @Override
     protected Object handleOperation(String operationName, OperationContext context, ModelNode operation) throws OperationFailedException {
