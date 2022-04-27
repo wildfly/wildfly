@@ -326,6 +326,7 @@
                 <module>clustering</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
+                <module>elytron</module>
                 <module>elytron-oidc-client</module>
             </modules>
         </profile>

@@ -62,6 +62,8 @@
         <version.javax.xml.bind.jaxb-api>2.4.0-b180830.0359</version.javax.xml.bind.jaxb-api>
         <version.org.glassfish.jaxb.jaxb-runtime>2.4.0-b180830.0438</version.org.glassfish.jaxb.jaxb-runtime>
         <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} ${extra.server.jvm.args}</server.jvm.args>
+
+        <maven.local.repo>${settings.localRepository}</maven.local.repo>
     </properties>
 
     <dependencies>
@@ -896,6 +898,79 @@
                                     <includes>
                                         <include>***/UndertowSSLv2HelloTestCase</include>
                                     </includes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Test against WildFly Preview dist -->
+        <profile>
+            <id>ee9.profile</id>
+            <activation>
+                <property>
+                    <name>ts.ee9</name>
+                </property>
+            </activation>
+            <properties>
+                <maven.local.repo>${wildfly.transformed.repo.dir}</maven.local.repo>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <system-properties>
+                                <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
+                            </system-properties>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jboss.galleon</groupId>
+                        <artifactId>galleon-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>server-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <plugin-options combine.self="append">
+                                        <jboss-jakarta-transform-artifacts>false</jboss-jakarta-transform-artifacts>
+                                        <jboss-maven-provisioning-repo>${maven.local.repo}</jboss-maven-provisioning-repo>
+                                    </plugin-options>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!--Re-enable the default surefire execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <phase>test</phase>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</server.jvm.args>
+                                    </systemPropertyVariables>
+                                    <!-- These include a module to be used which currently uses javax and is not transformed -->
+                                    <excludedGroups>org.jboss.as.test.shared.categories.RequiresTransformedClass</excludedGroups>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>sslv2-tests</id>
+                                <phase>test</phase>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir} -Djava.security.properties=${security.properties}</server.jvm.args>
+                                    </systemPropertyVariables>
                                 </configuration>
                             </execution>
                         </executions>
