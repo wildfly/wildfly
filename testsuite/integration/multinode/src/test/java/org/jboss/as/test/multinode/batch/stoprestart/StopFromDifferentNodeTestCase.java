@@ -35,6 +35,7 @@ import java.net.SocketPermission;
 import java.security.SecurityPermission;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import javax.batch.runtime.BatchStatus;
 import javax.naming.Context;
 
@@ -43,6 +44,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -53,6 +55,7 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -65,10 +68,22 @@ import org.junit.runner.RunWith;
 @RunAsClient
 @ServerSetup(StopFromDifferentNodeTestCase.StopFromDifferentNodeTestCaseSetup.class)
 public class StopFromDifferentNodeTestCase {
+    private static final Logger log = Logger.getLogger(StopFromDifferentNodeTestCase.class.getName());
     private static final String ARCHIVE_NAME = "stopFromDifferentNode";
     private static final String BATCHLET1_JOB = "batchlet1.xml";
     private static final String BATCH_CLIENT_BEAN_LOOKUP = ARCHIVE_NAME + "/" + BatchClientBean.class.getSimpleName() + "!" + BatchClientIF.class.getName();
-    private static final long BATCHLET_DELAY_SECONDS = TimeoutUtil.adjust(2);
+
+    /**
+     * Number of seconds {@link Batchlet1#process()} method sleeps. The batchlet
+     * needs to sleep long enough so that when a client stops it, it is still in
+     * running state.
+     */
+    private static final long BATCHLET_DELAY_SECONDS = TimeoutUtil.adjust(10);
+
+    /**
+     * Interval in milliseconds with which a client polls the status of a job execution.
+     */
+    private static final int CHECK_STATUS_INTERVAL_MILLIS = TimeoutUtil.adjust(200);
 
     private static Server h2Server;
 
@@ -89,8 +104,9 @@ public class StopFromDifferentNodeTestCase {
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             if (h2Server == null) {
-                //we need a TCP server that can be shared between the two servers
-                h2Server = Server.createTcpServer().start();
+                //We need a TCP server that can be shared between the two servers.
+                //To allow remote connections, start the TCP server using the option -tcpAllowOthers
+                h2Server = Server.createTcpServer("-tcpAllowOthers").start();
             }
 
             if (savedDefaultJobRepository == null) {
@@ -184,7 +200,8 @@ public class StopFromDifferentNodeTestCase {
      * Verifies that a running batch job execution can be stopped from a different node.
      * This test starts a batch job in node 1, stop it in node 2, and restart it in node 2.
      */
-    @Test
+    @Test()
+    @InSequence(0)
     public void testStartStopRestart122() throws Exception {
         testStartStopRestart(122);
     }
@@ -194,6 +211,7 @@ public class StopFromDifferentNodeTestCase {
      * This test starts a batch job in node 1, stop it in node 2, and restart it in node 1.
      */
     @Test
+    @InSequence(1)
     public void testStartStopRestart121() throws Exception {
         testStartStopRestart(121);
     }
@@ -218,13 +236,12 @@ public class StopFromDifferentNodeTestCase {
             //start the job in node 1
             final Properties jobParams = new Properties();
             jobParams.setProperty("seconds", String.valueOf(BATCHLET_DELAY_SECONDS));
+            jobParams.setProperty("interval", String.valueOf(CHECK_STATUS_INTERVAL_MILLIS));
             final long jobExecutionId = bean1.start(BATCHLET1_JOB, jobParams);
 
             //make sure the job execution has started
             final BatchStatus startedFromNode1 = waitForBatchStatus(bean1, jobExecutionId, BatchStatus.STARTED);
             assertEquals(BatchStatus.STARTED, startedFromNode1);
-            final BatchStatus startedFromNode2 = waitForBatchStatus(bean2, jobExecutionId, BatchStatus.STARTED);
-            assertEquals(BatchStatus.STARTED, startedFromNode2);
 
             //stop the job execution from node 2
             bean2.stop(jobExecutionId);
@@ -239,15 +256,14 @@ public class StopFromDifferentNodeTestCase {
 
             //restart from node 1 or node 2, depending on sequence parameter.
             BatchClientIF beanUsedToRestart = sequence == 121 ? bean1 : bean2;
-            final long restartExecutionId = beanUsedToRestart.restart(jobExecutionId, null);
+            //do not wait in the batchlet when restarting.
+            jobParams.setProperty("seconds", String.valueOf(0));
+            jobParams.setProperty("interval", String.valueOf(0));
+            final long restartExecutionId = beanUsedToRestart.restart(jobExecutionId, jobParams);
 
-            //check job status from node 1
-            final BatchStatus restartStatusFromNode1 = waitForBatchStatus(bean1, restartExecutionId, BatchStatus.COMPLETED);
+            //check job status from the node which originated the restart operation
+            final BatchStatus restartStatusFromNode1 = waitForBatchStatus(beanUsedToRestart, restartExecutionId, BatchStatus.COMPLETED);
             assertEquals(BatchStatus.COMPLETED, restartStatusFromNode1);
-
-            //check job status from node 2
-            final BatchStatus restartStatusFromNode2 = waitForBatchStatus(bean2, restartExecutionId, BatchStatus.COMPLETED);
-            assertEquals(BatchStatus.COMPLETED, restartStatusFromNode2);
         } finally {
             if (context2 != null) {
                 context2.close();
@@ -259,19 +275,21 @@ public class StopFromDifferentNodeTestCase {
     }
 
     private static BatchStatus waitForBatchStatus(BatchClientIF bean, long jobExecutionId, BatchStatus batchStatus) throws Exception {
-        final int checkIntervalMillis = TimeoutUtil.adjust(50);
-        final int maxCount = TimeoutUtil.adjust(50);
-        int count = 0;
+        final long endTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(BATCHLET_DELAY_SECONDS);
         BatchStatus finalStatus = null;
+        Exception exception = null;
         do {
-            Thread.sleep(checkIntervalMillis);
+            Thread.sleep(CHECK_STATUS_INTERVAL_MILLIS);
             try {
                 finalStatus = bean.getJobStatus(jobExecutionId);
             } catch (Exception e) {
-                //ignore
+                exception = e;
             }
-        } while (finalStatus != batchStatus && ++count <= maxCount);
+        } while (finalStatus != batchStatus && System.currentTimeMillis() < endTime);
 
+        if (exception != null) {
+            log.warnf(exception, "batch status is still null after wait timeout.");
+        }
         return finalStatus;
     }
 
