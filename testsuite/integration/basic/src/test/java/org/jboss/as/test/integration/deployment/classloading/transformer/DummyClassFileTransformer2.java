@@ -22,8 +22,8 @@
 
 package org.jboss.as.test.integration.deployment.classloading.transformer;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
+import org.jboss.modules.ClassTransformer;
+import java.nio.ByteBuffer;
 import java.security.ProtectionDomain;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -31,14 +31,14 @@ import java.util.concurrent.ConcurrentSkipListSet;
 /**
  * @author Marius Bogoevici
  */
-public class DummyClassFileTransformer2 implements ClassFileTransformer {
+public class DummyClassFileTransformer2 implements ClassTransformer {
 
     public static boolean wasActive = false;
 
     public static Set<String> transformedClassNames = new ConcurrentSkipListSet<String> ();
 
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+    public ByteBuffer transform(ClassLoader loader, String className, ProtectionDomain protectionDomain, ByteBuffer classfileBuffer) throws IllegalArgumentException {
         transformedClassNames.add(className);
         wasActive = true;
         return classfileBuffer;

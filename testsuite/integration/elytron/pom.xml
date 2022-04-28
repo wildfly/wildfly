@@ -53,7 +53,8 @@
         <wildfly.dir>${basedir}/target/${wildfly.instance.name}</wildfly.dir>
         <security.properties>${project.basedir}/src/test/resources/reenabled_tlsv1.properties</security.properties>
         <!-- WFLY-16155 temporary pin bouncycastle 1.69 for test only.
-             Remove pinning with WFLY-15867 upgrading org.xipki.pki tests -->
+             Remove pinning with WFLY-15867 upgrading org.xipki.pki tests
+             and change to org.bouncycastle:*-jdk18on -->
         <version.org.bouncycastle>1.69</version.org.bouncycastle>
         <version.org.hsqldb.hsqldb>2.5.0</version.org.hsqldb.hsqldb>
         <version.org.mock-server.mockserver>5.6.1</version.org.mock-server.mockserver>
@@ -236,6 +237,9 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- WFLY-16155 temporary pin bouncycastle 1.69 for test only.
+             Remove pinning with WFLY-15867 upgrading org.xipki.pki tests
+             and change to org.bouncycastle:*-jdk18on -->
         <!-- crl and ocsp -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
