@@ -28,8 +28,7 @@ import org.jboss.dmr.ModelNode;
 import java.io.IOException;
 
 import static org.jboss.as.controller.operations.common.Util.getEmptyOperation;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.wildfly.test.integration.microprofile.health.MicroProfileHealthUtils.testManagementOperation;
 
 /**
  * @author <a href="http://xstefank.io/">Martin Stefanko</a> (c) 2021 Red Hat inc.
@@ -42,25 +41,7 @@ public class MicroProfileHealthApplicationStartupOperationTestCase extends Micro
         ModelNode checkOp = getEmptyOperation(operation, address);
 
         ModelNode response = managementClient.getControllerClient().execute(checkOp);
-
-        final String opOutcome = response.get("outcome").asString();
-        assertEquals("success", opOutcome);
-
-        ModelNode result = response.get("result");
-        assertEquals(mustBeUP ? "UP" : "DOWN", result.get("status").asString());
-
-        if (probeName != null) {
-            for (ModelNode check : result.get("checks").asList()) {
-                if (probeName.equals(check.get("name").asString())) {
-                    // probe name found
-                    // global outcome is driven by this probe state
-                    assertEquals(mustBeUP ? "UP" : "DOWN", check.get("status").asString());
-                    return;
-                }
-            }
-            fail("Probe named " + probeName + " not found in " + result);
-        }
-
+        testManagementOperation(response, mustBeUP, probeName);
 
     }
 }

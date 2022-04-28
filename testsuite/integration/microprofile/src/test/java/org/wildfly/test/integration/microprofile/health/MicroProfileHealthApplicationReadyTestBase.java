@@ -99,5 +99,4 @@ public abstract class MicroProfileHealthApplicationReadyTestBase {
 
         checkGlobalOutcome(managementClient, "check-ready", false, null);
     }
-
 }

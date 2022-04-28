@@ -42,6 +42,7 @@ import org.junit.runner.RunWith;
 import java.io.IOException;
 import java.net.URL;
 
+
 /**
  * Test that an application without any startup probe got one setup by WildFly so that the application
  * is considered started when it is deployed
@@ -98,5 +99,4 @@ public abstract class MicroProfileHealthApplicationWithoutStartupTestBase {
 
         checkGlobalOutcome(managementClient, "check-started", false, null);
     }
-
 }

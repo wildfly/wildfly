@@ -55,7 +55,7 @@ public abstract class MicroProfileHealthApplicationStartupTestBase {
     @Deployment(name = "MicroProfileHealthApplicationStartupTestBaseSetup")
     public static Archive<?> deploySetup() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthApplicationStartupTestBaseSetup.war")
-            .addClass(MicroProfileHealthApplicationStartupSetupTask.class);
+                .addClass(MicroProfileHealthApplicationStartupSetupTask.class);
         return war;
     }
 
@@ -86,7 +86,7 @@ public abstract class MicroProfileHealthApplicationStartupTestBase {
     @InSequence(2)
     @OperateOnDeployment("MicroProfileHealthApplicationStartupTestBase")
     public void testApplicationStartupAfterDeployment(@ArquillianResource URL url) throws Exception {
-            checkGlobalOutcome(managementClient, "check-started", true, "successfulStartupProbe");
+        checkGlobalOutcome(managementClient, "check-started", true, "successfulStartupProbe");
     }
 
     @Test
@@ -97,5 +97,4 @@ public abstract class MicroProfileHealthApplicationStartupTestBase {
 
         checkGlobalOutcome(managementClient, "check-started", false, null);
     }
-
 }
