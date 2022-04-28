@@ -39,6 +39,7 @@ import org.jboss.as.appclient.logging.AppClientLogger;
 import org.jboss.as.appclient.subsystem.parsing.AppClientXml;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Namespace;
+import org.jboss.as.controller.persistence.ConfigurationExtensionFactory;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.server.Bootstrap;
@@ -174,6 +175,7 @@ public final class Main {
         boolean clientArgs = false;
         ProductConfig productConfig;
         boolean hostSet = false;
+        String yamlFile = null;
 
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
@@ -236,8 +238,7 @@ public final class Main {
                     }
                     String fileUrl = parseValue(arg, CommandLineConstants.CONNECTION_PROPERTIES);
                     ret.propertiesFile = fileUrl;
-                }else if (arg.startsWith(CommandLineConstants.SYS_PROP)) {
-
+                } else if (arg.startsWith(CommandLineConstants.SYS_PROP)) {
                     // set a system property
                     String name, value;
                     int idx = arg.indexOf("=");
@@ -254,6 +255,22 @@ public final class Main {
                     appClientConfig = parseValue(arg, CommandLineConstants.APPCLIENT_CONFIG);
                 } else if (CommandLineConstants.SECMGR.equals(arg)) {
                     // ignore the argument as it's allowed, but passed to jboss-modules and not used here
+                } else if(ConfigurationExtensionFactory.isConfigurationExtensionSupported()
+                        && ConfigurationExtensionFactory.commandLineContainsArgument(arg)) {
+                    int idx = arg.indexOf("=");
+                    if (idx == -1) {
+                       final int next = i + 1;
+                        if (next < argsLength) {
+                            yamlFile = args[next];
+                            i++;
+                        } else {
+                            STDERR.println(AppClientLogger.ROOT_LOGGER.argumentExpected(arg));
+                            usage();
+                            return null;
+                        }
+                    } else {
+                        yamlFile = arg.substring(idx + 1, arg.length());
+                    }
                 } else {
                     if (arg.startsWith("-")) {
                         STDOUT.println(AppClientLogger.ROOT_LOGGER.unknownOption(arg));
@@ -273,7 +290,8 @@ public final class Main {
 
         String hostControllerName = null; // No host controller unless in domain mode.
         productConfig = new ProductConfig(Module.getBootModuleLoader(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.HOME_DIR, null), systemProperties);
-        ret.environment = new ServerEnvironment(hostControllerName, systemProperties, systemEnvironment, appClientConfig, null, launchType, null, productConfig);
+        ret.environment = new ServerEnvironment(hostControllerName, systemProperties, systemEnvironment, appClientConfig, null, launchType, null, productConfig,
+                System.currentTimeMillis(), false, null, null, null, yamlFile);
         return ret;
     }
 

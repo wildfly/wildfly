@@ -3,6 +3,7 @@ package org.jboss.as.test.integration.ee.appclient.basic;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.net.URL;
 
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -18,6 +19,8 @@ public abstract class AbstractSimpleApplicationClientTestCase {
 
     protected static final String MODULE_NAME = "ejb";
 
+    protected static final String YAML_ARG = " --yaml=" + new File(new File("target","test-classes"), "app-client.yml").getAbsolutePath();
+
     @ArquillianResource
     protected ManagementClient managementClient;
 
@@ -31,7 +34,7 @@ public abstract class AbstractSimpleApplicationClientTestCase {
                 APP_NAME, MODULE_NAME, AppClientStateSingleton.class.getSimpleName(), "");
         final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
         remote.reset();
-        final AppClientWrapper wrapper = new AppClientWrapper(getArchive(), getHostArgument(),
+        final AppClientWrapper wrapper = new AppClientWrapper(getArchive(), YAML_ARG + getHostArgument(),
                 "client-annotation.jar", "${test.expr.applcient.param:cmdLineParam}");
         try {
             final String result = remote.awaitAppClientCall();
@@ -52,7 +55,7 @@ public abstract class AbstractSimpleApplicationClientTestCase {
                 APP_NAME, MODULE_NAME, AppClientStateSingleton.class.getSimpleName(), "");
         final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
         remote.reset();
-        final AppClientWrapper wrapper = new AppClientWrapper(getArchive(), getHostArgument(),
+        final AppClientWrapper wrapper = new AppClientWrapper(getArchive(), YAML_ARG + getHostArgument(),
                 "client-dd.jar", "");
         try {
             final String result = remote.awaitAppClientCall();
@@ -75,7 +78,7 @@ public abstract class AbstractSimpleApplicationClientTestCase {
         remote.reset();
         URL props = getClass().getClassLoader().getResource("jboss-ejb-client.properties");
         final AppClientWrapper wrapper = new AppClientWrapper(getArchive(),
-                " -Dnode0=" + managementClient.getMgmtAddress() + getEjbClientPropertiesArgument(props),
+                YAML_ARG + " -Dnode0=" + managementClient.getMgmtAddress() + getEjbClientPropertiesArgument(props),
                 "client-override.jar",
                 "");
         try {
@@ -89,7 +92,7 @@ public abstract class AbstractSimpleApplicationClientTestCase {
 
     private String getHostArgument() {
         // Use an expression for the host arg value to validate that works
-        return "--host=${test.expr.appclient.host:" + managementClient.getRemoteEjbURL() + "}";
+        return " --host=${test.expr.appclient.host:" + managementClient.getRemoteEjbURL() + "}";
     }
 
     private String getEjbClientPropertiesArgument(URL props) {

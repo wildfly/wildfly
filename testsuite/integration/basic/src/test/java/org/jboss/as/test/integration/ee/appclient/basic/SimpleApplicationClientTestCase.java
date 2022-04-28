@@ -62,18 +62,21 @@ public class SimpleApplicationClientTestCase extends AbstractSimpleApplicationCl
         ear.addAsModule(ejb);
 
         final JavaArchive appClient = ShrinkWrap.create(JavaArchive.class, "client-annotation.jar");
+        appClient.addClasses(org.junit.Assert.class, org.junit.ComparisonFailure.class);
         appClient.addClasses(AppClientMain.class);
         appClient.addAsManifestResource(new StringAsset("Main-Class: " + AppClientMain.class.getName() + "\n"), "MANIFEST.MF");
         ear.addAsModule(appClient);
 
         final JavaArchive clientDD = ShrinkWrap.create(JavaArchive.class, "client-dd.jar");
-        clientDD.addClasses(DescriptorClientMain.class);
+        clientDD.addClasses(DescriptorClientMain.class, org.junit.ComparisonFailure.class);
+        clientDD.addClasses(org.junit.Assert.class);
         clientDD.addAsManifestResource(new StringAsset("Main-Class: " + DescriptorClientMain.class.getName() + "\n"), "MANIFEST.MF");
         clientDD.addAsManifestResource(SimpleApplicationClientTestCase.class.getPackage(), "application-client.xml", "application-client.xml");
         ear.addAsModule(clientDD);
 
         final JavaArchive clientOverride = ShrinkWrap.create(JavaArchive.class, "client-override.jar");
-        clientOverride.addClasses(DescriptorClientMain.class);
+        clientOverride.addClasses(DescriptorClientMain.class, org.junit.ComparisonFailure.class);
+        clientOverride.addClasses(org.junit.Assert.class);
         clientOverride.addAsManifestResource(new StringAsset("Main-Class: " + DescriptorClientMain.class.getName() + "\n"), "MANIFEST.MF");
         clientOverride.addAsManifestResource(SimpleApplicationClientTestCase.class.getPackage(), "application-client.xml", "application-client.xml");
         clientOverride.addAsManifestResource(SimpleApplicationClientTestCase.class.getPackage(), "jboss-client.xml", "jboss-client.xml");
