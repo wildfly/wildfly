@@ -42,7 +42,7 @@
         <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
 
         <!-- Version properties for dependency management items -->
-        <version.com.sun.faces>3.0.2.SP01</version.com.sun.faces>
+        <version.com.sun.faces>4.0.0-M6.SP01</version.com.sun.faces>
         <version.com.sun.istack>4.0.1</version.com.sun.istack>
         <version.com.sun.xml.messaging.saaj>2.0.0.SP1</version.com.sun.xml.messaging.saaj>
         <version.jakarta.activation.jakarta.activation-api>2.1.0</version.jakarta.activation.jakarta.activation-api>
@@ -54,7 +54,7 @@
         <version.jakarta.el.jakarta-el-api>5.0.0-RC1</version.jakarta.el.jakarta-el-api>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <version.jakarta.enterprise>4.0.0-RC2</version.jakarta.enterprise>
-        <version.jakarta.faces.jakarta-faces-api>3.0.0</version.jakarta.faces.jakarta-faces-api>
+        <version.jakarta.faces.jakarta-faces-api>4.0.0-M6</version.jakarta.faces.jakarta-faces-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.1</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.interceptor.jakarta-interceptors-api>2.1.0</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.jms.jakarta-jms-api>3.0.0</version.jakarta.jms.jakarta-jms-api>
