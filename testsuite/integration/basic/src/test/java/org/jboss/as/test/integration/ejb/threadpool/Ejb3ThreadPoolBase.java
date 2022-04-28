@@ -22,6 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.threadpool;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
+import java.io.FilePermission;
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -36,11 +41,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-
-import javax.naming.InitialContext;
-import java.io.FilePermission;
-
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 public class Ejb3ThreadPoolBase {
 
@@ -70,9 +70,10 @@ public class Ejb3ThreadPoolBase {
     void waitUntilThreadPoolProcessedAtLeast(int tasks, long timeoutInMillis) throws Exception {
         long startTime = System.currentTimeMillis();
         ModelNode readTasks = Util.getReadAttributeOperation(DEFAULT_THREAD_POOL_ADDRESS, "completed-task-count");
-        while (executeOperation(readTasks).asInt() < tasks) {
+        int actualTaskCount;
+        while ((actualTaskCount = executeOperation(readTasks).asInt()) < tasks) {
             if (System.currentTimeMillis() - startTime > timeoutInMillis) {
-                Assert.fail("There are not enough tasks (expected: " + tasks + ") processed by thread pool in timeout " + timeoutInMillis);
+                Assert.fail("There are not enough tasks (expected: " + tasks + ", actual: " + actualTaskCount + ") processed by thread pool in timeout " + timeoutInMillis);
             }
             Thread.sleep(500);
         }
