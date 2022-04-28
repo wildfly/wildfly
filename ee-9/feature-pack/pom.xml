@@ -925,6 +925,10 @@
                     <groupId>org.jboss.narayana.jts</groupId>
                     <artifactId>narayana-jts-integration</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-spring</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
