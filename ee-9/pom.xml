@@ -42,7 +42,7 @@
         <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
 
         <!-- Version properties for dependency management items -->
-        <version.com.sun.faces>3.0.0.SP04</version.com.sun.faces>
+        <version.com.sun.faces>3.0.2.SP01</version.com.sun.faces>
         <version.com.sun.istack>4.0.1</version.com.sun.istack>
         <version.com.sun.xml.messaging.saaj>2.0.0.SP1</version.com.sun.xml.messaging.saaj>
         <version.jakarta.activation.jakarta.activation-api>2.1.0</version.jakarta.activation.jakarta.activation-api>
