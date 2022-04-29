@@ -58,7 +58,7 @@ public class SessionFactoryTestCase {
     // This test needs to be recompiled against Hibernater ORM 6 (WFLY-16178) in order to pass.
     @BeforeClass
     public static void beforeClass() {
-        assumeTrue(System.getProperty("ts.ee9") == null);
+        assumeTrue(System.getProperty("ts.ee9") == null && System.getProperty("ts.bootable.ee9") == null);
     }
 
     @Deployment
