@@ -285,10 +285,14 @@
                     Override version properties for MicroProfile 5 as we do in ee-9/pom.xml
                 -->
                 <version.io.smallrye.smallrye-opentracing>3.0.0-RC1</version.io.smallrye.smallrye-opentracing>
-                <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
-                <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
-                <version.jakarta.json.bind.api>2.0.0</version.jakarta.json.bind.api>
-                <version.jakarta.json.jakarta-json-api>2.0.0</version.jakarta.json.jakarta-json-api>
+                <version.jakarta.activation.jakarta.activation-api>2.1.0</version.jakarta.activation.jakarta.activation-api>
+                <version.jakarta.annotation.jakarta-annotation-api>2.1.0</version.jakarta.annotation.jakarta-annotation-api>
+                <version.jakarta.el.jakarta-el-api>5.0.0-RC1</version.jakarta.el.jakarta-el-api>
+                <version.jakarta.enterprise>4.0.0-RC2</version.jakarta.enterprise>
+                <version.jakarta.inject.jakarta.inject-api>2.0.1</version.jakarta.inject.jakarta.inject-api>
+                <version.jakarta.json.bind.api>3.0.0</version.jakarta.json.bind.api>
+                <version.jakarta.json.jakarta-json-api>2.1.0</version.jakarta.json.jakarta-json-api>
+                <version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
                 <version.org.eclipse.microprofile.config.api>3.0</version.org.eclipse.microprofile.config.api>
                 <version.org.eclipse.microprofile.fault-tolerance.api>4.0</version.org.eclipse.microprofile.fault-tolerance.api>
                 <version.org.eclipse.microprofile.health.api>4.0</version.org.eclipse.microprofile.health.api>
@@ -297,16 +301,24 @@
                 <version.org.eclipse.microprofile.openapi>3.0</version.org.eclipse.microprofile.openapi>
                 <version.org.eclipse.microprofile.opentracing>3.0</version.org.eclipse.microprofile.opentracing>
                 <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
-                <version.org.eclipse.yasson>2.0.3</version.org.eclipse.yasson>
+                <version.org.eclipse.parsson>1.1.0</version.org.eclipse.parsson>
+                <version.org.eclipse.yasson>3.0.0-RC1</version.org.eclipse.yasson>
                 <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
-                <version.org.jboss.resteasy.6>6.1.0.Alpha1</version.org.jboss.resteasy.6>
+                <version.org.jboss.resteasy.6>6.1.0.Beta2</version.org.jboss.resteasy.6>
                 <version.org.jboss.resteasy.microprofile>2.0.0.Beta1</version.org.jboss.resteasy.microprofile>
-                <version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0.RC1-jbossorg-1</version.jakarta.ws.rs.jakarta-ws-rs-api>
+                <version.org.jboss.weld.weld>5.0.0.Beta1</version.org.jboss.weld.weld>
+                <version.org.jboss.weld.weld-api>5.0.Beta5</version.org.jboss.weld.weld-api>
                 <!--
                     Override version properties for MicroProfile 5 Implementations as we do in ee-9/pom.xml
                 -->
+                <version.io.smallrye.open-api>3.0.0-RC1</version.io.smallrye.open-api>
+                <version.io.smallrye.smallrye-common>2.0.0-RC2</version.io.smallrye.smallrye-common>
                 <version.io.smallrye.smallrye-config>3.0.0-RC1</version.io.smallrye.smallrye-config>
-                <version.io.smallrye.smallrye-fault-tolerance>6.0.0-RC1</version.io.smallrye.smallrye-fault-tolerance>
+                <version.io.smallrye.smallrye-fault-tolerance>6.0.0-RC2</version.io.smallrye.smallrye-fault-tolerance>
+                <version.io.smallrye.smallrye-health>4.0.0-RC1</version.io.smallrye.smallrye-health>
+                <version.io.smallrye.smallrye-jwt>4.0.0-RC1</version.io.smallrye.smallrye-jwt>
+                <version.io.smallrye.smallrye-metrics>4.0.0-RC1</version.io.smallrye.smallrye-metrics>
+                <version.io.smallrye.smallrye-opentracing>3.0.0-RC1</version.io.smallrye.smallrye-opentracing>
 
                 <!-- Test only dependencies - don't update in ee-9/pom.xml -->
                 <version.org.eclipse.microprofile.fault-tolerance.tck>${version.org.eclipse.microprofile.fault-tolerance.api}</version.org.eclipse.microprofile.fault-tolerance.tck>
@@ -317,9 +329,50 @@
                 <!-- For EE9 use the following directory as an additional source -->
                 <ts.microprofile-tck.build-helper.source.dir>src/test/jakarta/java</ts.microprofile-tck.build-helper.source.dir>
             </properties>
-            <!-- Temporary for MP 5/Jakarta 9 -->
+            <!-- Temporary for MP 5/Jakarta 9-10 -->
             <dependencyManagement>
                 <dependencies>
+
+                    <dependency>
+                        <groupId>io.smallrye.common</groupId>
+                        <artifactId>smallrye-common-annotation</artifactId>
+                        <version>${version.io.smallrye.smallrye-common}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>jakarta.enterprise</groupId>
+                                <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>jakarta.inject</groupId>
+                                <artifactId>jakarta.inject-api</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>io.smallrye.common</groupId>
+                        <artifactId>smallrye-common-constraint</artifactId>
+                        <version>${version.io.smallrye.smallrye-common}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>io.smallrye.common</groupId>
+                        <artifactId>smallrye-common-classloader</artifactId>
+                        <version>${version.io.smallrye.smallrye-common}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>io.smallrye.common</groupId>
+                        <artifactId>smallrye-common-expression</artifactId>
+                        <version>${version.io.smallrye.smallrye-common}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>io.smallrye.common</groupId>
+                        <artifactId>smallrye-common-function</artifactId>
+                        <version>${version.io.smallrye.smallrye-common}</version>
+                    </dependency>
+
                     <dependency>
                         <groupId>io.smallrye.config</groupId>
                         <artifactId>smallrye-config</artifactId>
@@ -350,6 +403,17 @@
                         <artifactId>smallrye-config-source-file-system</artifactId>
                         <version>${version.io.smallrye.smallrye-config}</version>
                     </dependency>
+
+                    <dependency>
+                        <groupId>io.smallrye</groupId>
+                        <artifactId>smallrye-open-api-core</artifactId>
+                        <version>${version.io.smallrye.open-api}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>io.smallrye</groupId>
+                        <artifactId>smallrye-open-api-jaxrs</artifactId>
+                        <version>${version.io.smallrye.open-api}</version>
+                    </dependency>
                     <dependency>
                         <groupId>io.smallrye</groupId>
                         <artifactId>smallrye-opentracing</artifactId>
@@ -359,6 +423,30 @@
                         <groupId>io.smallrye</groupId>
                         <artifactId>smallrye-opentracing-contrib</artifactId>
                         <version>${version.io.smallrye.smallrye-opentracing}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>jakarta.activation</groupId>
+                        <artifactId>jakarta.activation-api</artifactId>
+                        <version>${version.jakarta.activation.jakarta.activation-api}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>jakarta.annotation</groupId>
+                        <artifactId>jakarta.annotation-api</artifactId>
+                        <version>${version.jakarta.annotation.jakarta-annotation-api}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>jakarta.el</groupId>
+                        <artifactId>jakarta.el-api</artifactId>
+                        <version>${version.jakarta.el.jakarta-el-api}</version>
+                        <exclusions>
+                            <exclusion>
+                                <artifactId>*</artifactId>
+                                <groupId>*</groupId>
+                            </exclusion>
+                        </exclusions>
                     </dependency>
 
                     <dependency>
@@ -376,6 +464,19 @@
                         <artifactId>jakarta.json-api</artifactId>
                         <version>${version.jakarta.json.jakarta-json-api}</version>
                     </dependency>
+
+                    <dependency>
+                        <groupId>org.eclipse.parsson</groupId>
+                        <artifactId>parsson</artifactId>
+                        <version>${version.org.eclipse.parsson}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+
                     <dependency>
                         <groupId>org.jboss.resteasy</groupId>
                         <artifactId>jose-jwt</artifactId>
@@ -567,6 +668,55 @@
                         <groupId>org.eclipse</groupId>
                         <artifactId>yasson</artifactId>
                         <version>${version.org.eclipse.yasson}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.weld</groupId>
+                        <artifactId>weld-api</artifactId>
+                        <version>${version.org.jboss.weld.weld-api}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.weld</groupId>
+                        <artifactId>weld-core-impl</artifactId>
+                        <version>${version.org.jboss.weld.weld}</version>
+                        <scope>provided</scope>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.weld</groupId>
+                        <artifactId>weld-spi</artifactId>
+                        <version>${version.org.jboss.weld.weld-api}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.jboss.weld.probe</groupId>
+                        <artifactId>weld-probe-core</artifactId>
+                        <version>${version.org.jboss.weld.weld}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
                     </dependency>
                 </dependencies>
             </dependencyManagement>

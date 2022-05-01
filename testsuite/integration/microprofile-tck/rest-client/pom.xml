@@ -623,6 +623,12 @@
                     <scope>test</scope>
                 </dependency>
                 <dependency>
+                    <groupId>org.eclipse.parsson</groupId>
+                    <artifactId>parsson</artifactId>
+                    <version>${version.org.eclipse.parsson}</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
                     <groupId>org.jboss.resteasy.microprofile</groupId>
                     <artifactId>microprofile-rest-client</artifactId>
                     <scope>test</scope>

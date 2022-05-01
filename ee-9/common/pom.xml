@@ -197,7 +197,7 @@
 
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcjmail-jdk15on</artifactId>
+            <artifactId>bcjmail-jdk18on</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -517,6 +517,17 @@
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
             <artifactId>narayana-jts-integration-jakarta</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy.spring</groupId>
+            <artifactId>resteasy-spring</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

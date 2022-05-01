@@ -558,17 +558,6 @@
                                 <id>default-test</id>
                                 <phase>none</phase>
                             </execution>
-                            <execution>
-                                <id>ws-integration-default.surefire</id>
-                                <configuration>
-                                    <excludes>
-                                        <!-- Excluded because JSF impl doesn't conform to CDI 4 deprecated method removals -->
-                                        <exclude>org/jboss/as/test/integration/ws/context/application/NotAnnotatedDeployTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/context/application/AnnotatedDeployTestCase.java</exclude>
-                                        <exlude>org/jboss/as/test/integration/ws/cdi/CdiJsfWebServicesTestCase.java</exlude>
-                                    </excludes>
-                                </configuration>
-                            </execution>
                         </executions>
                     </plugin>
                 </plugins>

@@ -43,6 +43,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -50,7 +51,6 @@ import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
@@ -106,7 +106,7 @@ public class BatchSubsystemSecurityTestCase {
         jar.addAsManifestResource(BatchSubsystemSecurityTestCase.class.getPackage(),
                 "long-running-batchlet.xml",
                 "batch-jobs/long-running-batchlet.xml");
-        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        jar.addAsManifestResource(CdiUtils.createBeansXml(), "beans.xml");
         jar.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new AllPermission()), "permissions.xml");
         return jar;
     }

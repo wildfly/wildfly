@@ -28,13 +28,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,7 +40,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.openapi.OASFactory;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.info.Info;
@@ -80,7 +75,6 @@ import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentInfoService;
 
 import io.smallrye.openapi.api.OpenApiConfig;
-import io.smallrye.openapi.api.OpenApiConfigImpl;
 import io.smallrye.openapi.runtime.OpenApiProcessor;
 import io.smallrye.openapi.runtime.OpenApiStaticFile;
 import io.smallrye.openapi.runtime.io.Format;
@@ -101,23 +95,12 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
     private static final String DEFAULT_TITLE = "Generated API";
     private static final Set<String> REQUISITE_LISTENERS = Collections.singleton("http");
 
-    private static final Map<Format, List<String>> STATIC_FILES = new EnumMap<>(Format.class);
     static {
-        // Order resource names by search order
-        STATIC_FILES.put(Format.YAML, Arrays.asList(
-                "/META-INF/openapi.yaml",
-                "/WEB-INF/classes/META-INF/openapi.yaml",
-                "/META-INF/openapi.yml",
-                "/WEB-INF/classes/META-INF/openapi.yml"));
-        STATIC_FILES.put(Format.JSON, Arrays.asList(
-                "/META-INF/openapi.json",
-                "/WEB-INF/classes/META-INF/openapi.json"));
-
         // Set the static OASFactoryResolver eagerly avoiding the need perform TCCL service loading later
         OASFactoryResolver.setInstance(new OASFactoryResolverImpl());
     }
 
-    private final Config config;
+    private final DeploymentConfiguration configuration;
     private final String deploymentName;
     private final VirtualFile root;
     private final CompositeIndex index;
@@ -126,8 +109,8 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
     private final SupplierDependency<Host> host;
     private final SupplierDependency<DeploymentInfo> info;
 
-    public OpenAPIModelServiceConfigurator(DeploymentUnit unit, String serverName, String hostName, Config config) {
-        super(unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT).getCapabilityServiceName(Capabilities.CAPABILITY_HOST, serverName, hostName).append(config.getOptionalValue(PATH, String.class).orElse(DEFAULT_PATH)));
+    public OpenAPIModelServiceConfigurator(DeploymentUnit unit, DeploymentConfiguration configuration) {
+        super(unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT).getCapabilityServiceName(Capabilities.CAPABILITY_HOST, configuration.getServerName(), configuration.getHostName()).append(configuration.getProperty(PATH, DEFAULT_PATH)));
         this.deploymentName = unit.getName();
         this.root = unit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         // Convert org.jboss.as.server.deployment.annotation.CompositeIndex to org.jboss.jandex.CompositeIndex
@@ -144,7 +127,7 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
         this.index = CompositeIndex.create(indexes.stream().map(IndexView.class::cast).collect(Collectors.toList()));
         this.module = unit.getAttachment(Attachments.MODULE);
         this.metaData = unit.getAttachment(WarMetaData.ATTACHMENT_KEY).getMergedJBossWebMetaData();
-        this.config = config;
+        this.configuration = configuration;
         this.host = new ServiceSupplierDependency<>(this.getHostServiceName());
         this.info = new ServiceSupplierDependency<>(UndertowService.deploymentServiceName(unit.getServiceName()).append(UndertowDeploymentInfoService.SERVICE_NAME));
 
@@ -164,13 +147,13 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
 
     @Override
     public OpenAPI get() {
-        OpenApiConfig config = new OpenApiConfigImpl(this.config);
+        OpenApiConfig config = this.configuration.getOpenApiConfig();
         IndexView indexView = new FilteredIndexView(this.index, config);
 
         OpenAPIDocumentBuilder builder = new OpenAPIDocumentBuilder();
         builder.config(config);
 
-        Map.Entry<VirtualFile, Format> entry = findStaticFile(this.root);
+        Map.Entry<VirtualFile, Format> entry = this.configuration.getStaticFile();
         if (entry != null) {
             VirtualFile file = entry.getKey();
             Format format = entry.getValue();
@@ -207,7 +190,7 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
         if (model.getServers() == null) {
             // Generate Server entries if none exist
             String contextPath = this.info.get().getContextPath();
-            if (this.config.getOptionalValue(RELATIVE_SERVER_URLS, Boolean.class).orElse(Boolean.TRUE).booleanValue()) {
+            if (this.configuration.getProperty(RELATIVE_SERVER_URLS, Boolean.TRUE).booleanValue()) {
                 model.setServers(Collections.singletonList(OASFactory.createServer().url(contextPath)));
             } else {
                 int aliases = host.getAllAliases().size();
@@ -250,19 +233,6 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
         }
 
         return model;
-    }
-
-    private static Map.Entry<VirtualFile, Format> findStaticFile(VirtualFile root) {
-        // Format search order
-        for (Format format : EnumSet.of(Format.YAML, Format.JSON)) {
-            for (String resource : STATIC_FILES.get(format)) {
-                VirtualFile file = root.getChild(resource);
-                if (file.exists()) {
-                    return new AbstractMap.SimpleImmutableEntry<>(file, format);
-                }
-            }
-        }
-        return null;
     }
 
     private static Server createServer(String protocol, String host, int port, String path) {

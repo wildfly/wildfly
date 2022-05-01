@@ -36,7 +36,7 @@
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
-      <artifactId>bcjmail-jdk15on</artifactId>
+      <artifactId>bcjmail-jdk18on</artifactId>
       <licenses>
         <license>
           <name>MIT License</name>

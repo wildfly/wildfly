@@ -3570,18 +3570,6 @@
                                         <exclude>org/jboss/as/test/integration/jpa/initializeinorder/InitializeInOrderTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jpa/entitylistener/EntityListenersTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/support/jpa/beanmanager/EntityListenerBeanManagerInjectionTestCase.java</exclude>
-
-                                        <!-- Excluded because JSF impl doesn't conform to CDI 4 deprecated method removals -->
-                                        <exclude>org/jboss/as/test/integration/jsf/phaselistener/injectiontarget/bean/InjectionBeanToPhaseListenerTest.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsf/injection/FacesConverterInjectionTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsf/unsupportedwar/FaceletsViewMappingsTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsf/undertow/CallEnumParameterMethodTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsf/managedbean/xml/XmlManagedBeanTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsf/managedbean/annotation/AnnotatedManagedBeanTestCase.java</exclude>
-                                        <!-- TODO these three tests are from different module, move the exclusions there -->
-                                        <exclude>org/jboss/as/test/integration/ws/context/application/NotAnnotatedDeployTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/context/application/AnnotatedDeployTestCase.java</exclude>
-                                        <exlude>org/jboss/as/test/integration/ws/cdi/CdiJsfWebServicesTestCase.java</exlude>
                                     </excludes>
                                 </configuration>
                             </execution>

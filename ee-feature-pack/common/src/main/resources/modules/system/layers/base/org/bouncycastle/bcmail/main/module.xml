@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.bouncycastle:bcmail-jdk15on}"/>
+        <artifact name="${org.bouncycastle:bcmail-jdk18on}"/>
     </resources>
 
     <dependencies>
