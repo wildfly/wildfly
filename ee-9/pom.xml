@@ -106,6 +106,7 @@
         <!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
 		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
         <version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</version.org.glassfish.jaxb.jaxb-xjc>
+        <version.org.glassfish.soteria>2.0.1</version.org.glassfish.soteria>
         <version.org.glassfish.web.jakarta.servlet.jsp.jstl>2.0.0</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <version.org.hibernate.validator>8.0.0.Alpha3</version.org.hibernate.validator>
         <version.org.jberet>2.0.4.Final</version.org.jberet>
@@ -121,8 +122,8 @@
         <version.org.jvnet.staxex>2.0.1</version.org.jvnet.staxex>
         <version.org.wildfly.security.elytron>2.0.0.Beta1</version.org.wildfly.security.elytron>
         <version.org.wildfly.security.elytron-mp>2.0.0.Beta3</version.org.wildfly.security.elytron-mp>
-        <version.org.wildfly.security.elytron-web>2.0.0.Beta2</version.org.wildfly.security.elytron-web>
-        <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta2</version.org.wildfly.security.jakarta.elytron-ee>
+        <version.org.wildfly.security.elytron-web>2.0.0.Beta3</version.org.wildfly.security.elytron-web>
+        <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta3</version.org.wildfly.security.jakarta.elytron-ee>
 
         <!-- TODO Glassfish uses org.glassfish:jakarta-el for this, which we use for the impl
              but we have a separate API jar -->
@@ -794,6 +795,18 @@
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-xjc</artifactId>
                 <version>${version.org.glassfish.jaxb.jaxb-xjc}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.soteria</groupId>
+                <artifactId>jakarta.security.enterprise</artifactId>
+                <version>${version.org.glassfish.soteria}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
