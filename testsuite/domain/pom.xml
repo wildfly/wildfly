@@ -321,8 +321,19 @@
                                 <id>default-test</id>
                                 <phase>test</phase>
                                 <configuration>
+                                
+                                    <argLine>-Djava.util.logging.manager=org.jboss.logmanager.LogManager ${jvm.args.ip.client} ${jvm.args.timeouts} ${surefire.system.args}</argLine>
+                                    
                                     <systemPropertyVariables>
                                         <server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</server.jvm.args>
+                                        
+                                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                                        <jboss.home>${project.basedir}/target/wildfly</jboss.home>
+                                        <module.path>${jboss.dist}/modules</module.path>
+                                        <jboss.test.host.master.address>${node0}</jboss.test.host.master.address>
+                                        <jboss.test.host.slave.address>${node1}</jboss.test.host.slave.address>
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Djbossas.ts.dir=${jbossas.ts.dir} ${extra.server.jvm.args}</server.jvm.args>
+                                        <testsuite.default.build.project.prefix>${testsuite.default.build.project.prefix}</testsuite.default.build.project.prefix>
                                     </systemPropertyVariables>
                                     <!-- These include a module to be used which currently uses javax and is not transformed -->
                                     <excludedGroups>org.jboss.as.test.shared.categories.RequiresTransformedClass</excludedGroups>
