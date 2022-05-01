@@ -450,6 +450,7 @@
             <id>ee9.profile</id>
             <activation><property><name>ts.ee9</name></property></activation>
             <modules>
+                <module>domain</module>
                 <module>integration</module>
                 <module>layers</module>
                 <module>preview</module>
