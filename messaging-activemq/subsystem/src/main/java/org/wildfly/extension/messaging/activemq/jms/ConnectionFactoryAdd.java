@@ -143,13 +143,13 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         if (clientProtocolManagerFactory.isDefined()) {
             config.setProtocolManagerFactoryStr(clientProtocolManagerFactory.asString());
         }
-        List<String> deserializationBlackList = Common.DESERIALIZATION_BLACKLIST.unwrap(context, model);
-        if (!deserializationBlackList.isEmpty()) {
-            config.setDeserializationBlackList(String.join(",", deserializationBlackList));
+        List<String> deserializationBlockList = Common.DESERIALIZATION_BLOCKLIST.unwrap(context, model);
+        if (!deserializationBlockList.isEmpty()) {
+            config.setDeserializationBlackList(String.join(",", deserializationBlockList));
         }
-        List<String> deserializationWhiteList = Common.DESERIALIZATION_WHITELIST.unwrap(context, model);
-        if (!deserializationWhiteList.isEmpty()) {
-            config.setDeserializationWhiteList(String.join(",", deserializationWhiteList));
+        List<String> deserializationAllowList = Common.DESERIALIZATION_ALLOWLIST.unwrap(context, model);
+        if (!deserializationAllowList.isEmpty()) {
+            config.setDeserializationWhiteList(String.join(",", deserializationAllowList));
         }
         JMSFactoryType jmsFactoryType = ConnectionFactoryType.valueOf(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.resolveModelAttribute(context, model).asString()).getType();
         config.setFactoryType(jmsFactoryType);

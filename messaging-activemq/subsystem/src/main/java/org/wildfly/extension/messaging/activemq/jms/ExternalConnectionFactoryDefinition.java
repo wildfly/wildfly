@@ -78,8 +78,8 @@ public class ExternalConnectionFactoryDefinition extends PersistentResourceDefin
         Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
         Common.THREAD_POOL_MAX_SIZE,
         Common.GROUP_ID,
-        Common.DESERIALIZATION_BLACKLIST,
-        Common.DESERIALIZATION_WHITELIST,
+        Common.DESERIALIZATION_BLOCKLIST,
+        Common.DESERIALIZATION_ALLOWLIST,
         Common.INITIAL_MESSAGE_PACKET_SIZE,
         Common.USE_TOPOLOGY};
 

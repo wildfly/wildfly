@@ -207,7 +207,7 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
-        StringListAttributeDefinition DESERIALIZATION_WHITELIST = new StringListAttributeDefinition.Builder("deserialization-white-list")
+        StringListAttributeDefinition DESERIALIZATION_ALLOWLIST = new StringListAttributeDefinition.Builder("deserialization-allow-list")
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setListValidator(Validators.noDuplicateElements(new StringLengthValidator(1, true, true)))
@@ -217,7 +217,7 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
-        StringListAttributeDefinition DESERIALIZATION_BLACKLIST = new StringListAttributeDefinition.Builder("deserialization-black-list")
+        StringListAttributeDefinition DESERIALIZATION_BLOCKLIST = new StringListAttributeDefinition.Builder("deserialization-block-list")
                 .setRequired(false)
                 .setAllowExpression(true)
                 .setListValidator(Validators.noDuplicateElements(new StringLengthValidator(1, true, true)))
@@ -464,8 +464,8 @@ public interface ConnectionFactoryAttributes {
                 create(SCHEDULED_THREAD_POOL_MAX_SIZE, "scheduledThreadPoolMaxSize", true),
                 create(THREAD_POOL_MAX_SIZE, "threadPoolMaxSize", true),
                 create(GROUP_ID, "groupID", true),
-                create(DESERIALIZATION_BLACKLIST, "deserializationBlackList", true),
-                create(DESERIALIZATION_WHITELIST, "deserializationWhiteList", true),
+                create(DESERIALIZATION_BLOCKLIST, "deserializationBlockList", true),
+                create(DESERIALIZATION_ALLOWLIST, "deserializationAllowList", true),
                 create(INITIAL_MESSAGE_PACKET_SIZE, "initialMessagePacketSize", true),
                 create(USE_TOPOLOGY, "useTopologyForLoadBalancing", true)
         };

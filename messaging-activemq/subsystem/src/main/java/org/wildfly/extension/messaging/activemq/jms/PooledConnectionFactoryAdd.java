@@ -175,10 +175,10 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
             if (node.isDefined()) {
                 String attributeName = definition.getName();
                 final String value;
-                if (attributeName.equals(Common.DESERIALIZATION_BLACKLIST.getName())) {
-                    value = String.join(",", Common.DESERIALIZATION_BLACKLIST.unwrap(context, model));
-                } else if (attributeName.equals(Common.DESERIALIZATION_WHITELIST.getName())) {
-                    value = String.join(",", Common.DESERIALIZATION_WHITELIST.unwrap(context, model));
+                if (attributeName.equals(Common.DESERIALIZATION_BLOCKLIST.getName())) {
+                    value = String.join(",", Common.DESERIALIZATION_BLOCKLIST.unwrap(context, model));
+                } else if (attributeName.equals(Common.DESERIALIZATION_ALLOWLIST.getName())) {
+                    value = String.join(",", Common.DESERIALIZATION_ALLOWLIST.unwrap(context, model));
                 } else {
                     value = node.asString();
                 }
