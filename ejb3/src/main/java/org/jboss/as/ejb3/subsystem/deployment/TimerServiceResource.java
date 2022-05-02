@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class TimerServiceResource implements Resource {
 
-    private Resource delegate = Resource.Factory.create(true);
+    private final Resource delegate = new TimerServiceBasicResource();
 
     /**
      * @return
@@ -190,7 +190,7 @@ public class TimerServiceResource implements Resource {
 
     public void timerCreated(String id) {
         PathElement address = PathElement.pathElement(EJB3SubsystemModel.TIMER, id);
-        this.delegate.registerChild(address, Resource.Factory.create());
+        this.delegate.registerChild(address, new TimerServiceBasicResource());
     }
 
     public void timerRemoved(String id) {
