@@ -34,8 +34,9 @@
                         <param name="socket-binding" value="jgroups-tcp"/>
                     </feature>
                     <feature spec="subsystem.jgroups.stack.protocol">
-                        <param name="protocol" value="S3_PING"/>
-                        <param name="properties" value="{access_key=&quot;${jboss.jgroups.s3_ping.access_key}&quot;,secret_access_key=&quot;${jboss.jgroups.s3_ping.secret_access_key}&quot;,location=&quot;${jboss.jgroups.s3_ping.bucket}&quot;}"/>
+                        <param name="protocol" value="org.jgroups.protocols.aws.S3_PING"/>
+                        <param name="module" value="org.jgroups.aws"/>
+                        <param name="properties" value="{region_name=&quot;${jboss.jgroups.aws.s3_ping.region_name}&quot;,bucket_name=&quot;${jboss.jgroups.aws.s3_ping.bucket_name}&quot;}"/>
                     </feature>
                     <feature spec="subsystem.jgroups.stack.protocol">
                         <param name="protocol" value="MERGE3"/>
@@ -72,8 +73,9 @@
                         <param name="socket-binding" value="jgroups-udp"/>
                     </feature>
                     <feature spec="subsystem.jgroups.stack.protocol">
-                        <param name="protocol" value="S3_PING"/>
-                        <param name="properties" value="{access_key=&quot;${jboss.jgroups.s3_ping.access_key}&quot;,secret_access_key=&quot;${jboss.jgroups.s3_ping.secret_access_key}&quot;,location=&quot;${jboss.jgroups.s3_ping.bucket}&quot;}"/>
+                        <param name="protocol" value="org.jgroups.protocols.aws.S3_PING"/>
+                        <param name="module" value="org.jgroups.aws"/>
+                        <param name="properties" value="{region_name=&quot;${jboss.jgroups.aws.s3_ping.region_name}&quot;,bucket_name=&quot;${jboss.jgroups.aws.s3_ping.bucket_name}&quot;}"/>
                     </feature>
                     <feature spec="subsystem.jgroups.stack.protocol">
                         <param name="protocol" value="MERGE3"/>
