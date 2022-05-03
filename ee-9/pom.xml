@@ -42,7 +42,7 @@
         <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
 
         <!-- Version properties for dependency management items -->
-        <version.com.sun.faces>3.0.2.SP01</version.com.sun.faces>
+        <version.com.sun.faces>4.0.0-M6.SP01</version.com.sun.faces>
         <version.antlr>4.9.1</version.antlr>
         <version.com.sun.istack>4.0.1</version.com.sun.istack>
         <version.com.sun.xml.messaging.saaj>2.0.0.SP1</version.com.sun.xml.messaging.saaj>
@@ -55,7 +55,7 @@
         <version.jakarta.el.jakarta-el-api>5.0.0-RC1</version.jakarta.el.jakarta-el-api>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <version.jakarta.enterprise>4.0.0-RC2</version.jakarta.enterprise>
-        <version.jakarta.faces.jakarta-faces-api>3.0.0</version.jakarta.faces.jakarta-faces-api>
+        <version.jakarta.faces.jakarta-faces-api>4.0.0-M6</version.jakarta.faces.jakarta-faces-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.1</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.interceptor.jakarta-interceptors-api>2.1.0</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.jms.jakarta-jms-api>3.0.0</version.jakarta.jms.jakarta-jms-api>
@@ -107,6 +107,7 @@
         <!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
 		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
         <version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</version.org.glassfish.jaxb.jaxb-xjc>
+        <version.org.glassfish.soteria>2.0.1</version.org.glassfish.soteria>
         <version.org.glassfish.web.jakarta.servlet.jsp.jstl>2.0.0</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <version.org.hibernate>6.0.0.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.1.2.Final</version.org.hibernate.commons.annotations>
@@ -124,8 +125,8 @@
         <version.org.jvnet.staxex>2.0.1</version.org.jvnet.staxex>
         <version.org.wildfly.security.elytron>2.0.0.Beta1</version.org.wildfly.security.elytron>
         <version.org.wildfly.security.elytron-mp>2.0.0.Beta3</version.org.wildfly.security.elytron-mp>
-        <version.org.wildfly.security.elytron-web>2.0.0.Beta2</version.org.wildfly.security.elytron-web>
-        <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta2</version.org.wildfly.security.jakarta.elytron-ee>
+        <version.org.wildfly.security.elytron-web>2.0.0.Beta3</version.org.wildfly.security.elytron-web>
+        <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta3</version.org.wildfly.security.jakarta.elytron-ee>
 
         <!-- TODO Glassfish uses org.glassfish:jakarta-el for this, which we use for the impl
              but we have a separate API jar -->
@@ -870,6 +871,18 @@
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>jipijapa-hibernate6</artifactId>
                 <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.soteria</groupId>
+                <artifactId>jakarta.security.enterprise</artifactId>
+                <version>${version.org.glassfish.soteria}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

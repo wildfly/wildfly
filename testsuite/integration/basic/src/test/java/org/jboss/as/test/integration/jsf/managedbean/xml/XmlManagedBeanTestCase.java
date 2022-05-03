@@ -23,11 +23,13 @@ package org.jboss.as.test.integration.jsf.managedbean.xml;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -36,6 +38,10 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class XmlManagedBeanTestCase {
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeNotWildFlyPreview();
+    }
 
     @Deployment
     public static Archive<?> deploy() {
@@ -49,7 +55,7 @@ public class XmlManagedBeanTestCase {
                 "    xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_1_2.xsd\">\n" +
                 "    <managed-bean eager=\"true\">\n" +
                 "        <managed-bean-name>simpleBean</managed-bean-name>\n" +
-                "        <managed-bean-class>"+SimpleJsfXmlManagedBean.class.getName()+"</managed-bean-class>\n" +
+                "        <managed-bean-class>" + SimpleJsfXmlManagedBean.class.getName() + "</managed-bean-class>\n" +
                 "        <managed-bean-scope>application</managed-bean-scope>\n" +
                 "    </managed-bean>\n" +
                 "</faces-config>"), "faces-config.xml");
