@@ -206,6 +206,16 @@
             <groupId>xom</groupId>
             <artifactId>xom</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.galleon-plugins</groupId>
+            <artifactId>transformer</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.galleon-plugins</groupId>
+            <artifactId>transformer</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
