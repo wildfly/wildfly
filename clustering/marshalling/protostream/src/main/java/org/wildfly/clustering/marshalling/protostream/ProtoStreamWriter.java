@@ -85,7 +85,9 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
      */
     @Deprecated
     @Override
-    void writeTag(int index, int wireType) throws IOException;
+    default void writeTag(int index, int wireType) throws IOException {
+        this.writeTag(index, WireType.fromValue(wireType));
+    }
 
     /**
      * Deprecated to discourage use.
