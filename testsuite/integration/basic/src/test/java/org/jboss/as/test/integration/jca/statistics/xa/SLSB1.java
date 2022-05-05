@@ -44,6 +44,8 @@ public class SLSB1 implements SLSB {
     @PersistenceContext(unitName = "testxapu")
     private EntityManager em;
 
+
+
     @Resource(name = "java:jboss/TransactionManager")
     private TransactionManager tm;
 
@@ -63,9 +65,12 @@ public class SLSB1 implements SLSB {
 
     @Override
     public void rollback() throws Exception {
+
         tx.begin();
         TxTestUtil.enlistTestXAResource(tm.getTransaction(), checker);
+
         em.persist(new TestEntity());
+        em.flush();
         tx.rollback();
     }
 
