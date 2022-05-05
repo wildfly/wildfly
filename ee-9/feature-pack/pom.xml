@@ -536,7 +536,8 @@
 
                                 <!-- Uses JSON only for formatting and uses an internal JSON generator -->
                                 <exlude>org.jboss.logmanager:jboss-logmanager\z</exlude>
-
+                                <!-- Uses javax JSON internally -->
+                                <exclude>org.wildfly.core:wildfly-event-logger\z</exclude>
                                 <!-- Don't transform Infinispan modules and its dependents -->
                                 <exclude>org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec</exclude>
                                 <exclude>org.infinispan:.+\z</exclude>
