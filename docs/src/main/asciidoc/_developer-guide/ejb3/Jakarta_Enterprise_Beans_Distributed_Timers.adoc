@@ -14,8 +14,11 @@ Additionally, this feature can also provide passivation support for non-persiste
 [[setup]]
 == Setup
 
-Distributed timer behavior is configured via the distributable-ejb subsystem, and can be configured globally via the ejb3 subsysetem or customized per EJB via the `timer-service` EJB deployment descriptor namespace.
-To use distributed timers, one must first disable the existing data store mechanism, and then specify the timer management to use for persistent timers, which references a timer management resource from the distributable-ejb subsystem.
+Distributed timer behavior is configured via the distributable-ejb subsystem, and can be configured globally via the ejb3 subsystem or customized per EJB via the `timer-service` EJB deployment descriptor namespace.
+
+WildFly's HA profiles (e.g. standalone-ha.xml) are configured to use the distributable timer service by default to handle both persistent and non-persistent timers.
+
+To enable the use of distributable timer service within a non-HA profile (e.g. standalone.xml), one must first disable the existing data store mechanism, and then specify the timer management to use for persistent timers, which references a timer management resource from the distributable-ejb subsystem.
 
 [source,options="nowrap"]
 ----

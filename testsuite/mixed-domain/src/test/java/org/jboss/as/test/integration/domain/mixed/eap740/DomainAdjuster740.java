@@ -26,10 +26,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.dmr.ModelNode;
@@ -47,6 +49,7 @@ public class DomainAdjuster740 extends DomainAdjuster {
 
         adjustRemoting(ops, profileAddress.append(SUBSYSTEM, "remoting"));
         adjustUndertow(ops, profileAddress.append(SUBSYSTEM, "undertow"));
+        adjustEjb3(ops, profileAddress.append(SUBSYSTEM, "ejb3"));
         removeDistributableEjb(ops, profileAddress.append(SUBSYSTEM, "distributable-ejb"));
 
         return ops;
@@ -73,6 +76,12 @@ public class DomainAdjuster740 extends DomainAdjuster {
         ops.add(Util.getWriteAttributeOperation(httpInvoker, "security-realm", "ApplicationRealm"));
     }
 
+    private static void adjustEjb3(List<ModelNode> operations, PathAddress subsystemAddress) {
+        PathAddress timerServiceAddress = subsystemAddress.append("service", "timer-service");
+        operations.add(createCompositeOperation(Arrays.asList(Util.getUndefineAttributeOperation(timerServiceAddress, "default-persistent-timer-management"), Util.getWriteAttributeOperation(timerServiceAddress, "default-data-store", "default-file-store"))));
+        operations.add(createCompositeOperation(Arrays.asList(Util.getUndefineAttributeOperation(timerServiceAddress, "default-transient-timer-management"), Util.getWriteAttributeOperation(timerServiceAddress, "thread-pool-name", "default"))));
+    }
+
     /**
      * Remove the distributable-ejb subsystem from the domain model for EAP 7.4.0 secondary hosts as they
      * do not support this subsystem or its associated module org.wildfly.clustering.ejb.
@@ -87,4 +96,12 @@ public class DomainAdjuster740 extends DomainAdjuster {
         ops.add(Util.createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.clustering.ejb")));
     }
 
+    private static ModelNode createCompositeOperation(Iterable<ModelNode> operations) {
+        ModelNode operation = Util.createOperation(ModelDescriptionConstants.COMPOSITE, PathAddress.EMPTY_ADDRESS);
+        ModelNode steps = operation.get(ModelDescriptionConstants.STEPS);
+        for (ModelNode step: operations) {
+            steps.add(step);
+        }
+        return operation;
+    }
 }
