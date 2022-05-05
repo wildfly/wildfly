@@ -55,7 +55,7 @@ public class SessionFactoryTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_sessionfactory";
 
-    // This test needs to be recompiled against Hibernater ORM 6 (WFLY-16178) in order to pass.
+    // This test needs to be recompiled against Hibernate ORM 6 (WFLY-16178) in order to pass.
     @BeforeClass
     public static void beforeClass() {
         assumeTrue(System.getProperty("ts.ee9") == null && System.getProperty("ts.bootable.ee9") == null);
