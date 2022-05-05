@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
+import static org.jboss.as.test.integration.domain.util.EENamespaceTransformer.jakartaTransform;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -37,8 +38,8 @@ import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -50,7 +51,6 @@ import org.junit.Test;
  */
 public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
 
-    private static WebArchive war;
     private static File warFile;
 
     private static String[] serverGroups;
@@ -60,12 +60,14 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
 
         CLITestSuite.createSupport(DeploySingleServerGroupTestCase.class.getSimpleName());
 
-        war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebResource(new StringAsset("Version1"), "page.html");
         String tempDir = System.getProperty("java.io.tmpdir");
         warFile = new File(tempDir + File.separator + "SimpleServlet.war");
-        new ZipExporterImpl(war).exportTo(warFile, true);
+
+        //new ZipExporterImpl(war).exportTo(warFile, true);
+        jakartaTransform(war.as(ZipExporter.class), warFile);
 
         serverGroups = CLITestSuite.serverGroups.keySet().toArray(new String[CLITestSuite.serverGroups.size()]);
 
@@ -111,10 +113,11 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
         checkURL("/SimpleServlet/page.html", "Version1", serverGroups[0]);
 
         // update the deployment - replace page.html
-        war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebResource(new StringAsset("Version2"), "page.html");
-        new ZipExporterImpl(war).exportTo(warFile, true);
+        //new ZipExporterImpl(war).exportTo(warFile, true);
+        jakartaTransform(war.as(ZipExporter.class), warFile);
 
         // redeploy to group servers
         assertFalse(cli.sendLine("deploy --server-groups=" + serverGroups[0] + " " + warFile.getAbsolutePath(), true));

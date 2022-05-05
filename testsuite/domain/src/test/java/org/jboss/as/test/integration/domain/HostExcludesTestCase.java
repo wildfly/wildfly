@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -200,7 +201,22 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         // to the internal mpExtensions Set defined on this class.
         CURRENT(MAJOR, WILDFLY_26_0, Arrays.asList(
                 "org.wildfly.extension.clustering.ejb"
-        ));
+        ), getCurrentRemovedExtenstions());
+
+        private static List<String> getCurrentRemovedExtenstions() {
+            if (System.getProperty("ts.ee9") != null || System.getProperty("ts.bootable.ee9") != null) {
+                return Arrays.asList(
+                        "org.jboss.as.messaging",
+                        "org.jboss.as.jacorb",
+                        "org.wildfly.extension.datasources-agroal",
+                        "org.jboss.as.jsr77",
+                        "org.jboss.as.web",
+                        "org.wildfly.extension.picketlink",
+                        "org.jboss.as.security"
+                        );
+            }
+            return Collections.emptyList();
+        }
 
         private final String name;
         private final Set<String> extensions = new HashSet<>();

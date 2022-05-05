@@ -101,7 +101,12 @@ public class ReadEnvironmentVariablesTestCase {
 
             final InputStream contents = EENamespaceTransformer.jakartaTransform(new ZipExporterImpl(archive).exportAsInputStream() ,archiveName);
             try {
-                DeploymentPlan plan = manager.newDeploymentPlan().add("env-test.war", contents).deploy("env-test.war").toServerGroup("main-server-group").toServerGroup("other-server-group").build();
+                DeploymentPlan plan = manager.newDeploymentPlan()
+                                          .add("env-test.war", contents)
+                                          .deploy("env-test.war")
+                                          .toServerGroup("main-server-group")
+                                          .toServerGroup("other-server-group")
+                                          .build();
                 DeploymentPlanResult result = manager.execute(plan).get();
                 Assert.assertTrue(result.isValid());
             } finally {
