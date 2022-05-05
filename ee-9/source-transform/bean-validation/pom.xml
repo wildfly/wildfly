@@ -63,7 +63,7 @@
             <!-- Needed for Hibernate Validator since it asserts the existence of javax.el during bootstrap in the
                   default configuration-->
             <groupId>org.jboss.spec.jakarta.el</groupId>
-            <artifactId>jboss-el-api_4.0_spec</artifactId>
+            <artifactId>jboss-el-api_5.0_spec</artifactId>
             <scope>runtime</scope>
         </dependency>
 
