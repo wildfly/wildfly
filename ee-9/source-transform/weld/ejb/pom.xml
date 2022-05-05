@@ -87,6 +87,17 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-ejb-jakarta</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client-jakarta</artifactId>
         </dependency>

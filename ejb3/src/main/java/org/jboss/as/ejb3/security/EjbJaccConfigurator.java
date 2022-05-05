@@ -41,7 +41,6 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewConfiguration;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.ApplicableMethodInformation;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
@@ -156,7 +155,7 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
         EJBMethodSecurityAttribute ejbMethodSecurityMetaData = permissions.getViewAttribute(ejbViewConfiguration.getMethodIntf(), viewMethod);
         //if this is null we try with the corresponding bean method.
         if (ejbMethodSecurityMetaData == null) {
-            ejbMethodSecurityMetaData = permissions.getViewAttribute(MethodIntf.BEAN, viewMethod);
+            ejbMethodSecurityMetaData = permissions.getViewAttribute(MethodInterfaceType.Bean, viewMethod);
         }
 
         final Method classMethod = ClassReflectionIndexUtil.findMethod(index, ejbViewConfiguration.getComponentConfiguration().getComponentClass(), viewMethod);
@@ -165,14 +164,14 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
             // if this is null we try with the corresponding bean method.
             ejbMethodSecurityMetaData = permissions.getAttribute(ejbViewConfiguration.getMethodIntf(), classMethod);
             if (ejbMethodSecurityMetaData == null) {
-                ejbMethodSecurityMetaData = permissions.getAttribute(MethodIntf.BEAN, classMethod);
+                ejbMethodSecurityMetaData = permissions.getAttribute(MethodInterfaceType.Bean, classMethod);
 
             }
         }
 
         // check if any security metadata was defined for the method.
         if (ejbMethodSecurityMetaData != null) {
-            final MethodInterfaceType interfaceType = this.getMethodInterfaceType(ejbViewConfiguration.getMethodIntf());
+            final MethodInterfaceType interfaceType = ejbViewConfiguration.getMethodIntf();
             final EJBMethodPermission permission = new EJBMethodPermission(description.getEJBName(), interfaceType.name(), viewMethod);
 
             if (ejbMethodSecurityMetaData.isPermitAll()) {
@@ -189,26 +188,5 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
             return true;
         }
         return false;
-    }
-
-    protected MethodInterfaceType getMethodInterfaceType(MethodIntf viewType) {
-        switch (viewType) {
-            case HOME:
-                return MethodInterfaceType.Home;
-            case LOCAL_HOME:
-                return MethodInterfaceType.LocalHome;
-            case SERVICE_ENDPOINT:
-                return MethodInterfaceType.ServiceEndpoint;
-            case LOCAL:
-                return MethodInterfaceType.Local;
-            case REMOTE:
-                return MethodInterfaceType.Remote;
-            case TIMER:
-                return MethodInterfaceType.Timer;
-            case MESSAGE_ENDPOINT:
-                return MethodInterfaceType.MessageEndpoint;
-            default:
-                return null;
-        }
     }
 }
