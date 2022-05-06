@@ -22,9 +22,6 @@
 
 package org.jboss.as.test.integration.jpa.cfgfile;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Map;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -92,15 +89,4 @@ public class CfgFileTestCase {
         SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
         sfsb1.getEmployeeNoTX(1);
     }
-
-    @Test
-    public void testProperties() throws Exception {
-        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
-        Map<String, Object> props = sfsb1.getEMFProperties();
-
-        assertEquals("Value for show_sql", "true", props.get("hibernate.show_sql").toString());
-        assertEquals("Value for hibernate.default_batch_fetch_size", "5", props.get("hibernate.default_batch_fetch_size").toString());
-        assertEquals("Value for dialect", "org.hibernate.dialect.HSQLDialect", props.get("hibernate.dialect").toString());
-    }
-
 }
