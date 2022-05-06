@@ -25,16 +25,19 @@ import java.util.List;
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaDelete;
+import javax.transaction.Transactional;
 
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.Query;
 
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
+import org.hibernate.search.query.dsl.QueryBuilder;
 
 @Stateful
+@Transactional
 public class SearchBean {
 
     @PersistenceContext
@@ -46,10 +49,30 @@ public class SearchBean {
         em.persist(book);
     }
 
+    public void deleteAll() {
+        CriteriaDelete<Book> delete = em.getCriteriaBuilder()
+                .createCriteriaDelete(Book.class);
+        delete.from(Book.class);
+        em.createQuery(delete).executeUpdate();
+        Search.getFullTextEntityManager(em).purgeAll(Book.class);
+    }
+
     public List<Book> findByKeyword(String keyword) {
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
-        TermQuery termQuery = new TermQuery(new Term("title", keyword));
-        FullTextQuery fullTextQuery = fullTextEntityManager.createFullTextQuery(termQuery, Book.class);
+        QueryBuilder qb = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(Book.class).get();
+        Query query = qb.keyword().onField("title").matching(keyword).createQuery();
+        FullTextQuery fullTextQuery = fullTextEntityManager.createFullTextQuery(query, Book.class);
+        return fullTextQuery.getResultList();
+    }
+
+    public List<Book> findAutocomplete(String term) {
+        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
+        QueryBuilder qb = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(Book.class)
+                .overridesForField("title_autocomplete", AnalysisConfigurationProvider.AUTOCOMPLETE_QUERY)
+                .get();
+        Query query = qb.simpleQueryString().onField("title_autocomplete")
+                .withAndAsDefaultOperator().matching(term).createQuery();
+        FullTextQuery fullTextQuery = fullTextEntityManager.createFullTextQuery(query, Book.class);
         return fullTextQuery.getResultList();
     }
 
