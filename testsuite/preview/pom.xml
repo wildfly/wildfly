@@ -57,6 +57,13 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-9-parent</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
                 <groupId>jakarta.ejb</groupId>
                 <artifactId>jakarta.ejb-api</artifactId>
                 <version>${version.jakarta.ejb.jakarta-ejb-api}</version>
@@ -138,6 +145,7 @@
             </activation>
             <modules>
                 <module>basic</module>
+                <module>source-transform</module>
                 <!--<module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
@@ -185,6 +193,7 @@
             <activation><property><name>allTests</name></property></activation>
             <modules>
                 <module>basic</module>
+                <module>source-transform</module>
                 <!--<module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
@@ -211,6 +220,7 @@
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
                 <module>basic</module>
+                <module>source-transform</module>
                 <!--><module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
