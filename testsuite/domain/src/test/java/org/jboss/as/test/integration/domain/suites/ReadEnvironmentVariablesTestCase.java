@@ -38,7 +38,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.http.impl.client.HttpClients;
+import org.jboss.as.test.integration.domain.util.EENamespaceTransformer;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.Assert;
 
 import org.apache.http.HttpResponse;
@@ -54,7 +56,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -93,13 +94,19 @@ public class ReadEnvironmentVariablesTestCase {
 
         try {
             //Deploy the archive
-            WebArchive archive = ShrinkWrap.create(WebArchive.class, "env-test.war").addClass(EnvironmentTestServlet.class);
+            String archiveName = "env-test.war";
+            WebArchive archive = ShrinkWrap.create(WebArchive.class, archiveName).addClass(EnvironmentTestServlet.class);
             archive.addAsResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.dmr \n"),"META-INF/MANIFEST.MF");
             archive.addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("getenv.*")), "permissions.xml");
 
-            final InputStream contents = archive.as(ZipExporter.class).exportAsInputStream();
+            final InputStream contents = EENamespaceTransformer.jakartaTransform(new ZipExporterImpl(archive).exportAsInputStream() ,archiveName);
             try {
-                DeploymentPlan plan = manager.newDeploymentPlan().add("env-test.war", contents).deploy("env-test.war").toServerGroup("main-server-group").toServerGroup("other-server-group").build();
+                DeploymentPlan plan = manager.newDeploymentPlan()
+                                          .add("env-test.war", contents)
+                                          .deploy("env-test.war")
+                                          .toServerGroup("main-server-group")
+                                          .toServerGroup("other-server-group")
+                                          .build();
                 DeploymentPlanResult result = manager.execute(plan).get();
                 Assert.assertTrue(result.isValid());
             } finally {

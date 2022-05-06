@@ -22,38 +22,6 @@
 
 package org.jboss.as.test.integration.domain.suites;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.http.impl.client.HttpClients;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.junit.Assert;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.jboss.as.cli.Util;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.shared.FileUtils;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
@@ -73,11 +41,43 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.cleanFile;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateResponse;
+import static org.jboss.as.test.integration.domain.util.EENamespaceTransformer.jakartaTransform;
 import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClients;
+import org.jboss.as.cli.Util;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
+import org.jboss.as.test.shared.FileUtils;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Test of various management operations involving deployment overlays
@@ -135,13 +135,17 @@ public class DeploymentOverlayTestCase {
         tmpDir = new File("target/deployments/" + DeploymentOverlayTestCase.class.getSimpleName());
         new File(tmpDir, "archives").mkdirs();
         new File(tmpDir, "exploded").mkdirs();
-        webArchive.as(ZipExporter.class).exportTo(new File(tmpDir, "archives/" + TEST), true);
+        File archiveTarget = new File(tmpDir, "archives/" + TEST);
+        jakartaTransform(webArchive.as(ZipExporter.class), archiveTarget);
+        //webArchive.as(ZipExporter.class).exportTo(new File(tmpDir, "archives/" + TEST), true);
+
+        // If the archive was transformed above by creating from the zipFile our reference is transformed as
+        // well so no further changes needed.
+        webArchive = ShrinkWrap.createFromZipFile(WebArchive.class, archiveTarget);
         webArchive.as(ExplodedExporter.class).exportExploded(new File(tmpDir, "exploded"));
 
         // Launch the domain
         testSupport = DomainTestSuite.createSupport(DeploymentOverlayTestCase.class.getSimpleName());
-
-
     }
 
     @AfterClass
