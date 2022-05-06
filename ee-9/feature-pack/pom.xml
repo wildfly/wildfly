@@ -616,6 +616,10 @@
                     <artifactId>jboss-invocation</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.wildfly.core</groupId>
+                    <artifactId>wildfly-elytron-integration</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.wildfly.security</groupId>
                     <artifactId>wildfly-elytron-jacc</artifactId>
                 </exclusion>
@@ -663,6 +667,24 @@
             <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
             <type>pom</type>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.wildfly.core</groupId>
+                    <artifactId>wildfly-elytron-integration</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-elytron-integration-jakarta</artifactId>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -965,6 +987,10 @@
                 <exclusion>
                     <groupId>org.jboss.metadata</groupId>
                     <artifactId>jboss-metadata-common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.core</groupId>
+                    <artifactId>wildfly-elytron-integration</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
