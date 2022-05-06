@@ -177,14 +177,13 @@
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.json</artifactId>
+            <groupId>jakarta.json</groupId>
+            <artifactId>jakarta.json-api</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-jakarta-client</artifactId>
-            <version>${version.org.hornetq}</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.inject</groupId>
@@ -381,4 +380,5 @@
             <type>jar</type>
         </dependency>
     </dependencies>
+
 </project>
