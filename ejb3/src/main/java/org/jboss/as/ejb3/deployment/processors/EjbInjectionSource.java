@@ -33,10 +33,9 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.ViewManagedReferenceFactory;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.RemoteViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.Attachments;
@@ -44,6 +43,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -113,9 +113,9 @@ public class EjbInjectionSource extends InjectionSource {
                     final Set<EJBViewDescription> ejbsForViewName = new HashSet<EJBViewDescription>();
                     for (final ViewDescription view : views) {
                         if (view instanceof EJBViewDescription) {
-                            final MethodIntf viewType = ((EJBViewDescription) view).getMethodIntf();
+                            final MethodInterfaceType viewType = ((EJBViewDescription) view).getMethodIntf();
                             // @EJB injection *shouldn't* consider the @WebService endpoint view or MDBs
-                            if (viewType == MethodIntf.SERVICE_ENDPOINT || viewType == MethodIntf.MESSAGE_ENDPOINT) {
+                            if (viewType == MethodInterfaceType.ServiceEndpoint || viewType == MethodInterfaceType.MessageEndpoint) {
                                 continue;
                             }
                             ejbsForViewName.add((EJBViewDescription) view);
@@ -141,7 +141,7 @@ public class EjbInjectionSource extends InjectionSource {
                         //for remote interfaces we do not want to use a normal binding
                         //we need to bind the remote proxy factory into JNDI instead to get the correct behaviour
 
-                        if (ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE || ejbViewDescription.getMethodIntf() == MethodIntf.HOME) {
+                        if (ejbViewDescription.getMethodIntf() == MethodInterfaceType.Remote || ejbViewDescription.getMethodIntf() == MethodInterfaceType.Home) {
                             final EJBComponentDescription componentDescription = (EJBComponentDescription) description.getComponentDescription();
                             final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
                             final String earApplicationName = moduleDescription.getEarApplicationName();

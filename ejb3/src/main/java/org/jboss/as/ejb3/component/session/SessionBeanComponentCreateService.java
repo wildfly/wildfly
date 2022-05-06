@@ -27,17 +27,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-
 import javax.ejb.LockType;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.PrimitiveClassLoaderUtil;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -92,11 +91,11 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
 
         if (sessionBeanComponentDescription.getScheduleMethods() != null) {
             for (Method method : sessionBeanComponentDescription.getScheduleMethods().keySet()) {
-                processTxAttr(sessionBeanComponentDescription, MethodIntf.TIMER, method);
+                processTxAttr(sessionBeanComponentDescription, MethodInterfaceType.Timer, method);
             }
         }
         if (sessionBeanComponentDescription.getTimeoutMethod() != null) {
-            this.processTxAttr(sessionBeanComponentDescription, MethodIntf.TIMER,
+            this.processTxAttr(sessionBeanComponentDescription, MethodInterfaceType.Timer,
                     sessionBeanComponentDescription.getTimeoutMethod());
         }
     }

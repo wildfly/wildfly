@@ -13,11 +13,11 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewConfiguration;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.msc.service.ServiceBuilder;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.ControlPointService;
@@ -30,7 +30,7 @@ import org.wildfly.extension.requestcontroller.RequestControllerActivationMarker
 public class EJBComponentSuspendDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
     public static final String ENTRY_POINT_NAME = "ejb.";
-    static final Set<MethodIntf> INTERFACES = EnumSet.of(MethodIntf.REMOTE, MethodIntf.HOME, MethodIntf.MESSAGE_ENDPOINT);
+    static final Set<MethodInterfaceType> INTERFACES = EnumSet.of(MethodInterfaceType.Remote, MethodInterfaceType.Home, MethodInterfaceType.MessageEndpoint);
 
     @Override
     public void deploy(DeploymentPhaseContext context) {

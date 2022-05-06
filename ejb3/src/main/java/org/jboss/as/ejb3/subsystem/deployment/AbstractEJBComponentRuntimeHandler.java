@@ -59,13 +59,13 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
 import org.jboss.dmr.ModelNode;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -129,14 +129,14 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
         } else if (BUSINESS_LOCAL.getName().equals(attributeName)) {
             for (final ViewDescription view : componentDescription.getViews()) {
                 final EJBViewDescription ejbViewDescription = (EJBViewDescription) view;
-                if (!ejbViewDescription.isEjb2xView() && ejbViewDescription.getMethodIntf() == MethodIntf.LOCAL) {
+                if (!ejbViewDescription.isEjb2xView() && ejbViewDescription.getMethodIntf() == MethodInterfaceType.Local) {
                     result.add(ejbViewDescription.getViewClassName());
                 }
             }
         } else if (BUSINESS_REMOTE.getName().equals(attributeName)) {
             for (final ViewDescription view : componentDescription.getViews()) {
                 final EJBViewDescription ejbViewDescription = (EJBViewDescription) view;
-                if (!ejbViewDescription.isEjb2xView() && ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE) {
+                if (!ejbViewDescription.isEjb2xView() && ejbViewDescription.getMethodIntf() == MethodInterfaceType.Remote) {
                     result.add(ejbViewDescription.getViewClassName());
                 }
             }

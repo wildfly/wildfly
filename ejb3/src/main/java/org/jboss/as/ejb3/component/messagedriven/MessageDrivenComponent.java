@@ -21,10 +21,13 @@
  */
 package org.jboss.as.ejb3.component.messagedriven;
 
+import static java.security.AccessController.doPrivileged;
+import static java.util.Collections.emptyMap;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
+
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import javax.ejb.TransactionAttributeType;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
@@ -32,32 +35,25 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.inflow.JBossMessageEndpointFactory;
 import org.jboss.as.ejb3.inflow.MessageEndpointService;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
 import org.jboss.as.server.suspend.SuspendController;
-import org.wildfly.security.manager.action.GetClassLoaderAction;
 import org.jboss.invocation.Interceptor;
 import org.jboss.jca.core.spi.rar.Endpoint;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static java.security.AccessController.doPrivileged;
-import static java.util.Collections.emptyMap;
-import static javax.ejb.TransactionAttributeType.REQUIRED;
-import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
-
-import static org.jboss.as.ejb3.component.MethodIntf.MESSAGE_ENDPOINT;
-
-import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.wildfly.security.manager.action.GetClassLoaderAction;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -165,7 +161,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
                 if(isBeanManagedTransaction())
                     return false;
                 // an MDB doesn't expose a real view
-                TransactionAttributeType transactionAttributeType = getTransactionAttributeType(MESSAGE_ENDPOINT, method);
+                TransactionAttributeType transactionAttributeType = getTransactionAttributeType(MethodInterfaceType.MessageEndpoint, method);
                 switch (transactionAttributeType) {
                     case REQUIRED:
                         return true;

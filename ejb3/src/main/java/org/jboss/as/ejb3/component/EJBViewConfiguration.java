@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.invocation.proxy.ProxyFactory;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -34,14 +35,14 @@ import org.jboss.msc.service.ServiceName;
  */
 public class EJBViewConfiguration extends ViewConfiguration {
 
-    private final MethodIntf methodIntf;
+    private final MethodInterfaceType methodIntf;
 
-    public EJBViewConfiguration(final Class<?> viewClass, final ComponentConfiguration componentConfiguration, final ServiceName viewServiceName, final ProxyFactory<?> proxyFactory, final MethodIntf methodIntf) {
+    public EJBViewConfiguration(final Class<?> viewClass, final ComponentConfiguration componentConfiguration, final ServiceName viewServiceName, final ProxyFactory<?> proxyFactory, final MethodInterfaceType methodIntf) {
         super(viewClass, componentConfiguration, viewServiceName, proxyFactory);
         this.methodIntf = methodIntf;
     }
 
-    public MethodIntf getMethodIntf() {
+    public MethodInterfaceType getMethodIntf() {
         return methodIntf;
     }
 
