@@ -38,6 +38,8 @@
     <packaging>pom</packaging>
 
     <properties>
+        <!-- Relative path to testsuite/shared -->
+        <shared.path>../../../shared</shared.path>
         <!-- Directory from which source is obtained. Child modules will override this -->
         <transformer-input-dir>${project.basedir}</transformer-input-dir>
         <!-- Plugin dependency versions -->
