@@ -23,7 +23,6 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.security.PrivilegedAction;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -69,15 +68,6 @@ public class SerializationContextBuilder {
     public SerializationContextBuilder register(SerializationContextInitializer initializer) {
         this.init(initializer);
         return this;
-    }
-
-    /**
-     * Registers a number of initializers with the {@link org.infinispan.protostream.SerializationContext}.
-     * @param initializers one or more initializers for the {@link org.infinispan.protostream.SerializationContext}.
-     * @return this builder
-     */
-    public SerializationContextBuilder register(SerializationContextInitializer... initializers) {
-        return this.register(Arrays.asList(initializers));
     }
 
     /**

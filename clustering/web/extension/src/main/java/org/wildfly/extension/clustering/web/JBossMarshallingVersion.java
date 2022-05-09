@@ -29,7 +29,7 @@ import java.util.function.Function;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
-import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
+import org.wildfly.clustering.marshalling.jboss.DynamicExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
 
 /**
@@ -52,7 +52,7 @@ public enum JBossMarshallingVersion implements Function<Module, MarshallingConfi
             MarshallingConfiguration config = new MarshallingConfiguration();
             config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
             config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
-            config.setObjectTable(new ExternalizerObjectTable(module.getClassLoader()));
+            config.setObjectTable(new DynamicExternalizerObjectTable(module.getClassLoader()));
             return config;
         }
     },

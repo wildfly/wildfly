@@ -37,7 +37,7 @@ import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
+import org.wildfly.clustering.marshalling.jboss.DynamicExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
@@ -74,7 +74,7 @@ public class InfinispanLegacySessionManagementProviderFactory implements LegacyS
                 MarshallingConfiguration config = new MarshallingConfiguration();
                 config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
                 config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
-                config.setObjectTable(new ExternalizerObjectTable(module.getClassLoader()));
+                config.setObjectTable(new DynamicExternalizerObjectTable(module.getClassLoader()));
                 return config;
             }
         },

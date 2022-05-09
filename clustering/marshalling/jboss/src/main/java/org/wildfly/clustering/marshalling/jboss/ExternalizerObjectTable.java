@@ -24,17 +24,11 @@ package org.wildfly.clustering.marshalling.jboss;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
 
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.ObjectTable;
@@ -42,7 +36,6 @@ import org.jboss.marshalling.Unmarshaller;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.IndexSerializer;
 import org.wildfly.clustering.marshalling.spi.IntSerializer;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * {@link ObjectTable} implementation that dynamically loads {@link Externalizer} instances available from a given {@link ClassLoader}.
@@ -50,42 +43,11 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class ExternalizerObjectTable implements ObjectTable {
 
-    private final List<Externalizer<Object>> externalizers;
+    private final List<Externalizer<?>> externalizers;
     private final Map<Class<?>, Integer> indexes = new IdentityHashMap<>();
     private final IntSerializer indexSerializer;
 
-    public ExternalizerObjectTable(ClassLoader... loader) {
-        this(loadExternalizers(loader));
-    }
-
-    private static List<Externalizer<Object>> loadExternalizers(ClassLoader... loaders) {
-        List<Externalizer<Object>> loadedExternalizers = WildFlySecurityManager.doUnchecked(new PrivilegedAction<List<Externalizer<Object>>>() {
-            @Override
-            public List<Externalizer<Object>> run() {
-                List<Externalizer<Object>> externalizers = new LinkedList<>();
-                for (ClassLoader loader : loaders) {
-                    for (Externalizer<Object> externalizer : ServiceLoader.load(Externalizer.class, loader)) {
-                        externalizers.add(externalizer);
-                    }
-                }
-                return externalizers;
-            }
-        });
-
-        Set<DefaultExternalizerProviders> providers = EnumSet.allOf(DefaultExternalizerProviders.class);
-        int size = loadedExternalizers.size();
-        for (DefaultExternalizerProviders provider : providers) {
-            size += provider.get().size();
-        }
-        List<Externalizer<Object>> result = new ArrayList<>(size);
-        for (DefaultExternalizerProviders provider : providers) {
-            result.addAll(provider.get());
-        }
-        result.addAll(loadedExternalizers);
-        return result;
-    }
-
-    public ExternalizerObjectTable(List<Externalizer<Object>> externalizers) {
+    public ExternalizerObjectTable(List<Externalizer<?>> externalizers) {
         this(IndexSerializer.select(externalizers.size()), externalizers);
     }
 
@@ -94,10 +56,10 @@ public class ExternalizerObjectTable implements ObjectTable {
         this(Arrays.asList(externalizers));
     }
 
-    private ExternalizerObjectTable(IntSerializer indexSerializer, List<Externalizer<Object>> externalizers) {
+    private ExternalizerObjectTable(IntSerializer indexSerializer, List<Externalizer<?>> externalizers) {
         this.indexSerializer = indexSerializer;
         this.externalizers = externalizers;
-        ListIterator<Externalizer<Object>> iterator = externalizers.listIterator();
+        ListIterator<Externalizer<?>> iterator = externalizers.listIterator();
         while (iterator.hasNext()) {
             this.indexes.putIfAbsent(iterator.next().getTargetClass(), iterator.previousIndex());
         }
@@ -130,10 +92,11 @@ public class ExternalizerObjectTable implements ObjectTable {
         private final IntSerializer serializer;
         private final Externalizer<Object> externalizer;
 
-        ExternalizerWriter(int index, IntSerializer serializer, Externalizer<Object> externalizer) {
+        @SuppressWarnings("unchecked")
+        ExternalizerWriter(int index, IntSerializer serializer, Externalizer<?> externalizer) {
             this.index = index;
             this.serializer = serializer;
-            this.externalizer = externalizer;
+            this.externalizer = (Externalizer<Object>) externalizer;
         }
 
         @Override
