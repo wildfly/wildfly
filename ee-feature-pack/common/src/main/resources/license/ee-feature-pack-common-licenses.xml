@@ -762,7 +762,7 @@
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-exporter-otlp-common</artifactId>
+      <artifactId>opentelemetry-exporter-otlp</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -772,7 +772,7 @@
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-exporter-otlp-trace</artifactId>
+      <artifactId>opentelemetry-exporter-otlp-common</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
