@@ -26,4 +26,6 @@
     <feature-group name="servlet-standalone-profile"/>
     <feature-group name="basic-ha-profile"/>
 
+    <feature spec="subsystem.elytron-oidc-client"/>
+
 </feature-group-spec>

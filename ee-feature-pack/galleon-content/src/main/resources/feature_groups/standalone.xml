@@ -21,4 +21,6 @@
     <feature-group name="standalone-profile"/>
 
     <feature-group name="infinispan-local"/>
+
+    <feature spec="subsystem.elytron-oidc-client"/>
 </feature-group-spec>

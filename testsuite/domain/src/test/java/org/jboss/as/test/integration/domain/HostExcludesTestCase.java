@@ -234,8 +234,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.jwt-smallrye",
                 "org.wildfly.extension.microprofile.openapi-smallrye",
                 "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
-                "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
-                "org.wildfly.extension.elytron-oidc-client"
+                "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye"
         ));
 
         ExtensionConf(String name, List<String> addedExtensions) {
