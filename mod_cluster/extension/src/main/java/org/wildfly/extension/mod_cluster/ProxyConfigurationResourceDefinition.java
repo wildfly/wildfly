@@ -356,7 +356,7 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
                 .addCapabilities(Capability.class)
                 ;
 
-        registration.registerReadWriteAttribute(Attribute.SSL_CONTEXT.getDefinition(), null, new ReloadRequiredWriteAttributeHandler() {
+        registration.registerReadWriteAttribute(Attribute.SSL_CONTEXT.getDefinition(), null, new ReloadRequiredWriteAttributeHandler(Attribute.SSL_CONTEXT.getDefinition()) {
             @Override
             protected void validateUpdatedModel(OperationContext context, Resource model) {
                 context.addStep(new OperationStepHandler() {
@@ -453,7 +453,7 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
 
         @Override
         public UnaryOperator<PathAddress> getPathAddressTransformation() {
-            return new UnaryOperator<PathAddress>() {
+            return new UnaryOperator<>() {
                 @Override
                 public PathAddress apply(PathAddress pathAddress) {
                     return pathAddress.append(SimpleLoadProviderResourceDefinition.PATH);
