@@ -21,7 +21,7 @@
     <parent>
         <artifactId>wildfly-ee-9-source-transform-parent</artifactId>
         <groupId>org.wildfly</groupId>
-        <version>27.0.0.Beta1-SNAPSHOT</version>
+        <version>27.0.0.Alpha1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
