@@ -34,6 +34,7 @@ import org.jboss.as.ejb3.validator.EjbProxy;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.proxy.ProxyFactory;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
 
@@ -44,7 +45,7 @@ import org.jboss.msc.value.Value;
  */
 public class EJBViewDescription extends ViewDescription {
 
-    private final MethodIntf methodIntf;
+    private final MethodInterfaceType methodIntf;
     private final boolean hasJNDIBindings;
 
     /**
@@ -53,18 +54,18 @@ public class EJBViewDescription extends ViewDescription {
      */
     private final boolean ejb2xView;
 
-    public EJBViewDescription(final ComponentDescription componentDescription, final String viewClassName, final MethodIntf methodIntf, final boolean ejb2xView) {
+    public EJBViewDescription(final ComponentDescription componentDescription, final String viewClassName, final MethodInterfaceType methodIntf, final boolean ejb2xView) {
         //only add the default configurator if an ejb 3.x business view
-        super(componentDescription, viewClassName, !ejb2xView && methodIntf != MethodIntf.HOME && methodIntf != MethodIntf.LOCAL_HOME, EjbProxy.class.getName());
+        super(componentDescription, viewClassName, !ejb2xView && methodIntf != MethodInterfaceType.Home && methodIntf != MethodInterfaceType.LocalHome, EjbProxy.class.getName());
         this.methodIntf = methodIntf;
         this.ejb2xView = ejb2xView;
         hasJNDIBindings = initHasJNDIBindings(methodIntf);
 
-        //add a configurator to attach the MethodIntf for this view
+        //add a configurator to attach the MethodInterfaceType for this view
         getConfigurators().add(new ViewConfigurator() {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.putPrivateData(MethodIntf.class, getMethodIntf());
+                configuration.putPrivateData(MethodInterfaceType.class, getMethodIntf());
             }
         });
         // add a view configurator for setting up application specific container interceptors for the EJB view
@@ -73,7 +74,7 @@ public class EJBViewDescription extends ViewDescription {
         getConfigurators().add(ServerInterceptorsViewConfigurator.INSTANCE);
     }
 
-    public MethodIntf getMethodIntf() {
+    public MethodInterfaceType getMethodIntf() {
         return methodIntf;
     }
 
@@ -102,7 +103,7 @@ public class EJBViewDescription extends ViewDescription {
 
     @Override
     protected InjectionSource createInjectionSource(final ServiceName serviceName, Value<ClassLoader> viewClassLoader, boolean appclient) {
-        if(methodIntf != MethodIntf.REMOTE && methodIntf != MethodIntf.HOME) {
+        if(methodIntf != MethodInterfaceType.Remote && methodIntf != MethodInterfaceType.Home) {
             return super.createInjectionSource(serviceName, viewClassLoader, appclient);
         } else {
             final EJBComponentDescription componentDescription = getComponentDescription();
@@ -135,14 +136,14 @@ public class EJBViewDescription extends ViewDescription {
         return hasJNDIBindings;
     }
 
-    private boolean initHasJNDIBindings(final MethodIntf methodIntf) {
-        if (methodIntf == MethodIntf.MESSAGE_ENDPOINT) {
+    private boolean initHasJNDIBindings(final MethodInterfaceType methodIntf) {
+        if (methodIntf == MethodInterfaceType.MessageEndpoint) {
             return false;
         }
-        if (methodIntf == MethodIntf.SERVICE_ENDPOINT) {
+        if (methodIntf == MethodInterfaceType.ServiceEndpoint) {
             return false;
         }
-        if (methodIntf == MethodIntf.TIMER) {
+        if (methodIntf == MethodInterfaceType.Timer) {
             return false;
         }
 
@@ -155,6 +156,6 @@ public class EJBViewDescription extends ViewDescription {
 
     @Override
     public boolean requiresSuperclassInProxy() {
-        return !(isEjb2xView() || methodIntf == MethodIntf.HOME);
+        return !(isEjb2xView() || methodIntf == MethodInterfaceType.Home);
     }
 }

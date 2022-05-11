@@ -34,11 +34,10 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.RemoteViewInjectionSource;
 import org.jboss.as.ejb3.remote.RemoteViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -48,6 +47,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -139,10 +139,10 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
         for (ViewDescription viewDescription : views) {
             boolean isEjbNamespaceBindingBaseName = false;
             ejbViewDescription = (EJBViewDescription) viewDescription;
-            if (appclient && ejbViewDescription.getMethodIntf() != MethodIntf.REMOTE && ejbViewDescription.getMethodIntf() != MethodIntf.HOME) {
+            if (appclient && ejbViewDescription.getMethodIntf() != MethodInterfaceType.Remote && ejbViewDescription.getMethodIntf() != MethodInterfaceType.Home) {
                 continue;
             }
-            if (ejbViewDescription.getMethodIntf() != MethodIntf.REMOTE) {
+            if (ejbViewDescription.getMethodIntf() != MethodInterfaceType.Remote) {
                 isEjbNamespaceBindingBaseName = true;
             }
 
@@ -166,7 +166,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             logBinding(jndiBindingsLogMessage, moduleJNDIName);
 
             // If it a remote or (remote) home view then bind the java:jboss/exported jndi names for the view
-            if(ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE || ejbViewDescription.getMethodIntf() == MethodIntf.HOME) {
+            if(ejbViewDescription.getMethodIntf() == MethodInterfaceType.Remote || ejbViewDescription.getMethodIntf() == MethodInterfaceType.Home) {
                 final String remoteJNDIName = remoteExportedJNDIBaseName + "!" + viewClassName;
                 if(RequestControllerActivationMarker.isRequestControllerEnabled(deploymentUnit)) {
                     registerControlPointBinding(sessionBean, viewDescription, remoteJNDIName, deploymentUnit);

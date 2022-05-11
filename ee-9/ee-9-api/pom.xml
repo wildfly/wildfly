@@ -83,6 +83,11 @@
         </dependency>
 
         <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.lang-model</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
         </dependency>
@@ -104,7 +109,7 @@
 
         <dependency>
             <groupId>org.jboss.spec.jakarta.el</groupId>
-            <artifactId>jboss-el-api_4.0_spec</artifactId>
+            <artifactId>jboss-el-api_5.0_spec</artifactId>
         </dependency>
 
         <dependency>

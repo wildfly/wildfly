@@ -31,8 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.util.MethodInfoHelper;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -53,12 +53,12 @@ public class ApplicableMethodInformation<T> {
     /**
      * applied to all view methods of a given type
      */
-    private final Map<MethodIntf, T> perViewStyle1 = new HashMap<MethodIntf, T>();
+    private final Map<MethodInterfaceType, T> perViewStyle1 = new HashMap<MethodInterfaceType, T>();
 
     /**
      * Applied to all methods with a given name on a given view type
      */
-    private final PopulatingMap<MethodIntf, Map<String, T>> perViewStyle2 = new PopulatingMap<MethodIntf, Map<String, T>>() {
+    private final PopulatingMap<MethodInterfaceType, Map<String, T>> perViewStyle2 = new PopulatingMap<MethodInterfaceType, Map<String, T>>() {
         @Override
         Map<String, T> populate() {
             return new HashMap<String, T>();
@@ -68,7 +68,7 @@ public class ApplicableMethodInformation<T> {
     /**
      * Applied to an exact method on a view type
      */
-    private final PopulatingMap<MethodIntf, PopulatingMap<String, Map<ArrayKey, T>>> perViewStyle3 = new PopulatingMap<MethodIntf, PopulatingMap<String, Map<ArrayKey, T>>>() {
+    private final PopulatingMap<MethodInterfaceType, PopulatingMap<String, Map<ArrayKey, T>>> perViewStyle3 = new PopulatingMap<MethodInterfaceType, PopulatingMap<String, Map<ArrayKey, T>>>() {
         @Override
         PopulatingMap<String, Map<ArrayKey, T>> populate() {
             return new PopulatingMap<String, Map<ArrayKey, T>>() {
@@ -111,11 +111,11 @@ public class ApplicableMethodInformation<T> {
     };
 
 
-    public T getAttribute(MethodIntf methodIntf, Method method) {
+    public T getAttribute(MethodInterfaceType methodIntf, Method method) {
         return getAttribute(methodIntf, method, null);
     }
 
-    public T getAttribute(MethodIntf methodIntf, Method method, MethodIntf defaultMethodIntf) {
+    public T getAttribute(MethodInterfaceType methodIntf, Method method, MethodInterfaceType defaultMethodIntf) {
         assert methodIntf != null : "methodIntf is null";
         assert method != null : "method is null";
 
@@ -150,7 +150,7 @@ public class ApplicableMethodInformation<T> {
         }
     }
 
-    public List<T> getAllAttributes(MethodIntf methodIntf, Method method) {
+    public List<T> getAllAttributes(MethodInterfaceType methodIntf, Method method) {
         assert methodIntf != null : "methodIntf is null";
 
 
@@ -212,7 +212,7 @@ public class ApplicableMethodInformation<T> {
     }
 
 
-    public T getViewAttribute(MethodIntf methodIntf, final Method method) {
+    public T getViewAttribute(MethodInterfaceType methodIntf, final Method method) {
         assert methodIntf != null : "methodIntf is null";
 
         Method classMethod = resolveRealMethod(method);
@@ -247,7 +247,7 @@ public class ApplicableMethodInformation<T> {
      * @param methodIntf the method-intf the annotations apply to or null if Jakarta Enterprise Beans class itself
      * @param attribute
      */
-    public void setAttribute(MethodIntf methodIntf, String className, T attribute) {
+    public void setAttribute(MethodInterfaceType methodIntf, String className, T attribute) {
         if (methodIntf != null && className != null)
             throw EjbLogger.ROOT_LOGGER.bothMethodIntAndClassNameSet(componentName);
         if (methodIntf == null) {
@@ -256,7 +256,7 @@ public class ApplicableMethodInformation<T> {
             perViewStyle1.put(methodIntf, attribute);
     }
 
-    public T getAttributeStyle1(MethodIntf methodIntf, String className) {
+    public T getAttributeStyle1(MethodInterfaceType methodIntf, String className) {
         if (methodIntf != null && className != null)
             throw EjbLogger.ROOT_LOGGER.bothMethodIntAndClassNameSet(componentName);
         if (methodIntf == null) {
@@ -273,14 +273,14 @@ public class ApplicableMethodInformation<T> {
      * @param transactionAttribute
      * @param methodName
      */
-    public void setAttribute(MethodIntf methodIntf, T transactionAttribute, String methodName) {
+    public void setAttribute(MethodInterfaceType methodIntf, T transactionAttribute, String methodName) {
         if (methodIntf == null)
             style2.put(methodName, transactionAttribute);
         else
             perViewStyle2.pick(methodIntf).put(methodName, transactionAttribute);
     }
 
-    public T getAttributeStyle2(MethodIntf methodIntf, String methodName) {
+    public T getAttributeStyle2(MethodInterfaceType methodIntf, String methodName) {
         if (methodIntf == null)
             return style2.get(methodName);
         else
@@ -295,7 +295,7 @@ public class ApplicableMethodInformation<T> {
      * @param methodName
      * @param methodParams
      */
-    public void setAttribute(MethodIntf methodIntf, T transactionAttribute, final String className, String methodName, String... methodParams) {
+    public void setAttribute(MethodInterfaceType methodIntf, T transactionAttribute, final String className, String methodName, String... methodParams) {
         ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
         if (methodIntf == null)
             style3.pick(className).pick(methodName).put(methodParamsKey, transactionAttribute);
@@ -303,7 +303,7 @@ public class ApplicableMethodInformation<T> {
             perViewStyle3.pick(methodIntf).pick(methodName).put(methodParamsKey, transactionAttribute);
     }
 
-    public T getAttributeStyle3(MethodIntf methodIntf, final String className, String methodName, String... methodParams) {
+    public T getAttributeStyle3(MethodInterfaceType methodIntf, final String className, String methodName, String... methodParams) {
         ArrayKey methodParamsKey = new ArrayKey((Object[]) methodParams);
         if (methodIntf == null)
             return style3.pick(className).pick(methodName).get(methodParamsKey);
@@ -323,7 +323,7 @@ public class ApplicableMethodInformation<T> {
      * Returns true if the given transaction specification was expliitly specified at a method level, returns
      * false if it was inherited from the default
      */
-    public boolean isMethodLevel(MethodIntf methodIntf, Method method, MethodIntf defaultMethodIntf) {
+    public boolean isMethodLevel(MethodInterfaceType methodIntf, Method method, MethodInterfaceType defaultMethodIntf) {
         assert methodIntf != null : "methodIntf is null";
         assert method != null : "method is null";
 

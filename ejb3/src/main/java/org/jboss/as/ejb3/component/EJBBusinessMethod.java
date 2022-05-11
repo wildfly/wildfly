@@ -27,6 +27,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 
 /**
  * @author Jaikiran Pai
@@ -37,7 +38,7 @@ public class EJBBusinessMethod implements Serializable {
 
     private final Class<?>[] methodParamTypes;
 
-    private final MethodIntf viewType;
+    private final MethodInterfaceType viewType;
 
     private final int hashCode;
 
@@ -47,16 +48,16 @@ public class EJBBusinessMethod implements Serializable {
     }
 
     public EJBBusinessMethod(String methodName, Class<?>... methodParamTypes) {
-        this(MethodIntf.BEAN, methodName, methodParamTypes);
+        this(MethodInterfaceType.Bean, methodName, methodParamTypes);
     }
 
-    public EJBBusinessMethod(MethodIntf view, String methodName, Class<?>... paramTypes) {
+    public EJBBusinessMethod(MethodInterfaceType view, String methodName, Class<?>... paramTypes) {
         if (methodName == null) {
             throw EjbLogger.ROOT_LOGGER.methodNameIsNull();
         }
         this.methodName = methodName;
         this.methodParamTypes = paramTypes == null ? new Class<?>[0] : paramTypes;
-        this.viewType = view == null ? MethodIntf.BEAN : view;
+        this.viewType = view == null ? MethodInterfaceType.Bean : view;
 
         this.hashCode = this.generateHashCode();
     }

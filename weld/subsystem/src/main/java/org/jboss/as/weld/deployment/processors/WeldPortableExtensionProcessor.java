@@ -21,13 +21,17 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import static org.jboss.as.weld.util.Reflections.loadClass;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -47,11 +51,16 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Deployment processor that loads Jakarta Contexts and Dependency Injection portable extensions.
+ * It also loads Build Compatible extensions for CDI 4+
  *
  * @author Stuart Douglas
  * @author Ales Justin
  */
 public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
+
+    // TODO this variable be removed once WFLY fully depends on CDI 4 and we can reference the class directly!
+    private final String buildCompatExtensionName = "jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension";
+    private static final String BUILD_COMPATIBLE_EXTENSION_CLASS_NAME = "org.jboss.weld.lite.extension.translator.LiteExtensionTranslator";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -79,47 +88,88 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
     private void loadAttachments(Module module, DeploymentUnit deploymentUnit, WeldPortableExtensions extensions) throws DeploymentUnitProcessingException {
         // now load extensions
         try {
-            Enumeration<URL> resources = module.getClassLoader().getResources("META-INF/services/" + Extension.class.getName());
-            final List<String> services = new ArrayList<>();
-            while (resources.hasMoreElements()) {
-                URL resource = resources.nextElement();
-                final InputStream stream = resource.openStream();
+            // load portable extension services
+            final List<String> portableExtensionServices = loadServices(module, Extension.class.getName());
+            // load build compatible extension services
+            final List<String> buildCompatibleExtensionServices = loadServices(module, buildCompatExtensionName);
+
+            // load class and register for portable extensions
+            Collection<Class<? extends Object>> loadedPortableExtensions = loadExtensions(module, portableExtensionServices);
+            registerPortableExtensions(deploymentUnit, extensions, loadedPortableExtensions);
+            // load class and register for portable extensions
+            // if there is at least one, add a portable extension processing them
+            List<Class<? extends Object>> loadedBuildCompatExtensions = loadExtensions(module, buildCompatibleExtensionServices);
+            if (!loadedBuildCompatExtensions.isEmpty()) {
+                final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+                // TODO heavy reflection usage; this can be removed once we can reference CDI 4/Weld 5 classes directly
+                Class<Extension> loadedClass = loadClass(BUILD_COMPATIBLE_EXTENSION_CLASS_NAME, module.getClassLoader());
+                Extension extension;
                 try {
-                    final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        final int commentIdx = line.indexOf('#');
-                        final String className;
-                        if (commentIdx == -1) {
-                            className = line.trim();
-                        } else {
-                            className = line.substring(0, commentIdx).trim();
-                        }
-                        if (className.length() == 0) {
-                            continue;
-                        }
-                        services.add(className);
-                    }
-                } finally {
-                    VFSUtils.safeClose(stream);
+                    // initiate extension with discovered build compatible extensions
+                    extension = loadedClass.getConstructor(List.class, ClassLoader.class)
+                            .newInstance(loadedBuildCompatExtensions, module.getClassLoader());
+                } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(e);
                 }
-            }
-            for (String service : services) {
-                final Class<Extension> extensionClass = loadExtension(service, module.getClassLoader());
-                if (extensionClass == null) {
-                    continue;
-                }
-                extensions.tryRegisterExtension(extensionClass, deploymentUnit);
+                // NOTE: I chose to register it under the same dep. unit as other extensions, not sure if this is correct
+                extensions.registerExtensionInstance(extension, deploymentUnit);
             }
         } catch (IOException e) {
             throw new DeploymentUnitProcessingException(e);
         }
     }
 
+    private List<Class<? extends Object>> loadExtensions(Module module, List<String> services) {
+        List<Class<? extends Object>> result = new ArrayList<>();
+        for (String service : services) {
+            final Class<? extends Object> extensionClass = loadExtension(service, module.getClassLoader());
+            if (extensionClass == null) {
+                continue;
+            }
+            result.add(extensionClass);
+        }
+        return result;
+    }
+
+    private void registerPortableExtensions(DeploymentUnit deploymentUnit, WeldPortableExtensions extensions, Collection<Class<? extends Object>> loadedExtensions) throws DeploymentUnitProcessingException {
+        for (Class<? extends Object> loadedExtension : loadedExtensions) {
+            extensions.tryRegisterExtension(loadedExtension, deploymentUnit);
+        }
+    }
+
+    private List<String> loadServices(Module module, String resourceSuffix) throws IOException {
+        Enumeration<URL> resources = module.getClassLoader().getResources("META-INF/services/" + resourceSuffix);
+        final List<String> services = new ArrayList<>();
+        while (resources.hasMoreElements()) {
+            URL resource = resources.nextElement();
+            final InputStream stream = resource.openStream();
+            try {
+                final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    final int commentIdx = line.indexOf('#');
+                    final String className;
+                    if (commentIdx == -1) {
+                        className = line.trim();
+                    } else {
+                        className = line.substring(0, commentIdx).trim();
+                    }
+                    if (className.length() == 0) {
+                        continue;
+                    }
+                    services.add(className);
+                }
+            } finally {
+                VFSUtils.safeClose(stream);
+            }
+        }
+        return services;
+    }
+
     @SuppressWarnings("unchecked")
-    private Class<Extension> loadExtension(String serviceClassName, final ClassLoader loader) throws DeploymentUnitProcessingException {
+    private Class<? extends Object> loadExtension(String serviceClassName, final ClassLoader loader) {
         try {
-            return (Class<Extension>) loader.loadClass(serviceClassName);
+            return loader.loadClass(serviceClassName);
         } catch (Exception e) {
             WeldLogger.DEPLOYMENT_LOGGER.couldNotLoadPortableExceptionClass(serviceClassName, e);
         } catch (LinkageError e) {

@@ -536,7 +536,8 @@
 
                                 <!-- Uses JSON only for formatting and uses an internal JSON generator -->
                                 <exlude>org.jboss.logmanager:jboss-logmanager\z</exlude>
-
+                                <!-- Uses javax JSON internally -->
+                                <exclude>org.wildfly.core:wildfly-event-logger\z</exclude>
                                 <!-- Don't transform Infinispan modules and its dependents -->
                                 <exclude>org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec</exclude>
                                 <exclude>org.infinispan:.+\z</exclude>
@@ -615,6 +616,10 @@
                     <artifactId>jboss-invocation</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.wildfly.core</groupId>
+                    <artifactId>wildfly-elytron-integration</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.wildfly.security</groupId>
                     <artifactId>wildfly-elytron-jacc</artifactId>
                 </exclusion>
@@ -662,6 +667,24 @@
             <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
             <type>pom</type>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.wildfly.core</groupId>
+                    <artifactId>wildfly-elytron-integration</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-elytron-integration-jakarta</artifactId>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -747,6 +770,10 @@
                      We could put these in pruned so they don't get pulled in but then when we change
                      the standard module source to use jakarta.* and drop the -jakarta artifacts we'll just
                      have to move back. -->
+                <exclusion>
+                    <groupId>antlr</groupId>
+                    <artifactId>antlr</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>jipijapa-spi</artifactId>
@@ -964,6 +991,10 @@
                 <exclusion>
                     <groupId>org.jboss.metadata</groupId>
                     <artifactId>jboss-metadata-common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.core</groupId>
+                    <artifactId>wildfly-elytron-integration</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>

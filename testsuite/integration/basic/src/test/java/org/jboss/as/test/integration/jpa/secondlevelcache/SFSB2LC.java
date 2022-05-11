@@ -248,7 +248,7 @@ public class SFSB2LC {
         stats.clear();
 
         try {
-            String queryString = "from Employee e where e.id > " + id;
+            String queryString = "select e from Employee e where e.id > " + id;
             QueryStatistics queryStats = stats.getQueryStatistics(queryString);
             Query query = em.createQuery(queryString);
             query.setHint("org.hibernate.cacheable", true);
@@ -308,7 +308,7 @@ public class SFSB2LC {
             // the nextTimestamp from infinispan is "return System.currentTimeMillis() / 100;"
             Thread.sleep(1000);
 
-            String queryString = "from Employee e where e.id > " + id;
+            String queryString = "select e from Employee e where e.id > " + id;
             QueryStatistics queryStats = stats.getQueryStatistics(queryString);
             Query query = em.createQuery(queryString);
             query.setHint("org.hibernate.cacheable", true);
@@ -413,7 +413,7 @@ public class SFSB2LC {
 
         Query query;
 
-        query = em.createQuery("from Employee e where e.id=:id");
+        query = em.createQuery("select e from Employee e where e.id=:id");
 
         query.setParameter("id", id);
         query.setHint("org.hibernate.cacheable", true);
@@ -430,7 +430,7 @@ public class SFSB2LC {
 
         Query query;
 
-        query = em.createQuery("from Employee");
+        query = em.createQuery("select e from Employee e");
         query.setHint("org.hibernate.cacheable", true);
 
         return query.getResultList();

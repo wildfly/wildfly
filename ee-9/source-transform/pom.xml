@@ -58,11 +58,11 @@
         <module>jpa/spi</module>
         <module>jpa/eclipselink</module>
         <module>jpa/subsystem</module>
-        <module>jsf/injection</module>
-        <module>jsf/subsystem</module>
+        <module>jsf</module>
         <module>mail</module>
         <module>microprofile</module>
         <module>mod_cluster/undertow</module>
+        <module>shared</module>
         <module>web-common</module>
         <module>weld/bean-validation</module>
         <module>weld/common</module>

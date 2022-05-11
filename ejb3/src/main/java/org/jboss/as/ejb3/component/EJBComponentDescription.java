@@ -40,7 +40,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
-
 import javax.ejb.EJBLocalObject;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
@@ -108,6 +107,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -415,7 +415,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     }
 
     public void addLocalHome(final String localHome) {
-        final EjbHomeViewDescription view = new EjbHomeViewDescription(this, localHome, MethodIntf.LOCAL_HOME);
+        final EjbHomeViewDescription view = new EjbHomeViewDescription(this, localHome, MethodInterfaceType.LocalHome);
         view.getConfigurators().add(new Ejb2ViewTypeConfigurator(Ejb2xViewType.LOCAL_HOME));
         getViews().add(view);
         // setup server side view interceptors
@@ -427,7 +427,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     }
 
     public void addRemoteHome(final String remoteHome) {
-        final EjbHomeViewDescription view = new EjbHomeViewDescription(this, remoteHome, MethodIntf.HOME);
+        final EjbHomeViewDescription view = new EjbHomeViewDescription(this, remoteHome, MethodInterfaceType.Home);
         view.getConfigurators().add(new Ejb2ViewTypeConfigurator(Ejb2xViewType.HOME));
         getViews().add(view);
         // setup server side view interceptors
@@ -440,13 +440,13 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     }
 
     public void addEjbLocalObjectView(final String viewClassName) {
-        final EJBViewDescription view = registerView(viewClassName, MethodIntf.LOCAL, true);
+        final EJBViewDescription view = registerView(viewClassName, MethodInterfaceType.Local, true);
         view.getConfigurators().add(new Ejb2ViewTypeConfigurator(Ejb2xViewType.LOCAL));
         this.ejbLocalView = view;
     }
 
     public void addEjbObjectView(final String viewClassName) {
-        final EJBViewDescription view = registerView(viewClassName, MethodIntf.REMOTE, true);
+        final EJBViewDescription view = registerView(viewClassName, MethodInterfaceType.Remote, true);
         view.getConfigurators().add(new Ejb2ViewTypeConfigurator(Ejb2xViewType.REMOTE));
         this.ejbRemoteView = view;
     }
@@ -478,9 +478,9 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 viewConfiguration.addViewInterceptor(new ImmediateInterceptorFactory(new ContextClassLoaderInterceptor(classLoader)), InterceptorOrder.View.TCCL_INTERCEPTOR);
 
                 //If this is the EJB 2.x local or home view add the exception transformer interceptor
-                if (view.getMethodIntf() == MethodIntf.LOCAL && EJBLocalObject.class.isAssignableFrom(viewConfiguration.getViewClass())) {
+                if (view.getMethodIntf() == MethodInterfaceType.Local && EJBLocalObject.class.isAssignableFrom(viewConfiguration.getViewClass())) {
                     viewConfiguration.addViewInterceptor(EjbExceptionTransformingInterceptorFactories.LOCAL_INSTANCE, InterceptorOrder.View.REMOTE_EXCEPTION_TRANSFORMER);
-                } else if (view.getMethodIntf() == MethodIntf.LOCAL_HOME) {
+                } else if (view.getMethodIntf() == MethodInterfaceType.LocalHome) {
                     viewConfiguration.addViewInterceptor(EjbExceptionTransformingInterceptorFactories.LOCAL_INSTANCE, InterceptorOrder.View.REMOTE_EXCEPTION_TRANSFORMER);
                 }
 
@@ -503,7 +503,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     }
 
     private void setupRemoteViewInterceptors(final EJBViewDescription view) {
-        if (view.getMethodIntf() == MethodIntf.REMOTE || view.getMethodIntf() == MethodIntf.HOME) {
+        if (view.getMethodIntf() == MethodInterfaceType.Remote || view.getMethodIntf() == MethodInterfaceType.Home) {
             view.getConfigurators().add(new ViewConfigurator() {
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
@@ -512,7 +512,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     }
                 }
             });
-            if (view.getMethodIntf() == MethodIntf.HOME) {
+            if (view.getMethodIntf() == MethodInterfaceType.Home) {
                 view.getConfigurators().add(new ViewConfigurator() {
                     @Override
                     public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
@@ -576,8 +576,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     if (!(view instanceof EJBViewDescription)) {
                         continue;
                     }
-                    final MethodIntf viewType = ((EJBViewDescription) view).getMethodIntf();
-                    if (viewType == MethodIntf.REMOTE || viewType == MethodIntf.HOME) {
+                    final MethodInterfaceType viewType = ((EJBViewDescription) view).getMethodIntf();
+                    if (viewType == MethodInterfaceType.Remote || viewType == MethodInterfaceType.Home) {
                         return true;
                     }
                 }
@@ -798,11 +798,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         roleLinks.add(toRole);
     }
 
-    protected EJBViewDescription registerView(final String viewClassName, final MethodIntf viewType) {
+    protected EJBViewDescription registerView(final String viewClassName, final MethodInterfaceType viewType) {
         return registerView(viewClassName, viewType, false);
     }
 
-    protected EJBViewDescription registerView(final String viewClassName, final MethodIntf viewType, final boolean ejb2xView) {
+    protected EJBViewDescription registerView(final String viewClassName, final MethodInterfaceType viewType, final boolean ejb2xView) {
         // setup the ViewDescription
         final EJBViewDescription viewDescription = new EJBViewDescription(this, viewClassName, viewType, ejb2xView);
         getViews().add(viewDescription);
@@ -812,8 +812,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         setupClientViewInterceptors(viewDescription);
         // return created view
 
-        if (viewType == MethodIntf.REMOTE ||
-                viewType == MethodIntf.HOME) {
+        if (viewType == MethodInterfaceType.Remote ||
+                viewType == MethodInterfaceType.Home) {
             setupRemoteView(viewDescription);
         }
 

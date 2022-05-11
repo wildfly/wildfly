@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
-
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
 import javax.ejb.TimerService;
@@ -76,6 +75,7 @@ import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -285,7 +285,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     protected TransactionAttributeType getCurrentTransactionAttribute() {
 
         final InterceptorContext invocation = CurrentInvocationContext.get();
-        final MethodIntf methodIntf = MethodIntfHelper.of(invocation);
+        final MethodInterfaceType methodIntf = MethodIntfHelper.of(invocation);
         return getTransactionAttributeType(methodIntf, invocation.getMethod());
     }
 
@@ -364,30 +364,30 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         return timerService;
     }
 
-    public TransactionAttributeType getTransactionAttributeType(final MethodIntf methodIntf, final Method method) {
+    public TransactionAttributeType getTransactionAttributeType(final MethodInterfaceType methodIntf, final Method method) {
         return getTransactionAttributeType(methodIntf, MethodIdentifier.getIdentifierForMethod(method));
     }
 
-    public TransactionAttributeType getTransactionAttributeType(final MethodIntf methodIntf, final MethodIdentifier method) {
+    public TransactionAttributeType getTransactionAttributeType(final MethodInterfaceType methodIntf, final MethodIdentifier method) {
         return getTransactionAttributeType(methodIntf, method, TransactionAttributeType.REQUIRED);
     }
 
-    public TransactionAttributeType getTransactionAttributeType(final MethodIntf methodIntf, final MethodIdentifier method, TransactionAttributeType defaultType) {
+    public TransactionAttributeType getTransactionAttributeType(final MethodInterfaceType methodIntf, final MethodIdentifier method, TransactionAttributeType defaultType) {
         TransactionAttributeType txAttr = txAttrs.get(new MethodTransactionAttributeKey(methodIntf, method));
         //fall back to type bean if not found
-        if (txAttr == null && methodIntf != MethodIntf.BEAN) {
-            txAttr = txAttrs.get(new MethodTransactionAttributeKey(MethodIntf.BEAN, method));
+        if (txAttr == null && methodIntf != MethodInterfaceType.Bean) {
+            txAttr = txAttrs.get(new MethodTransactionAttributeKey(MethodInterfaceType.Bean, method));
         }
         if (txAttr == null)
             return defaultType;
         return txAttr;
     }
 
-    public boolean isTransactionAttributeTypeExplicit(final MethodIntf methodIntf, final MethodIdentifier method) {
+    public boolean isTransactionAttributeTypeExplicit(final MethodInterfaceType methodIntf, final MethodIdentifier method) {
         Boolean txAttr = txExplicitAttrs.get(new MethodTransactionAttributeKey(methodIntf, method));
         //fall back to type bean if not found
-        if (txAttr == null && methodIntf != MethodIntf.BEAN) {
-            txAttr = txExplicitAttrs.get(new MethodTransactionAttributeKey(MethodIntf.BEAN, method));
+        if (txAttr == null && methodIntf != MethodInterfaceType.Bean) {
+            txAttr = txExplicitAttrs.get(new MethodTransactionAttributeKey(MethodInterfaceType.Bean, method));
         }
         if (txAttr == null)
             return false;
@@ -407,14 +407,14 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         return transactionSynchronizationRegistry;
     }
 
-    public int getTransactionTimeout(final MethodIntf methodIntf, final Method method) {
+    public int getTransactionTimeout(final MethodInterfaceType methodIntf, final Method method) {
         return getTransactionTimeout(methodIntf, MethodIdentifier.getIdentifierForMethod(method));
     }
 
-    public int getTransactionTimeout(final MethodIntf methodIntf, final MethodIdentifier method) {
+    public int getTransactionTimeout(final MethodInterfaceType methodIntf, final MethodIdentifier method) {
         Integer txTimeout = txTimeouts.get(new MethodTransactionAttributeKey(methodIntf, method));
-        if (txTimeout == null && methodIntf != MethodIntf.BEAN) {
-            txTimeout = txTimeouts.get(new MethodTransactionAttributeKey(MethodIntf.BEAN, method));
+        if (txTimeout == null && methodIntf != MethodInterfaceType.Bean) {
+            txTimeout = txTimeouts.get(new MethodTransactionAttributeKey(MethodInterfaceType.Bean, method));
         }
         if (txTimeout == null)
             return -1;

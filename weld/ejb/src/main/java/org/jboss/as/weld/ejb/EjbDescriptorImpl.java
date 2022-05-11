@@ -33,11 +33,11 @@ import java.util.Set;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
@@ -77,10 +77,10 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
         if (componentDescription.getViews() != null) {
             for (ViewDescription view : componentDescription.getViews()) {
 
-                if (description == null || getMethodIntf(view) == MethodIntf.LOCAL) {
+                if (description == null || getMethodIntf(view) == MethodInterfaceType.Local) {
                     final String viewClassName = view.getViewClassName();
                     localInterfaces.add(new BusinessInterfaceDescriptorImpl<Object>(beanDeploymentArchive, viewClassName));
-                } else if (getMethodIntf(view) == MethodIntf.REMOTE) {
+                } else if (getMethodIntf(view) == MethodInterfaceType.Remote) {
                     remoteInterfaces.add(new BusinessInterfaceDescriptorImpl<Object>(beanDeploymentArchive, view.getViewClassName()));
                 }
             }
@@ -162,7 +162,7 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
         this.viewServices = viewServices;
     }
 
-    private MethodIntf getMethodIntf(final ViewDescription view) {
+    private MethodInterfaceType getMethodIntf(final ViewDescription view) {
         if (view instanceof EJBViewDescription) {
             final EJBViewDescription ejbView = (EJBViewDescription) view;
             return ejbView.getMethodIntf();

@@ -37,13 +37,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-
 import javax.security.jacc.EJBMethodPermission;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -112,41 +110,12 @@ public class JaccInterceptor implements Interceptor {
     }
 
     private void hasPermission(EJBComponent ejbComponent, ComponentView componentView, Method method, SecurityIdentity securityIdentity) {
-        MethodInterfaceType methodIntfType = getMethodInterfaceType(componentView.getPrivateData(MethodIntf.class));
+        MethodInterfaceType methodIntfType = componentView.getPrivateData(MethodInterfaceType.class);
         EJBMethodPermission permission = createEjbMethodPermission(method, ejbComponent, methodIntfType);
         ProtectionDomain domain = new ProtectionDomain (componentView.getProxyClass().getProtectionDomain().getCodeSource(), null, null, getGrantedRoles(securityIdentity));
         Policy policy = WildFlySecurityManager.isChecking() ? doPrivileged((PrivilegedAction<Policy>) Policy::getPolicy) : Policy.getPolicy();
         if (!policy.implies(domain, permission)) {
             throw EjbLogger.ROOT_LOGGER.invocationOfMethodNotAllowed(method,ejbComponent.getComponentName());
-        }
-    }
-
-    /**
-     * <p>
-     * Gets the {@code MethodInterfaceType} that corresponds to the specified {@code MethodIntf}.
-     * </p>
-     *
-     * @param viewType the {@code MethodIntf} type to be converted.
-     * @return the converted type or {@code null} if the type cannot be converted.
-     */
-    protected MethodInterfaceType getMethodInterfaceType(MethodIntf viewType) {
-        switch (viewType) {
-            case HOME:
-                return MethodInterfaceType.Home;
-            case LOCAL_HOME:
-                return MethodInterfaceType.LocalHome;
-            case SERVICE_ENDPOINT:
-                return MethodInterfaceType.ServiceEndpoint;
-            case LOCAL:
-                return MethodInterfaceType.Local;
-            case REMOTE:
-                return MethodInterfaceType.Remote;
-            case TIMER:
-                return MethodInterfaceType.Timer;
-            case MESSAGE_ENDPOINT:
-                return MethodInterfaceType.MessageEndpoint;
-            default:
-                return null;
         }
     }
 

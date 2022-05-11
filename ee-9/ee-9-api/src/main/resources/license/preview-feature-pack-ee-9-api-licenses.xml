@@ -40,6 +40,17 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>jakarta.enterprise</groupId>
+      <artifactId>jakarta.enterprise.lang.model</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>jakarta.inject</groupId>
       <artifactId>jakarta.inject-api</artifactId>
       <licenses>
@@ -175,7 +186,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.jakarta.el</groupId>
-      <artifactId>jboss-el-api_4.0_spec</artifactId>
+      <artifactId>jboss-el-api_5.0_spec</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>

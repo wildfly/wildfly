@@ -1,10 +1,11 @@
 package org.jboss.as.test.shared.util;
 
+import static org.junit.Assume.assumeTrue;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.function.Supplier;
 
-import org.junit.Assume;
 import org.junit.AssumptionViolatedException;
 import org.testcontainers.DockerClientFactory;
 
@@ -90,6 +91,12 @@ public class AssumeTestGroupUtil {
         }
     }
 
+    public static void assumeNotWildFlyPreview() {
+        assumeTrue("Some tests are disabled on WildFly Preview",
+                System.getProperty("ts.ee9") == null &&
+                        System.getProperty("ts.bootable.ee9") == null);
+    }
+
     private static int getJavaSpecificationVersion() {
         final String versionString = System.getProperty("java.specification.version");
         return Integer.parseInt(versionString);
@@ -99,7 +106,7 @@ public class AssumeTestGroupUtil {
         AccessController.doPrivileged(new PrivilegedAction<Void>() {
             @Override
             public Void run() {
-                Assume.assumeTrue(message, assumeTrueCondition.get());
+                assumeTrue(message, assumeTrueCondition.get());
                 return null;
             }
         });

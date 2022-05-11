@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.security;
 
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT;
 
 import java.lang.reflect.Method;
@@ -39,11 +40,10 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.deployment.ApplicableMethodInformation;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.security.service.EJBViewMethodSecurityAttributesService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -53,9 +53,8 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
  * {@link ViewConfigurator} responsible for setting up necessary security interceptors on an EJB view.
@@ -85,7 +84,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         // then we now have 2 views with the same view name. In such cases, it's fine to skip one of those views and register this service only once, since essentially, the service is expected to return the same data
         // for both these views. So here we skip the @WebService view if the bean also has a @LocalBean (no-interface) view and let the EJBViewMethodSecurityAttributesService be built when the no-interface view is processed
         // note that we always install this service for SERVICE_ENDPOINT views, even if security is not enabled
-        if (MethodIntf.SERVICE_ENDPOINT == ejbViewDescription.getMethodIntf()) {
+        if (MethodInterfaceType.ServiceEndpoint == ejbViewDescription.getMethodIntf()) {
             viewMethodSecurityAttributesServiceBuilder = new EJBViewMethodSecurityAttributesService.Builder();
             viewMethodSecurityAttributesServiceName =  EJBViewMethodSecurityAttributesService.getServiceName(ejbComponentDescription.getApplicationName(), ejbComponentDescription.getModuleName(), ejbComponentDescription.getEJBName(), viewClassName);
         } else {
@@ -206,9 +205,9 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         allAttributes.addAll(permissions.getAllAttributes(ejbViewDescription.getMethodIntf(), viewMethod));
 
         if (ejbMethodSecurityMetaData == null) {
-            ejbMethodSecurityMetaData = permissions.getViewAttribute(MethodIntf.BEAN, viewMethod);
+            ejbMethodSecurityMetaData = permissions.getViewAttribute(MethodInterfaceType.Bean, viewMethod);
         }
-        allAttributes.addAll(permissions.getAllAttributes(MethodIntf.BEAN, viewMethod));
+        allAttributes.addAll(permissions.getAllAttributes(MethodInterfaceType.Bean, viewMethod));
 
         final Method classMethod = ClassReflectionIndexUtil.findMethod(deploymentReflectionIndex, componentConfiguration.getComponentClass(), viewMethod);
         if (ejbMethodSecurityMetaData == null
@@ -216,12 +215,12 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             // if this is null we try with the corresponding bean method
             ejbMethodSecurityMetaData = permissions.getAttribute(ejbViewDescription.getMethodIntf(), classMethod);
             if (ejbMethodSecurityMetaData == null) {
-                ejbMethodSecurityMetaData = permissions.getAttribute(MethodIntf.BEAN, classMethod);
+                ejbMethodSecurityMetaData = permissions.getAttribute(MethodInterfaceType.Bean, classMethod);
             }
         }
         if (classMethod != null) {
             allAttributes.addAll(permissions.getAllAttributes(ejbViewDescription.getMethodIntf(), classMethod));
-            allAttributes.addAll(permissions.getAllAttributes(MethodIntf.BEAN, classMethod));
+            allAttributes.addAll(permissions.getAllAttributes(MethodInterfaceType.Bean, classMethod));
         }
 
 

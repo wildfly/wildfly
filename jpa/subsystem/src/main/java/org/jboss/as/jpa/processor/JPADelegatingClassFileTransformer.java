@@ -24,7 +24,6 @@ package org.jboss.as.jpa.processor;
 
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
-import java.lang.instrument.IllegalClassFormatException;
 import java.nio.ByteBuffer;
 import java.security.AccessControlContext;
 import java.security.AccessController;
@@ -73,7 +72,7 @@ class JPADelegatingClassFileTransformer implements ClassTransformer {
                                 // parameter classBeingRedefined is always passed as null
                                 // because we won't ever be called to transform already loaded classes.
                                 result = transformer.transform(classLoader, className, null, protectionDomain, transformedBuffer);
-                            } catch (IllegalClassFormatException e) {
+                            } catch (Exception e) {
                                 throw JpaLogger.ROOT_LOGGER.invalidClassFormat(e, className);
                             }
                             if (result != null) {
