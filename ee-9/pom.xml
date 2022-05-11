@@ -1529,6 +1529,19 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-testsuite-shared-jakarta</artifactId>
+                <version>${ee.maven.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-undertow-jakarta</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
