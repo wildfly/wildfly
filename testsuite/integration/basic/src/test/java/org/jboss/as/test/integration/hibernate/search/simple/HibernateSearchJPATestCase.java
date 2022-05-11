@@ -31,11 +31,13 @@ import org.hibernate.search.engine.impl.MutableSearchFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,6 +50,11 @@ import org.junit.runner.RunWith;
 public class HibernateSearchJPATestCase {
 
     private static final String ARCHIVE_NAME = "hibernate4native_search_test";
+
+    @BeforeClass
+    public static void securityManagerNotSupportedInHibernateSearch() {
+        AssumeTestGroupUtil.assumeSecurityManagerDisabled();
+    }
 
     @EJB(mappedName = "java:module/SearchBean")
     private SearchBean searchBean;
