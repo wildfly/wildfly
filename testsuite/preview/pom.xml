@@ -28,6 +28,8 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <!-- This project's root dir. -->
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <!-- Relative path to testsuite/shared -->
+        <shared.path>../../shared</shared.path>
         <jvm.args.dirs>
             -Djbossas.ts.submodule.dir=${jbossas.ts.submodule.dir}
             -Djbossas.ts.integ.dir=${jbossas.ts.integ.dir}
@@ -56,6 +58,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-9-parent</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>jakarta.ejb</groupId>
                 <artifactId>jakarta.ejb-api</artifactId>
@@ -89,7 +98,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-testsuite-shared</artifactId>
+            <artifactId>wildfly-testsuite-shared-jakarta</artifactId>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -138,6 +147,7 @@
             </activation>
             <modules>
                 <module>basic</module>
+                <module>source-transform</module>
                 <!--<module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
@@ -185,6 +195,7 @@
             <activation><property><name>allTests</name></property></activation>
             <modules>
                 <module>basic</module>
+                <module>source-transform</module>
                 <!--<module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
@@ -211,6 +222,7 @@
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
                 <module>basic</module>
+                <module>source-transform</module>
                 <!--><module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
@@ -468,7 +480,7 @@
                             <overwrite>true</overwrite>
                             <resources>
                                 <resource>
-                                    <directory>../../shared/src/main/resources</directory>
+                                    <directory>${shared.path}/src/main/resources</directory>
                                     <includes><include>*.properties</include></includes>
                                 </resource>
                             </resources>

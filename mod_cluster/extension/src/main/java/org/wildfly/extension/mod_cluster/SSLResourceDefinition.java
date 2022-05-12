@@ -113,7 +113,7 @@ class SSLResourceDefinition extends ChildResourceDefinition<ManagementResourceRe
                 ;
 
         for (Attribute attribute : Attribute.values()) {
-            registration.registerReadWriteAttribute(attribute.getDefinition(), null, new ReloadRequiredWriteAttributeHandler() {
+            registration.registerReadWriteAttribute(attribute.getDefinition(), null, new ReloadRequiredWriteAttributeHandler(attribute.getDefinition()) {
                 @Override
                 protected void validateUpdatedModel(OperationContext context, Resource model) {
                     context.addStep(new OperationStepHandler() {

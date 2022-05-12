@@ -24,20 +24,22 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-ee-9-parent</artifactId>
+        <artifactId>wildfly-ts-preview</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>27.0.0.Alpha1</version>
+        <version>27.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-ee-9-source-transform-parent</artifactId>
-    <description>Parent for EE 9 Source Transformation related modules</description>
+    <artifactId>wildfly-ts-preview-source-transform-parent</artifactId>
+    <description>Parent for WildFly Preview Testsuite Source Transformation related modules</description>
     <packaging>pom</packaging>
 
     <properties>
+        <!-- Relative path to testsuite/shared -->
+        <shared.path>../../../shared</shared.path>
         <!-- Directory from which source is obtained. Child modules will override this -->
         <transformer-input-dir>${project.basedir}</transformer-input-dir>
         <!-- Plugin dependency versions -->
@@ -45,37 +47,7 @@
     </properties>
 
     <modules>
-        <module>batch-jberet</module>
-        <module>bean-validation</module>
-        <module>clustering</module>
-        <module>connector</module>
-        <module>ee</module>
-        <module>ee-security</module>
-        <module>ejb3</module>
-        <module>jaxrs</module>
-        <module>iiop-openjdk</module>
-        <module>transactions</module>
-        <module>jpa/spi</module>
-        <module>jpa/eclipselink</module>
-        <module>jpa/subsystem</module>
-        <module>jsf</module>
-        <module>mail</module>
-        <module>microprofile</module>
-        <module>mod_cluster/undertow</module>
-        <module>shared</module>
-        <module>web-common</module>
-        <module>weld/bean-validation</module>
-        <module>weld/common</module>
-        <module>weld/ejb</module>
-        <module>weld/jpa</module>
-        <module>weld/spi</module>
-        <module>weld/subsystem</module>
-        <module>weld/transactions</module>
-        <module>observability/opentelemetry-api</module>
-        <module>observability/opentelemetry</module>
-        <module>undertow</module>
-        <module>messaging-activemq/injection</module>
-        <module>messaging-activemq/subsystem</module>
+        <module>web</module>
     </modules>
 
     <build>
