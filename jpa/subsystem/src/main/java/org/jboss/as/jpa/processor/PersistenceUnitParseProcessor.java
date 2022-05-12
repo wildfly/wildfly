@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
@@ -417,7 +418,28 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     private void markDU(PersistenceUnitMetadataHolder holder, DeploymentUnit deploymentUnit) {
         if (holder.getPersistenceUnits() != null && !holder.getPersistenceUnits().isEmpty()) {
             JPADeploymentMarker.mark(deploymentUnit);
+
+            // Hibernate Search backend type detection
+            for (PersistenceUnitMetadata persistenceUnit : holder.getPersistenceUnits()) {
+                Properties properties = persistenceUnit.getProperties();
+                String backendType = properties == null ? null
+                        : properties.getProperty(Configuration.HIBERNATE_SEARCH_BACKEND_TYPE);
+                if (backendType != null) {
+                    backendType = trimToNull(backendType);
+                }
+                if (backendType != null) {
+                    HibernateSearchDeploymentMarker.markBackendType(deploymentUnit, backendType);
+                }
+            }
         }
+    }
+
+    private String trimToNull(String backendType) {
+        backendType = backendType.trim();
+        if (backendType.isEmpty()) {
+            return null;
+        }
+        return backendType;
     }
 
     private void incrementPersistenceUnitCount(DeploymentUnit topDeploymentUnit, int persistenceUnitCount) {

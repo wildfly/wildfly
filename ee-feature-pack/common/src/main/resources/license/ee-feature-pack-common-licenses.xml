@@ -13,6 +13,17 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>com.carrotsearch</groupId>
+      <artifactId>hppc</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>com.fasterxml</groupId>
       <artifactId>classmate</artifactId>
       <licenses>
@@ -1601,6 +1612,8 @@
       </licenses>
     </dependency>
     <dependency>
+      <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+      <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-backward-codecs</artifactId>
       <licenses>
@@ -1634,6 +1647,8 @@
       </licenses>
     </dependency>
     <dependency>
+      <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+      <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-misc</artifactId>
       <licenses>
@@ -1658,6 +1673,17 @@
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-queryparser</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-join</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -1826,6 +1852,28 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.elasticsearch.client</groupId>
+      <artifactId>elasticsearch-rest-client</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.elasticsearch.client</groupId>
+      <artifactId>elasticsearch-rest-client-sniffer</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>codemodel</artifactId>
       <licenses>
@@ -1939,6 +1987,8 @@
       </licenses>
     </dependency>
     <dependency>
+      <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+      <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search-backend-jms</artifactId>
       <licenses>
@@ -1950,6 +2000,8 @@
       </licenses>
     </dependency>
     <dependency>
+      <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+      <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search-engine</artifactId>
       <licenses>
@@ -1961,6 +2013,8 @@
       </licenses>
     </dependency>
     <dependency>
+      <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+      <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search-orm</artifactId>
       <licenses>
@@ -1972,8 +2026,65 @@
       </licenses>
     </dependency>
     <dependency>
+      <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+      <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search-serialization-avro</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.search</groupId>
+      <artifactId>hibernate-search-util-common</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.search</groupId>
+      <artifactId>hibernate-search-engine</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.search</groupId>
+      <artifactId>hibernate-search-backend-lucene</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.search</groupId>
+      <artifactId>hibernate-search-mapper-pojo-base</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.search</groupId>
+      <artifactId>hibernate-search-mapper-orm-orm6</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>

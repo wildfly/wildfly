@@ -182,7 +182,6 @@
         <trace>none</trace>
     </properties>
 
-
     <dependencies>
         <dependency>
             <groupId>jakarta.inject</groupId>

@@ -19,12 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.hibernate.search;
+package org.jboss.as.test.integration.hibernate.search.simple;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
@@ -37,6 +38,7 @@ public class Book {
     Long id;
 
     @Field
+    @Field(name = "title_autocomplete", analyzer = @Analyzer(definition = AnalysisConfigurationProvider.AUTOCOMPLETE))
     String title;
 
 }

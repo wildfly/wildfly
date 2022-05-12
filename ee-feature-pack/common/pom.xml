@@ -95,6 +95,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.carrotsearch</groupId>
+            <artifactId>hppc</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.fasterxml</groupId>
             <artifactId>classmate</artifactId>
         </dependency>
@@ -239,6 +244,16 @@
         <dependency>
             <groupId>com.sun.istack</groupId>
             <artifactId>istack-commons-tools</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-client-sniffer</artifactId>
         </dependency>
 
         <dependency>
@@ -1659,9 +1674,17 @@
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-join</artifactId>
+        </dependency>
+        <dependency>
+            <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+            <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
+            <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-misc</artifactId>
         </dependency>
         <dependency>
+            <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+            <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-backward-codecs</artifactId>
         </dependency>
@@ -1797,50 +1820,6 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-envers</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-engine</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-orm</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-backend-jms</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-serialization-avro</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

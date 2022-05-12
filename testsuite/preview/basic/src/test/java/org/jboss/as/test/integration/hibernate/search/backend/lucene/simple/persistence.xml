@@ -11,7 +11,12 @@
                         <property name="wildfly.jpa.hibernate.search.module" value="none" />
             -->
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
-            <property name="hibernate.search.default.directory_provider" value="ram"/>
+            <property name="hibernate.search.schema_management.strategy" value="drop-and-create-and-drop"/>
+            <property name="hibernate.search.backend.type" value="lucene"/>
+            <property name="hibernate.search.backend.lucene_version" value="LUCENE_CURRENT"/>
+            <property name="hibernate.search.backend.directory.type" value="local-heap"/>
+            <property name="hibernate.search.backend.analysis.configurer"
+                      value="org.jboss.as.test.integration.hibernate.search.backend.lucene.simple.AnalysisConfigurer"/>
         </properties>
     </persistence-unit>
 </persistence>

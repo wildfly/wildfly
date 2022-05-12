@@ -196,10 +196,40 @@ public class Configuration {
     public static final String HIBERNATE_SEARCH_MODULE = "wildfly.jpa.hibernate.search.module";
 
     /**
-     * name of the Hibernate Search module name
+     * name of the legacy Hibernate Search module providing the ORM mapper
+     * only useful for Hibernate Search 5.x.
      */
-    public static final String PROVIDER_MODULE_HIBERNATE_SEARCH = "org.hibernate.search.orm";
+    public static final String HIBERNATE_SEARCH_MODULE_MAPPER_ORM_LEGACY = "org.hibernate.search.orm";
 
+    /**
+     * name of the Hibernate Search module providing the ORM mapper
+     */
+    public static final String HIBERNATE_SEARCH_MODULE_MAPPER_ORM = "org.hibernate.search.mapper.orm";
+
+    /**
+     * name of the Hibernate Search module providing the Lucene backend
+     */
+    public static final String HIBERNATE_SEARCH_MODULE_BACKEND_LUCENE = "org.hibernate.search.backend.lucene";
+
+    /**
+     * name of the Hibernate Search module providing the Elasticsearch backend
+     */
+    public static final String HIBERNATE_SEARCH_MODULE_BACKEND_ELASTICSEARCH = "org.hibernate.search.backend.elasticsearch";
+
+    /**
+     * name of the Hibernate Search configuration property allowing to set the backend type
+     */
+    public static final String HIBERNATE_SEARCH_BACKEND_TYPE = "hibernate.search.backend.type";
+
+    /**
+     * The value of the {@link #HIBERNATE_SEARCH_BACKEND_TYPE} property that identifies the use of a Lucene backend.
+     */
+    public static final String HIBERNATE_SEARCH_BACKEND_TYPE_VALUE_LUCENE = "lucene";
+
+    /**
+     * The value of the {@link #HIBERNATE_SEARCH_BACKEND_TYPE} property that identifies the use of an Elasticsearch backend.
+     */
+    public static final String HIBERNATE_SEARCH_BACKEND_TYPE_VALUE_ELASTICSEARCH = "elasticsearch";
 
     private static final String EE_DEFAULT_DATASOURCE = "java:comp/DefaultDataSource";
     // key = provider class name, value = module name

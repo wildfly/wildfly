@@ -54,6 +54,9 @@
         <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.persistence>3.0.0</version.jakarta.persistence>
         <version.jakarta.transaction.jakarta-transaction-api>2.0.0</version.jakarta.transaction.jakarta-transaction-api>
+        <version.org.apache.lucene>8.11.1</version.org.apache.lucene>
+        <version.org.hibernate>6.0.0.Final</version.org.hibernate>
+        <version.org.hibernate.search>6.1.4.Final</version.org.hibernate.search>
     </properties>
 
     <dependencyManagement>
@@ -74,6 +77,128 @@
                 <groupId>jakarta.inject</groupId>
                 <artifactId>jakarta.inject-api</artifactId>
                 <version>${version.jakarta.inject.jakarta.inject-api}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${version.org.hibernate}</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- Unfortunately we cannot move this dependency management to any of the parent POMs,
+                 because it would override the version some transitive dependencies of test dependencies in ee8 tests,
+                 which would break ee8 tests.
+                 In particular the transitive dependencies of org.infinispan:infinispan-server-testdriver-junit4
+                 to Hibernate Search would get overriden to use 5.x instead of 6.x,
+                 which definitely will not work.
+                 So, we have to duplicate the dependency management: once in ee9/pom.xml and once here. -->
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-util-common</artifactId>
+                <version>${version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-engine</artifactId>
+                <version>${version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-backend-elasticsearch</artifactId>
+                <version>${version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-backend-lucene</artifactId>
+                <version>${version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-mapper-pojo-base</artifactId>
+                <version>${version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-mapper-orm-orm6</artifactId>
+                <version>${version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- These dependencies are not present in WildFly itself, only in integration tests. -->
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
+                <version>${version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-v5migrationhelper-engine</artifactId>
+                <version>${version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-v5migrationhelper-orm-orm6</artifactId>
+                <version>${version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>

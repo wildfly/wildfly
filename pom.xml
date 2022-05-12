@@ -299,6 +299,8 @@
          -->
         <version.antlr>2.7.7</version.antlr>
         <version.com.beust>1.78</version.com.beust>
+        <version.com.carrotsearch.hppc>0.8.1</version.com.carrotsearch.hppc>
+        <version.org.elasticsearch.client.rest-client>7.16.3</version.org.elasticsearch.client.rest-client>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.12.6</version.com.fasterxml.jackson>
         <version.com.fasterxml.jackson.databind>2.12.6.1</version.com.fasterxml.jackson.databind>
@@ -384,7 +386,7 @@
         <version.net.shibboleth.utilities.java-support>7.3.0</version.net.shibboleth.utilities.java-support>
         <version.org.apache.activemq.artemis>2.19.1</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>1.0.2</version.org.apache.activemq.artemis.native>
-        <version.org.apache.avro>1.7.6</version.org.apache.avro>
+        <version.org.apache.avro>1.11.0</version.org.apache.avro>
         <version.org.apache.cxf>3.5.1</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.3.1</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M24</version.org.apache.ds>
@@ -1755,6 +1757,12 @@
                 <artifactId>jcommander</artifactId>
                 <version>${version.com.beust}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.carrotsearch</groupId>
+                <artifactId>hppc</artifactId>
+                <version>${version.com.carrotsearch.hppc}</version>
             </dependency>
 
             <dependency>
@@ -3577,14 +3585,6 @@
                 <artifactId>avro</artifactId>
                 <version>${version.org.apache.avro}</version>
                 <exclusions>
-                    <exclusion>
-                        <groupId>com.thoughtworks.paranamer</groupId>
-                        <artifactId>paranamer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.xerial.snappy</groupId>
-                        <artifactId>snappy-java</artifactId>
-                    </exclusion>
                     <exclusion>
                         <groupId>org.apache.commons</groupId>
                         <artifactId>commons-compress</artifactId>
@@ -6379,6 +6379,8 @@
                 <version>${version.org.apache.lucene}</version>
             </dependency>
             <dependency>
+                <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+                <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-backward-codecs</artifactId>
                 <version>${version.org.apache.lucene}</version>
@@ -6394,6 +6396,8 @@
                 <version>${version.org.apache.lucene}</version>
             </dependency>
             <dependency>
+                <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+                <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-misc</artifactId>
                 <version>${version.org.apache.lucene}</version>
@@ -6411,6 +6415,21 @@
                     <exclusion>
                         <groupId>org.apache.lucene</groupId>
                         <artifactId>lucene-sandbox</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-join</artifactId>
+                <version>${version.org.apache.lucene}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.lucene</groupId>
+                        <artifactId>lucene-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.lucene</groupId>
+                        <artifactId>lucene-grouping</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -6955,6 +6974,32 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+
+            <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>elasticsearch-rest-client</artifactId>
+                <version>${version.org.elasticsearch.client.rest-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>elasticsearch-rest-client-sniffer</artifactId>
+                <version>${version.org.elasticsearch.client.rest-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>com.github.tomakehurst</groupId>
                 <artifactId>wiremock</artifactId>
@@ -7129,12 +7174,16 @@
             </dependency>
 
             <dependency>
+                <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+                <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-backend-jms</artifactId>
                 <version>${version.org.hibernate.search}</version>
             </dependency>
 
             <dependency>
+                <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+                <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-engine</artifactId>
                 <version>${version.org.hibernate.search}</version>
@@ -7147,6 +7196,8 @@
             </dependency>
 
             <dependency>
+                <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+                <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-orm</artifactId>
                 <version>${version.org.hibernate.search}</version>
@@ -7179,6 +7230,8 @@
             </dependency>
 
             <dependency>
+                <!-- Legacy dependency, useful for Hibernate Search 5 only -->
+                <!-- TODO WFLY-16362: Remove before WildFly 27 is released -->
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-serialization-avro</artifactId>
                 <version>${version.org.hibernate.search}</version>

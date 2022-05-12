@@ -19,22 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.hibernate.search;
+package org.jboss.as.test.integration.hibernate.search.backend.elasticsearch.simple;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import org.hibernate.search.engine.search.common.BooleanOperator;
+import org.hibernate.search.mapper.orm.Search;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.CriteriaDelete;
+import jakarta.transaction.Transactional;
 import java.util.List;
-import javax.ejb.Stateful;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.TermQuery;
-
-import org.hibernate.search.SearchFactory;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.FullTextQuery;
-import org.hibernate.search.jpa.Search;
-
-@Stateful
+@ApplicationScoped
+@Transactional
 public class SearchBean {
 
     @PersistenceContext
@@ -46,15 +44,26 @@ public class SearchBean {
         em.persist(book);
     }
 
-    public List<Book> findByKeyword(String keyword) {
-        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
-        TermQuery termQuery = new TermQuery(new Term("title", keyword));
-        FullTextQuery fullTextQuery = fullTextEntityManager.createFullTextQuery(termQuery, Book.class);
-        return fullTextQuery.getResultList();
+    public void deleteAll() {
+        CriteriaDelete<Book> delete = em.getCriteriaBuilder()
+                .createCriteriaDelete(Book.class);
+        delete.from(Book.class);
+        em.createQuery(delete).executeUpdate();
+        Search.session(em).workspace(Book.class).purge();
     }
 
-    public SearchFactory retrieveHibernateSearchEngine() {
-        return Search.getFullTextEntityManager(em).getSearchFactory();
+    public List<Book> findByKeyword(String keyword) {
+        return Search.session(em).search(Book.class)
+                .where(f -> f.match().field("title").matching(keyword))
+                .fetchAllHits();
+    }
+
+    public List<Book> findAutocomplete(String term) {
+        return Search.session(em).search(Book.class)
+                .where(f -> f.simpleQueryString().field("title_autocomplete")
+                        .matching(term)
+                        .defaultOperator(BooleanOperator.AND))
+                .fetchAllHits();
     }
 
 }
