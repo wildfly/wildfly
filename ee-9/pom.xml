@@ -116,7 +116,7 @@
         <version.org.hibernate.commons.annotations>5.1.2.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>6.1.4.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>8.0.0.Alpha3</version.org.hibernate.validator>
-        <version.org.jberet>2.0.4.Final</version.org.jberet>
+        <version.org.jberet>2.1.0.Beta1</version.org.jberet>
         <version.org.jboss.invocation>1.7.0.Final</version.org.jboss.invocation>
         <version.org.jboss.resteasy.6>6.1.0.Beta2</version.org.jboss.resteasy.6>
         <version.org.jboss.resteasy.microprofile>2.0.0.Beta1</version.org.jboss.resteasy.microprofile>
