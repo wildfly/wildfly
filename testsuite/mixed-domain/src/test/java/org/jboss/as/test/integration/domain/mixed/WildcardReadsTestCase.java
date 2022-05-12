@@ -349,7 +349,7 @@ public class WildcardReadsTestCase {
         assertEquals(resp.toString(), 1, masterCount);
         assertNotNull(resp.toString(), slaveResult);
 
-        // Now limit the result to slaves
+        // Now limit the result to secondary hosts
         op.get(WHERE, MASTER).set(false);
         resp = executeForResult(op);
         assertEquals(resp.toString(), 1, resp.asInt());

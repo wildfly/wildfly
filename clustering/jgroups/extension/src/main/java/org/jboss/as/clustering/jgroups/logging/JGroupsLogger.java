@@ -129,7 +129,7 @@ public interface JGroupsLogger extends BasicLogger {
 //    @Message(id = 20, value = "Unable to load protocol class %s")
 //    String unableToLoadProtocol(String protocolName);
 
-    @Message(id = 21, value = "Attributes referencing threads subsystem can only be used to support older slaves in the domain.")
+    @Message(id = 21, value = "Attributes referencing threads subsystem can only be used to support older secondary hosts in the domain.")
     String threadsAttributesUsedInRuntime();
 
     @Message(id = 22, value = "%s entry not found in configured key store")

@@ -94,7 +94,7 @@ public abstract class DomainHostExcludesTest {
 
         testSupport = MixedDomainTestSuite.getSupport(clazz);
 
-        // note that some of these 7+ specific changes may warrant creating a newer version of testing-host.xml for the newer slaves
+        // note that some of these 7+ specific changes may warrant creating a newer version of testing-host.xml for the newer secondary hosts
         // at some point (the currently used host.xml is quite an old version). If these exceptions become more complicated than this, we should
         // probably do that.
 

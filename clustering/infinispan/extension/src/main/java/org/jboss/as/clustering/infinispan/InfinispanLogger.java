@@ -126,7 +126,7 @@ public interface InfinispanLogger extends BasicLogger {
     String indeterminiteStack();
 
     @LogMessage(level = WARN)
-    @Message(id = 28, value = "Executor configuration '%s' was deprecated and will only be used to support legacy slaves in the domain.")
+    @Message(id = 28, value = "Executor configuration '%s' was deprecated and will only be used to support legacy secondary hosts in the domain.")
     void executorIgnored(String executorName);
 
     @LogMessage(level = INFO)
