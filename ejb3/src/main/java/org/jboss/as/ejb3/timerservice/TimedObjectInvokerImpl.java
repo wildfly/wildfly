@@ -30,13 +30,13 @@ import java.util.Map;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -95,7 +95,7 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Service<Timed
         }
         context.setTimer(timer);
         context.putPrivateData(Component.class, ejbComponent.getValue());
-        context.putPrivateData(MethodIntf.class, MethodIntf.TIMER);
+        context.putPrivateData(MethodInterfaceType.class, MethodInterfaceType.Timer);
         context.putPrivateData(InvocationType.class, InvocationType.TIMER);
         interceptor.processInvocation(context);
     }

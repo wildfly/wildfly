@@ -26,6 +26,7 @@
 
     <resources>
         <artifact name="${jakarta.enterprise:jakarta.enterprise.cdi-api}"/>
+        <artifact name="${jakarta.enterprise:jakarta.enterprise.lang-model}"/>
     </resources>
 
     <dependencies>

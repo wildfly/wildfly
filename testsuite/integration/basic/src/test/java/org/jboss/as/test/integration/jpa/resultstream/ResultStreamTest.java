@@ -54,7 +54,7 @@ public class ResultStreamTest {
 
     @TransactionAttribute(TransactionAttributeType.NEVER)
     public Stream getTicketStreamOrderedById() {
-        return em.createQuery( "from Ticket t order by t.id" ).getResultStream();
+        return em.createQuery( "select t from Ticket t order by t.id" ).getResultStream();
     }
 
     public void deleteTickets() {

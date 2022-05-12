@@ -2,6 +2,28 @@
 <licenseSummary>
   <dependencies>
     <dependency>
+      <groupId>antlr</groupId>
+      <artifactId>antlr4</artifactId>
+      <licenses>
+        <license>
+          <name>The Antlr4 4.9.1 License</name>
+          <url>https://github.com/antlr/antlr4/blob/4.9.1/LICENSE.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
+      <licenses>
+        <license>
+          <name>The antlr4-runtime 4.9.1 License</name>
+          <url>https://github.com/antlr/antlr4/blob/4.9.1/LICENSE.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>io.undertow</groupId>
       <artifactId>undertow-servlet-jakarta</artifactId>
       <licenses>
@@ -463,6 +485,28 @@
         <license>
           <name>GNU General Public License v2.0 only, with Classpath exception</name>
           <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.weld</groupId>
+      <artifactId>weld-lite-extension-translator</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jipijapa-hibernate6</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>

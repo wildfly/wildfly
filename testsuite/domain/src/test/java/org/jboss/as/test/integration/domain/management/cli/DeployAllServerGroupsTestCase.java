@@ -21,14 +21,13 @@
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
+import static org.jboss.as.test.integration.domain.util.EENamespaceTransformer.jakartaTransform;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Assert;
 
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
@@ -37,9 +36,10 @@ import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -49,7 +49,6 @@ import org.junit.Test;
  */
 public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
 
-    private static WebArchive war;
     private static File warFile;
 
     @BeforeClass
@@ -57,12 +56,14 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
 
         CLITestSuite.createSupport(DeployAllServerGroupsTestCase.class.getSimpleName());
 
-        war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebResource(new StringAsset("Version1"), "page.html");
         String tempDir = System.getProperty("java.io.tmpdir");
         warFile = new File(tempDir, "SimpleServlet.war");
-        new ZipExporterImpl(war).exportTo(warFile, true);
+
+        jakartaTransform(war.as(ZipExporter.class), warFile);
+        //new ZipExporterImpl(war).exportTo(warFile, true);
 
         AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
     }
@@ -97,10 +98,11 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
         checkURL("/SimpleServlet/page.html", "Version1");
 
         // update the deployment - replace page.html
-        war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebResource(new StringAsset("Version2"), "page.html");
-        new ZipExporterImpl(war).exportTo(warFile, true);
+        //new ZipExporterImpl(war).exportTo(warFile, true);
+        jakartaTransform(war.as(ZipExporter.class), warFile);
 
 
         // redeploy to all servers

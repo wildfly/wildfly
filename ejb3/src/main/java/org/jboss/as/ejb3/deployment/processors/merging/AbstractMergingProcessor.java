@@ -28,9 +28,8 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -104,30 +103,9 @@ public abstract class AbstractMergingProcessor<T extends EJBComponentDescription
      */
     protected abstract void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final T description) throws DeploymentUnitProcessingException;
 
-
-    protected MethodIntf getMethodIntf(final MethodInterfaceType viewType, final MethodIntf defaultMethodIntf) {
-        if (viewType == null) {
-            return defaultMethodIntf;
-        }
-        switch (viewType) {
-            case Home:
-                return MethodIntf.HOME;
-            case LocalHome:
-                return MethodIntf.LOCAL_HOME;
-            case ServiceEndpoint:
-                return MethodIntf.SERVICE_ENDPOINT;
-            case Local:
-                return MethodIntf.LOCAL;
-            case Remote:
-                return MethodIntf.REMOTE;
-            case Timer:
-                return MethodIntf.TIMER;
-            case MessageEndpoint:
-                return MethodIntf.MESSAGE_ENDPOINT;
-        }
-        return defaultMethodIntf;
+    protected MethodInterfaceType getMethodIntf(final MethodInterfaceType viewType, final MethodInterfaceType defaultMethodIntf) {
+        return viewType == null ? defaultMethodIntf : viewType;
     }
-
 
     protected String[] getMethodParams(MethodParametersMetaData methodParametersMetaData) {
         if (methodParametersMetaData == null) {

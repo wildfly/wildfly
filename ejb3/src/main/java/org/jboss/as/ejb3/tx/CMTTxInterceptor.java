@@ -41,13 +41,13 @@ import javax.transaction.Transaction;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.MethodIntfHelper;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.wildfly.transaction.client.AbstractTransaction;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
@@ -135,7 +135,7 @@ public class CMTTxInterceptor implements Interceptor {
         final ContextTransactionManager tm = ContextTransactionManager.getInstance();
         final int oldTimeout = tm.getTransactionTimeout();
         try {
-            final MethodIntf methodIntf = MethodIntfHelper.of(invocation);
+            final MethodInterfaceType methodIntf = MethodIntfHelper.of(invocation);
             final Method method = invocation.getMethod();
             final TransactionAttributeType attr = component.getTransactionAttributeType(methodIntf, method);
             final int timeoutInSeconds = component.getTransactionTimeout(methodIntf, method);

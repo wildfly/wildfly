@@ -41,8 +41,8 @@ import javax.persistence.OneToMany;
  */
 @Entity
 @NamedQueries(
-        {@NamedQuery(name = "allCustomers", query = "from Customer"),
-                @NamedQuery(name = "customerById", query = "from Customer c where c.id=:id")})
+        {@NamedQuery(name = "allCustomers", query = "select c from Customer c"),
+                @NamedQuery(name = "customerById", query = "select c from Customer c where c.id=:id")})
 public class Customer {
 
     private Long id;

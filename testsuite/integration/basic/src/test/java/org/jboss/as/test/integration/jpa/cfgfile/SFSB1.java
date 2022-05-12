@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.jpa.cfgfile;
 
-import java.util.Map;
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -48,11 +47,6 @@ public class SFSB1 {
 
     public Employee getEmployeeNoTX(int id) {
         return em.find(Employee.class, id, LockModeType.NONE);
-    }
-
-
-    public Map<String, Object> getEMFProperties() {
-        return em.getEntityManagerFactory().getProperties();
     }
 
 }

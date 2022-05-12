@@ -22,15 +22,16 @@
 package org.jboss.as.ejb3.component;
 
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 
 /**
  * @author Stuart Douglas
  */
 public class MethodTransactionAttributeKey {
-    private final MethodIntf methodIntf;
+    private final MethodInterfaceType methodIntf;
     private final MethodIdentifier methodIdentifier;
 
-    public MethodTransactionAttributeKey(final MethodIntf methodIntf, final MethodIdentifier methodIdentifier) {
+    public MethodTransactionAttributeKey(final MethodInterfaceType methodIntf, final MethodIdentifier methodIdentifier) {
         this.methodIntf = methodIntf;
         this.methodIdentifier = methodIdentifier;
     }
@@ -39,7 +40,7 @@ public class MethodTransactionAttributeKey {
         return methodIdentifier;
     }
 
-    public MethodIntf getMethodIntf() {
+    public MethodInterfaceType getMethodIntf() {
         return methodIntf;
     }
 

@@ -42,7 +42,8 @@
         <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
 
         <!-- Version properties for dependency management items -->
-        <version.com.sun.faces>3.0.2.SP01</version.com.sun.faces>
+        <version.com.sun.faces>4.0.0-M6.SP01</version.com.sun.faces>
+        <version.antlr>4.9.1</version.antlr>
         <version.com.sun.istack>4.0.1</version.com.sun.istack>
         <version.com.sun.xml.messaging.saaj>2.0.0.SP1</version.com.sun.xml.messaging.saaj>
         <version.jakarta.activation.jakarta.activation-api>2.1.0</version.jakarta.activation.jakarta.activation-api>
@@ -53,8 +54,8 @@
         <version.jakarta.ejb.jakarta-ejb-api>4.0.0</version.jakarta.ejb.jakarta-ejb-api>
         <version.jakarta.el.jakarta-el-api>5.0.0-RC1</version.jakarta.el.jakarta-el-api>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
-        <version.jakarta.enterprise>4.0.0-RC2</version.jakarta.enterprise>
-        <version.jakarta.faces.jakarta-faces-api>3.0.0</version.jakarta.faces.jakarta-faces-api>
+        <version.jakarta.enterprise>4.0.0</version.jakarta.enterprise>
+        <version.jakarta.faces.jakarta-faces-api>4.0.0-M6</version.jakarta.faces.jakarta-faces-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.1</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.interceptor.jakarta-interceptors-api>2.1.0</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.jms.jakarta-jms-api>3.0.0</version.jakarta.jms.jakarta-jms-api>
@@ -62,7 +63,7 @@
         <version.jakarta.json.bind.api>3.0.0</version.jakarta.json.bind.api>
         <version.jakarta.json.jakarta-json-api>2.1.0</version.jakarta.json.jakarta-json-api>
         <version.jakarta.jws.jakarta-jws-api>3.0.0</version.jakarta.jws.jakarta-jws-api>
-        <version.jakarta.persistence>3.0.0</version.jakarta.persistence>
+        <version.jakarta.persistence>3.1.0</version.jakarta.persistence>
         <version.jakarta.resource.jakarta-resource-api>2.0.0</version.jakarta.resource.jakarta-resource-api>
         <version.jakarta.security.enterprise>2.0.0</version.jakarta.security.enterprise>
         <version.jakarta.servlet.jakarta-servlet-api>5.0.0</version.jakarta.servlet.jakarta-servlet-api>
@@ -88,6 +89,7 @@
         <version.org.eclipse.microprofile.metrics.api>4.0</version.org.eclipse.microprofile.metrics.api>
         <version.org.eclipse.microprofile.openapi>3.0</version.org.eclipse.microprofile.openapi>
         <version.org.eclipse.microprofile.opentracing>3.0</version.org.eclipse.microprofile.opentracing>
+        <version.org.eclipse.microprofile.reactive-messaging.api>3.0-RC2</version.org.eclipse.microprofile.reactive-messaging.api>
         <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
         <!-- Implementations -->
         <version.io.smallrye.open-api>3.0.0-RC1</version.io.smallrye.open-api>
@@ -98,6 +100,7 @@
         <version.io.smallrye.smallrye-jwt>4.0.0-RC1</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>4.0.0-RC1</version.io.smallrye.smallrye-metrics>
         <version.io.smallrye.smallrye-opentracing>3.0.0-RC1</version.io.smallrye.smallrye-opentracing>
+        <version.io.smallrye.smallrye-reactive-messaging>4.0.0.RC1</version.io.smallrye.smallrye-reactive-messaging>
         <!-- MP5 - END -->
         <version.org.eclipse.yasson>3.0.0-RC1</version.org.eclipse.yasson>
         <version.org.eclipselink.version>3.0.2</version.org.eclipselink.version>
@@ -106,23 +109,26 @@
         <!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
 		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
         <version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</version.org.glassfish.jaxb.jaxb-xjc>
+        <version.org.glassfish.soteria>2.0.1</version.org.glassfish.soteria>
         <version.org.glassfish.web.jakarta.servlet.jsp.jstl>2.0.0</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
+        <version.org.hibernate>6.0.0.Final</version.org.hibernate>
+        <version.org.hibernate.commons.annotations>5.1.2.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.validator>8.0.0.Alpha3</version.org.hibernate.validator>
         <version.org.jberet>2.0.4.Final</version.org.jberet>
         <version.org.jboss.invocation>1.7.0.Final</version.org.jboss.invocation>
         <version.org.jboss.resteasy.6>6.1.0.Beta2</version.org.jboss.resteasy.6>
         <version.org.jboss.resteasy.microprofile>2.0.0.Beta1</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.resteasy.spring>3.0.0.Alpha3</version.org.jboss.resteasy.spring>
-        <version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>3.0.0</version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec>
+        <version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>4.0.0.Alpha1</version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>
         <version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec>
         <version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>
-        <version.org.jboss.weld.weld>5.0.0.Beta1</version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld-api>5.0.Beta5</version.org.jboss.weld.weld-api>
+        <version.org.jboss.weld.weld>5.0.0.SP1</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>5.0.Final</version.org.jboss.weld.weld-api>
         <version.org.jvnet.staxex>2.0.1</version.org.jvnet.staxex>
         <version.org.wildfly.security.elytron>2.0.0.Beta1</version.org.wildfly.security.elytron>
         <version.org.wildfly.security.elytron-mp>2.0.0.Beta3</version.org.wildfly.security.elytron-mp>
-        <version.org.wildfly.security.elytron-web>2.0.0.Beta2</version.org.wildfly.security.elytron-web>
-        <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta2</version.org.wildfly.security.jakarta.elytron-ee>
+        <version.org.wildfly.security.elytron-web>2.0.0.Beta3</version.org.wildfly.security.elytron-web>
+        <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta3</version.org.wildfly.security.jakarta.elytron-ee>
 
         <!-- TODO Glassfish uses org.glassfish:jakarta-el for this, which we use for the impl
              but we have a separate API jar -->
@@ -139,6 +145,30 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4</artifactId>
+                <version>${version.antlr}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-runtime</artifactId>
+                <version>${version.antlr}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>com.fasterxml.jackson.jaxrs</groupId>
                 <artifactId>jackson-jaxrs-base</artifactId>
@@ -362,7 +392,53 @@
                 <artifactId>smallrye-opentracing-contrib</artifactId>
                 <version>${version.io.smallrye.smallrye-opentracing}</version>
             </dependency>
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>smallrye-reactive-messaging-api</artifactId>
+                <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>smallrye-reactive-messaging-kafka</artifactId>
+                <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>smallrye-reactive-messaging-kafka-api</artifactId>
+                <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>smallrye-reactive-messaging-provider</artifactId>
+                <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
             <dependency>
                 <groupId>jakarta.annotation</groupId>
                 <artifactId>jakarta.annotation-api</artifactId>
@@ -425,20 +501,20 @@
             </dependency>
 
             <dependency>
-                <groupId>jakarta.el</groupId>
-                <artifactId>jakarta.el-api</artifactId>
-                <version>${version.jakarta.el.jakarta-el-api}</version>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                <version>${version.jakarta.enterprise}</version>
                 <exclusions>
                     <exclusion>
-                        <artifactId>*</artifactId>
                         <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
 
             <dependency>
                 <groupId>jakarta.enterprise</groupId>
-                <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                <artifactId>jakarta.enterprise.lang-model</artifactId>
                 <version>${version.jakarta.enterprise}</version>
                 <exclusions>
                     <exclusion>
@@ -801,6 +877,67 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.hibernate.common</groupId>
+                <artifactId>hibernate-commons-annotations</artifactId>
+                <version>${version.org.hibernate.commons.annotations}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${version.org.hibernate}</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-envers</artifactId>
+                <version>${version.org.hibernate}</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>jipijapa-hibernate6</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.soteria</groupId>
+                <artifactId>jakarta.security.enterprise</artifactId>
+                <version>${version.org.glassfish.soteria}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
             <dependency>
                 <groupId>org.glassfish.web</groupId>
@@ -996,8 +1133,8 @@
 
             <dependency>
                 <groupId>org.jboss.spec.jakarta.el</groupId>
-                <artifactId>jboss-el-api_4.0_spec</artifactId>
-                <version>${version.org.jboss.spec.jakarta.el.jboss-el-api_4.0_spec}</version>
+                <artifactId>jboss-el-api_5.0_spec</artifactId>
+                <version>${version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1005,6 +1142,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
                 <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
                 <artifactId>jboss-jakarta-xml-ws-api_3.0_spec</artifactId>
@@ -1270,6 +1408,18 @@
 
             <dependency>
                 <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-lite-extension-translator</artifactId>
+                <version>${version.org.jboss.weld.weld}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-spi</artifactId>
                 <version>${version.org.jboss.weld.weld-api}</version>
                 <exclusions>
@@ -1377,6 +1527,19 @@
                 </exclusions>
             </dependency>
 
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-testsuite-shared-jakarta</artifactId>
+                <version>${ee.maven.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-undertow-jakarta</artifactId>

@@ -1,5 +1,15 @@
 package org.jboss.as.test.integration.jsf.duplicateid;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -15,39 +25,37 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.jsf.duplicateid.deployment.IncludeBean;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 /**
  * Test case based on reproducer for https://issues.jboss.org/browse/JBEAP-10758
- *
+ * <p>
  * Original reproducer: https://github.com/tuner/mojarra-dynamic-include-reproducer
  * Original reproducer author: Kari Lavikka <tuner@bdb.fi>
  *
  * @author Jan Kasik <jkasik@redhat.com>
- *
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class DuplicateIDIntegrationTestCase {
+
+    // TODO: Disable this test for now. The inclusion of javax.* strings in static resources is troublesome, but we can
+    // fix that once main is switched to EE 10 and we no longer need to support
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeNotWildFlyPreview();
+    }
 
     private static final Logger log = LoggerFactory.getLogger(DuplicateIDIntegrationTestCase.class);
 

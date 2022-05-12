@@ -26,13 +26,12 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-ee-9-source-transform-parent</artifactId>
+        <artifactId>wildfly-jsf-parent-jakarta</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>27.0.0.Beta1-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <packaging>jar</packaging>
@@ -76,7 +75,7 @@
 
         <dependency>
             <groupId>org.jboss.spec.jakarta.el</groupId>
-            <artifactId>jboss-el-api_4.0_spec</artifactId>
+            <artifactId>jboss-el-api_5.0_spec</artifactId>
         </dependency>
 
         <dependency>
@@ -132,4 +131,40 @@
         </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.gmaven</groupId>
+                <artifactId>groovy-maven-plugin</artifactId>
+                <version>2.1.1</version>
+                <executions>
+                    <execution>
+                        <id>delete-old-file</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <source>
+                                def toDelete = [
+                                    "org/jboss/as/jsf/injection/AnnotationMap.java",
+                                    "org/jboss/as/jsf/injection/weld/legacy/"
+                                ]
+                                toDelete.forEach {
+                                    def file = new File(project.build.getDirectory() + "/generated-sources/transformed/" + it)
+                                    if (file.isDirectory()) {
+                                        file.deleteDir()
+                                    } else {
+                                        file.delete()
+                                    }
+                                }
+                            </source>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
 </project>

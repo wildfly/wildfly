@@ -3452,20 +3452,11 @@
                                         <exclude>org/jboss/as/test/integration/ejb/transaction/mdb/timeout/MessageDriven*TimeoutTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/cli/JmsTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/**/*TestCase.java</exclude><!-- TODO be more precise about what is excluded -->
-                                        <!-- Requires legacy security -->
-                                        <exclude>org/jboss/as/test/integration/ejb/security/LdapLegacyTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ejb/security/RunAsPrincipalCustomDomainTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ejb/security/callerprincipal/GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainDotNameTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/web/security/runas/WebSecurityRunAsTestCase.java</exclude>
                                         <!-- Requires JSR77 -->
                                         <exclude>org/jboss/as/test/integration/jsr77/*TestCase.java</exclude>
                                         <!-- TODO figure out the problem -->
                                         <exclude>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</exclude><!-- probably mdb -->
                                         <exclude>org/jboss/as/test/integration/ejb/pool/lifecycle/PooledEJBLifecycleTestCase.java</exclude><!-- probably mdb -->
-                                        <exclude>org/jboss/as/test/integration/ejb/security/In*Ann*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ejb/security/SaslLegacyMechanismConfigurationTestCase.java</exclude><!-- wants legacy security but the EE9 remoting config is probably wrong too -->
-                                        <exclude>org/jboss/as/test/integration/ejb/security/SingleMethodsAnn*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jmx/full/JMXFilterTestCase.java</exclude><!-- Uses jsr77 subsystem as test subject -->
                                         <exclude>org/jboss/as/test/integration/management/cli/DeploymentOverlayCLITestCase.java</exclude><!-- use of unmanaged (exploded) deployments?? -->
                                         <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude><!-- Problem is probably MDB use -->
@@ -3530,19 +3521,6 @@
                                         <exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
                                         <!-- Test involves server side EE 9 types propagating to @RunAsClient EE 8 test -->
                                         <exclude>org/jboss/as/test/integration/ejb/transaction/exception/TxExceptionEjbClientTestCase.java</exclude>
-                                        <!-- Requires legacy security -->
-                                        <exclude>org/jboss/as/test/integration/ejb/container/interceptor/security/SwitchIdentityTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ejb/container/interceptor/security/api/SwitchIdentityTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainDotNameTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/aselytron/SecurityDomainAsElytronSecurityRealmTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/auditing/SecurityAuditingTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/auditing/CustomAuditProviderModuleTest.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/cli/JsseTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/context/ReuseAuthenticatedSubjectTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/jaas/JAASIdentityCachingTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/security/jaspi/*TestCase.java</exclude>
-                                        <exclude>org/wildfly/test/elytron/intermediate/*TestCase.java</exclude>
                                         <!-- No agroal -->
                                         <exclude>org/wildfly/test/integration/agroal/*TestCase.java</exclude>
                                         <!-- No Hibernate 5.0 module -->

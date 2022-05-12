@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.component.messagedriven;
 import static org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT;
 
 import java.util.Properties;
-
 import javax.ejb.MessageDrivenBean;
 import javax.ejb.TransactionManagementType;
 import javax.resource.spi.ResourceAdapter;
@@ -45,13 +44,12 @@ import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.tx.CMTTxInterceptor;
 import org.jboss.as.ejb3.tx.EjbBMTInterceptor;
 import org.jboss.as.ejb3.tx.LifecycleCMTTxInterceptor;
@@ -66,6 +64,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -113,7 +112,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
         this.messageListenerInterfaceName = messageListenerInterfaceName;
         this.defaultMdbPoolAvailable = defaultMdbPoolAvailable;
 
-        registerView(getEJBClassName(), MethodIntf.MESSAGE_ENDPOINT);
+        registerView(getEJBClassName(), MethodInterfaceType.MessageEndpoint);
         // add the interceptor which will invoke the setMessageDrivenContext() method on a MDB which implements
         // MessageDrivenBean interface
         this.addSetMessageDrivenContextMethodInvocationInterceptor();

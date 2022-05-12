@@ -68,7 +68,7 @@ public interface SingletonLogger extends BasicLogger {
     void serviceStartFailed(@Cause StartException e, String service);
 
     @LogMessage(level = WARN)
-    @Message(id = 6, value = "Failed to reach quorum of %2$d for %1$s service. No singleton master will be elected.")
+    @Message(id = 6, value = "Failed to reach quorum of %2$d for %1$s service. No primary singleton provider will be elected.")
     void quorumNotReached(String service, int quorum);
 
     @LogMessage(level = INFO)
