@@ -35,9 +35,6 @@ end-if
 # enable audit-log records
 /core-service=management/access=audit/logger=audit-log:write-attribute(name=enabled,value=true)
 
-# remove Silent Authentication from Default Management Security Realm
-/core-service=management/security-realm=ManagementRealm/authentication=local:remove
-
 # remove Silent Authentication from Default Application Security Realm
 /core-service=management/security-realm=ApplicationRealm/authentication=local:remove
 
