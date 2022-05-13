@@ -136,7 +136,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
 
     private final SecurityDomain securityDomain;
     private final boolean enableJacc;
-    private SecurityIdentity incomingRunAsIdentity;
+    private ThreadLocal<SecurityIdentity> incomingRunAsIdentity;
     private final Function<SecurityIdentity, Set<SecurityIdentity>> identityOutflowFunction;
     private final boolean securityRequired;
     private final EJBComponentDescription componentDescription;
@@ -193,7 +193,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         this.securityDomain = ejbComponentCreateService.getSecurityDomain();
         this.enableJacc = ejbComponentCreateService.isEnableJacc();
         this.legacyCompliantPrincipalPropagation = ejbComponentCreateService.isLegacyCompliantPrincipalPropagation();
-        this.incomingRunAsIdentity = null;
+        this.incomingRunAsIdentity = new ThreadLocal<>();
         this.identityOutflowFunction = ejbComponentCreateService.getIdentityOutflowFunction();
         this.securityRequired = ejbComponentCreateService.isSecurityRequired();
         this.componentDescription = ejbComponentCreateService.getComponentDescription();
@@ -294,11 +294,15 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     }
 
     public SecurityIdentity getIncomingRunAsIdentity() {
-        return incomingRunAsIdentity;
+        return incomingRunAsIdentity.get();
     }
 
     public void setIncomingRunAsIdentity(SecurityIdentity identity) {
-        this.incomingRunAsIdentity = identity;
+        if (identity == null) {
+            incomingRunAsIdentity.remove();
+        } else {
+            incomingRunAsIdentity.set(identity);
+        }
     }
 
     protected TransactionAttributeType getCurrentTransactionAttribute() {
@@ -658,10 +662,10 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         InvocationType invocationType = CurrentInvocationContext.get().getPrivateData(InvocationType.class);
         boolean isRemote = invocationType != null && invocationType.equals(InvocationType.REMOTE);
         if (legacyCompliantPrincipalPropagation && !isRemote) {
-            return (incomingRunAsIdentity == null) ? securityDomain.getCurrentSecurityIdentity() : incomingRunAsIdentity;
+            return (getIncomingRunAsIdentity() == null) ? securityDomain.getCurrentSecurityIdentity() : getIncomingRunAsIdentity();
         } else {
-            if (incomingRunAsIdentity != null) {
-                return incomingRunAsIdentity;
+            if (getIncomingRunAsIdentity() != null) {
+                return getIncomingRunAsIdentity();
             } else if (securityRequired) {
                 return securityDomain.getCurrentSecurityIdentity();
             } else {
