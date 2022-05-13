@@ -298,10 +298,6 @@
                            <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
                            <org.wildfly.test.kill-servers-before-test>${org.wildfly.test.kill-servers-before-test}</org.wildfly.test.kill-servers-before-test>
                        </systemPropertyVariables>
-                       <!-- Arquillian's config files. -->
-                       <additionalClasspathElements combine.children="append">
-                           <additionalClasspathElement>${basedir}/src/test/config/arq</additionalClasspathElement>
-                       </additionalClasspathElements>
                        <argLine>${surefire.system.args}</argLine>
                        <trimStackTrace>false</trimStackTrace>
                    </configuration>
