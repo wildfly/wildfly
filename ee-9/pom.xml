@@ -114,7 +114,7 @@
         <version.org.glassfish.web.jakarta.servlet.jsp.jstl>2.0.0</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <version.org.hibernate>6.0.1.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>6.0.1.Final</version.org.hibernate.commons.annotations>
-        <version.org.hibernate.search>6.1.4.Final</version.org.hibernate.search>
+        <version.org.hibernate.search>6.1.5.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>8.0.0.Alpha3</version.org.hibernate.validator>
         <version.org.jberet>2.0.4.Final</version.org.jberet>
         <version.org.jboss.invocation>1.7.0.Final</version.org.jboss.invocation>
