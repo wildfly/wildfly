@@ -55,8 +55,8 @@
         <version.jakarta.persistence>3.0.0</version.jakarta.persistence>
         <version.jakarta.transaction.jakarta-transaction-api>2.0.0</version.jakarta.transaction.jakarta-transaction-api>
         <version.org.apache.lucene>8.11.1</version.org.apache.lucene>
-        <version.org.hibernate>6.0.0.Final</version.org.hibernate>
-        <version.org.hibernate.search>6.1.4.Final</version.org.hibernate.search>
+        <version.org.hibernate>6.0.1.Final</version.org.hibernate>
+        <version.org.hibernate.search>6.1.5.Final</version.org.hibernate.search>
     </properties>
 
     <dependencyManagement>
