@@ -65,7 +65,7 @@ public class HotRodStoreServiceConfigurator extends StoreServiceConfigurator<Hot
 
     @Override
     public void accept(HotRodStoreConfigurationBuilder builder) {
-        builder.segmented(true)
+        builder.segmented(false)
                 .cacheConfiguration(this.cacheConfiguration)
                 .remoteCacheContainer(this.remoteCacheContainer.get())
         ;

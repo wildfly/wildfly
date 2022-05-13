@@ -71,7 +71,7 @@ import io.reactivex.rxjava3.core.Flowable;
  */
 @ConfiguredBy(HotRodStoreConfiguration.class)
 public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
-    private static final Set<Characteristic> CHARACTERISTICS = EnumSet.of(Characteristic.SHAREABLE, Characteristic.BULK_READ, Characteristic.EXPIRATION, Characteristic.SEGMENTABLE);
+    private static final Set<Characteristic> CHARACTERISTICS = EnumSet.of(Characteristic.SHAREABLE, Characteristic.BULK_READ, Characteristic.EXPIRATION);
 
     private RemoteCache<ByteBuffer, ByteBuffer> cache;
     private BlockingManager blockingManager;
@@ -94,7 +94,7 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
         this.entryFactory = context.getMarshallableEntryFactory();
 
         String templateName = (cacheConfiguration != null) ? cacheConfiguration : DefaultTemplate.DIST_SYNC.getTemplateName();
-        Consumer<RemoteCacheConfigurationBuilder> configurator = new Consumer<RemoteCacheConfigurationBuilder>() {
+        Consumer<RemoteCacheConfigurationBuilder> configurator = new Consumer<>() {
             @Override
             public void accept(RemoteCacheConfigurationBuilder builder) {
                 builder.forceReturnValues(false).transactionMode(TransactionMode.NONE).nearCacheMode(NearCacheMode.DISABLED).templateName(templateName);
