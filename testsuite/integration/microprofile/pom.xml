@@ -555,12 +555,12 @@
                 <dependency>
                     <groupId>io.smallrye</groupId>
                     <artifactId>smallrye-opentracing</artifactId>
-                    <version>${version.io.smallrye.smallrye-opentracing}</version>
+                    <version>${preview.version.io.smallrye.smallrye-opentracing}</version>
                 </dependency>
                 <dependency>
                     <groupId>io.smallrye</groupId>
                     <artifactId>smallrye-opentracing-contrib</artifactId>
-                    <version>${version.io.smallrye.smallrye-opentracing}</version>
+                    <version>${preview.version.io.smallrye.smallrye-opentracing}</version>
                 </dependency>
             </dependencies>
             <build>

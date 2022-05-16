@@ -317,9 +317,18 @@
         </dependency>
 
         <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-envers</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-util-common</artifactId>
-            <version>${version.org.hibernate.search}</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -331,7 +340,6 @@
         <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-engine</artifactId>
-            <version>${version.org.hibernate.search}</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -343,7 +351,6 @@
         <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-backend-lucene</artifactId>
-            <version>${version.org.hibernate.search}</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -355,7 +362,6 @@
         <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-backend-elasticsearch</artifactId>
-            <version>${version.org.hibernate.search}</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -367,7 +373,6 @@
         <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-mapper-pojo-base</artifactId>
-            <version>${version.org.hibernate.search}</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -379,7 +384,6 @@
         <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-mapper-orm-orm6</artifactId>
-            <version>${version.org.hibernate.search}</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

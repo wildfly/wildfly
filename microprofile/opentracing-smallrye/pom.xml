@@ -72,6 +72,10 @@
             <artifactId>smallrye-opentracing</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-web-common</artifactId>
             <exclusions>
