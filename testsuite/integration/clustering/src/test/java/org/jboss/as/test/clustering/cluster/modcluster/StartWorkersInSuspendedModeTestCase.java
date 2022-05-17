@@ -39,7 +39,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.controller.client.helpers.ClientConstants.ADDRESS;
 import static org.jboss.as.controller.client.helpers.ClientConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_RESOURCE_OPERATION;
@@ -85,7 +84,6 @@ public class StartWorkersInSuspendedModeTestCase extends AbstractClusteringTestC
 
         ModelNode op = createOpNode("subsystem=undertow/configuration=filter/mod-cluster=load-balancer/balancer=mycluster/node=" + NODE_1,
                                     READ_RESOURCE_OPERATION);
-        op.get(ADDRESS).add("context", "/" + MODULE_NAME);
         op.get(RECURSIVE).set(true);
         op.get(INCLUDE_RUNTIME).set(true);
 
@@ -105,8 +103,11 @@ public class StartWorkersInSuspendedModeTestCase extends AbstractClusteringTestC
             Thread.sleep(100);
         }
 
-        Assert.assertEquals(SUCCESS, modelNode.get(OUTCOME).asString());
-        Assert.assertEquals("stopped", modelNode.get(RESULT).get(STATUS).asString());
+        Assert.assertEquals("Operation failed: " + modelNode.asString(),
+                SUCCESS, modelNode.get(OUTCOME).asString());
+        Assert.assertFalse("No contexts are expected to be registered by mod_cluster: "
+                        + modelNode.get(RESULT).get("context").asString(),
+                modelNode.get(RESULT).get("context").isDefined());
     }
 
     static class ServerSetupTask extends CLIServerSetupTask {

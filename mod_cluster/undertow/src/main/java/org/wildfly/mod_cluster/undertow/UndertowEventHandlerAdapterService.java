@@ -118,14 +118,17 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
     }
 
     private synchronized void onStart(Context context) {
-        ContainerEventHandler handler = this.configuration.getContainerEventHandler();
-
-        handler.add(context);
-
         State state = this.configuration.getSuspendController().getState();
 
-        // TODO break into onDeploymentAdd once implemented in Undertow
-        if(state == State.RUNNING) {
+        if (state == State.RUNNING) {
+            // Following handler calls result in context registration on the proxy side, which in turn results in
+            // the proxy starting to serve 503 responses for this context. We want to avoid context registration unless
+            // the server is in RUNNING state.
+            // During normal server startup, this block is skipped and the add() & start() handler calls are done later
+            // in the `#resume()` method.
+            ContainerEventHandler handler = this.configuration.getContainerEventHandler();
+            handler.add(context);
+            // TODO break into onDeploymentAdd once implemented in Undertow
             handler.start(context);
         }
 
@@ -202,8 +205,16 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
 
     @Override
     public void resume() {
+        // This is run just before container enters RUNNING state - contexts need to be registered.
+        ContainerEventHandler handler = this.configuration.getContainerEventHandler();
         for (Context context : this.contexts) {
-            this.configuration.getContainerEventHandler().start(context);
+            handler.add(context);
+            handler.start(context);
+        }
+        // Proxy will not consider this node to be ready, until it receives a STATUS request - send it now to minimize
+        // time when the proxy serves 503.
+        for (Engine engine : this.server.getEngines()) {
+            this.configuration.getContainerEventHandler().status(engine);
         }
     }
 }
