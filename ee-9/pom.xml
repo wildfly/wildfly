@@ -44,6 +44,16 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <!-- Bring in all the standard WF deps, which will be overridden by explicit ones below -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-feature-pack-parent</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4</artifactId>
@@ -195,6 +205,18 @@
                 <groupId>io.agroal</groupId>
                 <artifactId>agroal-pool</artifactId>
                 <version>${preview.version.io.agroal}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-health</artifactId>
+                <version>${preview.version.io.smallrye.smallrye-health}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -456,6 +478,19 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>io.undertow.jastow</groupId>
+                <artifactId>jastow-jakarta</artifactId>
+                <version>${version.io.undertow.jastow}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>jakarta.annotation</groupId>
                 <artifactId>jakarta.annotation-api</artifactId>
@@ -2188,6 +2223,18 @@
                 <groupId>org.jboss.invocation</groupId>
                 <artifactId>jboss-invocation-jakarta</artifactId>
                 <version>${preview.version.org.jboss.invocation}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.metadata</groupId>
+                <artifactId>jboss-metadata-common-jakarta</artifactId>
+                <version>${version.org.jboss.metadata}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
