@@ -354,7 +354,7 @@
                                 </goals>
                                 <configuration>
                                     <scripts>
-                                        <script>hardening_standalone_microprofile.cli</script>
+                                        <script>hardening.cli</script>
                                     </scripts>
                                     <systemProperties>
                                         <config>standalone-microprofile.xml</config>
@@ -369,7 +369,7 @@
                                 </goals>
                                 <configuration>
                                     <scripts>
-                                        <script>hardening_standalone_microprofile.cli</script>
+                                        <script>hardening.cli</script>
                                     </scripts>
                                     <systemProperties>
                                         <config>standalone-microprofile-ha.xml</config>

@@ -3,17 +3,4 @@ embed-host-controller --host-config=${host-config}
 # create WCC_SSL_Realm
 /host=${host-name}/core-service=management/security-realm=WCC_SSL_Realm:add
 
-# enable audit-log records
-/host=${host-name}/core-service=management/access=audit/logger=audit-log:write-attribute(name=enabled,value=true)
-/host=${host-name}/core-service=management/access=audit/server-logger=audit-log:write-attribute(name=enabled,value=true)
-
-# remove Silent Authentication from Default Management Security Realm
-/host=${host-name}/core-service=management/security-realm=ManagementRealm/authentication=local:remove
-
-# remove Silent Authentication from Default Application Security Realm
-/host=${host-name}/core-service=management/security-realm=ApplicationRealm/authentication=local:remove
-
-# disable remote access to JMX subsystem
-/host=${host-name}/subsystem=jmx/remoting-connector=jmx:remove
-
 stop-embedded-host-controller
