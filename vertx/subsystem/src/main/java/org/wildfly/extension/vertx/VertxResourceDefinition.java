@@ -112,6 +112,9 @@ public class VertxResourceDefinition extends SimpleResourceDefinition {
             String jgroupChannel = operation.hasDefined(VertxConstants.ATTR_JGROUPS_CHANNEL) ? VertxAttributes.JGROUPS_CHANNEL.resolveModelAttribute(context, operation).asString() : null;
             final boolean forkedChannel = VertxAttributes.FORKED_CHANNEL.resolveModelAttribute(context, operation).asBoolean();
             final String jgroupsStackFile = operation.hasDefined(ATTR_JGROUPS_STACK_FILE) ? VertxAttributes.JGROUPS_STACK_FILE.resolveModelAttribute(context, operation).asString() : null;
+            if (clustered && jgroupChannel != null && jgroupsStackFile != null) {
+                throw VERTX_LOGGER.onlyOneJgroupsConfigNeeded(name);
+            }
             String optionName = operation.hasDefined(ATTR_OPTION_NAME) ? VertxAttributes.OPTION_NAME.resolveModelAttribute(context, operation).asString() : null;
             final List<String> aliases = operation.hasDefined(VertxConstants.ATTR_ALIAS) ? VertxAttributes.ALIAS.unwrap(context, operation) : null;
             final VertxProxy vertxProxy = new VertxProxy(name, jndiName, clustered, jgroupChannel, forkedChannel, jgroupsStackFile);

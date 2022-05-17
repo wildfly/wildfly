@@ -92,4 +92,7 @@ public interface VertxLogger extends BasicLogger {
     @Message(id = 18, value = "Either path or value should be specified for the option: %s")
     OperationFailedException atLeastPathOrValueDefined(String optionName);
 
+    @Message(id = 19, value = "Cannot specify both jgroups-stack-file and jgroups-channel for clustered Vert.x: %s")
+    OperationFailedException onlyOneJgroupsConfigNeeded(String name);
+
 }
