@@ -164,4 +164,8 @@ public interface JGroupsLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 31, value = "Ignoring unrecognized %s property: %s")
     void unrecognizedProtocolProperty(String protocol, String property);
+
+    @LogMessage(level = WARN)
+    @Message(id = 32, value = "Attribute '%s' of element '%s' is no longer supported and will be ignored.")
+    void attributeIgnored(String attribute, String element);
 }

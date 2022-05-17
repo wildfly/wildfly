@@ -60,11 +60,8 @@ public class JGroupsSubsystemTestCase extends ClusteringSubsystemTest<JGroupsSch
         return EnumSet.allOf(JGroupsSchema.class);
     }
 
-    private final JGroupsSchema schema;
-
     public JGroupsSubsystemTestCase(JGroupsSchema schema) {
         super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), schema, "subsystem-jgroups-%d_%d.xml", "schema/jboss-as-jgroups_%d_%d.xsd");
-        this.schema = schema;
     }
 
     private KernelServices buildKernelServices() throws Exception {
@@ -156,7 +153,6 @@ public class JGroupsSubsystemTestCase extends ClusteringSubsystemTest<JGroupsSch
      */
     @Test
     public void testIndexedAdds() throws Exception {
-        if (!this.schema.since(JGroupsSchema.VERSION_3_0)) return;
 
         final KernelServices services = this.buildKernelServices();
 
