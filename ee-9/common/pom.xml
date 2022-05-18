@@ -252,7 +252,7 @@
 
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
+            <artifactId>jakarta.enterprise.concurrent</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -262,8 +262,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.enterprise.concurrent</artifactId>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
