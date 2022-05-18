@@ -858,6 +858,7 @@
                                         <exclude>${test-group}/**/group/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/jms/*TestCase.java</exclude>
                                         <!-- These are run by ts.clustering.cluster.ha-infinispan-server.profile -->
+                                        <exclude>${test-group}/**/ejb/remote/EJBOverHTTPTestCase.java</exclude>
                                         <exclude>${test-group}/**/ejb/timer/remote/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/infinispan/remote/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/web/remote/*TestCase.java</exclude>
@@ -926,6 +927,7 @@
                                     <runOrder>alphabetical</runOrder>
                                     <!-- Tests to execute. -->
                                     <includes>
+                                        <include>${test-group}/**/ejb/remote/EJBOverHTTPTestCase.java</include>
                                         <include>${test-group}/**/ejb/timer/remote/*TestCase.java</include>
                                         <include>${test-group}/**/infinispan/remote/*TestCase.java</include>
                                         <include>${test-group}/**/web/remote/*TestCase.java</include>
