@@ -26,8 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -49,16 +47,10 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
     // transport test operations
     static final ModelNode addTransportOp = getTransportAddOperation("maximal2", "UDP");
-    // addTransportOpWithProps calls the operation below to check passing optional parameters
-    //   /subsystem=jgroups/stack=maximal2/transport=UDP:add(properties=[{A=>a},{B=>b}])
-    static final ModelNode addTransportOpWithProps = getTransportAddOperationWithProperties("maximal2", "UDP");
     static final ModelNode removeTransportOp = getTransportRemoveOperation("maximal2", "UDP");
 
     // protocol test operations
     static final ModelNode addProtocolOp = getProtocolAddOperation("maximal2", "PING");
-    // addProtocolOpWithProps calls the operation below to check passing optional parameters
-    //   /subsystem=jgroups/stack=maximal2:add-protocol(type=MPING, properties=[{A=>a},{B=>b}])
-    static final ModelNode addProtocolOpWithProps = getProtocolAddOperationWithProperties("maximal2", "PING");
     static final ModelNode removeProtocolOp = getProtocolRemoveOperation("maximal2", "PING");
 
     @Test
@@ -122,59 +114,6 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // remove the protocol stack again
         result = services.executeOperation(removeStackOp);
-        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
-    }
-
-    /**
-     * Test for https://issues.jboss.org/browse/WFLY-5290 where server/test hangs when using legacy TRANSPORT alias:
-     *
-     * Create a simple stack, then remove, re-add a different transport, remove twice expecting the 2nd remove to fail.
-     * Tests both situations when stack in inferred from :add operation and when its inferred from the existing resource.
-     */
-    @Test
-    public void testLegacyTransportAliasSequence() throws Exception {
-
-        KernelServices services = buildKernelServices();
-
-        String stackName = "legacyStack";
-
-        // add a sample stack to test legacy paths on
-        ModelNode result = services.executeOperation(getProtocolStackAddOperationWithParameters(stackName));
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
-        // add a thread pool
-        result = services.executeOperation(getLegacyThreadPoolAddOperation(stackName, "default"));
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
-        ModelNode op = getLegacyThreadPoolAddOperation(stackName, "default");
-        op.get("operation").set("write-attribute");
-        op.get("name").set("keepalive-time");
-        op.get("value").set(999);
-        result = services.executeOperation(op);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
-        op = Operations.createReadResourceOperation(getSubsystemAddress());
-        op.get(ModelDescriptionConstants.INCLUDE_ALIASES).set("true");
-        op.get(ModelDescriptionConstants.RECURSIVE).set("true");
-        result = services.executeOperation(op);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
-        op = Util.createOperation(ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION, getSubsystemAddress());
-        op.get(ModelDescriptionConstants.INCLUDE_ALIASES).set("true");
-        op.get(ModelDescriptionConstants.RECURSIVE).set("true");
-        result = services.executeOperation(op);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
-        result = services.executeOperation(getLegacyTransportRemoveOperation(stackName));
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
-        result = services.executeOperation(getLegacyTransportAddOperation(stackName, "TCP"));
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
-        result = services.executeOperation(getLegacyTransportRemoveOperation(stackName));
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
-        result = services.executeOperation(getLegacyTransportRemoveOperation(stackName));
         Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
     }
 }

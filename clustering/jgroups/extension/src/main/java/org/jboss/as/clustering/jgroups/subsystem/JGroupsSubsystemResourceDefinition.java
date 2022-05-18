@@ -40,17 +40,10 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SubsystemRegistration;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.server.service.ClusteringRequirement;
@@ -78,12 +71,6 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
                 return builder.setCapabilityReference(new CapabilityReference(CAPABILITIES.get(JGroupsRequirement.CHANNEL_FACTORY), JGroupsRequirement.CHANNEL_FACTORY));
             }
         },
-        @Deprecated DEFAULT_STACK("default-stack", ModelType.STRING) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion());
-            }
-        },
         ;
         private final AttributeDefinition definition;
 
@@ -99,29 +86,6 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
         @Override
         public AttributeDefinition getDefinition() {
             return this.definition;
-        }
-    }
-
-    static class AddOperationTransformer implements UnaryOperator<OperationStepHandler> {
-        @Override
-        public OperationStepHandler apply(OperationStepHandler handler) {
-            return new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    // If this is a legacy configuration containing a default-stack, but no default-channel, then fabricate a default channel using the default stack
-                    // This ensures that the default channel factory capability is available to the /subsystem=infinispan/cache-container=*/transport=jgroups resource, which requires them
-                    // We can drop this compatibility workaround after we drop support for model version 3.0.
-                    if (!operation.hasDefined(Attribute.DEFAULT_CHANNEL.getName()) && operation.hasDefined(Attribute.DEFAULT_STACK.getName())) {
-                        String defaultChannel = "auto";
-                        PathAddress channelAddress = context.getCurrentAddress().append(ChannelResourceDefinition.pathElement(defaultChannel));
-                        ModelNode channelOperation = Util.createAddOperation(channelAddress);
-                        channelOperation.get(ChannelResourceDefinition.Attribute.STACK.getName()).set(operation.get(Attribute.DEFAULT_STACK.getName()));
-                        context.addStep(channelOperation, context.getRootResourceRegistration().getOperationHandler(channelAddress, ModelDescriptionConstants.ADD), OperationContext.Stage.MODEL);
-                        operation.get(Attribute.DEFAULT_CHANNEL.getName()).set(new ModelNode(defaultChannel));
-                    }
-                    handler.execute(context, operation);
-                }
-            };
         }
     }
 
@@ -146,7 +110,6 @@ public class JGroupsSubsystemResourceDefinition extends SubsystemResourceDefinit
                 .addAttributes(Attribute.class)
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CHANNEL.getName()), CAPABILITIES.values())
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CHANNEL.getName()), capabilities)
-                .setAddOperationTransformation(new AddOperationTransformer())
                 ;
         ResourceServiceHandler handler = new JGroupsSubsystemServiceHandler();
         new SimpleResourceRegistration(descriptor, handler).register(registration);
