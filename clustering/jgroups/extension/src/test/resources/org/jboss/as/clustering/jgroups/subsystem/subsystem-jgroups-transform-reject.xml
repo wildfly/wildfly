@@ -25,17 +25,12 @@
         <channel name="default" stack="minimal"/>
         <channel name="bridge" stack="default"/>
     </channels>
-    <stacks default="maximal">
+    <stacks>
         <stack name="maximal">
             <transport type="TCP"
                        module="org.jgroups"
                        socket-binding="jgroups-tcp"
                        diagnostics-socket-binding="jgroups-diagnostics"
-                       default-executor="jgroups"
-                       oob-executor="jgroups-oob"
-                       timer-executor="jgroups-timer"
-                       shared="false"
-                       thread-factory="jgroups-thread-factory"
                        machine="machine1"
                        rack="rack1"
                        site="site1">

@@ -132,11 +132,6 @@
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
-        <xs:attribute name="default" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Deprecated. Identifies the default protocol stack.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="stack">
@@ -196,7 +191,7 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="generic-protocol">
+    <xs:complexType name="protocol">
         <xs:sequence>
             <xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded">
                 <xs:annotation>
@@ -221,21 +216,9 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="protocol">
-        <xs:complexContent>
-            <xs:extension base="tns:generic-protocol">
-                <xs:attribute name="socket-binding" type="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>Deprecated.  Socket-based protocols should use &lt;socket-protocol/&gt; instead.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
     <xs:complexType name="socket-protocol">
         <xs:complexContent>
-            <xs:extension base="tns:generic-protocol">
+            <xs:extension base="tns:protocol">
                 <xs:attribute name="socket-binding" type="xs:string" use="required">
                     <xs:annotation>
                         <xs:documentation>Provides a socket binding for a protocol.</xs:documentation>
@@ -252,7 +235,7 @@
 
     <xs:complexType name="socket-discovery-protocol">
         <xs:complexContent>
-            <xs:extension base="tns:generic-protocol">
+            <xs:extension base="tns:protocol">
                 <xs:attribute name="socket-bindings" type="tns:list" use="required">
                     <xs:annotation>
                         <xs:documentation>Provides a list of socket bindings for a protocol.</xs:documentation>
@@ -264,7 +247,7 @@
 
     <xs:complexType name="jdbc-protocol">
         <xs:complexContent>
-            <xs:extension base="tns:generic-protocol">
+            <xs:extension base="tns:protocol">
                 <xs:attribute name="data-source" type="xs:string" use="required">
                     <xs:annotation>
                         <xs:documentation>Data source reference for JDBC protocols to be used instead of connection and JNDI lookup properties.</xs:documentation>
@@ -276,7 +259,7 @@
 
     <xs:complexType name="encrypt-protocol">
         <xs:complexContent>
-            <xs:extension base="tns:generic-protocol">
+            <xs:extension base="tns:protocol">
                 <xs:sequence>
                     <xs:element name="key-credential-reference" type="credential-reference:credentialReferenceType">
                         <xs:annotation>
@@ -300,7 +283,7 @@
 
     <xs:complexType name="auth-protocol">
         <xs:complexContent>
-            <xs:extension base="tns:generic-protocol">
+            <xs:extension base="tns:protocol">
                 <xs:choice>
                     <xs:element name="plain-token" type="tns:plain-token">
                         <xs:annotation>
@@ -375,7 +358,7 @@
 
     <xs:complexType name="transport">
         <xs:complexContent>
-            <xs:extension base="tns:generic-protocol">
+            <xs:extension base="tns:protocol">
                 <xs:sequence>
                     <xs:element name="default-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
                         <xs:annotation>
@@ -383,11 +366,6 @@
                         </xs:annotation>
                     </xs:element>
                 </xs:sequence>
-                <xs:attribute name="shared" type="xs:boolean" default="true">
-                    <xs:annotation>
-                        <xs:documentation>Indicates whether or not the channels created for this stack should use a single, shared transport.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
                 <xs:attribute name="socket-binding" type="xs:string">
                     <xs:annotation>
                         <xs:documentation>The socket-binding used to configure the bind address/port of the socket used to receive messages from other members.</xs:documentation>
@@ -401,26 +379,6 @@
                 <xs:attribute name="diagnostics-socket-binding" type="xs:string">
                     <xs:annotation>
                         <xs:documentation>If specified, enables diagnostics and specified the multicast address/port on which to communicate.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-                <xs:attribute name="default-executor" type="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>Defines the thread pool used for default messages received by this transport.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-                <xs:attribute name="oob-executor" type="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>Defines the thread pool used for OOB messages received by this transport.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-                <xs:attribute name="timer-executor" type="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>Defines the timer thread pool used by this transport.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-                <xs:attribute name="thread-factory" type="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>Defines the thread factory used by this transport.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="site" type="xs:string">
@@ -438,13 +396,6 @@
                         <xs:documentation>Identifies the machine where this node runs.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="socket-transport">
-        <xs:complexContent>
-            <xs:extension base="tns:transport">
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

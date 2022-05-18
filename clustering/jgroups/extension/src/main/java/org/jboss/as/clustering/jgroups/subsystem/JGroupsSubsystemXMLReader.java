@@ -205,6 +205,9 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DEFAULT: {
+                    if (this.schema.since(JGroupsSchema.VERSION_9_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
                     JGroupsLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
                     break;
                 }
@@ -311,6 +314,9 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case SHARED: {
+                    if (this.schema.since(JGroupsSchema.VERSION_9_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
                     JGroupsLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
                     break;
                 }
@@ -323,18 +329,30 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     break;
                 }
                 case DEFAULT_EXECUTOR: {
+                    if (this.schema.since(JGroupsSchema.VERSION_9_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
                     JGroupsLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
                     break;
                 }
                 case OOB_EXECUTOR: {
+                    if (this.schema.since(JGroupsSchema.VERSION_9_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
                     JGroupsLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
                     break;
                 }
                 case TIMER_EXECUTOR: {
+                    if (this.schema.since(JGroupsSchema.VERSION_9_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
                     JGroupsLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
                     break;
                 }
                 case THREAD_FACTORY: {
+                    if (this.schema.since(JGroupsSchema.VERSION_9_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
                     JGroupsLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
                     break;
                 }
