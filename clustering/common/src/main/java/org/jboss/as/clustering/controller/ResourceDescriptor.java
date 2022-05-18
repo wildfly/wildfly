@@ -26,8 +26,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +34,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 import org.jboss.as.clustering.function.Predicates;
 import org.jboss.as.controller.AttributeDefinition;
@@ -55,27 +54,32 @@ import org.jboss.dmr.ModelNode;
  */
 public class ResourceDescriptor implements AddStepHandlerDescriptor {
 
-    private static final Comparator<PathElement> PATH_COMPARATOR = (PathElement path1, PathElement path2) -> {
-        int result = path1.getKey().compareTo(path2.getKey());
-        return (result == 0) ? path1.getValue().compareTo(path2.getValue()) : result;
+    private static final Comparator<PathElement> PATH_COMPARATOR = new Comparator<>() {
+        @Override
+        public int compare(PathElement path1, PathElement path2) {
+            int result = path1.getKey().compareTo(path2.getKey());
+            return (result == 0) ? path1.getValue().compareTo(path2.getValue()) : result;
+        }
     };
-
     private static final Comparator<AttributeDefinition> ATTRIBUTE_COMPARATOR = Comparator.comparing(AttributeDefinition::getName);
+    private static final Comparator<Capability> CAPABILITY_COMPARATOR = Comparator.comparing(Capability::getName);
+    @SuppressWarnings("deprecation")
+    private static final Comparator<CapabilityReferenceRecorder> CAPABILITY_REFERENCE_COMPARATOR = Comparator.comparing(CapabilityReferenceRecorder::getBaseDependentName);
 
     private final ResourceDescriptionResolver resolver;
-    private final Map<Capability, Predicate<ModelNode>> capabilities = new HashMap<>();
-    private final List<AttributeDefinition> attributes = new LinkedList<>();
-    private final Map<AttributeDefinition, OperationStepHandler> customAttributes = new HashMap<>();
-    private final List<AttributeDefinition> ignoredAttributes = new LinkedList<>();
-    private final List<AttributeDefinition> parameters = new LinkedList<>();
-    private final Set<PathElement> requiredChildren = new TreeSet<>(PATH_COMPARATOR);
-    private final Set<PathElement> requiredSingletonChildren = new TreeSet<>(PATH_COMPARATOR);
-    private final Map<AttributeDefinition, AttributeTranslation> attributeTranslations = new TreeMap<>(ATTRIBUTE_COMPARATOR);
-    private final List<RuntimeResourceRegistration> runtimeResourceRegistrations = new LinkedList<>();
-    private final Set<CapabilityReferenceRecorder> resourceCapabilityReferences = new HashSet<>();
-    private volatile UnaryOperator<OperationStepHandler> addOperationTransformer = UnaryOperator.identity();
-    private volatile UnaryOperator<OperationStepHandler> operationTransformer = UnaryOperator.identity();
-    private volatile UnaryOperator<Resource> resourceTransformer = UnaryOperator.identity();
+    private Map<Capability, Predicate<ModelNode>> capabilities = Map.of();
+    private List<AttributeDefinition> attributes = List.of();
+    private Map<AttributeDefinition, OperationStepHandler> customAttributes = Map.of();
+    private List<AttributeDefinition> ignoredAttributes = List.of();
+    private List<AttributeDefinition> parameters = List.of();
+    private Set<PathElement> requiredChildren = Set.of();
+    private Set<PathElement> requiredSingletonChildren = Set.of();
+    private Map<AttributeDefinition, AttributeTranslation> attributeTranslations = Map.of();
+    private List<RuntimeResourceRegistration> runtimeResourceRegistrations = List.of();
+    private Set<CapabilityReferenceRecorder> resourceCapabilityReferences = Set.of();
+    private UnaryOperator<OperationStepHandler> addOperationTransformer = UnaryOperator.identity();
+    private UnaryOperator<OperationStepHandler> operationTransformer = UnaryOperator.identity();
+    private UnaryOperator<Resource> resourceTransformer = UnaryOperator.identity();
 
     public ResourceDescriptor(ResourceDescriptionResolver resolver) {
         this.resolver = resolver;
@@ -126,8 +130,46 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
         return this.customAttributes;
     }
 
+    @Override
+    public Collection<RuntimeResourceRegistration> getRuntimeResourceRegistrations() {
+        return this.runtimeResourceRegistrations;
+    }
+
+    @Override
+    public Set<CapabilityReferenceRecorder> getResourceCapabilityReferences() {
+        return this.resourceCapabilityReferences;
+    }
+
+    @Override
+    public UnaryOperator<OperationStepHandler> getOperationTransformation() {
+        return this.operationTransformer;
+    }
+
+    @Override
+    public UnaryOperator<Resource> getResourceTransformation() {
+        return this.resourceTransformer;
+    }
+
+    @Override
+    public UnaryOperator<OperationStepHandler> getAddOperationTransformation() {
+        return this.addOperationTransformer;
+    }
+
     public ResourceDescriptor addAttribute(Attribute attribute, OperationStepHandler writeAttributeHandler) {
-        this.customAttributes.put(attribute.getDefinition(), writeAttributeHandler);
+        return this.addAttribute(attribute.getDefinition(), writeAttributeHandler);
+    }
+
+    public ResourceDescriptor addAttribute(AttributeDefinition attribute, OperationStepHandler writeAttributeHandler) {
+        if (this.customAttributes.isEmpty()) {
+            this.customAttributes = Map.of(attribute, writeAttributeHandler);
+        } else {
+            if (this.customAttributes.size() == 1) {
+                Map<AttributeDefinition, OperationStepHandler> existing = this.customAttributes;
+                this.customAttributes = new TreeMap<>(ATTRIBUTE_COMPARATOR);
+                this.customAttributes.putAll(existing);
+            }
+            this.customAttributes.put(attribute, writeAttributeHandler);
+        }
         return this;
     }
 
@@ -135,19 +177,29 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
         return this.addAttributes(EnumSet.allOf(enumClass));
     }
 
+    public ResourceDescriptor addAttributes(Set<? extends Attribute> attributes) {
+        return this.addAttributes(attributes.stream());
+    }
+
     public ResourceDescriptor addAttributes(Attribute... attributes) {
-        return this.addAttributes(Arrays.asList(attributes));
+        return this.addAttributes(List.of(attributes).stream());
     }
 
-    public ResourceDescriptor addAttributes(Iterable<? extends Attribute> attributes) {
-        for (Attribute attribute : attributes) {
-            this.attributes.add(attribute.getDefinition());
+    private ResourceDescriptor addAttributes(Stream<? extends Attribute> attributes) {
+        return this.addAttributes(attributes.map(Attribute::getDefinition)::iterator);
+    }
+
+    public ResourceDescriptor addAttributes(AttributeDefinition... attributes) {
+        return this.addAttributes(List.of(attributes));
+    }
+
+    public ResourceDescriptor addAttributes(Iterable<AttributeDefinition> attributes) {
+        if (this.attributes.isEmpty()) {
+            this.attributes = new LinkedList<>();
         }
-        return this;
-    }
-
-    public ResourceDescriptor addAttributes(Collection<AttributeDefinition> attributes) {
-        this.attributes.addAll(attributes);
+        for (AttributeDefinition attribute : attributes) {
+            this.attributes.add(attribute);
+        }
         return this;
     }
 
@@ -155,19 +207,29 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
         return this.addIgnoredAttributes(EnumSet.allOf(enumClass));
     }
 
+    public ResourceDescriptor addIgnoredAttributes(Set<? extends Attribute> attributes) {
+        return this.addIgnoredAttributes(attributes.stream());
+    }
+
     public ResourceDescriptor addIgnoredAttributes(Attribute... attributes) {
-        return this.addIgnoredAttributes(Arrays.asList(attributes));
+        return this.addIgnoredAttributes(List.of(attributes).stream());
     }
 
-    public ResourceDescriptor addIgnoredAttributes(Iterable<? extends Attribute> attributes) {
-        for (Attribute attribute : attributes) {
-            this.ignoredAttributes.add(attribute.getDefinition());
+    private ResourceDescriptor addIgnoredAttributes(Stream<? extends Attribute> attributes) {
+        return this.addIgnoredAttributes(attributes.map(Attribute::getDefinition)::iterator);
+    }
+
+    public ResourceDescriptor addIgnoredAttributes(AttributeDefinition... attributes) {
+        return this.addIgnoredAttributes(List.of(attributes));
+    }
+
+    public ResourceDescriptor addIgnoredAttributes(Iterable<AttributeDefinition> attributes) {
+        if (this.ignoredAttributes.isEmpty()) {
+            this.ignoredAttributes = new LinkedList<>();
         }
-        return this;
-    }
-
-    public ResourceDescriptor addIgnoredAttributes(Collection<AttributeDefinition> attributes) {
-        this.ignoredAttributes.addAll(attributes);
+        for (AttributeDefinition attribute : attributes) {
+            this.ignoredAttributes.add(attribute);
+        }
         return this;
     }
 
@@ -175,19 +237,29 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
         return this.addExtraParameters(EnumSet.allOf(enumClass));
     }
 
-    public ResourceDescriptor addExtraParameters(Attribute... parameters) {
-        return this.addExtraParameters(Arrays.asList(parameters));
+    public ResourceDescriptor addExtraParameters(Set<? extends Attribute> parameters) {
+        return this.addExtraParameters(parameters.stream());
     }
 
-    public ResourceDescriptor addExtraParameters(Iterable<? extends Attribute> parameters) {
-        for (Attribute parameter : parameters) {
-            this.parameters.add(parameter.getDefinition());
-        }
-        return this;
+    public ResourceDescriptor addExtraParameters(Attribute... parameters) {
+        return this.addExtraParameters(List.of(parameters).stream());
+    }
+
+    private ResourceDescriptor addExtraParameters(Stream<? extends Attribute> parameters) {
+        return this.addExtraParameters(parameters.map(Attribute::getDefinition)::iterator);
     }
 
     public ResourceDescriptor addExtraParameters(AttributeDefinition... parameters) {
-        this.parameters.addAll(Arrays.asList(parameters));
+        return this.addExtraParameters(List.of(parameters));
+    }
+
+    public ResourceDescriptor addExtraParameters(Iterable<AttributeDefinition> parameters) {
+        if (this.parameters.isEmpty()) {
+            this.parameters = new LinkedList<>();
+        }
+        for (AttributeDefinition parameter : parameters) {
+            this.parameters.add(parameter);
+        }
         return this;
     }
 
@@ -212,6 +284,9 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     }
 
     public ResourceDescriptor addCapabilities(Predicate<ModelNode> predicate, Iterable<? extends Capability> capabilities) {
+        if (this.capabilities.isEmpty()) {
+            this.capabilities = new TreeMap<>(CAPABILITY_COMPARATOR);
+        }
         for (Capability capability : capabilities) {
             this.capabilities.put(capability, predicate);
         }
@@ -222,63 +297,90 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
         return this.addRequiredChildren(EnumSet.allOf(enumClass));
     }
 
-    public ResourceDescriptor addRequiredChildren(Iterable<? extends ResourceDefinitionProvider> providers) {
-        for (ResourceDefinitionProvider provider : providers) {
-            this.requiredChildren.add(provider.getPathElement());
-        }
-        return this;
+    public ResourceDescriptor addRequiredChildren(Set<? extends ResourceDefinitionProvider> providers) {
+        return this.addRequiredChildren(providers.stream().map(ResourceDefinitionProvider::getPathElement)::iterator);
     }
 
     public ResourceDescriptor addRequiredChildren(PathElement... paths) {
-        this.requiredChildren.addAll(Arrays.asList(paths));
+        return this.addRequiredChildren(List.of(paths));
+    }
+
+    public ResourceDescriptor addRequiredChildren(Iterable<PathElement> paths) {
+        if (this.requiredChildren.isEmpty()) {
+            this.requiredChildren = new TreeSet<>(PATH_COMPARATOR);
+        }
+        for (PathElement path : paths) {
+            this.requiredChildren.add(path);
+        }
         return this;
     }
 
     public <E extends Enum<E> & ResourceDefinition> ResourceDescriptor addRequiredSingletonChildren(Class<E> enumClass) {
-        for (ResourceDefinition definition : EnumSet.allOf(enumClass)) {
-            this.requiredSingletonChildren.add(definition.getPathElement());
+        return this.addRequiredSingletonChildren(EnumSet.allOf(enumClass));
+    }
+
+    public ResourceDescriptor addRequiredSingletonChildren(Set<? extends ResourceDefinition> definitions) {
+        return this.addRequiredSingletonChildren(definitions.stream().map(ResourceDefinition::getPathElement)::iterator);
+    }
+
+    public ResourceDescriptor addRequiredSingletonChildren(PathElement... paths) {
+        return this.addRequiredSingletonChildren(List.of(paths));
+    }
+
+    public ResourceDescriptor addRequiredSingletonChildren(Iterable<PathElement> paths) {
+        if (this.requiredSingletonChildren.isEmpty()) {
+            this.requiredSingletonChildren = new TreeSet<>(PATH_COMPARATOR);
+        }
+        for (PathElement path : paths) {
+            this.requiredSingletonChildren.add(path);
         }
         return this;
     }
 
-    public ResourceDescriptor addRequiredSingletonChildren(PathElement... paths) {
-        this.requiredSingletonChildren.addAll(Arrays.asList(paths));
-        return this;
-    }
-
     public ResourceDescriptor addAlias(Attribute alias, Attribute target) {
-        this.attributeTranslations.put(alias.getDefinition(), () -> target);
-        return this;
+        return this.addAttributeTranslation(alias, () -> target);
     }
 
     public ResourceDescriptor addAttributeTranslation(Attribute sourceAttribute, AttributeTranslation translation) {
-        this.attributeTranslations.put(sourceAttribute.getDefinition(), translation);
+        if (this.attributeTranslations.isEmpty()) {
+            this.attributeTranslations = Map.of(sourceAttribute.getDefinition(), translation);
+        } else {
+            if (this.attributeTranslations.size() == 1) {
+                Map<AttributeDefinition, AttributeTranslation> existing = this.attributeTranslations;
+                this.attributeTranslations = new TreeMap<>(ATTRIBUTE_COMPARATOR);
+                this.attributeTranslations.putAll(existing);
+            }
+            this.attributeTranslations.put(sourceAttribute.getDefinition(), translation);
+        }
         return this;
-    }
-
-    @Override
-    public Collection<RuntimeResourceRegistration> getRuntimeResourceRegistrations() {
-        return this.runtimeResourceRegistrations;
     }
 
     public ResourceDescriptor addRuntimeResourceRegistration(RuntimeResourceRegistration registration) {
-        this.runtimeResourceRegistrations.add(registration);
+        if (this.runtimeResourceRegistrations.isEmpty()) {
+            this.runtimeResourceRegistrations = List.of(registration);
+        } else {
+            if (this.runtimeResourceRegistrations.size() == 1) {
+                List<RuntimeResourceRegistration> existing = this.runtimeResourceRegistrations;
+                this.runtimeResourceRegistrations = new LinkedList<>();
+                this.runtimeResourceRegistrations.addAll(existing);
+            }
+            this.runtimeResourceRegistrations.add(registration);
+        }
         return this;
-    }
-
-    @Override
-    public Set<CapabilityReferenceRecorder> getResourceCapabilityReferences() {
-        return this.resourceCapabilityReferences;
     }
 
     public ResourceDescriptor addResourceCapabilityReference(CapabilityReferenceRecorder reference) {
-        this.resourceCapabilityReferences.add(reference);
+        if (this.resourceCapabilityReferences.isEmpty()) {
+            this.resourceCapabilityReferences = Set.of(reference);
+        } else {
+            if (this.resourceCapabilityReferences.size() == 1) {
+                Set<CapabilityReferenceRecorder> existing = this.resourceCapabilityReferences;
+                this.resourceCapabilityReferences = new TreeSet<>(CAPABILITY_REFERENCE_COMPARATOR);
+                this.resourceCapabilityReferences.addAll(existing);
+            }
+            this.resourceCapabilityReferences.add(reference);
+        }
         return this;
-    }
-
-    @Override
-    public UnaryOperator<OperationStepHandler> getAddOperationTransformation() {
-        return this.addOperationTransformer;
     }
 
     public ResourceDescriptor setAddOperationTransformation(UnaryOperator<OperationStepHandler> transformation) {
@@ -286,19 +388,9 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
         return this;
     }
 
-    @Override
-    public UnaryOperator<OperationStepHandler> getOperationTransformation() {
-        return this.operationTransformer;
-    }
-
     public ResourceDescriptor setOperationTransformation(UnaryOperator<OperationStepHandler> transformation) {
         this.operationTransformer = transformation;
         return this;
-    }
-
-    @Override
-    public UnaryOperator<Resource> getResourceTransformation() {
-        return this.resourceTransformer;
     }
 
     public ResourceDescriptor setResourceTransformation(UnaryOperator<Resource> transformation) {
