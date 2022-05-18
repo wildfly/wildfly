@@ -111,6 +111,10 @@ public interface InfinispanLogger extends BasicLogger {
 //    @Message(id = 8, value = "Could not resolve destination address for outbound socket binding named '%s'")
 //    InjectionException failedToInjectSocketBinding(@Cause UnknownHostException cause, OutboundSocketBinding binding);
 
+    @LogMessage(level = WARN)
+    @Message(id = 9, value = "The '%s' element is no longer supported and will be ignored")
+    void elementIgnored(String element);
+
     /**
      * Creates an exception indicating an invalid cache store.
      *

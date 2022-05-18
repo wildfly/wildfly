@@ -35,7 +35,6 @@ import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDe
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.DeprecatedAttribute;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
-import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteTransactionResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.SecurityResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -82,14 +81,9 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
                     // write any configured thread pools
                     if (container.hasDefined(ThreadPoolResourceDefinition.WILDCARD_PATH.getKey())) {
-                        writeThreadPoolElements(XMLElement.ASYNC_OPERATIONS_THREAD_POOL, ThreadPoolResourceDefinition.ASYNC_OPERATIONS, writer, container);
                         writeThreadPoolElements(XMLElement.BLOCKING_THREAD_POOL, ThreadPoolResourceDefinition.BLOCKING, writer, container);
                         writeThreadPoolElements(XMLElement.LISTENER_THREAD_POOL, ThreadPoolResourceDefinition.LISTENER, writer, container);
                         writeThreadPoolElements(XMLElement.NON_BLOCKING_THREAD_POOL, ThreadPoolResourceDefinition.NON_BLOCKING, writer, container);
-                        writeThreadPoolElements(XMLElement.PERSISTENCE_THREAD_POOL, ThreadPoolResourceDefinition.PERSISTENCE, writer, container);
-                        writeThreadPoolElements(XMLElement.REMOTE_COMMAND_THREAD_POOL, ThreadPoolResourceDefinition.REMOTE_COMMAND, writer, container);
-                        writeThreadPoolElements(XMLElement.STATE_TRANSFER_THREAD_POOL, ThreadPoolResourceDefinition.STATE_TRANSFER, writer, container);
-                        writeThreadPoolElements(XMLElement.TRANSPORT_THREAD_POOL, ThreadPoolResourceDefinition.TRANSPORT, writer, container);
                         writeScheduledThreadPoolElements(XMLElement.EXPIRATION_THREAD_POOL, ScheduledThreadPoolResourceDefinition.EXPIRATION, writer, container);
                     }
 
@@ -221,14 +215,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         writer.writeEndElement();
                     }
 
-                    ModelNode transactionModel = remoteContainer.get(RemoteTransactionResourceDefinition.PATH.getKeyValuePair());
-                    Set<RemoteTransactionResourceDefinition.Attribute> transactionAttributes = EnumSet.allOf(RemoteTransactionResourceDefinition.Attribute.class);
-                    if (hasDefined(transactionModel, transactionAttributes)) {
-                        writer.writeStartElement(XMLElement.TRANSACTION.getLocalName());
-                        writeAttributes(writer, transactionModel, transactionAttributes);
-                        writer.writeEndElement();
-                    }
-
                     writer.writeEndElement(); // </remote-cache-container>
                 }
             }
@@ -328,17 +314,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeEndElement();
         }
 
-        if (cache.hasDefined(BinaryKeyedJDBCStoreResourceDefinition.PATH.getKeyValuePair())) {
-            ModelNode store = cache.get(BinaryKeyedJDBCStoreResourceDefinition.PATH.getKeyValuePair());
-            writer.writeStartElement(XMLElement.BINARY_KEYED_JDBC_STORE.getLocalName());
-            writeAttributes(writer, store, JDBCStoreResourceDefinition.Attribute.class);
-            writeAttributes(writer, store, storeAttributes);
-            writeAttributes(writer, store, StoreResourceDefinition.DeprecatedAttribute.class);
-            writeStoreElements(writer, store);
-            writeJDBCStoreTable(writer, XMLElement.BINARY_KEYED_TABLE, store, BinaryTableResourceDefinition.PATH, BinaryTableResourceDefinition.Attribute.PREFIX);
-            writer.writeEndElement();
-        }
-
         if (cache.hasDefined(StringKeyedJDBCStoreResourceDefinition.PATH.getKeyValuePair())) {
             ModelNode store = cache.get(StringKeyedJDBCStoreResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(XMLElement.JDBC_STORE.getLocalName());
@@ -347,18 +322,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writeAttributes(writer, store, StoreResourceDefinition.DeprecatedAttribute.class);
             writeStoreElements(writer, store);
             writeJDBCStoreTable(writer, XMLElement.TABLE, store, StringTableResourceDefinition.PATH, StringTableResourceDefinition.Attribute.PREFIX);
-            writer.writeEndElement();
-        }
-
-        if (cache.hasDefined(MixedKeyedJDBCStoreResourceDefinition.PATH.getKeyValuePair())) {
-            ModelNode store = cache.get(MixedKeyedJDBCStoreResourceDefinition.PATH.getKeyValuePair());
-            writer.writeStartElement(XMLElement.MIXED_KEYED_JDBC_STORE.getLocalName());
-            writeAttributes(writer, store, JDBCStoreResourceDefinition.Attribute.class);
-            writeAttributes(writer, store, storeAttributes);
-            writeAttributes(writer, store, StoreResourceDefinition.DeprecatedAttribute.class);
-            writeStoreElements(writer, store);
-            writeJDBCStoreTable(writer, XMLElement.BINARY_KEYED_TABLE, store, BinaryTableResourceDefinition.PATH, BinaryTableResourceDefinition.Attribute.PREFIX);
-            writeJDBCStoreTable(writer, XMLElement.STRING_KEYED_TABLE, store, StringTableResourceDefinition.PATH, StringTableResourceDefinition.Attribute.PREFIX);
             writer.writeEndElement();
         }
 

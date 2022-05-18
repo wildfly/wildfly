@@ -29,10 +29,7 @@ import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -55,11 +52,8 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest<Infinis
         return EnumSet.allOf(InfinispanSchema.class);
     }
 
-    private final InfinispanSchema schema;
-
     public InfinispanSubsystemTestCase(InfinispanSchema schema) {
         super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), schema, "subsystem-infinispan-%d_%d.xml", "schema/jboss-as-infinispan_%d_%d.xsd");
-        this.schema = schema;
     }
 
     @Override
@@ -97,36 +91,5 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest<Infinis
         Properties properties = new Properties();
         properties.put("java.io.tmpdir", "/tmp");
         return properties;
-    }
-
-    @Override
-    protected KernelServices standardSubsystemTest(String configId, String configIdResolvedModel, boolean compareXml, AdditionalInitialization additionalInit) throws Exception {
-        KernelServices services = super.standardSubsystemTest(configId, configIdResolvedModel, compareXml, additionalInit);
-
-        if (!this.schema.since(InfinispanSchema.VERSION_1_5)) {
-            ModelNode model = services.readWholeModel();
-
-            Assert.assertTrue(model.get(InfinispanSubsystemResourceDefinition.PATH.getKey()).hasDefined(InfinispanSubsystemResourceDefinition.PATH.getValue()));
-            ModelNode subsystem = model.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair());
-
-            for (Property containerProp : subsystem.get(CacheContainerResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
-                Assert.assertTrue("cache-container=" + containerProp.getName(),
-                        containerProp.getValue().get(CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getName()).asBoolean());
-
-                for (String key : containerProp.getValue().keys()) {
-                    if (key.endsWith("-cache") && !key.equals("default-cache")) {
-                        ModelNode caches = containerProp.getValue().get(key);
-                        if (caches.isDefined()) {
-                            for (Property cacheProp : caches.asPropertyList()) {
-                                Assert.assertTrue("cache-container=" + containerProp.getName() + "," + key + "=" + cacheProp.getName(),
-                                        containerProp.getValue().get(CacheResourceDefinition.Attribute.STATISTICS_ENABLED.getName()).asBoolean());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return services;
     }
 }
