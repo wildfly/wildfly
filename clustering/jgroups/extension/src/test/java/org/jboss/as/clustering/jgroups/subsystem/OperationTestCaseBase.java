@@ -91,10 +91,6 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Util.createRemoveOperation(getTransportAddress(stackName, type));
     }
 
-    protected static ModelNode getLegacyTransportRemoveOperation(String stackName) {
-        return Util.createRemoveOperation(getLegacyTransportAddress(stackName));
-    }
-
     protected static ModelNode getTransportReadOperation(String stackName, String type, Attribute attribute) {
         return Operations.createReadAttributeOperation(getTransportAddress(stackName, type), attribute);
     }
@@ -191,10 +187,6 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected static PathAddress getTransportAddress(String stackName, String type) {
         return getProtocolStackAddress(stackName).append(TransportResourceDefinition.pathElement(type));
-    }
-
-    protected static PathAddress getLegacyTransportAddress(String stackName) {
-        return getProtocolStackAddress(stackName).append(TransportResourceDefinition.LEGACY_PATH);
     }
 
     protected static PathAddress getProtocolAddress(String stackName, String type) {

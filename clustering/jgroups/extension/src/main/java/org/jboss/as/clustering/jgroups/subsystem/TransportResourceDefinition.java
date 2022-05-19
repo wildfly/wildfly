@@ -47,7 +47,6 @@ import org.jboss.dmr.ModelType;
  */
 public class TransportResourceDefinition extends AbstractProtocolResourceDefinition {
 
-    static final PathElement LEGACY_PATH = pathElement("TRANSPORT");
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     public static PathElement pathElement(String name) {
