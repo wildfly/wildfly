@@ -177,38 +177,47 @@
                 <default-security-domain value="other"/>
                 <default-missing-method-permissions-deny-access value="true"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:infinispan:2.0">
-                <cache-container name="web" default-cache="local" module="org.wildfly.clustering.web.infinispan">
-                    <local-cache name="local" batching="true">
-                        <file-store passivation="true" purge="false"/>
-                    </local-cache>
-                    <local-cache name="persistent" batching="true">
-                        <file-store passivation="false" purge="false"/>
-                    </local-cache>
+            <subsystem xmlns="urn:jboss:domain:infinispan:12.0">
+                <cache-container name="ejb" default-cache="dist" aliases="sfsb" modules="org.wildfly.clustering.ejb.infinispan">
+                    <transport lock-timeout="60000"/>
+                    <distributed-cache name="dist">
+                        <locking isolation="REPEATABLE_READ"/>
+                        <transaction mode="BATCH"/>
+                        <file-store/>
+                    </distributed-cache>
                 </cache-container>
-                <cache-container name="ejb" aliases="sfsb" default-cache="local" module="org.wildfly.clustering.ejb.infinispan">
-                    <local-cache name="local" batching="true">
-                        <file-store passivation="true" purge="false"/>
-                    </local-cache>
-                    <local-cache name="persistent" batching="true">
-                        <file-store passivation="false" purge="false"/>
-                    </local-cache>
+                <cache-container name="server" default-cache="default" aliases="singleton cluster" modules="org.wildfly.clustering.server">
+                    <transport lock-timeout="60000"/>
+                    <replicated-cache name="default">
+                        <transaction mode="BATCH"/>
+                    </replicated-cache>
                 </cache-container>
-                <cache-container name="hibernate" default-cache="local-query" module="org.hibernate.infinispan">
-                    <local-cache name="entity">
-                        <transaction mode="NON_XA"/>
-                        <eviction strategy="LRU" max-entries="10000"/>
-                        <expiration max-idle="100000"/>
-                    </local-cache>
+                <cache-container name="web" default-cache="sso" modules="org.wildfly.clustering.web.infinispan">
+                    <transport lock-timeout="60000"/>
+                    <replicated-cache name="sso">
+                        <file-store/>
+                    </replicated-cache>
+                    <replicated-cache name="routing"/>
+                    <distributed-cache name="dist">
+                        <locking isolation="REPEATABLE_READ"/>
+                        <transaction mode="BATCH"/>
+                        <file-store/>
+                    </distributed-cache>
+                </cache-container>
+                <cache-container name="hibernate" modules="org.infinispan.hibernate-cache">
+                    <transport lock-timeout="60000"/>
                     <local-cache name="local-query">
-                        <transaction mode="NONE"/>
-                        <eviction strategy="LRU" max-entries="10000"/>
+                        <heap-memory size="10000"/>
                         <expiration max-idle="100000"/>
                     </local-cache>
-                    <local-cache name="timestamps">
-                        <transaction mode="NONE"/>
-                        <eviction strategy="NONE"/>
+                    <local-cache name="pending-puts">
+                        <expiration max-idle="60000"/>
                     </local-cache>
+                    <invalidation-cache name="entity">
+                        <heap-memory size="10000"/>
+                        <expiration max-idle="100000"/>
+                    </invalidation-cache>
+                    <replicated-cache name="timestamps"/>
                 </cache-container>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jgroups:2.0" default-stack="udp">
@@ -527,32 +536,47 @@
                 <default-security-domain value="other"/>
                 <default-missing-method-permissions-deny-access value="true"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:infinispan:2.0">
-                <cache-container name="web" aliases="standard-session-cache" default-cache="local-web" module="org.wildfly.clustering.web.infinispan">
-                    <local-cache name="local-web" batching="true">
-                        <file-store passivation="false" purge="false"/>
-                    </local-cache>
+            <subsystem xmlns="urn:jboss:domain:infinispan:12.0">
+                <cache-container name="ejb" default-cache="dist" aliases="sfsb" modules="org.wildfly.clustering.ejb.infinispan">
+                    <transport lock-timeout="60000"/>
+                    <distributed-cache name="dist">
+                        <locking isolation="REPEATABLE_READ"/>
+                        <transaction mode="BATCH"/>
+                        <file-store/>
+                    </distributed-cache>
                 </cache-container>
-                <cache-container name="ejb" default-cache="local" module="org.wildfly.clustering.ejb.infinispan">
-                    <local-cache name="local" batching="true">
-                        <file-store passivation="true" purge="false"/>
-                    </local-cache>
+                <cache-container name="server" default-cache="default" aliases="singleton cluster" modules="org.wildfly.clustering.server">
+                    <transport lock-timeout="60000"/>
+                    <replicated-cache name="default">
+                        <transaction mode="BATCH"/>
+                    </replicated-cache>
                 </cache-container>
-                <cache-container name="hibernate" default-cache="local-query" module="org.hibernate.infinispan">
-                    <local-cache name="entity">
-                        <transaction mode="NON_XA"/>
-                        <eviction strategy="LRU" max-entries="10000"/>
-                        <expiration max-idle="100000"/>
-                    </local-cache>
+                <cache-container name="web" default-cache="sso" modules="org.wildfly.clustering.web.infinispan">
+                    <transport lock-timeout="60000"/>
+                    <replicated-cache name="sso">
+                        <file-store/>
+                    </replicated-cache>
+                    <replicated-cache name="routing"/>
+                    <distributed-cache name="dist">
+                        <locking isolation="REPEATABLE_READ"/>
+                        <transaction mode="BATCH"/>
+                        <file-store/>
+                    </distributed-cache>
+                </cache-container>
+                <cache-container name="hibernate" modules="org.infinispan.hibernate-cache">
+                    <transport lock-timeout="60000"/>
                     <local-cache name="local-query">
-                        <transaction mode="NONE"/>
-                        <eviction strategy="LRU" max-entries="10000"/>
+                        <heap-memory size="10000"/>
                         <expiration max-idle="100000"/>
                     </local-cache>
-                    <local-cache name="timestamps">
-                        <transaction mode="NONE"/>
-                        <eviction strategy="NONE"/>
+                    <local-cache name="pending-puts">
+                        <expiration max-idle="60000"/>
                     </local-cache>
+                    <invalidation-cache name="entity">
+                        <heap-memory size="10000"/>
+                        <expiration max-idle="100000"/>
+                    </invalidation-cache>
+                    <replicated-cache name="timestamps"/>
                 </cache-container>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jgroups:2.0" default-stack="udp">
