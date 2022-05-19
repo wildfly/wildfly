@@ -351,6 +351,6 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
                 destinations.add(control.getAddress());
             }
         }
-        return destinations.toArray(new String[destinations.size()]);
+        return destinations.toArray(String[]::new);
     }
 }
