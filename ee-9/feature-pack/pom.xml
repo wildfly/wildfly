@@ -1005,6 +1005,10 @@
                     <artifactId>jastow</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.glassfish</groupId>
+                    <artifactId>jakarta.el</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.jboss.metadata</groupId>
                     <artifactId>jboss-metadata-common</artifactId>
                 </exclusion>
