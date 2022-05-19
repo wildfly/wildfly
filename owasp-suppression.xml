@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
 
+    <suppress>
+        <notes><![CDATA[
+   file name: picketbox-infinispan-5.0.3.Final-redhat-00006.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.picketbox/picketbox\-infinispan@.*$</packageUrl>
+        <cve>CVE-2019-10158</cve>
+        <cve>CVE-2016-0750</cve>
+        <cve>CVE-2017-15089</cve>
+        <cve>CVE-2019-10174</cve>
+    </suppress>
+	
     <!-- [wildfly] Apache ActiveMQ is not shipped with wildfly ('ActiveMQ Artemis' is not 'ActiveMQ') -->
     <suppress>
         <notes><![CDATA[
@@ -55,7 +66,14 @@
         <packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-artemis\-native@.*$</packageUrl>
         <cve>CVE-2021-26117</cve>
     </suppress>
-
+    <!-- This vulnerability affects artemis-core-client not activemq-artemis-native artifact, Apache Artemis has been upgraded to 2.19.1 version which contains fix (https://issues.apache.org/jira/browse/ARTEMIS-3593) -->
+    <suppress>
+        <notes><![CDATA[
+   file name: activemq-artemis-native-1.0.2.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-artemis\-native@.*$</packageUrl>
+        <cve>CVE-2022-23913</cve>
+    </suppress>
     <!-- [wildfly] Applies to versions prior to wildfly 25.0.0 -->
     <suppress>
         <notes><![CDATA[
@@ -119,14 +137,30 @@
         <cve>CVE-2021-30468</cve>
     </suppress>
 
+    <!-- [CVE-2020-36518] This vulnerability affects com.fasterxml.jackson.core:jackson-databind not org.codehaus.jackson:jackson-xc artifact. Issue has been fixed in 2.13.2.1 and 2.12.6.1 versions. (https://github.com/advisories/GHSA-57j2-w4cx-62h2) -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jackson-xc-1.9.13.redhat-00007.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.codehaus\.jackson/jackson\-.*@.*$</packageUrl>
+        <cve>CVE-2018-14718</cve>
+        <cve>CVE-2018-7489</cve>
+        <cve>CVE-2020-36518</cve>
+    </suppress>
+
     <!-- [wildfly-core] The vulnerability applies to io.undertow package, undertow-server from org.wildfly.security.elytron-web package is a different module -->
     <suppress>
         <notes><![CDATA[
        file name: undertow-server-1.9.1.Final.jar
        ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server.*@.*$</packageUrl>
-        <cve>CVE-2019-3888</cve>
+        <cve>CVE-2017-12165</cve>
+        <cve>CVE-2017-12196</cve>
+        <cve>CVE-2017-2670</cve>
+        <cve>CVE-2017-7559</cve>
+        <cve>CVE-2018-1067</cve>
         <cve>CVE-2019-10184</cve>
+        <cve>CVE-2019-3888</cve>
         <cve>CVE-2019-10212</cve>
         <cve>CVE-2019-14888</cve>
         <cve>CVE-2019-19343</cve>
@@ -134,8 +168,9 @@
         <cve>CVE-2020-1757</cve>
         <cve>CVE-2020-10705</cve>
         <cve>CVE-2020-10719</cve>
+        <cve>CVE-2020-1745</cve>
     </suppress>
-
+	
     <!-- [wildfly] This is a false positive because wildfly itself does not use commons-compress. Commons-compress comes with org.testcontainers and it is used only for test purposes  -->
     <suppress>
         <notes><![CDATA[
@@ -218,6 +253,31 @@
         <cve>CVE-2021-23463</cve>
     </suppress>
 
+    <!-- [wildfly] 'In practice, this issue impacts only H2 databases which are actively using the Web Console and enabled remote access.' WildFly uses on in-memory h2 without remote access. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: h2-1.4.197.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+        <cve>CVE-2022-23221</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: h2-1.4.197.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+        <vulnerabilityName>CWE-94: Improper Control of Generation of Code ('Code Injection')</vulnerabilityName>
+    </suppress>
+
+    <!-- [wildfly] 'In practice, this issue impacts only H2 databases which are actively using the Web Console and enabled remote access.' WildFly uses on in-memory h2 without remote access. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: h2-1.4.197.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+        <cve>CVE-2021-42392</cve>
+    </suppress>
+	
     <!-- [wildfly] False-positive: it was fixed in 2.7.1.jbossorg-4 (https://github.com/jboss/xalan-j/commit/8cd0c151456475f57961b0987d9f985202f81eec) -->
     <suppress>
         <notes><![CDATA[
@@ -322,6 +382,14 @@
         <cve>CVE-2020-25689</cve>
         <cve>CVE-2021-3536</cve>
     </suppress>
+    <!-- False positive, from RedHat analyze (https://access.redhat.com/security/cve/CVE-2021-31917) only DataGrid is affected but not JBoss EAP. -->
+    <suppress>
+        <notes><![CDATA[
+    file name: infinispan-core-11.0.4.Final.jar
+    ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.infinispan/infinispan\-.*@.*$</packageUrl>
+        <cve>CVE-2021-31917</cve>
+    </suppress>
     <!-- ManagedSieve of Apache James not found in WildFly distribution -->
     <!-- Jazzer of Apache James not found in WildFly distribution  -->
     <suppress>
@@ -329,6 +397,32 @@
    file name: apache-mime4j-core-0.8.4.jar
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.james/apache\-mime4j\-.*$</packageUrl>
+        <cve>CVE-2021-40525</cve>
+        <cve>CVE-2021-40110</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+   file name: commons-cli-1.3.1.jar
+   file name: protostream-4.3.4.Final.jar (shaded: commons-cli:commons-cli:1.2)
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/commons\-cli/commons\-cli@.*$</packageUrl>
+        <cve>CVE-2021-40525</cve>
+        <cve>CVE-2021-40110</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: commons-digester-1.8.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/commons\-digester/commons\-digester@.*$</packageUrl>
+        <cve>CVE-2021-40525</cve>
+        <cve>CVE-2021-40110</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: commons-lang-2.6.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/commons\-lang/commons\-lang@.*$</packageUrl>
         <cve>CVE-2021-40525</cve>
         <cve>CVE-2021-40110</cve>
     </suppress>
@@ -348,4 +442,37 @@
         <packageUrl regex="true">^pkg:maven/org\.apache\.cxf.*$</packageUrl>
         <cve>CVE-2021-40690</cve>
     </suppress>
+    <!-- Wildfly21 ships with JGroups 4.2.5.Final which is not affected by CVE-2016-2141  -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jgroups-azure-1.3.0.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.jgroups\.azure/jgroups\-azure@.*$</packageUrl>
+        <cve>CVE-2016-2141</cve>
+    </suppress>
+    <!-- Wildfly21 ships with JGroups 4.2.5.Final which is not affected by CVE-2016-2141  -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jgroups-kubernetes-1.0.15.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.jgroups\.kubernetes/jgroups\-kubernetes@.*$</packageUrl>
+        <cve>CVE-2016-2141</cve>
+    </suppress>
+	<!-- [wildfly] (CVE-2017-18214) Red Hat JBoss Enterprise Application Platform are Not affected -->
+	<suppress>
+		<notes><![CDATA[
+   file name: javascript/bootstrap@3.3.1 (from weld-probe-core-3.1.5.Final.jar)
+   ]]></notes>
+		<packageUrl regex="true">^pkg:javascript/bootstrap@.*$</packageUrl>
+		<cve>CVE-2017-18214</cve>
+	</suppress>
+    <!-- According to: https://access.redhat.com/errata/RHSA-2022:1681 and https://access.redhat.com/errata/RHSA-2022:1715, Red Hat Advanced Cluster Management for Kubernetes 2 for RHEL 7/8 x86_64 are affected. Additionally, the usage of moment.locale was not found in weld-probe-core -->
+    <suppress>
+        <notes><![CDATA[
+   file name: weld-probe-core-3.1.5.Final.jar: probe.js
+   ]]></notes>
+        <packageUrl regex="true">^pkg:javascript/bootstrap@.*$</packageUrl>
+        <cve>CVE-2022-24785</cve>
+    </suppress>
+	
 </suppressions>
