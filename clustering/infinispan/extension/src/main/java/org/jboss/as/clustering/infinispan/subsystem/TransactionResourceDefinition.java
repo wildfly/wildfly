@@ -36,7 +36,6 @@ import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
@@ -63,7 +62,6 @@ import org.wildfly.clustering.service.Requirement;
 public class TransactionResourceDefinition extends ComponentResourceDefinition {
 
     static final PathElement PATH = pathElement("transaction");
-    static final PathElement LEGACY_PATH = PathElement.pathElement(PATH.getValue(), "TRANSACTION");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         LOCKING("locking", ModelType.STRING, new ModelNode(LockingMode.PESSIMISTIC.name())) {
@@ -138,7 +136,6 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
-        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         Capability dependentCapability = new BinaryRequirementCapability(InfinispanCacheRequirement.CACHE, BinaryCapabilityNameResolver.GRANDPARENT_PARENT);
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())

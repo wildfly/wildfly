@@ -39,7 +39,6 @@ import org.jboss.as.controller.PathElement;
  */
 public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefinition {
 
-    static final PathElement LEGACY_PATH = PathElement.pathElement("string-keyed-jdbc-store", "STRING_KEYED_JDBC_STORE");
     static final PathElement STRING_JDBC_PATH = pathElement("string-jdbc");
     static final PathElement PATH = JDBCStoreResourceDefinition.PATH;
 
@@ -51,7 +50,7 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     }
 
     StringKeyedJDBCStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new ResourceDescriptorConfigurator());
+        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new ResourceDescriptorConfigurator());
     }
 
     @Override

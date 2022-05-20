@@ -95,8 +95,8 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         }
     }
 
-    JDBCStoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator) {
-        super(path, legacyPath, resolver, new ResourceDescriptorConfigurator(configurator));
+    JDBCStoreResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator) {
+        super(path, resolver, new ResourceDescriptorConfigurator(configurator));
     }
 
     @Override

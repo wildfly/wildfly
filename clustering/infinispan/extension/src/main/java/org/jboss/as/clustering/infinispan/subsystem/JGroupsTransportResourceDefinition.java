@@ -29,7 +29,6 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -37,7 +36,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jgroups.JChannel;
@@ -54,7 +52,6 @@ import org.wildfly.clustering.service.UnaryRequirement;
  */
 public class JGroupsTransportResourceDefinition extends TransportResourceDefinition {
 
-    static final PathElement LEGACY_PATH = pathElement("TRANSPORT");
     static final PathElement PATH = pathElement("jgroups");
 
     enum Requirement implements UnaryRequirement {
@@ -144,14 +141,5 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
 
     JGroupsTransportResourceDefinition() {
         super(PATH, new ResourceDescriptorConfigurator(), new JGroupsTransportServiceHandler());
-    }
-
-    @Override
-    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
-        ManagementResourceRegistration registration = super.register(parent);
-
-        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
-
-        return registration;
     }
 }

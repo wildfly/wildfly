@@ -69,7 +69,7 @@ public class HotRodStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     public HotRodStoreResourceDefinition() {
-        super(PATH, null, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class));
+        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class));
     }
 
     @Override

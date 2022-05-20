@@ -28,7 +28,6 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
@@ -51,7 +50,6 @@ import org.jboss.dmr.ModelType;
  */
 public class StateTransferResourceDefinition extends ComponentResourceDefinition {
 
-    static final PathElement LEGACY_PATH = PathElement.pathElement("state-transfer", "STATE_TRANSFER");
     static final PathElement PATH = pathElement("state-transfer");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
@@ -94,7 +92,6 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
-        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)

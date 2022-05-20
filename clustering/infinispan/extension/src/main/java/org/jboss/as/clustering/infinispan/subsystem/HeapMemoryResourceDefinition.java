@@ -26,9 +26,7 @@ import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.StorageType;
-import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -42,9 +40,6 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 public class HeapMemoryResourceDefinition extends MemoryResourceDefinition {
 
     static final PathElement PATH = pathElement("heap");
-    static final PathElement OBJECT_PATH = pathElement("object");
-    static final PathElement EVICTION_PATH = ComponentResourceDefinition.pathElement("eviction");
-    static final PathElement LEGACY_PATH = PathElement.pathElement(EVICTION_PATH.getValue(), "EVICTION");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         SIZE_UNIT(SharedAttribute.SIZE_UNIT) {
@@ -75,16 +70,5 @@ public class HeapMemoryResourceDefinition extends MemoryResourceDefinition {
 
     HeapMemoryResourceDefinition() {
         super(StorageType.HEAP, PATH, new ResourceDescriptorConfigurator(), Attribute.SIZE_UNIT);
-    }
-
-    @Override
-    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
-        ManagementResourceRegistration registration = super.register(parent);
-
-        parent.registerAlias(OBJECT_PATH, new SimpleAliasEntry(registration));
-        parent.registerAlias(EVICTION_PATH, new SimpleAliasEntry(registration));
-        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
-
-        return registration;
     }
 }

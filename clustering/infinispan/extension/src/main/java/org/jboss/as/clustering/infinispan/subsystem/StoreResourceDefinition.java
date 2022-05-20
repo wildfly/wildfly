@@ -31,7 +31,6 @@ import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -105,21 +104,16 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         }
     }
 
-    private final PathElement legacyPath;
     private final UnaryOperator<ResourceDescriptor> configurator;
 
-    protected StoreResourceDefinition(PathElement path, PathElement legacyPath, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator) {
+    protected StoreResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator) {
         super(path, resolver);
-        this.legacyPath = legacyPath;
         this.configurator = configurator;
     }
 
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
-        if (this.legacyPath != null) {
-            parent.registerAlias(this.legacyPath, new SimpleAliasEntry(registration));
-        }
 
         ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
                 .addAttributes(Attribute.class)

@@ -26,7 +26,6 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -44,7 +43,6 @@ import org.jboss.dmr.ModelType;
  */
 public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefinition {
 
-    static final PathElement LEGACY_PATH = PathElement.pathElement("write-behind", "WRITE_BEHIND");
     static final PathElement PATH = pathElement("behind");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
@@ -74,7 +72,6 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
-        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
