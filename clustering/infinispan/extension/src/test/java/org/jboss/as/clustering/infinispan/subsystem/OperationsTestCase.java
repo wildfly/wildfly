@@ -4,14 +4,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import java.util.Collections;
-
-import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -106,7 +100,6 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals("new-datasource", result.get(RESULT).asString());
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testStoreProperties() throws Exception {
         KernelServices services = this.createKernelServicesBuilder().setSubsystemXml(this.getSubsystemXml()).build();
@@ -126,44 +119,6 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals(value, result.get(RESULT).asString());
 
         operation = Operations.createMapRemoveOperation(address, StoreResourceDefinition.Attribute.PROPERTIES, key);
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).isDefined());
-
-        operation = Operations.createMapGetOperation(address, StoreResourceDefinition.Attribute.PROPERTIES, key);
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).isDefined());
-
-        // Validate that properties can still be added/removed/updated via child property resources
-        PathAddress propertyAddress = address.append(StorePropertyResourceDefinition.pathElement(key));
-        operation = Operations.createAddOperation(propertyAddress, Collections.<Attribute, ModelNode>singletonMap(new SimpleAttribute(StorePropertyResourceDefinition.VALUE), new ModelNode(value)));
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).isDefined());
-
-        operation = Operations.createMapGetOperation(address, StoreResourceDefinition.Attribute.PROPERTIES, key);
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals(value, result.get(RESULT).asString());
-
-        value = "false";
-        operation = Operations.createWriteAttributeOperation(propertyAddress, new SimpleAttribute(StorePropertyResourceDefinition.VALUE), new ModelNode(value));
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).isDefined());
-
-        operation = Operations.createMapGetOperation(address, StoreResourceDefinition.Attribute.PROPERTIES, key);
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals(value, result.get(RESULT).asString());
-
-        operation = Operations.createReadAttributeOperation(propertyAddress, new SimpleAttribute(StorePropertyResourceDefinition.VALUE));
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals(value, result.get(RESULT).asString());
-
-        operation = Util.createRemoveOperation(propertyAddress);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
@@ -192,30 +147,6 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals(new ModelNode(alias), result.get(RESULT));
 
         operation = Operations.createListRemoveOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES, 0);
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).isDefined());
-
-        operation = Operations.createListGetOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES, 0);
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).isDefined());
-
-        // Validate that aliases can still be added/removed via legacy operations
-        operation = Util.createOperation("add-alias", address);
-        operation.get(ModelDescriptionConstants.NAME).set(alias);
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertFalse(result.get(RESULT).isDefined());
-
-        operation = Operations.createListGetOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES, 0);
-        result = services.executeOperation(operation);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        /* This currently fails due to WFCORE-626, requires wildfly-core-1.0.0.Beta4
-        Assert.assertEquals(new ModelNode(alias), result.get(RESULT));
-        */
-        operation = Util.createOperation("remove-alias", address);
-        operation.get(ModelDescriptionConstants.NAME).set(alias);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());

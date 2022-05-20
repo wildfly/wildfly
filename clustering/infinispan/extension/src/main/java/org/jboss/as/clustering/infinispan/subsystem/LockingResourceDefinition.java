@@ -22,15 +22,11 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.util.concurrent.IsolationLevel;
-import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.ReadAttributeTranslationHandler;
-import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -38,7 +34,6 @@ import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -94,44 +89,6 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
         }
     }
 
-    enum DeprecatedMetric implements AttributeTranslation, UnaryOperator<PathAddress>, Registration<ManagementResourceRegistration> {
-        CURRENT_CONCURRENCY_LEVEL(LockingMetric.CURRENT_CONCURRENCY_LEVEL),
-        NUMBER_OF_LOCKS_AVAILABLE(LockingMetric.NUMBER_OF_LOCKS_AVAILABLE),
-        NUMBER_OF_LOCKS_HELD(LockingMetric.NUMBER_OF_LOCKS_HELD),
-        ;
-        private final AttributeDefinition definition;
-        private final org.jboss.as.clustering.controller.Attribute targetAttribute;
-
-        DeprecatedMetric(LockingMetric metric) {
-            this.targetAttribute = metric;
-            this.definition = new SimpleAttributeDefinitionBuilder(metric.getName(), metric.getDefinition().getType())
-                    .setDeprecated(InfinispanModel.VERSION_11_0_0.getVersion())
-                    .setStorageRuntime()
-                    .build();
-        }
-
-        @Override
-        public void register(ManagementResourceRegistration registration) {
-            registration.registerReadOnlyAttribute(this.definition, new ReadAttributeTranslationHandler(this));
-        }
-
-        @Override
-        public org.jboss.as.clustering.controller.Attribute getTargetAttribute() {
-            return this.targetAttribute;
-        }
-
-        @Override
-        public UnaryOperator<PathAddress> getPathAddressTransformation() {
-            return this;
-        }
-
-        @Override
-        public PathAddress apply(PathAddress address) {
-            PathAddress cacheAddress = address.getParent();
-            return cacheAddress.getParent().append(CacheRuntimeResourceDefinition.pathElement(cacheAddress.getLastElement().getValue()), LockingRuntimeResourceDefinition.PATH);
-        }
-    }
-
     LockingResourceDefinition() {
         super(PATH);
     }
@@ -144,12 +101,6 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(LockingServiceConfigurator::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
-
-        if (registration.isRuntimeOnlyRegistrationValid()) {
-            for (DeprecatedMetric metric : EnumSet.allOf(DeprecatedMetric.class)) {
-                metric.register(registration);
-            }
-        }
 
         return registration;
     }

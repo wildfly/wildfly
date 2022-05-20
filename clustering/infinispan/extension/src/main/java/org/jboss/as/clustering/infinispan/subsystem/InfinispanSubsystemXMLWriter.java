@@ -33,7 +33,6 @@ import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.HotRodStoreResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
-import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.DeprecatedAttribute;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.SecurityResourceDefinition;
 import org.jboss.as.controller.PathElement;
@@ -52,7 +51,6 @@ import org.wildfly.common.iteration.CompositeIterable;
  */
 public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemMarshallingContext> {
 
-    @SuppressWarnings("deprecation")
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(InfinispanSchema.CURRENT.getNamespaceUri(), false);
@@ -69,13 +67,11 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
                     writeAttributes(writer, container, CacheContainerResourceDefinition.Attribute.class);
                     writeAttributes(writer, container, CacheContainerResourceDefinition.ListAttribute.class);
-                    writeAttributes(writer, container, CacheContainerResourceDefinition.ExecutorAttribute.class);
 
                     if (container.hasDefined(JGroupsTransportResourceDefinition.PATH.getKeyValuePair())) {
                         writer.writeStartElement(XMLElement.TRANSPORT.getLocalName());
                         ModelNode transport = container.get(JGroupsTransportResourceDefinition.PATH.getKeyValuePair());
                         writeAttributes(writer, transport, EnumSet.allOf(JGroupsTransportResourceDefinition.Attribute.class));
-                        writeAttributes(writer, transport, EnumSet.allOf(JGroupsTransportResourceDefinition.ExecutorAttribute.class));
                         writer.writeEndElement();
                     }
 
@@ -171,7 +167,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
                     writeAttributes(writer, remoteContainer, EnumSet.complementOf(EnumSet.of(RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES)));
                     writeAttributes(writer, remoteContainer, RemoteCacheContainerResourceDefinition.ListAttribute.class);
-                    writeAttributes(writer, remoteContainer, EnumSet.complementOf(EnumSet.of(DeprecatedAttribute.MODULE)));
+                    writeAttributes(writer, remoteContainer, EnumSet.allOf(RemoteCacheContainerResourceDefinition.DeprecatedAttribute.class));
 
                     writeThreadPoolElements(XMLElement.ASYNC_THREAD_POOL, ThreadPoolResourceDefinition.CLIENT, writer, remoteContainer);
 
@@ -180,13 +176,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     if (hasDefined(connectionPool, attributes)) {
                         writer.writeStartElement(XMLElement.CONNECTION_POOL.getLocalName());
                         writeAttributes(writer, connectionPool, attributes);
-                        writer.writeEndElement();
-                    }
-
-                    if (remoteContainer.hasDefined(org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition.PATH.getKeyValuePair())) {
-                        writer.writeStartElement(XMLElement.INVALIDATION_NEAR_CACHE.getLocalName());
-                        ModelNode nearCache = remoteContainer.get(org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition.PATH.getKeyValuePair());
-                        writeAttributes(writer, nearCache, EnumSet.allOf(org.jboss.as.clustering.infinispan.subsystem.remote.InvalidationNearCacheResourceDefinition.Attribute.class));
                         writer.writeEndElement();
                     }
 
@@ -233,11 +222,9 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writeAttributes(writer, cache, ClusteredCacheResourceDefinition.Attribute.class);
     }
 
-    @SuppressWarnings("deprecation")
     private static void writeSegmentedCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
         writeClusteredCacheAttributes(writer, name, cache);
         writeAttributes(writer, cache, SegmentedCacheResourceDefinition.Attribute.class);
-        writeAttributes(writer, cache, SegmentedCacheResourceDefinition.DeprecatedAttribute.class);
     }
 
     @SuppressWarnings("deprecation")
@@ -299,7 +286,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writeAttributes(writer, store, CustomStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, JDBCStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, storeAttributes);
-            writeAttributes(writer, store, StoreResourceDefinition.DeprecatedAttribute.class);
             writeStoreElements(writer, store);
             writer.writeEndElement();
         }
@@ -309,7 +295,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeStartElement(XMLElement.FILE_STORE.getLocalName());
             writeAttributes(writer, store, FileStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, storeAttributes);
-            writeAttributes(writer, store, StoreResourceDefinition.DeprecatedAttribute.class);
             writeStoreElements(writer, store);
             writer.writeEndElement();
         }
@@ -319,7 +304,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeStartElement(XMLElement.JDBC_STORE.getLocalName());
             writeAttributes(writer, store, JDBCStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, storeAttributes);
-            writeAttributes(writer, store, StoreResourceDefinition.DeprecatedAttribute.class);
             writeStoreElements(writer, store);
             writeJDBCStoreTable(writer, XMLElement.TABLE, store, StringTableResourceDefinition.PATH, StringTableResourceDefinition.Attribute.PREFIX);
             writer.writeEndElement();
@@ -330,7 +314,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeStartElement(XMLElement.REMOTE_STORE.getLocalName());
             writeAttributes(writer, store, RemoteStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, storeAttributes);
-            writeAttributes(writer, store, StoreResourceDefinition.DeprecatedAttribute.class);
             writeStoreElements(writer, store);
             writer.writeEndElement();
         }
@@ -340,7 +323,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeStartElement(XMLElement.HOTROD_STORE.getLocalName());
             writeAttributes(writer, store, HotRodStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, storeAttributes);
-            writeAttributes(writer, store, StoreResourceDefinition.DeprecatedAttribute.class);
             writeStoreElements(writer, store);
             writer.writeEndElement();
         }

@@ -29,14 +29,11 @@ import java.util.function.UnaryOperator;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.infinispan.transaction.LockingMode;
-import org.jboss.as.clustering.controller.AttributeTranslation;
 import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.BinaryRequirementCapability;
 import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.ReadAttributeTranslationHandler;
-import org.jboss.as.clustering.controller.Registration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
@@ -44,7 +41,6 @@ import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -135,44 +131,6 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
         }
     }
 
-    enum DeprecatedMetric implements AttributeTranslation, UnaryOperator<PathAddress>, Registration<ManagementResourceRegistration> {
-        COMMITS(TransactionMetric.COMMITS),
-        PREPARES(TransactionMetric.PREPARES),
-        ROLLBACKS(TransactionMetric.ROLLBACKS),
-        ;
-        private final AttributeDefinition definition;
-        private final org.jboss.as.clustering.controller.Attribute targetAttribute;
-
-        DeprecatedMetric(TransactionMetric metric) {
-            this.targetAttribute = metric;
-            this.definition = new SimpleAttributeDefinitionBuilder(metric.getName(), metric.getDefinition().getType())
-                    .setDeprecated(InfinispanModel.VERSION_11_0_0.getVersion())
-                    .setStorageRuntime()
-                    .build();
-        }
-
-        @Override
-        public void register(ManagementResourceRegistration registration) {
-            registration.registerReadOnlyAttribute(this.definition, new ReadAttributeTranslationHandler(this));
-        }
-
-        @Override
-        public org.jboss.as.clustering.controller.Attribute getTargetAttribute() {
-            return this.targetAttribute;
-        }
-
-        @Override
-        public UnaryOperator<PathAddress> getPathAddressTransformation() {
-            return this;
-        }
-
-        @Override
-        public PathAddress apply(PathAddress address) {
-            PathAddress cacheAddress = address.getParent();
-            return cacheAddress.getParent().append(CacheRuntimeResourceDefinition.pathElement(cacheAddress.getLastElement().getValue()), TransactionRuntimeResourceDefinition.PATH);
-        }
-    }
-
     TransactionResourceDefinition() {
         super(PATH);
     }
@@ -193,12 +151,6 @@ public class TransactionResourceDefinition extends ComponentResourceDefinition {
                 .addResourceCapabilityReference(new TransactionResourceCapabilityReference(dependentCapability, TransactionRequirement.XA_RESOURCE_RECOVERY_REGISTRY, Attribute.MODE, EnumSet.complementOf(EnumSet.of(TransactionMode.FULL_XA))));
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(TransactionServiceConfigurator::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
-
-        if (registration.isRuntimeOnlyRegistrationValid()) {
-            for (DeprecatedMetric metric : EnumSet.allOf(DeprecatedMetric.class)) {
-                metric.register(registration);
-            }
-        }
 
         return registration;
     }

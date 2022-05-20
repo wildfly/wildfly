@@ -49,7 +49,6 @@ public enum CacheComponent implements ResourceServiceNameFactory {
     PARTITION_HANDLING(PartitionHandlingResourceDefinition.PATH),
     STORE_WRITE(StoreWriteResourceDefinition.WILDCARD_PATH),
     TRANSACTION(TransactionResourceDefinition.PATH),
-    BINARY_TABLE(StoreResourceDefinition.WILDCARD_PATH, BinaryTableResourceDefinition.PATH),
     STRING_TABLE(StoreResourceDefinition.WILDCARD_PATH, StringTableResourceDefinition.PATH),
     BACKUPS(BackupResourceDefinition.WILDCARD_PATH),
     ;

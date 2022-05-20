@@ -62,40 +62,9 @@ import org.jboss.msc.service.ServiceName;
  */
 public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition, ResourceServiceConfiguratorFactory, UnaryOperator<SimpleResourceDefinition.Parameters> {
 
-    // cache-container
-    @Deprecated ASYNC_OPERATIONS("async-operations", 25, 25, 1000, TimeUnit.MINUTES.toMillis(1), true, CacheContainerResourceDefinition.Capability.CONFIGURATION) {
-        @Override
-        public SimpleResourceDefinition.Parameters apply(SimpleResourceDefinition.Parameters parameters) {
-            return parameters.setDeprecatedSince(InfinispanModel.VERSION_13_0_0.getVersion());
-        }
-    },
     BLOCKING("blocking", 1, 150, 5000, TimeUnit.MINUTES.toMillis(1), false, CacheContainerResourceDefinition.Capability.CONFIGURATION),
     LISTENER("listener", 1, 1, 1000, TimeUnit.MINUTES.toMillis(1), false, CacheContainerResourceDefinition.Capability.CONFIGURATION),
     NON_BLOCKING("non-blocking", 2, 2, 1000, TimeUnit.MINUTES.toMillis(1), true, CacheContainerResourceDefinition.Capability.CONFIGURATION),
-    @Deprecated PERSISTENCE("persistence", 4, 4, 5000, TimeUnit.MINUTES.toMillis(1), false, CacheContainerResourceDefinition.Capability.CONFIGURATION) {
-        @Override
-        public SimpleResourceDefinition.Parameters apply(SimpleResourceDefinition.Parameters parameters) {
-            return parameters.setDeprecatedSince(InfinispanModel.VERSION_13_0_0.getVersion());
-        }
-    },
-    @Deprecated REMOTE_COMMAND("remote-command", 1, 200, 0, TimeUnit.MINUTES.toMillis(1), false, CacheContainerResourceDefinition.Capability.CONFIGURATION) {
-        @Override
-        public SimpleResourceDefinition.Parameters apply(SimpleResourceDefinition.Parameters parameters) {
-            return parameters.setDeprecatedSince(InfinispanModel.VERSION_13_0_0.getVersion());
-        }
-    },
-    @Deprecated STATE_TRANSFER("state-transfer", 1, 60, 0, TimeUnit.MINUTES.toMillis(1), true, CacheContainerResourceDefinition.Capability.CONFIGURATION) {
-        @Override
-        public SimpleResourceDefinition.Parameters apply(SimpleResourceDefinition.Parameters parameters) {
-            return parameters.setDeprecatedSince(InfinispanModel.VERSION_12_0_0.getVersion());
-        }
-    },
-    @Deprecated TRANSPORT("transport", 10, 10, 1000, TimeUnit.MINUTES.toMillis(1), true, CacheContainerResourceDefinition.Capability.CONFIGURATION) {
-        @Override
-        public SimpleResourceDefinition.Parameters apply(SimpleResourceDefinition.Parameters parameters) {
-            return parameters.setDeprecatedSince(InfinispanModel.VERSION_13_0_0.getVersion());
-        }
-    },
     // remote-cache-container
     CLIENT("async", 99, 99, 0, 0L, true, RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION) {
         @Override

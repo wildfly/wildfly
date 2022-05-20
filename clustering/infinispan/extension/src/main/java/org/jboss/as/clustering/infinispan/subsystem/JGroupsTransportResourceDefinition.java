@@ -132,57 +132,10 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         }
     }
 
-    @Deprecated
-    enum ExecutorAttribute implements org.jboss.as.clustering.controller.Attribute {
-        TRANSPORT("executor"),
-        ;
-        private final AttributeDefinition definition;
-
-        ExecutorAttribute(String name) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING)
-                    .setAllowExpression(true)
-                    .setRequired(false)
-                    .setAllowExpression(false)
-                    .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    .build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
-    @Deprecated
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        CLUSTER("cluster", ModelType.STRING, null, InfinispanModel.VERSION_3_0_0),
-        STACK("stack", ModelType.STRING, null, InfinispanModel.VERSION_3_0_0),
-        ;
-        private final AttributeDefinition definition;
-
-        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setRequired(false)
-                    .setDefaultValue(defaultValue)
-                    .setDeprecated(deprecation.getVersion())
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    .build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
     static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
             return descriptor.addAttributes(Attribute.class)
-                    .addIgnoredAttributes(ExecutorAttribute.class)
-                    .addIgnoredAttributes(DeprecatedAttribute.class)
                     .addCapabilities(Capability.class)
                     .addResourceCapabilityReference(new ResourceCapabilityReference(Capability.TRANSPORT_CHANNEL, JGroupsDefaultRequirement.CHANNEL_FACTORY))
                     ;

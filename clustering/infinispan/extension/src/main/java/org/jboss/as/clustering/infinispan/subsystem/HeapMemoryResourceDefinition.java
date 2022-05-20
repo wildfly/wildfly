@@ -26,7 +26,6 @@ import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.StorageType;
-import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
@@ -35,9 +34,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.EnumValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Definition for the /memory=object resource.
@@ -70,40 +66,10 @@ public class HeapMemoryResourceDefinition extends MemoryResourceDefinition {
         }
     }
 
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        STRATEGY("strategy", ModelType.STRING, new ModelNode(EvictionStrategy.NONE.name())),
-        MAX_ENTRIES("max-entries", ModelType.LONG, new ModelNode(-1L)),
-        ;
-        private final AttributeDefinition definition;
-
-        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue) {
-            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setRequired(false)
-                    .setDefaultValue(defaultValue)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    .setDeprecated(InfinispanModel.VERSION_6_0_0.getVersion())
-                    ).build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-
-        @Override
-        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-            return builder;
-        }
-    }
-
     static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
-            return descriptor.addAttributes(Attribute.class)
-                    .addIgnoredAttributes(EnumSet.complementOf(EnumSet.of(DeprecatedAttribute.MAX_ENTRIES)))
-                    .addAlias(DeprecatedAttribute.MAX_ENTRIES, MemoryResourceDefinition.Attribute.SIZE)
-                    ;
+            return descriptor.addAttributes(Attribute.class);
         }
     }
 

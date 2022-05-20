@@ -87,28 +87,6 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
         }
     }
 
-    @Deprecated
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        ENABLED("enabled", ModelType.BOOLEAN, ModelNode.TRUE, InfinispanModel.VERSION_4_0_0),
-        ;
-        private final AttributeDefinition definition;
-
-        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setRequired(false)
-                    .setDefaultValue(defaultValue)
-                    .setDeprecated(deprecation.getVersion())
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    .build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
     StateTransferResourceDefinition() {
         super(PATH);
     }
@@ -120,7 +98,6 @@ public class StateTransferResourceDefinition extends ComponentResourceDefinition
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
-                .addIgnoredAttributes(DeprecatedAttribute.class)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(StateTransferServiceConfigurator::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);

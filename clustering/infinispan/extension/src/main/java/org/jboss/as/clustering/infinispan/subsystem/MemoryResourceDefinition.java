@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.StorageType;
@@ -124,12 +123,6 @@ public class MemoryResourceDefinition extends ChildResourceDefinition<Management
 
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
         new SimpleResourceRegistration(descriptor, handler).register(registration);
-
-        if (registration.isRuntimeOnlyRegistrationValid()) {
-            for (EvictionMetric metric : EnumSet.allOf(EvictionMetric.class)) {
-                metric.register(registration);
-            }
-        }
 
         return registration;
     }

@@ -30,7 +30,6 @@ import org.infinispan.client.hotrod.ProtocolVersion;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.ListAttributeTranslation;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
@@ -103,7 +102,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         MARSHALLER("marshaller", ModelType.STRING, new ModelNode(HotRodMarshallerFactory.LEGACY.name())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new EnumValidator<HotRodMarshallerFactory>(HotRodMarshallerFactory.class) {
+                return builder.setValidator(new EnumValidator<>(HotRodMarshallerFactory.class) {
                     @Override
                     public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
                         super.validateParameter(parameterName, value);
@@ -199,12 +198,6 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 return builder.setDefaultValue(new ModelNode(64));
             }
         },
-        MODULE("module", ModelType.STRING, InfinispanModel.VERSION_14_0_0) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setFlags(AttributeAccess.Flag.ALIAS);
-            }
-        },
         VALUE_SIZE_ESTIMATE("value-size-estimate", ModelType.INT, InfinispanModel.VERSION_15_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -238,7 +231,6 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parentRegistration) {
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(this);
@@ -246,11 +238,9 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addAttributes(ListAttribute.class)
-                .addIgnoredAttributes(EnumSet.complementOf(EnumSet.of(DeprecatedAttribute.MODULE)))
-                .addAttributeTranslation(DeprecatedAttribute.MODULE, new ListAttributeTranslation(ListAttribute.MODULES))
+                .addAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
-                .addRequiredChildren(ConnectionPoolResourceDefinition.PATH, ThreadPoolResourceDefinition.CLIENT.getPathElement(), SecurityResourceDefinition.PATH, RemoteTransactionResourceDefinition.PATH)
-                .addRequiredSingletonChildren(NoNearCacheResourceDefinition.PATH)
+                .addRequiredChildren(ConnectionPoolResourceDefinition.PATH, ThreadPoolResourceDefinition.CLIENT.getPathElement(), SecurityResourceDefinition.PATH)
                 .setResourceTransformation(RemoteCacheContainerResource::new)
                 ;
         ServiceValueExecutorRegistry<RemoteCacheContainer> executors = new ServiceValueExecutorRegistry<>();
@@ -260,10 +250,6 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         new ConnectionPoolResourceDefinition().register(registration);
         new RemoteClusterResourceDefinition(this, executors).register(registration);
         new SecurityResourceDefinition().register(registration);
-        new RemoteTransactionResourceDefinition().register(registration);
-
-        new InvalidationNearCacheResourceDefinition().register(registration);
-        new NoNearCacheResourceDefinition().register(registration);
 
         ThreadPoolResourceDefinition.CLIENT.register(registration);
 

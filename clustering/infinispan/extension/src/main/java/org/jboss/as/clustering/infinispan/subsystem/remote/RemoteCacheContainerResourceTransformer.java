@@ -24,13 +24,8 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.function.Consumer;
 
-import org.jboss.as.clustering.controller.transform.DiscardSingletonListAttributeChecker;
-import org.jboss.as.clustering.controller.transform.RejectNonSingletonListAttributeChecker;
-import org.jboss.as.clustering.controller.transform.SingletonListAttributeConverter;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
-import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.DeprecatedAttribute;
-import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.ListAttribute;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -59,14 +54,5 @@ public class RemoteCacheContainerResourceTransformer implements Consumer<ModelVe
                     .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getName())
                     .end();
         }
-        if (InfinispanModel.VERSION_14_0_0.requiresTransformation(version)) {
-            this.builder.getAttributeBuilder()
-                    .setValueConverter(new SingletonListAttributeConverter(ListAttribute.MODULES), DeprecatedAttribute.MODULE.getDefinition())
-                    .setDiscard(DiscardSingletonListAttributeChecker.INSTANCE, ListAttribute.MODULES.getDefinition())
-                    .addRejectCheck(RejectNonSingletonListAttributeChecker.INSTANCE, ListAttribute.MODULES.getDefinition())
-                    .end();
-        }
-
-        new RemoteTransactionResourceTransformer(this.builder).accept(version);
     }
 }

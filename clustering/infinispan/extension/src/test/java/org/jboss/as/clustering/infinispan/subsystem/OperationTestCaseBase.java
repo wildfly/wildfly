@@ -22,8 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-
 import java.io.IOException;
 import java.util.Collections;
 
@@ -139,41 +137,8 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Util.getUndefineAttributeOperation(cacheStoreAddress, StoreResourceDefinition.Attribute.PROPERTIES.getName());
     }
 
-    protected static ModelNode getCacheStorePropertyAddOperation(String containerName, String cacheName, String cacheType, String propertyName, String value) {
-        ModelNode operation = Util.createAddOperation(getCacheStorePropertyAddress(containerName, cacheType, cacheName, propertyName));
-        // required attributes
-        operation.get(VALUE).set(value);
-        return operation;
-    }
-
-    protected static ModelNode getCacheStorePropertyWriteOperation(String containerName, String cacheName, String cacheType, String propertyName, String value) {
-        return Util.getWriteAttributeOperation(getCacheStorePropertyAddress(containerName, cacheType, cacheName, propertyName), VALUE, new ModelNode().set(value));
-    }
-
-    // address generation
-    @SuppressWarnings("deprecation")
-    protected static PathAddress getCacheStorePropertyAddress(String containerName, String cacheType, String cacheName, String propertyName) {
-        return getCustomCacheStoreAddress(containerName, cacheType, cacheName).append(StorePropertyResourceDefinition.pathElement(propertyName));
-    }
-
     protected static PathAddress getJDBCCacheStoreAddress(String containerName, String cacheType, String cacheName) {
         return getCacheAddress(containerName, cacheType, cacheName).append(JDBCStoreResourceDefinition.PATH);
-    }
-
-    protected static PathAddress getMixedKeyedJDBCCacheStoreAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(MixedKeyedJDBCStoreResourceDefinition.PATH);
-    }
-
-    protected static PathAddress getMixedKeyedJDBCCacheStoreLegacyAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(MixedKeyedJDBCStoreResourceDefinition.LEGACY_PATH);
-    }
-
-    protected static PathAddress getBinaryKeyedJDBCCacheStoreAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(BinaryKeyedJDBCStoreResourceDefinition.PATH);
-    }
-
-    protected static PathAddress getBinaryKeyedJDBCCacheStoreLegacyAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(BinaryKeyedJDBCStoreResourceDefinition.LEGACY_PATH);
     }
 
     protected static PathAddress getStringKeyedJDBCCacheStoreAddress(String containerName, String cacheType, String cacheName) {

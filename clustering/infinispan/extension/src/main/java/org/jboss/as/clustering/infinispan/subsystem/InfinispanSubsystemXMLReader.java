@@ -118,7 +118,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
-                    readAttribute(reader, i, operation, CacheContainerResourceDefinition.DeprecatedAttribute.MODULE);
+                    readAttribute(reader, i, operation, CacheContainerResourceDefinition.ListAttribute.MODULES);
                     break;
                 }
                 case STATISTICS_ENABLED: {
@@ -372,7 +372,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 }
-                readAttribute(reader, index, operation, CacheResourceDefinition.DeprecatedAttribute.MODULE);
+                readAttribute(reader, index, operation, CacheResourceDefinition.ListAttribute.MODULES);
                 break;
             }
             case STATISTICS_ENABLED: {
@@ -1417,7 +1417,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
-                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.DeprecatedAttribute.MODULE);
+                    readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.ListAttribute.MODULES);
                     break;
                 }
                 case PROTOCOL_VERSION: {
