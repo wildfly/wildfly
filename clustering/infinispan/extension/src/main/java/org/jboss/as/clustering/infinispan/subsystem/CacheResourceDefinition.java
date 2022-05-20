@@ -167,7 +167,7 @@ public class CacheResourceDefinition<P extends CacheServiceConfiguratorProvider>
         new NoStoreResourceDefinition().register(registration);
         new CustomStoreResourceDefinition().register(registration);
         new FileStoreResourceDefinition().register(registration);
-        new StringKeyedJDBCStoreResourceDefinition().register(registration);
+        new JDBCStoreResourceDefinition().register(registration);
         new RemoteStoreResourceDefinition().register(registration);
         new HotRodStoreResourceDefinition().register(registration);
 

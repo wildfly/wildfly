@@ -141,36 +141,16 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return getCacheAddress(containerName, cacheType, cacheName).append(JDBCStoreResourceDefinition.PATH);
     }
 
-    protected static PathAddress getStringKeyedJDBCCacheStoreAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(StringKeyedJDBCStoreResourceDefinition.STRING_JDBC_PATH);
-    }
-
-    protected static PathAddress getStringKeyedJDBCCacheStoreLegacyAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(StringKeyedJDBCStoreResourceDefinition.LEGACY_PATH);
-    }
-
     protected static PathAddress getRemoteCacheStoreAddress(String containerName, String cacheType, String cacheName) {
         return getCacheAddress(containerName, cacheType, cacheName).append(RemoteStoreResourceDefinition.PATH);
-    }
-
-    protected static PathAddress getRemoteCacheStoreLegacyAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(RemoteStoreResourceDefinition.LEGACY_PATH);
     }
 
     protected static PathAddress getFileCacheStoreAddress(String containerName, String cacheType, String cacheName) {
         return getCacheAddress(containerName, cacheType, cacheName).append(FileStoreResourceDefinition.PATH);
     }
 
-    protected static PathAddress getFileCacheStoreLegacyAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(FileStoreResourceDefinition.LEGACY_PATH);
-    }
-
     protected static PathAddress getCustomCacheStoreAddress(String containerName, String cacheType, String cacheName) {
         return getCacheAddress(containerName, cacheType, cacheName).append(CustomStoreResourceDefinition.PATH);
-    }
-
-    protected static PathAddress getCustomCacheStoreLegacyAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(CustomStoreResourceDefinition.LEGACY_PATH);
     }
 
     protected static PathAddress getCacheContainerAddress(String containerName) {

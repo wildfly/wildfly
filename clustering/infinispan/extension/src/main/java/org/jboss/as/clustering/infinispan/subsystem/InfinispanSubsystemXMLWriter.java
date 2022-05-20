@@ -299,8 +299,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeEndElement();
         }
 
-        if (cache.hasDefined(StringKeyedJDBCStoreResourceDefinition.PATH.getKeyValuePair())) {
-            ModelNode store = cache.get(StringKeyedJDBCStoreResourceDefinition.PATH.getKeyValuePair());
+        if (cache.hasDefined(JDBCStoreResourceDefinition.PATH.getKeyValuePair())) {
+            ModelNode store = cache.get(JDBCStoreResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(XMLElement.JDBC_STORE.getLocalName());
             writeAttributes(writer, store, JDBCStoreResourceDefinition.Attribute.class);
             writeAttributes(writer, store, storeAttributes);

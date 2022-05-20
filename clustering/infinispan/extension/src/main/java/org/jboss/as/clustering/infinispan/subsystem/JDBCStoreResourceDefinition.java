@@ -27,6 +27,7 @@ import java.util.function.UnaryOperator;
 import org.infinispan.persistence.jdbc.common.DatabaseType;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.validation.EnumValidator;
@@ -34,7 +35,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelType;
 
@@ -43,7 +43,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinition {
+public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
 
     static final PathElement PATH = pathElement("jdbc");
 
@@ -80,27 +80,31 @@ public abstract class JDBCStoreResourceDefinition extends StoreResourceDefinitio
         }
     }
 
-    private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
-        private final UnaryOperator<ResourceDescriptor> configurator;
-
-        ResourceDescriptorConfigurator(UnaryOperator<ResourceDescriptor> configurator) {
-            this.configurator = configurator;
-        }
+    static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
 
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
-            return this.configurator.apply(descriptor)
-                    .addAttributes(Attribute.class)
+            return descriptor.addAttributes(Attribute.class)
+                    .addRequiredChildren(StringTableResourceDefinition.PATH)
                     ;
         }
     }
 
-    JDBCStoreResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator) {
-        super(path, resolver, new ResourceDescriptorConfigurator(configurator));
+    JDBCStoreResourceDefinition() {
+        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new ResourceDescriptorConfigurator());
     }
 
     @Override
     public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
         return new JDBCStoreServiceConfigurator(address);
+    }
+
+    @Override
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
+        ManagementResourceRegistration registration = super.register(parent);
+
+        new StringTableResourceDefinition().register(registration);
+
+        return registration;
     }
 }
