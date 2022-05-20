@@ -55,11 +55,6 @@
                     <xs:documentation>Overrides the transport characteristics for this cache container.</xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="async-operations-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
-                <xs:annotation>
-                    <xs:documentation>Defines a thread pool used for asynchronous operations.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
             <xs:element name="blocking-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>Defines a thread pool used for blocking operations.</xs:documentation>
@@ -73,26 +68,6 @@
             <xs:element name="non-blocking-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
                     <xs:documentation>Defines a thread pool used for non-blocking operations.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="persistence-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
-                <xs:annotation>
-                    <xs:documentation>Defines a thread pool used for interacting with the persistent store.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="remote-command-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
-                <xs:annotation>
-                    <xs:documentation>Defines a thread pool used to execute remote commands.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="state-transfer-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
-                <xs:annotation>
-                    <xs:documentation>Defines a thread pool used for for state transfer.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="transport-thread-pool" type="tns:thread-pool" minOccurs="0" maxOccurs="1">
-                <xs:annotation>
-                    <xs:documentation>Defines a thread pool used for asynchronous transport communication.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="expiration-thread-pool" type="tns:scheduled-thread-pool" minOccurs="0" maxOccurs="1">
@@ -222,26 +197,11 @@
                         <xs:documentation>Defines a file-based cache store.</xs:documentation>
                     </xs:annotation>
                 </xs:element>
-                <xs:choice minOccurs="0">
-                    <xs:element name="jdbc-store" type="tns:jdbc-store">
-                        <xs:annotation>
-                            <xs:documentation>Defines a database cache store accessed via JDBC using string-based keys.</xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                    <xs:element name="binary-keyed-jdbc-store" type="tns:binary-keyed-jdbc-store">
-                        <xs:annotation>
-                            <xs:documentation>Defines a database cache store accessed via JDBC using binary-based keys. Warning: This option has been deprecated, please use jdbc-store instead</xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                    <xs:element name="mixed-keyed-jdbc-store" type="tns:mixed-keyed-jdbc-store">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Defines a database cache store accessed via JDBC using mixed string and binary-based keys.
-                                Warning: This option has been deprecated, please use jdbc-store instead.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                </xs:choice>
+                <xs:element name="jdbc-store" type="tns:jdbc-store">
+                    <xs:annotation>
+                        <xs:documentation>Defines a database cache store accessed via JDBC using string-based keys.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
                 <xs:element name="remote-store" type="tns:remote-store">
                     <xs:annotation>
                         <xs:documentation>
@@ -456,14 +416,6 @@
                         <xs:documentation>Number of hash space segments (per cluster).</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="consistent-hash-strategy" type="tns:consistent-hash-strategy" default="INTER_CACHE">
-                    <xs:annotation>
-                        <xs:documentation>
-                            Defines the consistent hash strategy for the cache.
-                            This determines the consistent hash factory to use for generating the consistent hash.
-                        </xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -567,11 +519,6 @@
                 <xs:documentation>If true, purges this cache store when it starts up.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="singleton" type="xs:boolean" default="false">
-            <xs:annotation>
-                <xs:documentation>Deprecated. This attribute does nothing an will be removed in a future release.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="write-behind">
@@ -580,13 +527,6 @@
                 <xs:documentation>
                     Maximum number of entries in the asynchronous queue. When the queue is full, the store becomes write-through.
                     until it can accept new entries
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="thread-pool-size" type="xs:int" default="1">
-            <xs:annotation>
-                <xs:documentation>
-                    Size of the thread pool whose threads are responsible for applying the modifications to the cache store.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -677,9 +617,18 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="abstract-jdbc-store">
+    <xs:complexType name="jdbc-store">
         <xs:complexContent>
             <xs:extension base="tns:store">
+                <xs:sequence>
+                    <xs:element name="table" type="tns:table" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Defines the table used to store cache entries.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
                 <xs:attribute name="data-source" type="xs:string" use="required">
                     <xs:annotation>
                         <xs:documentation>References the pool name of a data source.</xs:documentation>
@@ -688,85 +637,6 @@
                 <xs:attribute name="dialect" type="tns:dialect" use="optional">
                     <xs:annotation>
                         <xs:documentation>Defines the JDBC dialect.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="jdbc-store">
-        <xs:complexContent>
-            <xs:extension base="tns:abstract-jdbc-store">
-                <xs:sequence>
-                    <xs:element name="table" type="tns:string-keyed-table" minOccurs="0">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Defines the table used to store cache entries.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="binary-keyed-jdbc-store">
-        <xs:complexContent>
-            <xs:extension base="tns:abstract-jdbc-store">
-                <xs:sequence>
-                    <xs:element name="binary-keyed-table" type="tns:binary-keyed-table" minOccurs="0">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Defines the table used to store cache buckets.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="mixed-keyed-jdbc-store">
-        <xs:complexContent>
-            <xs:extension base="tns:abstract-jdbc-store">
-                <xs:sequence>
-                    <xs:element name="binary-keyed-table" type="tns:binary-keyed-table" minOccurs="0">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Defines the table used to store cache buckets.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                    <xs:element name="string-keyed-table" type="tns:string-keyed-table" minOccurs="0">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Defines the table used to store cache entries.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="string-keyed-table">
-        <xs:complexContent>
-            <xs:extension base="tns:table">
-                <xs:attribute name="prefix" type="xs:string" default="ispn_entry">
-                    <xs:annotation>
-                        <xs:documentation>Defines the prefix prepended to the cache name used when composing the name of the cache entry table.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="binary-keyed-table">
-        <xs:complexContent>
-            <xs:extension base="tns:table">
-                <xs:attribute name="prefix" type="xs:string" default="ispn_bucket">
-                    <xs:annotation>
-                        <xs:documentation>Defines the prefix prepended to the cache name used when composing the name of the cache bucket table.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>
@@ -934,19 +804,6 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="backup-for">
-        <xs:attribute name="remote-cache" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>The name of the remote cache for which this cache acts as a backup</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="remote-site" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>The site of the remote cache for which this cache acts as a backup.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:complexType>
-
     <xs:complexType name="take-offline">
         <xs:attribute name="after-failures" type="xs:int" default="0">
             <xs:annotation>
@@ -1042,25 +899,6 @@
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:simpleType name="eviction-type">
-        <xs:restriction base="xs:token">
-            <xs:enumeration value="COUNT">
-                <xs:annotation>
-                    <xs:documentation>
-                        Evicts the oldest entries when the number of cache entries exceeds the specified size.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="MEMORY">
-                <xs:annotation>
-                    <xs:documentation>
-                        Evicts the oldest entries when the total memory size of cache entries exceeds the specified size.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-        </xs:restriction>
-    </xs:simpleType>
-
     <xs:simpleType name="mode">
         <xs:restriction base="xs:token">
             <xs:enumeration value="ASYNC">
@@ -1147,25 +985,6 @@
             <xs:enumeration value="SQL_SERVER"/>
             <xs:enumeration value="SQLITE"/>
             <xs:enumeration value="SYBASE"/>
-        </xs:restriction>
-    </xs:simpleType>
-
-    <xs:simpleType name="consistent-hash-strategy">
-        <xs:restriction base="xs:token">
-            <xs:enumeration value="INTER_CACHE">
-                <xs:annotation>
-                    <xs:documentation>
-                        A given cache key will have the same consistent hash on every node on any cache with the same topology.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="INTRA_CACHE">
-                <xs:annotation>
-                    <xs:documentation>
-                        A given cache key will have the same consistent hash on every node within a given cache with the same topology.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
 
@@ -1257,14 +1076,6 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="invalidation-near-cache" type="tns:invalidation-near-cache" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation>
-                        Configures using near cache in invalidated mode.
-                        When entries are updated or removed server-side, invalidation messages will be sent to clients to remove them from the near cache.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:element>
             <xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded">
                 <xs:annotation>
                     <xs:documentation>
@@ -1283,13 +1094,6 @@
                 <xs:annotation>
                     <xs:documentation>
                         Security configuration.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="transaction" type="tns:remote-transaction" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation>
-                        Transaction configuration.
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
@@ -1340,7 +1144,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="protocol-version" type="tns:protocol-version" default="3.0">
+        <xs:attribute name="protocol-version" type="tns:protocol-version" default="3.1">
             <xs:annotation>
                 <xs:documentation>
                     Defines the protocol version that this client should use.
@@ -1416,16 +1220,6 @@
             <xs:simpleType>
                 <xs:list itemType="xs:string"/>
             </xs:simpleType>
-        </xs:attribute>
-    </xs:complexType>
-
-    <xs:complexType name="invalidation-near-cache">
-        <xs:attribute name="max-entries" type="xs:int">
-            <xs:annotation>
-                <xs:documentation>
-                    Defines the maximum number of elements to keep in the near cache.
-                </xs:documentation>
-            </xs:annotation>
         </xs:attribute>
     </xs:complexType>
 
@@ -1514,6 +1308,7 @@
             <xs:enumeration value="2.8"/>
             <xs:enumeration value="2.9"/>
             <xs:enumeration value="3.0"/>
+            <xs:enumeration value="3.1"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -1526,35 +1321,5 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-
-    <xs:complexType name="remote-transaction">
-        <xs:attribute name="mode" type="tns:remote-transaction-mode" default="NONE">
-            <xs:annotation>
-                <xs:documentation>
-                    Reference to the Elytron-managed SSLContext to be used for connecting to the remote cluster.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:complexType>
-
-    <xs:simpleType name="remote-transaction-mode">
-        <xs:restriction base="tns:transaction-mode">
-            <xs:enumeration value="NONE">
-                <xs:annotation>
-                    <xs:documentation>Cache will be non-transactional.</xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="BATCH">
-                <xs:annotation>
-                    <xs:documentation>Cache will support batching of operations.</xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="NON_DURABLE_XA">
-                <xs:annotation>
-                    <xs:documentation>Cache will enlist within transactions as a javax.transaction.xa.XAResource, without recovery.</xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
-        </xs:restriction>
-    </xs:simpleType>
 
 </xs:schema>

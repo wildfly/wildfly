@@ -171,6 +171,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case ASYNC_OPERATIONS_THREAD_POOL: {
+                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     ROOT_LOGGER.elementIgnored(element.getLocalName());
                     ParseUtils.requireNoContent(reader);
                     break;
@@ -180,21 +183,33 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case PERSISTENCE_THREAD_POOL: {
+                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     ROOT_LOGGER.elementIgnored(element.getLocalName());
                     ParseUtils.requireNoContent(reader);
                     break;
                 }
                 case REMOTE_COMMAND_THREAD_POOL: {
+                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     ROOT_LOGGER.elementIgnored(element.getLocalName());
                     ParseUtils.requireNoContent(reader);
                     break;
                 }
                 case STATE_TRANSFER_THREAD_POOL: {
+                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     ROOT_LOGGER.elementIgnored(element.getLocalName());
                     ParseUtils.requireNoContent(reader);
                     break;
                 }
                 case TRANSPORT_THREAD_POOL: {
+                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     ROOT_LOGGER.elementIgnored(element.getLocalName());
                     ParseUtils.requireNoContent(reader);
                     break;
@@ -401,6 +416,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case CONSISTENT_HASH_STRATEGY: {
+                if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
                 ROOT_LOGGER.attributeDeprecated(attribute.getLocalName(), reader.getLocalName());
                 break;
             }
@@ -410,19 +428,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         }
     }
 
-    @SuppressWarnings("deprecation")
     private void parseClusteredCacheAttribute(XMLExtendedStreamReader reader, int index, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         ModelNode operation = operations.get(address);
         XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(index));
         switch (attribute) {
-            case QUEUE_SIZE: {
-                ROOT_LOGGER.attributeDeprecated(attribute.getLocalName(), reader.getLocalName());
-                break;
-            }
-            case QUEUE_FLUSH_INTERVAL: {
-                ROOT_LOGGER.attributeDeprecated(attribute.getLocalName(), reader.getLocalName());
-                break;
-            }
             case REMOTE_TIMEOUT: {
                 readAttribute(reader, index, operation, ClusteredCacheResourceDefinition.Attribute.REMOTE_TIMEOUT);
                 break;
@@ -471,11 +480,17 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case BINARY_KEYED_JDBC_STORE: {
+                if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
                 ROOT_LOGGER.elementIgnored(element.getLocalName());
                 this.parseBinaryKeyedJDBCStore(reader, cacheAddress, operations);
                 break;
             }
             case MIXED_KEYED_JDBC_STORE: {
+                if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
                 this.parseMixedKeyedJDBCStore(reader, cacheAddress, operations);
                 break;
             }
@@ -813,6 +828,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case CAPACITY: {
+                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     ROOT_LOGGER.attributeDeprecated(attribute.getLocalName(), reader.getLocalName());
                     break;
                 }
@@ -1223,7 +1241,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         ParseUtils.requireNoContent(reader);
     }
 
-    @SuppressWarnings({ "static-method", "deprecation" })
+    @SuppressWarnings("deprecation")
     private void parseStoreAttribute(XMLExtendedStreamReader reader, int index, ModelNode operation) throws XMLStreamException {
         XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(index));
         switch (attribute) {
@@ -1248,6 +1266,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case SINGLETON: {
+                if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
                 ROOT_LOGGER.attributeDeprecated(attribute.getLocalName(), reader.getLocalName());
                 break;
             }
@@ -1482,6 +1503,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case INVALIDATION_NEAR_CACHE: {
+                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     ROOT_LOGGER.elementIgnored(element.getLocalName());
                     ParseUtils.requireNoContent(reader);
                     break;
@@ -1495,6 +1519,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case TRANSACTION: {
+                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
                     ROOT_LOGGER.elementIgnored(element.getLocalName());
                     ParseUtils.requireNoContent(reader);
                     break;
