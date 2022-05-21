@@ -2548,6 +2548,17 @@
         </dependency>
 
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-datasources-agroal</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>org.wildfly.discovery</groupId>
             <artifactId>wildfly-discovery-client</artifactId>
             <exclusions>

@@ -200,7 +200,8 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         // If an extension is added to this enum, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
         // to the internal mpExtensions Set defined on this class.
         CURRENT(MAJOR, WILDFLY_26_0, Arrays.asList(
-                "org.wildfly.extension.clustering.ejb"
+                "org.wildfly.extension.clustering.ejb",
+                "org.wildfly.extension.datasources-agroal"
         ), getCurrentRemovedExtenstions());
 
         private static List<String> getCurrentRemovedExtenstions() {
@@ -208,7 +209,6 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 return Arrays.asList(
                         "org.jboss.as.messaging",
                         "org.jboss.as.jacorb",
-                        "org.wildfly.extension.datasources-agroal",
                         "org.jboss.as.jsr77",
                         "org.jboss.as.web",
                         "org.wildfly.extension.picketlink",

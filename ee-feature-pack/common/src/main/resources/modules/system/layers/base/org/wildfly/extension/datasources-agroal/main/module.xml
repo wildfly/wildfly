@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-datasources-agroal}"/>
+        <artifact name="\${org.wildfly:wildfly-datasources-agroal@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
