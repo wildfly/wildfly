@@ -35,7 +35,7 @@ import org.jboss.as.test.integration.domain.mixed.DomainAdjuster;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Does adjustments to the domain model for 7.4.0 legacy slaves.
+ * Does adjustments to the domain model for 7.4.0 legacy secondary hosts.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
@@ -74,7 +74,7 @@ public class DomainAdjuster740 extends DomainAdjuster {
     }
 
     /**
-     * Remove the distributable-ejb subsystem from the domain model for EAP 7.4.0 slaves as they
+     * Remove the distributable-ejb subsystem from the domain model for EAP 7.4.0 secondary hosts as they
      * do not support this subsystem or its associated module org.wildfly.clustering.ejb.
      *
      * @param ops   list of operations used to adjust the domain model for EAP 7.4.0

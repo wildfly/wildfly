@@ -167,7 +167,7 @@ public abstract class SimpleMixedDomainTest  {
         }
     }
 
-    //Do this one last since it changes the host model of the slaves
+    //Do this one last since it changes the host model of the secondary hosts
     @Test
     public void test99999_ProfileClone() throws Exception {
         if (version.getMajor() == 6) {

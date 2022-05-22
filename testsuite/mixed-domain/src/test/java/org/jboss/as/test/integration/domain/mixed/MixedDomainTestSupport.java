@@ -213,7 +213,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             masterUtil.connect();
             masterUtil.awaitHostController(System.currentTimeMillis());
 
-            //Start the slaves
+            //Start the secondary hosts
             DomainLifecycleUtil slaveUtil = getDomainSlaveLifecycleUtil();
             if (slaveUtil != null) {
                 //slaveUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
