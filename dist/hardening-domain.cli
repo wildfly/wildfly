@@ -1,0 +1,33 @@
+embed-host-controller
+
+# [P] Remove Example Content
+/profile=${profile}/subsystem=datasources/data-source=ExampleDS:remove
+/profile=${profile}/subsystem=ee/service=default-bindings:undefine-attribute(name=datasource)
+
+/profile=${profile}/subsystem=undertow/server=default-server/host=default-host/location="/":remove
+/profile=${profile}/subsystem=undertow/configuration=handler/file=welcome-content:remove
+
+# [P] Disable Deployment Scanner
+#No deployment scanner in domain mode
+
+# [P] Disable stacktrace in response body
+/profile=${profile}/subsystem=undertow/servlet-container=default:write-attribute(name="stack-trace-on-error",value="none")
+
+# [P] Enable SSL Connector
+# create key-store
+/profile=${profile}/subsystem=elytron/key-store=WCC_KEYSTORE:add(\
+    relative-to=jboss.server.config.dir,\
+    path=wcc.keystore,\
+    required=true,\
+    credential-reference={clear-text=wildfly})
+# create key-manager
+/profile=${profile}/subsystem=elytron/key-manager=WCC_SSL_KM:add(\
+    key-store=WCC_KEYSTORE,\
+    credential-reference={clear-text=wildfly})
+# create server-ssl-context
+/profile=${profile}/subsystem=elytron/server-ssl-context=WCC_SSL_Context:add(key-manager=WCC_SSL_KM)
+
+# assign newly created Elytron ssl-context to https-listener
+/profile=${profile}/subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=ssl-context,value=WCC_SSL_Context)
+
+stop-embedded-host-controller
