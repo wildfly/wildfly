@@ -103,11 +103,13 @@ public class DefaultProtoStreamReader extends DefaultProtoStreamOperation implem
         return this.reader.readEnum();
     }
 
+    @Deprecated
     @Override
     public int readInt32() throws IOException {
         return this.reader.readInt32();
     }
 
+    @Deprecated
     @Override
     public int readFixed32() throws IOException {
         return this.reader.readFixed32();
@@ -128,11 +130,13 @@ public class DefaultProtoStreamReader extends DefaultProtoStreamOperation implem
         return this.reader.readSFixed32();
     }
 
+    @Deprecated
     @Override
     public long readInt64() throws IOException {
         return this.reader.readInt64();
     }
 
+    @Deprecated
     @Override
     public long readFixed64() throws IOException {
         return this.reader.readFixed64();

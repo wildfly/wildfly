@@ -8,6 +8,7 @@
         <batchlet ref="batchlet1">
             <properties>
                 <property name="seconds" value="#{jobParameters['seconds']}?:1;"/>
+                <property name="interval" value="#{jobParameters['interval']}?:500;"/>
             </properties>
         </batchlet>
     </step>
@@ -15,6 +16,7 @@
         <batchlet ref="batchlet1">
             <properties>
                 <property name="seconds" value="0"/>
+                <property name="interval" value="0"/>
             </properties>
         </batchlet>
     </step>
