@@ -1,0 +1,39 @@
+embed-server --server-config=${config}
+
+# [P] Remove Example Content
+/subsystem=datasources/data-source=ExampleDS:remove
+/subsystem=ee/service=default-bindings:undefine-attribute(name=datasource)
+
+# microprofile has not welcome content
+if (outcome == success) of /subsystem=undertow/configuration=handler/file=welcome-content:read-resource
+  /subsystem=undertow/server=default-server/host=default-host/location="/":remove
+  /subsystem=undertow/configuration=handler/file=welcome-content:remove
+end-if
+
+# [P] Disable Deployment Scanner
+/subsystem=deployment-scanner/scanner=default:write-attribute(name="scan-enabled",value=false)
+
+# [P] Disable stacktrace in response body
+/subsystem=undertow/servlet-container=default:write-attribute(name="stack-trace-on-error",value="none")
+
+# [P] Enable SSL Connector
+# create key-store
+/subsystem=elytron/key-store=WCC_KEYSTORE:add(\
+    relative-to=jboss.server.config.dir,\
+    path=wcc.keystore,\
+    required=true,\
+    credential-reference={clear-text=wildfly})
+# create key-manager
+/subsystem=elytron/key-manager=WCC_SSL_KM:add(\
+    key-store=WCC_KEYSTORE,\
+    credential-reference={clear-text=wildfly})
+# create server-ssl-context
+/subsystem=elytron/server-ssl-context=WCC_SSL_Context:add(key-manager=WCC_SSL_KM)
+
+# assign newly created Elytron ssl-context to https-listener
+/subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=ssl-context,value=WCC_SSL_Context)
+
+# [P] Enable audit-log records
+/core-service=management/access=audit/logger=audit-log:write-attribute(name=enabled,value=true)
+
+stop-embedded-server

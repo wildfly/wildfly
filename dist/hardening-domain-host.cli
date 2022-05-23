@@ -1,0 +1,7 @@
+embed-host-controller --host-config=${host-config}
+
+# [P] Enable audit-log records
+/host=${host-name}/core-service=management/access=audit/logger=audit-log:write-attribute(name=enabled,value=true)
+/host=${host-name}/core-service=management/access=audit/server-logger=audit-log:write-attribute(name=enabled,value=true)
+
+stop-embedded-host-controller
