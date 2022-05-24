@@ -475,4 +475,15 @@
         <cve>CVE-2022-24785</cve>
     </suppress>
 	
+    <!-- False-positive, vulnerability detected in Async javascript library https://github.com/caolan/async but Wildfly uses a different lib: https://github.com/IBM/java-async-util -->
+	<suppress>
+	   <notes><![CDATA[
+	   file name: asyncutil-0.1.0.jar
+	   ]]></notes>
+	   <packageUrl regex="true">^pkg:maven/com\.ibm\.async/asyncutil@.*$</packageUrl>
+	   <cve>CVE-2021-43138</cve>
+	</suppress>	
+	
+	
+	
 </suppressions>
