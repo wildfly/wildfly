@@ -140,8 +140,8 @@ public class MessagingSubsystemParser_14_0 extends PersistentResourceXMLParser {
                                 ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
                                 ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
                                 ConnectionFactoryAttributes.Common.GROUP_ID,
-                                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                                ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                                ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST,
+                                ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST,
                                 ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE
                         ))
                 .addChild(createPooledConnectionFactory(true))
@@ -552,8 +552,8 @@ public class MessagingSubsystemParser_14_0 extends PersistentResourceXMLParser {
                                                         ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
                                                         ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
                                                         ConnectionFactoryAttributes.Common.GROUP_ID,
-                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST,
+                                                        ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST,
                                                         ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE,
                                                         ConnectionFactoryAttributes.Regular.FACTORY_TYPE,
                                                         ConnectionFactoryAttributes.Common.USE_TOPOLOGY))
@@ -665,8 +665,8 @@ public class MessagingSubsystemParser_14_0 extends PersistentResourceXMLParser {
                         ConnectionFactoryAttributes.Common.SCHEDULED_THREAD_POOL_MAX_SIZE,
                         ConnectionFactoryAttributes.Common.THREAD_POOL_MAX_SIZE,
                         ConnectionFactoryAttributes.Common.GROUP_ID,
-                        ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST,
-                        ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST,
+                        ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST,
+                        ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST,
                         ConnectionFactoryAttributes.Common.USE_TOPOLOGY,
                         // pooled
                         // inbound config

@@ -31,6 +31,10 @@ import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERN
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_TOPIC_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.QUEUE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.SERVER_PATH;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -98,8 +102,27 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         rejectDefinedAttributeWithDefaultValue(externaljmsqueue, ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
         ResourceTransformationDescriptionBuilder externaljmstopic = subsystem.addChildResource(MessagingExtension.EXTERNAL_JMS_TOPIC_PATH);
         rejectDefinedAttributeWithDefaultValue(externaljmstopic, ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX);
-        ResourceTransformationDescriptionBuilder bridge = subsystem.addChildResource(MessagingExtension.SERVER_PATH).addChildResource(MessagingExtension.BRIDGE_PATH);
+
+        ResourceTransformationDescriptionBuilder externalConnectionFactory = subsystem.addChildResource(MessagingExtension.CONNECTION_FACTORY_PATH);
+        renameAttribute(externalConnectionFactory, DESERIALIZATION_BLACKLIST, DESERIALIZATION_BLOCKLIST);
+        renameAttribute(externalConnectionFactory, DESERIALIZATION_WHITELIST, DESERIALIZATION_ALLOWLIST);
+
+        ResourceTransformationDescriptionBuilder pooledExternalConnectionFactory = subsystem.addChildResource(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH);
+        renameAttribute(pooledExternalConnectionFactory, DESERIALIZATION_BLACKLIST, DESERIALIZATION_BLOCKLIST);
+        renameAttribute(pooledExternalConnectionFactory, DESERIALIZATION_WHITELIST, DESERIALIZATION_ALLOWLIST);
+
+        ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(MessagingExtension.SERVER_PATH);
+        ResourceTransformationDescriptionBuilder bridge = server.addChildResource(MessagingExtension.BRIDGE_PATH);
         rejectDefinedAttributeWithDefaultValue(bridge, BridgeDefinition.ROUTING_TYPE);
+
+        ResourceTransformationDescriptionBuilder connectionFactory = server.addChildResource(MessagingExtension.CONNECTION_FACTORY_PATH);
+        renameAttribute(connectionFactory, DESERIALIZATION_BLACKLIST, DESERIALIZATION_BLOCKLIST);
+        renameAttribute(connectionFactory, DESERIALIZATION_WHITELIST, DESERIALIZATION_ALLOWLIST);
+
+        ResourceTransformationDescriptionBuilder pooledConnectionFactory = server.addChildResource(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH);
+        renameAttribute(pooledConnectionFactory, DESERIALIZATION_BLACKLIST, DESERIALIZATION_BLOCKLIST);
+        renameAttribute(pooledConnectionFactory, DESERIALIZATION_WHITELIST, DESERIALIZATION_ALLOWLIST);
+
     }
 
     private static void registerTransformers_WF_26_1(ResourceTransformationDescriptionBuilder subsystem) {
@@ -404,5 +427,11 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
         builder.getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, attrs)
                 .addRejectCheck(DEFINED, attrs);
+    }
+
+    private static void renameAttribute(ResourceTransformationDescriptionBuilder resourceRegistry, AttributeDefinition attribute, AttributeDefinition newAttribute) {
+        resourceRegistry.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, newAttribute)
+                .addRename(newAttribute, attribute.getName());
     }
 }

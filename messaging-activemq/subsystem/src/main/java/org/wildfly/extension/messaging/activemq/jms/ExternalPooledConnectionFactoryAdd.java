@@ -25,6 +25,10 @@ package org.wildfly.extension.messaging.activemq.jms;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.MessagingServices.isSubsystemResource;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.getDefinitions;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST;
 import static org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryAdd.getTxSupport;
 import static org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryAdd.installStatistics;
 
@@ -156,5 +160,22 @@ public class ExternalPooledConnectionFactoryAdd extends AbstractAddStepHandler {
             return model.get(Common.DISCOVERY_GROUP.getName()).asString();
         }
         return null;
+    }
+
+    @Override
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        for (AttributeDefinition attr : attributes) {
+            if (DESERIALIZATION_BLACKLIST.equals(attr)) {
+                if (operation.hasDefined(DESERIALIZATION_BLACKLIST.getName())) {
+                    DESERIALIZATION_BLOCKLIST.validateAndSet(operation, model);
+                }
+            } else if (DESERIALIZATION_WHITELIST.equals(attr)) {
+                if (operation.hasDefined(DESERIALIZATION_WHITELIST.getName())) {
+                    DESERIALIZATION_ALLOWLIST.validateAndSet(operation, model);
+                }
+            } else {
+                attr.validateAndSet(operation, model);
+            }
+        }
     }
 }
