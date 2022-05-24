@@ -484,12 +484,12 @@
        <cve>CVE-2021-43138</cve>
     </suppress>    
     
-    <!-- Wildfly uses jboss.resteasy 4.x which is higher than vulnerable ones (before 3.1.2). Mocroprofile-config comes with appropriate exclusions. -->
+    <!-- Wildfly uses jboss.resteasy 4.x which is higher than vulnerable ones (before 3.1.2). Mocroprofile comes with appropriate exclusions. -->
     <suppress>
        <notes><![CDATA[
        file name: microprofile-config-1.0.0.Final.jar
        ]]></notes>
-       <packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy\.microprofile/microprofile\-config@.*$</packageUrl>
+       <packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy\.microprofile/microprofile\-.*@.*$</packageUrl>
        <cve>CVE-2016-9606</cve>
     </suppress>    
 
@@ -502,6 +502,6 @@
        ]]></notes>
        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
        <cve>CVE-2020-36518</cve>
-    </suppress>    
-    
+    </suppress>     
+	
 </suppressions>
