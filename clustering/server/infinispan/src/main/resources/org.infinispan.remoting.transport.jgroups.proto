@@ -11,5 +11,4 @@ import "org.jgroups.util.proto";
 message JGroupsAddress {
 	optional	org.jgroups.util.UUID	uuidAddress	= 1;
 	optional	org.jgroups.stack.IpAddress	ipAddress	= 2;
-	optional	org.jgroups.stack.IpAddressUUID	uuidIpAddress	= 3;
 }

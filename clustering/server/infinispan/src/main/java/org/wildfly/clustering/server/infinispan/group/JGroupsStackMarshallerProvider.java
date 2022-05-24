@@ -32,7 +32,6 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvi
  */
 public enum JGroupsStackMarshallerProvider implements ProtoStreamMarshallerProvider {
     IP_ADDRESS(new ProtoStreamBuilderFieldSetMarshaller<>(IpAddressMarshaller.INSTANCE)),
-    IP_ADDRESS_UUID(new IpAddressUUIDMarshaller()),
     ;
     private final ProtoStreamMarshaller<?> marshaller;
 

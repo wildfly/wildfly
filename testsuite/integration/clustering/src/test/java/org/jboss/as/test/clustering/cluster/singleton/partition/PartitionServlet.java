@@ -92,7 +92,7 @@ public class PartitionServlet extends HttpServlet {
 
                 // Simulate partitions by injecting DISCARD protocol
                 DISCARD discard = new DISCARD();
-                discard.setDiscardAll(true);
+                discard.discardAll(true);
                 this.channel.getProtocolStack().insertProtocol(discard, ProtocolStack.Position.ABOVE, TP.class);
 
                 // Speed up partitioning
