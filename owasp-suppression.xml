@@ -11,7 +11,7 @@
         <cve>CVE-2017-15089</cve>
         <cve>CVE-2019-10174</cve>
     </suppress>
-	
+    
     <!-- [wildfly] Apache ActiveMQ is not shipped with wildfly ('ActiveMQ Artemis' is not 'ActiveMQ') -->
     <suppress>
         <notes><![CDATA[
@@ -97,8 +97,8 @@
     <!-- [wildfly] Used only in tests, not deployed  -->
     <suppress>
         <notes><![CDATA[
-	   file name: apacheds-all-2.0.0-M24.jar (shaded: org.apache.directory.api:api-ldap-net-mina:1.0.0)
-	   ]]></notes>
+       file name: apacheds-all-2.0.0-M24.jar (shaded: org.apache.directory.api:api-ldap-net-mina:1.0.0)
+       ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.directory\.api/api\-.*@.*$</packageUrl>
         <cve>CVE-2015-3250</cve>
         <cve>CVE-2018-1337</cve>
@@ -107,11 +107,11 @@
     <!-- Vulnerabilities do not apply to xjc plugins -->
     <suppress>
         <notes><![CDATA[
-	   file name: cxf-xjc-dv-3.3.1.jar
-	   file name: cxf-xjc-ts-3.3.1.jar
-	   file name: cxf-xjc-bug986-3.3.1.jar
-	   file name: cxf-xjc-boolean-3.3.1.jar
-	   ]]></notes>
+       file name: cxf-xjc-dv-3.3.1.jar
+       file name: cxf-xjc-ts-3.3.1.jar
+       file name: cxf-xjc-bug986-3.3.1.jar
+       file name: cxf-xjc-boolean-3.3.1.jar
+       ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.cxf\.xjcplugins/cxf\-xjc\-(dv|ts|bug986|boolean)@.*$</packageUrl>
         <cve>CVE-2019-12406</cve>
         <cve>CVE-2019-12419</cve>
@@ -170,7 +170,7 @@
         <cve>CVE-2020-10719</cve>
         <cve>CVE-2020-1745</cve>
     </suppress>
-	
+    
     <!-- [wildfly] This is a false positive because wildfly itself does not use commons-compress. Commons-compress comes with org.testcontainers and it is used only for test purposes  -->
     <suppress>
         <notes><![CDATA[
@@ -277,7 +277,7 @@
         <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
         <cve>CVE-2021-42392</cve>
     </suppress>
-	
+    
     <!-- [wildfly] False-positive: it was fixed in 2.7.1.jbossorg-4 (https://github.com/jboss/xalan-j/commit/8cd0c151456475f57961b0987d9f985202f81eec) -->
     <suppress>
         <notes><![CDATA[
@@ -458,14 +458,14 @@
         <packageUrl regex="true">^pkg:maven/org\.jgroups\.kubernetes/jgroups\-kubernetes@.*$</packageUrl>
         <cve>CVE-2016-2141</cve>
     </suppress>
-	<!-- [wildfly] (CVE-2017-18214) Red Hat JBoss Enterprise Application Platform are Not affected -->
-	<suppress>
-		<notes><![CDATA[
+    <!-- [wildfly] (CVE-2017-18214) Red Hat JBoss Enterprise Application Platform are Not affected -->
+    <suppress>
+        <notes><![CDATA[
    file name: javascript/bootstrap@3.3.1 (from weld-probe-core-3.1.5.Final.jar)
    ]]></notes>
-		<packageUrl regex="true">^pkg:javascript/bootstrap@.*$</packageUrl>
-		<cve>CVE-2017-18214</cve>
-	</suppress>
+        <packageUrl regex="true">^pkg:javascript/bootstrap@.*$</packageUrl>
+        <cve>CVE-2017-18214</cve>
+    </suppress>
     <!-- According to: https://access.redhat.com/errata/RHSA-2022:1681 and https://access.redhat.com/errata/RHSA-2022:1715, Red Hat Advanced Cluster Management for Kubernetes 2 for RHEL 7/8 x86_64 are affected. Additionally, the usage of moment.locale was not found in weld-probe-core -->
     <suppress>
         <notes><![CDATA[
@@ -474,16 +474,25 @@
         <packageUrl regex="true">^pkg:javascript/bootstrap@.*$</packageUrl>
         <cve>CVE-2022-24785</cve>
     </suppress>
-	
+    
     <!-- False-positive, vulnerability detected in Async javascript library https://github.com/caolan/async but Wildfly uses a different lib: https://github.com/IBM/java-async-util -->
-	<suppress>
-	   <notes><![CDATA[
-	   file name: asyncutil-0.1.0.jar
-	   ]]></notes>
-	   <packageUrl regex="true">^pkg:maven/com\.ibm\.async/asyncutil@.*$</packageUrl>
-	   <cve>CVE-2021-43138</cve>
-	</suppress>	
-	
-	
-	
+    <suppress>
+       <notes><![CDATA[
+       file name: asyncutil-0.1.0.jar
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/com\.ibm\.async/asyncutil@.*$</packageUrl>
+       <cve>CVE-2021-43138</cve>
+    </suppress>    
+    
+    <!-- Wildfly uses jboss.resteasy 4.x which is higher than vulnerable ones (before 3.1.2). Mocroprofile-config comes with appropriate exclusions. -->
+    <suppress>
+       <notes><![CDATA[
+       file name: microprofile-config-1.0.0.Final.jar
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy\.microprofile/microprofile\-config@.*$</packageUrl>
+       <cve>CVE-2016-9606</cve>
+    </suppress>    
+
+    
+    
 </suppressions>
