@@ -1594,7 +1594,7 @@
             <dependency>
                 <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
                 <artifactId>microprofile-fault-tolerance-tck</artifactId>
-                <version>${preview.version.org.eclipse.microprofile.fault-tolerance.tck}</version>
+                <version>${preview.version.org.eclipse.microprofile.fault-tolerance.api}</version>
                 <scope>test</scope>
                 <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
@@ -2589,6 +2589,13 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${preview.version.org.testng}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>

@@ -78,6 +78,18 @@
         <module>reactive-streams-operators</module>
     </modules>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-feature-pack-parent</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <build>
         <plugins>
             <plugin>
@@ -282,7 +294,6 @@
                 <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
 
                 <!-- Test framework only dependencies - don't update in ee-9/pom.xml -->
-                <preview.version.org.testng>7.4.0</preview.version.org.testng>
                 <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
                 <version.org.wildfly.arquillian>5.0.0.Alpha2</version.org.wildfly.arquillian>
                 <!-- For EE9 use the following directory as an additional source -->

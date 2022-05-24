@@ -260,6 +260,19 @@
                 </exclusions>
             </dependency>
 
+            <!-- TODO get the testsuite tests that use this separated from EE ones so we don't need to manage it here -->
+            <dependency>
+                <groupId>org.eclipse.microprofile.health</groupId>
+                <artifactId>microprofile-health-api</artifactId>
+                <version>${version.org.eclipse.microprofile.health.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.inject</groupId>
+                        <artifactId>javax.inject</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-xjc</artifactId>
