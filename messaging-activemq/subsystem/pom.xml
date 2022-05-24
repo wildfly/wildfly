@@ -40,18 +40,6 @@
 
     <name>WildFly: Messaging Subsystem With ActiveMQ Artemis</name>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-servlet-feature-pack-parent</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -106,6 +94,11 @@
         <dependency>
               <groupId>org.apache.activemq</groupId>
               <artifactId>artemis-core-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-service-extensions</artifactId>
         </dependency>
 
         <dependency>

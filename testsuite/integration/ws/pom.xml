@@ -127,6 +127,11 @@
             <artifactId>wildfly-cli</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-discovery</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Required for Java 11 (maybe 10 too) -->
         <dependency>
             <groupId>com.sun.activation</groupId>

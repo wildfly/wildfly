@@ -16,18 +16,6 @@
    <artifactId>wildfly-weld-ejb</artifactId>
    <name>WildFly: Weld EJB</name>
 
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-servlet-feature-pack-parent</artifactId>
-            <version>${ee.maven.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
-
    <dependencies>
 
       <dependency>
