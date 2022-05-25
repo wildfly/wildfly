@@ -157,10 +157,6 @@
                 <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
                 <!-- Enable bootable jar packaging -->
                 <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
-
-                <version.jakarta.enterprise>4.0.0</version.jakarta.enterprise>
-                <version.org.eclipse.microprofile.reactive-messaging.api>${version.eclipse.mp.rm.for.jakarta}</version.org.eclipse.microprofile.reactive-messaging.api>
-                <version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>4.0.0.Alpha1</version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>
             </properties>
 
 
@@ -169,23 +165,11 @@
                     <groupId>jakarta.enterprise</groupId>
                     <artifactId>jakarta.enterprise.cdi-api</artifactId>
                     <scope>test</scope>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>jakarta.el</groupId>
-                            <artifactId>jakarta.el-api</artifactId>
-                        </exclusion>
-                    </exclusions>
                 </dependency>
                 <dependency>
                     <groupId>org.jboss.spec.jakarta.el</groupId>
                     <artifactId>jboss-el-api_5.0_spec</artifactId>
-                    <version>${version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec}</version>
-                    <exclusions>
-                        <exclusion>
-                            <artifactId>*</artifactId>
-                            <groupId>*</groupId>
-                        </exclusion>
-                    </exclusions>
+                    <scope>test</scope>
                 </dependency>
             </dependencies>
 

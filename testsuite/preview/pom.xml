@@ -47,16 +47,6 @@
         <ts.skipTests>${skipTests}</ts.skipTests>
 
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
-
-        <!-- This must be aligned on properties defined in ee-9/pom.xml -->
-        <version.jakarta.ejb.jakarta-ejb-api>4.0.0</version.jakarta.ejb.jakarta-ejb-api>
-        <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
-        <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
-        <version.jakarta.persistence>3.0.0</version.jakarta.persistence>
-        <version.jakarta.transaction.jakarta-transaction-api>2.0.0</version.jakarta.transaction.jakarta-transaction-api>
-        <version.org.apache.lucene>8.11.1</version.org.apache.lucene>
-        <version.org.hibernate>6.0.1.Final</version.org.hibernate>
-        <version.org.hibernate.search>6.1.5.Final</version.org.hibernate.search>
     </properties>
 
     <dependencyManagement>
@@ -71,18 +61,29 @@
             <dependency>
                 <groupId>jakarta.ejb</groupId>
                 <artifactId>jakarta.ejb-api</artifactId>
-                <version>${version.jakarta.ejb.jakarta-ejb-api}</version>
+                <version>${preview.version.jakarta.ejb.jakarta-ejb-api}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                <version>${preview.version.jakarta.enterprise}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.inject</groupId>
                 <artifactId>jakarta.inject-api</artifactId>
-                <version>${version.jakarta.inject.jakarta.inject-api}</version>
+                <version>${preview.version.jakarta.inject.jakarta.inject-api}</version>
             </dependency>
+            <dependency>
+                <groupId>jakarta.persistence</groupId>
+                <artifactId>jakarta.persistence-api</artifactId>
+                <version>${preview.version.jakarta.persistence}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>org.hibernate.orm</groupId>
                 <artifactId>hibernate-core</artifactId>
-                <version>${version.org.hibernate}</version>
+                <version>${preview.version.org.hibernate}</version>
                 <scope>provided</scope>
                 <exclusions>
                     <exclusion>
@@ -102,7 +103,7 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-util-common</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${preview.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -113,7 +114,7 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-engine</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${preview.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -124,7 +125,7 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-backend-elasticsearch</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${preview.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -135,7 +136,7 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-backend-lucene</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${preview.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -146,7 +147,7 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-mapper-pojo-base</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${preview.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -157,7 +158,7 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-mapper-orm-orm6</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${preview.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -170,7 +171,7 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${preview.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -181,7 +182,7 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-v5migrationhelper-engine</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${preview.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -192,7 +193,7 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-v5migrationhelper-orm-orm6</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${preview.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
