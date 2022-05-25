@@ -427,6 +427,7 @@ public interface CommonAttributes {
     String PASSWORD = "password";
     String PERMISSION_ELEMENT_NAME = "permission";
     String POOLED_CONNECTION_FACTORY = "pooled-connection-factory";
+    String PRIMARY = "primary";
     String QUEUE = "queue";
     String QUEUE_NAME = "queue-name";
     String QUEUE_NAMES = "queue-names";
@@ -435,6 +436,8 @@ public interface CommonAttributes {
     String REPLICATION = "replication";
     String REPLICATION_COLOCATED = "replication-colocated";
     String REPLICATION_MASTER = "replication-master";
+    String REPLICATION_PRIMARY = "replication-primary";
+    String REPLICATION_SECONDARY = "replication-secondary";
     String REPLICATION_SLAVE = "replication-slave";
     String RESOURCE_ADAPTER = "resource-adapter";
     String RESOLVE_ADDRESS_SETTING = "resolve-address-setting";
@@ -442,6 +445,7 @@ public interface CommonAttributes {
     String ROLES_ATTR_NAME = "roles";
     String RUNTIME_QUEUE = "runtime-queue";
     String SCALE_DOWN = "scale-down";
+    String SECONDARY = "secondary";
     String SECURITY_ROLE = "security-role";
     String SECURITY_SETTING = "security-setting";
     String SECURITY_SETTINGS = "security-settings";
@@ -450,6 +454,8 @@ public interface CommonAttributes {
     String SHARED_STORE = "shared-store";
     String SHARED_STORE_COLOCATED = "shared-store-colocated";
     String SHARED_STORE_MASTER = "shared-store-master";
+    String SHARED_STORE_PRIMARY = "shared-store-primary";
+    String SHARED_STORE_SECONDARY = "shared-store-secondary";
     String SHARED_STORE_SLAVE = "shared-store-slave";
     String SLAVE = "slave";
     String SOCKET_BROADCAST_GROUP = "socket-broadcast-group";

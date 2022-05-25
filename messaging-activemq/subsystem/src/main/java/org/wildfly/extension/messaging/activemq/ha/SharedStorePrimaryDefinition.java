@@ -22,12 +22,8 @@
 
 package org.wildfly.extension.messaging.activemq.ha;
 
-
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA_POLICY;
-import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.CHECK_FOR_LIVE_SERVER;
-import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.CLUSTER_NAME;
-import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.GROUP_NAME;
-import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.INITIAL_REPLICATION_SYNC_TIMEOUT;
+import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.wildfly.extension.messaging.activemq.ha.ManagementHelper.createAddOperation;
 
 import java.util.Arrays;
@@ -46,26 +42,21 @@ import org.wildfly.extension.messaging.activemq.MessagingExtension;
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
  */
-public class ReplicationMasterDefinition extends PersistentResourceDefinition {
+public class SharedStorePrimaryDefinition extends PersistentResourceDefinition {
 
     public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(
-            (AttributeDefinition) CLUSTER_NAME,
-            GROUP_NAME,
-            CHECK_FOR_LIVE_SERVER,
-            INITIAL_REPLICATION_SYNC_TIMEOUT
+            FAILOVER_ON_SERVER_SHUTDOWN
     ));
 
-    public static final ReplicationMasterDefinition INSTANCE = new ReplicationMasterDefinition(MessagingExtension.REPLICATION_MASTER_PATH, false, true);
-    public static final ReplicationMasterDefinition HC_INSTANCE = new ReplicationMasterDefinition(MessagingExtension.REPLICATION_MASTER_PATH, false, false);
-    public static final ReplicationMasterDefinition CONFIGURATION_INSTANCE = new ReplicationMasterDefinition(MessagingExtension.CONFIGURATION_MASTER_PATH, true, true);
+    public static final SharedStorePrimaryDefinition INSTANCE = new SharedStorePrimaryDefinition(MessagingExtension.SHARED_STORE_PRIMARY_PATH, false);
+    public static final SharedStorePrimaryDefinition CONFIGURATION_INSTANCE = new SharedStorePrimaryDefinition(MessagingExtension.CONFIGURATION_PRIMARY_PATH, true);
 
-    private final boolean registerRuntime;
-    private ReplicationMasterDefinition(PathElement path, boolean allowSibling, boolean registerRuntime) {
+
+    private SharedStorePrimaryDefinition(PathElement path, boolean allowSibling) {
         super(path,
                 MessagingExtension.getResourceDescriptionResolver(HA_POLICY),
                 createAddOperation(path.getKey(), allowSibling, ATTRIBUTES),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
-        this.registerRuntime = registerRuntime;
     }
 
     @Override
@@ -74,13 +65,12 @@ public class ReplicationMasterDefinition extends PersistentResourceDefinition {
         for (AttributeDefinition attribute : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attribute, null, writeAttribute);
         }
-        if(registerRuntime) {
-            HAPolicySynchronizationStatusReadHandler.registerMasterAttributes(resourceRegistration);
-        }
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return ATTRIBUTES;
     }
+
+
 }

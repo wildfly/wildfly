@@ -95,33 +95,33 @@ public class MigrateTestCase extends AbstractSubsystemTest {
         assertFalse(model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "unmigrated-backup", "ha-policy").isDefined());
         assertFalse(model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "unmigrated-shared-store", "ha-policy").isDefined());
 
-        ModelNode haPolicyForDefaultServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "default", "ha-policy", "shared-store-master");
+        ModelNode haPolicyForDefaultServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "default", "ha-policy", "shared-store-primary");
         assertTrue(haPolicyForDefaultServer.isDefined());
         assertFalse(haPolicyForDefaultServer.get("failback-delay").isDefined());
         assertEquals(false, haPolicyForDefaultServer.get("failover-on-server-shutdown").asBoolean());
 
-        ModelNode haPolicyForSharedStoreMasterServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "shared-store-master", "ha-policy", "shared-store-master");
+        ModelNode haPolicyForSharedStoreMasterServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "shared-store-primary", "ha-policy", "shared-store-primary");
         assertTrue(haPolicyForSharedStoreMasterServer.isDefined());
         assertFalse(haPolicyForSharedStoreMasterServer.get("failback-delay").isDefined());
         assertEquals("${failover.on.shutdown:true}", haPolicyForSharedStoreMasterServer.get("failover-on-server-shutdown").asString());
 
-        ModelNode haPolicyForSharedStoreSlaveServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "shared-store-slave", "ha-policy", "shared-store-slave");
+        ModelNode haPolicyForSharedStoreSlaveServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "shared-store-secondary", "ha-policy", "shared-store-secondary");
         assertTrue(haPolicyForSharedStoreSlaveServer.isDefined());
         assertEquals("${allow.failback.1:false}", haPolicyForSharedStoreSlaveServer.get("allow-failback").asString());
         assertFalse(haPolicyForSharedStoreSlaveServer.get("failback-delay").isDefined());
         assertEquals("${failover.on.shutdown.1:true}", haPolicyForSharedStoreSlaveServer.get("failover-on-server-shutdown").asString());
 
-        ModelNode haPolicyForReplicationMasterServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "replication-master", "ha-policy", "replication-master");
+        ModelNode haPolicyForReplicationMasterServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "replication-primary", "ha-policy", "replication-primary");
         assertTrue(haPolicyForReplicationMasterServer.isDefined());
         assertEquals("${check.for.live.server:true}", haPolicyForReplicationMasterServer.get("check-for-live-server").asString());
-        assertEquals("${replication.master.group.name:mygroup}", haPolicyForReplicationMasterServer.get("group-name").asString());
+        assertEquals("${replication.primary.group.name:mygroup}", haPolicyForReplicationMasterServer.get("group-name").asString());
 
-        ModelNode haPolicyForReplicationSlaveServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "replication-slave", "ha-policy", "replication-slave");
+        ModelNode haPolicyForReplicationSlaveServer = model.get(SUBSYSTEM, MESSAGING_ACTIVEMQ_SUBSYSTEM_NAME, "server", "replication-secondary", "ha-policy", "replication-secondary");
         assertTrue(haPolicyForReplicationSlaveServer.isDefined());
         assertEquals("${allow.failback.2:false}", haPolicyForReplicationSlaveServer.get("allow-failback").asString());
         assertFalse(haPolicyForReplicationSlaveServer.get("failback-delay").isDefined());
         assertEquals("${max.saved.replicated.journal.size:2}", haPolicyForReplicationSlaveServer.get("max-saved-replicated-journal-size").asString());
-        assertEquals("${replication.master.group.name:mygroup2}", haPolicyForReplicationSlaveServer.get("group-name").asString());
+        assertEquals("${replication.primary.group.name:mygroup2}", haPolicyForReplicationSlaveServer.get("group-name").asString());
     }
 
     @Test

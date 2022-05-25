@@ -62,13 +62,17 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 import static org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators.LONG_INSTANCE;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.AliasEntry;
 import org.wildfly.extension.messaging.activemq.ha.LiveOnlyDefinition;
 import org.wildfly.extension.messaging.activemq.ha.ReplicationColocatedDefinition;
-import org.wildfly.extension.messaging.activemq.ha.ReplicationMasterDefinition;
-import org.wildfly.extension.messaging.activemq.ha.ReplicationSlaveDefinition;
+import org.wildfly.extension.messaging.activemq.ha.ReplicationPrimaryDefinition;
+import org.wildfly.extension.messaging.activemq.ha.ReplicationSecondaryDefinition;
 import org.wildfly.extension.messaging.activemq.ha.SharedStoreColocatedDefinition;
-import org.wildfly.extension.messaging.activemq.ha.SharedStoreMasterDefinition;
-import org.wildfly.extension.messaging.activemq.ha.SharedStoreSlaveDefinition;
+import org.wildfly.extension.messaging.activemq.ha.SharedStorePrimaryDefinition;
+import org.wildfly.extension.messaging.activemq.ha.SharedStoreSecondaryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSQueueDefinition;
 import org.wildfly.extension.messaging.activemq.jms.JMSServerControlHandler;
@@ -993,14 +997,13 @@ public class ServerDefinition extends PersistentResourceDefinition {
     protected List<? extends PersistentResourceDefinition> getChildren() {
         List<PersistentResourceDefinition> children = new ArrayList<>();
         // Static resources
-        children.addAll(Arrays.asList(
-                // HA policy
+        children.addAll(Arrays.asList(// HA policy
                 LiveOnlyDefinition.INSTANCE,
-                registerRuntimeOnly ? ReplicationMasterDefinition.INSTANCE : ReplicationMasterDefinition.HC_INSTANCE,
-                registerRuntimeOnly ? ReplicationSlaveDefinition.INSTANCE : ReplicationSlaveDefinition.HC_INSTANCE,
+                registerRuntimeOnly ? ReplicationPrimaryDefinition.INSTANCE : ReplicationPrimaryDefinition.HC_INSTANCE,
+                registerRuntimeOnly ? ReplicationSecondaryDefinition.INSTANCE : ReplicationSecondaryDefinition.HC_INSTANCE,
                 ReplicationColocatedDefinition.INSTANCE,
-                SharedStoreMasterDefinition.INSTANCE,
-                SharedStoreSlaveDefinition.INSTANCE,
+                SharedStorePrimaryDefinition.INSTANCE,
+                SharedStoreSecondaryDefinition.INSTANCE,
                 SharedStoreColocatedDefinition.INSTANCE,
 
                 AddressSettingDefinition.INSTANCE,
@@ -1048,11 +1051,25 @@ public class ServerDefinition extends PersistentResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
+        resourceRegistration.registerAlias(MessagingExtension.REPLICATION_MASTER_PATH, createAlias(resourceRegistration, MessagingExtension.REPLICATION_PRIMARY_PATH));
+        resourceRegistration.registerAlias(MessagingExtension.REPLICATION_SLAVE_PATH, createAlias(resourceRegistration, MessagingExtension.REPLICATION_SECONDARY_PATH));
+        resourceRegistration.registerAlias(MessagingExtension.SHARED_STORE_MASTER_PATH, createAlias(resourceRegistration, MessagingExtension.SHARED_STORE_PRIMARY_PATH));
+        resourceRegistration.registerAlias(MessagingExtension.SHARED_STORE_SLAVE_PATH, createAlias(resourceRegistration, MessagingExtension.SHARED_STORE_SECONDARY_PATH));
         // runtime queues and core-address are only registered when it is ok to register runtime resource (ie they are not registered on HC).
         if (registerRuntimeOnly) {
-            resourceRegistration.registerSubModel(new QueueDefinition(registerRuntimeOnly,  MessagingExtension.RUNTIME_QUEUE_PATH));
+            resourceRegistration.registerSubModel(new QueueDefinition(registerRuntimeOnly, MessagingExtension.RUNTIME_QUEUE_PATH));
             resourceRegistration.registerSubModel(CoreAddressDefinition.INSTANCE);
         }
+    }
+
+    private static AliasEntry createAlias(ManagementResourceRegistration resourceRegistration, PathElement target) {
+        return new AliasEntry(resourceRegistration.getSubModel(PathAddress.pathAddress(target))) {
+            @Override
+            public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasEntry.AliasContext aliasContext) {
+                return aliasAddress.getParent().append(target);
+            }
+        };
+
     }
 
     private enum JournalType {
