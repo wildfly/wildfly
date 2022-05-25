@@ -51,6 +51,11 @@
             <artifactId>jboss-ejb3-ext-api</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-discovery</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>

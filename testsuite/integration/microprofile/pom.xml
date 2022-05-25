@@ -51,19 +51,11 @@
         <bootable-jar-packaging.phase>none</bootable-jar-packaging.phase>
         <!-- By default (i.e. Java EE) use the following directory as an additional source -->
         <ts.microprofile.build-helper.source.dir>src/test/javax/java</ts.microprofile.build-helper.source.dir>
-    </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-feature-pack-parent</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+        <!-- Use the complete WF dependencyManagement set, not just the default EE set -->
+        <dependency.management.import.artifact>wildfly-feature-pack-parent</dependency.management.import.artifact>
+
+    </properties>
 
     <dependencies>
         <!-- MicroProfile APIs -->
@@ -560,8 +552,6 @@
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
 
                 <ts.microprofile.build-helper.source.dir>src/test/jakarta/java</ts.microprofile.build-helper.source.dir>
-
-                <version.io.smallrye.smallrye-opentracing>3.0.0-RC1</version.io.smallrye.smallrye-opentracing>
             </properties>
             <dependencies>
                 <dependency>
@@ -878,6 +868,11 @@
             <properties>
                 <bootable-jar-packaging.phase>process-test-resources</bootable-jar-packaging.phase>
                 <extra.server.jvm.args>-Dmaven.repo.local=${wildfly.transformed.repo.dir}</extra.server.jvm.args>
+
+                <!-- Use the WFP dependencyManagement set.
+                     This is set in this profile in a parent module, but the explicit global override
+                     in this module takes precedence. -->
+                <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
             </properties>
             <build>
                 <plugins>

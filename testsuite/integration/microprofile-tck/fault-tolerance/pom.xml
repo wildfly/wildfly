@@ -74,6 +74,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.microprofile.metrics</groupId>
             <artifactId>microprofile-metrics-api</artifactId>
             <scope>test</scope>
@@ -163,12 +167,6 @@
                 <!-- Enable galleon provisioning -->
                 <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>jakarta.enterprise</groupId>
-                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
-                </dependency>
-            </dependencies>
         </profile>
 
         <!-- Profile to turn off execution of this module's tests if the testsuite is being run
