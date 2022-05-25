@@ -42,17 +42,18 @@
         <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
 
         <!-- Version properties for dependency management items -->
-        <version.com.sun.faces>4.0.0-M6.SP01</version.com.sun.faces>
+        <version.com.sun.faces>4.0.0-M7.SP01</version.com.sun.faces>
         <version.antlr>4.10</version.antlr>
         <version.com.sun.istack>4.0.1</version.com.sun.istack>
         <version.com.sun.xml.messaging.saaj>2.0.0.SP1</version.com.sun.xml.messaging.saaj>
+        <version.io.agroal>2.0</version.io.agroal>
         <version.jakarta.activation.jakarta.activation-api>2.1.0</version.jakarta.activation.jakarta.activation-api>
         <version.jakarta.annotation.jakarta-annotation-api>2.1.0</version.jakarta.annotation.jakarta-annotation-api>
         <version.jakarta.authentication.jakarta-authentication-api>2.0.0</version.jakarta.authentication.jakarta-authentication-api>
         <version.jakarta.authorization.jakarta-authorization-api>2.0.0</version.jakarta.authorization.jakarta-authorization-api>
         <version.jakarta.batch.jakarta.batch-api>2.1.0</version.jakarta.batch.jakarta.batch-api>
         <version.jakarta.ejb.jakarta-ejb-api>4.0.0</version.jakarta.ejb.jakarta-ejb-api>
-        <version.jakarta.el.jakarta-el-api>5.0.0-RC1</version.jakarta.el.jakarta-el-api>
+        <version.jakarta.el.jakarta-el-api>5.0.0</version.jakarta.el.jakarta-el-api>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <version.jakarta.enterprise>4.0.0</version.jakarta.enterprise>
         <version.jakarta.faces.jakarta-faces-api>4.0.0-M6</version.jakarta.faces.jakarta-faces-api>
@@ -68,7 +69,7 @@
         <version.jakarta.security.enterprise>2.0.0</version.jakarta.security.enterprise>
         <version.jakarta.servlet.jakarta-servlet-api>5.0.0</version.jakarta.servlet.jakarta-servlet-api>
         <version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.0.0</version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
-        <version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>2.0.0</version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
+        <version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>3.0.0</version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
         <version.jakarta.transaction.jakarta-transaction-api>2.0.0</version.jakarta.transaction.jakarta-transaction-api>
         <version.jakarta.validation.jakarta-validation-api>3.0.0</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.0.0</version.jakarta.websocket.jakarta-websocket-api>
@@ -105,13 +106,13 @@
         <!-- MP5 - END -->
         <version.org.eclipse.yasson>3.0.0-RC1</version.org.eclipse.yasson>
         <version.org.eclipselink.version>3.0.2</version.org.eclipselink.version>
-        <version.org.glassfish.jakarta.el>5.0.0-M1</version.org.glassfish.jakarta.el>
+        <version.org.glassfish.expressly>5.0.0-M2</version.org.glassfish.expressly>
         <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
         <!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
 		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
         <version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</version.org.glassfish.jaxb.jaxb-xjc>
         <version.org.glassfish.soteria>2.0.1</version.org.glassfish.soteria>
-        <version.org.glassfish.web.jakarta.servlet.jsp.jstl>2.0.0</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
+        <version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.0</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <version.org.hibernate>6.0.1.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>6.0.1.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>6.1.5.Final</version.org.hibernate.search>
@@ -132,13 +133,6 @@
         <version.org.wildfly.security.elytron-web>2.0.0.Beta3</version.org.wildfly.security.elytron-web>
         <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta3</version.org.wildfly.security.jakarta.elytron-ee>
 
-        <!-- TODO Glassfish uses org.glassfish:jakarta-el for this, which we use for the impl
-             but we have a separate API jar -->
-        <!--
-        <version.jakarta.el.jakarta-el-api>4.0.0-RC1</version.jakarta.el.jakarta-el-api>
-        -->
-
-        <!-- TODO Glassfish 6.0.0.M1 used org.glassfish.metro:webservices-api-osgi for these; see if there is another API jar -->
         <!--
         <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>2.0.0.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>
         <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>1.0.2.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>
@@ -262,6 +256,42 @@
                 <groupId>jakarta.mail</groupId>
                 <artifactId>jakarta.mail-api</artifactId>
                 <version>${version.jakarta.mail-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.agroal</groupId>
+                <artifactId>agroal-api</artifactId>
+                <version>${version.io.agroal}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.agroal</groupId>
+                <artifactId>agroal-narayana</artifactId>
+                <version>${version.io.agroal}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.agroal</groupId>
+                <artifactId>agroal-pool</artifactId>
+                <version>${version.io.agroal}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -846,8 +876,8 @@
 
             <dependency>
                 <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.el</artifactId>
-                <version>${version.org.glassfish.jakarta.el}</version>
+                <artifactId>jakarta.enterprise.concurrent</artifactId>
+                <version>${version.org.glassfish.jakarta.enterprise.concurrent}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -857,9 +887,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.enterprise.concurrent</artifactId>
-                <version>${version.org.glassfish.jakarta.enterprise.concurrent}</version>
+                <groupId>org.glassfish.expressly</groupId>
+                <artifactId>expressly</artifactId>
+                <version>${version.org.glassfish.expressly}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1575,6 +1605,18 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-bean-validation-jakarta</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-datasources-agroal-jakarta</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>

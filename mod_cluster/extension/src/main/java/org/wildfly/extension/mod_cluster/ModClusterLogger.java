@@ -165,7 +165,7 @@ interface ModClusterLogger extends BasicLogger {
 //     *
 //     * @return the message
 //     */
-//    @Message(id = 17, value = "'proxy-list' usage not allowed in the current model, can only be used to support older slaves")
+//    @Message(id = 17, value = "'proxy-list' usage not allowed in the current model, can only be used to support older secondary hosts")
 //    String proxyListNotAllowedInCurrentModel();
 
 //    /**

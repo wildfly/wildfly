@@ -775,6 +775,18 @@
                     <artifactId>antlr</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>io.agroal</groupId>
+                    <artifactId>agroal-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.agroal</groupId>
+                    <artifactId>agroal-narayana</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.agroal</groupId>
+                    <artifactId>agroal-pool</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>jipijapa-spi</artifactId>
                 </exclusion>
@@ -803,6 +815,10 @@
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-clustering-web-undertow</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-datasources-agroal</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
@@ -1003,6 +1019,10 @@
                 <exclusion>
                     <groupId>io.undertow.jastow</groupId>
                     <artifactId>jastow</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.glassfish</groupId>
+                    <artifactId>jakarta.el</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.jboss.metadata</groupId>
