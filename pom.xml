@@ -553,11 +553,17 @@
         <preview.version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.0.0</preview.version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
         <preview.version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>3.0.0</preview.version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
         <preview.version.jakarta.transaction.jakarta-transaction-api>2.0.0</preview.version.jakarta.transaction.jakarta-transaction-api>
+        <preview.version.jakarta.xml.bind-api>3.0.1</preview.version.jakarta.xml.bind-api>
         <preview.version.jakarta.validation.jakarta-validation-api>3.0.0</preview.version.jakarta.validation.jakarta-validation-api>
         <preview.version.jakarta.websocket.jakarta-websocket-api>2.0.0</preview.version.jakarta.websocket.jakarta-websocket-api>
         <preview.version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</preview.version.jakarta.ws.rs.jakarta-ws-rs-api>
         <!--<preview.version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.0</preview.version.jakarta.xml.bind.jakarta-xml-bind-api>-->
+        <preview.version.net.shibboleth.utilities.java-support>8.0.0</preview.version.net.shibboleth.utilities.java-support>
+        <preview.version.org.apache.cxf>3.5.2-jbossorg</preview.version.org.apache.cxf>
+        <preview.version.org.apache.cxf.xjcplugins>3.3.1-jbossorg-1</preview.version.org.apache.cxf.xjcplugins>
         <preview.version.org.apache.lucene>8.11.1</preview.version.org.apache.lucene>
+        <preview.version.org.apache.wss4j>2.4.1-jbossorg-1</preview.version.org.apache.wss4j>
+        <preview.version.org.apache.xmlsec>3.0.0</preview.version.org.apache.xmlsec>
         <preview.version.org.apache.myfaces.core>3.0.1</preview.version.org.apache.myfaces.core>
         <preview.version.org.eclipse.angus.angus-activation>1.0.0</preview.version.org.eclipse.angus.angus-activation>
         <preview.version.org.eclipse.angus.angus-mail>1.0.0</preview.version.org.eclipse.angus.angus-mail>
@@ -593,7 +599,8 @@
         <preview.version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</preview.version.org.glassfish.jakarta.enterprise.concurrent>
         <!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
 		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
-        <preview.version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</preview.version.org.glassfish.jaxb.jaxb-xjc>
+        <preview.version.org.glassfish.jaxb>3.0.2</preview.version.org.glassfish.jaxb>
+        <preview.version.org.glassfish.jaxb.jaxb-xjc>3.0.2</preview.version.org.glassfish.jaxb.jaxb-xjc>
         <preview.version.org.glassfish.soteria>2.0.1</preview.version.org.glassfish.soteria>
         <preview.version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.0</preview.version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <preview.version.org.hibernate>6.0.1.Final</preview.version.org.hibernate>
@@ -615,7 +622,6 @@
         <preview.version.org.wildfly.security.elytron-mp>2.0.0.Beta3</preview.version.org.wildfly.security.elytron-mp>
         <preview.version.org.wildfly.security.elytron-web>2.0.0.Beta3</preview.version.org.wildfly.security.elytron-web>
         <preview.version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta3</preview.version.org.wildfly.security.jakarta.elytron-ee>
-
     </properties>
 
     <dependencyManagement>

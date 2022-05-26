@@ -29,6 +29,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.jaxb.FakeJAXBContextFactory;
@@ -56,6 +57,7 @@ public abstract class JAXBContextTestBase {
     protected static final String JAXB_FACTORY_PROP_NAME = JAXBContextFactory.class.getName();
     protected static final String JAKARTA_FACTORY_PROP_NAME = JAXBContextFactory.class.getName().replaceFirst("javax.", "jakarta.");
     protected static final String DEFAULT_JAXB_FACTORY_CLASS = "com.sun.xml.bind.v2.JAXBContextFactory";
+    protected static final String JAKARTA_JAXB_FACTORY_CLASS = "org.glassfish.jaxb.runtime.v2.JAXBContextFactory";
     protected static final String CUSTOM_JAXB_FACTORY_CLASS = FakeJAXBContextFactory.class.getName();
     protected static final String JAXB_PROPERTIES_FILE = "WEB-INF/classes/org/jboss/as/test/integration/jaxb/bindings/jaxb.properties";
     protected static final String SERVICES_FILE = "META-INF/services/" + JAXB_FACTORY_PROP_NAME;
@@ -91,7 +93,9 @@ public abstract class JAXBContextTestBase {
             final HttpEntity entity = response.getEntity();
             Assert.assertNotNull("Response message from servlet was null", entity);
             final String responseMessage = EntityUtils.toString(entity);
-            MatcherAssert.assertThat(responseMessage, CoreMatchers.containsString("/com/sun/xml/bind/v2/runtime/JAXBContextImpl"));
+            Matcher matcher1 = CoreMatchers.containsString("/com/sun/xml/bind/v2/runtime/JAXBContextImpl");
+            Matcher matcher2 = CoreMatchers.containsString("/org/glassfish/jaxb/runtime/v2/runtime/JAXBContextImpl");
+            MatcherAssert.assertThat(responseMessage, CoreMatchers.either(matcher1).or(matcher2));
         }
         // test it works
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {

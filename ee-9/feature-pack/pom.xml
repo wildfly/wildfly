@@ -569,6 +569,12 @@
                                 <exclude>org.glassfish:jakarta.json\z</exclude>
                                 <exclude>activemq-artemis-native\z</exclude>
                                 <exclude>org.jboss.activemq.artemis.integration:artemis-wildfly-jakarta-integration\z</exclude>
+                                <!-- javax.annotation.Nullable and javax.annotaion.Nonnull in opensaml-->
+                                <exclude>org.opensaml:opensaml-core\z</exclude>
+                                <exclude>org.opensaml:opensaml-xmlsec-api\z</exclude>
+                                <exclude>org.opensaml:opensaml-security-impl\z</exclude>
+                                <exclude>org.opensaml:opensaml-soap-api\z</exclude>
+                                <exclude>org.opensaml:opensaml-saml-api\z</exclude>
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>
