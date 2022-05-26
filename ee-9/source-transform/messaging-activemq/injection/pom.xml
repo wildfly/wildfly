@@ -137,12 +137,6 @@
             <type>jar</type>
         </dependency>
 
-        <dependency>
-            <groupId>jakarta.transaction</groupId>
-            <artifactId>jakarta.transaction-api</artifactId>
-            <type>jar</type>
-        </dependency>
-
         <!-- test -->
         <dependency>
             <groupId>junit</groupId>
