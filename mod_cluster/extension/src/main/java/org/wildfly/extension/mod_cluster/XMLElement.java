@@ -36,17 +36,16 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 enum XMLElement {
     UNKNOWN((String) null),
 
-    @Deprecated MOD_CLUSTER_CONFIG(ProxyConfigurationResourceDefinition.LEGACY_PATH),
     PROXY(ProxyConfigurationResourceDefinition.WILDCARD_PATH),
 
-    SIMPLE_LOAD_PROVIDER(ProxyConfigurationResourceDefinition.DeprecatedAttribute.SIMPLE_LOAD_PROVIDER.getName()),
-    DYNAMIC_LOAD_PROVIDER(DynamicLoadProviderResourceDefinition.LEGACY_PATH),
+    SIMPLE_LOAD_PROVIDER("simple-load-provider"),
+    DYNAMIC_LOAD_PROVIDER("dynamic-load-provider"),
 
     CUSTOM_LOAD_METRIC(CustomLoadMetricResourceDefinition.WILDCARD_PATH),
     LOAD_METRIC(LoadMetricResourceDefinition.WILDCARD_PATH),
     PROPERTY(ModelDescriptionConstants.PROPERTY),
 
-    @Deprecated SSL(SSLResourceDefinition.PATH),
+    SSL("ssl"),
     ;
 
     private final String name;

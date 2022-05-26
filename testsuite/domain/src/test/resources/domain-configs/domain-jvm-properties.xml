@@ -334,8 +334,12 @@
                 <modify-wsdl-address>true</modify-wsdl-address>
                 <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:modcluster:1.2">
-                <mod-cluster-config advertise-socket="modcluster" connector="default"/>
+            <subsystem xmlns="urn:jboss:domain:modcluster:6.0">
+                <proxy name="default" advertise-socket="modcluster" listener="default">
+                    <dynamic-load-provider>
+                        <load-metric type="cpu"/>
+                    </dynamic-load-provider>
+                </proxy>
             </subsystem>
             <subsystem xmlns="urn:wildfly:elytron:14.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
                 <providers>

@@ -25,6 +25,7 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
 import static org.wildfly.extension.mod_cluster.XMLAttribute.CLASS;
 import static org.wildfly.extension.mod_cluster.XMLAttribute.TYPE;
 
@@ -53,7 +54,6 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
         this.schema = schema;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
         ParseUtils.requireNoAttributes(reader);
@@ -65,17 +65,9 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
-                case MOD_CLUSTER_CONFIG: {
-                    if (!schema.since(ModClusterSchema.MODCLUSTER_4_0)) {
-                        this.parseProxy(reader, list, subsystemAddress);
-                        break;
-                    }
-                }
                 case PROXY: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_4_0)) {
-                        this.parseProxy(reader, list, subsystemAddress);
-                        break;
-                    }
+                    this.parseProxy(reader, list, subsystemAddress);
+                    break;
                 }
                 default: {
                     throw unexpectedElement(reader);
@@ -84,9 +76,8 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
         }
     }
 
-    @SuppressWarnings("deprecation")
     private void parseProxy(XMLExtendedStreamReader reader, List<ModelNode> list, PathAddress parent) throws XMLStreamException {
-        String name = schema.since(ModClusterSchema.MODCLUSTER_4_0) ? require(reader, XMLAttribute.NAME) : "default";
+        String name = require(reader, XMLAttribute.NAME);
 
         PathAddress address = parent.append(ProxyConfigurationResourceDefinition.pathElement(name));
         ModelNode operation = Util.createAddOperation(address);
@@ -178,81 +169,44 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
                     break;
                 }
                 case PROXY_LIST: {
-                    // The legacy PROXY_LIST is here to support EAP 6.x slaves
-                    readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.PROXY_LIST);
+                    if (this.schema.since(ModClusterSchema.MODCLUSTER_6_0)) {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                    ROOT_LOGGER.ignoredAttribute(attribute.getLocalName(), reader.getLocalName());
                     break;
                 }
-                // 1.0
-                case DOMAIN: {
-                    if (schema == ModClusterSchema.MODCLUSTER_1_0) {
-                        readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.LOAD_BALANCING_GROUP);
-                        break;
-                    }
-                }
-                // 1.1
                 case LOAD_BALANCING_GROUP: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_1_1)) {
-                        readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.LOAD_BALANCING_GROUP);
-                        break;
-                    }
+                    readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.LOAD_BALANCING_GROUP);
+                    break;
                 }
-                case CONNECTOR: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_1_1) && !schema.since(ModClusterSchema.MODCLUSTER_4_0)) {
-                        readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.LISTENER);
-                        break;
-                    } else {
-                        throw unexpectedAttribute(reader, i);
-                    }
-                }
-                // 1.2
                 case SESSION_DRAINING_STRATEGY: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_1_2)) {
-                        readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.SESSION_DRAINING_STRATEGY);
-                        break;
-                    }
+                    readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.SESSION_DRAINING_STRATEGY);
+                    break;
                 }
-                // 2.0
                 case STATUS_INTERVAL: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_2_0)) {
-                        readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.STATUS_INTERVAL);
-                        break;
-                    }
+                    readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.STATUS_INTERVAL);
+                    break;
                 }
                 case PROXIES: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_2_0)) {
-                        readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.PROXIES);
-                        break;
-                    }
+                    readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.PROXIES);
+                    break;
                 }
-                // 3.0
                 case SSL_CONTEXT: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_3_0)) {
-                        readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.SSL_CONTEXT);
-                        break;
-                    }
+                    readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.SSL_CONTEXT);
+                    break;
                 }
-                // 4.0
                 case NAME: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_4_0)) {
-                        // Ignore -- already parsed.
-                        break;
-                    }
+                    // Ignore -- already parsed.
+                    break;
                 }
                 case LISTENER: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_4_0)) {
-                        readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.LISTENER);
-                        break;
-                    }
+                    readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.LISTENER);
+                    break;
                 }
                 default: {
                     throw unexpectedAttribute(reader, i);
                 }
             }
-        }
-
-        if (schema == ModClusterSchema.MODCLUSTER_1_0) {
-            // This is a required attribute - so set it to something reasonable
-            setAttribute(reader, "ajp", operation, ProxyConfigurationResourceDefinition.Attribute.LISTENER);
         }
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -267,7 +221,8 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
                     break;
                 }
                 case SSL: {
-                    this.parseSSL(reader, list, address);
+                    ROOT_LOGGER.ignoredElement(element.getLocalName());
+                    ParseUtils.requireNoContent(reader);
                     break;
                 }
                 default: {
@@ -275,53 +230,6 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
                 }
             }
         }
-    }
-
-    @SuppressWarnings("deprecation")
-    private void parseSSL(XMLExtendedStreamReader reader, List<ModelNode> list, PathAddress parent) throws XMLStreamException {
-        PathAddress address = parent.append(SSLResourceDefinition.PATH);
-        ModelNode operation = Util.createAddOperation(address);
-        list.add(operation);
-        int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-                // toto enum-ize
-                case KEY_ALIAS: {
-                    readAttribute(reader, i, operation, SSLResourceDefinition.Attribute.KEY_ALIAS);
-                    break;
-                }
-                case PASSWORD: {
-                    readAttribute(reader, i, operation, SSLResourceDefinition.Attribute.PASSWORD);
-                    break;
-                }
-                case CERTIFICATE_KEY_FILE: {
-                    readAttribute(reader, i, operation, SSLResourceDefinition.Attribute.CERTIFICATE_KEY_FILE);
-                    break;
-                }
-                case CIPHER_SUITE: {
-                    readAttribute(reader, i, operation, SSLResourceDefinition.Attribute.CIPHER_SUITE);
-                    break;
-                }
-                case PROTOCOL: {
-                    readAttribute(reader, i, operation, SSLResourceDefinition.Attribute.PROTOCOL);
-                    break;
-                }
-                case CA_CERTIFICATE_FILE: {
-                    readAttribute(reader, i, operation, SSLResourceDefinition.Attribute.CA_CERTIFICATE_FILE);
-                    break;
-                }
-                case CA_REVOCATION_URL: {
-                    readAttribute(reader, i, operation, SSLResourceDefinition.Attribute.CA_REVOCATION_URL);
-                    break;
-                }
-                default: {
-                    throw unexpectedAttribute(reader, i);
-                }
-            }
-        }
-        ParseUtils.requireNoContent(reader);
     }
 
     private void parseSimpleLoadProvider(XMLExtendedStreamReader reader, List<ModelNode> list, PathAddress parent) throws XMLStreamException {
@@ -398,6 +306,10 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
 
     private void parseLoadMetric(XMLExtendedStreamReader reader, List<ModelNode> list, PathAddress address) throws XMLStreamException {
         String type = require(reader, TYPE);
+        if ("mem".equalsIgnoreCase(type)) {
+            ROOT_LOGGER.ignoredElement(type);
+            ParseUtils.requireNoContent(reader);
+        }
         PathAddress opAddress = address.append(LoadMetricResourceDefinition.pathElement(type));
         ModelNode operation = Util.createAddOperation(opAddress);
 

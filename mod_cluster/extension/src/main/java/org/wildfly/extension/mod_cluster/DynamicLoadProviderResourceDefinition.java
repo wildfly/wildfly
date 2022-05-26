@@ -27,7 +27,6 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -39,13 +38,11 @@ import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 
 /**
  * Definition for resource at address /subsystem=modcluster/proxy=X/load-provider=dynamic
- * and its legacy alias /subsystem=modcluster/proxy=X/dynamic-load-provider=configuration
  *
  * @author Radoslav Husar
  */
 public class DynamicLoadProviderResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
-    public static final PathElement LEGACY_PATH = PathElement.pathElement("dynamic-load-provider", "configuration");
     public static final PathElement PATH = PathElement.pathElement("load-provider", "dynamic");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
@@ -88,7 +85,6 @@ public class DynamicLoadProviderResourceDefinition extends ChildResourceDefiniti
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
-        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)

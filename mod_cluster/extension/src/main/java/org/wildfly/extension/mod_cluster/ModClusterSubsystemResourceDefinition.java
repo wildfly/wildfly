@@ -35,7 +35,6 @@ import org.jboss.modcluster.ModClusterServiceMBean;
 
 /**
  * Resource definition for mod_cluster subsystem resource, children of which are respective proxy configurations.
- * Also registers wrong, legacy and deprecated proxy operations (WFLY-10439).
  *
  * @author Radoslav Husar
  */
@@ -47,7 +46,6 @@ class ModClusterSubsystemResourceDefinition extends SubsystemResourceDefinition<
         super(PATH, ModClusterExtension.SUBSYSTEM_RESOLVER);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void register(SubsystemRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubsystemModel(this);
@@ -61,10 +59,5 @@ class ModClusterSubsystemResourceDefinition extends SubsystemResourceDefinition<
         new SimpleResourceRegistration(descriptor, handler).register(registration);
 
         new ProxyConfigurationResourceDefinition(registry).register(registration);
-
-        // Deprecated legacy operations which are exposed at the wrong location
-        if (parent.isRuntimeOnlyRegistrationValid()) {
-            new LegacyProxyHandler(registry).register(registration);
-        }
     }
 }

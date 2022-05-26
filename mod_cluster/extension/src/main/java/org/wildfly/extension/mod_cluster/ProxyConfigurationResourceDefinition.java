@@ -22,14 +22,8 @@
 
 package org.wildfly.extension.mod_cluster;
 
-import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
-
-import java.util.EnumSet;
-import java.util.Set;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.AttributeTranslation;
-import org.jboss.as.clustering.controller.AttributeValueTranslator;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
@@ -40,25 +34,16 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ParameterCorrector;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.AliasEntry;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.ModClusterServiceMBean;
@@ -73,7 +58,6 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
 
     private static final String UNDERTOW_LISTENER_CAPABILITY_NAME = "org.wildfly.undertow.listener";
 
-    static final PathElement LEGACY_PATH = PathElement.pathElement("mod-cluster-config", "configuration");
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     static PathElement pathElement(String name) {
@@ -171,39 +155,6 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
             }
         },
         PROXIES("proxies"),
-        PROXY_LIST("proxy-list", ModelType.STRING, null) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder
-                        .setValidator(new ParameterValidator() {
-                            @Override
-                            public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                                if (value.isDefined()) {
-                                    String str = value.asString();
-                                    String[] results = str.split(",");
-                                    for (String result : results) {
-                                        int i = result.lastIndexOf(":");
-                                        try {
-                                            //validate that the port is >0 and that the host is not the empty string
-                                            //this also validates that both a host and port have been supplied
-                                            //<=1 as we want to make sure the host is not the empty string
-                                            if (i <= 1 || Integer.parseInt(result.substring(i + 1)) <= 0) {
-                                                throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.needHostAndPort(result));
-                                            }
-                                        } catch (NumberFormatException e) {
-                                            throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.needHostAndPort(result));
-                                        }
-                                    }
-                                }
-
-                            }
-                        })
-                        .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
-                        .setDeprecated(ModClusterModel.VERSION_2_0_0.getVersion())
-                        .addAlternatives(PROXIES.getName())
-                        ;
-            }
-        },
         PROXY_URL("proxy-url", ModelType.STRING, new ModelNode("/")) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -303,7 +254,6 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
                     .setCapabilityReference(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getName())
                     .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
                     .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
-                    .addAlternatives("proxy-list")
                     .build();
         }
 
@@ -318,23 +268,6 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         }
     }
 
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        CONNECTOR("connector", ModelType.STRING, ModClusterModel.VERSION_6_0_0),
-        SIMPLE_LOAD_PROVIDER("simple-load-provider", ModelType.INT, ModClusterModel.VERSION_6_0_0),
-        ;
-
-        private final AttributeDefinition definition;
-
-        DeprecatedAttribute(String name, ModelType type, ModClusterModel deprecation) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type, true).setDeprecated(deprecation.getVersion()).build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
     private final FunctionExecutorRegistry<ModClusterServiceMBean> executors;
 
     public ProxyConfigurationResourceDefinition(FunctionExecutorRegistry<ModClusterServiceMBean> executors) {
@@ -342,124 +275,26 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         this.executors = executors;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(EnumSet.complementOf(EnumSet.of(Attribute.SSL_CONTEXT)))
-                .addExtraParameters(Attribute.SSL_CONTEXT)
-                .addAttributeTranslation(DeprecatedAttribute.SIMPLE_LOAD_PROVIDER, SIMPLE_LOAD_PROVIDER_TRANSLATION)
-                .addAlias(DeprecatedAttribute.CONNECTOR, Attribute.LISTENER)
+                .addAttributes(Attribute.class)
                 .addRequiredSingletonChildren(SimpleLoadProviderResourceDefinition.PATH)
                 .addCapabilities(Capability.class)
                 ;
-
-        registration.registerReadWriteAttribute(Attribute.SSL_CONTEXT.getDefinition(), null, new ReloadRequiredWriteAttributeHandler(Attribute.SSL_CONTEXT.getDefinition()) {
-            @Override
-            protected void validateUpdatedModel(OperationContext context, Resource model) {
-                context.addStep(new OperationStepHandler() {
-                    @Override
-                    public void execute(OperationContext ctx, ModelNode op) throws OperationFailedException {
-                        if (model.hasChild(SSLResourceDefinition.PATH)) {
-                            throw new OperationFailedException(ROOT_LOGGER.bothElytronAndLegacySslContextDefined());
-                        }
-                    }
-                }, OperationContext.Stage.MODEL);
-            }
-        });
-
-        parent.registerAlias(LEGACY_PATH, new AliasEntry(registration) {
-            @Override
-            public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasContext aliasContext) {
-                PathAddress rebuiltAddress = PathAddress.EMPTY_ADDRESS;
-                for (PathElement pathElement : aliasAddress) {
-                    if (pathElement.equals(LEGACY_PATH)) {
-                        try {
-                            if (aliasContext.readResourceFromRoot(rebuiltAddress, false).hasChildren(ProxyConfigurationResourceDefinition.WILDCARD_PATH.getKey())) {
-                                Set<Resource.ResourceEntry> children = aliasContext.readResourceFromRoot(rebuiltAddress, false).getChildren(ProxyConfigurationResourceDefinition.WILDCARD_PATH.getKey());
-                                if (children.size() > 1 && !Operations.getOperationName(aliasContext.getOperation()).equals(AliasContext.RECURSIVE_GLOBAL_OP)) {
-                                    throw new IllegalStateException(ModClusterLogger.ROOT_LOGGER.legacyOperationsWithMultipleProxies());
-                                }
-                                PathAddress proxyPath = PathAddress.pathAddress(ProxyConfigurationResourceDefinition.pathElement(children.iterator().next().getName()));
-                                rebuiltAddress = rebuiltAddress.append(proxyPath);
-                            } else {
-                                // handle :add
-                                rebuiltAddress = rebuiltAddress.append(ProxyConfigurationResourceDefinition.pathElement("default"));
-                            }
-                        } catch (Resource.NoSuchResourceException ignore) {
-                            // handle recursive-global-op
-                            rebuiltAddress = rebuiltAddress.append(ProxyConfigurationResourceDefinition.WILDCARD_PATH);
-                        }
-                    } else {
-                        rebuiltAddress = rebuiltAddress.append(pathElement);
-                    }
-                }
-                return rebuiltAddress;
-            }
-        });
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new OperationHandler<>(new ProxyOperationExecutor(this.executors), ProxyOperation.class).register(registration);
         }
 
         new ReloadRequiredResourceRegistration(descriptor).register(registration);
-        new LegacyMetricOperationsRegistration().register(registration);
 
         new SimpleLoadProviderResourceDefinition().register(registration);
         new DynamicLoadProviderResourceDefinition().register(registration);
 
-        new SSLResourceDefinition().register(registration);
-
         return registration;
     }
-
-    private static final AttributeTranslation SIMPLE_LOAD_PROVIDER_TRANSLATION = new AttributeTranslation() {
-        @Override
-        public org.jboss.as.clustering.controller.Attribute getTargetAttribute() {
-            return SimpleLoadProviderResourceDefinition.Attribute.FACTOR;
-        }
-
-        private final AttributeValueTranslator simpleLoadFactorDefinedValidator = new AttributeValueTranslator() {
-            @Override
-            public ModelNode translate(OperationContext context, ModelNode value) throws OperationFailedException {
-                // Skip if executed on the existing current resource
-                PathAddress currentAddress = context.getCurrentAddress();
-                if (currentAddress.getLastElement().equals(SimpleLoadProviderResourceDefinition.PATH)) {
-                    return value;
-                }
-
-                try {
-                    // Otherwise, fail if operation executed on the legacy resource if dynamic load provider is defined
-                    PathAddress address = PathAddress.pathAddress(DynamicLoadProviderResourceDefinition.PATH);
-                    context.readResource(address, false);
-                } catch (Resource.NoSuchResourceException ignore) {
-                    return value;
-                }
-                throw ROOT_LOGGER.simpleLoadFactorProviderIsNotConfigured();
-            }
-        };
-
-        @Override
-        public AttributeValueTranslator getReadTranslator() {
-            return simpleLoadFactorDefinedValidator;
-        }
-
-        @Override
-        public AttributeValueTranslator getWriteTranslator() {
-            return simpleLoadFactorDefinedValidator;
-        }
-
-        @Override
-        public UnaryOperator<PathAddress> getPathAddressTransformation() {
-            return new UnaryOperator<>() {
-                @Override
-                public PathAddress apply(PathAddress pathAddress) {
-                    return pathAddress.append(SimpleLoadProviderResourceDefinition.PATH);
-                }
-            };
-        }
-    };
 
 }

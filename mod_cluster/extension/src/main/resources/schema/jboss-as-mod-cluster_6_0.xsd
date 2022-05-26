@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2018, Red Hat, Inc., and individual contributors
+  ~ Copyright 2022, Red Hat, Inc., and individual contributors
   ~ as indicated by the @author tags. See the copyright.txt file in the
   ~ distribution for a full listing of individual contributors.
   ~
@@ -21,8 +21,11 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:jboss:domain:modcluster:4.0"
-           xmlns="urn:jboss:domain:modcluster:4.0" elementFormDefault="qualified" version="4.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:jboss:domain:modcluster:6.0"
+           xmlns="urn:jboss:domain:modcluster:6.0"
+           elementFormDefault="qualified"
+           version="6.0">
 
     <xs:element name="subsystem" type="subsystem"/>
 
@@ -57,13 +60,6 @@
                     </xs:annotation>
                 </xs:element>
             </xs:choice>
-            <xs:element name="ssl" type="ssl" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation>
-                        Deprecated. Use 'ssl-context' attribute instead.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:element>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
@@ -175,14 +171,6 @@
             <xs:simpleType>
                 <xs:list itemType="xs:string"/>
             </xs:simpleType>
-        </xs:attribute>
-        <xs:attribute name="proxy-list" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>
-                    Deprecated in favor of proxies (list of references to outbound-socket-binding). List of reverse proxies to
-                    register with. Format (hostname:port) separated with commas.
-                </xs:documentation>
-            </xs:annotation>
         </xs:attribute>
         <xs:attribute name="proxy-url" type="xs:string">
             <xs:annotation>
@@ -315,6 +303,14 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="initial-load" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Initial load within the range [0..100] with which to prepopulate historical values. Used to gradually drive
+                    load to the node. Value of 0 prepopulates with full load and value of -1 disables this behavior.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="common-load-metric" abstract="true">
@@ -389,13 +385,6 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
-            <xs:enumeration value="mem">
-                <xs:annotation>
-                    <xs:documentation>
-                        Deprecated. Will be ignored at runtime if specified.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:enumeration>
             <xs:enumeration value="heap">
                 <xs:annotation>
                     <xs:documentation>
@@ -445,63 +434,6 @@
     <xs:complexType name="property">
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="value" type="xs:string" use="required"/>
-    </xs:complexType>
-
-    <xs:complexType name="ssl">
-        <xs:annotation>
-            <xs:documentation>
-                Deprecated. The SSL configuration to client MCMP logic.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="ca-certificate-file" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>
-                    Location of the file containing the trust store.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="ca-revocation-url" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>
-                    Certificate authority revocation list.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="certificate-key-file" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>
-                    Key file for the certificate.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="key-alias" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>
-                    The alias of the key holding the client certificates in the key store.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="password" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>
-                    Password granting access to the key store and trust store.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="cipher-suite" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>
-                    Comma separated list of encryption ciphers the configuration is allowed to use.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="protocol" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>
-                    The SSL protocols that are enabled.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
     </xs:complexType>
 
 </xs:schema>
