@@ -112,7 +112,7 @@ public class XSiteSimpleTestCase extends AbstractClusteringTestCase {
     @Override
     public void beforeTestMethod() throws Exception {
         // Orchestrate startup of clusters to purge previously discovered views.
-        stop(nodes);
+        stop();
         start(NODE_1);
         deploy(DEPLOYMENT_1);
         start(NODE_3);

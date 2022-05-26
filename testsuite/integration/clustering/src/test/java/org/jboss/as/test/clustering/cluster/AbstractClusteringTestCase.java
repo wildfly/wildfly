@@ -24,7 +24,6 @@ package org.jboss.as.test.clustering.cluster;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.AbstractMap;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -179,8 +178,8 @@ public abstract class AbstractClusteringTestCase {
     @ArquillianResource
     protected Deployer deployer;
 
-    protected final Set<String> nodes;
-    protected final Set<String> deployments;
+    private final Set<String> containers;
+    private final Set<String> deployments;
 
     // Framework contract methods
     @Deprecated
@@ -203,7 +202,7 @@ public abstract class AbstractClusteringTestCase {
     }
 
     public AbstractClusteringTestCase(Set<String> containers, Set<String> deployments) {
-        this.nodes = containers;
+        this.containers = containers;
         this.deployments = deployments;
     }
 
@@ -216,7 +215,7 @@ public abstract class AbstractClusteringTestCase {
     @Before
     public void beforeTestMethod() throws Exception {
         this.containerRegistry.getContainers().forEach(container -> {
-            if (container.getState() == Container.State.STARTED && !Arrays.asList(nodes).contains(container.getName())) {
+            if (container.getState() == Container.State.STARTED && !this.containers.contains(container.getName())) {
                 // Even though we should be able to just stop the container object this currently fails with:
                 // WFARQ-47 Calling "container.stop();" always ends exceptionally "Caught exception closing ManagementClient: java.lang.NullPointerException"
                 this.stop(container.getName());
@@ -224,8 +223,8 @@ public abstract class AbstractClusteringTestCase {
             }
         });
 
-        start(nodes);
-        deploy(deployments);
+        this.start();
+        this.deploy();
     }
 
     /**
@@ -233,14 +232,18 @@ public abstract class AbstractClusteringTestCase {
      */
     @After
     public void afterTestMethod() throws Exception {
-        start(nodes);
-        undeploy(deployments);
+        this.start();
+        this.undeploy();
     }
 
     // Node and deployment lifecycle management convenience methods
     @Deprecated
     protected void start(String... containers) {
         start(Set.of(containers));
+    }
+
+    protected void start() {
+        this.start(this.containers);
     }
 
     protected void start(String container) {
@@ -254,6 +257,10 @@ public abstract class AbstractClusteringTestCase {
     @Deprecated
     protected void stop(String... containers) {
         stop(Set.of(containers));
+    }
+
+    protected void stop() {
+        this.stop(this.containers);
     }
 
     protected void stop(String container) {
@@ -286,6 +293,10 @@ public abstract class AbstractClusteringTestCase {
         deploy(Set.of(deployments));
     }
 
+    protected void deploy() {
+        this.deploy(this.deployments);
+    }
+
     protected void deploy(String deployment) {
         NodeUtil.deploy(this.deployer, deployment);
     }
@@ -297,6 +308,10 @@ public abstract class AbstractClusteringTestCase {
     @Deprecated
     protected void undeploy(String... deployments) {
         undeploy(Set.of(deployments));
+    }
+
+    protected void undeploy() {
+        this.undeploy(this.deployments);
     }
 
     protected void undeploy(String deployment) {

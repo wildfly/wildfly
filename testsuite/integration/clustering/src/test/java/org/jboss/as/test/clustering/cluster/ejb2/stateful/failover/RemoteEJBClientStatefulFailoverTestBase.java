@@ -64,7 +64,7 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends AbstractCl
 
     @Override
     public void afterTestMethod() {
-        start(nodes);
+        start();
         undeploy(TWO_DEPLOYMENTS);
         undeploy(TWO_DEPLOYMENT_HELPERS);
     }
