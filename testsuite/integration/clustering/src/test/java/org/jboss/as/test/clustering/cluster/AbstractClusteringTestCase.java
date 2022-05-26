@@ -21,16 +21,14 @@
  */
 package org.jboss.as.test.clustering.cluster;
 
-import static org.wildfly.common.Assert.checkNotNullArrayParam;
-
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TreeMap;
-import java.util.stream.Stream;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -75,9 +73,12 @@ public abstract class AbstractClusteringTestCase {
     public static final String NODE_2 = "node-2";
     public static final String NODE_3 = "node-3";
     public static final String NODE_4 = "node-4";
-    public static final String[] TWO_NODES = new String[] { NODE_1, NODE_2 };
-    public static final String[] THREE_NODES = new String[] { NODE_1, NODE_2, NODE_3 };
-    public static final String[] FOUR_NODES = new String[] { NODE_1, NODE_2, NODE_3, NODE_4 };
+    @Deprecated public static final String[] TWO_NODES = new String[] { NODE_1, NODE_2 };
+    @Deprecated public static final String[] THREE_NODES = new String[] { NODE_1, NODE_2, NODE_3 };
+    @Deprecated public static final String[] FOUR_NODES = new String[] { NODE_1, NODE_2, NODE_3, NODE_4 };
+    public static final Set<String> NODE_1_2 = Set.of(TWO_NODES);
+    public static final Set<String> NODE_1_2_3 = Set.of(THREE_NODES);
+    public static final Set<String> NODE_1_2_3_4 = Set.of(FOUR_NODES);
     public static final String NODE_NAME_PROPERTY = "jboss.node.name";
 
     // Test deployment names
@@ -85,17 +86,22 @@ public abstract class AbstractClusteringTestCase {
     public static final String DEPLOYMENT_2 = "deployment-2";
     public static final String DEPLOYMENT_3 = "deployment-3";
     public static final String DEPLOYMENT_4 = "deployment-4";
-    public static final String[] TWO_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2 };
-    public static final String[] THREE_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3 };
-    public static final String[] FOUR_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3, DEPLOYMENT_4 };
+    @Deprecated public static final String[] TWO_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2 };
+    @Deprecated public static final String[] THREE_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3 };
+    @Deprecated public static final String[] FOUR_DEPLOYMENTS = new String[] { DEPLOYMENT_1, DEPLOYMENT_2, DEPLOYMENT_3, DEPLOYMENT_4 };
+    public static final Set<String> DEPLOYMENT_1_2 = Set.of(TWO_DEPLOYMENTS);
+    public static final Set<String> DEPLOYMENT_1_2_3 = Set.of(THREE_DEPLOYMENTS);
+    public static final Set<String> DEPLOYMENT_1_2_3_4 = Set.of(FOUR_DEPLOYMENTS);
 
     // Helper deployment names
     public static final String DEPLOYMENT_HELPER_1 = "deployment-helper-0";
     public static final String DEPLOYMENT_HELPER_2 = "deployment-helper-1";
     public static final String DEPLOYMENT_HELPER_3 = "deployment-helper-2";
     public static final String DEPLOYMENT_HELPER_4 = "deployment-helper-3";
-    public static final String[] TWO_DEPLOYMENT_HELPERS = new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2 };
-    public static final String[] FOUR_DEPLOYMENT_HELPERS = new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2, DEPLOYMENT_HELPER_3, DEPLOYMENT_HELPER_4 };
+    @Deprecated public static final String[] TWO_DEPLOYMENT_HELPERS = new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2 };
+    @Deprecated public static final String[] FOUR_DEPLOYMENT_HELPERS = new String[] { DEPLOYMENT_HELPER_1, DEPLOYMENT_HELPER_2, DEPLOYMENT_HELPER_3, DEPLOYMENT_HELPER_4 };
+    public static final Set<String> DEPLOYMENT_HELPER_1_2 = Set.of(TWO_DEPLOYMENT_HELPERS);
+    public static final Set<String> DEPLOYMENT_HELPER_1_2_3_4 = Set.of(FOUR_DEPLOYMENT_HELPERS);
 
     // Infinispan Server
     public static final String INFINISPAN_SERVER_HOME = System.getProperty("infinispan.server.home");
@@ -155,13 +161,7 @@ public abstract class AbstractClusteringTestCase {
     public static final String TESTSUITE_MCAST3 = System.getProperty("mcast3", "230.0.0.7");
 
     protected static final Logger log = Logger.getLogger(AbstractClusteringTestCase.class);
-    private static final Map<String, String> NODE_TO_DEPLOYMENT = new TreeMap<>();
-    static {
-        NODE_TO_DEPLOYMENT.put(NODE_1, DEPLOYMENT_1);
-        NODE_TO_DEPLOYMENT.put(NODE_2, DEPLOYMENT_2);
-        NODE_TO_DEPLOYMENT.put(NODE_3, DEPLOYMENT_3);
-        NODE_TO_DEPLOYMENT.put(NODE_4, DEPLOYMENT_4);
-    }
+    private static final Map<String, String> CONTAINER_TO_DEPLOYMENT = Map.of(NODE_1, DEPLOYMENT_1, NODE_2, DEPLOYMENT_2, NODE_3, DEPLOYMENT_3, NODE_4, DEPLOYMENT_4);
 
     protected static Map.Entry<String, String> parseSessionRoute(HttpResponse response) {
         Header setCookieHeader = response.getFirstHeader("Set-Cookie");
@@ -179,21 +179,31 @@ public abstract class AbstractClusteringTestCase {
     @ArquillianResource
     protected Deployer deployer;
 
-    protected final String[] nodes;
-    protected final String[] deployments;
+    protected final Set<String> nodes;
+    protected final Set<String> deployments;
 
     // Framework contract methods
-
+    @Deprecated
     public AbstractClusteringTestCase() {
-        this(TWO_NODES);
+        this(NODE_1_2);
     }
 
+    @Deprecated
     public AbstractClusteringTestCase(String[] nodes) {
-        this(nodes, Stream.of(nodes).map(NODE_TO_DEPLOYMENT::get).toArray(String[]::new));
+        this(Set.of(nodes));
     }
 
+    public AbstractClusteringTestCase(Set<String> containers) {
+        this(containers, toDeployments(containers));
+    }
+
+    @Deprecated
     public AbstractClusteringTestCase(String[] nodes, String[] deployments) {
-        this.nodes = nodes;
+        this(Set.of(nodes), Set.of(deployments));
+    }
+
+    public AbstractClusteringTestCase(Set<String> containers, Set<String> deployments) {
+        this.nodes = containers;
         this.deployments = deployments;
     }
 
@@ -228,12 +238,29 @@ public abstract class AbstractClusteringTestCase {
     }
 
     // Node and deployment lifecycle management convenience methods
-
+    @Deprecated
     protected void start(String... containers) {
+        start(Set.of(containers));
+    }
+
+    protected void start(String container) {
+        NodeUtil.start(this.controller, container);
+    }
+
+    protected void start(Set<String> containers) {
         NodeUtil.start(this.controller, containers);
     }
 
+    @Deprecated
     protected void stop(String... containers) {
+        stop(Set.of(containers));
+    }
+
+    protected void stop(String container) {
+        NodeUtil.stop(this.controller, container);
+    }
+
+    protected void stop(Set<String> containers) {
         NodeUtil.stop(this.controller, containers);
     }
 
@@ -241,20 +268,51 @@ public abstract class AbstractClusteringTestCase {
         return NodeUtil.isStarted(this.controller, container);
     }
 
+    @Deprecated
     protected void stop(int timeout, String... containers) {
-        NodeUtil.stop(this.controller, timeout, containers);
+        stop(Set.of(containers), timeout);
     }
 
+    protected void stop(String container, int timeout) {
+        NodeUtil.stop(this.controller, container, timeout);
+    }
+
+    protected void stop(Set<String> containers, int timeout) {
+        NodeUtil.stop(this.controller, containers, timeout);
+    }
+
+    @Deprecated
     protected void deploy(String... deployments) {
+        deploy(Set.of(deployments));
+    }
+
+    protected void deploy(String deployment) {
+        NodeUtil.deploy(this.deployer, deployment);
+    }
+
+    protected void deploy(Set<String> deployments) {
         NodeUtil.deploy(this.deployer, deployments);
     }
 
+    @Deprecated
     protected void undeploy(String... deployments) {
+        undeploy(Set.of(deployments));
+    }
+
+    protected void undeploy(String deployment) {
+        NodeUtil.undeploy(this.deployer, deployment);
+    }
+
+    protected void undeploy(Set<String> deployments) {
         NodeUtil.undeploy(this.deployer, deployments);
     }
 
-    protected String findDeployment(String node) {
-        return NODE_TO_DEPLOYMENT.get(node);
+    protected static String findDeployment(String container) {
+        String deployment = CONTAINER_TO_DEPLOYMENT.get(container);
+        if (deployment == null) {
+            throw new IllegalArgumentException(container);
+        }
+        return deployment;
     }
 
     public static int getPortOffsetForNode(String node) {
@@ -272,61 +330,49 @@ public abstract class AbstractClusteringTestCase {
         }
     }
 
+    static Set<String> toDeployments(Set<String> containers) {
+        return containers.stream().map(AbstractClusteringTestCase::findDeployment).collect(Collectors.toSet());
+    }
+
     public interface Lifecycle {
-        void start(String... nodes);
-        void stop(String... nodes);
+        default void start(String container) {
+            this.start(Set.of(container));
+        }
+        default void stop(String container) {
+            this.stop(Set.of(container));
+        }
+        void start(Set<String> containers);
+        void stop(Set<String> containers);
     }
 
     public class RestartLifecycle implements Lifecycle {
         @Override
-        public void start(String... nodes) {
-            AbstractClusteringTestCase.this.start(this.getContainers(nodes));
+        public void start(Set<String> containers) {
+            AbstractClusteringTestCase.this.start(containers);
         }
 
         @Override
-        public void stop(String... nodes) {
-            AbstractClusteringTestCase.this.stop(this.getContainers(nodes));
-        }
-
-        String[] getContainers(String... nodes) {
-            String[] containers = new String[nodes.length];
-            for (int i = 0; i < nodes.length; ++i) {
-                String node = checkNotNullArrayParam("nodes", i, nodes[i]);
-                containers[i] = node;
-            }
-            return containers;
+        public void stop(Set<String> containers) {
+            AbstractClusteringTestCase.this.stop(containers);
         }
     }
 
     public class GracefulRestartLifecycle extends RestartLifecycle {
         @Override
-        public void stop(String... nodes) {
-            AbstractClusteringTestCase.this.stop(GRACEFUL_SHUTDOWN_TIMEOUT, this.getContainers(nodes));
+        public void stop(Set<String> containers) {
+            AbstractClusteringTestCase.this.stop(containers, GRACEFUL_SHUTDOWN_TIMEOUT);
         }
     }
 
     public class RedeployLifecycle implements Lifecycle {
         @Override
-        public void start(String... nodes) {
-            AbstractClusteringTestCase.this.deploy(this.getDeployments(nodes));
+        public void start(Set<String> containers) {
+            AbstractClusteringTestCase.this.deploy(toDeployments(containers));
         }
 
         @Override
-        public void stop(String... nodes) {
-            AbstractClusteringTestCase.this.undeploy(this.getDeployments(nodes));
-        }
-
-        private String[] getDeployments(String... nodes) {
-            String[] deployments = new String[nodes.length];
-            for (int i = 0; i < nodes.length; ++i) {
-                String node = nodes[i];
-                String deployment = NODE_TO_DEPLOYMENT.get(node);
-                if (deployment == null) {
-                    throw new IllegalArgumentException(node);
-                }
-                deployments[i] = deployment;
-            }
-            return deployments;
+        public void stop(Set<String> containers) {
+            AbstractClusteringTestCase.this.undeploy(toDeployments(containers));
         }
     }
 }
