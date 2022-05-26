@@ -596,7 +596,7 @@
         <preview.version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</preview.version.org.glassfish.jaxb.jaxb-xjc>
         <preview.version.org.glassfish.soteria>2.0.1</preview.version.org.glassfish.soteria>
         <preview.version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.0</preview.version.org.glassfish.web.jakarta.servlet.jsp.jstl>
-        <preview.version.org.hibernate>6.0.1.Final</preview.version.org.hibernate>
+        <preview.version.org.hibernate>6.0.2.Final</preview.version.org.hibernate>
         <preview.version.org.hibernate.commons.annotations>6.0.1.Final</preview.version.org.hibernate.commons.annotations>
         <preview.version.org.hibernate.search>6.1.5.Final</preview.version.org.hibernate.search>
         <preview.version.org.hibernate.validator>8.0.0.Alpha3</preview.version.org.hibernate.validator>
