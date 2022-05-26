@@ -1537,6 +1537,54 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>restat-bridge-jakarta</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>restat-api-jakarta</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>restat-util-jakarta</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>restat-integration-jakarta</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.spec.jakarta.el</groupId>
                 <artifactId>jboss-el-api_5.0_spec</artifactId>
                 <version>${preview.version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec}</version>
@@ -2590,6 +2638,20 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <!-- RTS -->
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-rts-jakarta</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+	    <!-- end RTS -->
         </dependencies>
     </dependencyManagement>
 
