@@ -733,21 +733,14 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>jakarta.xml.bind</groupId>
-                <artifactId>jakarta.xml.bind-api</artifactId>
-                <version>${preview.version.jakarta.xml.bind-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>jakarta.ws.rs</groupId>
                 <artifactId>jakarta.ws.rs-api</artifactId>
-                <version>${version.jakarta.ws.rs.jakarta-ws-rs-api}</version>
+                <version>${preview.version.jakarta.ws.rs.jakarta-ws-rs-api}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${preview.version.jakarta.xml.bind.jakarta-xml-bind-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -755,7 +748,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
             <dependency>
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>artemis-jakarta-client</artifactId>
@@ -809,36 +801,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.ws.xmlschema</groupId>
-                        <artifactId>xmlschema-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>woodstox-core-asl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -849,52 +813,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -905,60 +825,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-javamail_1.4_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.fastinfoset</groupId>
-                        <artifactId>FastInfoset</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -969,60 +837,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-databinding-jaxb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-javamail_1.4_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1033,56 +849,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-databinding-jaxb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.ow2.asm</groupId>
-                        <artifactId>asm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1093,56 +861,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-frontend-simple</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1153,58 +873,9 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-core</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
-                    </exclusion>
-
                 </exclusions>
             </dependency>
 
@@ -1214,60 +885,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.osgi</groupId>
-                        <artifactId>org.osgi.core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-beans</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1278,64 +897,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.ow2.asm</groupId>
-                        <artifactId>asm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.messaging.saaj</groupId>
-                        <artifactId>saaj-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-frontend-simple</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-transports-http</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-ws-addr</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-activation_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-javamail_1.4_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jaxws_2.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>asm</groupId>
-                        <artifactId>asm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1346,48 +909,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1398,84 +921,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-aop</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-asm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-beans</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-context</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-expression</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-tx</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-jms</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1486,52 +933,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1542,52 +945,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.xml.soap</groupId>
-                        <artifactId>saaj-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1598,88 +957,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-javamail_1.4_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-aop</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-asm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-beans</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-context</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-expression</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-tx</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-jms</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-web</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1690,64 +969,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-transports-http-jetty</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>jcl-over-slf4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1758,72 +981,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-pool</groupId>
-                        <artifactId>commons-pool</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-lang</groupId>
-                        <artifactId>commons-lang</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-activation_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jms_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1834,56 +993,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.xml.soap</groupId>
-                        <artifactId>saaj-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1894,48 +1005,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1946,48 +1017,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1998,68 +1029,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-bindings-soap</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-annotation_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jaxws_2.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2070,72 +1041,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-bindings-soap</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-ws-addr</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jaxws_2.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-stax-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2146,100 +1053,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>net.sf.ehcache</groupId>
-                        <artifactId>ehcache-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-bindings-soap</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.wss4j</groupId>
-                        <artifactId>wss4j-bindings</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.wss4j</groupId>
-                        <artifactId>wss4j-ws-security-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.wss4j</groupId>
-                        <artifactId>wss4j-ws-security-dom</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.wss4j</groupId>
-                        <artifactId>wss4j-ws-security-stax</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.wss4j</groupId>
-                        <artifactId>wss4j-policy</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.wss4j</groupId>
-                        <artifactId>wss4j-ws-security-policy-stax</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.ehcache</groupId>
-                        <artifactId>ehcache</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.bouncycastle</groupId>
-                        <artifactId>bcprov-jdk15</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2250,56 +1065,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.ow2.asm</groupId>
-                        <artifactId>asm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2310,64 +1077,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-xjc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.velocity</groupId>
-                        <artifactId>velocity</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>wsdl4j</groupId>
-                        <artifactId>wsdl4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2378,108 +1089,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-frontend-simple</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-wsdlto-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-validator</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-wsdlto-databinding-jaxb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-wsdlto-frontend-jaxws</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>wsdl4j</groupId>
-                        <artifactId>wsdl4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-xjc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-javascript</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jaxws_2.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2490,116 +1101,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-frontend-simple</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-wsdlto-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-validator</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-wsdlto-databinding-jaxb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-wsdlto-frontend-jaxws</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.velocity</groupId>
-                        <artifactId>velocity</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.ws.xmlschema</groupId>
-                        <artifactId>xmlschema-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>wsdl4j</groupId>
-                        <artifactId>wsdl4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-xjc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-javascript</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jaxws_2.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2610,84 +1113,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-xjc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jaxws_2.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-stax-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.velocity</groupId>
-                        <artifactId>velocity</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>wsdl4j</groupId>
-                        <artifactId>wsdl4j</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2698,64 +1125,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.glassfish.jaxb</groupId>
-                        <artifactId>jaxb-xjc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2766,60 +1137,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-tools-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-text</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2830,56 +1149,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-rs-security-jose</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-context</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2890,52 +1161,8 @@
                 <version>${preview.version.org.apache.cxf}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-transports-udp</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.jws</groupId>
-                        <artifactId>jakarta.jws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.soap</groupId>
-                        <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2946,44 +1173,8 @@
                 <version>${preview.version.org.apache.cxf.xjcplugins}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-lang3</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-lang</groupId>
-                        <artifactId>commons-lang</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.activation</groupId>
-                        <artifactId>jakarta.activation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2994,51 +1185,10 @@
                 <version>${preview.version.org.apache.cxf.xjcplugins}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-lang3</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.activation</groupId>
-                        <artifactId>jakarta.activation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
-                    </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.ws.rs</groupId>
-                <artifactId>jakarta.ws.rs-api</artifactId>
-                <version>${preview.version.jakarta.ws.rs.jakarta-ws-rs-api}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf.xjcplugins</groupId>
@@ -3046,44 +1196,8 @@
                 <version>${preview.version.org.apache.cxf.xjcplugins}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-lang3</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-lang</groupId>
-                        <artifactId>commons-lang</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.activation</groupId>
-                        <artifactId>jakarta.activation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3094,36 +1208,8 @@
                 <version>${preview.version.org.apache.cxf.xjcplugins}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.activation</groupId>
-                        <artifactId>jakarta.activation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3134,44 +1220,8 @@
                 <version>${preview.version.org.apache.cxf.xjcplugins}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-lang3</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-lang</groupId>
-                        <artifactId>commons-lang</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.activation</groupId>
-                        <artifactId>jakarta.activation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb-omgapi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jacorb</groupId>
-                        <artifactId>jacorb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.rmi</groupId>
-                        <artifactId>jboss-rmi-api_1.0_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3181,20 +1231,8 @@
                 <version>${preview.version.org.apache.wss4j}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.opensaml</groupId>
-                        <artifactId>opensaml</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3204,20 +1242,8 @@
                 <version>${preview.version.org.apache.wss4j}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.opensaml</groupId>
-                        <artifactId>opensaml</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3227,20 +1253,8 @@
                 <version>${preview.version.org.apache.wss4j}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.geronimo.javamail</groupId>
-                        <artifactId>geronimo-javamail_1.4_mail</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.opensaml</groupId>
-                        <artifactId>opensaml</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3250,16 +1264,8 @@
                 <version>${preview.version.org.apache.wss4j}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.ehcache</groupId>
-                        <artifactId>ehcache</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3269,20 +1275,8 @@
                 <version>${preview.version.org.apache.wss4j}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.opensaml</groupId>
-                        <artifactId>opensaml</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3292,16 +1286,8 @@
                 <version>${preview.version.org.apache.wss4j}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.ehcache</groupId>
-                        <artifactId>ehcache</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.ws</groupId>
-                        <artifactId>jakarta.xml.ws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3312,12 +1298,8 @@
                 <version>${preview.version.org.apache.xmlsec}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.woodstox</groupId>
-                        <artifactId>woodstox-core-asl</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

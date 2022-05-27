@@ -519,6 +519,11 @@
                                 <exclude>io.smallrye:smallrye-open-api-core</exclude>
                                 <exclude>io.smallrye:smallrye-open-api-jaxrs</exclude>
                                 <exclude>io.undertow:undertow-servlet-jakarta\z</exclude>
+                                <exclude>org.opensaml:opensaml-core\z</exclude>
+                                <exclude>org.opensaml:opensaml-security-impl\z</exclude>
+                                <exclude>org.opensaml:opensaml-soap-api\z</exclude>
+                                <exclude>org.opensaml:opensaml-saml-api\z</exclude>
+                                <exclude>org.opensaml:opensaml-xmlsec-api\z</exclude>
                                 <!-- end javax.annotations excludes -->
                                 <!-- Don't transform org.dom4j:dom4j as we don't use its package
                                      that uses jaxp -->
@@ -569,12 +574,6 @@
                                 <exclude>org.glassfish:jakarta.json\z</exclude>
                                 <exclude>activemq-artemis-native\z</exclude>
                                 <exclude>org.jboss.activemq.artemis.integration:artemis-wildfly-jakarta-integration\z</exclude>
-                                <!-- javax.annotation.Nullable and javax.annotaion.Nonnull in opensaml-->
-                                <exclude>org.opensaml:opensaml-core\z</exclude>
-                                <exclude>org.opensaml:opensaml-xmlsec-api\z</exclude>
-                                <exclude>org.opensaml:opensaml-security-impl\z</exclude>
-                                <exclude>org.opensaml:opensaml-soap-api\z</exclude>
-                                <exclude>org.opensaml:opensaml-saml-api\z</exclude>
                             </jakarta-transform-excluded-artifacts>
                         </configuration>
                     </execution>

@@ -77,5 +77,6 @@
         <module name="org.wildfly.common"/>
 
         <module name="java.xml"/>
+        <module name="javax.xml.bind.api"/>
     </dependencies>
 </module>
