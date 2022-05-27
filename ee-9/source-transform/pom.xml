@@ -56,6 +56,7 @@
         <module>jaxrs</module>
         <module>iiop-openjdk</module>
         <module>transactions</module>
+        <module>xts</module>
         <module>jpa/spi</module>
         <module>jpa/eclipselink</module>
         <module>jpa/subsystem</module>
