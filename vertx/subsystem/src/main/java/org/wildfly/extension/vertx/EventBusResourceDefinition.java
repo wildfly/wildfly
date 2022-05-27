@@ -34,6 +34,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -55,6 +56,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.KeyCertOptions;
 import io.vertx.core.net.OpenSSLEngineOptions;
 import io.vertx.core.net.TrustOptions;
+
+import static org.wildfly.extension.vertx.PemTrustOptionsResourceDefinition.PEM_VALUE_MARSHALLER;
+import static org.wildfly.extension.vertx.PemTrustOptionsResourceDefinition.PEM_VALUE_PARSER;
 
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
@@ -182,13 +186,13 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
     .setAttributeMarshaller(AttributeMarshaller.COMMA_STRING_LIST)
     .build();
 
-  public static final StringListAttributeDefinition ATTR_EVENTBUS_CRL_VALUES = new StringListAttributeDefinition.Builder(VertxConstants.ATTR_EVENTBUS_CRL_VALUES)
+  public static final SimpleListAttributeDefinition ATTR_EVENTBUS_CRL_VALUES = new SimpleListAttributeDefinition.Builder(VertxConstants.ATTR_EVENTBUS_CRL_VALUES, PemTrustOptionsResourceDefinition.ATTR_PEM_VALUE)
     .setRequired(false)
     .setRestartAllServices()
     .setElementValidator(new StringLengthValidator(1))
     .setAllowExpression(true)
-    .setAttributeParser(AttributeParser.COMMA_DELIMITED_STRING_LIST)
-    .setAttributeMarshaller(AttributeMarshaller.COMMA_STRING_LIST)
+    .setAttributeParser(PEM_VALUE_PARSER)
+    .setAttributeMarshaller(PEM_VALUE_MARSHALLER)
     .build();
 
   public static final SimpleAttributeDefinition ATTR_EVENTBUS_USE_ALPN = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_EVENTBUS_USE_ALPN, ModelType.BOOLEAN)
@@ -522,7 +526,7 @@ class EventBusResourceDefinition extends PersistentResourceDefinition implements
         ATTR_EVENTBUS_CRL_PATHS.validateOperation(operation).asList().forEach(e -> eventBusOptions.addCrlPath(e.asString()));
       }
       if (operation.hasDefined(ATTR_EVENTBUS_CRL_VALUES.getName())) {
-        eventBusOptions.getCrlPaths().clear();
+        eventBusOptions.getCrlValues().clear();
         ATTR_EVENTBUS_CRL_VALUES.validateOperation(operation).asList().forEach(e -> eventBusOptions.addCrlValue(Buffer.buffer(e.asString())));
       }
       if (operation.hasDefined(ATTR_EVENTBUS_USE_ALPN.getName())) {

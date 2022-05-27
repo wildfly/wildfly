@@ -31,12 +31,12 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
-import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -71,7 +71,7 @@ class PemKeyCertOptionsResourceDefinition extends PersistentResourceDefinition i
     .setAttributeMarshaller(AttributeMarshaller.COMMA_STRING_LIST)
     .build();
 
-  public static final ObjectListAttributeDefinition ATTR_PEM_KEY_CERT_KEY_VALUE = new ObjectListAttributeDefinition.Builder(VertxConstants.ATTR_PEM_KEY_CERT_KEY_VALUE, PemTrustOptionsResourceDefinition.ATTR_PEM_VALUE_OBJECT)
+  public static final SimpleListAttributeDefinition ATTR_PEM_KEY_CERT_KEY_VALUE = new SimpleListAttributeDefinition.Builder(VertxConstants.ATTR_PEM_KEY_CERT_KEY_VALUE, PemTrustOptionsResourceDefinition.ATTR_PEM_VALUE)
     .setRequired(false)
     .setRestartAllServices()
     .setAttributeParser(PEM_VALUE_PARSER)
@@ -88,7 +88,7 @@ class PemKeyCertOptionsResourceDefinition extends PersistentResourceDefinition i
     .setAttributeMarshaller(AttributeMarshaller.COMMA_STRING_LIST)
     .build();
 
-  public static final ObjectListAttributeDefinition ATTR_PEM_KEY_CERT_CERT_VALUE = new ObjectListAttributeDefinition.Builder(VertxConstants.ATTR_PEM_KEY_CERT_CERT_VALUE, PemTrustOptionsResourceDefinition.ATTR_PEM_VALUE_OBJECT)
+  public static final SimpleListAttributeDefinition ATTR_PEM_KEY_CERT_CERT_VALUE = new SimpleListAttributeDefinition.Builder(VertxConstants.ATTR_PEM_KEY_CERT_CERT_VALUE, PemTrustOptionsResourceDefinition.ATTR_PEM_VALUE)
     .setRequired(false)
     .setRestartAllServices()
     .setAttributeParser(PEM_VALUE_PARSER)

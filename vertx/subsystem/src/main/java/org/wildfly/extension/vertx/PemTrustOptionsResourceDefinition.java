@@ -36,7 +36,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.AttributeParsers;
-import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
@@ -87,12 +86,6 @@ class PemTrustOptionsResourceDefinition extends PersistentResourceDefinition imp
     .setAllowExpression(true)
     .setAttributeParser(AttributeParsers.SIMPLE_ELEMENT)
     .setAttributeMarshaller(SIMPLE_ELEMENT)
-    .setRestartAllServices()
-    .build();
-
-  public static final ObjectTypeAttributeDefinition ATTR_PEM_VALUE_OBJECT = new ObjectTypeAttributeDefinition.Builder(VertxConstants.ATTR_PEM_VALUE, ATTR_PEM_VALUE)
-    .setRequired(false)
-    .setAllowExpression(true)
     .setRestartAllServices()
     .build();
 
