@@ -559,7 +559,7 @@
         <preview.version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</preview.version.jakarta.ws.rs.jakarta-ws-rs-api>
         <!--<preview.version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.0</preview.version.jakarta.xml.bind.jakarta-xml-bind-api>-->
         <preview.version.net.shibboleth.utilities.java-support>8.0.0</preview.version.net.shibboleth.utilities.java-support>
-        <preview.version.org.apache.cxf>3.5.2-jbossorg</preview.version.org.apache.cxf>
+        <preview.version.org.apache.cxf>3.5.2-jbossorg-1</preview.version.org.apache.cxf>
         <preview.version.org.apache.cxf.xjcplugins>3.3.1-jbossorg-1</preview.version.org.apache.cxf.xjcplugins>
         <preview.version.org.apache.lucene>8.11.1</preview.version.org.apache.lucene>
         <preview.version.org.apache.wss4j>2.4.1-jbossorg-1</preview.version.org.apache.wss4j>
@@ -617,6 +617,7 @@
         <preview.version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>1.0.0.Final</preview.version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>
         <preview.version.org.jboss.weld.weld>5.0.0.SP1</preview.version.org.jboss.weld.weld>
         <preview.version.org.jboss.weld.weld-api>5.0.Final</preview.version.org.jboss.weld.weld-api>
+        <preview.version.org.opensaml.opensaml>4.2.0</preview.version.org.opensaml.opensaml>
         <preview.version.org.jvnet.staxex>2.0.1</preview.version.org.jvnet.staxex>
         <preview.version.org.wildfly.security.elytron>2.0.0.Beta1</preview.version.org.wildfly.security.elytron>
         <preview.version.org.wildfly.security.elytron-mp>2.0.0.Beta3</preview.version.org.wildfly.security.elytron-mp>
@@ -10127,6 +10128,15 @@
             <name>JBoss Public Repository Group</name>
             <url>${maven.repository.url}</url>
             <layout>default</layout>
+        </repository>
+        <!-- Remove below repo after opensaml 4.2.0 is accessible from maven central repo-->
+        <repository>
+            <id>opensaml-repo</id>
+            <name>opensaml</name>
+            <url>https://build.shibboleth.net/nexus/content/groups/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
         </repository>
     </repositories>
 
