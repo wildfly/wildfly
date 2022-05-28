@@ -37,7 +37,7 @@ public class InfinispanServerSetupTask extends CLIServerSetupTask {
     public InfinispanServerSetupTask() {
         this.builder.node(AbstractClusteringTestCase.TWO_NODES)
                 .setup("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:add(port=%d,host=%s)", INFINISPAN_SERVER_PORT, INFINISPAN_SERVER_ADDRESS)
-                .setup("/subsystem=infinispan/remote-cache-container=sso:add(default-remote-cluster=infinispan-server-cluster, module=org.wildfly.clustering.web.hotrod, properties={infinispan.client.hotrod.auth_username=%s, infinispan.client.hotrod.auth_password=%s})", INFINISPAN_APPLICATION_USER, INFINISPAN_APPLICATION_PASSWORD)
+                .setup("/subsystem=infinispan/remote-cache-container=sso:add(default-remote-cluster=infinispan-server-cluster, modules=[org.wildfly.clustering.web.hotrod], properties={infinispan.client.hotrod.auth_username=%s, infinispan.client.hotrod.auth_password=%s})", INFINISPAN_APPLICATION_USER, INFINISPAN_APPLICATION_PASSWORD)
                 .setup("/subsystem=infinispan/remote-cache-container=sso/remote-cluster=infinispan-server-cluster:add(socket-bindings=[infinispan-server])")
                 .teardown("/subsystem=infinispan/remote-cache-container=sso:remove")
                 .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=infinispan-server:remove")
