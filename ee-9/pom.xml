@@ -44,6 +44,16 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <!-- Bring in all the standard WF deps, which will be overridden by explicit ones below -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-feature-pack-parent</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4</artifactId>
@@ -456,6 +466,19 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>io.undertow.jastow</groupId>
+                <artifactId>jastow-jakarta</artifactId>
+                <version>${version.io.undertow.jastow}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>jakarta.annotation</groupId>
                 <artifactId>jakarta.annotation-api</artifactId>
@@ -1559,7 +1582,7 @@
             <dependency>
                 <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
                 <artifactId>microprofile-fault-tolerance-tck</artifactId>
-                <version>${preview.version.org.eclipse.microprofile.fault-tolerance.tck}</version>
+                <version>${preview.version.org.eclipse.microprofile.fault-tolerance.api}</version>
                 <scope>test</scope>
                 <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
@@ -1676,18 +1699,6 @@
                 <artifactId>microprofile-opentracing-tck-rest-client</artifactId>
                 <version>${preview.version.org.eclipse.microprofile.opentracing}</version>
                 <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-
-            <dependency>
-                <groupId>org.eclipse.microprofile.reactive-streams-operators</groupId>
-                <artifactId>microprofile-reactive-streams-operators-api</artifactId>
-                <version>${version.org.eclipse.microprofile.reactive-streams-operators.api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -1901,6 +1912,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
                 <groupId>org.hibernate.common</groupId>
                 <artifactId>hibernate-commons-annotations</artifactId>
@@ -1996,6 +2008,43 @@
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-mapper-orm-orm6</artifactId>
                 <version>${preview.version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- These dependencies are not present in WildFly itself, only in integration tests. -->
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
+                <version>${preview.version.org.hibernate.search}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-v5migrationhelper-engine</artifactId>
+                <version>${preview.version.org.hibernate.search}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-v5migrationhelper-orm-orm6</artifactId>
+                <version>${preview.version.org.hibernate.search}</version>
+                <scope>test</scope>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2188,6 +2237,18 @@
                 <groupId>org.jboss.invocation</groupId>
                 <artifactId>jboss-invocation-jakarta</artifactId>
                 <version>${preview.version.org.jboss.invocation}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.metadata</groupId>
+                <artifactId>jboss-metadata-common-jakarta</artifactId>
+                <version>${version.org.jboss.metadata}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2541,6 +2602,13 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${preview.version.org.testng}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>

@@ -19,6 +19,23 @@
     <artifactId>wildfly-jpa-parent</artifactId>
     <packaging>pom</packaging>
     <name>WildFly: JPA</name>
+
+    <properties>
+        <dependency.management.pom.artifactId>wildfly-ee-feature-pack-parent</dependency.management.pom.artifactId>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>${dependency.management.pom.artifactId}</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <modules>
         <module>subsystem</module>
         <module>spi</module>

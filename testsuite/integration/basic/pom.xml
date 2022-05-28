@@ -186,11 +186,6 @@
             <scope>test</scope>
         </dependency>
         <!-- End JAXB Java 11 Requirements -->
-        <dependency>
-            <groupId>org.eclipse.microprofile.jwt</groupId>
-            <artifactId>microprofile-jwt-auth-api</artifactId>
-            <scope>test</scope>
-        </dependency>
         <!-- A required implementation for the org.jboss.resteasy:resteasy-json-binding-provider -->
         <dependency>
             <groupId>org.eclipse</groupId>

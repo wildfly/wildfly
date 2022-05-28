@@ -97,6 +97,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-service-extensions</artifactId>
+        </dependency>
+
+        <dependency>
               <groupId>org.apache.activemq</groupId>
               <artifactId>artemis-server</artifactId>
         </dependency>
