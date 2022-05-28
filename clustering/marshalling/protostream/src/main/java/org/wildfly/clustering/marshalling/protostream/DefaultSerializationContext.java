@@ -192,7 +192,7 @@ public class DefaultSerializationContext implements SerializationContext, Suppli
     }
 
     private <T> InstanceMarshallerProvider<T> adapt(InstanceMarshallerProvider<T> provider) {
-        return new InstanceMarshallerProvider<T>() {
+        return new InstanceMarshallerProvider<>() {
             @Override
             public Class<T> getJavaClass() {
                 return provider.getJavaClass();

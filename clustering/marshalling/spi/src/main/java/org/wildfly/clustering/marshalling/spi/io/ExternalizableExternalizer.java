@@ -51,7 +51,7 @@ public class ExternalizableExternalizer<T extends Externalizable> implements Ext
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        PrivilegedExceptionAction<T> action = new PrivilegedExceptionAction<T>() {
+        PrivilegedExceptionAction<T> action = new PrivilegedExceptionAction<>() {
             @Override
             public T run() throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
                 return ExternalizableExternalizer.this.getTargetClass().getConstructor().newInstance();

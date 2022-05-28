@@ -32,7 +32,7 @@ import org.wildfly.clustering.marshalling.spi.ObjectExternalizer;
  * @author Paul Ferraro
  */
 public class SingletonCollectionExternalizer<T extends Collection<Object>> extends ObjectExternalizer<T> {
-    private static final Function<Collection<Object>, Object> ACCESSOR = new Function<Collection<Object>, Object>() {
+    private static final Function<Collection<Object>, Object> ACCESSOR = new Function<>() {
         @Override
         public Object apply(Collection<Object> collection) {
             return collection.iterator().next();
