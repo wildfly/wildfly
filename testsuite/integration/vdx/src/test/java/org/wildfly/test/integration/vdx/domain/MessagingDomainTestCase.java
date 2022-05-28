@@ -19,6 +19,8 @@ package org.wildfly.test.integration.vdx.domain;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -40,6 +42,12 @@ import org.wildfly.test.integration.vdx.utils.server.ServerConfig;
 @RunWith(Arquillian.class)
 @Category(DomainTests.class)
 public class MessagingDomainTestCase extends TestBase {
+
+    @BeforeClass
+    public static void noPreview() {
+        // WildFly Preview doesn't configure a messaging broker
+        AssumeTestGroupUtil.assumeNotWildFlyPreview();
+    }
 
     /*
     * provide invalid value to address-full-policy which is enum - only allowed are PAGE,BLOCK,FAIL,DROP, try to use "PAGES"

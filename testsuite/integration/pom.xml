@@ -328,6 +328,7 @@
                 <module>microprofile-tck</module>
                 <module>elytron</module>
                 <module>elytron-oidc-client</module>
+                <module>vdx</module>
             </modules>
         </profile>
 
