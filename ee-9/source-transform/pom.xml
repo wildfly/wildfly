@@ -49,6 +49,7 @@
         <module>bean-validation</module>
         <module>clustering</module>
         <module>connector</module>
+        <module>datasources-agroal</module>
         <module>ee</module>
         <module>ee-security</module>
         <module>ejb3</module>

@@ -49,6 +49,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
             <scope>test</scope>
@@ -157,12 +161,6 @@
                 <!-- Enable galleon provisioning -->
                 <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>jakarta.inject</groupId>
-                    <artifactId>jakarta.inject-api</artifactId>
-                </dependency>
-            </dependencies>
 
             <!-- Enable legacy empty beans.xml treatment otherwise the TCKs will fail -->
             <build>
@@ -248,6 +246,44 @@
                                 <exclude>**/MeterTest.java</exclude>
                             </excludes>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>tck.assemble</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <!-- Package all the JUnit TEST-*.xml files in a single zip for easy download -->
+                                <id>assemble-tck-results</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>assembly.xml</descriptor>
+                                    </descriptors>
+                                    <recompressZippedFiles>true</recompressZippedFiles>
+                                    <finalName>surefire-reports</finalName>
+                                    <appendAssemblyId>false</appendAssemblyId>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <workDirectory>${project.build.directory}/assembly/work</workDirectory>
+                                    <tarLongFileMode>${assembly.tarLongFileMode}</tarLongFileMode>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

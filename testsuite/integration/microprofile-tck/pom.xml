@@ -63,6 +63,9 @@
 
         <!-- By default (i.e. Java EE) use the following directory as an additional source -->
         <ts.microprofile-tck.build-helper.source.dir>src/test/javax/java</ts.microprofile-tck.build-helper.source.dir>
+
+        <!-- Use the complete WF dependencyManagement set, not just the default EE set -->
+        <dependency.management.import.artifact>wildfly-feature-pack-parent</dependency.management.import.artifact>
     </properties>
 
     <modules>
@@ -281,295 +284,16 @@
                 <!-- Disable the standard copy-based provisioning -->
                 <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
 
-                <!--
-                    Override version properties for MicroProfile 5 as we do in ee-9/pom.xml
-                -->
-                <version.io.smallrye.smallrye-opentracing>3.0.0-RC1</version.io.smallrye.smallrye-opentracing>
-                <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
-                <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
-                <version.jakarta.json.bind.api>2.0.0</version.jakarta.json.bind.api>
-                <version.jakarta.json.jakarta-json-api>2.0.0</version.jakarta.json.jakarta-json-api>
-                <version.org.eclipse.microprofile.config.api>3.0</version.org.eclipse.microprofile.config.api>
-                <version.org.eclipse.microprofile.fault-tolerance.api>4.0</version.org.eclipse.microprofile.fault-tolerance.api>
-                <version.org.eclipse.microprofile.health.api>4.0</version.org.eclipse.microprofile.health.api>
-                <version.org.eclipse.microprofile.jwt.api>2.0</version.org.eclipse.microprofile.jwt.api>
-                <version.org.eclipse.microprofile.metrics.api>4.0</version.org.eclipse.microprofile.metrics.api>
-                <version.org.eclipse.microprofile.openapi>3.0</version.org.eclipse.microprofile.openapi>
-                <version.org.eclipse.microprofile.opentracing>3.0</version.org.eclipse.microprofile.opentracing>
-                <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
-                <version.org.eclipse.yasson>2.0.3</version.org.eclipse.yasson>
-                <version.org.glassfish.jakarta.json>2.0.0</version.org.glassfish.jakarta.json>
-                <version.org.jboss.resteasy.6>6.1.0.Alpha1</version.org.jboss.resteasy.6>
-                <version.org.jboss.resteasy.microprofile>2.0.0.Beta1</version.org.jboss.resteasy.microprofile>
-                <version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0.RC1-jbossorg-1</version.jakarta.ws.rs.jakarta-ws-rs-api>
-                <!--
-                    Override version properties for MicroProfile 5 Implementations as we do in ee-9/pom.xml
-                -->
-                <version.io.smallrye.smallrye-config>3.0.0-RC1</version.io.smallrye.smallrye-config>
-                <version.io.smallrye.smallrye-fault-tolerance>6.0.0-RC1</version.io.smallrye.smallrye-fault-tolerance>
-
-                <!-- Test only dependencies - don't update in ee-9/pom.xml -->
-                <version.org.eclipse.microprofile.fault-tolerance.tck>${version.org.eclipse.microprofile.fault-tolerance.api}</version.org.eclipse.microprofile.fault-tolerance.tck>
                 <!-- Test framework only dependencies - don't update in ee-9/pom.xml -->
-                <version.org.testng>7.4.0</version.org.testng>
                 <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
                 <version.org.wildfly.arquillian>5.0.0.Alpha2</version.org.wildfly.arquillian>
                 <!-- For EE9 use the following directory as an additional source -->
                 <ts.microprofile-tck.build-helper.source.dir>src/test/jakarta/java</ts.microprofile-tck.build-helper.source.dir>
+                <!-- Use the WFP dependencyManagement set.
+                     This is set in this profile in a parent module, but the explicit global override
+                     in this module takes precedence. -->
+                <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
             </properties>
-            <!-- Temporary for MP 5/Jakarta 9 -->
-            <dependencyManagement>
-                <dependencies>
-                    <dependency>
-                        <groupId>io.smallrye.config</groupId>
-                        <artifactId>smallrye-config</artifactId>
-                        <version>${version.io.smallrye.smallrye-config}</version>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>jakarta.annotation</groupId>
-                                <artifactId>jakarta.annotation-api</artifactId>
-                            </exclusion>
-                            <exclusion>
-                                <groupId>jakarta.enterprise</groupId>
-                                <artifactId>jakarta.enterprise.cdi-api</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
-                        <groupId>io.smallrye.config</groupId>
-                        <artifactId>smallrye-config-common</artifactId>
-                        <version>${version.io.smallrye.smallrye-config}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>io.smallrye.config</groupId>
-                        <artifactId>smallrye-config-core</artifactId>
-                        <version>${version.io.smallrye.smallrye-config}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>io.smallrye.config</groupId>
-                        <artifactId>smallrye-config-source-file-system</artifactId>
-                        <version>${version.io.smallrye.smallrye-config}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>io.smallrye</groupId>
-                        <artifactId>smallrye-opentracing</artifactId>
-                        <version>${version.io.smallrye.smallrye-opentracing}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>io.smallrye</groupId>
-                        <artifactId>smallrye-opentracing-contrib</artifactId>
-                        <version>${version.io.smallrye.smallrye-opentracing}</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>jakarta.enterprise</groupId>
-                        <artifactId>jakarta.enterprise.cdi-api</artifactId>
-                        <version>${version.jakarta.enterprise}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>jakarta.inject</groupId>
-                        <artifactId>jakarta.inject-api</artifactId>
-                        <version>${version.jakarta.inject.jakarta.inject-api}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>jakarta.json</groupId>
-                        <artifactId>jakarta.json-api</artifactId>
-                        <version>${version.jakarta.json.jakarta-json-api}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>jose-jwt</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.glassfish</groupId>
-                        <artifactId>jakarta.json</artifactId>
-                        <version>${version.org.glassfish.jakarta.json}</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-client</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-client-api</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-core</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-core-spi</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-atom-provider</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-cdi</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-crypto</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-jackson2-provider</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-json-binding-provider</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-json-p-provider</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-jaxb-provider</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-jsapi</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-multipart-provider</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-rxjava2</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy</groupId>
-                        <artifactId>resteasy-validator-provider</artifactId>
-                        <version>${version.org.jboss.resteasy.6}</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.jboss.resteasy.microprofile</groupId>
-                        <artifactId>microprofile-config</artifactId>
-                        <version>${version.org.jboss.resteasy.microprofile}</version>
-                        <exclusions>
-                            <exclusion>
-                                <artifactId>*</artifactId>
-                                <groupId>*</groupId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.jboss.resteasy.microprofile</groupId>
-                        <artifactId>microprofile-rest-client</artifactId>
-                        <version>${version.org.jboss.resteasy.microprofile}</version>
-                        <exclusions>
-                            <exclusion>
-                                <artifactId>*</artifactId>
-                                <groupId>*</groupId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.jboss.resteasy.microprofile</groupId>
-                        <artifactId>microprofile-rest-client-base</artifactId>
-                        <version>${version.org.jboss.resteasy.microprofile}</version>
-                        <exclusions>
-                            <exclusion>
-                                <artifactId>*</artifactId>
-                                <groupId>*</groupId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
-                        <groupId>jakarta.ws.rs</groupId>
-                        <artifactId>jakarta.ws.rs-api</artifactId>
-                        <version>${version.jakarta.ws.rs.jakarta-ws-rs-api}</version>
-                        <exclusions>
-                            <exclusion>
-                                <groupId>*</groupId>
-                                <artifactId>*</artifactId>
-                            </exclusion>
-                        </exclusions>
-                    </dependency>
-                    <dependency>
-                        <groupId>jakarta.json.bind</groupId>
-                        <artifactId>jakarta.json.bind-api</artifactId>
-                        <version>${version.jakarta.json.bind.api}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse</groupId>
-                        <artifactId>yasson</artifactId>
-                        <version>${version.org.eclipse.yasson}</version>
-                    </dependency>
-                </dependencies>
-            </dependencyManagement>
             <build>
                 <plugins>
                     <plugin>
@@ -720,6 +444,10 @@
                 <!-- Disable the standard copy-based provisioning -->
                 <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
                 <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
+                <!-- Use the WFP dependencyManagement set.
+                     This is set in this profile in a parent module, but the explicit global override
+                     in this module takes precedence. -->
+                <dependency.management.import.artifact>wildfly-ee-9-parent</dependency.management.import.artifact>
             </properties>
             <build>
                 <plugins>

@@ -32,10 +32,10 @@
     <artifactId>jipijapa-hibernate6</artifactId>
 
     <name>jipijapa Hibernate 6 (JPA 3.1) integration</name>
-    
-    
+
     <properties>
-        
+        <!-- Use the WildFly Preview dependency set until standard WildFly uses Hibernate 6 -->
+        <dependency.management.pom.artifactId>wildfly-preview-feature-pack-parent</dependency.management.pom.artifactId>
     </properties>
 
     <dependencies>

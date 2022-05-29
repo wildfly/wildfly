@@ -96,6 +96,12 @@
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <xslt.scripts.dir>${jbossas.ts.integ.dir}/src/test/xslt</xslt.scripts.dir>
 
+        <!-- The artifactId of the pom to use as an import scope dependency (a bom) for testsuite modules.
+             Child modules or profiles can override this to use a different dependency set,
+             for example to test WildFly Preview or to test microprofile.
+             Default is the EE dependency set. -->
+        <dependency.management.import.artifact>wildfly-ee-feature-pack-parent</dependency.management.import.artifact>
+
         <!-- IP address defaults. -->
         <node0>127.0.0.1</node0>
         <node1>127.0.0.1</node1>
@@ -181,6 +187,18 @@
         <!-- used to enable trace logging for test suite runs -->
         <trace>none</trace>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>${dependency.management.import.artifact}</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -461,7 +479,6 @@
                 <module>scripts</module>
             </modules>
         </profile>
-
 
         <!--
           Debugging profiles.

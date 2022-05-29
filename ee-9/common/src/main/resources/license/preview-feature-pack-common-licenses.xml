@@ -24,6 +24,39 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>io.agroal</groupId>
+      <artifactId>agroal-api</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.agroal</groupId>
+      <artifactId>agroal-narayana</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>io.agroal</groupId>
+      <artifactId>agroal-pool</artifactId>
+      <licenses>
+        <license>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>io.undertow</groupId>
       <artifactId>undertow-servlet-jakarta</artifactId>
       <licenses>
@@ -111,6 +144,22 @@
       </licenses>
     </dependency>
     <dependency>
+      <groupId>org.glassfish.expressly</groupId>
+      <artifactId>expressly</artifactId>
+      <licenses>
+        <license>
+          <name>Eclipse Public License 2.0</name>
+          <url>http://www.eclipse.org/legal/epl-v20.html</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License v2.0 only, with Classpath exception</name>
+          <url>https://fedoraproject.org/wiki/Licensing/GPL_Classpath_Exception</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-iiop-client-jakarta</artifactId>
       <licenses>
@@ -168,7 +217,6 @@
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
       <artifactId>ironjacamar-common-impl-jakarta</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -180,7 +228,6 @@
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
       <artifactId>ironjacamar-common-spi-jakarta</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -192,7 +239,6 @@
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
       <artifactId>ironjacamar-core-api-jakarta</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -204,12 +250,10 @@
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
       <artifactId>ironjacamar-core-impl-jakarta</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
       <artifactId>ironjacamar-deployers-common-jakarta</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -221,7 +265,6 @@
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
       <artifactId>ironjacamar-jdbc-jakarta</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -233,7 +276,6 @@
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
       <artifactId>ironjacamar-validator-jakarta</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -558,6 +600,17 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-web-undertow-jakarta</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-datasources-agroal-jakarta</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>

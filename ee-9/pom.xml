@@ -40,117 +40,24 @@
         <preview.dist.product.release.name>WildFly Preview</preview.dist.product.release.name>
         <preview.dist.product.slot>${full.dist.product.slot}</preview.dist.product.slot>
         <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
-
-        <!-- Version properties for dependency management items -->
-        <version.com.sun.faces>4.0.0-M7.SP01</version.com.sun.faces>
-        <version.antlr>4.10</version.antlr>
-        <version.com.sun.istack>4.0.1</version.com.sun.istack>
-        <version.com.sun.xml.messaging.saaj>2.0.0.SP1</version.com.sun.xml.messaging.saaj>
-        <version.jakarta.activation.jakarta.activation-api>2.1.0</version.jakarta.activation.jakarta.activation-api>
-        <version.jakarta.annotation.jakarta-annotation-api>2.1.0</version.jakarta.annotation.jakarta-annotation-api>
-        <version.jakarta.authentication.jakarta-authentication-api>2.0.0</version.jakarta.authentication.jakarta-authentication-api>
-        <version.jakarta.authorization.jakarta-authorization-api>2.0.0</version.jakarta.authorization.jakarta-authorization-api>
-        <version.jakarta.batch.jakarta.batch-api>2.1.0</version.jakarta.batch.jakarta.batch-api>
-        <version.jakarta.ejb.jakarta-ejb-api>4.0.0</version.jakarta.ejb.jakarta-ejb-api>
-        <version.jakarta.el.jakarta-el-api>5.0.0-RC1</version.jakarta.el.jakarta-el-api>
-        <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
-        <version.jakarta.enterprise>4.0.0</version.jakarta.enterprise>
-        <version.jakarta.faces.jakarta-faces-api>4.0.0-M6</version.jakarta.faces.jakarta-faces-api>
-        <version.jakarta.inject.jakarta.inject-api>2.0.1</version.jakarta.inject.jakarta.inject-api>
-        <version.jakarta.interceptor.jakarta-interceptors-api>2.1.0</version.jakarta.interceptor.jakarta-interceptors-api>
-        <version.jakarta.jms.jakarta-jms-api>3.0.0</version.jakarta.jms.jakarta-jms-api>
-        <version.jakarta.mail-api>2.1.0</version.jakarta.mail-api>
-        <version.jakarta.json.bind.api>3.0.0</version.jakarta.json.bind.api>
-        <version.jakarta.json.jakarta-json-api>2.1.0</version.jakarta.json.jakarta-json-api>
-        <version.jakarta.jws.jakarta-jws-api>3.0.0</version.jakarta.jws.jakarta-jws-api>
-        <version.jakarta.persistence>3.1.0</version.jakarta.persistence>
-        <version.jakarta.resource.jakarta-resource-api>2.0.0</version.jakarta.resource.jakarta-resource-api>
-        <version.jakarta.security.enterprise>2.0.0</version.jakarta.security.enterprise>
-        <version.jakarta.servlet.jakarta-servlet-api>5.0.0</version.jakarta.servlet.jakarta-servlet-api>
-        <version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.0.0</version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
-        <version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>2.0.0</version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
-        <version.jakarta.transaction.jakarta-transaction-api>2.0.0</version.jakarta.transaction.jakarta-transaction-api>
-        <version.jakarta.validation.jakarta-validation-api>3.0.0</version.jakarta.validation.jakarta-validation-api>
-        <version.jakarta.websocket.jakarta-websocket-api>2.0.0</version.jakarta.websocket.jakarta-websocket-api>
-        <version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
-        <!--<version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.0</version.jakarta.xml.bind.jakarta-xml-bind-api>-->
-        <version.org.apache.lucene>8.11.1</version.org.apache.lucene>
-        <version.org.apache.myfaces.core>3.0.1</version.org.apache.myfaces.core>
-        <version.org.eclipse.angus.angus-activation>1.0.0</version.org.eclipse.angus.angus-activation>
-        <version.org.eclipse.angus.angus-mail>1.0.0</version.org.eclipse.angus.angus-mail>
-        <version.org.eclipse.parsson>1.1.0</version.org.eclipse.parsson>
-        <!--
-            Overrides for MP5. Also make sure to update these in testsuite/integration/microprofile-tck/pom.xml
-        -->
-        <version.org.eclipse.microprofile.config.api>3.0</version.org.eclipse.microprofile.config.api>
-        <version.org.eclipse.microprofile.fault-tolerance.api>4.0</version.org.eclipse.microprofile.fault-tolerance.api>
-        <version.org.eclipse.microprofile.fault-tolerance.tck>${version.org.eclipse.microprofile.fault-tolerance.api}</version.org.eclipse.microprofile.fault-tolerance.tck>
-        <version.org.eclipse.microprofile.jwt.api>2.0</version.org.eclipse.microprofile.jwt.api>
-        <version.org.eclipse.microprofile.health.api>4.0</version.org.eclipse.microprofile.health.api>
-        <version.org.eclipse.microprofile.metrics.api>4.0</version.org.eclipse.microprofile.metrics.api>
-        <version.org.eclipse.microprofile.openapi>3.0</version.org.eclipse.microprofile.openapi>
-        <version.org.eclipse.microprofile.opentracing>3.0</version.org.eclipse.microprofile.opentracing>
-        <version.org.eclipse.microprofile.reactive-messaging.api>3.0-RC2</version.org.eclipse.microprofile.reactive-messaging.api>
-        <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
-        <!-- Implementations -->
-        <version.io.smallrye.open-api>3.0.0-RC1</version.io.smallrye.open-api>
-        <version.io.smallrye.smallrye-common>2.0.0-RC2</version.io.smallrye.smallrye-common>
-        <version.io.smallrye.smallrye-config>3.0.0-RC1</version.io.smallrye.smallrye-config>
-        <version.io.smallrye.smallrye-fault-tolerance>6.0.0-RC2</version.io.smallrye.smallrye-fault-tolerance>
-        <version.io.smallrye.smallrye-health>4.0.0-RC1</version.io.smallrye.smallrye-health>
-        <version.io.smallrye.smallrye-jwt>4.0.0-RC1</version.io.smallrye.smallrye-jwt>
-        <version.io.smallrye.smallrye-metrics>4.0.0-RC1</version.io.smallrye.smallrye-metrics>
-        <version.io.smallrye.smallrye-opentracing>3.0.0-RC1</version.io.smallrye.smallrye-opentracing>
-        <version.io.smallrye.smallrye-reactive-messaging>4.0.0.RC1</version.io.smallrye.smallrye-reactive-messaging>
-        <!-- MP5 - END -->
-        <version.org.eclipse.yasson>3.0.0-RC1</version.org.eclipse.yasson>
-        <version.org.eclipselink.version>3.0.2</version.org.eclipselink.version>
-        <version.org.glassfish.jakarta.el>5.0.0-M1</version.org.glassfish.jakarta.el>
-        <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
-        <!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
-		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
-        <version.org.glassfish.jaxb.jaxb-xjc>${version.sun.jaxb}-jbossorg-1</version.org.glassfish.jaxb.jaxb-xjc>
-        <version.org.glassfish.soteria>2.0.1</version.org.glassfish.soteria>
-        <version.org.glassfish.web.jakarta.servlet.jsp.jstl>2.0.0</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
-        <version.org.hibernate>6.0.1.Final</version.org.hibernate>
-        <version.org.hibernate.commons.annotations>6.0.1.Final</version.org.hibernate.commons.annotations>
-        <version.org.hibernate.search>6.1.5.Final</version.org.hibernate.search>
-        <version.org.hibernate.validator>8.0.0.Alpha3</version.org.hibernate.validator>
-        <version.org.jberet>2.1.0.Beta1</version.org.jberet>
-        <version.org.jboss.invocation>1.7.0.Final</version.org.jboss.invocation>
-        <version.org.jboss.resteasy.6>6.1.0.Beta2</version.org.jboss.resteasy.6>
-        <version.org.jboss.resteasy.microprofile>2.0.0.Beta1</version.org.jboss.resteasy.microprofile>
-        <version.org.jboss.resteasy.spring>3.0.0.Alpha3</version.org.jboss.resteasy.spring>
-        <version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>4.0.0.Alpha1</version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>
-        <version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec>1.0.1.Final</version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec>
-        <version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>
-        <version.org.jboss.weld.weld>5.0.0.SP1</version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld-api>5.0.Final</version.org.jboss.weld.weld-api>
-        <version.org.jvnet.staxex>2.0.1</version.org.jvnet.staxex>
-        <version.org.wildfly.security.elytron>2.0.0.Beta1</version.org.wildfly.security.elytron>
-        <version.org.wildfly.security.elytron-mp>2.0.0.Beta3</version.org.wildfly.security.elytron-mp>
-        <version.org.wildfly.security.elytron-web>2.0.0.Beta3</version.org.wildfly.security.elytron-web>
-        <version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta3</version.org.wildfly.security.jakarta.elytron-ee>
-
-        <!-- TODO Glassfish uses org.glassfish:jakarta-el for this, which we use for the impl
-             but we have a separate API jar -->
-        <!--
-        <version.jakarta.el.jakarta-el-api>4.0.0-RC1</version.jakarta.el.jakarta-el-api>
-        -->
-
-        <!-- TODO Glassfish 6.0.0.M1 used org.glassfish.metro:webservices-api-osgi for these; see if there is another API jar -->
-        <!--
-        <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>2.0.0.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>
-        <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>1.0.2.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>
-        -->
     </properties>
 
     <dependencyManagement>
         <dependencies>
+
+            <!-- Bring in all the standard WF deps, which will be overridden by explicit ones below -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-feature-pack-parent</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4</artifactId>
-                <version>${version.antlr}</version>
+                <version>${preview.version.antlr}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -162,7 +69,7 @@
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-runtime</artifactId>
-                <version>${version.antlr}</version>
+                <version>${preview.version.antlr}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -213,7 +120,7 @@
             <dependency>
                 <groupId>jakarta.activation</groupId>
                 <artifactId>jakarta.activation-api</artifactId>
-                <version>${version.jakarta.activation.jakarta.activation-api}</version>
+                <version>${preview.version.jakarta.activation.jakarta.activation-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -225,7 +132,7 @@
             <dependency>
                 <groupId>com.sun.faces</groupId>
                 <artifactId>jsf-impl</artifactId>
-                <version>${version.com.sun.faces}</version>
+                <version>${preview.version.com.sun.faces}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -237,7 +144,7 @@
             <dependency>
                 <groupId>com.sun.istack</groupId>
                 <artifactId>istack-commons-runtime</artifactId>
-                <version>${version.com.sun.istack}</version>
+                <version>${preview.version.com.sun.istack}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -249,7 +156,7 @@
             <dependency>
                 <groupId>com.sun.istack</groupId>
                 <artifactId>istack-commons-tools</artifactId>
-                <version>${version.com.sun.istack}</version>
+                <version>${preview.version.com.sun.istack}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -261,7 +168,43 @@
             <dependency>
                 <groupId>jakarta.mail</groupId>
                 <artifactId>jakarta.mail-api</artifactId>
-                <version>${version.jakarta.mail-api}</version>
+                <version>${preview.version.jakarta.mail-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.agroal</groupId>
+                <artifactId>agroal-api</artifactId>
+                <version>${preview.version.io.agroal}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.agroal</groupId>
+                <artifactId>agroal-narayana</artifactId>
+                <version>${preview.version.io.agroal}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.agroal</groupId>
+                <artifactId>agroal-pool</artifactId>
+                <version>${preview.version.io.agroal}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -273,18 +216,18 @@
             <dependency>
                 <groupId>io.smallrye</groupId>
                 <artifactId>smallrye-open-api-core</artifactId>
-                <version>${version.io.smallrye.open-api}</version>
+                <version>${preview.version.io.smallrye.open-api}</version>
             </dependency>
             <dependency>
                 <groupId>io.smallrye</groupId>
                 <artifactId>smallrye-open-api-jaxrs</artifactId>
-                <version>${version.io.smallrye.open-api}</version>
+                <version>${preview.version.io.smallrye.open-api}</version>
             </dependency>
 
             <dependency>
                 <groupId>io.smallrye.common</groupId>
                 <artifactId>smallrye-common-annotation</artifactId>
-                <version>${version.io.smallrye.smallrye-common}</version>
+                <version>${preview.version.io.smallrye.smallrye-common}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>jakarta.enterprise</groupId>
@@ -300,7 +243,7 @@
             <dependency>
                 <groupId>com.sun.xml.messaging.saaj</groupId>
                 <artifactId>saaj-impl</artifactId>
-                <version>${version.com.sun.xml.messaging.saaj}</version>
+                <version>${preview.version.com.sun.xml.messaging.saaj}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -312,31 +255,65 @@
             <dependency>
                 <groupId>io.smallrye.common</groupId>
                 <artifactId>smallrye-common-constraint</artifactId>
-                <version>${version.io.smallrye.smallrye-common}</version>
+                <version>${preview.version.io.smallrye.smallrye-common}</version>
             </dependency>
 
             <dependency>
                 <groupId>io.smallrye.common</groupId>
                 <artifactId>smallrye-common-classloader</artifactId>
-                <version>${version.io.smallrye.smallrye-common}</version>
+                <version>${preview.version.io.smallrye.smallrye-common}</version>
             </dependency>
 
             <dependency>
                 <groupId>io.smallrye.common</groupId>
                 <artifactId>smallrye-common-expression</artifactId>
-                <version>${version.io.smallrye.smallrye-common}</version>
+                <version>${preview.version.io.smallrye.smallrye-common}</version>
             </dependency>
 
             <dependency>
                 <groupId>io.smallrye.common</groupId>
                 <artifactId>smallrye-common-function</artifactId>
-                <version>${version.io.smallrye.smallrye-common}</version>
+                <version>${preview.version.io.smallrye.smallrye-common}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-health</artifactId>
+                <version>${preview.version.io.smallrye.smallrye-health}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-jwt</artifactId>
+                <version>${preview.version.io.smallrye.smallrye-jwt}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-jwt-cdi-extension</artifactId>
+                <version>${preview.version.io.smallrye.smallrye-jwt}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-jwt-common</artifactId>
+                <version>${preview.version.io.smallrye.smallrye-jwt}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-jwt-http-mechanism</artifactId>
+                <version>${preview.version.io.smallrye.smallrye-jwt}</version>
             </dependency>
 
             <dependency>
                 <groupId>io.smallrye.config</groupId>
                 <artifactId>smallrye-config</artifactId>
-                <version>${version.io.smallrye.smallrye-config}</version>
+                <version>${preview.version.io.smallrye.smallrye-config}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>jakarta.annotation</groupId>
@@ -351,53 +328,56 @@
             <dependency>
                 <groupId>io.smallrye.config</groupId>
                 <artifactId>smallrye-config-common</artifactId>
-                <version>${version.io.smallrye.smallrye-config}</version>
+                <version>${preview.version.io.smallrye.smallrye-config}</version>
             </dependency>
             <dependency>
                 <groupId>io.smallrye.config</groupId>
                 <artifactId>smallrye-config-core</artifactId>
-                <version>${version.io.smallrye.smallrye-config}</version>
+                <version>${preview.version.io.smallrye.smallrye-config}</version>
             </dependency>
             <dependency>
                 <groupId>io.smallrye.config</groupId>
                 <artifactId>smallrye-config-source-file-system</artifactId>
-                <version>${version.io.smallrye.smallrye-config}</version>
+                <version>${preview.version.io.smallrye.smallrye-config}</version>
             </dependency>
 
             <dependency>
                 <groupId>io.smallrye</groupId>
                 <artifactId>smallrye-fault-tolerance</artifactId>
-                <version>${version.io.smallrye.smallrye-fault-tolerance}</version>
+                <version>${preview.version.io.smallrye.smallrye-fault-tolerance}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>io.smallrye</groupId>
                 <artifactId>smallrye-fault-tolerance-api</artifactId>
-                <version>${version.io.smallrye.smallrye-fault-tolerance}</version>
+                <version>${preview.version.io.smallrye.smallrye-fault-tolerance}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>io.smallrye</groupId>
                 <artifactId>smallrye-fault-tolerance-autoconfig-core</artifactId>
-                <version>${version.io.smallrye.smallrye-fault-tolerance}</version>
+                <version>${preview.version.io.smallrye.smallrye-fault-tolerance}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>io.smallrye</groupId>
                 <artifactId>smallrye-fault-tolerance-core</artifactId>
-                <version>${version.io.smallrye.smallrye-fault-tolerance}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.smallrye</groupId>
-                <artifactId>smallrye-opentracing</artifactId>
-                <version>${version.io.smallrye.smallrye-opentracing}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.smallrye</groupId>
-                <artifactId>smallrye-opentracing-contrib</artifactId>
-                <version>${version.io.smallrye.smallrye-opentracing}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.smallrye.reactive</groupId>
-                <artifactId>smallrye-reactive-messaging-api</artifactId>
-                <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <version>${preview.version.io.smallrye.smallrye-fault-tolerance}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -407,9 +387,54 @@
             </dependency>
 
             <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-metrics</artifactId>
+                <version>${preview.version.io.smallrye.smallrye-metrics}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-metrics-api</artifactId>
+                <version>${preview.version.io.smallrye.smallrye-metrics}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-opentracing</artifactId>
+                <version>${preview.version.io.smallrye.smallrye-opentracing}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-opentracing-contrib</artifactId>
+                <version>${preview.version.io.smallrye.smallrye-opentracing}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>smallrye-reactive-messaging-api</artifactId>
+                <version>${preview.version.io.smallrye.smallrye-reactive-messaging}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-reactive-messaging-kafka</artifactId>
-                <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <version>${preview.version.io.smallrye.smallrye-reactive-messaging}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -421,7 +446,7 @@
             <dependency>
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-reactive-messaging-kafka-api</artifactId>
-                <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <version>${preview.version.io.smallrye.smallrye-reactive-messaging}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -433,7 +458,7 @@
             <dependency>
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-reactive-messaging-provider</artifactId>
-                <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <version>${preview.version.io.smallrye.smallrye-reactive-messaging}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -441,10 +466,23 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>io.undertow.jastow</groupId>
+                <artifactId>jastow-jakarta</artifactId>
+                <version>${version.io.undertow.jastow}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>jakarta.annotation</groupId>
                 <artifactId>jakarta.annotation-api</artifactId>
-                <version>${version.jakarta.annotation.jakarta-annotation-api}</version>
+                <version>${preview.version.jakarta.annotation.jakarta-annotation-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -456,7 +494,7 @@
             <dependency>
                 <groupId>jakarta.authentication</groupId>
                 <artifactId>jakarta.authentication-api</artifactId>
-                <version>${version.jakarta.authentication.jakarta-authentication-api}</version>
+                <version>${preview.version.jakarta.authentication.jakarta-authentication-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -468,7 +506,7 @@
             <dependency>
                 <groupId>jakarta.authorization</groupId>
                 <artifactId>jakarta.authorization-api</artifactId>
-                <version>${version.jakarta.authorization.jakarta-authorization-api}</version>
+                <version>${preview.version.jakarta.authorization.jakarta-authorization-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -480,7 +518,7 @@
             <dependency>
                 <groupId>jakarta.batch</groupId>
                 <artifactId>jakarta.batch-api</artifactId>
-                <version>${version.jakarta.batch.jakarta.batch-api}</version>
+                <version>${preview.version.jakarta.batch.jakarta.batch-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -492,7 +530,7 @@
             <dependency>
                 <groupId>jakarta.ejb</groupId>
                 <artifactId>jakarta.ejb-api</artifactId>
-                <version>${version.jakarta.ejb.jakarta-ejb-api}</version>
+                <version>${preview.version.jakarta.ejb.jakarta-ejb-api}</version>
                 <!-- Exclude dependencies declared in the servlet-feature-pack-ee-8-api module -->
                 <exclusions>
                     <exclusion>
@@ -505,7 +543,7 @@
             <dependency>
                 <groupId>jakarta.enterprise</groupId>
                 <artifactId>jakarta.enterprise.cdi-api</artifactId>
-                <version>${version.jakarta.enterprise}</version>
+                <version>${preview.version.jakarta.enterprise}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -517,7 +555,7 @@
             <dependency>
                 <groupId>jakarta.enterprise</groupId>
                 <artifactId>jakarta.enterprise.lang-model</artifactId>
-                <version>${version.jakarta.enterprise}</version>
+                <version>${preview.version.jakarta.enterprise}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -529,7 +567,7 @@
             <dependency>
                 <groupId>jakarta.enterprise.concurrent</groupId>
                 <artifactId>jakarta.enterprise.concurrent-api</artifactId>
-                <version>${version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api}</version>
+                <version>${preview.version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -541,7 +579,7 @@
             <dependency>
                 <groupId>jakarta.faces</groupId>
                 <artifactId>jakarta.faces-api</artifactId>
-                <version>${version.jakarta.faces.jakarta-faces-api}</version>
+                <version>${preview.version.jakarta.faces.jakarta-faces-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -553,7 +591,7 @@
             <dependency>
                 <groupId>jakarta.inject</groupId>
                 <artifactId>jakarta.inject-api</artifactId>
-                <version>${version.jakarta.inject.jakarta.inject-api}</version>
+                <version>${preview.version.jakarta.inject.jakarta.inject-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -565,7 +603,7 @@
             <dependency>
                 <groupId>jakarta.interceptor</groupId>
                 <artifactId>jakarta.interceptor-api</artifactId>
-                <version>${version.jakarta.interceptor.jakarta-interceptors-api}</version>
+                <version>${preview.version.jakarta.interceptor.jakarta-interceptors-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -577,7 +615,7 @@
             <dependency>
                 <groupId>jakarta.jms</groupId>
                 <artifactId>jakarta.jms-api</artifactId>
-                <version>${version.jakarta.jms.jakarta-jms-api}</version>
+                <version>${preview.version.jakarta.jms.jakarta-jms-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -589,13 +627,13 @@
             <dependency>
                 <groupId>jakarta.json</groupId>
                 <artifactId>jakarta.json-api</artifactId>
-                <version>${version.jakarta.json.jakarta-json-api}</version>
+                <version>${preview.version.jakarta.json.jakarta-json-api}</version>
             </dependency>
 
             <dependency>
                 <groupId>jakarta.jws</groupId>
                 <artifactId>jakarta.jws-api</artifactId>
-                <version>${version.jakarta.jws.jakarta-jws-api}</version>
+                <version>${preview.version.jakarta.jws.jakarta-jws-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -607,13 +645,13 @@
             <dependency>
                 <groupId>jakarta.json.bind</groupId>
                 <artifactId>jakarta.json.bind-api</artifactId>
-                <version>${version.jakarta.json.bind.api}</version>
+                <version>${preview.version.jakarta.json.bind.api}</version>
             </dependency>
 
             <dependency>
                 <groupId>jakarta.persistence</groupId>
                 <artifactId>jakarta.persistence-api</artifactId>
-                <version>${version.jakarta.persistence}</version>
+                <version>${preview.version.jakarta.persistence}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -625,7 +663,7 @@
             <dependency>
                 <groupId>jakarta.resource</groupId>
                 <artifactId>jakarta.resource-api</artifactId>
-                <version>${version.jakarta.resource.jakarta-resource-api}</version>
+                <version>${preview.version.jakarta.resource.jakarta-resource-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -637,7 +675,7 @@
             <dependency>
                 <groupId>jakarta.security.enterprise</groupId>
                 <artifactId>jakarta.security.enterprise-api</artifactId>
-                <version>${version.jakarta.security.enterprise}</version>
+                <version>${preview.version.jakarta.security.enterprise}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -649,7 +687,7 @@
             <dependency>
                 <groupId>jakarta.servlet</groupId>
                 <artifactId>jakarta.servlet-api</artifactId>
-                <version>${version.jakarta.servlet.jakarta-servlet-api}</version>
+                <version>${preview.version.jakarta.servlet.jakarta-servlet-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -661,7 +699,7 @@
             <dependency>
                 <groupId>jakarta.servlet.jsp.jstl</groupId>
                 <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
-                <version>${version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api}</version>
+                <version>${preview.version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -673,7 +711,7 @@
             <dependency>
                 <groupId>jakarta.servlet.jsp</groupId>
                 <artifactId>jakarta.servlet.jsp-api</artifactId>
-                <version>${version.jakarta.servlet.jsp.jakarta-servlet-jsp-api}</version>
+                <version>${preview.version.jakarta.servlet.jsp.jakarta-servlet-jsp-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -685,7 +723,7 @@
             <dependency>
                 <groupId>jakarta.transaction</groupId>
                 <artifactId>jakarta.transaction-api</artifactId>
-                <version>${version.jakarta.transaction.jakarta-transaction-api}</version>
+                <version>${preview.version.jakarta.transaction.jakarta-transaction-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -697,7 +735,7 @@
             <dependency>
                 <groupId>jakarta.validation</groupId>
                 <artifactId>jakarta.validation-api</artifactId>
-                <version>${version.jakarta.validation.jakarta-validation-api}</version>
+                <version>${preview.version.jakarta.validation.jakarta-validation-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -709,7 +747,7 @@
             <dependency>
                 <groupId>jakarta.websocket</groupId>
                 <artifactId>jakarta.websocket-api</artifactId>
-                <version>${version.jakarta.websocket.jakarta-websocket-api}</version>
+                <version>${preview.version.jakarta.websocket.jakarta-websocket-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -717,11 +755,15 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
             <dependency>
                 <groupId>jakarta.ws.rs</groupId>
                 <artifactId>jakarta.ws.rs-api</artifactId>
-                <version>${version.jakarta.ws.rs.jakarta-ws-rs-api}</version>
+                <version>${preview.version.jakarta.ws.rs.jakarta-ws-rs-api}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${preview.version.jakarta.xml.bind.jakarta-xml-bind-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -729,7 +771,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
             <dependency>
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>artemis-jakarta-client</artifactId>
@@ -777,11 +818,688 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-core</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-features-logging</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-bindings-coloc</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-bindings-soap</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-bindings-xml</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-databinding-aegis</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-databinding-jaxb</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-features-clustering</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxws</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-simple</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-management</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-security</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-security-saml</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-http</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-http-hc</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-jms</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-local</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-ws-addr</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-ws-mex</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-ws-policy</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-ws-rm</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-ws-security</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-wsdl</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-tools-common</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-tools-java2ws</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-tools-validator</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-tools-wsdlto-core</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-tools-wsdlto-databinding-jaxb</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-tools-wsdlto-frontend-jaxws</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf.services.sts</groupId>
+                <artifactId>cxf-services-sts-core</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf.services.ws-discovery</groupId>
+                <artifactId>cxf-services-ws-discovery-api</artifactId>
+                <version>${preview.version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf.xjc-utils</groupId>
+                <artifactId>cxf-xjc-runtime</artifactId>
+                <version>${preview.version.org.apache.cxf.xjcplugins}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf.xjcplugins</groupId>
+                <artifactId>cxf-xjc-boolean</artifactId>
+                <version>${preview.version.org.apache.cxf.xjcplugins}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf.xjcplugins</groupId>
+                <artifactId>cxf-xjc-bug986</artifactId>
+                <version>${preview.version.org.apache.cxf.xjcplugins}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf.xjcplugins</groupId>
+                <artifactId>cxf-xjc-dv</artifactId>
+                <version>${preview.version.org.apache.cxf.xjcplugins}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf.xjcplugins</groupId>
+                <artifactId>cxf-xjc-ts</artifactId>
+                <version>${preview.version.org.apache.cxf.xjcplugins}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.wss4j</groupId>
+                <artifactId>wss4j-bindings</artifactId>
+                <version>${preview.version.org.apache.wss4j}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.wss4j</groupId>
+                <artifactId>wss4j-policy</artifactId>
+                <version>${preview.version.org.apache.wss4j}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.wss4j</groupId>
+                <artifactId>wss4j-ws-security-common</artifactId>
+                <version>${preview.version.org.apache.wss4j}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.wss4j</groupId>
+                <artifactId>wss4j-ws-security-dom</artifactId>
+                <version>${preview.version.org.apache.wss4j}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.wss4j</groupId>
+                <artifactId>wss4j-ws-security-policy-stax</artifactId>
+                <version>${preview.version.org.apache.wss4j}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.wss4j</groupId>
+                <artifactId>wss4j-ws-security-stax</artifactId>
+                <version>${preview.version.org.apache.wss4j}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.santuario</groupId>
+                <artifactId>xmlsec</artifactId>
+                <version>${preview.version.org.apache.xmlsec}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-core</artifactId>
+                <version>${preview.version.org.opensaml.opensaml}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.dropwizard.metrics</groupId>
+                        <artifactId>metrics-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-profile-api</artifactId>
+                <version>${preview.version.org.opensaml.opensaml}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-saml-api</artifactId>
+                <version>${preview.version.org.opensaml.opensaml}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-saml-impl</artifactId>
+                <version>${preview.version.org.opensaml.opensaml}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.velocity</groupId>
+                        <artifactId>velocity</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-security-api</artifactId>
+                <version>${preview.version.org.opensaml.opensaml}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-security-impl</artifactId>
+                <version>${preview.version.org.opensaml.opensaml}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-soap-api</artifactId>
+                <version>${preview.version.org.opensaml.opensaml}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-xacml-api</artifactId>
+                <version>${preview.version.org.opensaml.opensaml}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-xacml-impl</artifactId>
+                <version>${preview.version.org.opensaml.opensaml}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-xacml-saml-api</artifactId>
+                <version>${preview.version.org.opensaml.opensaml}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-xacml-saml-impl</artifactId>
+                <version>${preview.version.org.opensaml.opensaml}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-xmlsec-api</artifactId>
+                <version>${preview.version.org.opensaml.opensaml}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.opensaml</groupId>
+                <artifactId>opensaml-xmlsec-impl</artifactId>
+                <version>${preview.version.org.opensaml.opensaml}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.shibboleth.utilities</groupId>
+                <artifactId>java-support</artifactId>
+                <version>${preview.version.net.shibboleth.utilities.java-support}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.code.findbugs</groupId>
+                        <artifactId>jsr305</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
 
             <dependency>
                 <groupId>org.apache.myfaces.core</groupId>
                 <artifactId>myfaces-impl</artifactId>
-                <version>${version.org.apache.myfaces.core}</version>
+                <version>${preview.version.org.apache.myfaces.core}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-analyzers-common</artifactId>
+                <version>${preview.version.org.apache.lucene}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-core</artifactId>
+                <version>${preview.version.org.apache.lucene}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-facet</artifactId>
+                <version>${preview.version.org.apache.lucene}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-queries</artifactId>
+                <version>${preview.version.org.apache.lucene}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-queryparser</artifactId>
+                <version>${preview.version.org.apache.lucene}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-join</artifactId>
+                <version>${preview.version.org.apache.lucene}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -793,7 +1511,7 @@
             <dependency>
                 <groupId>org.eclipse</groupId>
                 <artifactId>yasson</artifactId>
-                <version>${version.org.eclipse.yasson}</version>
+                <version>${preview.version.org.eclipse.yasson}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -810,7 +1528,7 @@
             <dependency>
                 <groupId>org.eclipse.angus</groupId>
                 <artifactId>angus-activation</artifactId>
-                <version>${version.org.eclipse.angus.angus-activation}</version>
+                <version>${preview.version.org.eclipse.angus.angus-activation}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -822,20 +1540,252 @@
             <dependency>
                 <groupId>org.eclipse.angus</groupId>
                 <artifactId>angus-mail</artifactId>
-                <version>${version.org.eclipse.angus.angus-mail}</version>
+                <version>${preview.version.org.eclipse.angus.angus-mail}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.config</groupId>
+                <artifactId>microprofile-config-api</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.config.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.config</groupId>
+                <artifactId>microprofile-config-tck</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.config.api}</version>
+                <scope>test</scope>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
+                <artifactId>microprofile-fault-tolerance-api</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.fault-tolerance.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
+                <artifactId>microprofile-fault-tolerance-tck</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.fault-tolerance.api}</version>
+                <scope>test</scope>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.health</groupId>
+                <artifactId>microprofile-health-api</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.health.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.health</groupId>
+                <artifactId>microprofile-health-tck</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.health.api}</version>
+                <scope>test</scope>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.jwt</groupId>
+                <artifactId>microprofile-jwt-auth-api</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.jwt.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.jwt</groupId>
+                <artifactId>microprofile-jwt-auth-tck</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.jwt.api}</version>
+                <scope>test</scope>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.jwt</groupId>
+                <artifactId>microprofile-jwt-auth-tck</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.jwt.api}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.metrics</groupId>
+                <artifactId>microprofile-metrics-api</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.metrics.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.metrics</groupId>
+                <artifactId>microprofile-metrics-api-tck</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.metrics.api}</version>
+                <scope>test</scope>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.metrics</groupId>
+                <artifactId>microprofile-metrics-rest-tck</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.metrics.api}</version>
+                <scope>test</scope>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.openapi</groupId>
+                <artifactId>microprofile-openapi-api</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.openapi}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.openapi</groupId>
+                <artifactId>microprofile-openapi-tck</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.openapi}</version>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.opentracing</groupId>
+                <artifactId>microprofile-opentracing-api</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.opentracing}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.opentracing</groupId>
+                <artifactId>microprofile-opentracing-tck</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.opentracing}</version>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.opentracing</groupId>
+                <artifactId>microprofile-opentracing-tck-rest-client</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.opentracing}</version>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
+                <artifactId>microprofile-reactive-messaging-api</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.reactive-messaging.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
+                <artifactId>microprofile-reactive-messaging-tck</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.reactive-messaging.api}</version>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.reactive-streams-operators</groupId>
+                <artifactId>microprofile-reactive-streams-operators-api</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.reactive-streams-operators.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.reactive-streams-operators</groupId>
+                <artifactId>microprofile-reactive-streams-operators-tck</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.reactive-streams-operators.api}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <!--
+                        Depends on org.reactivestreams:reactive-streams-tck which in turn has a dependency
+                        on an ancient version of this spi
+                     -->
+                    <exclusion>
+                        <groupId>org.jboss.arquillian.test</groupId>
+                        <artifactId>arquillian-test-spi</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.reactive-streams-operators</groupId>
+                <artifactId>microprofile-reactive-streams-operators-core</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.reactive-streams-operators.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.rest.client</groupId>
+                <artifactId>microprofile-rest-client-api</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.rest.client.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.rest.client</groupId>
+                <artifactId>microprofile-rest-client-tck</artifactId>
+                <version>${preview.version.org.eclipse.microprofile.rest.client.api}</version>
+                <scope>test</scope>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
 
             <!-- JSON Processing RI -->
             <dependency>
                 <groupId>org.eclipse.parsson</groupId>
                 <artifactId>parsson</artifactId>
-                <version>${version.org.eclipse.parsson}</version>
+                <version>${preview.version.org.eclipse.parsson}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -845,9 +1795,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.el</artifactId>
-                <version>${version.org.glassfish.jakarta.el}</version>
+                <groupId>org.eclipse.persistence</groupId>
+                <artifactId>eclipselink</artifactId>
+                <version>${preview.version.org.eclipselink.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -859,7 +1809,19 @@
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>jakarta.enterprise.concurrent</artifactId>
-                <version>${version.org.glassfish.jakarta.enterprise.concurrent}</version>
+                <version>${preview.version.org.glassfish.jakarta.enterprise.concurrent}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.expressly</groupId>
+                <artifactId>expressly</artifactId>
+                <version>${preview.version.org.glassfish.expressly}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -870,8 +1832,25 @@
 
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
-                <artifactId>jaxb-xjc</artifactId>
-                <version>${version.org.glassfish.jaxb.jaxb-xjc}</version>
+                <artifactId>codemodel</artifactId>
+                <version>${preview.version.org.glassfish.jaxb}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-jxc</artifactId>
+                <version>${preview.version.org.glassfish.jaxb}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun</groupId>
+                        <artifactId>tools</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-core</artifactId>
+                <version>${preview.version.org.glassfish.jaxb}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -879,10 +1858,65 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
+                <version>${preview.version.org.glassfish.jaxb}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.activation</groupId>
+                        <artifactId>javax.activation-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jvnet.staxex</groupId>
+                        <artifactId>stax-ex</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>txw2</artifactId>
+                <version>${preview.version.org.glassfish.jaxb}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>xsom</artifactId>
+                <version>${preview.version.org.glassfish.jaxb}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind.external</groupId>
+                        <artifactId>relaxng-datatype</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>relaxngDatatype</groupId>
+                        <artifactId>relaxngDatatype</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-xjc</artifactId>
+                <version>${preview.version.org.glassfish.jaxb.jaxb-xjc}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>org.hibernate.common</groupId>
                 <artifactId>hibernate-commons-annotations</artifactId>
-                <version>${version.org.hibernate.commons.annotations}</version>
+                <version>${preview.version.org.hibernate.commons.annotations}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -894,8 +1928,7 @@
             <dependency>
                 <groupId>org.hibernate.orm</groupId>
                 <artifactId>hibernate-core</artifactId>
-                <version>${version.org.hibernate}</version>
-                <scope>provided</scope>
+                <version>${preview.version.org.hibernate}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -907,8 +1940,7 @@
             <dependency>
                 <groupId>org.hibernate.orm</groupId>
                 <artifactId>hibernate-envers</artifactId>
-                <version>${version.org.hibernate}</version>
-                <scope>provided</scope>
+                <version>${preview.version.org.hibernate}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -920,7 +1952,7 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-util-common</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${preview.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -931,7 +1963,7 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-engine</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${preview.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -942,7 +1974,7 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-backend-elasticsearch</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${preview.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -953,7 +1985,7 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-backend-lucene</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${preview.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -964,7 +1996,7 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-mapper-pojo-base</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${preview.version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -975,7 +2007,44 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-mapper-orm-orm6</artifactId>
-                <version>${version.org.hibernate.search}</version>
+                <version>${preview.version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- These dependencies are not present in WildFly itself, only in integration tests. -->
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
+                <version>${preview.version.org.hibernate.search}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-v5migrationhelper-engine</artifactId>
+                <version>${preview.version.org.hibernate.search}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-v5migrationhelper-orm-orm6</artifactId>
+                <version>${preview.version.org.hibernate.search}</version>
+                <scope>test</scope>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -999,7 +2068,7 @@
             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
                 <artifactId>jakarta.security.enterprise</artifactId>
-                <version>${version.org.glassfish.soteria}</version>
+                <version>${preview.version.org.glassfish.soteria}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1011,7 +2080,7 @@
             <dependency>
                 <groupId>org.glassfish.web</groupId>
                 <artifactId>jakarta.servlet.jsp.jstl</artifactId>
-                <version>${version.org.glassfish.web.jakarta.servlet.jsp.jstl}</version>
+                <version>${preview.version.org.glassfish.web.jakarta.servlet.jsp.jstl}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1023,7 +2092,7 @@
             <dependency>
                 <groupId>org.hibernate.validator</groupId>
                 <artifactId>hibernate-validator</artifactId>
-                <version>${version.org.hibernate.validator}</version>
+                <version>${preview.version.org.hibernate.validator}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1035,7 +2104,7 @@
             <dependency>
                 <groupId>org.hibernate.validator</groupId>
                 <artifactId>hibernate-validator-cdi</artifactId>
-                <version>${version.org.hibernate.validator}</version>
+                <version>${preview.version.org.hibernate.validator}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1143,7 +2212,7 @@
             <dependency>
                 <groupId>org.jberet</groupId>
                 <artifactId>jberet-core</artifactId>
-                <version>${version.org.jberet}</version>
+                <version>${preview.version.org.jberet}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1167,7 +2236,19 @@
             <dependency>
                 <groupId>org.jboss.invocation</groupId>
                 <artifactId>jboss-invocation-jakarta</artifactId>
-                <version>${version.org.jboss.invocation}</version>
+                <version>${preview.version.org.jboss.invocation}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.metadata</groupId>
+                <artifactId>jboss-metadata-common-jakarta</artifactId>
+                <version>${version.org.jboss.metadata}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1203,7 +2284,7 @@
             <dependency>
                 <groupId>org.jboss.spec.jakarta.el</groupId>
                 <artifactId>jboss-el-api_5.0_spec</artifactId>
-                <version>${version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec}</version>
+                <version>${preview.version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1215,7 +2296,7 @@
             <dependency>
                 <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
                 <artifactId>jboss-jakarta-xml-ws-api_3.0_spec</artifactId>
-                <version>${version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec}</version>
+                <version>${preview.version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1227,7 +2308,7 @@
             <dependency>
                 <groupId>org.jboss.spec.jakarta.xml.soap</groupId>
                 <artifactId>jboss-saaj-api_2.0_spec</artifactId>
-                <version>${version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec}</version>
+                <version>${preview.version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1275,7 +2356,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>jose-jwt</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1287,19 +2368,19 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-client</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-client-api</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-core</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1311,7 +2392,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-core-spi</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1323,19 +2404,19 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-atom-provider</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-cdi</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-crypto</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1347,7 +2428,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jackson2-provider</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1359,19 +2440,19 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-json-binding-provider</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-json-p-provider</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jaxb-provider</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1383,31 +2464,31 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jsapi</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-multipart-provider</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-rxjava2</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-validator-provider</artifactId>
-                <version>${version.org.jboss.resteasy.6}</version>
+                <version>${preview.version.org.jboss.resteasy}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy.microprofile</groupId>
                 <artifactId>microprofile-config</artifactId>
-                <version>${version.org.jboss.resteasy.microprofile}</version>
+                <version>${preview.version.org.jboss.resteasy.microprofile}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>*</artifactId>
@@ -1418,7 +2499,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy.microprofile</groupId>
                 <artifactId>microprofile-rest-client</artifactId>
-                <version>${version.org.jboss.resteasy.microprofile}</version>
+                <version>${preview.version.org.jboss.resteasy.microprofile}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>*</artifactId>
@@ -1429,7 +2510,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy.microprofile</groupId>
                 <artifactId>microprofile-rest-client-base</artifactId>
-                <version>${version.org.jboss.resteasy.microprofile}</version>
+                <version>${preview.version.org.jboss.resteasy.microprofile}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>*</artifactId>
@@ -1441,7 +2522,7 @@
             <dependency>
                 <groupId>org.jboss.resteasy.spring</groupId>
                 <artifactId>resteasy-spring</artifactId>
-                <version>${version.org.jboss.resteasy.spring}</version>
+                <version>${preview.version.org.jboss.resteasy.spring}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1453,7 +2534,7 @@
             <dependency>
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-api</artifactId>
-                <version>${version.org.jboss.weld.weld-api}</version>
+                <version>${preview.version.org.jboss.weld.weld-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1465,7 +2546,7 @@
             <dependency>
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-core-impl</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
+                <version>${preview.version.org.jboss.weld.weld}</version>
                 <scope>provided</scope>
                 <exclusions>
                     <exclusion>
@@ -1478,7 +2559,7 @@
             <dependency>
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-lite-extension-translator</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
+                <version>${preview.version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1490,7 +2571,7 @@
             <dependency>
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-spi</artifactId>
-                <version>${version.org.jboss.weld.weld-api}</version>
+                <version>${preview.version.org.jboss.weld.weld-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1502,7 +2583,7 @@
             <dependency>
                 <groupId>org.jboss.weld.module</groupId>
                 <artifactId>weld-ejb</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
+                <version>${preview.version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1514,13 +2595,20 @@
             <dependency>
                 <groupId>org.jvnet.staxex</groupId>
                 <artifactId>stax-ex</artifactId>
-                <version>${version.org.jvnet.staxex}</version>
+                <version>${preview.version.org.jvnet.staxex}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${preview.version.org.testng}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
@@ -1586,6 +2674,18 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-datasources-agroal-jakarta</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-jaxrs-jakarta</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
@@ -1624,7 +2724,7 @@
             <dependency>
                 <groupId>org.jboss.weld.module</groupId>
                 <artifactId>weld-jsf</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
+                <version>${preview.version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1636,7 +2736,7 @@
             <dependency>
                 <groupId>org.jboss.weld.module</groupId>
                 <artifactId>weld-jta</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
+                <version>${preview.version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1648,7 +2748,7 @@
             <dependency>
                 <groupId>org.jboss.weld.module</groupId>
                 <artifactId>weld-web</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
+                <version>${preview.version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1660,7 +2760,7 @@
             <dependency>
                 <groupId>org.jboss.weld.probe</groupId>
                 <artifactId>weld-probe-core</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
+                <version>${preview.version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1994,7 +3094,7 @@
             <dependency>
                 <groupId>org.wildfly.security</groupId>
                 <artifactId>wildfly-elytron-audit</artifactId>
-                <version>${version.org.wildfly.security.elytron}</version>
+                <version>${preview.version.org.wildfly.security.elytron}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2006,7 +3106,7 @@
             <dependency>
                 <groupId>org.wildfly.security</groupId>
                 <artifactId>wildfly-elytron-client</artifactId>
-                <version>${version.org.wildfly.security.elytron}</version>
+                <version>${preview.version.org.wildfly.security.elytron}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2018,7 +3118,7 @@
             <dependency>
                 <groupId>org.wildfly.security</groupId>
                 <artifactId>wildfly-elytron-http-oidc</artifactId>
-                <version>${version.org.wildfly.security.elytron}</version>
+                <version>${preview.version.org.wildfly.security.elytron}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2030,7 +3130,19 @@
             <dependency>
                 <groupId>org.wildfly.security</groupId>
                 <artifactId>wildfly-elytron-json-util</artifactId>
-                <version>${version.org.wildfly.security.elytron}</version>
+                <version>${preview.version.org.wildfly.security.elytron}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security</groupId>
+                <artifactId>wildfly-elytron-jwt</artifactId>
+                <version>${preview.version.org.wildfly.security.elytron-mp}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2042,7 +3154,7 @@
             <dependency>
                 <groupId>org.wildfly.security</groupId>
                 <artifactId>wildfly-elytron-mechanism-oauth2</artifactId>
-                <version>${version.org.wildfly.security.elytron}</version>
+                <version>${preview.version.org.wildfly.security.elytron}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2054,7 +3166,7 @@
             <dependency>
                 <groupId>org.wildfly.security</groupId>
                 <artifactId>wildfly-elytron-realm-token</artifactId>
-                <version>${version.org.wildfly.security.elytron}</version>
+                <version>${preview.version.org.wildfly.security.elytron}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2066,7 +3178,7 @@
             <dependency>
                 <groupId>org.wildfly.security</groupId>
                 <artifactId>wildfly-elytron-tool</artifactId>
-                <version>${version.org.wildfly.security.elytron}</version>
+                <version>${preview.version.org.wildfly.security.elytron}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2078,7 +3190,7 @@
             <dependency>
                 <groupId>org.wildfly.security</groupId>
                 <artifactId>wildfly-elytron-x500-cert-acme</artifactId>
-                <version>${version.org.wildfly.security.elytron}</version>
+                <version>${preview.version.org.wildfly.security.elytron}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2090,7 +3202,7 @@
             <dependency>
                 <groupId>org.wildfly.security.elytron-web</groupId>
                 <artifactId>undertow-server-servlet</artifactId>
-                <version>${version.org.wildfly.security.elytron-web}</version>
+                <version>${preview.version.org.wildfly.security.elytron-web}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>*</artifactId>
@@ -2102,7 +3214,7 @@
             <dependency>
                 <groupId>org.wildfly.security.jakarta</groupId>
                 <artifactId>jakarta-authentication</artifactId>
-                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+                <version>${preview.version.org.wildfly.security.jakarta.elytron-ee}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2114,7 +3226,7 @@
             <dependency>
                 <groupId>org.wildfly.security.jakarta</groupId>
                 <artifactId>jakarta-authorization</artifactId>
-                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+                <version>${preview.version.org.wildfly.security.jakarta.elytron-ee}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2126,7 +3238,7 @@
             <dependency>
                 <groupId>org.wildfly.security.jakarta</groupId>
                 <artifactId>jakarta-client-resteasy</artifactId>
-                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+                <version>${preview.version.org.wildfly.security.jakarta.elytron-ee}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2138,7 +3250,7 @@
             <dependency>
                 <groupId>org.wildfly.security.jakarta</groupId>
                 <artifactId>jakarta-client-webservices</artifactId>
-                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+                <version>${preview.version.org.wildfly.security.jakarta.elytron-ee}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

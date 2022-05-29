@@ -53,9 +53,6 @@
         <!-- These properties control what layers are provisioned if galleon provision occurs -->
         <ts.microprofile-tck-provisioning.base.layer>cloud-server</ts.microprofile-tck-provisioning.base.layer>
         <ts.microprofile-tck-provisioning.decorator.layer>microprofile-reactive-streams-operators</ts.microprofile-tck-provisioning.decorator.layer>
-
-        <!-- Just a temporary property until we move to Jakarta -->
-        <version.eclipse.mp.rso.tck.for.jakarta>3.0-RC1</version.eclipse.mp.rso.tck.for.jakarta>
     </properties>
 
     <dependencies>
@@ -154,9 +151,7 @@
                 <!-- Enable bootable jar packaging -->
                 <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
 
-                <!-- Override versions -->
-                <version.org.eclipse.microprofile.reactive-streams-operators.api>${version.eclipse.mp.rso.tck.for.jakarta}</version.org.eclipse.microprofile.reactive-streams-operators.api>
-            </properties>
+           </properties>
         </profile>
 
         <profile>
@@ -168,9 +163,6 @@
             </activation>
             <properties>
                 <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
-
-                <!-- Override versions -->
-                <version.org.eclipse.microprofile.reactive-streams-operators.api>${version.eclipse.mp.rso.tck.for.jakarta}</version.org.eclipse.microprofile.reactive-streams-operators.api>
             </properties>
         </profile>
     </profiles>

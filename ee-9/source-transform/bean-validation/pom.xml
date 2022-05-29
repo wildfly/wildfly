@@ -70,8 +70,8 @@
         <dependency>
             <!-- Needed for Hibernate Validator since it asserts the existence of javax.el during bootstrap in the
                   default configuration-->
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
             <scope>runtime</scope>
         </dependency>
 

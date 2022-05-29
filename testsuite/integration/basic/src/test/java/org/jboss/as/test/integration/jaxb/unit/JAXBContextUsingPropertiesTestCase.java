@@ -42,7 +42,7 @@ public class JAXBContextUsingPropertiesTestCase extends JAXBContextTestBase {
         String nl = System.getProperty("line.separator");
         war.add(new StringAsset(
                 JAXB_FACTORY_PROP_NAME + "=" + DEFAULT_JAXB_FACTORY_CLASS + nl
-                + JAKARTA_FACTORY_PROP_NAME + "=" + DEFAULT_JAXB_FACTORY_CLASS),
+                + JAKARTA_FACTORY_PROP_NAME + "=" + JAKARTA_JAXB_FACTORY_CLASS),
                 JAXB_PROPERTIES_FILE);
         return war;
     }

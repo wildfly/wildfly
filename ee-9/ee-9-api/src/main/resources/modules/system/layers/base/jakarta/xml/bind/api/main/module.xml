@@ -25,8 +25,7 @@
 <module xmlns="urn:jboss:module:1.9" name="jakarta.xml.bind.api">
 
     <resources>
-        <artifact name="${org.jboss.spec.javax.xml.bind:jboss-jaxb-api_2.3_spec}"/>
-        <!--<artifact name="${jakarta.xml.bind:jakarta.xml.bind-api}"/>-->
+        <artifact name="${jakarta.xml.bind:jakarta.xml.bind-api}"/>
     </resources>
 
     <dependencies>
@@ -36,7 +35,7 @@
         <module name="javax.activation.api" export="true"/>
         <module name="org.eclipse.angus.activation" services="export" export="true"/>
         <module name="javax.xml.stream.api"/>
-        <module name="com.sun.xml.bind" services="import"/>
+        <module name="com.sun.xml.bind" services="export" export="true"/>
         <!--WFLY-14219 Remove deprecated <module name="javax.api"/> -->
     </dependencies>
 </module>
