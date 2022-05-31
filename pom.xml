@@ -625,6 +625,9 @@
         <preview.version.org.wildfly.security.elytron-mp>2.0.0.Beta3</preview.version.org.wildfly.security.elytron-mp>
         <preview.version.org.wildfly.security.elytron-web>2.0.0.Beta3</preview.version.org.wildfly.security.elytron-web>
         <preview.version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta3</preview.version.org.wildfly.security.jakarta.elytron-ee>
+
+        <!-- Base wildfly version used by testsuite/galleon/update test to install a server that gets updated to the SNAPSHOT version -->
+        <wildfly.test.galleon.update.base.version>26.1.1.Final</wildfly.test.galleon.update.base.version>
     </properties>
 
     <dependencyManagement>

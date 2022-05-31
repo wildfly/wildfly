@@ -447,7 +447,16 @@
                 <module>layers</module>
             </modules>
         </profile>
-
+        <profile>
+            <id>galleon.module.profile</id>
+            <activation><property><name>galleon.module</name></property></activation>
+            <modules><module>galleon</module></modules>
+        </profile>
+        <profile>
+            <id>galleon_.module.profile</id>
+            <activation><property><name>ts.galleon</name></property></activation>
+            <modules><module>galleon</module></modules>
+        </profile>
         <profile>
             <id>scripts.module.profile</id>
             <activation><property><name>scripts.module</name></property></activation>
