@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<feature-group-spec name="host-slave" xmlns="urn:jboss:galleon:feature-group:1.0">
-    <feature-group name="servlet-host-slave">
+<feature-group-spec name="host-secondary" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature-group name="servlet-host-secondary">
         <exclude feature-id="host.interface:host=secondary,interface=unsecure"/>
         <exclude feature-id="host.interface:host=secondary,interface=private"/>
     </feature-group>
