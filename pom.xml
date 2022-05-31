@@ -267,8 +267,6 @@
          -->
         <version.asciidoctor.plugin>2.2.2</version.asciidoctor.plugin>
         <version.help.plugin>2.2</version.help.plugin>
-        <version.org.codehaus.woodstox.stax2-api>4.2.1</version.org.codehaus.woodstox.stax2-api>
-        <version.org.codehaus.woodstox.woodstox-core>6.0.3</version.org.codehaus.woodstox.woodstox-core>
         <version.org.jacoco>0.8.7</version.org.jacoco>
         <version.org.jboss.galleon>5.0.1.Final</version.org.jboss.galleon>
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
@@ -410,6 +408,8 @@
         <version.org.bitbucket.jose4j>0.7.11</version.org.bitbucket.jose4j>
         <version.org.bytebuddy>1.11.12</version.org.bytebuddy>
         <version.org.cryptacular>1.2.5</version.org.cryptacular>
+        <version.org.codehaus.woodstox.stax2-api>4.2.1</version.org.codehaus.woodstox.stax2-api>
+        <version.org.codehaus.woodstox.woodstox-core>6.2.8</version.org.codehaus.woodstox.woodstox-core>
         <version.org.eclipse.jdt>3.26.0</version.org.eclipse.jdt>
         <!-- Required by the Wiremock used in the MicroProfile REST Client TCK -->
         <version.org.eclipse.jetty>9.2.30.v20200428</version.org.eclipse.jetty>
