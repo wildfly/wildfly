@@ -47,6 +47,6 @@
         </feature>
     </feature>
 
-    <feature-group name="host-master"/>
+    <feature-group name="host-primary"/>
 
 </feature-group-spec>
