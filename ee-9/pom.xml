@@ -772,6 +772,17 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>jboss.jaxbintros</groupId>
+                <artifactId>jboss-jaxb-intros</artifactId>
+                <version>${preview.version.jboss.jaxbintros}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>artemis-jakarta-client</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>

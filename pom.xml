@@ -592,6 +592,7 @@
         <preview.version.io.smallrye.smallrye-opentracing>3.0.0-RC1</preview.version.io.smallrye.smallrye-opentracing>
         <preview.version.io.smallrye.smallrye-reactive-messaging>4.0.0.RC1</preview.version.io.smallrye.smallrye-reactive-messaging>
         <!-- MP5 - END -->
+        <preview.version.jboss.jaxbintros>2.0.0</preview.version.jboss.jaxbintros>
         <preview.version.org.eclipse.yasson>3.0.0-RC2</preview.version.org.eclipse.yasson>
         <preview.version.org.eclipselink.version>3.0.2</preview.version.org.eclipselink.version>
         <preview.version.org.glassfish.expressly>5.0.0-M2</preview.version.org.glassfish.expressly>
