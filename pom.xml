@@ -60,7 +60,6 @@
         <module>client/properties</module>
         <module>client/shade</module>
         <module>clustering</module>
-        <module>component-matrix-builder</module>
         <module>connector</module>
         <module>datasources-agroal</module>
         <module>dist</module>
@@ -274,7 +273,6 @@
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.component-matrix-plugin>1.0.3.Final</version.org.wildfly.component-matrix-plugin>
         <version.org.wildfly.galleon-plugins>6.0.0.Alpha2</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>7.0.0.Final</version.org.wildfly.jar.plugin>
         <version.org.wildfly.maven.plugins>2.2.0.Final</version.org.wildfly.maven.plugins>
@@ -9338,11 +9336,6 @@
                             <organization>${project.organization.name}</organization>
                         </attributes>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.wildfly.plugins</groupId>
-                    <artifactId>wildfly-component-matrix-plugin</artifactId>
-                    <version>${version.org.wildfly.component-matrix-plugin}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
