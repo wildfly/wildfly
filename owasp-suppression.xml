@@ -93,7 +93,7 @@
         <packageUrl regex="true">^pkg:maven/org\.wildfly.*@.*$</packageUrl>
         <cve>CVE-2020-25640</cve>
     </suppress>
-
+	
     <!-- [wildfly] Used only in tests, not deployed  -->
     <suppress>
         <notes><![CDATA[
@@ -201,7 +201,25 @@
         <packageUrl regex="true">^pkg:maven/org\.apache\.velocity/velocity\-engine\-scripting@.*$</packageUrl>
         <cve>CVE-2020-13936</cve>
     </suppress>
-
+	
+	<!-- CVE-2019-0231 False positive - Apacheds-all is only used in tests -->
+	<suppress>
+		<notes><![CDATA[
+		file name: apacheds-all-2.0.0-M24.jar (shaded: org.apache.mina:mina-core:2.0.16)
+		]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.mina/mina\-core@.*$</packageUrl>
+		<cve>CVE-2019-0231</cve>
+	</suppress>
+	
+	<!-- CVE-2017-12629 False positive - JBoss EAP7 is not affected by this flaw -->
+	<suppress>
+		<notes><![CDATA[
+		file name: lucene-queryparser-5.5.5.jar
+		]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene\-queryparser@.*$</packageUrl>
+		<cve>CVE-2017-12629</cve>
+	</suppress>
+	
     <!-- This is a false positive because wildfly-core itself does not use mockserver libraries. Mockserver is used only for test purposes (wildfly-core-testsuite-shared module). -->
     <suppress>
         <notes><![CDATA[
@@ -290,11 +308,12 @@
     <!-- This is a false positive because the core itself does not use json-smart or accessors-smart. Those libraries are used by mockserver-netty in test (wildfly-core-testsuite-share) module. -->
     <suppress>
         <notes><![CDATA[
-   file name: json-smart-2.3.jar
-   file name: accessors-smart-1.2.jar
-   ]]></notes>
+		file name: json-smart-2.3.jar
+		file name: accessors-smart-1.2.jar
+		]]></notes>
         <packageUrl regex="true">^pkg:maven/net\.minidev/(json-smart|accessors\-smart).*$</packageUrl>
-        <vulnerabilityName>CVE-2021-27568</vulnerabilityName>
+        <cve>CVE-2021-27568</cve>
+        <cve>CVE-2021-31684</cve>
     </suppress>
 
     <!-- [wildfly] Applies to versions prior to wildfly 25.0.0 -->
