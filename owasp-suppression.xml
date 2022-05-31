@@ -18,7 +18,7 @@
         <packageUrl regex="true">^pkg:maven/org\.hibernate/hibernate\-.*$</packageUrl>
         <cve>CVE-2020-25638</cve>
     </suppress>
-
+	
     <!-- [wildfly] Applies to versions prior to wildfly 21.0.0 -->
     <suppress>
         <notes><![CDATA[
@@ -600,7 +600,32 @@
         <packageUrl regex="true">^pkg:maven/org\.apache\.cxf.*$</packageUrl>
         <cve>CVE-2021-22696</cve>
     </suppress>
+	<!-- CVE-2019-0231 Apacheds-all is only used in test -->
+	<suppress>
+		<notes><![CDATA[
+		file name: apacheds-all-2.0.0-M24.jar (shaded: org.apache.mina:mina-core:2.0.16)
+		]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.mina/mina\-core@.*$</packageUrl>
+		<cve>CVE-2019-0231</cve>
+	</suppress>
 
+	<!-- CVE-2017-12629 Red Hat JBoss EAP7 is not affected by this flaw -->
+	<suppress>
+		<notes><![CDATA[
+		file name: lucene-queryparser-5.5.5.jar
+		]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene\-queryparser@.*$</packageUrl>
+		<cve>CVE-2017-12629</cve>
+	</suppress>
+
+	<!-- CVE-2018-1051 This won't be fixed in JBoss EAP as the YamlProvider in RESTEasy is unsupported -->
+	<suppress>
+		<notes><![CDATA[
+		file name: resteasy-yaml-provider-3.13.2.Final.jar
+		]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy/resteasy\-yaml\-provider@.*$</packageUrl>
+		<cve>CVE-2018-1051</cve>
+	</suppress>
     <!-- False positive xjcplugins are not using org.apache.cxf:cxf-rt-rs-json-basic (https://bugzilla.redhat.com/show_bug.cgi?id=1973392),
     the version of apache.cxf was updated to fixed 3.3.11: https://github.com/PSI-Polska/wildfly/commit/334aee15ec46821f5674bfa33aadabb06966049e -->
     <suppress>
