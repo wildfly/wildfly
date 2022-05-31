@@ -62,7 +62,6 @@ import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
 import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.jca.rar.MultipleResourceAdapter;
-import org.jboss.as.test.integration.jca.security.AbstractLoginModuleSecurityDomainTestCaseSetup;
 import org.jboss.as.test.integration.jca.security.TestBean;
 import org.jboss.as.test.integration.jca.security.WildFlyActivationRaWithElytronAuthContextTestCase;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
@@ -213,7 +212,7 @@ public class WildFlyActivationRaWithWMElytronSecurityDomainWorkManagerElytronEna
                 .addClass(AbstractElytronSetupTask.class)
                 .addClass(AbstractJcaSetup.class)
                 .addClass(AbstractRaSetup.class);
-        jar.addClasses(AbstractLoginModuleSecurityDomainTestCaseSetup.class, AbstractSecurityDomainSetup.class, TestBean.class);
+        jar.addClasses(AbstractSecurityDomainSetup.class, TestBean.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.ironjacamar.api,deployment.wf-ra-wm-security-domain-rar.rar\n"), "MANIFEST.MF");
         jar.addAsManifestResource(createPermissionsXmlAsset(
                 new ElytronPermission("createAdHocIdentity"),

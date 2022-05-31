@@ -34,7 +34,6 @@ import javax.ejb.Stateless;
 import org.jboss.as.ejb3.context.SessionContextImpl;
 import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.logging.Logger;
-import org.jboss.security.RunAsIdentity;
 import org.wildfly.security.auth.principal.NamePrincipal;
 import org.wildfly.security.authz.Roles;
 
@@ -62,9 +61,7 @@ public class UncheckedStatelessBean {
             }
             return rolesSet;
         } else {
-            // use legacy approach
-            RunAsIdentity rs = (RunAsIdentity) ctx.getCallerPrincipal();
-            return rs.getRunAsRoles();
+            throw new IllegalStateException("Legacy security has been removed");
         }
     }
 }

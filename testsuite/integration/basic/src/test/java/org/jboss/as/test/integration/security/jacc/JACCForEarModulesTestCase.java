@@ -42,7 +42,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.security.Constants;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
@@ -238,7 +237,7 @@ public class JACCForEarModulesTestCase {
         @Override
         protected SecurityDomain[] getSecurityDomains() {
             return new SecurityDomain[]{new SecurityDomain.Builder().name(SECURITY_DOMAIN_NAME)
-                    .authorizationModules(new SecurityModule.Builder().name("JACC").flag(Constants.REQUIRED).build()).build()};
+                    .authorizationModules(new SecurityModule.Builder().name("JACC").flag("required").build()).build()};
         }
     }
 }
