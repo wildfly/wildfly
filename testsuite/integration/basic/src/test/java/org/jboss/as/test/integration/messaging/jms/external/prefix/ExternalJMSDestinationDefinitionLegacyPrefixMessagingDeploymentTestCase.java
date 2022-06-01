@@ -63,7 +63,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -74,7 +73,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(ExternalJMSDestinationDefinitionLegacyPrefixMessagingDeploymentTestCase.SetupTask.class)
-@Ignore("WFLY-16121")
 public class ExternalJMSDestinationDefinitionLegacyPrefixMessagingDeploymentTestCase {
 
     public static final String QUEUE_LOOKUP = "java:/jms/AutomaticQueueCreationOnExternalMessagingDeploymentTestCase/myQueue";
