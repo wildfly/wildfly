@@ -51,6 +51,7 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -281,7 +282,11 @@ public class RuntimeJMSTopicManagementTestCase {
     }
 
     private boolean isTopicPaused(ManagementClient managementClient) throws IOException {
-        return execute(managementClient.getControllerClient(), Operations.createReadAttributeOperation(getTopicAddress(), "paused"), true).asBoolean();
+        ModelNode result = execute(managementClient.getControllerClient(), Operations.createReadAttributeOperation(getTopicAddress(), "paused"), true);
+        if(result.getType() == ModelType.BOOLEAN) {
+            return result.asBoolean();
+        }
+        throw new IllegalArgumentException("Result " + result.asString() + " is not a Boolean");
     }
 
     private void addSecuritySettings(JMSOperations adminSupport) throws IOException {
