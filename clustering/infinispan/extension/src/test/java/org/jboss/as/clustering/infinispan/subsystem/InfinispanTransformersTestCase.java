@@ -80,6 +80,8 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         switch (version) {
             case EAP_7_4_0:
                 return new String[] {
+                        "org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec:2.0.0.Final",
+                        "org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec:2.0.0.Final",
                         formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-extension:%s", version),
                         "org.infinispan:infinispan-commons:11.0.9.Final-redhat-00001",
                         "org.infinispan:infinispan-core:11.0.9.Final-redhat-00001",

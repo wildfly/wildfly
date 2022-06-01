@@ -111,12 +111,17 @@
 
         <dependency>
             <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-commons-jakarta</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-component-annotations</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
+            <artifactId>infinispan-core-jakarta</artifactId>
             <scope>provided</scope>
         </dependency>
 

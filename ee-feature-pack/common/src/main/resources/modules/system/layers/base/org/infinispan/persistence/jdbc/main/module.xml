@@ -27,15 +27,16 @@
     </properties>
 
     <resources>
-        <artifact name="${org.infinispan:infinispan-cachestore-jdbc-common}"/>
-        <artifact name="${org.infinispan:infinispan-cachestore-jdbc}"/>
+        <artifact name="\${org.infinispan:infinispan-cachestore-jdbc-common@module.jakarta.suffix@}"/>
+        <artifact name="\${org.infinispan:infinispan-cachestore-jdbc@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
         <module name="java.naming"/>
         <module name="java.sql"/>
         <module name="java.xml"/>
-        <module name="internal.javax.transaction.api"/>
+        <module name="javax.transaction.api"/>
+
         <module name="io.reactivex.rxjava3.rxjava"/>
         <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>

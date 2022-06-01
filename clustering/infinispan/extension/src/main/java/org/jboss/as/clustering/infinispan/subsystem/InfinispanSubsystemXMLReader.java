@@ -38,12 +38,12 @@ import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourc
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.SecurityResourceDefinition;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition;
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.clustering.logging.ClusteringLogger;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -304,10 +304,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             // We need to create a corresponding channel add operation
             String channel = "ee-" + containerAddress.getLastElement().getValue();
             setAttribute(reader, channel, operation, JGroupsTransportResourceDefinition.Attribute.CHANNEL);
-            PathAddress channelAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH, ChannelResourceDefinition.pathElement(channel));
+            PathAddress channelAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "jgroups"), PathElement.pathElement("channel", channel));
             ModelNode channelOperation = Util.createAddOperation(channelAddress);
             if (stack != null) {
-                setAttribute(reader, stack, channelOperation, ChannelResourceDefinition.Attribute.STACK);
+                channelOperation.get("stack").set(stack);
             }
             if (cluster != null) {
                 channelOperation.get("cluster").set(cluster);

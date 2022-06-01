@@ -81,13 +81,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.byteman</groupId>
-            <artifactId>byteman</artifactId>
+            <artifactId>byteman-bmunit</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -107,10 +107,26 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.jboss.byteman</groupId>
-            <artifactId>byteman-bmunit</artifactId>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

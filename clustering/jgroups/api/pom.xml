@@ -45,6 +45,7 @@
     </description>
 
     <dependencies>
+        <!-- External dependencies -->
         <dependency>
             <groupId>org.jgroups</groupId>
             <artifactId>jgroups</artifactId>

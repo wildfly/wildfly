@@ -24,7 +24,7 @@ package org.wildfly.clustering.infinispan.client;
 
 import java.util.concurrent.CompletionStage;
 
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;

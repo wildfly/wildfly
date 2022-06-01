@@ -116,6 +116,13 @@
             <artifactId>wildfly-elytron-security-manager</artifactId>
         </dependency>
 
+        <!-- Runtime dependencies -->
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-security-manager-action</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>${project.groupId}</groupId>

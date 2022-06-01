@@ -39,20 +39,27 @@
     <artifactId>wildfly-clustering-infinispan-client-api</artifactId>
     <packaging>jar</packaging>
 
-    <name>WildFly: Infinispan Client SPI</name>
+    <name>WildFly: Infinispan Client API</name>
     <description>
         Contains extensions to the HotRod client API.
     </description>
 
     <dependencies>
+        <!-- Specification dependencies -->
+        <dependency>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- External dependencies -->
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-client-hotrod</artifactId>
+            <artifactId>infinispan-client-hotrod-jakarta</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.spec.javax.transaction</groupId>
-            <artifactId>jboss-transaction-api_1.3_spec</artifactId>
-            <scope>provided</scope>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-commons-jakarta</artifactId>
         </dependency>
     </dependencies>
 </project>

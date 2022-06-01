@@ -33,7 +33,8 @@
     </resources>
 
     <dependencies>
-        <module name="internal.javax.transaction.api"/>
+        <module name="javax.transaction.api"/>
+
         <module name="org.infinispan.client.hotrod"/>
         <module name="org.infinispan.commons"/>
     </dependencies>
