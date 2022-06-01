@@ -1,7 +1,8 @@
 package org.jboss.as.test.integration.jsf.duplicateid.deployment;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ViewScoped;
+import javax.faces.annotation.FacesConfig;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -9,10 +10,12 @@ import java.util.Set;
 /**
  * @author Kari
  */
-@ManagedBean(name = "includeBean")
+@Named("includeBean")
 @ViewScoped
+// TODO remove once standard WildFly moves to Faces 4
+@FacesConfig
 public class IncludeBean implements Serializable {
-    private Set<Integer> visibleComponentIndexes = new HashSet<Integer>();
+    private final Set<Integer> visibleComponentIndexes = new HashSet<Integer>();
 
     public void show(int index) {
         visibleComponentIndexes.add(index);

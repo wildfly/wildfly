@@ -22,8 +22,8 @@
 package org.jboss.as.test.integration.jsf.beanvalidation.cdi;
 
 import java.io.Serializable;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
 import javax.validation.constraints.Size;
 
 /**
@@ -31,7 +31,7 @@ import javax.validation.constraints.Size;
  *
  * @author Farah Juma
  */
-@ManagedBean(name = "team")
+@Named("team")
 @SessionScoped
 public class Team implements Serializable {
 

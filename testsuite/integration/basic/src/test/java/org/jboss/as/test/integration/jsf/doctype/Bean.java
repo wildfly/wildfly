@@ -24,15 +24,17 @@ package org.jboss.as.test.integration.jsf.doctype;
 import java.io.Serializable;
 
 import javax.enterprise.context.SessionScoped;
-import javax.faces.bean.ManagedBean;
+import javax.faces.annotation.FacesConfig;
+import javax.inject.Named;
 
 /**
  * A simple bean.
  *
  * @author <a href="fjuma@redhat.com">Farah Juma</a>
  */
-@ManagedBean(name = "bean")
+@Named("bean")
 @SessionScoped
+@FacesConfig
 public class Bean implements Serializable {
 
     private String name;
