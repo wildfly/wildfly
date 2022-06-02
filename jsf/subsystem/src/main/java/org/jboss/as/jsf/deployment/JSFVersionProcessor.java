@@ -71,7 +71,8 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
             DotName.createSimple("javax.faces.bean.ManagedBean"),
             DotName.createSimple("javax.faces.event.NamedEvent"),
             DotName.createSimple("javax.faces.application.ResourceDependencies"),
-            DotName.createSimple("javax.faces.application.ResourceDependency")};
+            DotName.createSimple("javax.faces.application.ResourceDependency"),
+            DotName.createSimple("javax.faces.annotation.ManagedProperty")};
 
 
     private static final DotName[] JSF_INTERFACES = {

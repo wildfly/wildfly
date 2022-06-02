@@ -1,5 +1,6 @@
 package org.jboss.as.test.shared.util;
 
+import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 import java.security.AccessController;
@@ -92,9 +93,17 @@ public class AssumeTestGroupUtil {
     }
 
     public static void assumeNotWildFlyPreview() {
-        assumeTrue("Some tests are disabled on WildFly Preview",
-                System.getProperty("ts.ee9") == null &&
-                        System.getProperty("ts.bootable.ee9") == null);
+        assumeFalse("Some tests are disabled on WildFly Preview",
+                isWildFlyPreview());
+    }
+
+    public static void assumeWildFlyPreview() {
+        assumeTrue("Some tests require WildFly Preview",
+                isWildFlyPreview());
+    }
+
+    public static boolean isWildFlyPreview() {
+        return System.getProperty("ts.ee9") != null || System.getProperty("ts.bootable.ee9") != null;
     }
 
     private static int getJavaSpecificationVersion() {
