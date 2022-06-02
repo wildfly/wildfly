@@ -95,4 +95,7 @@ public interface VertxLogger extends BasicLogger {
     @Message(id = 19, value = "Cannot specify both jgroups-stack-file and jgroups-channel for clustered Vert.x: %s")
     OperationFailedException onlyOneJgroupsConfigNeeded(String name);
 
+    @LogMessage(level = WARN)
+    @Message(id = 20, value = "Failed to resolve file: %s")
+    void failedToResolveVFSFile(String fileName, @Cause Exception e);
 }

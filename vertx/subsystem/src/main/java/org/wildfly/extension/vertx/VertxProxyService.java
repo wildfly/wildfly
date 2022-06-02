@@ -21,6 +21,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.VertxBuilder;
 import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.core.spi.file.FileResolver;
 import io.vertx.ext.cluster.infinispan.InfinispanClusterManager;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
@@ -46,6 +47,8 @@ import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -181,7 +184,10 @@ public class VertxProxyService implements Service, VertxConstants {
         if (vertxOptions == null) {
             vertxOptions = new VertxOptions();
         }
-        VertxBuilder vb = new VertxBuilder(vertxOptions);
+        vertxOptions.getFileSystemOptions()
+          .setFileCacheDir(serverEnvSupplier.get().getServerTempDir() + File.separator + "vertx-cache-" + vertxProxy.getName());
+        VertxFileResolver fileResolver = new VertxFileResolver(vertxOptions.getFileSystemOptions());
+        VertxBuilder vb = new VertxBuilder(vertxOptions).fileResolver(fileResolver);
         if (vertxProxy.isClustered()) {
             ClassLoader classLoader = getClass().getClassLoader();
             ConfigurationBuilderHolder builderHolder = new ParserRegistry(classLoader)

@@ -95,7 +95,7 @@ class VertxOptionFileResourceDefinition extends AbstractVertxOptionsResourceDefi
       Supplier<ServerEnvironment> serverEnvSupplier = vertxServiceBuilder.requires(ServerEnvironmentService.SERVICE_NAME);
       VertxOptions vertxOptions = new VertxOptions(readJsonFromFile(optionFilePath, serverEnvSupplier.get().getServerConfigurationDir()));
       NamedVertxOptions namedVertxOptions = new NamedVertxOptions(name, vertxOptions);
-      vertxServiceBuilder.setInstance(new NamedVertxOptionsService(namedVertxOptions, serverEnvSupplier, consumer));
+      vertxServiceBuilder.setInstance(new NamedVertxOptionsService(namedVertxOptions, consumer));
       vertxServiceBuilder
         .setInitialMode(ServiceController.Mode.ACTIVE)
         .install();

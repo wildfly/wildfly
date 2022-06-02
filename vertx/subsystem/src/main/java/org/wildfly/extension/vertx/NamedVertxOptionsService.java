@@ -43,24 +43,22 @@ public class NamedVertxOptionsService implements Service {
 
   private final NamedVertxOptions namedVertxOptions;
   private final Consumer<NamedVertxOptions> consumer;
-  private final Supplier<ServerEnvironment> serverEnvSupplier;
   private final Supplier<AddressResolverOptions> addressResolverOptionsSupplier;
   private final Supplier<EventBusOptions> eventBusOptionsSupplier;
   private final Supplier<MetricsOptions> metricsOptionsSupplier;
   private final Supplier<TracingOptions> tracingOptionsSupplier;
 
-  NamedVertxOptionsService(NamedVertxOptions namedVertxOptions, Supplier<ServerEnvironment> serverEnvSupplier, Consumer<NamedVertxOptions> consumer) {
-    this(namedVertxOptions, serverEnvSupplier, null, null, null, null, consumer);
+  NamedVertxOptionsService(NamedVertxOptions namedVertxOptions, Consumer<NamedVertxOptions> consumer) {
+    this(namedVertxOptions, null, null, null, null, consumer);
   }
 
-  NamedVertxOptionsService(NamedVertxOptions namedVertxOptions, Supplier<ServerEnvironment> serverEnvSupplier,
+  NamedVertxOptionsService(NamedVertxOptions namedVertxOptions,
                            Supplier<AddressResolverOptions> addressResolverOptionsSupplier,
                            Supplier<EventBusOptions> eventBusOptionsSupplier,
                            Supplier<MetricsOptions> metricsOptionsSupplier,
                            Supplier<TracingOptions> tracingOptionsSupplier,
                            Consumer<NamedVertxOptions> consumer) {
     this.namedVertxOptions = namedVertxOptions;
-    this.serverEnvSupplier = serverEnvSupplier;
     this.addressResolverOptionsSupplier = addressResolverOptionsSupplier;
     this.eventBusOptionsSupplier = eventBusOptionsSupplier;
     this.metricsOptionsSupplier = metricsOptionsSupplier;
@@ -74,7 +72,6 @@ public class NamedVertxOptionsService implements Service {
     ServiceName vertxServiceName = VertxOptionFileResourceDefinition.VERTX_OPTIONS_CAPABILITY.getCapabilityServiceName(namedVertxOptions.getName());
     ServiceBuilder<?> vertxServiceBuilder = context.getServiceTarget().addService(vertxServiceName);
     Consumer<NamedVertxOptions> consumer = vertxServiceBuilder.provides(vertxServiceName);
-    Supplier<ServerEnvironment> serverEnvSupplier = vertxServiceBuilder.requires(ServerEnvironmentService.SERVICE_NAME);
     Supplier<AddressResolverOptions> addressResolverOptionsSupplier = null;
     if (addressResolverOptionName != null) {
       addressResolverOptionsSupplier = vertxServiceBuilder.requires(AddressResolverResourceDefinition.VERTX_OPTIONS_ADDRESS_RESOLVER_CAPABILITY.getCapabilityServiceName(addressResolverOptionName));
@@ -91,8 +88,7 @@ public class NamedVertxOptionsService implements Service {
     if (tracingOptionName != null) {
       tracingOptionsSupplier = vertxServiceBuilder.requires(ServiceName.parse("TODO"));
     }
-    vertxServiceBuilder.setInstance(new NamedVertxOptionsService(namedVertxOptions, serverEnvSupplier,
-      addressResolverOptionsSupplier, eventBusOptionsSupplier, metricsOptionsSupplier, tracingOptionsSupplier, consumer));
+    vertxServiceBuilder.setInstance(new NamedVertxOptionsService(namedVertxOptions, addressResolverOptionsSupplier, eventBusOptionsSupplier, metricsOptionsSupplier, tracingOptionsSupplier, consumer));
     vertxServiceBuilder
       .setInitialMode(ServiceController.Mode.ACTIVE)
       .install();
@@ -100,7 +96,6 @@ public class NamedVertxOptionsService implements Service {
 
   @Override
   public void start(StartContext startContext) throws StartException {
-    this.namedVertxOptions.getVertxOptions().getFileSystemOptions().setFileCacheDir(serverEnvSupplier.get().getServerTempDir() + File.separator + "vertx-cache");
     if (this.addressResolverOptionsSupplier != null && this.addressResolverOptionsSupplier.get() != null) {
       this.namedVertxOptions.getVertxOptions().setAddressResolverOptions(this.addressResolverOptionsSupplier.get());
     }
