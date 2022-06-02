@@ -59,7 +59,7 @@
         </dependency>
         <dependency>
             <groupId>io.undertow</groupId>
-            <artifactId>undertow-servlet-jakarta</artifactId>
+            <artifactId>undertow-servlet</artifactId>
         </dependency>
 
         <!-- Other deps consistent with the javax.* mod_cluster-undertow module -->

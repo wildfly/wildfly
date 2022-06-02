@@ -144,6 +144,11 @@
             <artifactId>jakarta.websocket-api</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-client-api</artifactId>
+        </dependency>
+
         <!-- EE 9 API - Full -->
 
         <dependency>

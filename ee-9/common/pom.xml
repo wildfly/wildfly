@@ -153,7 +153,7 @@
 
         <dependency>
             <groupId>io.undertow</groupId>
-            <artifactId>undertow-servlet-jakarta</artifactId>
+            <artifactId>undertow-servlet</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -164,7 +164,7 @@
 
         <dependency>
             <groupId>io.undertow</groupId>
-            <artifactId>undertow-websockets-jsr-jakarta</artifactId>
+            <artifactId>undertow-websockets-jsr</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -175,7 +175,7 @@
 
         <dependency>
             <groupId>io.undertow.jastow</groupId>
-            <artifactId>jastow-jakarta</artifactId>
+            <artifactId>jastow</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
