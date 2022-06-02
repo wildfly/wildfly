@@ -154,7 +154,7 @@ use:
 [source,xml,options="nowrap"]
 ----
 <domain-controller>
-   <remote protocol="http-remoting" host="192.168.0.101" port="9990" username="slave" authentication-context="hcAuthContext"/>
+   <remote protocol="http-remoting" host="192.168.0.101" port="9990" username="secondary" authentication-context="hcAuthContext"/>
 </domain-controller>
 ----
 
