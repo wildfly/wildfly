@@ -76,35 +76,35 @@ resolve a corresponding network interface.
 Please consult the chapter "Interface Configuration" for a more detailed
 explanation on how to configure network interfaces.
 
-Next by default the master domain controller is configured to require
-authentication so a user needs to be added that can be used by the slave
-domain controller to connect.
+Next by default the Domain Controller is configured to require
+authentication so a user needs to be added that can be used by the secondary
+Host Controller to connect.
 
 Make use of the `add-user` utility to add a new user, for this example I
-am adding a new user called slave.
+am adding a new user called "secondary".
 
 [NOTE]
 
-`add-user` MUST be run on the master domain controller and NOT the
-slave.
+`add-user` MUST be run on the Domain Controller and NOT the
+secondary Host Controller.
 
 [[host-controller-configuration]]
 == Host Controller Configuration
 
-Once the domain controller is configured correctly you can proceed with
-any host that should join the domain. The host controller configuration
+Once the Domain Controller is configured correctly you can proceed with
+any host that should join the domain. The Host Controller configuration
 requires three steps:
 
 * The logical host name (within the domain) needs to be distinct
-* The host controller needs to know the domain controller IP address
+* The Host Controller needs to know the Domain Controller IP address
 
 Provide a distinct, logical name for the host. In the following example
-we simply name it "slave":
+we simply name it "secondary":
 
 [source,xml,options="nowrap"]
 ----
 <host xmlns="urn:jboss:domain:3.0"
-     name="slave">
+     name="secondary">
 [...]
 </host>
 ----
@@ -127,19 +127,18 @@ to contain the identity of the host controller.
     <authentication-client>
         <authentication-configuration sasl-mechanism-selector="DIGEST-MD5"
                                       name="hostAuthConfig"
-                                      authentication-name="slave"
+                                      authentication-name="secondary"
                                       realm="ManagementRealm">
             <credential-reference clear-text="host_us3r_password"/>
         </authentication-configuration>
         <authentication-context name="hcAuthContext">
-            <match-rule match-host="${jboss.test.host.master.address}" 
-                        authentication-configuration="hostAuthConfig"/>
+            <match-rule authentication-configuration="hostAuthConfig"/>
         </authentication-context>
     </authentication-client>
 ....
 ----
 
-Tell it how to find the domain controller so it can register itself with
+Tell it how to find the Domain Controller, so it can register itself with
 the domain:
 
 [source,xml,options="nowrap"]
@@ -150,7 +149,7 @@ the domain:
 ----
 
 Since we have also exposed the HTTP management interface we could also
-use :
+use:
 
 [source,xml,options="nowrap"]
 ----
@@ -164,13 +163,13 @@ use :
 [TIP]
 
 The name of each host needs to be unique when registering with the
-domain controller, however the username does not - using the username
+Domain Controller, however the username does not - using the username
 attribute allows the same account to be used by multiple hosts if this
 makes sense in your environment.
 
 === Ignoring domain wide resources
 
-WildFly 10 and later make it easy for slave host controllers to "ignore"
+WildFly 10 and later make it easy for secondary Host Controllers to "ignore"
 parts of the domain wide configuration. What does the mean and why is it
 useful?
 
@@ -180,39 +179,39 @@ wide configuration (i.e. those resources whose address does not begin
 with `/host=*`, i.e. those that are persisted in `domain.xml`. Having
 that local copy allows a user to do the following things:
 
-* Ask the slave to launch its already configured servers, even if the
+* Ask the secondary Host Controller to launch its already configured servers, even if the
 Domain Controller is not running.
 * Configured new servers, using different server groups from those
-current running, and ask the slave to launch them, even if the Domain
+current running, and ask the secondary Host Controller to launch them, even if the Domain
 Controller is not running.
-* Reconfigure the slave to act as the Domain Controller, allowing it to
-take over as the master if the previous master has failed or been shut
+* Reconfigure the secondary Host Controller to act as the Domain Controller, allowing it to
+take over as the Domain Controller if the previous Domain Controller has failed or been shut
 down.
 
 However, of these three things only the latter two require that the
-slave maintain a _complete_ copy of the domain wide configuration. The
-first only requires the slave to have the _portion_ of the domain wide
+secondary Host Controller maintain a _complete_ copy of the domain wide configuration. The
+first only requires the secondary Host Controller to have the _portion_ of the domain wide
 configuration that is relevant to its current servers. And the first use
-case is the most common one. A slave that is only meant to support the
+case is the most common one. A secondary Host Controller that is only meant to support the
 first use case can safely "ignore" portions of the domain wide
 configuration. And there are benefits to ignoring some resources:
 
 * If a server group is ignored, and the deployments mapped to that
-server group aren't mapped to other non-ignored groups, then the slave
+server group aren't mapped to other non-ignored groups, then the secondary Host Controller
 does not need to pull down a copy of the deployment content from the
-master. That can save disk space on the slave, improve the speed of
+Domain Controller. That can save disk space on the secondary Host Controller, improve the speed of
 starting new hosts and reduce network traffic.
 * WildFly supports "mixed domains" where a later version Domain
-Controller can manage slaves running previous versions. But those
-"legacy" slaves cannot understand configuration resources, attributes
+Controller can manage secondary Host Controllers running previous versions. But those
+"legacy" secondary Host Controllers cannot understand configuration resources, attributes
 and operations introduced in newer versions. So any attempt to use newer
 things in the domain wide configuration will fail unless the legacy
-slaves are ignoring the relevant resources. But ignoring resources will
-allow the legacy slaves to work fine managing servers using profiles
+secondary Host Controllers are ignoring the relevant resources. But ignoring resources will
+allow the legacy secondary Host Controllers to work fine managing servers using profiles
 without new concepts, while other hosts can run servers with profiles
 that take advantage of the latest features.
 
-Prior to WildFly 10, a slave could be configured to ignore some
+Prior to WildFly 10, a secondary Host Controller could be configured to ignore some
 resources, but the mechanism was not particularly user friendly:
 
 * The resources to be ignored had to be listed in a fair amount of
@@ -222,12 +221,12 @@ that needs to ignore that must be updated to record that.
 
 Starting with WildFly 10, this kind of detailed configuration is no
 longer required. Instead, with the standard versions of `host.xml`, the
-slave will behave as follows:
+secondary Host Controller will behave as follows:
 
-* If the slave was started with the `--backup` command line parameter,
+* If the secondary Host Controller was started with the `--backup` command line parameter,
 the behavior will be the same as releases prior to 10; i.e. only
 resources specifically configured to be ignored will be ignored.
-* Otherwise, the slave will "ignore unused resources".
+* Otherwise, the secondary Host Controller will "ignore unused resources".
 
 What does "ignoring unused resources" mean?
 
@@ -243,9 +242,9 @@ server-group, is ignored
 non-ignored profile uses the extension. Ignoring an extension requires
 explicit configuration. Perhaps in a future release extensions will be
 explicitly ignored.
-* If a change is made to the slave host's configuration or to the domain
+* If a change is made to the secondary Host Controller host's configuration or to the domain
 wide configuration that reduces the set of ignored resources, then as
-part of handling that change the slave will contact the master to pull
+part of handling that change the secondary Host Controller will contact the Domain Controller to pull
 down the missing pieces of configuration and will integrate those pieces
 in its local copy of the management model. Examples of such changes
 include adding a new server-config that references a previously ignored
@@ -275,8 +274,8 @@ The "ignore unused resources" behavior can be used in combination with
 the pre-WildFly 10 detailed specification of what to ignore. If that is
 done both the unused resources and the explicitly declared resources
 will be ignored. Here's an example of such a configuration, one where
-the slave cannot use the "org.example.foo" extension that has been
-installed on the Domain Controller and on some slaves, but not this one:
+the secondary Host Controller cannot use the "org.example.foo" extension that has been
+installed on the Domain Controller and on some secondary Host Controllers, but not this one:
 
 [source,xml,options="nowrap"]
 ----
@@ -295,8 +294,8 @@ installed on the Domain Controller and on some slaves, but not this one:
 [[server-groups]]
 == Server groups
 
-The domain controller defines one or more server groups and associates
-each of these with a profile and a socket binding group, and also :
+The Domain Controller defines one or more server groups and associates
+each of these with a profile and a socket binding group, and also:
 
 [source,xml,options="nowrap"]
 ----
@@ -319,7 +318,7 @@ each of these with a profile and a socket binding group, and also :
 
 ~(See domain/configuration/domain.xml)~
 
-The domain controller also defines the socket binding groups and the
+The Domain Controller also defines the socket binding groups and the
 profiles. The socket binding groups define the default socket bindings
 that are used:
 
@@ -371,7 +370,7 @@ implement the functionality people expect of an application server.
 
 ~(See domain/configuration/domain.xml)~ +
 Here we have two profiles. The `bigger` profile contains all the same
-subsystems as the `default` profile (athough the parameters for the
+subsystems as the `default` profile (although the parameters for the
 various subsystems could be different in each profile), and adds the
 `fictional-example` subsystem which references the `unique-to-bigger`
 socket binding.
@@ -379,7 +378,7 @@ socket binding.
 [[servers]]
 == Servers
 
-The host controller defines one or more servers:
+The Host Controller defines one or more servers:
 
 [source,xml,options="nowrap"]
 ----
@@ -426,7 +425,7 @@ group.
 [[jvm]]
 === JVM
 
-The host controller contains the main `jvm` definitions with arguments:
+The Host Controller contains the main `jvm` definitions with arguments:
 
 [source,xml,options="nowrap"]
 ----
@@ -438,17 +437,17 @@ The host controller contains the main `jvm` definitions with arguments:
 ----
 
 ~(See domain/configuration/host.xml)~ +
-From the preceeding examples we can see that we also had a `jvm`
-reference at server group level in the domain controller. The jvm's name
-*must* match one of the definitions in the host controller. The values
-supplied at domain controller and host controller level are combined,
-with the host controller taking precedence if the same parameter is
+From the preceding examples we can see that we also had a `jvm`
+reference at server group level in the Domain Controller. The jvm's name
+*must* match one of the definitions in the Host Controller. The values
+supplied at Domain Controller and Host Controller level are combined,
+with the Host Controller taking precedence if the same parameter is
 given in both places.
 
 Finally, as seen, we can also override the `jvm` at server level. Again,
-the jvm's name *must* match one of the definitions in the host
-controller. The values are combined with the ones coming in from domain
-controller and host controller level, this time the server definition
+the jvm's name *must* match one of the definitions in the Host Controller.
+The values are combined with the ones coming in from Domain
+Controller and Host Controller level, this time the server definition
 takes precedence if the same parameter is given in all places.
 
 Following these rules the jvm parameters to start each server would be
