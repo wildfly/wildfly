@@ -179,7 +179,7 @@ documentation] for details on managing the _webservices_ subsystem such
 as adding, removing and modifying handlers and properties.
 
 The allowed contents in the _webservices_ subsystem are defined by the
-https://github.com/jbossas/jboss-as/blob/7.2.0.Final/build/src/main/resources/docs/schema/jboss-as-webservices_1_2.xsd[schema]
+https://github.com/wildfly/wildfly/blob/main/webservices/server-integration/src/main/resources/schema/jboss-as-webservices_1_2.xsd[schema]
 included in the application server.
 
 [[standard-configurations]]
@@ -306,19 +306,19 @@ extension provided by JBossWS:
 [source,java,options="nowrap"]
 ----
 import org.jboss.ws.api.configuration.ClientConfigFeature;
- 
+
 ...
- 
+
 Service service = Service.create(wsdlURL, serviceName);
 Endpoint port = service.getPort(Endpoint.class, new ClientConfigFeature("META-INF/my-client-config.xml", "Custom Client Config"));
 port.echo("Kermit");
- 
+
 ... or ....
- 
+
 port = service.getPort(Endpoint.class, new ClientConfigFeature("META-INF/my-client-config.xml", "Custom Client Config"), true); //setup properties too from the configuration
 port.echo("Kermit");
 ... or ...
- 
+
 port = service.getPort(Endpoint.class, new ClientConfigFeature(null, testConfigName)); //reads from current container configurations if available
 port.echo("Kermit");
 ----
@@ -341,29 +341,28 @@ from client configurations as follows:
 ----
 import org.jboss.ws.api.configuration.ClientConfigUtil;
 import org.jboss.ws.api.configuration.ClientConfigurer;
- 
+
 ...
- 
+
 Service service = Service.create(wsdlURL, serviceName);
 Endpoint port = service.getPort(Endpoint.class);
 BindingProvider bp = (BindingProvider)port;
 ClientConfigUtil.setConfigHandlers(bp, "META-INF/my-client-config.xml", "Custom Client Config 1");
 port.echo("Kermit");
- 
+
 ...
- 
+
 ClientConfigurer configurer = ClientConfigUtil.resolveClientConfigurer();
 configurer.setConfigHandlers(bp, "META-INF/my-client-config.xml", "Custom Client Config 2");
 port.echo("Kermit");
- 
+
 ...
- 
+
 configurer.setConfigHandlers(bp, "META-INF/my-client-config.xml", "Custom Client Config 3");
 port.echo("Kermit");
- 
- 
+
 ...
- 
+
 configurer.setConfigHandlers(bp, null, "Container Custom Client Config"); //reads from current container configurations if available
 port.echo("Kermit");
 ----
@@ -375,29 +374,28 @@ follows:
 ----
 import org.jboss.ws.api.configuration.ClientConfigUtil;
 import org.jboss.ws.api.configuration.ClientConfigurer;
- 
+
 ...
- 
+
 Service service = Service.create(wsdlURL, serviceName);
 Endpoint port = service.getPort(Endpoint.class);
- 
+
 ClientConfigUtil.setConfigProperties(port, "META-INF/my-client-config.xml", "Custom Client Config 1");
 port.echo("Kermit");
- 
+
 ...
- 
+
 ClientConfigurer configurer = ClientConfigUtil.resolveClientConfigurer();
 configurer.setConfigProperties(port, "META-INF/my-client-config.xml", "Custom Client Config 2");
 port.echo("Kermit");
- 
+
 ...
- 
+
 configurer.setConfigProperties(port, "META-INF/my-client-config.xml", "Custom Client Config 3");
 port.echo("Kermit");
- 
- 
+
 ...
- 
+
 configurer.setConfigProperties(port, null, "Container Custom Client Config"); //reads from current container configurations if available
 port.echo("Kermit");
 
