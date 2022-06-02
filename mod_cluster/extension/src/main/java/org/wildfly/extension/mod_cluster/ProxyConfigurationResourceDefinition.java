@@ -104,13 +104,12 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         BALANCER("balancer", ModelType.STRING, null),
         EXCLUDED_CONTEXTS("excluded-contexts", ModelType.STRING, null),
         FLUSH_PACKETS("flush-packets", ModelType.BOOLEAN, ModelNode.FALSE),
-        FLUSH_WAIT("flush-wait", ModelType.INT, new ModelNode(-1)) {
+        FLUSH_WAIT("flush-wait", ModelType.INT, null) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder
                         .setMeasurementUnit(MeasurementUnit.SECONDS)
-                        .setValidator(new IntRangeValidator(-1, true, true))
-                        .setCorrector(ZeroToNegativeOneParameterCorrector.INSTANCE)
+                        .setValidator(new IntRangeValidator(1, true, true))
                         ;
             }
         },
@@ -138,13 +137,12 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
                         ;
             }
         },
-        NODE_TIMEOUT("node-timeout", ModelType.INT, new ModelNode(-1)) {
+        NODE_TIMEOUT("node-timeout", ModelType.INT, null) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder
                         .setMeasurementUnit(MeasurementUnit.SECONDS)
-                        .setValidator(new IntRangeValidator(-1, true, true))
-                        .setCorrector(ZeroToNegativeOneParameterCorrector.INSTANCE)
+                        .setValidator(new IntRangeValidator(1, true, true))
                         ;
             }
         },
@@ -169,12 +167,11 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
                 return builder.setValidator(new EnumValidator<>(SessionDrainingStrategyEnum.class, SessionDrainingStrategyEnum.values()));
             }
         },
-        SMAX("smax", ModelType.INT, new ModelNode(-1)) {
+        SMAX("smax", ModelType.INT, null) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder
-                        .setValidator(new IntRangeValidator(-1, true, true))
-                        .setCorrector(ZeroToNegativeOneParameterCorrector.INSTANCE)
+                        .setValidator(new IntRangeValidator(1, true, true))
                         ;
             }
         },
@@ -198,7 +195,8 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
         STATUS_INTERVAL("status-interval", ModelType.INT, new ModelNode(10)) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setMeasurementUnit(MeasurementUnit.SECONDS)
+                return builder
+                        .setMeasurementUnit(MeasurementUnit.SECONDS)
                         .setValidator(new IntRangeValidator(1, true, true));
             }
         },
@@ -212,23 +210,21 @@ public class ProxyConfigurationResourceDefinition extends ChildResourceDefinitio
                         .setValidator(new IntRangeValidator(1, true, true));
             }
         },
-        TTL("ttl", ModelType.INT, new ModelNode(-1)) {
+        TTL("ttl", ModelType.INT, null) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder
                         .setMeasurementUnit(MeasurementUnit.SECONDS)
-                        .setValidator(new IntRangeValidator(-1, true, true))
-                        .setCorrector(ZeroToNegativeOneParameterCorrector.INSTANCE)
+                        .setValidator(new IntRangeValidator(1, true, true))
                         ;
             }
         },
-        WORKER_TIMEOUT("worker-timeout", ModelType.INT, new ModelNode(-1)) {
+        WORKER_TIMEOUT("worker-timeout", ModelType.INT, null) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder
                         .setMeasurementUnit(MeasurementUnit.SECONDS)
-                        .setValidator(new IntRangeValidator(-1, true, true))
-                        .setCorrector(ZeroToNegativeOneParameterCorrector.INSTANCE)
+                        .setValidator(new IntRangeValidator(1, true, true))
                         ;
             }
         },

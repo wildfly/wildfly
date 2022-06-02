@@ -94,7 +94,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 /**
  * @author Radoslav Husar
  */
- public class ProxyConfigurationServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<ModClusterConfiguration>, Consumer<ModClusterConfiguration> {
+public class ProxyConfigurationServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<ModClusterConfiguration>, Consumer<ModClusterConfiguration> {
 
     private volatile SupplierDependency<SocketBinding> advertiseSocketDependency = null;
     private final List<SupplierDependency<OutboundSocketBinding>> outboundSocketBindings = new LinkedList<>();
@@ -188,21 +188,38 @@ import org.wildfly.clustering.service.SupplierDependency;
                 .setStickySession(STICKY_SESSION.resolveModelAttribute(context, model).asBoolean())
                 .setStickySessionRemove(STICKY_SESSION_REMOVE.resolveModelAttribute(context, model).asBoolean())
                 .setStickySessionForce(STICKY_SESSION_FORCE.resolveModelAttribute(context, model).asBoolean())
-                .setWorkerTimeout(WORKER_TIMEOUT.resolveModelAttribute(context, model).asInt())
                 .setMaxAttempts(MAX_ATTEMPTS.resolveModelAttribute(context, model).asInt())
         ;
+
+        ModelNode node = WORKER_TIMEOUT.resolveModelAttribute(context, model);
+        if (node.isDefined()) {
+            builder.balancer().setWorkerTimeout(node.asInt());
+        }
 
         // Node
 
         builder.node()
                 .setFlushPackets(FLUSH_PACKETS.resolveModelAttribute(context, model).asBoolean())
-                .setFlushWait(FLUSH_WAIT.resolveModelAttribute(context, model).asInt())
                 .setPing(PING.resolveModelAttribute(context, model).asInt())
-                .setSmax(SMAX.resolveModelAttribute(context, model).asInt())
-                .setTtl(TTL.resolveModelAttribute(context, model).asInt())
-                .setNodeTimeout(NODE_TIMEOUT.resolveModelAttribute(context, model).asInt())
         ;
-        ModelNode node = BALANCER.resolveModelAttribute(context, model);
+
+        node = FLUSH_WAIT.resolveModelAttribute(context, model);
+        if (node.isDefined()) {
+            builder.node().setFlushWait(node.asInt());
+        }
+        node = SMAX.resolveModelAttribute(context, model);
+        if (node.isDefined()) {
+            builder.node().setSmax(node.asInt());
+        }
+        node = TTL.resolveModelAttribute(context, model);
+        if (node.isDefined()) {
+            builder.node().setTtl(node.asInt());
+        }
+        node = NODE_TIMEOUT.resolveModelAttribute(context, model);
+        if (node.isDefined()) {
+            builder.node().setNodeTimeout(node.asInt());
+        }
+        node = BALANCER.resolveModelAttribute(context, model);
         if (node.isDefined()) {
             builder.node().setBalancer(node.asString());
         }
