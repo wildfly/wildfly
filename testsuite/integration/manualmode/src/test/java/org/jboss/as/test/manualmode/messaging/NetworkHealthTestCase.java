@@ -94,11 +94,7 @@ public class NetworkHealthTestCase {
     public void testNetworkUnHealthyNetwork() throws Exception {
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
         //Windows fix required until ARTEMIS-3799 is in
-        ModelNode op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-ping-command", "cmd /C ping -n 1 -w %d %s | findstr /i \"TTL\"");
-        if(TestSuiteEnvironment.isWindows()) {
-            executeOperationForSuccess(managementClient, op);
-        }
-        op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-ping6-command", "cmd /C ping -n 1 -w %d %s | findstr /i \"TTL\"");
+        ModelNode op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-ping6-command", "ping -6 -n 1 -w %d %s");
         if(TestSuiteEnvironment.isWindows()) {
             executeOperationForSuccess(managementClient, op);
         }
@@ -124,7 +120,11 @@ public class NetworkHealthTestCase {
         }
         Assert.assertFalse("Broker should be stopped", isBrokerActive(jmsOperations, managementClient));
 
-        op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-list", TestSuiteEnvironment.getServerAddress());
+        String ipAddress = TestSuiteEnvironment.getServerAddress();
+        if(ipAddress.charAt(0) == '[') {
+            ipAddress = ipAddress.substring(1, ipAddress.lastIndexOf(']'));
+        }
+        op = Operations.createWriteAttributeOperation(jmsOperations.getServerAddress(), "network-check-list", ipAddress);
         executeOperationForSuccess(managementClient, op);
         managementClient.close();
         container.stop(DEFAULT_FULL_JBOSSAS);
@@ -225,12 +225,12 @@ public class NetworkHealthTestCase {
 
         @Override
         public Collection<String> getCategories() {
-            return Arrays.asList("org.apache.activemq.artemis.logs");
+            return Arrays.asList("org.apache.activemq.artemis");
         }
 
         @Override
         public String getLevel() {
-            return "INFO";
+            return "TRACE";
         }
 
         @Override
