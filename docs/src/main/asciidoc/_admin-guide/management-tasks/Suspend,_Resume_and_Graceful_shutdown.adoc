@@ -192,19 +192,19 @@ applied at global, server group, server and host levels:
 
 *Server*
 
-`/host=master/server-config=server-one:suspend(suspend-timeout=x)`
+`/host=primary/server-config=server-one:suspend(suspend-timeout=x)`
 
-`/host=master/server-config=server-one:resume`
+`/host=primary/server-config=server-one:resume`
 
-`/host=master/server-config=server-one:stop(suspend-timeout=x)`
+`/host=primary/server-config=server-one:stop(suspend-timeout=x)`
 
 *Host level*
 
-`/host=master:suspend-servers(suspend-timeout=x)`
+`/host=primary:suspend-servers(suspend-timeout=x)`
 
-`/host=master:resume-servers`
+`/host=primary:resume-servers`
 
-`/host=master:shutdown(suspend-timeout=x)`
+`/host=primary:shutdown(suspend-timeout=x)`
 
 Note that even though the host controller itself is being shut down, the suspend-timeout attribute for the shutdown operation at host level is applied to the servers only and not to the host controller itself.
 
