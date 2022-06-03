@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 
-<config xmlns="urn:jboss:galleon:config:1.0" name="standalone-ha.xml" model="standalone">
+<config xmlns="urn:jboss:galleon:config:1.0" name="standalone-full-ha.xml" model="standalone">
     <layers>
-        <include name="internal-standalone-profile"/>
+        <include name="internal-standalone-full-profile"/>
         <exclude name="jpa"/>      
         <include name="jpa-distributed"/>            
         <exclude name="ejb-local-cache"/>
@@ -11,8 +11,7 @@
         <include name="web-clustering"/>
         <include name="mod_cluster"/>
         <include name="singleton-ha"/>
-        <exclude name="messaging-activemq"/>
     </layers>
 
-    <feature-group name="adjust-standalone-ha-config"/>
+    <feature-group name="adjust-standalone-full-ha-config"/>
 </config>

@@ -38,8 +38,8 @@ import org.infinispan.manager.CacheContainer;
  */
 @ManagedBean("infinispan")
 public class InfinispanManagedBean {
-    private static final String CONTAINER_JNDI_NAME = "java:jboss/infinispan/container/server";
-    private static final String CACHE_JNDI_NAME = "java:jboss/infinispan/cache/server/default";
+    private static final String CONTAINER_JNDI_NAME = "java:jboss/infinispan/container/web";
+    private static final String CACHE_JNDI_NAME = "java:jboss/infinispan/cache/web/default";
 
     @Resource(lookup = CONTAINER_JNDI_NAME)
     private CacheContainer container;

@@ -2,7 +2,9 @@
 <feature-group-spec name="remoting" xmlns="urn:jboss:galleon:feature-group:1.0">
     <!-- TODO Temporary fork to override use of security-realms. -->
     <feature spec="subsystem.remoting">
-        <feature spec="subsystem.remoting.configuration.endpoint"/>
+        <feature spec="subsystem.remoting.configuration.endpoint">
+            <unset param="worker"/>
+        </feature>
         <feature spec="subsystem.remoting.http-connector">
             <param name="http-connector" value="http-remoting-connector"/>
             <param name="connector-ref" value="default"/>

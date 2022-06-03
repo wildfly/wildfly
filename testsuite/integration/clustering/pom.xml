@@ -570,6 +570,8 @@
                                     <offline>true</offline>
                                     <scripts>
                                         <script>clustering-ha.cli</script>
+                                        <!-- Add cache-container=server to the standalone.xml and standalone-full.xml configurations -->
+                                        <script>clustering.cli</script>
                                     </scripts>
                                     <jboss-home>${wildfly.dir}</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
@@ -1452,6 +1454,27 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>ts.config-as.configure-wildfly</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Only standalone-ha.xml and standalone-full-ha.xml configurations 
+                                         have been provisioned, execute only the CLI script that updates the ha configurations -->
+                                    <scripts combine.self="override">
+                                        <script>clustering-ha.cli</script>
+                                    </scripts>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

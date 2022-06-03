@@ -33,7 +33,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class InfinispanCdiBean {
 
-    @Resource(lookup = "java:jboss/infinispan/cache/server/default")
+    @Resource(lookup = "java:jboss/infinispan/cache/web/default")
     private Map<Integer, Object> cache;
 
     public void test() {

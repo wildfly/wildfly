@@ -85,7 +85,7 @@ public class InfinispanResourceRefTestCase {
                 + "         xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd\">\n"
                 + "    <resource-ref>\n"
                 + "        <res-ref-name>" + InfinispanBean.CONTAINER_REF_NAME + "</res-ref-name>\n"
-                + "        <lookup-name>java:jboss/infinispan/container/server</lookup-name>\n"
+                + "        <lookup-name>java:jboss/infinispan/container/web</lookup-name>\n"
                 + "        <injection-target>"
                 + "            <injection-target-class>" + InfinispanBean.class.getName() + "</injection-target-class>"
                 + "            <injection-target-name>container</injection-target-name>"
@@ -93,7 +93,7 @@ public class InfinispanResourceRefTestCase {
                 + "    </resource-ref>\n"
                 + "    <resource-ref>\n"
                 + "        <res-ref-name>default-cache-config</res-ref-name>\n"
-                + "        <lookup-name>java:jboss/infinispan/configuration/server/default</lookup-name>\n"
+                + "        <lookup-name>java:jboss/infinispan/configuration/web/default</lookup-name>\n"
                 + "    </resource-ref>\n"
                 + "</web-app>");
     }

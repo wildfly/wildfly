@@ -82,6 +82,9 @@
         <provisioning.phase.preview.only>none</provisioning.phase.preview.only> <!-- Use for executions that will only work with WildFly Preview -->
         <!-- Don't run the default surefire execution unless a profile enables it -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
+        
+        <!-- default configs provisioned with passive+ -->
+        <std.default.install.dir>${project.build.directory}/std-configs</std.default.install.dir>
     </properties>
 
     <profiles>
@@ -2785,6 +2788,110 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+                            <!-- Build all the default standard configs with passive+. -->
+                            <execution>
+                                <id>test-standalone-passive-plus</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${std.default.install.dir}/standalone</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.maven.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone.xml</name>
+                                                </config>
+                                            </included-configs>
+                                        </feature-pack>
+                                    </feature-packs>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>test-standalone-ha-passive-plus</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${std.default.install.dir}/standalone-ha</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.maven.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone-ha.xml</name>
+                                                </config>
+                                            </included-configs>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <custom-config>ha-config.xml</custom-config>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>test-standalone-full-passive-plus</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${std.default.install.dir}/standalone-full</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.maven.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone-full.xml</name>
+                                                </config>
+                                            </included-configs>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <custom-config>full-config.xml</custom-config>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>test-standalone-full-ha-passive-plus</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${std.default.install.dir}/standalone-full-ha</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.maven.groupId}</groupId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
+                                            <version>${ee.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone-full-ha.xml</name>
+                                                </config>
+                                            </included-configs>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <custom-config>full-ha-config.xml</custom-config>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
 
@@ -2795,6 +2902,7 @@
                             <systemPropertyVariables>
                                 <!-- maven.local.repo is set in parent pom.xml, system property surefire.system.args -->
                                 <layers.install.root>${layers.install.dir}</layers.install.root>
+                                <std.default.install.root>${std.default.install.dir}</std.default.install.root>
                                 <jbossas.version>${project.parent.version}</jbossas.version>
                                 <cleanup.tmp>${cleanup.tmp}</cleanup.tmp>
                                 <layers.delete.installations>${layers.delete.installations}</layers.delete.installations>
