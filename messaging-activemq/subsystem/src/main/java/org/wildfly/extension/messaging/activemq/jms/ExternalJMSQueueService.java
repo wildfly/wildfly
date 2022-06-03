@@ -108,11 +108,11 @@ public class ExternalJMSQueueService implements Service<Queue> {
                         @Override
                         public void nodeDown(long eventUID, String nodeID) {}
                     };
-                    locator.addClusterTopologyListener(listener);
                     Collection<TopologyMemberImpl> members = locator.getTopology().getMembers();
-                    if (members == null || members.isEmpty()) {
+                    if (members == null || members.isEmpty() || members.size() == 1) {
                         config.createQueue(cf, managementQueue, queueName);
                     }
+                    locator.addClusterTopologyListener(listener);
                 } else {
                     config.createQueue(cf, managementQueue, queueName);
                 }
