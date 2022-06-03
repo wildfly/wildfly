@@ -1,5 +1,29 @@
 <?xml version="1.0" ?>
 
 <config xmlns="urn:jboss:galleon:config:1.0" name="standalone-full.xml" model="standalone">
-    <feature-group name="standalone-full"/>
+    <layers>
+        <include name="jaxrs-server"/>
+        <include name="ee-security"/>
+        <include name="metrics"/>
+        <include name="health"/>
+        <include name="microprofile-jwt"/>
+        <include name="microprofile-opentracing"/>
+        <include name="h2-default-datasource"/>
+        <include name="elytron-oidc-client"/>
+        <include name="ejb"/>               
+        <include name="ejb-http-invoker"/>
+
+        <include name="web-passivation"/>
+        <include name="undertow-https"/>
+        <include name="jdr"/>
+        <include name="jsf"/>
+        <include name="webservices"/>
+        <include name="pojo"/>
+        <include name="mail"/>
+        <include name="sar"/>
+        <include name="batch-jberet"/>
+
+        <include name="iiop-openjdk"/>
+    </layers>
+    <feature-group name="adjust-standalone-full-config"/>
 </config>

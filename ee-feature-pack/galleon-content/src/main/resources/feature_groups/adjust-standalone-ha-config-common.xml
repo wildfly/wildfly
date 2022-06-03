@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="adjust-standalone-ha-config-common" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <!-- the module it depends on is forced to be provisioned by galleon, so we are fine: WFLY-16099  -->
+    <feature-group name="infinispan-dist-server"/>
+    
+    <!-- clustering not in layer -->
+    <feature-group name="undertow-ajp-listener"/>
+    <feature spec="socket-binding-group">
+        <param name="socket-binding-group" value="standard-sockets" />
+        <feature-group name="modcluster-sockets"/>
+    </feature>
+    <feature-group name="modcluster"/>
+    <feature-group name="singleton"/>
+</feature-group-spec>

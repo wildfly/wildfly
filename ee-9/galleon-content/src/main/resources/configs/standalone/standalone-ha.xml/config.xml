@@ -1,20 +1,27 @@
 <?xml version="1.0" ?>
 
-<config xmlns="urn:jboss:galleon:config:1.0" name="standalone.xml" model="standalone">
+<config xmlns="urn:jboss:galleon:config:1.0" name="standalone-ha.xml" model="standalone">
     <layers>
         <include name="jaxrs-server"/>
         <include name="ee-security"/>
         <include name="metrics"/>
         <include name="health"/>
-
+        <include name="microprofile-jwt"/>
+        <include name="microprofile-opentracing"/>
+            
+        <exclude name="jpa"/>      
+        <include name="jpa-distributed"/>            
+                        
         <include name="h2-default-datasource"/>
-        <!--<layer>elytron-oidc-client</layer>-->
+        <include name="elytron-oidc-client"/>
                         
         <include name="ejb-http-invoker"/>
+        <exclude name="ejb-local-cache"/>
+        <include name="ejb-dist-cache"/>
         <include name="resource-adapters"/>
         <include name="remoting"/>
                         
-        <include name="web-passivation"/>
+        <include name="web-clustering"/>
         <include name="undertow-https"/>
         <include name="jdr"/>
         <include name="jsf"/>
@@ -25,6 +32,9 @@
         <include name="batch-jberet"/>
         <exclude name="messaging-activemq"/>
     </layers>
-    
-    <feature-group name="adjust-standalone-config"/>
+
+    <feature-group name="adjust-standalone-ha-config"/>
+
+    <!-- The jaeger module is referenced from opentracing extension, using the feature-group is ok -->
+    <feature-group name="microprofile-opentracing-jaeger"/>
 </config>

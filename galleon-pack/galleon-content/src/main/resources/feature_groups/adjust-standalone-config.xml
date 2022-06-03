@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="adjust-standalone-config" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <origin name="org.wildfly:wildfly-ee-galleon-pack">
+        <feature-group name="adjust-standalone-config"/>
+    </origin>
+    <!-- The jaeger module is referenced from opentracing extension, using the feature-group is ok -->
+    <feature-group name="microprofile-opentracing-jaeger"/>
+
+</feature-group-spec>

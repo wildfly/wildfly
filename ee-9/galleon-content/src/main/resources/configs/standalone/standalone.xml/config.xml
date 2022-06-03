@@ -6,9 +6,10 @@
         <include name="ee-security"/>
         <include name="metrics"/>
         <include name="health"/>
-
+        <include name="microprofile-jwt"/>
+        <include name="microprofile-opentracing"/>
         <include name="h2-default-datasource"/>
-        <!--<layer>elytron-oidc-client</layer>-->
+        <include name="elytron-oidc-client"/>
                         
         <include name="ejb-http-invoker"/>
         <include name="resource-adapters"/>
@@ -25,6 +26,9 @@
         <include name="batch-jberet"/>
         <exclude name="messaging-activemq"/>
     </layers>
-    
+
     <feature-group name="adjust-standalone-config"/>
+    
+    <!-- The jaeger module is referenced from opentracing extension, using the feature-group is ok -->
+    <feature-group name="microprofile-opentracing-jaeger"/>
 </config>

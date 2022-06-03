@@ -1,5 +1,38 @@
 <?xml version="1.0" ?>
 
 <config xmlns="urn:jboss:galleon:config:1.0" name="standalone-ha.xml" model="standalone">
-    <feature-group name="standalone-ha"/>
+    <layers>
+        <include name="jaxrs-server"/>
+        <include name="ee-security"/>
+        <include name="metrics"/>
+        <include name="health"/>
+        <include name="microprofile-jwt"/>
+        <include name="microprofile-opentracing"/>
+            
+        <exclude name="jpa"/>      
+        <include name="jpa-distributed"/>            
+                        
+        <include name="h2-default-datasource"/>
+        <include name="elytron-oidc-client"/>
+                        
+        <include name="ejb-http-invoker"/>
+        <exclude name="ejb-local-cache"/>
+        <include name="ejb-dist-cache"/>
+        <include name="resource-adapters"/>
+        <include name="remoting"/>
+                        
+        <include name="web-clustering"/>
+        <include name="undertow-https"/>
+        <include name="jdr"/>
+        <include name="jsf"/>
+        <include name="webservices"/>
+        <include name="pojo"/>
+        <include name="mail"/>
+        <include name="sar"/>
+        <include name="batch-jberet"/>
+        <exclude name="messaging-activemq"/>
+    </layers>
+
+    <feature-group name="adjust-standalone-ha-config"/>
+
 </config>

@@ -1,14 +1,15 @@
 <?xml version="1.0" ?>
 
 <config xmlns="urn:jboss:galleon:config:1.0" name="standalone-full.xml" model="standalone">
-       <layers>
+    <layers>
         <include name="jaxrs-server"/>
         <include name="ee-security"/>
         <include name="metrics"/>
         <include name="health"/>
-
+        <include name="microprofile-jwt"/>
+        <include name="microprofile-opentracing"/>
         <include name="h2-default-datasource"/>
-        <!--<layer>elytron-oidc-client</layer>-->
+        <include name="elytron-oidc-client"/>
         <include name="ejb"/>               
         <include name="ejb-http-invoker"/>
 
@@ -23,7 +24,11 @@
         <include name="batch-jberet"/>
 
         <include name="iiop-openjdk"/>
+        <!-- Preview does not contain embedded broker that ee and full feature-packs contain -->
+        <include name="remote-activemq"/>
     </layers>
 
     <feature-group name="adjust-standalone-full-config"/>
+    <!-- The jaeger module is referenced from opentracing extension, using the feature-group is ok -->
+    <feature-group name="microprofile-opentracing-jaeger"/>
 </config>
