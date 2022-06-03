@@ -30,24 +30,8 @@
 
     <feature-group name="undertow-default-config"/>
 
-    <!-- From ejb layer -->
-    <feature spec="subsystem.ejb3">
-        <feature spec="subsystem.ejb3.strict-max-bean-instance-pool">
-            <param name="strict-max-bean-instance-pool" value="mdb-strict-max-pool"/>
-            <param name="derive-size" value="from-cpu-count"/>
-            <param name="timeout" value="5"/>
-            <param name="timeout-unit" value="MINUTES"/>
-        </feature>
-        <feature spec="subsystem.ejb3.service.remote">
-            <param name="connectors" value="[http-remoting-connector]"/>
-            <param name="thread-pool-name" value="default"/>
-            <feature spec="subsystem.ejb3.service.remote.channel-creation-options">
-                <param name="channel-creation-options" value="MAX_OUTBOUND_MESSAGES"/>
-                <param name="value" value="1234"/>
-                <param name="type" value="remoting"/>
-            </feature>
-        </feature>
-    </feature>
+    <feature-group name="ejb3-mdb-pool"/>
+    <feature-group name="ejb3-remote-service"/>
 
     <!-- the module it depends on is forced to be provisioned by galleon, so we are fine: WFLY-16099  -->
     <feature-group name="infinispan-local-server"/>
