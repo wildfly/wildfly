@@ -16,6 +16,7 @@
         <include name="elytron-oidc-client"/>
                         
         <include name="ejb-http-invoker"/>
+        <include name="remote-naming"/>
         <exclude name="ejb-local-cache"/>
         <include name="ejb-dist-cache"/>
         <include name="resource-adapters"/>
@@ -36,9 +37,6 @@
     <feature-group name="undertow-default-config"/>
 
     <!-- From ejb layer -->
-    <feature spec="subsystem.naming">
-        <feature spec="subsystem.naming.service.remote-naming"/>
-    </feature>
     <feature spec="subsystem.ejb3">
         <feature spec="subsystem.ejb3.strict-max-bean-instance-pool">
             <param name="strict-max-bean-instance-pool" value="mdb-strict-max-pool"/>

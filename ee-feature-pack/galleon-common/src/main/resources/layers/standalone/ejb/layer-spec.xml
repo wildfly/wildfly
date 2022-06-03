@@ -8,12 +8,9 @@
         <layer name="messaging-activemq"/>    <!-- change to messaging-activemq when available -->
         <layer name="remoting"/>
         <layer name="undertow"/>
-
+        <layer name="remote-naming"/>
     </dependencies>
 
-    <feature spec="subsystem.naming">
-        <feature spec="subsystem.naming.service.remote-naming"/>
-    </feature>
     <feature spec="subsystem.ejb3">
         <param name="default-resource-adapter-name" value="${ejb.resource-adapter-name:activemq-ra.rar}"/>
         <param name="default-mdb-instance-pool" value="mdb-strict-max-pool"/>
