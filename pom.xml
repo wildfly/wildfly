@@ -266,7 +266,6 @@
             versions, add the artifactId or other qualifier to the property name.
          -->
         <version.asciidoctor.plugin>2.2.2</version.asciidoctor.plugin>
-        <version.help.plugin>2.2</version.help.plugin>
         <version.org.jacoco>0.8.7</version.org.jacoco>
         <version.org.jboss.galleon>5.0.1.Final</version.org.jboss.galleon>
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
