@@ -43,15 +43,7 @@
     <feature-group name="infinispan-dist-server"/>
    
     <!-- clustering not in layer -->
-    <feature spec="subsystem.undertow.server">
-        <param name="server" value="default-server"/>
-        <feature spec="subsystem.undertow.server.ajp-listener">
-            <param name="ajp-listener" value="ajp"/>
-            <param name="socket-binding" value="ajp"/>
-            <unset param="worker"/>
-            <unset param="buffer-pool"/>
-        </feature>
-    </feature>
+    <feature-group name="undertow-ajp-listener"/>
     <feature spec="socket-binding-group">
         <param name="socket-binding-group" value="standard-sockets" />
         <feature-group name="modcluster-sockets"/>
