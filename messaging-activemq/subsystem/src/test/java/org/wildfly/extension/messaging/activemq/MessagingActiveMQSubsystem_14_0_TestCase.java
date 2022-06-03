@@ -34,12 +34,13 @@ import static org.wildfly.extension.messaging.activemq.MessagingDependencies.get
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.ADDRESS_SETTING_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.BRIDGE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CLUSTER_CONNECTION_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_PRIMARY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONNECTION_FACTORY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_QUEUE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_TOPIC_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.POOLED_CONNECTION_FACTORY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_COLOCATED_PATH;
-import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_MASTER_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_PRIMARY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.SERVER_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.SUBSYSTEM_PATH;
 
@@ -305,9 +306,9 @@ public class MessagingActiveMQSubsystem_14_0_TestCase extends AbstractSubsystemB
                                 ServerDefinition.JOURNAL_MAX_ATTIC_FILES,
                                 ServerDefinition.ADDRESS_QUEUE_SCAN_PERIOD
                         ))
-                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_MASTER_PATH),
+                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_PRIMARY_PATH),
                         new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
-                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_COLOCATED_PATH, MessagingExtension.CONFIGURATION_MASTER_PATH),
+                .addFailedAttribute(subsystemAddress.append(SERVER_PATH, REPLICATION_COLOCATED_PATH, CONFIGURATION_PRIMARY_PATH),
                         new ChangeToTrueConfig(HAAttributes.CHECK_FOR_LIVE_SERVER.getName()))
                 .addFailedAttribute(subsystemAddress.append(SERVER_PATH, ADDRESS_SETTING_PATH),
                         new FailedOperationTransformationConfig.NewAttributesConfig(

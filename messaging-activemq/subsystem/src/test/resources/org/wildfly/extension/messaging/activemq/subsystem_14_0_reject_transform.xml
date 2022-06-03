@@ -133,7 +133,7 @@
             policy="HALT"/>
 
         <replication-colocated>
-            <master />
+            <primary />
         </replication-colocated>
         <queue name="coreQueueA"
                address="${address:addressA}"
@@ -279,6 +279,6 @@
         </target>
     </jms-bridge>
     <server name="other">
-        <replication-master />
+        <replication-primary />
     </server>
 </subsystem>

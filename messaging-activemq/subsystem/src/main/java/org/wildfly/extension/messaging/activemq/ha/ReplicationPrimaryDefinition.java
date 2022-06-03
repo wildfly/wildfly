@@ -22,16 +22,15 @@
 
 package org.wildfly.extension.messaging.activemq.ha;
 
+
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA_POLICY;
-import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.ALLOW_FAILBACK;
+import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.CHECK_FOR_LIVE_SERVER;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.CLUSTER_NAME;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.GROUP_NAME;
 import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.INITIAL_REPLICATION_SYNC_TIMEOUT;
-import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE;
-import static org.wildfly.extension.messaging.activemq.ha.HAAttributes.RESTART_BACKUP;
 import static org.wildfly.extension.messaging.activemq.ha.ManagementHelper.createAddOperation;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -47,30 +46,21 @@ import org.wildfly.extension.messaging.activemq.MessagingExtension;
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
  */
-public class ReplicationSlaveDefinition extends PersistentResourceDefinition {
+public class ReplicationPrimaryDefinition extends PersistentResourceDefinition {
 
-    public static final Collection<AttributeDefinition> ATTRIBUTES;
+    public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(
+            (AttributeDefinition) CLUSTER_NAME,
+            GROUP_NAME,
+            CHECK_FOR_LIVE_SERVER,
+            INITIAL_REPLICATION_SYNC_TIMEOUT
+    ));
 
-    static {
-        Collection<AttributeDefinition> attributes = new ArrayList<>();
-        attributes.add(CLUSTER_NAME);
-        attributes.add(GROUP_NAME);
-        attributes.add(ALLOW_FAILBACK);
-        attributes.add(INITIAL_REPLICATION_SYNC_TIMEOUT);
-        attributes.add(MAX_SAVED_REPLICATED_JOURNAL_SIZE);
-        attributes.add(RESTART_BACKUP);
-
-        attributes.addAll(ScaleDownAttributes.SCALE_DOWN_ATTRIBUTES);
-
-        ATTRIBUTES = Collections.unmodifiableCollection(attributes);
-    }
-
-    public static final ReplicationSlaveDefinition INSTANCE = new ReplicationSlaveDefinition(MessagingExtension.REPLICATION_SLAVE_PATH, false, true);
-    public static final ReplicationSlaveDefinition HC_INSTANCE = new ReplicationSlaveDefinition(MessagingExtension.REPLICATION_SLAVE_PATH, false, false);
-    public static final ReplicationSlaveDefinition CONFIGURATION_INSTANCE = new ReplicationSlaveDefinition(MessagingExtension.CONFIGURATION_SLAVE_PATH, true, true);
+    public static final ReplicationPrimaryDefinition INSTANCE = new ReplicationPrimaryDefinition(MessagingExtension.REPLICATION_PRIMARY_PATH, false, true);
+    public static final ReplicationPrimaryDefinition HC_INSTANCE = new ReplicationPrimaryDefinition(MessagingExtension.REPLICATION_PRIMARY_PATH, false, false);
+    public static final ReplicationPrimaryDefinition CONFIGURATION_INSTANCE = new ReplicationPrimaryDefinition(MessagingExtension.CONFIGURATION_PRIMARY_PATH, true, true);
 
     private final boolean registerRuntime;
-    private ReplicationSlaveDefinition(PathElement path, boolean allowSibling, boolean registerRuntime) {
+    private ReplicationPrimaryDefinition(PathElement path, boolean allowSibling, boolean registerRuntime) {
         super(path,
                 MessagingExtension.getResourceDescriptionResolver(HA_POLICY),
                 createAddOperation(path.getKey(), allowSibling, ATTRIBUTES),
@@ -85,7 +75,7 @@ public class ReplicationSlaveDefinition extends PersistentResourceDefinition {
             resourceRegistration.registerReadWriteAttribute(attribute, null, writeAttribute);
         }
         if(registerRuntime) {
-            HAPolicySynchronizationStatusReadHandler.registerSlaveAttributes(resourceRegistration);
+            HAPolicySynchronizationStatusReadHandler.registerMasterAttributes(resourceRegistration);
         }
     }
 
@@ -93,5 +83,4 @@ public class ReplicationSlaveDefinition extends PersistentResourceDefinition {
     public Collection<AttributeDefinition> getAttributes() {
         return ATTRIBUTES;
     }
-
 }
