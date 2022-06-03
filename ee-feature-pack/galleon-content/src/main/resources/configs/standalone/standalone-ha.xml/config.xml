@@ -33,6 +33,12 @@
 
     <feature-group name="undertow-default-config"/>
 
+    <feature spec="subsystem.remoting">
+        <feature spec="subsystem.remoting.configuration.endpoint">
+            <unset param="worker"/>
+        </feature>
+    </feature>
+
     <feature-group name="ejb3-mdb-pool"/>
     <feature-group name="ejb3-remote-service"/>
 
