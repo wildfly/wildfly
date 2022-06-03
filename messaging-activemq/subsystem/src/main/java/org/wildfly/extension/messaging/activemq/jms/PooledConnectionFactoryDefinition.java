@@ -25,6 +25,10 @@ package org.wildfly.extension.messaging.activemq.jms;
 import static java.lang.System.arraycopy;
 import static org.wildfly.extension.messaging.activemq.AbstractTransportDefinition.CONNECTOR_CAPABILITY_NAME;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.getDefinitions;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.CREDENTIAL_REFERENCE;
 
 import java.util.Arrays;
@@ -160,7 +164,7 @@ public class PooledConnectionFactoryDefinition extends PersistentResourceDefinit
                 if (deployed) {
                     registry.registerReadOnlyAttribute(attr, PooledConnectionFactoryConfigurationRuntimeHandler.INSTANCE);
                 } else {
-                    if (attr.equals(CREDENTIAL_REFERENCE)) {
+                    if (CREDENTIAL_REFERENCE.equals(attr)) {
                         registry.registerReadWriteAttribute(attr, null, credentialReferenceWriteAttributeHandler);
                     } else {
                         registry.registerReadWriteAttribute(attr, null, reloadRequiredWriteAttributeHandler);
@@ -168,5 +172,7 @@ public class PooledConnectionFactoryDefinition extends PersistentResourceDefinit
                 }
             }
         }
+        ConnectionFactoryAttributes.registerAliasAttribute(registry, deployed, DESERIALIZATION_WHITELIST, DESERIALIZATION_ALLOWLIST.getName());
+        ConnectionFactoryAttributes.registerAliasAttribute(registry, deployed, DESERIALIZATION_BLACKLIST, DESERIALIZATION_BLOCKLIST.getName());
     }
 }

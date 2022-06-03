@@ -44,7 +44,7 @@ import org.wildfly.extension.messaging.activemq.MessagingExtension;
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
  */
-public class SharedStoreSlaveDefinition extends PersistentResourceDefinition {
+public class SharedStoreSecondaryDefinition extends PersistentResourceDefinition {
 
     public static final Collection<AttributeDefinition> ATTRIBUTES;
 
@@ -61,10 +61,10 @@ public class SharedStoreSlaveDefinition extends PersistentResourceDefinition {
 
     private static final AbstractWriteAttributeHandler WRITE_ATTRIBUTE = new ActiveMQReloadRequiredHandlers.WriteAttributeHandler(ATTRIBUTES);
 
-    public static final SharedStoreSlaveDefinition INSTANCE = new SharedStoreSlaveDefinition(MessagingExtension.SHARED_STORE_SLAVE_PATH, false);
-    public static final SharedStoreSlaveDefinition CONFIGURATION_INSTANCE = new SharedStoreSlaveDefinition(MessagingExtension.CONFIGURATION_SLAVE_PATH, true);
+    public static final SharedStoreSecondaryDefinition INSTANCE = new SharedStoreSecondaryDefinition(MessagingExtension.SHARED_STORE_SECONDARY_PATH, false);
+    public static final SharedStoreSecondaryDefinition CONFIGURATION_INSTANCE = new SharedStoreSecondaryDefinition(MessagingExtension.CONFIGURATION_SECONDARY_PATH, true);
 
-    private SharedStoreSlaveDefinition(PathElement path, boolean allowSibling) {
+    private SharedStoreSecondaryDefinition(PathElement path, boolean allowSibling) {
         super(path,
                 MessagingExtension.getResourceDescriptionResolver(HA_POLICY),
                 createAddOperation(path.getKey(), allowSibling, ATTRIBUTES),

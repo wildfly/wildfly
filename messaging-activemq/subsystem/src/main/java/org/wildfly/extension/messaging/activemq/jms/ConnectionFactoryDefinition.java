@@ -24,6 +24,10 @@ package org.wildfly.extension.messaging.activemq.jms;
 
 import static java.lang.System.arraycopy;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttribute.getDefinitions;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_ALLOWLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLACKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_BLOCKLIST;
+import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common.DESERIALIZATION_WHITELIST;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -75,6 +79,13 @@ public class ConnectionFactoryDefinition extends PersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return Arrays.asList(ATTRIBUTES);
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        super.registerAttributes(resourceRegistration);
+        ConnectionFactoryAttributes.registerAliasAttribute(resourceRegistration, false, DESERIALIZATION_WHITELIST, DESERIALIZATION_ALLOWLIST.getName());
+        ConnectionFactoryAttributes.registerAliasAttribute(resourceRegistration, false, DESERIALIZATION_BLACKLIST, DESERIALIZATION_BLOCKLIST.getName());
     }
 
     @Override

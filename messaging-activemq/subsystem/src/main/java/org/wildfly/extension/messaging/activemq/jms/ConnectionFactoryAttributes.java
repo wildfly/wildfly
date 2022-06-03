@@ -47,8 +47,11 @@ import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ParameterCorrector;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
@@ -56,6 +59,8 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -214,6 +219,16 @@ public interface ConnectionFactoryAttributes {
                 .setAttributeParser(AttributeParser.STRING_LIST)
                 .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
                 .setDeprecated(ModelVersion.create(13, 0, 0), false)
+                .setAlternatives("deserialization-allow-list")
+                .setRestartAllServices()
+                .build();
+
+        StringListAttributeDefinition DESERIALIZATION_ALLOWLIST = new StringListAttributeDefinition.Builder("deserialization-allow-list")
+                .setRequired(false)
+                .setAllowExpression(true)
+                .setListValidator(Validators.noDuplicateElements(new StringLengthValidator(1, true, true)))
+                .setAttributeParser(AttributeParser.STRING_LIST)
+                .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
                 .setRestartAllServices()
                 .build();
 
@@ -224,10 +239,20 @@ public interface ConnectionFactoryAttributes {
                 .setAttributeParser(AttributeParser.STRING_LIST)
                 .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
                 .setDeprecated(ModelVersion.create(13, 0, 0), false)
+                .setAlternatives("deserialization-block-list")
                 .setRestartAllServices()
                 .build();
 
-        SimpleAttributeDefinition DISCOVERY_GROUP =  SimpleAttributeDefinitionBuilder.create(CommonAttributes.DISCOVERY_GROUP, STRING)
+        StringListAttributeDefinition DESERIALIZATION_BLOCKLIST = new StringListAttributeDefinition.Builder("deserialization-block-list")
+                .setRequired(false)
+                .setAllowExpression(true)
+                .setListValidator(Validators.noDuplicateElements(new StringLengthValidator(1, true, true)))
+                .setAttributeParser(AttributeParser.STRING_LIST)
+                .setAttributeMarshaller(AttributeMarshaller.STRING_LIST)
+                .setRestartAllServices()
+                .build();
+
+        SimpleAttributeDefinition DISCOVERY_GROUP = SimpleAttributeDefinitionBuilder.create(CommonAttributes.DISCOVERY_GROUP, STRING)
                 .setRequired(true)
                 .setAlternatives(CommonAttributes.CONNECTORS)
                 .setRestartAllServices()
@@ -464,6 +489,8 @@ public interface ConnectionFactoryAttributes {
                 create(SCHEDULED_THREAD_POOL_MAX_SIZE, "scheduledThreadPoolMaxSize", true),
                 create(THREAD_POOL_MAX_SIZE, "threadPoolMaxSize", true),
                 create(GROUP_ID, "groupID", true),
+                create(DESERIALIZATION_ALLOWLIST, "deserializationWhiteList", true),
+                create(DESERIALIZATION_BLOCKLIST, "deserializationBlackList", true),
                 create(DESERIALIZATION_BLACKLIST, "deserializationBlackList", true),
                 create(DESERIALIZATION_WHITELIST, "deserializationWhiteList", true),
                 create(INITIAL_MESSAGE_PACKET_SIZE, "initialMessagePacketSize", true),
@@ -705,6 +732,62 @@ public interface ConnectionFactoryAttributes {
                     && !getAllowedValues().contains(value)) {
                 MessagingLogger.ROOT_LOGGER.invalidTransactionNameValue(value.asString(), parameterName, getAllowedValues());
             }
+        }
+    }
+
+    static class AliasReadAttributeHandler implements OperationStepHandler {
+
+        private final String oldAttributeName;
+        private final String newAttributeName;
+
+        public AliasReadAttributeHandler(String oldAttributeName, String newAttributeName) {
+            this.oldAttributeName = oldAttributeName;
+            this.newAttributeName = newAttributeName;
+        }
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            ModelNode op = operation.clone();
+            op.get(newAttributeName).set(operation.get(oldAttributeName));
+            AttributeAccess access = context.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, newAttributeName);
+            if(access != null && access.getReadHandler() != null) {
+                access.getReadHandler().execute(context, op);
+            }
+        }
+    }
+
+    static class AliasWriteAttributeHandler implements OperationStepHandler {
+
+        private final String oldAttributeName;
+        private final String newAttributeName;
+
+        public AliasWriteAttributeHandler(String oldAttributeName, String newAttributeName) {
+            this.oldAttributeName = oldAttributeName;
+            this.newAttributeName = newAttributeName;
+        }
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            ModelNode op = operation.clone();
+            op.get(newAttributeName).set(operation.get(oldAttributeName));
+            AttributeAccess access = context.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, newAttributeName);
+            if(access != null && access.getWriteHandler() != null) {
+                access.getWriteHandler().execute(context, op);
+            }
+        }
+    }
+
+    public static void registerAliasAttribute(ManagementResourceRegistration resourceRegistration, boolean readOnly, StringListAttributeDefinition alias, String attribute) {
+        if (resourceRegistration.getAttributeNames(PathAddress.EMPTY_ADDRESS).contains(alias.getName())) {
+            resourceRegistration.unregisterAttribute(alias.getName());
+        }
+        StringListAttributeDefinition aliasedAttributeDefinition = new StringListAttributeDefinition.Builder(alias)
+                .setFlags(AttributeAccess.Flag.ALIAS).build();
+        if (readOnly) {
+            resourceRegistration.registerReadOnlyAttribute(aliasedAttributeDefinition, new AliasReadAttributeHandler(alias.getName(), attribute));
+        } else {
+            resourceRegistration.registerReadWriteAttribute(aliasedAttributeDefinition, new AliasReadAttributeHandler(alias.getName(), attribute),
+                    new AliasWriteAttributeHandler(alias.getName(), attribute));
         }
     }
 }

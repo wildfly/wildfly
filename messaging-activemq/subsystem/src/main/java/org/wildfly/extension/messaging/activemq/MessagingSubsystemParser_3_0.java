@@ -30,18 +30,19 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.IN_VM_AC
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.IN_VM_CONNECTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_CONNECTOR;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_MASTER_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_SLAVE_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.REPLICATION_MASTER_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.SHARED_STORE_MASTER_PATH;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.SHARED_STORE_SLAVE_PATH;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.wildfly.extension.messaging.activemq.ha.HAAttributes;
 import org.wildfly.extension.messaging.activemq.ha.LiveOnlyDefinition;
 import org.wildfly.extension.messaging.activemq.ha.ReplicationColocatedDefinition;
-import org.wildfly.extension.messaging.activemq.ha.ReplicationMasterDefinition;
-import org.wildfly.extension.messaging.activemq.ha.ReplicationSlaveDefinition;
 import org.wildfly.extension.messaging.activemq.ha.ScaleDownAttributes;
 import org.wildfly.extension.messaging.activemq.ha.SharedStoreColocatedDefinition;
-import org.wildfly.extension.messaging.activemq.ha.SharedStoreMasterDefinition;
-import org.wildfly.extension.messaging.activemq.ha.SharedStoreSlaveDefinition;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 import org.wildfly.extension.messaging.activemq.jms.PooledConnectionFactoryDefinition;
 import org.wildfly.extension.messaging.activemq.jms.bridge.JMSBridgeDefinition;
@@ -66,8 +67,7 @@ public class MessagingSubsystemParser_3_0 extends PersistentResourceXMLParser {
                 .addAttributes(
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_THREAD_POOL_MAX_SIZE,
                         MessagingSubsystemRootResourceDefinition.GLOBAL_CLIENT_SCHEDULED_THREAD_POOL_MAX_SIZE)
-                .addChild(
-                        builder(MessagingExtension.SERVER_PATH)
+                .addChild(builder(MessagingExtension.SERVER_PATH)
                                 .addAttributes(
                                         // no attribute groups
                                         ServerDefinition.PERSISTENCE_ENABLED,
@@ -144,15 +144,13 @@ public class MessagingSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                         ScaleDownAttributes.SCALE_DOWN_GROUP_NAME,
                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
                                                         ScaleDownAttributes.SCALE_DOWN_CONNECTORS))
-                                .addChild(
-                                        builder(ReplicationMasterDefinition.INSTANCE.getPathElement())
+                                .addChild(builder(REPLICATION_MASTER_PATH)
                                                 .addAttributes(
                                                         HAAttributes.CLUSTER_NAME,
                                                         HAAttributes.GROUP_NAME,
                                                         HAAttributes.CHECK_FOR_LIVE_SERVER,
                                                         HAAttributes.INITIAL_REPLICATION_SYNC_TIMEOUT))
-                                .addChild(
-                                        builder(ReplicationSlaveDefinition.INSTANCE.getPathElement())
+                                .addChild(builder(MessagingExtension.REPLICATION_SLAVE_PATH)
                                                 .addAttributes(
                                                         HAAttributes.CLUSTER_NAME,
                                                         HAAttributes.GROUP_NAME,
@@ -165,8 +163,7 @@ public class MessagingSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                         ScaleDownAttributes.SCALE_DOWN_GROUP_NAME,
                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
                                                         ScaleDownAttributes.SCALE_DOWN_CONNECTORS))
-                                .addChild(
-                                        builder(ReplicationColocatedDefinition.INSTANCE.getPathElement())
+                                .addChild(builder(ReplicationColocatedDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HAAttributes.REQUEST_BACKUP,
                                                         HAAttributes.BACKUP_REQUEST_RETRIES,
@@ -174,15 +171,13 @@ public class MessagingSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                         HAAttributes.MAX_BACKUPS,
                                                         HAAttributes.BACKUP_PORT_OFFSET,
                                                         HAAttributes.EXCLUDED_CONNECTORS)
-                                                .addChild(
-                                                        builder(ReplicationMasterDefinition.CONFIGURATION_INSTANCE.getPathElement())
+                                                .addChild(builder(MessagingExtension.CONFIGURATION_MASTER_PATH)
                                                                 .addAttributes(
                                                                         HAAttributes.CLUSTER_NAME,
                                                                         HAAttributes.GROUP_NAME,
                                                                         HAAttributes.CHECK_FOR_LIVE_SERVER,
                                                                         HAAttributes.INITIAL_REPLICATION_SYNC_TIMEOUT))
-                                                .addChild(
-                                                        builder(ReplicationSlaveDefinition.CONFIGURATION_INSTANCE.getPathElement())
+                                                .addChild(builder(MessagingExtension.CONFIGURATION_SLAVE_PATH)
                                                                 .addAttributes(
                                                                         HAAttributes.CLUSTER_NAME,
                                                                         HAAttributes.GROUP_NAME,
@@ -195,12 +190,10 @@ public class MessagingSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                                         ScaleDownAttributes.SCALE_DOWN_GROUP_NAME,
                                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
                                                                         ScaleDownAttributes.SCALE_DOWN_CONNECTORS)))
-                                .addChild(
-                                        builder(SharedStoreMasterDefinition.INSTANCE.getPathElement())
+                                .addChild(builder(SHARED_STORE_MASTER_PATH)
                                                 .addAttributes(
                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN))
-                                .addChild(
-                                        builder(SharedStoreSlaveDefinition.INSTANCE.getPathElement())
+                                .addChild(builder(SHARED_STORE_SLAVE_PATH)
                                                 .addAttributes(
                                                         HAAttributes.ALLOW_FAILBACK,
                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN,
@@ -210,20 +203,17 @@ public class MessagingSubsystemParser_3_0 extends PersistentResourceXMLParser {
                                                         ScaleDownAttributes.SCALE_DOWN_GROUP_NAME,
                                                         ScaleDownAttributes.SCALE_DOWN_DISCOVERY_GROUP,
                                                         ScaleDownAttributes.SCALE_DOWN_CONNECTORS))
-                                .addChild(
-                                        builder(SharedStoreColocatedDefinition.INSTANCE.getPathElement())
+                                .addChild(builder(SharedStoreColocatedDefinition.INSTANCE.getPathElement())
                                                 .addAttributes(
                                                         HAAttributes.REQUEST_BACKUP,
                                                         HAAttributes.BACKUP_REQUEST_RETRIES,
                                                         HAAttributes.BACKUP_REQUEST_RETRY_INTERVAL,
                                                         HAAttributes.MAX_BACKUPS,
                                                         HAAttributes.BACKUP_PORT_OFFSET)
-                                                .addChild(
-                                                        builder(SharedStoreMasterDefinition.CONFIGURATION_INSTANCE.getPathElement())
+                                                .addChild(builder(CONFIGURATION_MASTER_PATH)
                                                                 .addAttributes(
                                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN))
-                                                .addChild(
-                                                        builder(SharedStoreSlaveDefinition.CONFIGURATION_INSTANCE.getPathElement())
+                                                .addChild(builder(CONFIGURATION_SLAVE_PATH)
                                                                 .addAttributes(
                                                                         HAAttributes.ALLOW_FAILBACK,
                                                                         HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN,
