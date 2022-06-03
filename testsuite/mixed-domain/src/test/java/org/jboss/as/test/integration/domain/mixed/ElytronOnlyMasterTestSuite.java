@@ -25,7 +25,7 @@ public class ElytronOnlyMasterTestSuite extends MixedDomainTestSuite {
 
 
     protected static MixedDomainTestSupport getSupport(Class<?> testClass) {
-        return getSupport(testClass, "master-config/host-master-elytron.xml",
-                "slave-config/host-slave.xml");
+        return getSupport(testClass, "master-config/host-primary-elytron.xml",
+                "slave-config/host-secondary.xml");
     }
 }

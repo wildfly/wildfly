@@ -96,13 +96,13 @@ public class EEConcurrencyExecutorShutdownTestCase {
             final DomainTestSupport.Configuration configuration;
             if (Boolean.getBoolean("wildfly.master.debug")) {
                 configuration = DomainTestSupport.Configuration.createDebugMaster(testName,
-                        "domain-configs/domain-standard-ee.xml", "host-configs/host-master.xml", null);
+                        "domain-configs/domain-standard-ee.xml", "host-configs/host-primary.xml", null);
             } else if (Boolean.getBoolean("wildfly.slave.debug")) {
                 configuration = DomainTestSupport.Configuration.createDebugSlave(testName,
-                        "domain-configs/domain-standard-ee.xml", "host-configs/host-master.xml", null);
+                        "domain-configs/domain-standard-ee.xml", "host-configs/host-primary.xml", null);
             } else {
                 configuration = DomainTestSupport.Configuration.create(testName,
-                        "domain-configs/domain-standard-ee.xml", "host-configs/host-master.xml", null);
+                        "domain-configs/domain-standard-ee.xml", "host-configs/host-primary.xml", null);
             }
             final DomainTestSupport testSupport = DomainTestSupport.create(configuration);
             testSupport.start();
