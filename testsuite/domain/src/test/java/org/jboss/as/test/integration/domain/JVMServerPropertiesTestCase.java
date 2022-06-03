@@ -106,7 +106,7 @@ public class JVMServerPropertiesTestCase {
     public static void setupDomain() throws Exception {
         final DomainTestSupport.Configuration configuration = DomainTestSupport.Configuration.create(JVMServerPropertiesTestCase.class.getSimpleName(),
                 "domain-configs/domain-jvm-properties.xml",
-                "host-configs/host-master-jvm-properties.xml",
+                "host-configs/host-primary-jvm-properties.xml",
                 null
         );
 

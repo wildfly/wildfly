@@ -85,8 +85,8 @@ public class ModelPersistenceTestCase {
     private static final String MASTER_DIR = "master";
     private static final String SLAVE_DIR = "slave";
     private static final String DOMAIN_NAME = "testing-domain-standard";
-    private static final String MASTER_NAME = "testing-host-master";
-    private static final String SLAVE_NAME = "testing-host-slave";
+    private static final String MASTER_NAME = "testing-host-primary";
+    private static final String SLAVE_NAME = "testing-host-secondary";
     private static File domainCurrentCfgDir;
     private static File masterCurrentCfgDir;
     private static File slaveCurrentCfgDir;
