@@ -1,0 +1,27 @@
+package com.sun.faces.facelets.el;
+
+import "jakarta.faces.view.proto";
+
+/**
+ * @TypeId(520)
+ */
+message ContextualCompositeValueExpression {
+	optional	jakarta.faces.view.Location	location	 = 1;
+	optional	bytes	expression	 = 2;
+}
+
+/**
+ * @TypeId(521)
+ */
+message TagMethodExpression {
+	optional	string	attribute	 = 1;
+	optional	bytes	expression	 = 2;
+}
+
+/**
+ * @TypeId(522)
+ */
+message TagValueExpression {
+	optional	string	attribute	 = 1;
+	optional	bytes	expression	 = 2;
+}

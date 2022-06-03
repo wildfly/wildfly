@@ -21,22 +21,4 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-
-<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.weld.web">
-
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
-
-    <resources>
-        <artifact name="\${org.wildfly:wildfly-clustering-weld-web@module.jakarta.suffix@}"/>
-    </resources>
-
-    <dependencies>
-        <module name="javax.enterprise.api"/>
-        <module name="org.infinispan.protostream"/>
-        <module name="org.jboss.weld.core"/>
-        <module name="org.wildfly.clustering.marshalling.protostream"/>
-        <module name="org.wildfly.common"/>
-    </dependencies>
-</module>
+<module-alias xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.el.glassfish" target-name="org.wildfly.clustering.el.expressly"/>

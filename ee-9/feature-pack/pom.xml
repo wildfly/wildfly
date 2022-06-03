@@ -837,6 +837,30 @@
                 </exclusion>
                 <exclusion>
                     <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-clustering-el-glassfish</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-clustering-faces-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-clustering-faces-mojarra</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-clustering-weld-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-clustering-weld-ejb</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>wildfly-clustering-weld-web</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
                     <artifactId>wildfly-clustering-web-undertow</artifactId>
                 </exclusion>
                 <exclusion>

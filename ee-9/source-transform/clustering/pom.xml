@@ -42,7 +42,9 @@
     <name>WildFly: Clustering subsystems and modules (Jakarta Namespace)</name>
 
     <modules>
+        <module>faces</module>
         <module>web</module>
+        <module>weld</module>
     </modules>
 
     <dependencies>

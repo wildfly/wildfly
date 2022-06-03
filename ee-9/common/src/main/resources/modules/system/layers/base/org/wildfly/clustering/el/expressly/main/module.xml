@@ -22,21 +22,22 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.weld.web">
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.el.expressly">
 
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
-        <artifact name="\${org.wildfly:wildfly-clustering-weld-web@module.jakarta.suffix@}"/>
+        <artifact name="${org.wildfly:wildfly-clustering-el-expressly}"/>
     </resources>
 
     <dependencies>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="org.glassfish.expressly" />
         <module name="org.infinispan.protostream"/>
-        <module name="org.jboss.weld.core"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.common"/>
+        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

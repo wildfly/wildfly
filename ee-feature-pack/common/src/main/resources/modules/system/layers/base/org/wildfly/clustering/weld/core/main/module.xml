@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-clustering-weld-core}"/>
+        <artifact name="\${org.wildfly:wildfly-clustering-weld-core@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>

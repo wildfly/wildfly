@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.wildfly:wildfly-clustering-faces-mojarra}"/>
+        <artifact name="\${org.wildfly:wildfly-clustering-faces-mojarra@module.jakarta.suffix@}"/>
     </resources>
 
     <dependencies>
