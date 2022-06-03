@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2021, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2022, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -22,22 +22,37 @@
 package org.jboss.as.test.integration.jsf.managedbean.managedproperty;
 
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ApplicationScoped;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
+import javax.enterprise.context.RequestScoped;
+import javax.faces.annotation.ManagedProperty;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
- * A simple Jakarta Server Faces managed bean.
+ * A CDI bean that injects various beans provided by Jakarta Faces
+ * via its @ManagedProperty facility.
  *
  * @author Farah Juma
+ * @author Brian Stansberry
  */
-@ManagedBean(name = "simpleJsfManagedBean", eager = true)
-@ApplicationScoped
-public class SimpleJsfManagedBean {
+@Named("testTarget")
+@RequestScoped
+public class InjectionTargetBean {
 
-    private static boolean postConstructCalled = false;
-    private static boolean greetingBeanInjected = false;
+    private boolean postConstructCalled = false;
+    private boolean greetingBeanInjected = false;
 
+    /** Injects using the Faces facility that exposes the request parameter map */
+    @Inject
+    @ManagedProperty(value = "#{param.testName}")
+    private String testName;
+
+    /** Injects using the Faces facility that exposes the FacesContext */
+    @Inject
+    @ManagedProperty("#{facesContext.externalContext.requestContextPath}")
+    private String contextPath;
+
+    /** Injects a bean included in the deployment */
+    @Inject
     @ManagedProperty(value = "#{greetingBean}")
     private GreetingBean greetingBean;
 
@@ -50,15 +65,19 @@ public class SimpleJsfManagedBean {
         postConstructCalled = true;
     }
 
-    public void setGreetingBean(GreetingBean greetingBean) {
-        this.greetingBean = greetingBean;
+    public String getTestName() {
+        return testName;
     }
 
-    public static boolean isGreetingBeanInjected() {
+    public String getContextPath() {
+        return contextPath;
+    }
+
+    public boolean isGreetingBeanInjected() {
         return greetingBeanInjected;
     }
 
-    public static boolean isPostConstructCalled() {
+    public boolean isPostConstructCalled() {
         return postConstructCalled;
     }
 }

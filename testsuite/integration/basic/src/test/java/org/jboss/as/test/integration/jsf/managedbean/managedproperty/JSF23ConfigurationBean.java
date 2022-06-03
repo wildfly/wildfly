@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2014, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2022, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -21,19 +21,18 @@
  */
 package org.jboss.as.test.integration.jsf.managedbean.managedproperty;
 
+import static javax.faces.annotation.FacesConfig.Version;
+
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
+import javax.faces.annotation.FacesConfig;
 
 /**
- * A greeting bean.
- *
- * @author Farah Juma
+ * TODO remove once standard WildFly moves to Faces 4
  */
-@Named("greetingBean")
+@FacesConfig(
+        // Activates CDI build-in beans that provide the injection this project
+        version = Version.JSF_2_3
+)
 @ApplicationScoped
-public class GreetingBean {
-
-    public String greet(String name) {
-        return "Hello " + name;
-    }
+public class JSF23ConfigurationBean {
 }
