@@ -471,10 +471,10 @@ public class AbstractValidationUnitTest {
         String result = line.replace("${jboss.management.native.port:9999}", "9999");
         result = result.replace("${jboss.management.http.port:9990}", "9990");
         result = result.replace("${jboss.management.https.port:9993}", "9993");
-        result = result.replace("${jboss.domain.master.protocol:remote}", "remote");
-        result = result.replace("${jboss.domain.master.protocol:remote+http}", "remote+http");
-        result = result.replace("${jboss.domain.master.port:9999}", "9999");
-        result = result.replace("${jboss.domain.master.port:9990}", "9990");
+        result = result.replace("${jboss.domain.primary.protocol:remote}", "remote");
+        result = result.replace("${jboss.domain.primary.protocol:remote+http}", "remote+http");
+        result = result.replace("${jboss.domain.primary.port:9999}", "9999");
+        result = result.replace("${jboss.domain.primary.port:9990}", "9990");
         result = result.replace("${jboss.mail.server.host:localhost}", "localhost");
         result = result.replace("${jboss.mail.server.port:25}", "25");
         result = result.replace("${jboss.messaging.group.port:9876}", "9876");
