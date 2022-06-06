@@ -328,27 +328,9 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     readAttribute(reader, i, operation, TransportResourceDefinition.Attribute.DIAGNOSTICS_SOCKET_BINDING);
                     break;
                 }
-                case DEFAULT_EXECUTOR: {
-                    if (this.schema.since(JGroupsSchema.VERSION_9_0)) {
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
-                    JGroupsLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
-                    break;
-                }
-                case OOB_EXECUTOR: {
-                    if (this.schema.since(JGroupsSchema.VERSION_9_0)) {
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
-                    JGroupsLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
-                    break;
-                }
-                case TIMER_EXECUTOR: {
-                    if (this.schema.since(JGroupsSchema.VERSION_9_0)) {
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
-                    JGroupsLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
-                    break;
-                }
+                case DEFAULT_EXECUTOR:
+                case OOB_EXECUTOR:
+                case TIMER_EXECUTOR:
                 case THREAD_FACTORY: {
                     if (this.schema.since(JGroupsSchema.VERSION_9_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
