@@ -709,8 +709,8 @@
    file name: javascript/bootstrap@3.3.1 (from weld-probe-core-3.1.5.Final.jar)
    ]]></notes>
 		<packageUrl regex="true">^pkg:javascript/bootstrap@.*$</packageUrl>
-		<cve>CVE-2017-18214</cve>
-	</suppress>
+        <cve>CVE-2017-18214</cve>
+    </suppress>
     <!-- According to: https://access.redhat.com/errata/RHSA-2022:1681 and https://access.redhat.com/errata/RHSA-2022:1715, Red Hat Advanced Cluster Management for Kubernetes 2 for RHEL 7/8 x86_64 are affected. Additionally, the usage of moment.locale was not found in weld-probe-core -->
     <suppress>
         <notes><![CDATA[
@@ -718,5 +718,13 @@
    ]]></notes>
         <packageUrl regex="true">^pkg:javascript/bootstrap@.*$</packageUrl>
         <cve>CVE-2022-24785</cve>
+    </suppress>
+    <!-- Wildfly21 doesn't use vulnerable gson classes affected by CVE-2022-25647 via protostream  -->
+    <suppress>
+        <notes><![CDATA[
+   file name: protostream-4.3.4.Final.jar (shaded: com.google.code.gson:gson:2.8.5)
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.google\.code\.gson/gson@.*$</packageUrl>
+        <cve>CVE-2022-25647</cve>
     </suppress>
 </suppressions>
