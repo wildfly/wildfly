@@ -170,42 +170,14 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     this.parseScheduledThreadPool(ScheduledThreadPoolResourceDefinition.EXPIRATION, reader, address, operations);
                     break;
                 }
-                case ASYNC_OPERATIONS_THREAD_POOL: {
-                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
-                        throw ParseUtils.unexpectedElement(reader);
-                    }
-                    ROOT_LOGGER.elementIgnored(element.getLocalName());
-                    ParseUtils.requireNoContent(reader);
-                    break;
-                }
                 case LISTENER_THREAD_POOL: {
                     this.parseThreadPool(ThreadPoolResourceDefinition.LISTENER, reader, address, operations);
                     break;
                 }
-                case PERSISTENCE_THREAD_POOL: {
-                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
-                        throw ParseUtils.unexpectedElement(reader);
-                    }
-                    ROOT_LOGGER.elementIgnored(element.getLocalName());
-                    ParseUtils.requireNoContent(reader);
-                    break;
-                }
-                case REMOTE_COMMAND_THREAD_POOL: {
-                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
-                        throw ParseUtils.unexpectedElement(reader);
-                    }
-                    ROOT_LOGGER.elementIgnored(element.getLocalName());
-                    ParseUtils.requireNoContent(reader);
-                    break;
-                }
-                case STATE_TRANSFER_THREAD_POOL: {
-                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
-                        throw ParseUtils.unexpectedElement(reader);
-                    }
-                    ROOT_LOGGER.elementIgnored(element.getLocalName());
-                    ParseUtils.requireNoContent(reader);
-                    break;
-                }
+                case ASYNC_OPERATIONS_THREAD_POOL:
+                case PERSISTENCE_THREAD_POOL:
+                case REMOTE_COMMAND_THREAD_POOL:
+                case STATE_TRANSFER_THREAD_POOL:
                 case TRANSPORT_THREAD_POOL: {
                     if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
                         throw ParseUtils.unexpectedElement(reader);
