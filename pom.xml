@@ -526,7 +526,7 @@
         <!-- WildFly Preview version propertie -->
         <preview.version.antlr>4.10</preview.version.antlr>
         <preview.version.com.sun.faces>4.0.0-M7.SP01</preview.version.com.sun.faces>
-        <preview.version.com.sun.istack>4.0.1</preview.version.com.sun.istack>
+        <preview.version.com.sun.istack>4.1.0</preview.version.com.sun.istack>
         <preview.version.com.sun.xml.messaging.saaj>2.0.0.SP1</preview.version.com.sun.xml.messaging.saaj>
         <preview.version.io.agroal>2.0</preview.version.io.agroal>
         <preview.version.io.undertow>2.3.0.Alpha1</preview.version.io.undertow>
@@ -558,7 +558,7 @@
         <preview.version.jakarta.validation.jakarta-validation-api>3.0.0</preview.version.jakarta.validation.jakarta-validation-api>
         <preview.version.jakarta.websocket.jakarta-websocket-api>2.1.0</preview.version.jakarta.websocket.jakarta-websocket-api>
         <preview.version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</preview.version.jakarta.ws.rs.jakarta-ws-rs-api>
-        <preview.version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.1</preview.version.jakarta.xml.bind.jakarta-xml-bind-api>
+        <preview.version.jakarta.xml.bind.jakarta-xml-bind-api>4.0.0</preview.version.jakarta.xml.bind.jakarta-xml-bind-api>
         <preview.version.net.shibboleth.utilities.java-support>8.0.0</preview.version.net.shibboleth.utilities.java-support>
         <preview.version.org.apache.cxf>3.5.2-jbossorg-2</preview.version.org.apache.cxf>
         <preview.version.org.apache.cxf.xjcplugins>4.0.0</preview.version.org.apache.cxf.xjcplugins>
@@ -600,9 +600,9 @@
         <preview.version.org.glassfish.jakarta.el>5.0.0-M1</preview.version.org.glassfish.jakarta.el>
         <preview.version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</preview.version.org.glassfish.jakarta.enterprise.concurrent>
         <!-- WFLY-14723 For XJC we use a jbossorg variant in WF Preview. Use the version expression from the root
-		     pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
-        <preview.version.org.glassfish.jaxb>3.0.2</preview.version.org.glassfish.jaxb>
-        <preview.version.org.glassfish.jaxb.jaxb-xjc>3.0.2</preview.version.org.glassfish.jaxb.jaxb-xjc>
+         pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
+        <preview.version.org.glassfish.jaxb>4.0.0</preview.version.org.glassfish.jaxb>
+        <preview.version.org.glassfish.jaxb.jaxb-xjc>${preview.version.org.glassfish.jaxb}</preview.version.org.glassfish.jaxb.jaxb-xjc>
         <preview.version.org.glassfish.soteria>2.0.1</preview.version.org.glassfish.soteria>
         <preview.version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.0</preview.version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <preview.version.org.hibernate>6.0.2.Final</preview.version.org.hibernate>
@@ -626,6 +626,7 @@
         <preview.version.org.wildfly.security.elytron-mp>2.0.0.Beta3</preview.version.org.wildfly.security.elytron-mp>
         <preview.version.org.wildfly.security.elytron-web>2.0.0.Beta3</preview.version.org.wildfly.security.elytron-web>
         <preview.version.org.wildfly.security.jakarta.elytron-ee>2.0.0.Beta3</preview.version.org.wildfly.security.jakarta.elytron-ee>
+        <preview.version.sun.jaxb>${preview.version.org.glassfish.jaxb}</preview.version.sun.jaxb>
 
         <!-- Base wildfly version used by testsuite/galleon/update test to install a server that gets updated to the SNAPSHOT version -->
         <wildfly.test.galleon.update.base.version>26.1.1.Final</wildfly.test.galleon.update.base.version>
