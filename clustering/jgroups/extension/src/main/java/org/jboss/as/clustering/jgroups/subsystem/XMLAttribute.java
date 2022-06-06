@@ -38,7 +38,6 @@ public enum XMLAttribute {
     DATA_SOURCE(JDBCProtocolResourceDefinition.Attribute.DATA_SOURCE),
     @Deprecated DEFAULT_EXECUTOR("default-executor"),
     DEFAULT("default"),
-    @Deprecated DEFAULT_STACK("default-stack"),
     DIAGNOSTICS_SOCKET_BINDING(TransportResourceDefinition.Attribute.DIAGNOSTICS_SOCKET_BINDING),
     KEEPALIVE_TIME(ThreadPoolResourceDefinition.DEFAULT.getKeepAliveTime()),
     KEY_ALIAS(EncryptProtocolResourceDefinition.Attribute.KEY_ALIAS),
