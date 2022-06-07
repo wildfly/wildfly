@@ -74,6 +74,10 @@
             <artifactId>jakarta.websocket-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-client-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.spec.jakarta.el</groupId>
             <artifactId>jboss-el-api_5.0_spec</artifactId>
         </dependency>
@@ -83,15 +87,15 @@
         </dependency>
         <dependency>
             <groupId>io.undertow</groupId>
-            <artifactId>undertow-servlet-jakarta</artifactId>
+            <artifactId>undertow-servlet</artifactId>
         </dependency>
         <dependency>
             <groupId>io.undertow</groupId>
-            <artifactId>undertow-websockets-jsr-jakarta</artifactId>
+            <artifactId>undertow-websockets-jsr</artifactId>
         </dependency>
         <dependency>
             <groupId>io.undertow.jastow</groupId>
-            <artifactId>jastow-jakarta</artifactId>
+            <artifactId>jastow</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
@@ -277,4 +281,39 @@
             <artifactId>wildfly-elytron-ssl</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.gmaven</groupId>
+                <artifactId>groovy-maven-plugin</artifactId>
+                <version>2.1.1</version>
+                <executions>
+                    <execution>
+                        <id>delete-old-file</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <source>
+                                def toDelete = [
+                                    "org/wildfly/extension/undertow/deployment/JspPropertyGroupDescriptorImpl.java"
+                                ]
+                                toDelete.forEach {
+                                    def file = new File(project.build.getDirectory() + "/generated-sources/transformed/" + it)
+                                    if (file.isDirectory()) {
+                                        file.deleteDir()
+                                    } else {
+                                        file.delete()
+                                    }
+                                }
+                            </source>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
