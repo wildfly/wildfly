@@ -53,7 +53,6 @@ public final class ModClusterSubsystemXMLWriter implements XMLElementWriter<Subs
         writer.writeEndElement();
     }
 
-    @SuppressWarnings("deprecation")
     private static void writeProxy(XMLExtendedStreamWriter writer, String name, ModelNode model) throws XMLStreamException {
         writer.writeStartElement(XMLElement.PROXY.getLocalName());
 
@@ -89,11 +88,6 @@ public final class ModClusterSubsystemXMLWriter implements XMLElementWriter<Subs
                     writer.writeEndElement();
                 }
             }
-            writer.writeEndElement();
-        }
-        if (model.get(SSLResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
-            writer.writeStartElement(XMLElement.SSL.getLocalName());
-            writeAttributes(writer, model.get(SSLResourceDefinition.PATH.getKeyValuePair()), EnumSet.allOf(SSLResourceDefinition.Attribute.class));
             writer.writeEndElement();
         }
         writer.writeEndElement();

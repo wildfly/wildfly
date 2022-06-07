@@ -34,7 +34,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
  * @author Jean-Frederic Clere
  * @author Radoslav Husar
  */
-@SuppressWarnings("deprecation")
 enum XMLAttribute {
     UNKNOWN((String) null),
 
@@ -44,8 +43,6 @@ enum XMLAttribute {
     ADVERTISE_SOCKET(ProxyConfigurationResourceDefinition.Attribute.ADVERTISE_SOCKET),
     AUTO_ENABLE_CONTEXTS(ProxyConfigurationResourceDefinition.Attribute.AUTO_ENABLE_CONTEXTS),
     BALANCER(ProxyConfigurationResourceDefinition.Attribute.BALANCER),
-    @Deprecated CONNECTOR(ProxyConfigurationResourceDefinition.DeprecatedAttribute.CONNECTOR),
-    @Deprecated DOMAIN("domain"),
     EXCLUDED_CONTEXTS(ProxyConfigurationResourceDefinition.Attribute.EXCLUDED_CONTEXTS),
     FLUSH_PACKETS(ProxyConfigurationResourceDefinition.Attribute.FLUSH_PACKETS),
     FLUSH_WAIT(ProxyConfigurationResourceDefinition.Attribute.FLUSH_WAIT),
@@ -56,7 +53,7 @@ enum XMLAttribute {
     NODE_TIMEOUT(ProxyConfigurationResourceDefinition.Attribute.NODE_TIMEOUT),
     PING(ProxyConfigurationResourceDefinition.Attribute.PING),
     PROXIES(ProxyConfigurationResourceDefinition.Attribute.PROXIES),
-    PROXY_LIST(ProxyConfigurationResourceDefinition.Attribute.PROXY_LIST),
+    PROXY_LIST("proxy-list"),
     PROXY_URL(ProxyConfigurationResourceDefinition.Attribute.PROXY_URL),
     SESSION_DRAINING_STRATEGY(ProxyConfigurationResourceDefinition.Attribute.SESSION_DRAINING_STRATEGY),
     SMAX(ProxyConfigurationResourceDefinition.Attribute.SMAX),
@@ -82,15 +79,6 @@ enum XMLAttribute {
     MODULE(CustomLoadMetricResourceDefinition.Attribute.MODULE),
     TYPE(LoadMetricResourceDefinition.Attribute.TYPE),
     WEIGHT(LoadMetricResourceDefinition.SharedAttribute.WEIGHT),
-
-    // Legacy SSL
-    CA_CERTIFICATE_FILE(SSLResourceDefinition.Attribute.CA_CERTIFICATE_FILE),
-    CA_REVOCATION_URL(SSLResourceDefinition.Attribute.CA_REVOCATION_URL),
-    CERTIFICATE_KEY_FILE(SSLResourceDefinition.Attribute.CERTIFICATE_KEY_FILE),
-    CIPHER_SUITE(SSLResourceDefinition.Attribute.CIPHER_SUITE),
-    KEY_ALIAS(SSLResourceDefinition.Attribute.KEY_ALIAS),
-    PASSWORD(SSLResourceDefinition.Attribute.PASSWORD),
-    PROTOCOL(SSLResourceDefinition.Attribute.PROTOCOL),
     ;
 
     private final String name;

@@ -397,12 +397,12 @@
         <pooled-connection-factory name="activemq-ra" entries="java:/JmsXA java:jboss/DefaultJMSConnectionFactory" connectors="in-vm" transaction="xa"/>
       </server>
     </subsystem>
-    <subsystem xmlns="urn:jboss:domain:modcluster:2.0">
-      <mod-cluster-config advertise-socket="modcluster" connector="ajp">
+    <subsystem xmlns="urn:jboss:domain:modcluster:6.0">
+      <proxy name="default" advertise-socket="modcluster" listener="ajp">
         <dynamic-load-provider>
           <load-metric type="cpu"/>
         </dynamic-load-provider>
-      </mod-cluster-config>
+      </proxy>
     </subsystem>
     <subsystem xmlns="urn:jboss:domain:naming:2.0">
       <remote-naming/>
