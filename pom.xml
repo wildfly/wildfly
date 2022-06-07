@@ -548,7 +548,7 @@
         <preview.version.jakarta.jws.jakarta-jws-api>3.0.0</preview.version.jakarta.jws.jakarta-jws-api>
         <preview.version.jakarta.xml.ws.jakarta.xml.ws-api>4.0.0</preview.version.jakarta.xml.ws.jakarta.xml.ws-api>
         <preview.version.jakarta.persistence>3.1.0</preview.version.jakarta.persistence>
-        <preview.version.jakarta.resource.jakarta-resource-api>2.0.0</preview.version.jakarta.resource.jakarta-resource-api>
+        <preview.version.jakarta.resource.jakarta-resource-api>2.1.0</preview.version.jakarta.resource.jakarta-resource-api>
         <preview.version.jakarta.security.enterprise>2.0.0</preview.version.jakarta.security.enterprise>
         <preview.version.jakarta.servlet.jakarta-servlet-api>6.0.0</preview.version.jakarta.servlet.jakarta-servlet-api>
         <preview.version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.1.0</preview.version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
