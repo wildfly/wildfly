@@ -3535,6 +3535,9 @@
                                         <exclude>org/jboss/as/test/integration/deployment/moduleslisting/DeploymentModulesListTestCase.java</exclude>
                                         <!-- Requires the Arquillian Servlet 3.0 protocol to be overridden to Servlet 5.0 -->
                                         <exclude>org/jboss/as/test/integration/logging/config/LoggingProfileSharedTestCase.java</exclude>
+                                        <!-- Assumes the Faces spec version in the server and on the client-side classpath are the same
+                                             and that the Faces spec jar includes the spec version in its manifest -->
+                                        <exclude>org/jboss/as/test/integration/jsf/version/JSFDeploymentProcessorTestCase.java</exclude>
                                         <!-- TODO figure out the problem -->
                                         <exclude>org/jboss/as/test/integration/batch/repository/JdbcRepositoryTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/appclient/basic/SimpleApplicationClientTestCase.java</exclude>
@@ -3543,16 +3546,13 @@
                                         <exclude>org/jboss/as/test/integration/jsf/beanvalidation/cdi/BeanValidationCdiIntegrationTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsf/doctype/DoctypeDeclTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsf/jsf23/JSF23SanityTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsf/managedbean/gc/GCPreDestroyTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jsf/testurl/ForbiddenUrlTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsf/version/JSFDeploymentProcessorTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/deploy/runtime/JaxrsRuntimeNameTestCase.java</exclude><!-- test expects javax strings in mgmt api responses -->
                                         <exclude>org/jboss/as/test/integration/weld/ejb/SessionObjectReferenceTestCase.java</exclude>
                                         <exclude>org/wildfly/test/integration/web/annotationsmodule/EarModuleDeploymentTestCase.java</exclude>
 
                                         <!-- Excluded because Hibernate doesn't conform to CDI 4 deprecated method removals -->
                                         <exclude>org/jboss/as/test/integration/ee/injection/support/jpa/EntityListenerInjectionSupportTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jsf/phaselistener/injectiontarget/InjectionToPhaseListenerTest.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jpa/initializeinorder/InitializeInOrderTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jpa/entitylistener/EntityListenersTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/support/jpa/beanmanager/EntityListenerBeanManagerInjectionTestCase.java</exclude>
