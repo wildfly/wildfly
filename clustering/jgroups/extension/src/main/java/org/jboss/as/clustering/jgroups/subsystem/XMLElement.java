@@ -47,10 +47,8 @@ public enum XMLElement {
     DIGEST_TOKEN("digest-token"),
     ENCRYPT_PROTOCOL("encrypt-protocol"),
     FORK(ForkResourceDefinition.WILDCARD_PATH),
-    INTERNAL_THREAD_POOL("internal-thread-pool"),
     JDBC_PROTOCOL("jdbc-protocol"),
     KEY_CREDENTIAL_REFERENCE(EncryptProtocolResourceDefinition.Attribute.KEY_CREDENTIAL),
-    OOB_THREAD_POOL("oob-thread-pool"),
     PLAIN_TOKEN("plain-token"),
     PROPERTY(ModelDescriptionConstants.PROPERTY),
     PROTOCOL(ProtocolResourceDefinition.WILDCARD_PATH),
@@ -61,7 +59,6 @@ public enum XMLElement {
     SOCKET_DISCOVERY_PROTOCOL("socket-discovery-protocol"),
     STACK(StackResourceDefinition.WILDCARD_PATH),
     STACKS("stacks"),
-    TIMER_THREAD_POOL("timer-thread-pool"),
     TRANSPORT(TransportResourceDefinition.WILDCARD_PATH),
     ;
 

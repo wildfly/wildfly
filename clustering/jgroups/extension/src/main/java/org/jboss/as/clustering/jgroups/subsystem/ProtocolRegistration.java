@@ -35,9 +35,6 @@ import org.jboss.as.clustering.controller.RuntimeResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jgroups.Global;
 import org.jgroups.PhysicalAddress;
-import org.jgroups.protocols.MERGE3;
-import org.jgroups.protocols.UNICAST3;
-import org.jgroups.protocols.pbcast.NAKACK2;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.stack.Protocol;
 
@@ -86,9 +83,6 @@ public class ProtocolRegistration implements Registration<ManagementResourceRegi
     }
 
     enum LegacyProtocol {
-        MERGE2(MERGE3.class, JGroupsModel.VERSION_6_0_0),
-        NAKACK("pbcast.NAKACK", NAKACK2.class, JGroupsModel.VERSION_6_0_0),
-        UNICAST2(UNICAST3.class, JGroupsModel.VERSION_6_0_0),
         ;
         final String name;
         final String targetName;

@@ -92,27 +92,6 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
         }
     }
 
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        STACK("stack", ModelType.STRING, JGroupsModel.VERSION_3_0_0),
-        CLUSTER("cluster", ModelType.STRING, JGroupsModel.VERSION_3_0_0),
-        ;
-        private final AttributeDefinition definition;
-
-        DeprecatedAttribute(String name, ModelType type, JGroupsModel deprecation) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
-                    .setRequired(false)
-                    .setAllowExpression(true)
-                    .setDeprecated(deprecation.getVersion())
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
     private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
 
     RemoteSiteResourceDefinition(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
@@ -126,7 +105,6 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
-                .addAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(RemoteSiteConfigurationServiceConfigurator::new);

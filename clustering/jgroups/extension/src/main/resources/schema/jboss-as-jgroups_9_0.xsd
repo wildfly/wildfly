@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2016, Red Hat, Inc., and individual contributors
+  ~ Copyright 2022, Red Hat, Inc., and individual contributors
   ~ as indicated by the @author tags. See the copyright.txt file in the
   ~ distribution for a full listing of individual contributors.
   ~
@@ -20,12 +20,15 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<xs:schema targetNamespace="urn:jboss:domain:jgroups:6.0"
+<xs:schema targetNamespace="urn:jboss:domain:jgroups:9.0"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns:tns="urn:jboss:domain:jgroups:6.0"
+           xmlns:tns="urn:jboss:domain:jgroups:9.0"
+           xmlns:credential-reference="urn:wildfly:credential-reference:1.1"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="6.0">
+           version="9.0">
+
+    <xs:import namespace="urn:wildfly:credential-reference:1.1" schemaLocation="wildfly-credential-reference_1_1.xsd"/>
 
     <xs:element name="subsystem" type="tns:subsystem">
         <xs:annotation>
@@ -129,11 +132,6 @@
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
-        <xs:attribute name="default" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>Deprecated. Identifies the default protocol stack.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="stack">
@@ -193,7 +191,7 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="generic-protocol">
+    <xs:complexType name="protocol">
         <xs:sequence>
             <xs:element name="property" type="tns:property" minOccurs="0" maxOccurs="unbounded">
                 <xs:annotation>
@@ -218,24 +216,17 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="protocol">
-        <xs:complexContent>
-            <xs:extension base="tns:generic-protocol">
-                <xs:attribute name="socket-binding" type="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>Deprecated.  Socket-based protocols should use &lt;socket-protocol/&gt; instead.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
     <xs:complexType name="socket-protocol">
         <xs:complexContent>
-            <xs:extension base="tns:generic-protocol">
+            <xs:extension base="tns:protocol">
                 <xs:attribute name="socket-binding" type="xs:string" use="required">
                     <xs:annotation>
                         <xs:documentation>Provides a socket binding for a protocol.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="client-socket-binding" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>The socket-binding used to configure the bind address/port of the socket used to send messages to other members.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>
@@ -244,8 +235,8 @@
 
     <xs:complexType name="socket-discovery-protocol">
         <xs:complexContent>
-            <xs:extension base="tns:generic-protocol">
-                <xs:attribute name="socket-bindings" type="xs:string" use="required">
+            <xs:extension base="tns:protocol">
+                <xs:attribute name="socket-bindings" type="tns:list" use="required">
                     <xs:annotation>
                         <xs:documentation>Provides a list of socket bindings for a protocol.</xs:documentation>
                     </xs:annotation>
@@ -256,7 +247,7 @@
 
     <xs:complexType name="jdbc-protocol">
         <xs:complexContent>
-            <xs:extension base="tns:generic-protocol">
+            <xs:extension base="tns:protocol">
                 <xs:attribute name="data-source" type="xs:string" use="required">
                     <xs:annotation>
                         <xs:documentation>Data source reference for JDBC protocols to be used instead of connection and JNDI lookup properties.</xs:documentation>
@@ -268,9 +259,9 @@
 
     <xs:complexType name="encrypt-protocol">
         <xs:complexContent>
-            <xs:extension base="tns:generic-protocol">
+            <xs:extension base="tns:protocol">
                 <xs:sequence>
-                    <xs:element name="key-credential-reference" type="tns:credential-reference">
+                    <xs:element name="key-credential-reference" type="credential-reference:credentialReferenceType">
                         <xs:annotation>
                             <xs:documentation>References the password credential with which the key is protected.</xs:documentation>
                         </xs:annotation>
@@ -292,7 +283,7 @@
 
     <xs:complexType name="auth-protocol">
         <xs:complexContent>
-            <xs:extension base="tns:generic-protocol">
+            <xs:extension base="tns:protocol">
                 <xs:choice>
                     <xs:element name="plain-token" type="tns:plain-token">
                         <xs:annotation>
@@ -316,7 +307,7 @@
 
     <xs:complexType name="plain-token">
         <xs:sequence>
-            <xs:element name="shared-secret-reference" type="tns:credential-reference">
+            <xs:element name="shared-secret-reference" type="credential-reference:credentialReferenceType">
                 <xs:annotation>
                     <xs:documentation>References a shared secret used to authenticate new members.</xs:documentation>
                 </xs:annotation>
@@ -340,7 +331,7 @@
         <xs:complexContent>
             <xs:extension base="tns:plain-token">
                 <xs:sequence>
-                    <xs:element name="key-credential-reference" type="tns:credential-reference">
+                    <xs:element name="key-credential-reference" type="credential-reference:credentialReferenceType">
                         <xs:annotation>
                             <xs:documentation>References the credential required to obtain the specified key from the specified store.</xs:documentation>
                         </xs:annotation>
@@ -365,41 +356,6 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <!-- Copied from elytron subsystem schema -->
-    <xs:complexType name="credential-reference">
-        <xs:attribute name="store" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation>
-                    Credential store name used to fetch credential with given 'alias' from.
-                    Credential store name has to be defined elsewhere.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="alias" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation>
-                    Alias of credential in the credential store.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="type" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation>
-                    Type of credential to be fetched from credential store.
-                    It is usually fully qualified class name.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="clear-text" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation>
-                    Credential/password in clear text. Use just for testing purpose.
-                    Otherwise use credential store to mask the actual credential from your configuration.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:complexType>
-
     <xs:complexType name="transport">
         <xs:complexContent>
             <xs:extension base="tns:protocol">
@@ -410,34 +366,19 @@
                         </xs:annotation>
                     </xs:element>
                 </xs:sequence>
-                <xs:attribute name="shared" type="xs:boolean" default="true">
+                <xs:attribute name="socket-binding" type="xs:string">
                     <xs:annotation>
-                        <xs:documentation>Indicates whether or not the channels created for this stack should use a single, shared transport.</xs:documentation>
+                        <xs:documentation>The socket-binding used to configure the bind address/port of the socket used to receive messages from other members.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="client-socket-binding" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>The socket-binding used to configure the bind address/port of the socket used to send messages to other members.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="diagnostics-socket-binding" type="xs:string">
                     <xs:annotation>
                         <xs:documentation>If specified, enables diagnostics and specified the multicast address/port on which to communicate.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-                <xs:attribute name="default-executor" type="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>Defines the thread pool used for default messages received by this transport.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-                <xs:attribute name="oob-executor" type="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>Defines the thread pool used for OOB messages received by this transport.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-                <xs:attribute name="timer-executor" type="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>Defines the timer thread pool used by this transport.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-                <xs:attribute name="thread-factory" type="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>Defines the thread factory used by this transport.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="site" type="xs:string">

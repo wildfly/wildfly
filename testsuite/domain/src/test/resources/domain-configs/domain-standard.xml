@@ -211,39 +211,42 @@
                     </local-cache>
                 </cache-container>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:jgroups:2.0" default-stack="udp">
-                   <stack name="udp">
-                       <transport type="UDP" socket-binding="jgroups-udp"/>
-                       <protocol type="PING"/>
-                       <protocol type="MERGE3"/>
-                       <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
-                       <protocol type="FD"/>
-                       <protocol type="VERIFY_SUSPECT"/>
-                       <protocol type="pbcast.NAKACK2"/>
-                       <protocol type="UNICAST2"/>
-                       <protocol type="pbcast.STABLE"/>
-                       <protocol type="pbcast.GMS"/>
-                       <protocol type="UFC"/>
-                       <protocol type="MFC"/>
-                       <protocol type="FRAG2"/>
-                       <protocol type="RSVP"/>
-                   </stack>
-                   <stack name="tcp">
-                       <transport type="TCP" socket-binding="jgroups-tcp"/>
-                       <protocol type="MPING" socket-binding="jgroups-mping"/>
-                       <protocol type="MERGE2"/>
-                       <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
-                       <protocol type="FD"/>
-                       <protocol type="VERIFY_SUSPECT"/>
-                       <protocol type="pbcast.NAKACK2"/>
-                       <protocol type="UNICAST2"/>
-                       <protocol type="pbcast.STABLE"/>
-                       <protocol type="pbcast.GMS"/>
-                       <protocol type="MFC"/>
-                       <protocol type="FRAG2"/>
-                       <protocol type="RSVP"/>
-                   </stack>
-               </subsystem>
+            <subsystem xmlns="urn:jboss:domain:jgroups:8.0">
+                <channels default="ee">
+                    <channel name="ee" stack="udp" cluster="ejb"/>
+                </channels>
+                <stacks>
+                    <stack name="udp">
+                        <transport type="UDP" socket-binding="jgroups-udp"/>
+                        <protocol type="PING"/>
+                        <protocol type="MERGE3"/>
+                        <socket-protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
+                        <protocol type="FD_ALL"/>
+                        <protocol type="VERIFY_SUSPECT"/>
+                        <protocol type="pbcast.NAKACK2"/>
+                        <protocol type="UNICAST3"/>
+                        <protocol type="pbcast.STABLE"/>
+                        <protocol type="pbcast.GMS"/>
+                        <protocol type="UFC"/>
+                        <protocol type="MFC"/>
+                        <protocol type="FRAG3"/>
+                    </stack>
+                    <stack name="tcp">
+                        <transport type="TCP" socket-binding="jgroups-tcp"/>
+                        <socket-protocol type="MPING" socket-binding="jgroups-mping"/>
+                        <protocol type="MERGE3"/>
+                        <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
+                        <protocol type="FD_ALL"/>
+                        <protocol type="VERIFY_SUSPECT"/>
+                        <protocol type="pbcast.NAKACK2"/>
+                        <protocol type="UNICAST3"/>
+                        <protocol type="pbcast.STABLE"/>
+                        <protocol type="pbcast.GMS"/>
+                        <protocol type="MFC"/>
+                        <protocol type="FRAG3"/>
+                    </stack>
+                </stacks>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:mail:1.1">
                 <mail-session jndi-name="java:jboss/mail/Default">
                     <smtp-server outbound-socket-binding-ref="mail-smtp"/>
@@ -555,39 +558,42 @@
                     </local-cache>
                 </cache-container>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:jgroups:2.0" default-stack="udp">
-                   <stack name="udp">
-                       <transport type="UDP" socket-binding="jgroups-udp"/>
-                       <protocol type="PING"/>
-                       <protocol type="MERGE3"/>
-                       <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
-                       <protocol type="FD"/>
-                       <protocol type="VERIFY_SUSPECT"/>
-                       <protocol type="pbcast.NAKACK2"/>
-                       <protocol type="UNICAST2"/>
-                       <protocol type="pbcast.STABLE"/>
-                       <protocol type="pbcast.GMS"/>
-                       <protocol type="UFC"/>
-                       <protocol type="MFC"/>
-                       <protocol type="FRAG2"/>
-                       <protocol type="RSVP"/>
-                   </stack>
-                   <stack name="tcp">
-                       <transport type="TCP" socket-binding="jgroups-tcp"/>
-                       <protocol type="MPING" socket-binding="jgroups-mping"/>
-                       <protocol type="MERGE2"/>
-                       <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
-                       <protocol type="FD"/>
-                       <protocol type="VERIFY_SUSPECT"/>
-                       <protocol type="pbcast.NAKACK2"/>
-                       <protocol type="UNICAST2"/>
-                       <protocol type="pbcast.STABLE"/>
-                       <protocol type="pbcast.GMS"/>
-                       <protocol type="MFC"/>
-                       <protocol type="FRAG2"/>
-                       <protocol type="RSVP"/>
-                   </stack>
-               </subsystem>
+            <subsystem xmlns="urn:jboss:domain:jgroups:8.0">
+                <channels default="ee">
+                    <channel name="ee" stack="udp" cluster="ejb"/>
+                </channels>
+                <stacks>
+                    <stack name="udp">
+                        <transport type="UDP" socket-binding="jgroups-udp"/>
+                        <protocol type="PING"/>
+                        <protocol type="MERGE3"/>
+                        <socket-protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
+                        <protocol type="FD_ALL"/>
+                        <protocol type="VERIFY_SUSPECT"/>
+                        <protocol type="pbcast.NAKACK2"/>
+                        <protocol type="UNICAST3"/>
+                        <protocol type="pbcast.STABLE"/>
+                        <protocol type="pbcast.GMS"/>
+                        <protocol type="UFC"/>
+                        <protocol type="MFC"/>
+                        <protocol type="FRAG3"/>
+                    </stack>
+                    <stack name="tcp">
+                        <transport type="TCP" socket-binding="jgroups-tcp"/>
+                        <socket-protocol type="MPING" socket-binding="jgroups-mping"/>
+                        <protocol type="MERGE3"/>
+                        <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
+                        <protocol type="FD_ALL"/>
+                        <protocol type="VERIFY_SUSPECT"/>
+                        <protocol type="pbcast.NAKACK2"/>
+                        <protocol type="UNICAST3"/>
+                        <protocol type="pbcast.STABLE"/>
+                        <protocol type="pbcast.GMS"/>
+                        <protocol type="MFC"/>
+                        <protocol type="FRAG3"/>
+                    </stack>
+                </stacks>
+            </subsystem>
             <subsystem xmlns="urn:jboss:domain:mail:1.0">
                 <mail-session jndi-name="java:jboss/mail/Default">
                     <smtp-server outbound-socket-binding-ref="mail-smtp"/>

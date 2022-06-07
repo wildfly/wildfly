@@ -88,27 +88,6 @@ public class AbstractProtocolResourceDefinition extends ChildResourceDefinition<
         }
     }
 
-    @Deprecated
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        TYPE(ModelDescriptionConstants.TYPE, ModelType.STRING, JGroupsModel.VERSION_3_0_0),
-        ;
-        private final AttributeDefinition definition;
-
-        DeprecatedAttribute(String name, ModelType type, JGroupsModel deprecation) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setRequired(false)
-                    .setDeprecated(deprecation.getVersion())
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
     private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceHandler handler;
     private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
@@ -120,20 +99,14 @@ public class AbstractProtocolResourceDefinition extends ChildResourceDefinition<
         this.parentServiceConfiguratorFactory = parentServiceConfiguratorFactory;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
                 .addAttributes(Attribute.class)
-                .addExtraParameters(DeprecatedAttribute.class)
                 ;
         new RestartParentResourceRegistration(this.parentServiceConfiguratorFactory, descriptor, this.handler).register(registration);
-
-        if (registration.getPathAddress().getLastElement().isWildcard()) {
-            new PropertyResourceDefinition().register(registration);
-        }
 
         return registration;
     }

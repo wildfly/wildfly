@@ -22,7 +22,6 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -40,7 +39,6 @@ import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
 public class RelayResourceDefinition extends AbstractProtocolResourceDefinition {
 
     static final PathElement PATH = pathElement(RelayConfiguration.PROTOCOL_NAME);
-    static final PathElement LEGACY_PATH = pathElement("RELAY");
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     public static PathElement pathElement(String name) {
@@ -80,8 +78,6 @@ public class RelayResourceDefinition extends AbstractProtocolResourceDefinition 
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = super.register(parent);
-
-        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         new RemoteSiteResourceDefinition(this.serviceConfiguratorFactory).register(registration);
 

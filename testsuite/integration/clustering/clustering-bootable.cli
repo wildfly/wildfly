@@ -38,7 +38,8 @@
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-4-bridge:add(host=${node3},port=7901)
 /socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-bridge:add(port=7601)
 /socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-fd-bridge:add(port=57601)
-/subsystem=jgroups/stack=tcp-bridge:add(transport={type=TCP,socket-binding=jgroups-tcp-bridge})
+/subsystem=jgroups/stack=tcp-bridge:add
+/subsystem=jgroups/stack=tcp-bridge/transport=TCP:add(socket-binding=jgroups-tcp-bridge)
 /subsystem=jgroups/stack=tcp-bridge/protocol=TCPPING:add(socket-bindings=[node-1-bridge,node-2-bridge,node-3-bridge,node-4-bridge])
 /subsystem=jgroups/stack=tcp-bridge/protocol=MERGE3:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=FD_SOCK:add(socket-binding=jgroups-tcp-fd-bridge)

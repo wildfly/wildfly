@@ -27,7 +27,6 @@ import java.io.IOException;
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.Operations;
-import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
@@ -88,29 +87,8 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return operation;
     }
 
-    @SuppressWarnings("deprecation")
-    protected static ModelNode getLegacyTransportAddOperation(String stackName, String protocol) {
-        ModelNode op = Util.createAddOperation(getLegacyTransportAddress(stackName));
-        op.get(AbstractProtocolResourceDefinition.DeprecatedAttribute.TYPE.getName()).set(protocol);
-        op.get(MulticastProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()).set("some-binding");
-        return op;
-    }
-
-    protected static ModelNode getTransportAddOperationWithProperties(String stackName, String type) {
-        ModelNode[] operations = new ModelNode[] {
-                getTransportAddOperation(stackName, type),
-                getProtocolPropertyAddOperation(stackName, type, "A", "a"),
-                getProtocolPropertyAddOperation(stackName, type, "B", "b"),
-        };
-        return Operations.createCompositeOperation(operations);
-    }
-
     protected static ModelNode getTransportRemoveOperation(String stackName, String type) {
         return Util.createRemoveOperation(getTransportAddress(stackName, type));
-    }
-
-    protected static ModelNode getLegacyTransportRemoveOperation(String stackName) {
-        return Util.createRemoveOperation(getLegacyTransportAddress(stackName));
     }
 
     protected static ModelNode getTransportReadOperation(String stackName, String type, Attribute attribute) {
@@ -119,27 +97,6 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected static ModelNode getTransportWriteOperation(String stackName, String type, Attribute attribute, String value) {
         return Operations.createWriteAttributeOperation(getTransportAddress(stackName, type), attribute, new ModelNode(value));
-    }
-
-    @SuppressWarnings("deprecation")
-    protected static ModelNode getTransportPropertyAddOperation(String stackName, String type, String propertyName, String propertyValue) {
-        ModelNode operation = Util.createAddOperation(getTransportPropertyAddress(stackName, type, propertyName));
-        operation.get(PropertyResourceDefinition.VALUE.getName()).set(propertyValue);
-        return operation;
-    }
-
-    protected static ModelNode getTransportPropertyRemoveOperation(String stackName, String type, String propertyName) {
-        return Util.createRemoveOperation(getTransportPropertyAddress(stackName, type, propertyName));
-    }
-
-    @SuppressWarnings("deprecation")
-    protected static ModelNode getTransportPropertyReadOperation(String stackName, String type, String propertyName) {
-        return Operations.createReadAttributeOperation(getTransportPropertyAddress(stackName, type, propertyName), new SimpleAttribute(PropertyResourceDefinition.VALUE));
-    }
-
-    @SuppressWarnings("deprecation")
-    protected static ModelNode getTransportPropertyWriteOperation(String stackName, String type, String propertyName, String propertyValue) {
-        return Operations.createWriteAttributeOperation(getTransportPropertyAddress(stackName, type, propertyName), new SimpleAttribute(PropertyResourceDefinition.VALUE), new ModelNode(propertyValue));
     }
 
     // Transport property map operations
@@ -172,22 +129,13 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return Operations.createWriteAttributeOperation(getTransportAddress(stackName, type), AbstractProtocolResourceDefinition.Attribute.PROPERTIES, values);
     }
 
-    protected static ModelNode getLegacyThreadPoolAddOperation(String stackName, String threadPoolName) {
-        return Util.createAddOperation(getLegacyTransportAddress(stackName).append("thread-pool", threadPoolName));
+    protected static ModelNode getThreadPoolAddOperation(String stackName, String type, String threadPoolName) {
+        return Util.createAddOperation(getTransportAddress(stackName, type).append("thread-pool", threadPoolName));
     }
 
     // Protocol operations
     protected static ModelNode getProtocolAddOperation(String stackName, String type) {
         return Util.createAddOperation(getProtocolAddress(stackName, type));
-    }
-
-    protected static ModelNode getProtocolAddOperationWithProperties(String stackName, String type) {
-        ModelNode[] operations = new ModelNode[] {
-                getProtocolAddOperation(stackName, type),
-                getProtocolPropertyAddOperation(stackName, type, "A", "a"),
-                getProtocolPropertyAddOperation(stackName, type, "B", "b"),
-        };
-        return Operations.createCompositeOperation(operations);
     }
 
     protected static ModelNode getProtocolReadOperation(String stackName, String protocolName, Attribute attribute) {
@@ -196,27 +144,6 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected static ModelNode getProtocolWriteOperation(String stackName, String protocolName, Attribute attribute, String value) {
         return Operations.createWriteAttributeOperation(getProtocolAddress(stackName, protocolName), attribute, new ModelNode(value));
-    }
-
-    @SuppressWarnings("deprecation")
-    protected static ModelNode getProtocolPropertyAddOperation(String stackName, String protocolName, String propertyName, String propertyValue) {
-        ModelNode operation = Util.createAddOperation(getProtocolPropertyAddress(stackName, protocolName, propertyName));
-        operation.get(PropertyResourceDefinition.VALUE.getName()).set(propertyValue);
-        return operation;
-    }
-
-    protected static ModelNode getProtocolPropertyRemoveOperation(String stackName, String protocolName, String propertyName) {
-        return Util.createRemoveOperation(getProtocolPropertyAddress(stackName, protocolName, propertyName));
-    }
-
-    @SuppressWarnings("deprecation")
-    protected static ModelNode getProtocolPropertyReadOperation(String stackName, String protocolName, String propertyName) {
-        return Operations.createReadAttributeOperation(getProtocolPropertyAddress(stackName, protocolName, propertyName), new SimpleAttribute(PropertyResourceDefinition.VALUE));
-    }
-
-    @SuppressWarnings("deprecation")
-    protected static ModelNode getProtocolPropertyWriteOperation(String stackName, String protocolName, String propertyName, String propertyValue) {
-        return Operations.createWriteAttributeOperation(getProtocolPropertyAddress(stackName, protocolName, propertyName), new SimpleAttribute(PropertyResourceDefinition.VALUE), new ModelNode(propertyValue));
     }
 
     protected static ModelNode getProtocolGetPropertyOperation(String stackName, String protocolName, String propertyName) {
@@ -262,22 +189,8 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         return getProtocolStackAddress(stackName).append(TransportResourceDefinition.pathElement(type));
     }
 
-    protected static PathAddress getLegacyTransportAddress(String stackName) {
-        return getProtocolStackAddress(stackName).append(TransportResourceDefinition.LEGACY_PATH);
-    }
-
-    @SuppressWarnings("deprecation")
-    protected static PathAddress getTransportPropertyAddress(String stackName, String type, String propertyName) {
-        return getTransportAddress(stackName, type).append(PropertyResourceDefinition.pathElement(propertyName));
-    }
-
     protected static PathAddress getProtocolAddress(String stackName, String type) {
         return getProtocolStackAddress(stackName).append(ProtocolResourceDefinition.pathElement(type));
-    }
-
-    @SuppressWarnings("deprecation")
-    protected static PathAddress getProtocolPropertyAddress(String stackName, String type, String propertyName) {
-        return getProtocolAddress(stackName, type).append(PropertyResourceDefinition.pathElement(propertyName));
     }
 
     protected String getSubsystemXml() throws IOException {
@@ -287,5 +200,4 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     protected KernelServices buildKernelServices() throws Exception {
         return createKernelServicesBuilder(new AdditionalInitialization().require(CommonUnaryRequirement.SOCKET_BINDING, "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "new-socket-binding")).setSubsystemXml(this.getSubsystemXml()).build();
     }
-
 }

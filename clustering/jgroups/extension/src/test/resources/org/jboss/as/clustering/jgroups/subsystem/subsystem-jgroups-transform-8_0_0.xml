@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:jgroups:8.0">
+<subsystem xmlns="urn:jboss:domain:jgroups:9.0">
     <channels default="ee">
         <channel name="ee" stack="maximal" cluster="${jgroups.ee.cluster:mycluster}" module="${jgroups.ee.module:org.wildfly.clustering.server}" statistics-enabled="${jgroups.ee.statistics-enabled:true}">
             <fork name="web">
@@ -41,7 +41,6 @@
                        socket-binding="some-binding"
                        client-socket-binding="some-other-binding"
                        diagnostics-socket-binding="jgroups-diagnostics"
-                       shared="${jgroups.maximal.shared:false}"
                        machine="${jgroups.maximal.machine:machine1}"
                        rack="${jgroups.maximal.rack:rack1}"
                        site="${jgroups.maximal.site:site1}">
