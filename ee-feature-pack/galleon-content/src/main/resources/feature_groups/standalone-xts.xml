@@ -15,7 +15,6 @@
         <feature-group name="iiop-sockets"/>
     </feature>
 
-    <feature-group name="jsr77"/>
     <feature-group name="iiop-openjdk"/>
     <feature-group name="messaging-activemq"/>
     <!-- uncomment to make it the match the legacy configs

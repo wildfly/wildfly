@@ -78,8 +78,8 @@
         <module>jdr</module>
         <module>jpa</module>
         <module>jsf</module>
-        <module>jsr77</module>
         <module>legacy/jacorb</module>
+        <module>legacy/jsr77</module>
         <module>legacy/messaging</module>
         <module>legacy/web</module>
         <module>mail</module>
