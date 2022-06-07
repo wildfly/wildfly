@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+
+<config xmlns="urn:jboss:galleon:config:1.0" name="standalone.xml" model="standalone">
+    <layers>
+        <include name="jaxrs-server"/>
+        <include name="ee-security"/>
+        <include name="metrics"/>
+        <include name="health"/>
+        <include name="microprofile-jwt"/>
+        <include name="microprofile-opentracing"/>
+        <include name="h2-default-datasource"/>
+        <include name="elytron-oidc-client"/>
+                        
+        <include name="ejb-http-invoker"/>
+        <include name="remote-naming"/>
+        <include name="resource-adapters"/>
+        <include name="remoting"/>
+                        
+        <include name="web-passivation"/>
+        <include name="undertow-https"/>
+        <include name="jdr"/>
+        <include name="jsf"/>
+        <include name="webservices"/>
+        <include name="pojo"/>
+        <include name="mail"/>
+        <include name="sar"/>
+        <include name="batch-jberet"/>
+        <exclude name="messaging-activemq"/>
+    </layers>
+
+    <feature-group name="undertow-default-config"/>
+
+    <feature spec="subsystem.remoting">
+        <feature spec="subsystem.remoting.configuration.endpoint">
+            <unset param="worker"/>
+        </feature>
+    </feature>
+
+    <feature-group name="ejb3-mdb-pool"/>
+    <feature-group name="ejb3-remote-service"/>
+
+    <!-- the module it depends on is forced to be provisioned by galleon, so we are fine: WFLY-16099  -->
+    <feature-group name="infinispan-local-server"/>
+    
+    <!-- Should we have a layer? -->
+    <feature-group name="microprofile-opentracing-jaeger"/>
+</config>
