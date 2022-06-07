@@ -62,8 +62,6 @@ public class LifecycleTestCase  {
 
     private static final String TRUE = "true";
 
-    private static final String UNSUPPORTED_OPERATION = "UnsupportedOperationException";
-
     private static final String ILLEGAL_STATE = "IllegalStateException";
 
     @EJB(mappedName = "java:global/ejb3security/EntryBean")
@@ -90,9 +88,9 @@ public class LifecycleTestCase  {
         StringBuilder failureMessages = new StringBuilder();
         final Callable<Void> callable = () -> {
             Map<String, String> result = entryBean.testStatefulBean();
-            verifyResult(result, BaseBean.LIFECYCLE_CALLBACK, USER1, UNSUPPORTED_OPERATION, TRUE, ILLEGAL_STATE, failureMessages);
-            verifyResult(result, BaseBean.BUSINESS, USER1, UNSUPPORTED_OPERATION, TRUE, ILLEGAL_STATE, failureMessages);
-            verifyResult(result, BaseBean.AFTER_BEGIN, USER1, UNSUPPORTED_OPERATION, TRUE, ILLEGAL_STATE, failureMessages);
+            verifyResult(result, BaseBean.LIFECYCLE_CALLBACK, USER1, TRUE, failureMessages);
+            verifyResult(result, BaseBean.BUSINESS, USER1, TRUE, failureMessages);
+            verifyResult(result, BaseBean.AFTER_BEGIN, USER1, TRUE, failureMessages);
             return null;
         };
         Util.switchIdentity("user1", "password1", callable);
@@ -107,7 +105,7 @@ public class LifecycleTestCase  {
         StringBuilder failureMessages = new StringBuilder();
         final Callable<Void> callable = () -> {
             Map<String, String> result = entryBean.testStatefulBean();
-            verifyResult(result, BaseBean.DEPENDENCY_INJECTION, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE,
+            verifyResult(result, BaseBean.DEPENDENCY_INJECTION, ILLEGAL_STATE, ILLEGAL_STATE,
                     failureMessages);
             return null;
         };
@@ -126,7 +124,7 @@ public class LifecycleTestCase  {
             for (String current : result.keySet()) {
                 log.trace(current + " = " + result.get(current));
             }
-            verifyResult(result, BaseBean.BUSINESS, USER1, UNSUPPORTED_OPERATION, TRUE, ILLEGAL_STATE, failureMessages);
+            verifyResult(result, BaseBean.BUSINESS, USER1, TRUE, failureMessages);
             return null;
         };
         Util.switchIdentity("user1", "password1", callable);
@@ -145,7 +143,7 @@ public class LifecycleTestCase  {
             for (String current : result.keySet()) {
                 log.trace(current + " = " + result.get(current));
             }
-            verifyResult(result, BaseBean.DEPENDENCY_INJECTION, ILLEGAL_STATE, UNSUPPORTED_OPERATION, ILLEGAL_STATE, ILLEGAL_STATE,
+            verifyResult(result, BaseBean.DEPENDENCY_INJECTION, ILLEGAL_STATE, ILLEGAL_STATE,
                     failureMessages);
             return null;
         };
@@ -159,15 +157,10 @@ public class LifecycleTestCase  {
     // TODO - Add test for Message Driven Bean
 
     private void verifyResult(Map<String, String> result, String beanMethod, String getCallerPrincipalResponse,
-            String getCallerIdentityResponse, String isCallerInRoleResponse, String isCallerInRoleIdentityResponse,
-            StringBuilder errors) {
+                              String isCallerInRoleResponse, StringBuilder errors) {
         verify(beanMethod, BaseBean.GET_CALLER_PRINCIPAL, getCallerPrincipalResponse,
                 result.get(beanMethod + ":" + BaseBean.GET_CALLER_PRINCIPAL), errors);
-        verify(beanMethod, BaseBean.GET_CALLER_IDENTITY, getCallerIdentityResponse, result.get(beanMethod + ":" + BaseBean.GET_CALLER_IDENTITY),
-                errors);
         verify(beanMethod, BaseBean.IS_CALLER_IN_ROLE, isCallerInRoleResponse, result.get(beanMethod + ":" + BaseBean.IS_CALLER_IN_ROLE), errors);
-        verify(beanMethod, BaseBean.IS_CALLER_IN_ROLE_IDENITY, isCallerInRoleIdentityResponse,
-                result.get(beanMethod + ":" + BaseBean.IS_CALLER_IN_ROLE_IDENITY), errors);
     }
 
     private void verify(String beanMethod, String ejbContextMethod, String expected, String actual, StringBuilder errors) {
