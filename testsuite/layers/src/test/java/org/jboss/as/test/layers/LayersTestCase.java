@@ -74,7 +74,14 @@ public class LayersTestCase {
         "org.apache.commons.lang3",
         "org.wildfly.security.elytron-tool",
         "org.wildfly.security.http.sfbasic",
-        "internal.javax.json.api.ee8"
+        "internal.javax.json.api.ee8",
+        // Workaround for  https://issues.redhat.com/browse/WFLY-16452 and https://issues.redhat.com/browse/WFLY-16453
+        "org.jboss.mod_cluster.container.spi",
+        "org.jboss.mod_cluster.core",
+        "org.jboss.mod_cluster.load.spi",
+        "org.wildfly.extension.clustering.singleton",
+        "org.wildfly.extension.mod_cluster"
+        // End workaround
     };
     // Packages that are not referenced from the module graph but needed.
     // This is the expected set of un-referenced modules found when scanning
@@ -166,12 +173,16 @@ public class LayersTestCase {
     public static String root;
     public static String servletRoot;
     public static String eeRoot;
+    public static String eeHaRoot;
+    public static String haRoot;
 
     @BeforeClass
     public static void setUp() {
         root = System.getProperty("layers.install.root");
         servletRoot = System.getProperty("servlet.layers.install.root");
         eeRoot = System.getProperty("ee.layers.install.root");
+        eeHaRoot = System.getProperty("ee.ha.layers.install.root");
+        haRoot = System.getProperty("ha.layers.install.root");
     }
 
     @AfterClass
@@ -194,6 +205,18 @@ public class LayersTestCase {
                     LayersTest.recursiveDelete(f.toPath());
                 }
             }
+            if (eeHaRoot != null && eeHaRoot.length() > 0) {
+                installations = new File(eeHaRoot).listFiles(File::isDirectory);
+                for (File f : installations) {
+                    LayersTest.recursiveDelete(f.toPath());
+                }
+            }
+            if (haRoot != null && haRoot.length() > 0) {
+                installations = new File(haRoot).listFiles(File::isDirectory);
+                for (File f : installations) {
+                    LayersTest.recursiveDelete(f.toPath());
+                }
+            }
         }
     }
 
@@ -208,6 +231,19 @@ public class LayersTestCase {
     public void testEE() throws Exception {
         org.junit.Assume.assumeTrue("EE testing disabled", eeRoot != null && eeRoot.length() > 0);
         LayersTest.test(eeRoot, new HashSet<>(EE_NOT_REFERENCED_LIST),
+                new HashSet<>(Arrays.asList(NOT_USED)));
+    }
+
+    @Test
+    public void testEEHA() throws Exception {
+        org.junit.Assume.assumeTrue("EE HA testing disabled", eeHaRoot != null && eeHaRoot.length() > 0);
+        LayersTest.test(eeHaRoot, new HashSet<>(EE_NOT_REFERENCED_LIST),
+                new HashSet<>(Arrays.asList(NOT_USED)));
+    }
+
+    @Test
+    public void testHA() throws Exception {
+        LayersTest.test(haRoot, new HashSet<>(FULL_NOT_REFERENCED_LIST),
                 new HashSet<>(Arrays.asList(NOT_USED)));
     }
 
@@ -227,6 +263,14 @@ public class LayersTestCase {
         }
         if (eeRoot != null && eeRoot.length() > 0) {
             HashMap<String, String> eeResults = LayersTest.checkBannedModules(eeRoot, BANNED_MODULES_CONF);
+            results.putAll(eeResults);
+        }
+        if (eeHaRoot != null && eeHaRoot.length() > 0) {
+            HashMap<String, String> eeResults = LayersTest.checkBannedModules(eeHaRoot, BANNED_MODULES_CONF);
+            results.putAll(eeResults);
+        }
+        if (haRoot != null && haRoot.length() > 0) {
+            HashMap<String, String> eeResults = LayersTest.checkBannedModules(haRoot, BANNED_MODULES_CONF);
             results.putAll(eeResults);
         }
         Assert.assertTrue("The following banned modules were provisioned " + results.toString(), results.isEmpty());
