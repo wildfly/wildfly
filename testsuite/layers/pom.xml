@@ -52,7 +52,13 @@
         <!-- An empty directory for this will disable 'ee' tests which are meant for testing
              the ee feature pack default config. -->
         <ee.layers.install.root>${ee.layers.install.dir}</ee.layers.install.root>
-        
+
+        <ee.ha.layers.install.dir>${project.build.directory}/ee-ha-layers-results</ee.ha.layers.install.dir>
+        <!-- An empty directory for this will disable 'ee' tests which are meant for testing
+             the ee feature pack default config. -->
+        <ee.ha.layers.install.root>${ee.ha.layers.install.dir}</ee.ha.layers.install.root>
+        <ha.layers.install.dir>${project.build.directory}/ha-layers-results</ha.layers.install.dir>
+
         <layers.delete.installations>true</layers.delete.installations>
         <jbossas.project.dir>${jbossas.ts.dir}/../..</jbossas.project.dir>
         
@@ -120,6 +126,8 @@
                 <servlet.layers.install.root></servlet.layers.install.root>
                 <!-- An empty value for this will disable the ee test -->
                 <ee.layers.install.root></ee.layers.install.root>
+                <!-- An empty value for this will disable the ee ha test -->
+                <ee.ha.layers.install.root></ee.ha.layers.install.root>
             </properties>
         </profile>
     </profiles>
@@ -1100,6 +1108,154 @@
                                                 <layer>web-server</layer>
                                                 <layer>webservices</layer>
                                             </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <!-- wildfly ee default standalone-ha config and all layers comparison -->
+                            <execution>
+                                <!-- Build the test-standalone-reference from the ee feature pack. -->
+                                <id>test-ee-ha-standalone-reference-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase.preview.excluded}</phase>
+                                <configuration>
+                                    <install-dir>${ee.ha.layers.install.dir}/test-standalone-reference</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone-ha.xml</name>
+                                                </config>
+                                            </included-configs>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <custom-config>ha-config.xml</custom-config>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <!-- Provision standalone-ha with a name different than test-standalone-reference to enforce execution of it by test. -->
+                                <id>test-ee-ha-standalone-execution</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase.preview.excluded}</phase>
+                                <configuration>
+                                    <install-dir>${ee.ha.layers.install.dir}/test-standalone-ha</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone-ha.xml</name>
+                                                </config>
+                                            </included-configs>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <custom-config>ha-config.xml</custom-config>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>all-layers-provisioning-ee-ha</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase.preview.excluded}</phase>
+                                <configuration>
+                                    <install-dir>${ee.ha.layers.install.dir}/test-all-layers</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${ee.feature.pack.groupId}</groupId>
+                                            <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                            <version>${ee.feature.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>base-server</layer>
+                                                <layer>batch-jberet</layer>
+                                                <layer>bean-validation</layer>
+                                                <layer>cdi</layer>
+                                                <layer>cloud-profile</layer>
+                                                <layer>cloud-server</layer>
+                                                <layer>core-management</layer>
+                                                <layer>core-server</layer>
+                                                <layer>core-tools</layer>
+                                                <layer>datasources</layer>
+                                                <layer>datasources-web-server</layer>
+                                                <layer>deployment-scanner</layer>
+                                                <layer>discovery</layer>
+                                                <layer>ee</layer>
+                                                <layer>ee-security</layer>
+                                                <layer>ejb</layer>
+                                                <layer>ejb-http-invoker</layer>
+                                                <layer>ejb-lite</layer>
+                                                <layer>ejb-dist-cache</layer>
+                                                <layer>elytron</layer>
+                                                <layer>h2-datasource</layer>
+                                                <layer>h2-default-datasource</layer>
+                                                <layer>h2-driver</layer>
+                                                <layer>iiop-openjdk</layer>
+                                                <layer>io</layer>
+                                                <layer>jaxrs</layer>
+                                                <layer>jaxrs-server</layer>
+                                                <layer>jdr</layer>
+                                                <layer>jms-activemq</layer>
+                                                <layer>jmx</layer>
+                                                <layer>jmx-remoting</layer>
+                                                <layer>jpa-distributed</layer>
+                                                <layer>jsf</layer>
+                                                <layer>jsonb</layer>
+                                                <layer>jsonp</layer>
+                                                <layer>logging</layer>
+                                                <layer>mail</layer>
+                                                <layer>management</layer>
+                                                <layer>messaging-activemq</layer>
+                                                <layer>naming</layer>
+                                                <layer>observability</layer>
+                                                <layer>opentelemetry</layer>
+                                                <layer>pojo</layer>
+                                                <layer>remote-activemq</layer>
+                                                <layer>remoting</layer>
+                                                <layer>request-controller</layer>
+                                                <layer>resource-adapters</layer>
+                                                <layer>sar</layer>
+                                                <layer>security-manager</layer>
+                                                <layer>transactions</layer>
+                                                <layer>undertow</layer>
+                                                <layer>undertow-https</layer>
+                                                <layer>undertow-load-balancer</layer>
+                                                <layer>web-clustering</layer>
+                                                <layer>web-console</layer>
+                                                <layer>web-server</layer>
+                                                <layer>webservices</layer>
+                                                
+                                                <!-- Missing layers for singleton and mod_cluster, there is a workaround in test 
+                                                        for the modules they are bringing, tracked by 
+                                              https://issues.redhat.com/browse/WFLY-16452 and https://issues.redhat.com/browse/WFLY-16453 -->
+
+                                            </layers>
+                                            <excluded-layers>
+                                                <layer>ejb-local-cache</layer>
+                                                <layer>jpa</layer>
+                                            </excluded-layers>
                                         </config>
                                     </configurations>
                                 </configuration>
@@ -2738,6 +2894,158 @@
                                     </configurations>
                                 </configuration>
                             </execution>
+                            <!-- wildfly default standalone-ha config and all layers comparison -->
+                            <execution>
+                                <!-- Build the test-standalone-reference from the full feature pack. -->
+                                <id>test-full-ha-standalone-reference-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${ha.layers.install.dir}/test-standalone-reference</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${full.maven.groupId}</groupId>
+                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
+                                            <version>${full.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone-ha.xml</name>
+                                                </config>
+                                            </included-configs>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <custom-config>ha-config.xml</custom-config>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <!-- Provision standalone-ha with a name different than test-standalone-reference to enforce execution of it by test. -->
+                                <id>test-full-ha-standalone-execution</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${ha.layers.install.dir}/test-standalone-ha</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${full.maven.groupId}</groupId>
+                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
+                                            <version>${full.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                            <included-configs>
+                                                <config>
+                                                    <model>standalone</model>
+                                                    <name>standalone-ha.xml</name>
+                                                </config>
+                                            </included-configs>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <custom-config>ha-config.xml</custom-config>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>all-layers-standalone-ha-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${ha.layers.install.dir}/test-all-layers</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${full.maven.groupId}</groupId>
+                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
+                                            <version>${full.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>base-server</layer>
+                                                <layer>batch-jberet</layer>
+                                                <layer>bean-validation</layer>
+                                                <layer>cdi</layer>
+                                                <layer>cloud-profile</layer>
+                                                <layer>cloud-server</layer>
+                                                <layer>core-management</layer>
+                                                <layer>core-server</layer>
+                                                <layer>core-tools</layer>
+                                                <layer>datasources</layer>
+                                                <layer>datasources-web-server</layer>
+                                                <layer>deployment-scanner</layer>
+                                                <layer>discovery</layer>
+                                                <layer>ee</layer>
+                                                <layer>ee-security</layer>
+                                                <layer>ejb</layer>
+                                                <layer>ejb-http-invoker</layer>
+                                                <layer>ejb-lite</layer>
+                                                <layer>ejb-dist-cache</layer>
+                                                <layer>elytron</layer>
+                                                <layer>h2-datasource</layer>
+                                                <layer>h2-default-datasource</layer>
+                                                <layer>h2-driver</layer>
+                                                <layer>iiop-openjdk</layer>
+                                                <layer>io</layer>
+                                                <layer>jaxrs</layer>
+                                                <layer>jaxrs-server</layer>
+                                                <layer>jdr</layer>
+                                                <layer>jms-activemq</layer>
+                                                <layer>jmx</layer>
+                                                <layer>jmx-remoting</layer>
+                                                <layer>jpa-distributed</layer>
+                                                <layer>jsf</layer>
+                                                <layer>jsonb</layer>
+                                                <layer>jsonp</layer>
+                                                <layer>logging</layer>
+                                                <layer>mail</layer>
+                                                <layer>management</layer>
+                                                <layer>messaging-activemq</layer>
+                                                <layer>naming</layer>
+                                                <layer>observability</layer>
+                                                <layer>opentelemetry</layer>
+                                                <layer>pojo</layer>
+                                                <layer>remote-activemq</layer>
+                                                <layer>remoting</layer>
+                                                <layer>request-controller</layer>
+                                                <layer>resource-adapters</layer>
+                                                <layer>sar</layer>
+                                                <layer>security-manager</layer>
+                                                <layer>transactions</layer>
+                                                <layer>undertow</layer>
+                                                <layer>undertow-https</layer>
+                                                <layer>undertow-load-balancer</layer>
+                                                <layer>web-clustering</layer>
+                                                <layer>web-console</layer>
+                                                <layer>web-server</layer>
+                                                <layer>webservices</layer>
+                                                
+                                                <!-- Missing layers for singleton and mod_cluster, there is a workaround in test
+                                                        for the modules they are bringing, tracked by
+                                              https://issues.redhat.com/browse/WFLY-16452 and https://issues.redhat.com/browse/WFLY-16453 -->
+
+                                                <!-- layers only present in full standalone-ha.xml -->
+                                                <layer>elytron-oidc-client</layer>
+                                                <layer>microprofile-jwt</layer>
+                                                <layer>microprofile-opentracing</layer>
+                                            </layers>
+                                            <excluded-layers>
+                                                <layer>ejb-local-cache</layer>
+                                                <layer>jpa</layer>
+                                            </excluded-layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
                             <!-- Core Layers - These can't be tested in Core as they require Undertow -->
                             <execution>
                                 <id>remoting-provisioning</id>
@@ -2811,6 +3119,8 @@
                                 <servlet.layers.install.root>${servlet.layers.install.root}</servlet.layers.install.root>
                                 <layers.install.root>${layers.install.dir}</layers.install.root>
                                 <ee.layers.install.root>${ee.layers.install.root}</ee.layers.install.root>
+                                <ee.ha.layers.install.root>${ee.ha.layers.install.root}</ee.ha.layers.install.root>
+                                <ha.layers.install.root>${ha.layers.install.dir}</ha.layers.install.root>
                                 <jbossas.version>${project.parent.version}</jbossas.version>
                                 <cleanup.tmp>${cleanup.tmp}</cleanup.tmp>
                                 <layers.delete.installations>${layers.delete.installations}</layers.delete.installations>
