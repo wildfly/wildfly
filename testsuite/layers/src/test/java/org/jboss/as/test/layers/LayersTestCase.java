@@ -17,6 +17,7 @@
 package org.jboss.as.test.layers;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -78,7 +79,7 @@ public class LayersTestCase {
     // Packages that are not referenced from the module graph but needed.
     // This is the expected set of un-referenced modules found when scanning
     // the default configuration.
-    private static final String[] NOT_REFERENCED = {
+    private static final String[] SERVLET_NOT_REFERENCED = {
         // injected by server in UndertowHttpManagementService
         "org.jboss.as.domain-http-error-context",
         // injected by logging
@@ -108,6 +109,48 @@ public class LayersTestCase {
         "internal.javax.json.api.ee8"
         };
 
+    private static final String[] EE_NOT_REFERENCED = {
+        // added by sar
+        "org.jboss.as.system-jmx",
+        // added by jsf
+        "org.jboss.as.jsf-injection",
+        // added by webservices
+        "org.jboss.ws.tools.wsprovide",
+        "org.jboss.ws.cxf.sts",
+        "org.jboss.ws.tools.common",
+        "org.jboss.ws.tools.wsconsume",
+        "org.jboss.ws.saaj-impl",
+        // Added transitively by org.jboss.ws.tools.common
+        "gnu.getopt",
+        // Injected by weld
+        "org.jboss.weld.probe",
+        // Injected by jaxrs
+        "org.jboss.resteasy.resteasy-json-p-provider",
+        "org.jboss.resteasy.resteasy-json-binding-provider",
+        // Added by standalone model.xml
+        "org.jboss.as.product",
+        // Injected by jpa
+        "org.hibernate.search.orm",
+        // Transitive of org.hibernate.search.orm
+        "org.hibernate.search.engine"
+    };
+
+    private static final String[] FULL_NOT_REFERENCED = {
+        // added by jaxrs in full
+        "org.jboss.resteasy.resteasy-client-microprofile"
+    };
+
+    private static final List<String> SERVLET_NOT_REFERENCED_LIST = new ArrayList<>();
+    private static final List<String> EE_NOT_REFERENCED_LIST = new ArrayList<>();
+    private static final List<String> FULL_NOT_REFERENCED_LIST = new ArrayList<>();
+    static {
+        SERVLET_NOT_REFERENCED_LIST.addAll(Arrays.asList(SERVLET_NOT_REFERENCED));
+        EE_NOT_REFERENCED_LIST.addAll(Arrays.asList(EE_NOT_REFERENCED));
+        EE_NOT_REFERENCED_LIST.addAll(SERVLET_NOT_REFERENCED_LIST);
+        FULL_NOT_REFERENCED_LIST.addAll(Arrays.asList(FULL_NOT_REFERENCED));
+        FULL_NOT_REFERENCED_LIST.addAll(SERVLET_NOT_REFERENCED_LIST);
+        FULL_NOT_REFERENCED_LIST.addAll(EE_NOT_REFERENCED_LIST);
+    }
     /**
      * A HashMap to configure a banned module.
      * They key is the banned module name, the value is an optional List with the installation names that are allowed to
@@ -122,23 +165,31 @@ public class LayersTestCase {
 
     public static String root;
     public static String servletRoot;
+    public static String eeRoot;
 
     @BeforeClass
     public static void setUp() {
         root = System.getProperty("layers.install.root");
         servletRoot = System.getProperty("servlet.layers.install.root");
+        eeRoot = System.getProperty("ee.layers.install.root");
     }
 
     @AfterClass
     public static void cleanUp() {
         Boolean delete = Boolean.getBoolean("layers.delete.installations");
-        if(delete) {
+        if (delete) {
             File[] installations = new File(root).listFiles(File::isDirectory);
-            for(File f : installations) {
+            for (File f : installations) {
                 LayersTest.recursiveDelete(f.toPath());
             }
             if (servletRoot != null && servletRoot.length() > 0) {
                 installations = new File(servletRoot).listFiles(File::isDirectory);
+                for (File f : installations) {
+                    LayersTest.recursiveDelete(f.toPath());
+                }
+            }
+            if (eeRoot != null && eeRoot.length() > 0) {
+               installations = new File(eeRoot).listFiles(File::isDirectory);
                 for (File f : installations) {
                     LayersTest.recursiveDelete(f.toPath());
                 }
@@ -149,15 +200,21 @@ public class LayersTestCase {
     @Test
     public void testServlet() throws Exception {
         org.junit.Assume.assumeTrue("Servlet testing disabled", servletRoot != null && servletRoot.length() > 0);
-        LayersTest.test(servletRoot, new HashSet<>(Arrays.asList(NOT_REFERENCED)),
+        LayersTest.test(servletRoot, new HashSet<>(SERVLET_NOT_REFERENCED_LIST),
+                new HashSet<>(Arrays.asList(NOT_USED)));
+    }
+
+    @Test
+    public void testEE() throws Exception {
+        org.junit.Assume.assumeTrue("EE testing disabled", eeRoot != null && eeRoot.length() > 0);
+        LayersTest.test(eeRoot, new HashSet<>(EE_NOT_REFERENCED_LIST),
                 new HashSet<>(Arrays.asList(NOT_USED)));
     }
 
     @Test
     public void test() throws Exception {
-        // TODO, no more testing than provisioning and execution of layers for now.
-        String root = System.getProperty("layers.install.root");
-        LayersTest.testExecution(root);
+       LayersTest.test(root, new HashSet<>(FULL_NOT_REFERENCED_LIST),
+       new HashSet<>(Arrays.asList(NOT_USED)));
     }
 
     @Test
@@ -167,6 +224,10 @@ public class LayersTestCase {
             HashMap<String, String> servletResults = LayersTest.checkBannedModules(servletRoot, BANNED_MODULES_CONF);
 
             results.putAll(servletResults);
+        }
+        if (eeRoot != null && eeRoot.length() > 0) {
+            HashMap<String, String> eeResults = LayersTest.checkBannedModules(eeRoot, BANNED_MODULES_CONF);
+            results.putAll(eeResults);
         }
         Assert.assertTrue("The following banned modules were provisioned " + results.toString(), results.isEmpty());
     }
