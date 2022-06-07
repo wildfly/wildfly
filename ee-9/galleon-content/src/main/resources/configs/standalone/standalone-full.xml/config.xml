@@ -49,7 +49,6 @@
         </feature>
     </feature>
     
-    <!-- A layer for embedded broker is in progress -->
     <feature-group name="messaging-activemq"/>
     
     <!-- Should we have a layer? -->

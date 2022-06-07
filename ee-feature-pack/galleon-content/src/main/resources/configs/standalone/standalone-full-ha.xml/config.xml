@@ -1,5 +1,68 @@
 <?xml version="1.0" ?>
 
 <config xmlns="urn:jboss:galleon:config:1.0" name="standalone-full-ha.xml" model="standalone">
-    <feature-group name="standalone-full-ha"/>
+        <layers>
+        <include name="jaxrs-server"/>
+        <include name="ee-security"/>
+        <include name="metrics"/>
+        <include name="health"/>
+        <exclude name="jpa"/>      
+        <include name="jpa-distributed"/>            
+                        
+        <include name="h2-default-datasource"/>
+        <!--<include name="elytron-oidc-client"/>-->
+                        
+        <include name="ejb-http-invoker"/>
+        <include name="ejb"/>
+        <exclude name="ejb-local-cache"/>
+        <include name="ejb-dist-cache"/>
+                        
+        <include name="web-clustering"/>
+        <include name="undertow-https"/>
+        <include name="jdr"/>
+        <include name="jsf"/>
+        <include name="webservices"/>
+        <include name="pojo"/>
+        <include name="mail"/>
+        <include name="sar"/>
+        <include name="batch-jberet"/>
+        
+        <include name="iiop-openjdk"/>
+    </layers>
+
+    <feature-group name="undertow-default-config"/>
+
+    <feature spec="subsystem.remoting">
+        <feature spec="subsystem.remoting.configuration.endpoint">
+            <unset param="worker"/>
+        </feature>
+    </feature>
+
+    <feature-group name="ejb3-mdb-pool"/>
+    <feature-group name="ejb3-remote-service"/>
+
+    <!-- the module it depends on is forced to be provisioned by galleon, so we are fine: WFLY-16099  -->
+    <feature-group name="infinispan-dist-server"/>
+    
+    <!-- clustering not in layer -->
+    <feature-group name="undertow-ajp-listener"/>
+    <feature spec="socket-binding-group">
+        <param name="socket-binding-group" value="standard-sockets" />
+        <feature-group name="modcluster-sockets"/>
+    </feature>
+    <feature-group name="modcluster"/>
+    <feature-group name="singleton"/>
+    
+    <feature-group name="jsr77"/>
+    
+    <feature spec="subsystem.ejb3">
+        <feature spec="subsystem.ejb3.service.iiop">
+            <param name="enable-by-default" value="false"/>
+            <param name="use-qualified-name" value="false"/>
+        </feature>
+    </feature>
+    <!-- Do we need a layer ? -->
+    <feature-group name="messaging-activemq-ha"/>
+    <!-- Should we have a layer? -->
+    <feature-group name="microprofile-opentracing-jaeger"/>
 </config>
