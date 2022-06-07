@@ -50,7 +50,6 @@ import org.jboss.dmr.ModelType;
 @Deprecated
 public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
 
-    static final PathElement LEGACY_PATH = PathElement.pathElement("remote-store", "REMOTE_STORE");
     static final PathElement PATH = pathElement("remote");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
@@ -86,7 +85,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     RemoteStoreResourceDefinition() {
-        super(PATH, LEGACY_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class));
+        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class));
         this.setDeprecated(InfinispanModel.VERSION_7_0_0.getVersion());
     }
 

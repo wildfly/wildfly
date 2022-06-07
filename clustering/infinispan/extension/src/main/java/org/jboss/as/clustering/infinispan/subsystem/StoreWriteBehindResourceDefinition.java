@@ -22,18 +22,14 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleAliasEntry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -47,7 +43,6 @@ import org.jboss.dmr.ModelType;
  */
 public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefinition {
 
-    static final PathElement LEGACY_PATH = PathElement.pathElement("write-behind", "WRITE_BEHIND");
     static final PathElement PATH = pathElement("behind");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
@@ -70,31 +65,6 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
         }
     }
 
-    @Deprecated
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        FLUSH_LOCK_TIMEOUT("flush-lock-timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(5)), InfinispanModel.VERSION_4_0_0),
-        SHUTDOWN_TIMEOUT("shutdown-timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(25)), InfinispanModel.VERSION_4_0_0),
-        THREAD_POOL_SIZE("thread-pool-size", ModelType.INT, new ModelNode(1), InfinispanModel.VERSION_13_0_0)
-        ;
-        private final AttributeDefinition definition;
-
-        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
-            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setRequired(false)
-                    .setDefaultValue(defaultValue)
-                    .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    .setDeprecated(deprecation.getVersion())
-                    .build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
     StoreWriteBehindResourceDefinition() {
         super(PATH);
     }
@@ -102,11 +72,9 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
-        parent.registerAlias(LEGACY_PATH, new SimpleAliasEntry(registration));
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
-                .addIgnoredAttributes(DeprecatedAttribute.class)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(StoreWriteBehindServiceConfigurator::new);
         new SimpleResourceRegistration(descriptor, handler).register(registration);

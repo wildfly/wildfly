@@ -27,7 +27,6 @@ import java.util.function.UnaryOperator;
 import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -66,33 +65,6 @@ public class SegmentedCacheResourceDefinition extends SharedStateCacheResourceDe
         }
     }
 
-    @Deprecated
-    enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
-        CONSISTENT_HASH_STRATEGY("consistent-hash-strategy", ModelType.STRING, new ModelNode(ConsistentHashStrategy.INTER_CACHE.name()), InfinispanModel.VERSION_13_0_0) {
-            @Override
-            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new EnumValidator<>(ConsistentHashStrategy.class));
-            }
-        },
-        ;
-        private final AttributeDefinition definition;
-
-        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
-            this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
-                    .setAllowExpression(true)
-                    .setRequired(false)
-                    .setDefaultValue(defaultValue)
-                    .setDeprecated(deprecation.getVersion())
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    ).build();
-        }
-
-        @Override
-        public AttributeDefinition getDefinition() {
-            return this.definition;
-        }
-    }
-
     private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
         private final UnaryOperator<ResourceDescriptor> configurator;
 
@@ -104,7 +76,6 @@ public class SegmentedCacheResourceDefinition extends SharedStateCacheResourceDe
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
             return this.configurator.apply(descriptor)
                     .addAttributes(Attribute.class)
-                    .addIgnoredAttributes(DeprecatedAttribute.class)
                     ;
         }
     }

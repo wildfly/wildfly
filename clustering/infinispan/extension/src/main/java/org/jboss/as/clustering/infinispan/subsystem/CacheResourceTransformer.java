@@ -24,9 +24,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.function.Consumer;
 
-import org.jboss.as.clustering.controller.transform.DiscardSingletonListAttributeChecker;
-import org.jboss.as.clustering.controller.transform.RejectNonSingletonListAttributeChecker;
-import org.jboss.as.clustering.controller.transform.SingletonListAttributeConverter;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
@@ -41,17 +38,8 @@ public class CacheResourceTransformer implements Consumer<ModelVersion> {
         this.builder = builder;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void accept(ModelVersion version) {
-        if (InfinispanModel.VERSION_14_0_0.requiresTransformation(version)) {
-            this.builder.getAttributeBuilder()
-                    .setValueConverter(new SingletonListAttributeConverter(CacheResourceDefinition.ListAttribute.MODULES), CacheResourceDefinition.DeprecatedAttribute.MODULE.getDefinition())
-                    .setDiscard(DiscardSingletonListAttributeChecker.INSTANCE, CacheResourceDefinition.ListAttribute.MODULES.getDefinition())
-                    .addRejectCheck(RejectNonSingletonListAttributeChecker.INSTANCE, CacheResourceDefinition.ListAttribute.MODULES.getDefinition())
-                    .end();
-        }
-
         new TransactionResourceTransformer(this.builder).accept(version);
     }
 }
