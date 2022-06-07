@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="\${io.undertow.jastow:jastow@module.jakarta.suffix@}"/>
+        <artifact name="${io.undertow.jastow:jastow}"/>
     </resources>
 
     <dependencies>

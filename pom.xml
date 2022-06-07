@@ -528,7 +528,9 @@
         <preview.version.com.sun.faces>4.0.0-M7.SP01</preview.version.com.sun.faces>
         <preview.version.com.sun.istack>4.0.1</preview.version.com.sun.istack>
         <preview.version.com.sun.xml.messaging.saaj>2.0.0.SP1</preview.version.com.sun.xml.messaging.saaj>
-		<preview.version.io.agroal>2.0</preview.version.io.agroal>
+        <preview.version.io.agroal>2.0</preview.version.io.agroal>
+        <preview.version.io.undertow>2.3.0.Alpha1</preview.version.io.undertow>
+        <preview.version.io.undertow.jastow>2.2.0.Final</preview.version.io.undertow.jastow>
         <preview.version.jakarta.activation.jakarta.activation-api>2.1.0</preview.version.jakarta.activation.jakarta.activation-api>
         <preview.version.jakarta.annotation.jakarta-annotation-api>2.1.0</preview.version.jakarta.annotation.jakarta-annotation-api>
         <preview.version.jakarta.authentication.jakarta-authentication-api>2.0.0</preview.version.jakarta.authentication.jakarta-authentication-api>
@@ -549,12 +551,12 @@
         <preview.version.jakarta.persistence>3.1.0</preview.version.jakarta.persistence>
         <preview.version.jakarta.resource.jakarta-resource-api>2.0.0</preview.version.jakarta.resource.jakarta-resource-api>
         <preview.version.jakarta.security.enterprise>2.0.0</preview.version.jakarta.security.enterprise>
-        <preview.version.jakarta.servlet.jakarta-servlet-api>5.0.0</preview.version.jakarta.servlet.jakarta-servlet-api>
-        <preview.version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.0.0</preview.version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
+        <preview.version.jakarta.servlet.jakarta-servlet-api>6.0.0</preview.version.jakarta.servlet.jakarta-servlet-api>
+        <preview.version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.1.0</preview.version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
         <preview.version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>3.0.0</preview.version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
         <preview.version.jakarta.transaction.jakarta-transaction-api>2.0.0</preview.version.jakarta.transaction.jakarta-transaction-api>
         <preview.version.jakarta.validation.jakarta-validation-api>3.0.2</preview.version.jakarta.validation.jakarta-validation-api>
-        <preview.version.jakarta.websocket.jakarta-websocket-api>2.0.0</preview.version.jakarta.websocket.jakarta-websocket-api>
+        <preview.version.jakarta.websocket.jakarta-websocket-api>2.1.0</preview.version.jakarta.websocket.jakarta-websocket-api>
         <preview.version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</preview.version.jakarta.ws.rs.jakarta-ws-rs-api>
         <preview.version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.1</preview.version.jakarta.xml.bind.jakarta-xml-bind-api>
         <preview.version.net.shibboleth.utilities.java-support>8.0.0</preview.version.net.shibboleth.utilities.java-support>
