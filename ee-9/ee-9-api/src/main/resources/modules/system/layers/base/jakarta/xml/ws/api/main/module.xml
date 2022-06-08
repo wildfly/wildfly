@@ -25,7 +25,7 @@
 <module xmlns="urn:jboss:module:1.9" name="jakarta.xml.ws.api">
 
     <resources>
-        <artifact name="${org.jboss.spec.jakarta.xml.ws:jboss-jakarta-xml-ws-api_3.0_spec}"/>
+        <artifact name="${org.jboss.spec.jakarta.xml.ws:jboss-jakarta-xml-ws-api_4.0_spec}"/>
     </resources>
 
     <dependencies>
