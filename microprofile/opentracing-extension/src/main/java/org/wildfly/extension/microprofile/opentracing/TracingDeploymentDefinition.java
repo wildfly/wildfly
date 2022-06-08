@@ -41,7 +41,7 @@ public class TracingDeploymentDefinition extends SimpleResourceDefinition {
 
     private TracingDeploymentDefinition() {
           super(new Parameters(SubsystemExtension.SUBSYSTEM_PATH, SubsystemExtension.getResourceDescriptionResolver())
-                  .setFeature(false));
+                  .setFeature(false).setRuntime());
     }
 
     @Override
