@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.jca.ijdeployment;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
@@ -91,6 +92,7 @@ public class IronJacamarDeploymentTestCase extends ContainerResourceMgmtTestBase
         operation.get(OP).set("read-resource");
         operation.get(OP_ADDR).set(address);
         operation.get(RECURSIVE).set(true);
+        operation.get(INCLUDE_RUNTIME).set(true);
         ModelNode result = executeOperation(operation);
 
         assertEquals("Bootstrap-context value is wrong", result.get("bootstrap-context").asString(), "default");
