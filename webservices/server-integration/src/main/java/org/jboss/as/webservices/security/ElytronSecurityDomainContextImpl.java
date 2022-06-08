@@ -32,11 +32,14 @@ import javax.security.auth.Subject;
 import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.util.SubjectUtil;
 import org.jboss.wsf.spi.security.SecurityDomainContext;
+import org.wildfly.security.auth.server.RealmIdentity;
 import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.auth.server.ServerAuthenticationContext;
+import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.evidence.PasswordGuessEvidence;
+import org.wildfly.security.password.interfaces.ClearPassword;
 
 public class ElytronSecurityDomainContextImpl implements SecurityDomainContext {
 
@@ -61,6 +64,24 @@ public class ElytronSecurityDomainContextImpl implements SecurityDomainContext {
     @Override
     public SecurityDomain getElytronSecurityDomain() {
         return this.securityDomain;
+    }
+
+    @Override
+    public String getPassword(Principal principal) {
+        try {
+            RealmIdentity identity = this.securityDomain.getIdentity(principal.getName());
+            if (identity.equals(RealmIdentity.NON_EXISTENT)) {
+                return null;
+            }
+            ClearPassword clearPassword = identity.getCredential(PasswordCredential.class).getPassword(ClearPassword.class);
+            // only realms supporting getCredential with clear password can be used with Username Token profile
+            if (clearPassword == null) {
+                return null;
+            }
+            return new String(clearPassword.getPassword());
+        } catch (RealmUnavailableException e) {
+            return null;
+        }
     }
 
     //TODO:refactor/deprecate this after elytron?
@@ -148,5 +169,4 @@ public class ElytronSecurityDomainContextImpl implements SecurityDomainContext {
     public void cleanupSubjectContext() {
         currentIdentity.remove();
     }
-
 }
