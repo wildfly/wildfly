@@ -547,7 +547,6 @@
         <preview.version.jakarta.mail-api>2.1.0</preview.version.jakarta.mail-api>
         <preview.version.jakarta.json.bind.api>3.0.0</preview.version.jakarta.json.bind.api>
         <preview.version.jakarta.json.jakarta-json-api>2.1.0</preview.version.jakarta.json.jakarta-json-api>
-        <preview.version.jakarta.jws.jakarta-jws-api>3.0.0</preview.version.jakarta.jws.jakarta-jws-api>
         <preview.version.jakarta.persistence>3.1.0</preview.version.jakarta.persistence>
         <preview.version.jakarta.resource.jakarta-resource-api>2.0.0</preview.version.jakarta.resource.jakarta-resource-api>
         <preview.version.jakarta.security.enterprise>2.0.0</preview.version.jakarta.security.enterprise>
@@ -615,7 +614,7 @@
         <preview.version.org.jboss.resteasy.microprofile>2.0.0.Beta1</preview.version.org.jboss.resteasy.microprofile>
         <preview.version.org.jboss.resteasy.spring>3.0.0.Alpha3</preview.version.org.jboss.resteasy.spring>
         <preview.version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>4.0.0.Alpha1</preview.version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>
-        <preview.version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec>1.0.1.Final</preview.version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec>
+        <preview.version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>1.0.0.Final</preview.version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>
         <preview.version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>1.0.0.Final</preview.version.org.jboss.spec.jakarta.xml.soap.saaj-api_2.0_spec>
         <preview.version.org.jboss.weld.weld>5.0.0.SP1</preview.version.org.jboss.weld.weld>
         <preview.version.org.jboss.weld.weld-api>5.0.Final</preview.version.org.jboss.weld.weld-api>
