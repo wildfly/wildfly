@@ -159,10 +159,6 @@
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>jakarta.jws</groupId>
-            <artifactId>jakarta.jws-api</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>jakarta.persistence</groupId>
@@ -216,7 +212,7 @@
 
         <dependency>
             <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
-            <artifactId>jboss-jakarta-xml-ws-api_3.0_spec</artifactId>
+            <artifactId>jboss-jakarta-xml-ws-api_4.0_spec</artifactId>
         </dependency>
 
         <dependency>
