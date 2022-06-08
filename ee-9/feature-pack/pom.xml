@@ -538,6 +538,7 @@
                                 <!-- end JPMS or OSGi metadata excludes -->
                                 <!-- Only contains hard-coded strings that are either not used or both the javax and
                                 jakarta names are used or legacy text files like XSD's or XML configuration files -->
+                                <excluded>jakarta.xml.bind:jakarta.xml.bind-api\z</excluded>
                                 <exclude>org.apache.logging.log4j:log4j-api\z</exclude>
                                 <exclude>org.glassfish.jaxb:jaxb-xjc\z</exclude>
                                 <excluded>org.apache.cxf:cxf-core\z</excluded>
