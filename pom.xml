@@ -560,8 +560,8 @@
         <preview.version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</preview.version.jakarta.ws.rs.jakarta-ws-rs-api>
         <preview.version.jakarta.xml.bind.jakarta-xml-bind-api>3.0.1</preview.version.jakarta.xml.bind.jakarta-xml-bind-api>
         <preview.version.net.shibboleth.utilities.java-support>8.0.0</preview.version.net.shibboleth.utilities.java-support>
-        <preview.version.org.apache.cxf>3.5.2-jbossorg-1</preview.version.org.apache.cxf>
-        <preview.version.org.apache.cxf.xjcplugins>3.3.1-jbossorg-1</preview.version.org.apache.cxf.xjcplugins>
+        <preview.version.org.apache.cxf>3.5.2-jbossorg-2</preview.version.org.apache.cxf>
+        <preview.version.org.apache.cxf.xjcplugins>4.0.0</preview.version.org.apache.cxf.xjcplugins>
         <preview.version.org.apache.lucene>8.11.1</preview.version.org.apache.lucene>
         <preview.version.org.apache.myfaces.core>3.0.1</preview.version.org.apache.myfaces.core>
         <preview.version.org.apache.wss4j>2.4.1-jbossorg-1</preview.version.org.apache.wss4j>
