@@ -44,7 +44,7 @@
         <module name="javax.transaction.api"/>
         <module name="javax.validation.api"/>
         <module name="javax.xml.bind.api"/>
-        <module name="com.sun.xml.bind"/>
+        <module name="org.glassfish.jaxb"/>
         <module name="org.antlr"/>
         <module name="org.dom4j"/>
         <module name="org.jboss.as.jpa.spi"/>
