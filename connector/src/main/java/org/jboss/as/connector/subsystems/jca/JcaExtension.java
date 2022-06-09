@@ -80,7 +80,7 @@ public class JcaExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jca";
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(5, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(5, 1, 0);
 
     private static final String RESOURCE_NAME = JcaExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -113,6 +113,7 @@ public class JcaExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_3_0.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_4_0.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_5_0.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_6_0.getUriString(), () -> ConnectorSubsystemParser.INSTANCE);
     }
 
     static final class ConnectorSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -325,6 +326,7 @@ public class JcaExtension implements Extension {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
 
                 switch (Namespace.forUri(reader.getNamespaceURI())) {
+                    case JCA_6_0:
                     case JCA_5_0:
                     case JCA_4_0:
                     case JCA_3_0:
@@ -385,7 +387,9 @@ public class JcaExtension implements Extension {
                             case TRACER: {
                                 if (Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_3_0) ||
                                     Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_4_0) ||
-                                    Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_5_0)) {
+                                    Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_5_0) ||
+                                    Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_6_0))
+                                {
                                     list.add(parseTracer(reader, address));
                                 } else {
                                     throw unexpectedElement(reader);
@@ -524,9 +528,17 @@ public class JcaExtension implements Extension {
                     }
                     case ELYTRON_ENABLED: {
                         switch (readerNS) {
+                            case JCA_6_0: {
+                                String value = rawElementText(reader);
+                                JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute().parseAndSetParameter(value, workManagerOperation, reader);
+                                break;
+                            }
                             case JCA_5_0: {
                                 String value = rawElementText(reader);
                                 JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute().parseAndSetParameter(value, workManagerOperation, reader);
+                                if (!workManagerOperation.hasDefined(JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute().getName())) {
+                                    workManagerOperation.get(JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute().getName()).set(new ModelNode(false));
+                                }
                                 break;
                             }
                             default: {
@@ -603,7 +615,8 @@ public class JcaExtension implements Extension {
                             case JCA_2_0:
                             case JCA_3_0:
                             case JCA_4_0:
-                            case JCA_5_0: {
+                            case JCA_5_0:
+                            case JCA_6_0:{
                                 parsePolicy(reader, distributedWorkManagerOperation);
                                 break;
                             }
@@ -618,7 +631,8 @@ public class JcaExtension implements Extension {
                             case JCA_2_0:
                             case JCA_3_0:
                             case JCA_4_0:
-                            case JCA_5_0: {
+                            case JCA_5_0:
+                            case JCA_6_0:{
                                 parseSelector(reader, distributedWorkManagerOperation);
                                 break;
                             }
@@ -630,9 +644,19 @@ public class JcaExtension implements Extension {
                     }
                     case ELYTRON_ENABLED: {
                         switch (readerNS) {
-                            case JCA_5_0: {
+                            case JCA_6_0:
+                            {
                                 String value = rawElementText(reader);
                                 ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.ELYTRON_ENABLED.getAttribute()).parseAndSetParameter(value, distributedWorkManagerOperation, reader);
+                                break;
+                            }
+                            case JCA_5_0:
+                            {
+                                String value = rawElementText(reader);
+                                ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.ELYTRON_ENABLED.getAttribute()).parseAndSetParameter(value, distributedWorkManagerOperation, reader);
+                                if (!distributedWorkManagerOperation.hasDefined(JcaDistributedWorkManagerDefinition.DWmParameters.ELYTRON_ENABLED.getAttribute().getName())) {
+                                    distributedWorkManagerOperation.get(JcaDistributedWorkManagerDefinition.DWmParameters.ELYTRON_ENABLED.getAttribute().getName()).set(new ModelNode(false));
+                                }
                                 break;
                             }
                             default: {
