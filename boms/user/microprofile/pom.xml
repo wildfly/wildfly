@@ -51,7 +51,7 @@
             <!-- base import of server's dep management -->
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-parent</artifactId>
+                <artifactId>wildfly-feature-pack-parent</artifactId>
                 <version>${version.server}</version>
                 <type>pom</type>
                 <scope>import</scope>
