@@ -14,24 +14,20 @@ embed-host-controller
 /profile=${profile}/subsystem=undertow/servlet-container=default:write-attribute(name="stack-trace-on-error",value="none")
 
 # [P] Enable SSL Connector
-# create WCC_SSL_Context
-/profile=${profile}/subsystem=elytron/credential-store=WCC_CREDENTIAL_STORE:add(\
-    location="wcc.credentials.store",\
-    relative-to=jboss.server.config.dir,\
-    credential-reference={clear-text=wildfly},\
-    create=true)
+# create key-store
 /profile=${profile}/subsystem=elytron/key-store=WCC_KEYSTORE:add(\
     relative-to=jboss.server.config.dir,\
-    path=wcc.keystore, required=false,\
+    path=wcc.keystore,\
+    required=true,\
     credential-reference={clear-text=wildfly})
+# create key-manager
 /profile=${profile}/subsystem=elytron/key-manager=WCC_SSL_KM:add(\
     key-store=WCC_KEYSTORE,\
-    alias-filter=server,\
     credential-reference={clear-text=wildfly})
+# create server-ssl-context
 /profile=${profile}/subsystem=elytron/server-ssl-context=WCC_SSL_Context:add(key-manager=WCC_SSL_KM)
 
-# switch https-listener from legacy security-realm to newly created Elytron ssl-context
-/profile=${profile}/subsystem=undertow/server=default-server/https-listener=https:undefine-attribute(name=security-realm)
+# assign newly created Elytron ssl-context to https-listener
 /profile=${profile}/subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=ssl-context,value=WCC_SSL_Context)
 
 stop-embedded-host-controller
