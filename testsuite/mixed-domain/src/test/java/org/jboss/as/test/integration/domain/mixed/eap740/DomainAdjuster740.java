@@ -51,6 +51,10 @@ public class DomainAdjuster740 extends DomainAdjuster {
         adjustEjb3(ops, profileAddress.append(SUBSYSTEM, "ejb3"));
         removeDistributableEjb(ops, profileAddress.append(SUBSYSTEM, "distributable-ejb"));
 
+        if (profileAddress.getElement(0).getValue().equals("full-ha")) {
+            adjustJGroups(ops, profileAddress.append(SUBSYSTEM, "jgroups"));
+        }
+
         return ops;
     }
 
@@ -79,6 +83,15 @@ public class DomainAdjuster740 extends DomainAdjuster {
         PathAddress timerServiceAddress = subsystemAddress.append("service", "timer-service");
         operations.add(Util.createCompositeOperation(Arrays.asList(Util.getUndefineAttributeOperation(timerServiceAddress, "default-persistent-timer-management"), Util.getWriteAttributeOperation(timerServiceAddress, "default-data-store", "default-file-store"))));
         operations.add(Util.createCompositeOperation(Arrays.asList(Util.getUndefineAttributeOperation(timerServiceAddress, "default-transient-timer-management"), Util.getWriteAttributeOperation(timerServiceAddress, "thread-pool-name", "default"))));
+    }
+
+    private static void adjustJGroups(List<ModelNode> operations, PathAddress subsystemAddress) {
+        for (String stack : Arrays.asList("tcp", "udp")) {
+            // Remove protocols that do not exist in EAP 7.4, but don't bother replacing
+            for (String protocol : Arrays.asList("RED", "FD_SOCK2", "FD_ALL3", "FRAG4", "VERIFY_SUSPECT2")) {
+                operations.add(Util.createRemoveOperation(subsystemAddress.append("stack", stack).append("protocol", protocol)));
+            }
+        }
     }
 
     /**

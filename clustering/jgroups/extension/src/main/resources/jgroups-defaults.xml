@@ -22,7 +22,7 @@
   -->
 <!-- N.B. This is *not* a usable protocol stack -->
 <!-- This file supplies the internal defaults per protocol -->
-<config xmlns="urn:org:jgroups" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups.xsd">
+<config xmlns="urn:org:jgroups">
     <UDP
         ip_ttl="2"
         mcast_recv_buf_size="25m"
@@ -31,6 +31,7 @@
         ucast_send_buf_size="1m"
         port_range="0"
         bundler_type="transfer-queue"
+        bundler.max_size="64k"
     />
     <TCP
         send_buf_size="640k"
@@ -59,11 +60,10 @@
         timeout="60000"
         timeout_check_interval="5000"
     />
-    <FD_ALL3
-        timeout="10000"
-        interval="2000"
-    />
+    <FD_SOCK port_range="0"/>
+    <FD_SOCK2 port_range="1" offset="1"/>
     <VERIFY_SUSPECT timeout="1000"/>
+    <VERIFY_SUSPECT2 timeout="1000"/>
     <pbcast.NAKACK2
         xmit_interval="100"
         xmit_table_num_rows="50"
@@ -81,5 +81,5 @@
     <UFC_NB max_credits="3m"/>
     <MFC max_credits="4m"/>
     <MFC_NB max_credits="3m"/>
-    <FRAG2 frag_size="30k"/>
+    <FRAG4 frag_size="60k"/>
 </config>
