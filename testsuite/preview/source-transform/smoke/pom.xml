@@ -261,7 +261,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
-            <artifactId>jboss-jakarta-xml-ws-api_3.0_spec</artifactId>
+            <artifactId>jboss-jakarta-xml-ws-api_4.0_spec</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
