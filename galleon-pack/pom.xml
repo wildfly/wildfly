@@ -477,6 +477,12 @@
                 <scope>test</scope>
             </dependency>
 
+            <dependency>
+                <groupId>org.wildfly.security</groupId>
+                <artifactId>wildfly-elytron-jwt</artifactId>
+                <version>${version.org.wildfly.security.elytron-mp}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

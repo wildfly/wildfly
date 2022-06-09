@@ -1884,23 +1884,24 @@
 
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
-                <artifactId>jaxb-jxc</artifactId>
-                <version>${preview.version.org.glassfish.jaxb}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.sun</groupId>
-                        <artifactId>tools</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-core</artifactId>
                 <version>${preview.version.org.glassfish.jaxb}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-jxc</artifactId>
+                <version>${preview.version.org.glassfish.jaxb}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun</groupId>
+                        <artifactId>tools</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1927,6 +1928,18 @@
 
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-xjc</artifactId>
+                <version>${preview.version.org.glassfish.jaxb.jaxb-xjc}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>txw2</artifactId>
                 <version>${preview.version.org.glassfish.jaxb}</version>
             </dependency>
@@ -1943,18 +1956,6 @@
                     <exclusion>
                         <groupId>relaxngDatatype</groupId>
                         <artifactId>relaxngDatatype</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.glassfish.jaxb</groupId>
-                <artifactId>jaxb-xjc</artifactId>
-                <version>${preview.version.org.glassfish.jaxb.jaxb-xjc}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
