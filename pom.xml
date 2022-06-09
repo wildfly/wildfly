@@ -740,7 +740,7 @@
                 <artifactId>wildfly-appclient</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
-
+            
             <dependency>
                 <groupId>xml-resolver</groupId>
                 <artifactId>xml-resolver</artifactId>
@@ -1098,7 +1098,7 @@
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
             </dependency>
-
+            
              <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ee-feature-pack-galleon-content</artifactId>
@@ -1318,7 +1318,7 @@
                 <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>
-
+ 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-messaging-activemq-injection</artifactId>
@@ -1455,7 +1455,7 @@
                 <version>${full.maven.version}</version>
                 <type>pom</type>
             </dependency>
-
+            
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
@@ -1483,7 +1483,7 @@
                 <version>${full.maven.version}</version>
                 <type>pom</type>
             </dependency>
-
+            
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-feature-pack-galleon-content</artifactId>
@@ -3279,7 +3279,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -3371,7 +3371,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion>                                        
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -3427,7 +3427,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.apache.geronimo.specs</groupId>
                         <artifactId>geronimo-javamail_1.4_spec</artifactId>
@@ -3495,7 +3495,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -3555,7 +3555,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -3615,7 +3615,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -3680,7 +3680,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -3828,7 +3828,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -3916,7 +3916,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -3972,7 +3972,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -4028,7 +4028,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -4120,7 +4120,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -4220,7 +4220,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -4328,7 +4328,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -4384,7 +4384,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -4436,7 +4436,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -4488,7 +4488,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -4588,7 +4588,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -4692,7 +4692,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -4796,7 +4796,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -4856,7 +4856,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -4924,7 +4924,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -5064,7 +5064,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -5212,7 +5212,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -5328,7 +5328,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -5424,7 +5424,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -5520,7 +5520,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -5580,7 +5580,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -5636,7 +5636,7 @@
                     <exclusion>
                         <groupId>jakarta.xml.soap</groupId>
                         <artifactId>jakarta.xml.soap-api</artifactId>
-                    </exclusion>
+                    </exclusion> 
                     <exclusion>
                         <groupId>org.jacorb</groupId>
                         <artifactId>jacorb-omgapi</artifactId>
@@ -6662,7 +6662,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
+        
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-hibernate-cache-spi</artifactId>
@@ -9356,7 +9356,7 @@
                 <arquillian.servlet.protocol>Servlet 5.0</arquillian.servlet.protocol>
             </properties>
         </profile>
-
+        
         <profile>
             <id>bootable.ee9.test.profile</id>
             <activation>
