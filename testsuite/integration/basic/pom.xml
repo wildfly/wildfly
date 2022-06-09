@@ -3465,9 +3465,6 @@
                                         <!-- Requires the Arquillian Servlet 3.0 protocol to be overridden to Servlet 5.0 -->
                                         <exclude>org/jboss/as/test/integration/logging/config/LoggingProfileSharedTestCase.java</exclude>
 
-                                        <!-- Excluded because Hibernate doesn't conform to CDI 4 deprecated method removals -->
-                                        <exclude>org/jboss/as/test/integration/ee/injection/support/jpa/EntityListenerInjectionSupportTestCase.java</exclude>
-
                                         <!-- With EE9, we use Hibernate Search 6 instead of 5,
                                              and Hibernate Search 6 exposes a different (backwards-incompatible) API,
                                              so Hibernate Search 5 tests cannot work.
@@ -3475,6 +3472,9 @@
                                              adapted to rely on Hibernate Search 6 APIs,
                                              so we still test Hibernate Search with EE9. -->
                                         <exclude>org/jboss/as/test/integration/hibernate/search/**</exclude>
+                                        <!-- Differences in the API changes for EE 8/9 and EE 10. -->
+                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingPropertiesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingServicesTestCase.java</exclude>
 
                                     </excludes>
                                 </configuration>
@@ -3551,12 +3551,6 @@
                                         <exclude>org/jboss/as/test/integration/weld/ejb/SessionObjectReferenceTestCase.java</exclude>
                                         <exclude>org/wildfly/test/integration/web/annotationsmodule/EarModuleDeploymentTestCase.java</exclude>
 
-                                        <!-- Excluded because Hibernate doesn't conform to CDI 4 deprecated method removals -->
-                                        <exclude>org/jboss/as/test/integration/ee/injection/support/jpa/EntityListenerInjectionSupportTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jpa/initializeinorder/InitializeInOrderTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/jpa/entitylistener/EntityListenersTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ee/injection/support/jpa/beanmanager/EntityListenerBeanManagerInjectionTestCase.java</exclude>
-
                                         <!-- With EE9, we use Hibernate Search 6 instead of 5,
                                              and Hibernate Search 6 exposes a different (backwards-incompatible) API,
                                              so Hibernate Search 5 tests cannot work.
@@ -3564,6 +3558,9 @@
                                              adapted to rely on Hibernate Search 6 APIs,
                                              so we still test Hibernate Search with EE9. -->
                                         <exclude>org/jboss/as/test/integration/hibernate/search/**</exclude>
+                                        <!-- Differences in the API changes for EE 8/9 and EE 10. -->
+                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingPropertiesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jaxb/unit/JAXBContextUsingServicesTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>

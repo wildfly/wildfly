@@ -667,18 +667,6 @@
             </dependency>
 
             <dependency>
-                <groupId>jakarta.jws</groupId>
-                <artifactId>jakarta.jws-api</artifactId>
-                <version>${preview.version.jakarta.jws.jakarta-jws-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>jakarta.json.bind</groupId>
                 <artifactId>jakarta.json.bind-api</artifactId>
                 <version>${preview.version.jakarta.json.bind.api}</version>
@@ -1896,23 +1884,24 @@
 
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
-                <artifactId>jaxb-jxc</artifactId>
-                <version>${preview.version.org.glassfish.jaxb}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.sun</groupId>
-                        <artifactId>tools</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-core</artifactId>
                 <version>${preview.version.org.glassfish.jaxb}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-jxc</artifactId>
+                <version>${preview.version.org.glassfish.jaxb}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun</groupId>
+                        <artifactId>tools</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1939,6 +1928,18 @@
 
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-xjc</artifactId>
+                <version>${preview.version.org.glassfish.jaxb.jaxb-xjc}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>txw2</artifactId>
                 <version>${preview.version.org.glassfish.jaxb}</version>
             </dependency>
@@ -1955,18 +1956,6 @@
                     <exclusion>
                         <groupId>relaxngDatatype</groupId>
                         <artifactId>relaxngDatatype</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.glassfish.jaxb</groupId>
-                <artifactId>jaxb-xjc</artifactId>
-                <version>${preview.version.org.glassfish.jaxb.jaxb-xjc}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2353,8 +2342,8 @@
 
             <dependency>
                 <groupId>org.jboss.spec.jakarta.xml.ws</groupId>
-                <artifactId>jboss-jakarta-xml-ws-api_3.0_spec</artifactId>
-                <version>${preview.version.org.jboss.spec.jakarta.xml.ws.api_3.0_spec}</version>
+                <artifactId>jboss-jakarta-xml-ws-api_4.0_spec</artifactId>
+                <version>${preview.version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

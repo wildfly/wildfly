@@ -145,7 +145,7 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
 
     private DeploymentDefinition() {
         super(new Parameters(PathElement.pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), DEFAULT_RESOLVER)
-                .setFeature(false));
+                .setFeature(false).setRuntime());
     }
 
 
