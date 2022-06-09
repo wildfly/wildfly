@@ -534,7 +534,7 @@
         <preview.version.jakarta.authentication.jakarta-authentication-api>2.0.0</preview.version.jakarta.authentication.jakarta-authentication-api>
         <preview.version.jakarta.authorization.jakarta-authorization-api>2.0.0</preview.version.jakarta.authorization.jakarta-authorization-api>
         <preview.version.jakarta.batch.jakarta.batch-api>2.1.0</preview.version.jakarta.batch.jakarta.batch-api>
-        <preview.version.jakarta.ejb.jakarta-ejb-api>4.0.0</preview.version.jakarta.ejb.jakarta-ejb-api>
+        <preview.version.jakarta.ejb.jakarta-ejb-api>4.0.1</preview.version.jakarta.ejb.jakarta-ejb-api>
         <preview.version.jakarta.el.jakarta-el-api>5.0.0</preview.version.jakarta.el.jakarta-el-api>
         <preview.version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</preview.version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <preview.version.jakarta.enterprise>4.0.0</preview.version.jakarta.enterprise>
